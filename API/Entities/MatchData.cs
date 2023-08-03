@@ -1,30 +1,78 @@
 ﻿using API.Entities.Bases;
+using Dapper;
 
-namespace API.Entities;
-
-public class MatchData : EntityBase
+namespace API.Entities
 {
-	public int PlayerId { get; set; }
-	public long OsuMatchId { get; set; }
-	public long GameId { get; set; }
-	public string ScoringType { get; set; }
-	public long Score { get; set; }
-	public long OsuBeatmapId { get; set; }
-	public int GameRawMods { get; set; }
-	public int RawMods { get; set; }
-	public string MatchName { get; set; }
-	public string Mode { get; set; }
-	public DateTime MatchStartDate { get; set; }
-	public bool? Freemod { get; set; }
-	public bool? Forcemod { get; set; }
-	public string? TeamType { get; set; }
-	public string? Team { get; set; }
-	public string? OsuName { get; set; }
-	public int? OsuRank { get; set; }
-	public int OsuBadge { get; set; }
-	public double? OsuDuelStarRating { get; set; }
-	public double? Accuracy { get; set; }
-	public double? CS { get; set; }
-	public double? AR { get; set; }
-	public double? OD { get; set; }
+	[Table("matchdata")]
+	public class MatchData : EntityBase
+	{
+		[Column("player_id")]
+		public int PlayerId { get; set; }
+
+		[Column("osu_match_id")]
+		public long OsuMatchId { get; set; }
+
+		[Column("game_id")]
+		public long GameId { get; set; }
+
+		[Column("scoring_type")]
+		public string ScoringType { get; set; }
+
+		[Column("score")]
+		public long Score { get; set; }
+
+		[Column("osu_beatmap_id")]
+		public long OsuBeatmapId { get; set; }
+
+		[Column("game_raw_mods")]
+		public int GameRawMods { get; set; }
+
+		[Column("raw_mods")]
+		public int RawMods { get; set; }
+
+		[Column("match_name")]
+		public string MatchName { get; set; }
+
+		[Column("mode")]
+		public string Mode { get; set; }
+
+		[Column("match_start_date")]
+		public DateTime MatchStartDate { get; set; }
+
+		[Column("free_mod")]
+		public bool? Freemod { get; set; }
+
+		[Column("force_mod")]
+		public bool? Forcemod { get; set; }
+
+		[Column("team_type")]
+		public string? TeamType { get; set; }
+
+		[Column("team")]
+		public string? Team { get; set; }
+
+		[Column("osu_name")]
+		public string? OsuName { get; set; }
+
+		[Column("osu_rank")]
+		public int? OsuRank { get; set; }
+
+		[Column("osu_badge")]
+		public int OsuBadge { get; set; }
+
+		[Column("osu_duel_starrating")]
+		public double? OsuDuelStarRating { get; set; }
+
+		[Column("accuracy")]
+		public double? Accuracy { get; set; }
+
+		[Column("cs")]
+		public double? CS { get; set; }
+
+		[Column("ar")]
+		public double? AR { get; set; }
+
+		[Column("od")]
+		public double? OD { get; set; }
+	}
 }

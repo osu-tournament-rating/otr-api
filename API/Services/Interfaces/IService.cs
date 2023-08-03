@@ -1,5 +1,4 @@
-﻿using API.Entities;
-using API.Entities.Bases;
+﻿using API.Entities.Bases;
 
 namespace API.Services.Interfaces;
 

@@ -1,9 +1,8 @@
 ﻿using API.Configurations;
-using API.Entities;
 using API.Entities.Bases;
 using API.Services.Interfaces;
 using Dapper;
-using Microsoft.Data.SqlClient;
+using Npgsql;
 
 namespace API.Services.Implementations;
 
@@ -15,11 +14,12 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 	{
 		_logger = logger;
 		_connectionString = dbCredentials.ConnectionString;
+		
 	}
 
 	public async Task<int?> CreateAsync(T entity)
 	{
-		using (var connection = new SqlConnection(_connectionString))
+		using (var connection = new NpgsqlConnection(_connectionString))
 		{
 			return await connection.InsertAsync(entity);
 		}
@@ -27,7 +27,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 
 	public async Task<T?> GetAsync(int id)
 	{
-		using (var connection = new SqlConnection(_connectionString))
+		using (var connection = new NpgsqlConnection(_connectionString))
 		{
 			return await connection.GetAsync<T>(id);
 		}
@@ -35,7 +35,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 
 	public async Task<int?> UpdateAsync(T entity)
 	{
-		using(var connection = new SqlConnection(_connectionString))
+		using(var connection = new NpgsqlConnection(_connectionString))
 		{
 			try
 			{
@@ -51,7 +51,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 
 	public async Task<int?> DeleteAsync(int id)
 	{
-		using(var connection = new SqlConnection(_connectionString))
+		using(var connection = new NpgsqlConnection(_connectionString))
 		{
 			try
 			{
@@ -67,7 +67,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 
 	public async Task<IEnumerable<T>?> GetAllAsync()
 	{
-		using (var connection = new SqlConnection(_connectionString))
+		using (var connection = new NpgsqlConnection(_connectionString))
 		{
 			// May consider not calling .ToList for performance reasons
 			var res = (await connection.GetListAsync<T>()).ToList();
@@ -77,7 +77,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 
 	public async Task<bool> ExistsAsync(int id)
 	{
-		using(var connection = new SqlConnection(_connectionString))
+		using(var connection = new NpgsqlConnection(_connectionString))
 		{
 			try
 			{

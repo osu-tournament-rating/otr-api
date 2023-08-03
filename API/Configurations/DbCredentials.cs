@@ -1,6 +1,4 @@
-﻿using API.Services;
-
-namespace API.Configurations;
+﻿namespace API.Configurations;
 
 public class DbCredentials : IDbCredentials
 {
