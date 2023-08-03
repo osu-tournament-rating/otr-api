@@ -6,5 +6,5 @@ namespace API.Services.Implementations;
 
 public class MatchDataService : ServiceBase<MatchData>, IMatchDataService
 {
-	public MatchDataService(IDbCredentials dbCredentials) : base(dbCredentials) {}
+	public MatchDataService(IDbCredentials dbCredentials, ILogger<MatchDataService> logger) : base(dbCredentials, logger) {}
 }
