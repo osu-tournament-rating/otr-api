@@ -1,4 +1,5 @@
 ﻿using Dapper;
+#pragma warning disable CS8618
 
 namespace API.Entities;
 
@@ -6,7 +7,7 @@ namespace API.Entities;
 public class Config
 {
 	[Column("key")]
-	public string Key { get; set; } = null!;
+	public string Key { get; set; }
 	[Column("value")]
-	public string Value { get; set; } = null!;
+	public string Value { get; set; }
 }

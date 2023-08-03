@@ -1,5 +1,6 @@
 ﻿using API.Entities.Bases;
 using Dapper;
+#pragma warning disable CS8618
 
 namespace API.Entities
 {
