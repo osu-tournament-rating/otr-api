@@ -2,6 +2,7 @@ using API.Configurations;
 using API.Services;
 using API.Services.Implementations;
 using API.Services.Interfaces;
+using Dapper;
 using Serilog;
 using Serilog.Events;
 
@@ -26,6 +27,8 @@ builder.Services.AddSerilog(configuration =>
 	             .WriteTo.File("logs\\log.log", rollingInterval: RollingInterval.Day)
 	             .WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true);
 });
+
+SimpleCRUD.SetDialect(SimpleCRUD.Dialect.PostgreSQL);
 
 builder.Services.AddLogging();
 
