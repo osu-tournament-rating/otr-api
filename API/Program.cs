@@ -4,12 +4,19 @@ using API.Services.Interfaces;
 using Dapper;
 using Serilog;
 using Serilog.Events;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+       .AddJsonOptions(o =>
+       {
+	       o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
+       });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -32,7 +39,6 @@ SimpleCRUD.SetDialect(SimpleCRUD.Dialect.PostgreSQL);
 builder.Services.AddLogging();
 
 builder.Services.AddScoped<IMatchDataService, MatchDataService>();
-
 builder.Services.AddSingleton<IDbCredentials, DbCredentials>(serviceProvider =>
 {
 	string? connString = serviceProvider.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
