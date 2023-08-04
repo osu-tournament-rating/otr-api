@@ -8,8 +8,8 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class CrudController<T> : Controller where T : class, IEntity
 {
-	private readonly ILogger _logger;
-	private readonly IService<T> _service;
+	public ILogger Logger { get; }
+	public IService<T> Service { get; }
 
 	public CrudController()
 	{
@@ -20,22 +20,22 @@ public class CrudController<T> : Controller where T : class, IEntity
 	{
 		// This generic logger will be provided by inheriting classes, which 
 		// then get their loggers from DI.
-		_logger = logger;
-		_service = service;
+		Logger = logger;
+		Service = service;
 	}
 
 	[HttpGet("all")]
 	public virtual async Task<ActionResult<IEnumerable<T>?>> GetAll()
 	{
-		_logger.LogInformation("Fetching all entities of type {Type}", typeof(T).Name);
-		var entities = await _service.GetAllAsync();
+		Logger.LogInformation("Fetching all entities of type {Type}", typeof(T).Name);
+		var entities = await Service.GetAllAsync();
 		if(entities == null)
 		{
-			_logger.LogWarning("No entities of type {Type} found", typeof(T).Name);
+			Logger.LogWarning("No entities of type {Type} found", typeof(T).Name);
 			return NotFound();
 		}
 		
-		_logger.LogInformation("Successfully fetched all entities of type {Type}", typeof(T).Name);
+		Logger.LogInformation("Successfully fetched all entities of type {Type}", typeof(T).Name);
 		return Ok(entities);
 	}
 }

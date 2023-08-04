@@ -17,10 +17,10 @@ namespace API.Entities
 		public long GameId { get; set; }
 
 		[Column("scoring_type")]
-		public string ScoringType { get; set; }
+		public string? ScoringType { get; set; }
 
 		[Column("score")]
-		public long Score { get; set; }
+		public double Score { get; set; }
 
 		[Column("osu_beatmap_id")]
 		public long OsuBeatmapId { get; set; }
@@ -32,7 +32,7 @@ namespace API.Entities
 		public int RawMods { get; set; }
 
 		[Column("match_name")]
-		public string MatchName { get; set; }
+		public string? MatchName { get; set; }
 
 		[Column("mode")]
 		public string Mode { get; set; }
@@ -58,8 +58,8 @@ namespace API.Entities
 		[Column("osu_rank")]
 		public int? OsuRank { get; set; }
 
-		[Column("osu_badge")]
-		public int OsuBadge { get; set; }
+		[Column("osu_badges")]
+		public int OsuBadges { get; set; }
 
 		[Column("osu_duel_starrating")]
 		public double? OsuDuelStarRating { get; set; }
