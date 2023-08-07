@@ -23,4 +23,16 @@ public class MatchDataController : CrudController<MatchData>
 		
 		return NotFound("No data found");
 	}
+
+	[HttpGet("{playerId}/all")]
+	public async Task<ActionResult<IEnumerable<MatchData>>> GetAllForPlayerAsync(int playerId)
+	{
+		var data = await _service.GetAllForPlayerAsync(playerId);
+		if (data.Any())
+		{
+			return Ok(data);
+		}
+
+		return NotFound("User does not have any data");
+	}
 }
