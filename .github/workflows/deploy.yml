@@ -81,6 +81,20 @@ jobs:
           ENV="PRODUCTION"
           PORT="9900"
         fi
+        ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST "
+        if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
+          ENV='STAGING'
+          PORT='9901'
+        else
+          ENV='PRODUCTION'
+          PORT='9900'
+        fi
+        echo "Environment: $ENV"
+        cd /github-builds/otr/$ENV
+        docker build -t otr-api-$ENV:${{ github.sha }} .
+        docker run -d -p $PORT:80 --name otr-api-$ENV otr-api-$ENV:${{ github.sha }}
+        "
+
         scp -i private_key.pem -o StrictHostKeyChecking=no ./API/Dockerfile $USER@$HOST:/github-builds/otr/$ENV/
         ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST "
           cd /github-builds/otr/$ENV
