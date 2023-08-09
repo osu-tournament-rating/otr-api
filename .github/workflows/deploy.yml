@@ -34,11 +34,17 @@ jobs:
 
     - name: Create appsettings.Staging.json
       if: github.ref == 'refs/heads/develop'
-      run: echo "${{ secrets.APPSETTINGS_STAGING }}" > appsettings.Staging.json
+      run: |
+        cat <<EOL > appsettings.Staging.json
+        ${{ secrets.APPSETTINGS_STAGING }}
+        EOL
 
     - name: Create appsettings.Production.json
       if: github.ref == 'refs/heads/master'
-      run: echo "${{ secrets.APPSETTINGS_PRODUCTION }}" > appsettings.Production.json
+      run: |
+        cat <<EOL > appsettings.Production.json
+        ${{ secrets.APPSETTINGS_PRODUCTION }}
+        EOL
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
