@@ -62,9 +62,10 @@ jobs:
       with:
         context: ./API
         push: false
-        tags: otr-api-${ENV}:${{ github.sha }}
+        tags: otr-api-${{ github.ref == 'refs/heads/develop' ? 'STAGING' : 'PRODUCTION' }}:${{ github.sha }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
+
 
     - name: Deploy to VPS
       env:
@@ -81,15 +82,6 @@ jobs:
           ENV="PRODUCTION"
           PORT="9900"
         fi
-        ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST "
-        if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
-          ENV='STAGING'
-          PORT='9901'
-        else
-          ENV='PRODUCTION'
-          PORT='9900'
-        fi
-        echo "Environment: $ENV"
         cd /github-builds/otr/$ENV
         docker build -t otr-api-$ENV:${{ github.sha }} .
         docker run -d -p $PORT:80 --name otr-api-$ENV otr-api-$ENV:${{ github.sha }}
