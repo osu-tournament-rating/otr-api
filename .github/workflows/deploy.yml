@@ -57,12 +57,20 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildx-
 
+    - name: Set ENV variable
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+          echo "ENV=STAGING" >> $GITHUB_ENV
+        else
+          echo "ENV=PRODUCTION" >> $GITHUB_ENV
+        fi
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v2
       with:
         context: ./API
         push: false
-        tags: otr-api-${{ github.ref == 'refs/heads/develop' ? 'STAGING' : 'PRODUCTION' }}:${{ github.sha }}
+        tags: otr-api-${{ env.ENV }}:${{ github.sha }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
 
