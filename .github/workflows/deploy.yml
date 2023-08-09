@@ -84,8 +84,8 @@ jobs:
         scp -i private_key.pem -o StrictHostKeyChecking=no Dockerfile $USER@$HOST:/github-builds/otr/$ENV/
         ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST "
           cd /github-builds/otr/$ENV
-          docker build -t my-app:${{ github.sha }} .
-          docker run -d -p $PORT:80 --name my-app-${ENV} my-app:${{ github.sha }}
+          docker build -t otr-api-${ENV}:${{ github.sha }} ./API
+          docker run -d -p $PORT:80 --name otr-api-${ENV} otr-api-${ENV}:${{ github.sha }}
         "
         rm -f private_key.pem
 
