@@ -75,6 +75,8 @@ jobs:
         cache-to: type=local,dest=/tmp/.buildx-cache
 
     - name: Deploy to VPS
+      with:
+        context: .
       env:
         PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         HOST: ${{ secrets.SSH_HOST }}
