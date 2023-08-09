@@ -69,8 +69,8 @@ jobs:
     - name: Deploy to VPS
       env:
         PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        HOST: $ {{ secrets.SSH_HOST }}
-        USER: $ {{ secrets.SSH_USER }}
+        HOST: ${{ secrets.SSH_HOST }}
+        USER: ${{ secrets.SSH_USER }}
       run: |
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
@@ -81,11 +81,10 @@ jobs:
           ENV="PRODUCTION"
           PORT="9900"
         fi
-        scp -i private_key.pem -o StrictHostKeyChecking=no Dockerfile $USER@$HOST:/github-builds/otr/$ENV/
+        scp -i private_key.pem -o StrictHostKeyChecking=no ./API/Dockerfile $USER@$HOST:/github-builds/otr/$ENV/
         ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST "
           cd /github-builds/otr/$ENV
-          docker build -t otr-api-${ENV}:${{ github.sha }} ./API
+          docker build -t otr-api-${ENV}:${{ github.sha }} .
           docker run -d -p $PORT:80 --name otr-api-${ENV} otr-api-${ENV}:${{ github.sha }}
         "
         rm -f private_key.pem
-
