@@ -82,11 +82,10 @@ jobs:
       run: |
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
-        if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
-          ENV="staging"
+        ENV="${{ env.ENV }}"
+        if [ "$ENV" == "staging" ]; then
           PORT="9901"
         else
-          ENV="production"
           PORT="9900"
         fi
         # Copy the entire API directory to the server
