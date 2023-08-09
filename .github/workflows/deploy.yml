@@ -45,8 +45,8 @@ jobs:
     - name: Deploy to VPS
       env:
         PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        HOST: 5.161.51.164
-        USER: stage
+        HOST: $ {{ secrets.SSH_HOST }}
+        USER: $ {{ secrets.SSH_USER }}
       run: |
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
