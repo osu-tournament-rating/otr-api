@@ -66,7 +66,6 @@ jobs:
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
 
-
     - name: Deploy to VPS
       env:
         PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -82,11 +81,6 @@ jobs:
           ENV="PRODUCTION"
           PORT="9900"
         fi
-        cd /github-builds/otr/$ENV
-        docker build -t otr-api-$ENV:${{ github.sha }} .
-        docker run -d -p $PORT:80 --name otr-api-$ENV otr-api-$ENV:${{ github.sha }}
-        "
-
         scp -i private_key.pem -o StrictHostKeyChecking=no ./API/Dockerfile $USER@$HOST:/github-builds/otr/$ENV/
         ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST "
           cd /github-builds/otr/$ENV
