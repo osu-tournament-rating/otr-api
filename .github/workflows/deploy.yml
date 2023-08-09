@@ -14,6 +14,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '7.0.4'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore
+
+    - name: Run Tests
+      run: dotnet test APITests --no-build --verbosity normal
+
     - name: Create appsettings.Staging.json
       if: github.ref == 'refs/heads/develop'
       run: echo "${{ secrets.APPSETTINGS_STAGING }}" > appsettings.Staging.json
