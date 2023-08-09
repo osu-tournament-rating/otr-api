@@ -32,18 +32,18 @@ jobs:
     - name: Run Tests
       run: dotnet test APITests --no-build --verbosity normal
 
-    - name: Create appsettings.Staging.json
+    - name: Create appsettings.staging.json
       if: github.ref == 'refs/heads/develop'
       run: |
-        cat <<EOL > appsettings.Staging.json
-        ${{ secrets.APPSETTINGS_STAGING }}
+        cat <<EOL > appsettings.staging.json
+        ${{ secrets.APPSETTINGS_staging }}
         EOL
 
-    - name: Create appsettings.Production.json
+    - name: Create appsettings.production.json
       if: github.ref == 'refs/heads/master'
       run: |
-        cat <<EOL > appsettings.Production.json
-        ${{ secrets.APPSETTINGS_PRODUCTION }}
+        cat <<EOL > appsettings.production.json
+        ${{ secrets.APPSETTINGS_production }}
         EOL
 
     - name: Set up Docker Buildx
@@ -60,9 +60,9 @@ jobs:
     - name: Set ENV variable
       run: |
         if [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-          echo "ENV=STAGING" >> $GITHUB_ENV
+          echo "ENV=staging" >> $GITHUB_ENV
         else
-          echo "ENV=PRODUCTION" >> $GITHUB_ENV
+          echo "ENV=production" >> $GITHUB_ENV
         fi
 
     - name: Build and push Docker image
@@ -83,10 +83,10 @@ jobs:
         echo "$PRIVATE_KEY" > private_key.pem
         chmod 600 private_key.pem
         if [ "${{ github.ref }}" == "refs/heads/develop" ]; then
-          ENV="STAGING"
+          ENV="staging"
           PORT="9901"
         else
-          ENV="PRODUCTION"
+          ENV="production"
           PORT="9900"
         fi
         scp -i private_key.pem -o StrictHostKeyChecking=no ./API/Dockerfile $USER@$HOST:/github-builds/otr/$ENV/
