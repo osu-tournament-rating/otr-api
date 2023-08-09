@@ -60,9 +60,9 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v2
       with:
-        context: .
+        context: ./API
         push: false
-        tags: my-app:${{ github.sha }}
+        tags: otr-api-${ENV}:${{ github.sha }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache
 
@@ -84,7 +84,12 @@ jobs:
         scp -i private_key.pem -o StrictHostKeyChecking=no ./API/Dockerfile $USER@$HOST:/github-builds/otr/$ENV/
         ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST "
           cd /github-builds/otr/$ENV
+          # Stop and remove the existing container if it's running
+          docker stop otr-api-${ENV} || true
+          docker rm otr-api-${ENV} || true
+          # Build the new image
           docker build -t otr-api-${ENV}:${{ github.sha }} .
+          # Run the new container with the updated image
           docker run -d -p $PORT:80 --name otr-api-${ENV} otr-api-${ENV}:${{ github.sha }}
         "
         rm -f private_key.pem
