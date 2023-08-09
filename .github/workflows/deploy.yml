@@ -75,7 +75,6 @@ jobs:
         cache-to: type=local,dest=/tmp/.buildx-cache
 
     - name: Deploy to VPS
-      context: .
       env:
         PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         HOST: ${{ secrets.SSH_HOST }}
@@ -90,13 +89,14 @@ jobs:
           ENV="production"
           PORT="9900"
         fi
-        scp -i private_key.pem -o StrictHostKeyChecking=no ./API/Dockerfile $USER@$HOST:/github-builds/otr/$ENV/
+        # Copy the entire API directory to the server
+        scp -i private_key.pem -o StrictHostKeyChecking=no -r ./API $USER@$HOST:/github-builds/otr/$ENV/
         ssh -i private_key.pem -o StrictHostKeyChecking=no $USER@$HOST "
-          cd /github-builds/otr/$ENV
+          cd /github-builds/otr/$ENV/API
           # Stop and remove the existing container if it's running
           docker stop otr-api-${ENV} || true
           docker rm otr-api-${ENV} || true
-          # Build the new image
+          # Build the new image with the context set to the API directory
           docker build -t otr-api-${ENV}:${{ github.sha }} .
           # Run the new container with the updated image
           docker run -d -p $PORT:80 --name otr-api-${ENV} otr-api-${ENV}:${{ github.sha }}
