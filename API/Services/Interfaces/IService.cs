@@ -5,7 +5,7 @@ namespace API.Services.Interfaces;
 public interface IService<T> where T : class, IEntity
 {
 	// CRUD operations
-	
+
 	/// <summary>
 	///  Adds a new entity to the database. If successful, returns the primary key of the entity, otherwise null.
 	/// </summary>
@@ -27,13 +27,14 @@ public interface IService<T> where T : class, IEntity
 	Task<int?> DeleteAsync(int id);
 
 	// Other common operations
-	
+
 	/// <summary>
-	/// Gets all entities from the database. If successful, returns the collection of entities, otherwise null.
+	///  Gets all entities from the database. If successful, returns the collection of entities, otherwise null.
 	/// </summary>
 	Task<IEnumerable<T>?> GetAllAsync();
+
 	/// <summary>
-	/// Returns true if an entity with the given ID exists in the database.
+	///  Returns true if an entity with the given ID exists in the database.
 	/// </summary>
 	Task<bool> ExistsAsync(int id);
 }

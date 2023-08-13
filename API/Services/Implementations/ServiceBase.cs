@@ -6,17 +6,17 @@ using Npgsql;
 
 namespace API.Services.Implementations;
 
-public class ServiceBase<T> : IService<T> where T : class, IEntity 
+public class ServiceBase<T> : IService<T> where T : class, IEntity
 {
 	private readonly ILogger _logger;
-	public string ConnectionString { get; }
 
 	protected ServiceBase(IDbCredentials dbCredentials, ILogger logger)
 	{
 		_logger = logger;
 		ConnectionString = dbCredentials.ConnectionString;
-		
 	}
+
+	public string ConnectionString { get; }
 
 	public async Task<int?> CreateAsync(T entity)
 	{
@@ -36,7 +36,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 
 	public async Task<int?> UpdateAsync(T entity)
 	{
-		using(var connection = new NpgsqlConnection(ConnectionString))
+		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
 			try
 			{
@@ -52,7 +52,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 
 	public async Task<int?> DeleteAsync(int id)
 	{
-		using(var connection = new NpgsqlConnection(ConnectionString))
+		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
 			try
 			{
@@ -78,7 +78,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 
 	public async Task<bool> ExistsAsync(int id)
 	{
-		using(var connection = new NpgsqlConnection(ConnectionString))
+		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
 			try
 			{

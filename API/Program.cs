@@ -4,7 +4,6 @@ using API.Services.Interfaces;
 using Dapper;
 using Serilog;
 using Serilog.Events;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,10 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers()
-       .AddJsonOptions(o =>
-       {
-	       o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
-       });
+       .AddJsonOptions(o => { o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals; });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -34,6 +30,7 @@ builder.Services.AddSerilog(configuration =>
 	             .WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true);
 });
 
+DefaultTypeMap.MatchNamesWithUnderscores = true;
 SimpleCRUD.SetDialect(SimpleCRUD.Dialect.PostgreSQL);
 
 builder.Services.AddLogging();
@@ -46,7 +43,7 @@ builder.Services.AddSingleton<IDbCredentials, DbCredentials>(serviceProvider =>
 	{
 		throw new InvalidOperationException("Missing connection string!");
 	}
-	
+
 	return new DbCredentials(connString);
 });
 

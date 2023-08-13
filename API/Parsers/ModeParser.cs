@@ -10,15 +10,12 @@ public enum Mode
 
 public static class ModeParser
 {
-	public static Mode Parse(string mode)
+	public static Mode Parse(string mode) => mode switch
 	{
-		return mode switch
-		{
-			"Standard" => Mode.Standard,
-			"Mania" => Mode.Mania,
-			"Taiko" => Mode.Taiko,
-			"Catch the Beat" => Mode.CatchTheBeat,
-			_ => throw new ArgumentException($"Invalid mode: {mode}")
-		};
-	}
+		"Standard" => Mode.Standard,
+		"Mania" => Mode.Mania,
+		"Taiko" => Mode.Taiko,
+		"Catch the Beat" => Mode.CatchTheBeat,
+		_ => throw new ArgumentException($"Invalid mode: {mode}")
+	};
 }

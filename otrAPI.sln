@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APITests", "APITests\APITests.csproj", "{7E4E1661-FA2C-4685-A211-190436DB6CD3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataInserter", "DataInserter\DataInserter.csproj", "{DD06A95A-3BD1-4418-ABBA-BCF567270288}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{7E4E1661-FA2C-4685-A211-190436DB6CD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E4E1661-FA2C-4685-A211-190436DB6CD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E4E1661-FA2C-4685-A211-190436DB6CD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD06A95A-3BD1-4418-ABBA-BCF567270288}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD06A95A-3BD1-4418-ABBA-BCF567270288}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD06A95A-3BD1-4418-ABBA-BCF567270288}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD06A95A-3BD1-4418-ABBA-BCF567270288}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

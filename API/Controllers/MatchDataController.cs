@@ -9,7 +9,6 @@ namespace API.Controllers;
 public class MatchDataController : CrudController<MatchData>
 {
 	private readonly IMatchDataService _service;
-
 	public MatchDataController(ILogger<MatchDataController> logger, IMatchDataService service) : base(logger, service) { _service = service; }
 
 	[HttpGet("all-filtered")]
@@ -20,7 +19,7 @@ public class MatchDataController : CrudController<MatchData>
 		{
 			return Ok(data);
 		}
-		
+
 		return NotFound("No data found");
 	}
 
