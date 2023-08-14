@@ -11,15 +11,15 @@ public class MatchDataController : CrudController<MatchData>
 	private readonly IMatchDataService _service;
 	public MatchDataController(ILogger<MatchDataController> logger, IMatchDataService service) : base(logger, service) { _service = service; }
 
-	[HttpGet("{id:int}/all")]
-	public async Task<ActionResult<IEnumerable<MatchData>>> GetAllForPlayerAsync(int id)
+	[HttpGet("{playerId:int}/all")]
+	public async Task<ActionResult<IEnumerable<MatchData>>> GetAllForPlayerAsync(int playerId)
 	{
-		var data = await _service.GetAllForPlayerAsync(id);
+		var data = await _service.GetAllForPlayerAsync(playerId);
 		if (data.Any())
 		{
 			return Ok(data);
 		}
 
-		return NotFound($"User with id {id} does not have any data");
+		return NotFound($"User with id {playerId} does not have any data");
 	}
 }

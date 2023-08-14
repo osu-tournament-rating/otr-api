@@ -1,4 +1,5 @@
 using API.Configurations;
+using API.Controllers;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using Dapper;
@@ -36,6 +37,8 @@ SimpleCRUD.SetDialect(SimpleCRUD.Dialect.PostgreSQL);
 builder.Services.AddLogging();
 
 builder.Services.AddScoped<IMatchDataService, MatchDataService>();
+builder.Services.AddScoped<IRatingsService, RatingsService>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddSingleton<IDbCredentials, DbCredentials>(serviceProvider =>
 {
 	string? connString = serviceProvider.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
