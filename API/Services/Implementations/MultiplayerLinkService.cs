@@ -10,11 +10,11 @@ public class MultiplayerLinkService : ServiceBase<MultiplayerLink>, IMultiplayer
 {
 	public MultiplayerLinkService(ICredentials credentials, ILogger<MultiplayerLinkService> logger) : base(credentials, logger) {}
 
-	public Task<MultiplayerLink?> GetByLobbyIdAsync(long lobbyId)
+	public async Task<MultiplayerLink?> GetByLobbyIdAsync(long lobbyId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return connection.QuerySingleOrDefaultAsync<MultiplayerLink?>("SELECT * FROM multiplayerlinks WHERE mp_link_id = @lobbyId", new { lobbyId });
+			return await connection.QuerySingleOrDefaultAsync<MultiplayerLink?>("SELECT * FROM multiplayerlinks WHERE mp_link_id = @lobbyId", new { lobbyId });
 		}
 	}
 
@@ -31,6 +31,14 @@ public class MultiplayerLinkService : ServiceBase<MultiplayerLink>, IMultiplayer
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
 			return await connection.QueryFirstOrDefaultAsync<MultiplayerLink?>("SELECT * FROM multiplayerlinks WHERE status = 'PENDING'");
+		}
+	}
+
+	public async Task<IEnumerable<long>> CheckExistingAsync(IEnumerable<long> lobbyIds)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QueryAsync<long>("SELECT mp_link_id FROM multiplayerlinks WHERE mp_link_id = ANY(@lobbyIds)", new { lobbyIds });
 		}
 	}
 }

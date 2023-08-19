@@ -8,7 +8,7 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 {
 	private const int RATE_LIMIT_CAPACITY = 1000;
 	private const int RATE_LIMIT_INTERVAL_SECONDS = 60;
-	private const int INTERVAL_SECONDS = 5;
+	private const int INTERVAL_SECONDS = 1;
 
 	private int _rateLimitCounter;
 	private DateTime _rateLimitResetTime = DateTime.UtcNow.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
@@ -73,8 +73,10 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 						_logger.LogWarning("Failed to fetch data for match {MatchId} (result from API was null)", link.MpLinkId);
 						continue;
 					}
+
+					link.LobbyName = result.Match.Name;
 				
-					// TODO: Insert into database
+					// TODO: Convert ACCEPTED status matches into MatchData entities
 					await UpdateLinkStatusAsync(link, "REVIEW", multiplayerLinkService);
 
 					_rateLimitCounter++;
@@ -94,6 +96,8 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 	private async Task UpdateLinkStatusAsync(MultiplayerLink link, string status, IMultiplayerLinkService multiplayerLinkService)
 	{
 		link.Status = status;
+		link.Updated = DateTime.Now;
+		
 		await multiplayerLinkService.UpdateAsync(link);
 		_logger.LogDebug("Set status of MultiplayerLink {LinkId} to {Status}", link.Id, status);
 	}
