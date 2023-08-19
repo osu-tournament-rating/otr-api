@@ -25,7 +25,7 @@ public class MultiplayerLinksController : CrudController<MultiplayerLink>
 		 * FLOW:
 		 *
 		 * The user submits a batch of links to the front-end. They are looking to add new data
-		 * to our database.
+		 * to our database that will eventually count towards ratings.
 		 *
 		 * This post endpoint takes these links, validates them (i.e. checks for duplicates,
 		 * whether the match titles align with osu! tournament naming conventions,
