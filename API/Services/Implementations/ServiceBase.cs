@@ -10,10 +10,10 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 {
 	private readonly ILogger _logger;
 
-	protected ServiceBase(IDbCredentials dbCredentials, ILogger logger)
+	public ServiceBase(ICredentials credentials, ILogger logger)
 	{
 		_logger = logger;
-		ConnectionString = dbCredentials.ConnectionString;
+		ConnectionString = credentials.ConnectionString;
 	}
 
 	public string ConnectionString { get; }

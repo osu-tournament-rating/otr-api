@@ -11,7 +11,7 @@ public class MatchDataService : ServiceBase<MatchData>, IMatchDataService
 	private const int SCORE_THRESHOLD = 10000;
 	private const double ACCURACY_THRESHOLD = 0.3;
 	private readonly string _filterQuery = $"SELECT * FROM matchdata WHERE score > {SCORE_THRESHOLD} AND accuracy > {ACCURACY_THRESHOLD}";
-	public MatchDataService(IDbCredentials dbCredentials, ILogger<MatchDataService> logger) : base(dbCredentials, logger) {}
+	public MatchDataService(ICredentials credentials, ILogger<MatchDataService> logger) : base(credentials, logger) {}
 
 	public async Task<IEnumerable<MatchData>> GetFilteredDataAsync()
 	{

@@ -8,7 +8,7 @@ namespace API.Services.Implementations;
 
 public class RatingsService : ServiceBase<Rating>, IRatingsService
 {
-	public RatingsService(IDbCredentials dbCredentials, ILogger<RatingsService> logger) : base(dbCredentials, logger) {}
+	public RatingsService(ICredentials credentials, ILogger<RatingsService> logger) : base(credentials, logger) {}
 
 	public async Task<IEnumerable<Rating>> GetAllForPlayerAsync(int id)
 	{

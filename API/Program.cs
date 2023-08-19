@@ -1,4 +1,5 @@
 using API.Configurations;
+using API.Osu.Multiplayer;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using Dapper;
@@ -35,19 +36,33 @@ SimpleCRUD.SetDialect(SimpleCRUD.Dialect.PostgreSQL);
 
 builder.Services.AddLogging();
 
+builder.Services.AddHostedService<MultiplayerLobbyDataWorker>();
+
 builder.Services.AddScoped<IMatchDataService, MatchDataService>();
 builder.Services.AddScoped<IRatingsService, RatingsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
-builder.Services.AddSingleton<IDbCredentials, DbCredentials>(serviceProvider =>
+builder.Services.AddScoped<IMultiplayerLinkService, MultiplayerLinkService>();
+
+builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
+builder.Services.AddSingleton<ICredentials, Credentials>(serviceProvider =>
 {
 	string? connString = serviceProvider.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
+	string? osuApiKey = serviceProvider.GetRequiredService<IConfiguration>().GetSection("Osu").GetValue<string>("ApiKey");
+	
 	if (connString == null)
 	{
 		throw new InvalidOperationException("Missing connection string!");
 	}
+	
+	if (osuApiKey == null)
+	{
+		throw new InvalidOperationException("Missing osu! API key!");
+	}
 
-	return new DbCredentials(connString);
+	return new Credentials(connString, osuApiKey);
 });
+
+builder.Services.AddSingleton<OsuApiService>();
 
 var app = builder.Build();
 

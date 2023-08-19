@@ -8,7 +8,7 @@ namespace API.Services.Implementations;
 
 public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistoryService
 {
-	protected RatingHistoryService(IDbCredentials dbCredentials, ILogger<RatingHistoryService> logger) : base(dbCredentials, logger) {}
+	public RatingHistoryService(ICredentials credentials, ILogger<RatingHistoryService> logger) : base(credentials, logger) {}
 
 	public async Task<IEnumerable<RatingHistory>> GetAllForPlayerAsync(int playerId)
 	{

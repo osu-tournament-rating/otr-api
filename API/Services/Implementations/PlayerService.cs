@@ -8,7 +8,7 @@ namespace API.Services.Implementations;
 
 public class PlayerService : ServiceBase<Player>, IPlayerService
 {
-	public PlayerService(IDbCredentials dbCredentials, ILogger<PlayerService> logger) : base(dbCredentials, logger) {}
+	public PlayerService(ICredentials credentials, ILogger<PlayerService> logger) : base(credentials, logger) {}
 
 	public async Task<Player?> GetByOsuIdAsync(int osuId)
 	{
