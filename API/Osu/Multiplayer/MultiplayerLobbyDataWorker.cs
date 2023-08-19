@@ -77,6 +77,8 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 					link.LobbyName = result.Match.Name;
 				
 					// TODO: Convert ACCEPTED status matches into MatchData entities
+					
+					// TODO: Reference LobbyNameChecker to validate lobby name
 					await UpdateLinkStatusAsync(link, "REVIEW", multiplayerLinkService);
 
 					_rateLimitCounter++;
