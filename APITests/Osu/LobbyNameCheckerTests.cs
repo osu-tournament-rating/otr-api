@@ -4,9 +4,6 @@ namespace APITests.Osu;
 
 public class LobbyNameCheckerTests
 {
-	/**
-	 * 
-	 */
 	[Test]
 	[TestCase("slot: (хохлорусы) vs (Mr.Worldwide)")]
 	[TestCase("megacup: (Nałęczowianka) vs (ff we have axolotl)")]
