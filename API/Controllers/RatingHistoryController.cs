@@ -1,5 +1,6 @@
 using API.Entities;
 using API.Services.Implementations;
+using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -8,8 +9,8 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class RatingHistoryController : CrudController<RatingHistory>
 {
-	private readonly RatingHistoryService _service;
-	public RatingHistoryController(ILogger<RatingHistoryController> logger, RatingHistoryService service) : base(logger, service) { _service = service; }
+	private readonly IRatingHistoryService _service;
+	public RatingHistoryController(ILogger<RatingHistoryController> logger, IRatingHistoryService service) : base(logger, service) { _service = service; }
 
 	[HttpGet("{playerId:int}/all")]
 	public async Task<ActionResult<IEnumerable<RatingHistory>>> GetAllForPlayerAsync(int playerId)
