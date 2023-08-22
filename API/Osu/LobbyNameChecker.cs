@@ -1,7 +1,6 @@
-namespace API.Osu;
-
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
+
+namespace API.Osu;
 
 public static class LobbyNameChecker
 {
@@ -16,6 +15,5 @@ public static class LobbyNameChecker
 		@".+?:\s?[^()]+?\s?vs\.?\s?[^()]+?$",
 		@".+?:.*?\((.+?)\)\s?vs\.?\s?\((.+?)\)"
 	};
-
 	public static bool IsNameValid(string name) => patterns.Any(pattern => Regex.IsMatch(name, pattern, RegexOptions.IgnoreCase));
 }

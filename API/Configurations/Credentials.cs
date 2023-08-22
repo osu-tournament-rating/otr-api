@@ -7,7 +7,7 @@ public class Credentials : ICredentials
 		ConnectionString = connectionString;
 		OsuApiKey = osuApiKey;
 	}
-	
+
 	public string ConnectionString { get; }
 	public string OsuApiKey { get; }
 }

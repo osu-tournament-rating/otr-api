@@ -3,11 +3,11 @@
 public interface ICredentials
 {
 	/// <summary>
-	/// Connection string to PostgreSQL database
+	///  Connection string to PostgreSQL database
 	/// </summary>
 	string ConnectionString { get; }
 	/// <summary>
-	/// osu! API v1 key
+	///  osu! API v1 key
 	/// </summary>
 	string OsuApiKey { get; }
 }

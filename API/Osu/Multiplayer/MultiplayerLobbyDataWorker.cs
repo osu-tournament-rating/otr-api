@@ -1,6 +1,5 @@
 using API.Entities;
 using API.Services.Interfaces;
-using System.Reflection.Metadata.Ecma335;
 
 namespace API.Osu.Multiplayer;
 
@@ -9,14 +8,12 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 	private const int RATE_LIMIT_CAPACITY = 1000;
 	private const int RATE_LIMIT_INTERVAL_SECONDS = 60;
 	private const int INTERVAL_SECONDS = 1;
-
-	private int _rateLimitCounter;
-	private DateTime _rateLimitResetTime = DateTime.UtcNow.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
-	
+	private readonly OsuApiService _apiService;
 	private readonly ILogger<MultiplayerLobbyDataWorker> _logger;
 	private readonly IServiceProvider _serviceProvider;
-	private readonly OsuApiService _apiService;
-	
+	private int _rateLimitCounter;
+	private DateTime _rateLimitResetTime = DateTime.UtcNow.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
+
 	public MultiplayerLobbyDataWorker(ILogger<MultiplayerLobbyDataWorker> logger, IServiceProvider serviceProvider, OsuApiService apiService)
 	{
 		_logger = logger;
@@ -25,8 +22,8 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 	}
 
 	/// <summary>
-	/// This method constantly checks the database for pending multiplayer links and processes them.
-	/// The osu! API rate limit is taken into account.
+	///  This method constantly checks the database for pending multiplayer links and processes them.
+	///  The osu! API rate limit is taken into account.
 	/// </summary>
 	/// <param name="cancellationToken"></param>
 	public Task StartAsync(CancellationToken cancellationToken = default)
@@ -34,6 +31,8 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 		_ = BackgroundTask(cancellationToken);
 		return Task.CompletedTask;
 	}
+
+	public async Task StopAsync(CancellationToken cancellationToken) => await Task.CompletedTask;
 
 	private async Task BackgroundTask(CancellationToken cancellationToken = default)
 	{
@@ -56,11 +55,10 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 			{
 				var multiplayerLinkService = scope.ServiceProvider.GetRequiredService<IMultiplayerLinkService>();
 				var matchDataService = scope.ServiceProvider.GetRequiredService<IMatchDataService>();
-				
+
 				var link = await multiplayerLinkService.GetFirstPendingOrDefaultAsync();
 				if (link == null)
 				{
-					_logger.LogDebug("No pending links to process");
 					await Task.Delay(INTERVAL_SECONDS * 1000, cancellationToken);
 					continue;
 				}
@@ -75,31 +73,29 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 					}
 
 					link.LobbyName = result.Match.Name;
-				
+
 					// TODO: Convert ACCEPTED status matches into MatchData entities
-					
+
 					// TODO: Reference LobbyNameChecker to validate lobby name
 					await UpdateLinkStatusAsync(link, "REVIEW", multiplayerLinkService);
 
 					_rateLimitCounter++;
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					await UpdateLinkStatusAsync(link, "FAILED", multiplayerLinkService);
-            
+
 					_logger.LogWarning(e, "Failed to fetch data for match {MatchId} (exception was thrown)", link.MpLinkId);
 				}
 			}
 		}
 	}
 
-	public async Task StopAsync(CancellationToken cancellationToken) => await Task.CompletedTask;
-	
 	private async Task UpdateLinkStatusAsync(MultiplayerLink link, string status, IMultiplayerLinkService multiplayerLinkService)
 	{
 		link.Status = status;
 		link.Updated = DateTime.Now;
-		
+
 		await multiplayerLinkService.UpdateAsync(link);
 		_logger.LogDebug("Set status of MultiplayerLink {LinkId} to {Status}", link.Id, status);
 	}

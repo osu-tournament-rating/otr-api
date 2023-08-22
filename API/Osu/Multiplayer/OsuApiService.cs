@@ -6,9 +6,9 @@ namespace API.Osu.Multiplayer;
 public class OsuApiService : IOsuApiService
 {
 	private const string BaseUrl = "https://osu.ppy.sh/api/";
-	private readonly ILogger<OsuApiService> _logger;
-	private readonly ICredentials _credentials;
 	private readonly HttpClient _client;
+	private readonly ICredentials _credentials;
+	private readonly ILogger<OsuApiService> _logger;
 
 	public OsuApiService(ILogger<OsuApiService> logger, ICredentials credentials)
 	{

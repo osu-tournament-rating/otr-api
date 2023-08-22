@@ -18,11 +18,21 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		}
 	}
 
-	public async Task<int> GetIdByOsuIdAsync(int osuId)
+	public async Task<int> GetIdByOsuIdAsync(long osuId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
 			return await connection.QuerySingleOrDefaultAsync<int>("SELECT id FROM players WHERE osu_id = @OsuId", new { OsuId = osuId });
 		}
 	}
+
+	public async Task<Dictionary<long, int>> GetIdsByOsuIdsAsync(IEnumerable<long> osuIds)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			var results = await connection.QueryAsync<(long osuId, int id)>("SELECT osu_id, id FROM players WHERE osu_id = ANY(@OsuIds)", new { OsuIds = osuIds.ToArray() });
+			return results.ToDictionary(x => x.osuId, x => x.id);
+		}
+	}
+
 }

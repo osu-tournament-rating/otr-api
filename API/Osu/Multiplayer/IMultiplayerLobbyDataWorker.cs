@@ -1,5 +1,3 @@
 namespace API.Osu.Multiplayer;
 
-public interface IMultiplayerLobbyDataWorker : IHostedService
-{
-}
+public interface IMultiplayerLobbyDataWorker : IHostedService {}

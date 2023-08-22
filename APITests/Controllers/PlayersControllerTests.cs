@@ -1,6 +1,3 @@
 namespace APITests.Controllers;
 
-public class PlayersControllerTests
-{
-	
-}
+public class PlayersControllerTests {}

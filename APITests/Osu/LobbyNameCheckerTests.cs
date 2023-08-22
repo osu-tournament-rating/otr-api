@@ -24,5 +24,5 @@ public class LobbyNameCheckerTests
 	[TestCase("test (a) vs. (b)")]
 	[TestCase("test (a) vs (b)")]
 	[TestCase("WDTWE (:smirk_cat:) vs (RAMSING)")]
-	public void Patterns_Regex_ShouldFail(string name) => Assert.That(LobbyNameChecker.IsNameValid(name), Is.False);
+	public void Patterns_Regex_ShouldNotMatch(string name) => Assert.That(LobbyNameChecker.IsNameValid(name), Is.False);
 }

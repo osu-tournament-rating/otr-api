@@ -10,7 +10,7 @@ public class PlayersController : CrudController<Player>
 {
 	private readonly IPlayerService _service;
 	public PlayersController(ILogger<PlayersController> logger, IPlayerService service) : base(logger, service) { _service = service; }
-	
+
 	[HttpGet("{osuId:int}")]
 	public override async Task<ActionResult<Player?>> Get(int osuId)
 	{
@@ -22,7 +22,7 @@ public class PlayersController : CrudController<Player>
 
 		return NotFound($"User with id {osuId} does not exist");
 	}
-	
+
 	[HttpGet("{osuId:int}/id")]
 	public async Task<ActionResult<int>> GetIdByOsuIdAsync(int osuId)
 	{

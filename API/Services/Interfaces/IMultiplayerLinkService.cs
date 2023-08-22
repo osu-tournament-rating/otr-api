@@ -1,5 +1,4 @@
 using API.Entities;
-using API.Osu.Multiplayer;
 
 namespace API.Services.Interfaces;
 

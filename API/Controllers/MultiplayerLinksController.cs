@@ -11,13 +11,13 @@ public class MultiplayerLinksController : CrudController<MultiplayerLink>
 {
 	private readonly ILogger<MultiplayerLinksController> _logger;
 	private readonly IMultiplayerLinkService _service;
-	
+
 	public MultiplayerLinksController(ILogger<MultiplayerLinksController> logger, IMultiplayerLinkService service) : base(logger, service)
 	{
 		_logger = logger;
 		_service = service;
 	}
-	
+
 	[HttpPost("batch")]
 	public async Task<string> PostAsync([FromBody] IEnumerable<MultiplayerLink> linkBatch)
 	{
@@ -35,7 +35,7 @@ public class MultiplayerLinksController : CrudController<MultiplayerLink>
 		 * The API.Osu.Multiplayer.MultiplayerLobbyDataWorker service checks the database for pending links
 		 * periodically and processes them automatically.
 		 */
-		
+
 		// Check if any of the links already exist in the database
 		var ret = linkBatch.ToList();
 		var existing = (await _service.CheckExistingAsync(ret.Select(x => x.MpLinkId).ToList())).ToList();
@@ -45,18 +45,17 @@ public class MultiplayerLinksController : CrudController<MultiplayerLink>
 			ret.RemoveAll(x => existing.Contains(x.MpLinkId));
 			_logger.LogInformation("Removed {Count} existing links from the batch", existing.Count);
 		}
-		
-		
+
 		// Mark as pending for worker
 		ret.ForEach(async x =>
 		{
 			x.Status = "PENDING";
 			x.Created = DateTime.Now;
 			x.Updated = DateTime.Now;
-			
+
 			await _service.CreateAsync(x);
 		});
-		
+
 		_logger.LogInformation("Created {Count} new links", ret.Count);
 
 		return JsonConvert.SerializeObject(ret);

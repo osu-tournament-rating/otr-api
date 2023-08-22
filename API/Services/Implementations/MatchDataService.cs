@@ -28,4 +28,21 @@ public class MatchDataService : ServiceBase<MatchData>, IMatchDataService
 			return await connection.QueryAsync<MatchData>("SELECT * FROM matchdata WHERE player_id = @PlayerId", new { PlayerId = playerId });
 		}
 	}
+
+	public async Task<int> GetIdForPlayerIdGameIdAsync(int playerId, long gameId)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QuerySingleAsync<int>("SELECT id FROM matchdata WHERE player_id = @PlayerId AND game_id = @GameId",
+				new { PlayerId = playerId, GameId = gameId });
+		}
+	}
+
+	public async Task<IEnumerable<(int id, int playerId, long gameId)>> GetIdsPlayerIdsGameIdsAsync()
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QueryAsync<(int id, int playerId, long gameId)>("SELECT id, player_id, game_id FROM matchdata");
+		}
+	}
 }
