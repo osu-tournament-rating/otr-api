@@ -27,4 +27,37 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 			return await connection.QueryAsync<RatingHistory>("SELECT * FROM ratinghistories WHERE player_id = @PlayerId", new { PlayerId = playerId });
 		}
 	}
+
+	public async Task ReplaceBatchAsync(IEnumerable<RatingHistory> ratings)
+	{
+		/**
+		 * USE THIS WITH CAUTION !!!
+		 */
+
+		ratings = ratings.ToList();
+		var playerIds = (await _playerService.GetAllAsync() ?? throw new InvalidOperationException("Invalid ratings")).ToDictionary(x => x.OsuId, x => x.Id);
+		var ids = (await _matchDataService.GetIdsPlayerIdsGameIdsAsync()).ToDictionary(x => (x.playerId, x.gameId), x => x.id);
+
+		foreach (var r in ratings)
+		{
+			r.PlayerId = playerIds[r.PlayerId];
+			r.MatchDataId = ids[(r.PlayerId, r.GameId)];
+		}
+
+		ratings = ratings.OrderBy(x => x.Created);
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			await connection.ExecuteAsync("TRUNCATE TABLE ratinghistories");
+			await connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode, match_data_id) VALUES (@PlayerId, @Mu, @Sigma, @Created, @Mode, @MatchDataId)",
+				ratings);
+		}
+	}
+
+	public async Task TruncateAsync()
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			await connection.ExecuteAsync("TRUNCATE TABLE ratinghistories");
+		}
+	}
 }

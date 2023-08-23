@@ -29,6 +29,14 @@ public class MatchDataService : ServiceBase<MatchData>, IMatchDataService
 		}
 	}
 
+	public Task<IEnumerable<MatchData>> GetAllForOsuMatchIdAsync(long osuMatchId)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return connection.QueryAsync<MatchData>("SELECT * FROM matchdata WHERE osu_match_id = @OsuMatchId", new { OsuMatchId = osuMatchId });
+		}
+	}
+
 	public async Task<int> GetIdForPlayerIdGameIdAsync(int playerId, long gameId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))

@@ -16,4 +16,8 @@ public class RatingHistory : EntityBase
 	public int MatchDataId { get; set; }
 	[Column("mode")]
 	public string Mode { get; set; } = "Standard"; // TODO: Remove hardcoded mode
+	[NotMapped]
+	public long MatchId { get; set; }
+	[NotMapped]
+	public long GameId { get; set; }
 }

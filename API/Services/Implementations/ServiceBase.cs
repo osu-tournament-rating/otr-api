@@ -18,7 +18,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 
 	public string ConnectionString { get; }
 
-	public async Task<int?> CreateAsync(T entity)
+	public virtual async Task<int?> CreateAsync(T entity)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
@@ -26,7 +26,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 		}
 	}
 
-	public async Task<T?> GetAsync(int id)
+	public virtual async Task<T?> GetAsync(int id)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
@@ -34,7 +34,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 		}
 	}
 
-	public async Task<int?> UpdateAsync(T entity)
+	public virtual async Task<int?> UpdateAsync(T entity)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
@@ -50,7 +50,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 		}
 	}
 
-	public async Task<int?> DeleteAsync(int id)
+	public virtual async Task<int?> DeleteAsync(int id)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
@@ -66,7 +66,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 		}
 	}
 
-	public async Task<IEnumerable<T>?> GetAllAsync()
+	public virtual async Task<IEnumerable<T>?> GetAllAsync()
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
@@ -76,7 +76,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 		}
 	}
 
-	public async Task<bool> ExistsAsync(int id)
+	public virtual async Task<bool> ExistsAsync(int id)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{

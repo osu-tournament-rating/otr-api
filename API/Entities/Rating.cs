@@ -16,4 +16,6 @@ public class Rating : UpdateableEntityBase
 	public double MuInitial { get; set; }
 	[Column("sigma_initial")]
 	public double SigmaInitial { get; set; }
+	[Column("mode")]
+	public string Mode { get; set; } = "Standard"; // TODO: Remove hardcoded mode
 }

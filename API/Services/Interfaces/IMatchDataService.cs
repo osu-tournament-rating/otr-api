@@ -10,6 +10,7 @@ public interface IMatchDataService : IService<MatchData>
 	Task<IEnumerable<MatchData>> GetFilteredDataAsync();
 
 	Task<IEnumerable<MatchData>> GetAllForPlayerAsync(int playerId);
+	Task<IEnumerable<MatchData>> GetAllForOsuMatchIdAsync(long osuMatchId);
 	Task<int> GetIdForPlayerIdGameIdAsync(int playerId, long gameId);
 	Task<IEnumerable<(int id, int playerId, long gameId)>> GetIdsPlayerIdsGameIdsAsync();
 }

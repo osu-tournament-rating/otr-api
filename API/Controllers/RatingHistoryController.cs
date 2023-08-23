@@ -1,5 +1,6 @@
 using API.Entities;
 using API.Services.Interfaces;
+using API.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -22,5 +23,23 @@ public class RatingHistoryController : CrudController<RatingHistory>
 		}
 
 		return NotFound($"User with id {playerId} does not have any data");
+	}
+	
+	[HttpPost("danger/replace")]
+	public async Task<IActionResult> BatchReplaceAsync(IFormFile file)
+	{
+		string content = await file.ReadAsStringAsync();
+		var import = JsonConvert.DeserializeObject<IEnumerable<RatingHistory>>(content);
+		
+		await _service.ReplaceBatchAsync(import!);
+		
+		return Ok();
+	}
+	
+	[HttpDelete("danger/truncate")]
+	public async Task<IActionResult> TruncateAsync()
+	{
+		await _service.TruncateAsync();
+		return Ok();
 	}
 }
