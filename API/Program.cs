@@ -49,15 +49,10 @@ builder.Services.AddSingleton<ICredentials, Credentials>(serviceProvider =>
 {
 	string? connString = serviceProvider.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
 	string? osuApiKey = serviceProvider.GetRequiredService<IConfiguration>().GetSection("Osu").GetValue<string>("ApiKey");
-	
+
 	if (connString == null)
 	{
 		throw new InvalidOperationException("Missing connection string!");
-	}
-	
-	if (osuApiKey == null)
-	{
-		throw new InvalidOperationException("Missing osu! API key!");
 	}
 
 	return new Credentials(connString, osuApiKey);
