@@ -34,4 +34,16 @@ public class PlayersController : CrudController<Player>
 
 		return NotFound($"User with id {osuId} does not exist");
 	}
+	
+	[HttpGet("{id}/osuid")]
+	public async Task<ActionResult<long>> GetOsuIdByIdAsync(int id)
+	{
+		long osuId = await _service.GetOsuIdByIdAsync(id);
+		if (osuId != 0)
+		{
+			return Ok(osuId);
+		}
+
+		return NotFound($"User with id {id} does not exist");
+	}
 }
