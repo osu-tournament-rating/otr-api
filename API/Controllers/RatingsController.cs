@@ -38,4 +38,16 @@ public class RatingsController : CrudController<Rating>
 
 		return StatusCode(500, $"Failed to update rating for player {playerId}");
 	}
+	
+	[HttpPost("batch")]
+	public async Task<ActionResult> BatchInsertOrUpdateAsync([FromBody] IEnumerable<Rating> ratings)
+	{
+		int? result = await _service.BatchInsertOrUpdateAsync(ratings);
+		if (result > 0)
+		{
+			return Ok();
+		}
+
+		return StatusCode(500, $"Failed to update ratings");
+	}
 }

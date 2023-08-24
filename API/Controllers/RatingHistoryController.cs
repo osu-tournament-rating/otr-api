@@ -42,4 +42,17 @@ public class RatingHistoryController : CrudController<RatingHistory>
 		await _service.TruncateAsync();
 		return Ok();
 	}
+	
+	[HttpPost("batch")]
+	public async Task<IActionResult> BatchAsync(IEnumerable<RatingHistory> histories)
+	{
+		// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+		if (histories == null)
+		{
+			return BadRequest("No data was given or the data was invalid");
+		}
+		
+		await _service.InsertAsync(histories);
+		return Ok();
+	}
 }

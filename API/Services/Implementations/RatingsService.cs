@@ -91,13 +91,19 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 			}
 
 			rating.Updated = DateTime.UtcNow; // This doesn't work for some reason...?
-			int exists = await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM ratings WHERE player_id = @PlayerId AND mode = @Mode", rating);
-			if (exists == 0)
-			{
-				return await connection.ExecuteAsync("INSERT INTO ratings (player_id, mu, sigma, mode, updated) VALUES (@PlayerId, @Mu, @Sigma, @Mode, @Updated)", rating);
-			}
-			
-			return await connection.ExecuteAsync("UPDATE ratings SET mu = @Mu, sigma = @Sigma, updated = @Updated WHERE player_id = @PlayerId AND mode = @Mode", rating);
+			return await connection.ExecuteAsync("INSERT INTO ratings (player_id, mu, sigma, mode, updated) VALUES (@PlayerId, @Mu, @Sigma, @Mode, @Updated) " +
+			                                     "ON CONFLICT (player_id, mode) DO UPDATE SET mu = @Mu, sigma = @Sigma, updated = @Updated " +
+			                                     "WHERE ratings.player_id = @PlayerId AND ratings.mode = @Mode", rating);
+		}
+	}
+
+	public async Task<int?> BatchInsertOrUpdateAsync(IEnumerable<Rating> ratings)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.ExecuteAsync("INSERT INTO ratings (player_id, mu, sigma, mode, updated) VALUES (@PlayerId, @Mu, @Sigma, @Mode, @Updated) " +
+			                                     "ON CONFLICT (player_id, mode) DO UPDATE SET mu = @Mu, sigma = @Sigma, updated = @Updated " +
+			                                     "WHERE ratings.player_id = @PlayerId AND ratings.mode = @Mode", ratings);
 		}
 	}
 }
