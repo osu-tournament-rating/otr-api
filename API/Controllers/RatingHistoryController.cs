@@ -11,7 +11,14 @@ namespace API.Controllers;
 public class RatingHistoryController : CrudController<RatingHistory>
 {
 	private readonly IRatingHistoryService _service;
-	public RatingHistoryController(ILogger<RatingHistoryController> logger, IRatingHistoryService service) : base(logger, service) { _service = service; }
+	private readonly IMatchDataService _matchDataService;
+
+	public RatingHistoryController(ILogger<RatingHistoryController> logger, IRatingHistoryService service,
+		IMatchDataService matchDataService) : base(logger, service)
+	{
+		_service = service;
+		_matchDataService = matchDataService;
+	}
 
 	[HttpGet("{playerId:int}/all")]
 	public async Task<ActionResult<IEnumerable<RatingHistory>>> GetAllForPlayerAsync(int playerId)
@@ -50,6 +57,23 @@ public class RatingHistoryController : CrudController<RatingHistory>
 		if (histories == null)
 		{
 			return BadRequest("No data was given or the data was invalid");
+		}
+
+		histories = histories.ToList();
+		foreach (var h in histories)
+		{
+			if (h.MatchDataId == 0)
+			{
+				int? matchDataId = await _matchDataService.GetIdAsync(h.PlayerId, h.MatchId, h.GameId);
+				if (matchDataId is > 0)
+				{
+					h.MatchDataId = matchDataId.Value;
+				}
+				else
+				{
+					return BadRequest($"Match data with player id {h.PlayerId} and osu match id {h.MatchId} and game id {h.GameId} does not exist");
+				}
+			}
 		}
 		
 		await _service.InsertAsync(histories);
