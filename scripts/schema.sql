@@ -67,7 +67,8 @@ create table ratings
     mu_initial    double precision                    not null,
     sigma_initial double precision                    not null,
     created       timestamp default CURRENT_TIMESTAMP not null,
-    updated       timestamp                           not null
+    updated       timestamp                           not null,
+    mode          text                                not null
 );
 
 create index "Ratings__mu"
@@ -83,11 +84,27 @@ create table ratinghistories
             references players,
     mu        double precision                    not null,
     sigma     double precision                    not null,
-    created   timestamp default CURRENT_TIMESTAMP not null
+    created   timestamp default CURRENT_TIMESTAMP not null,
+    mode      text                                not null,
+    match_data_id integer                         not null
+        constraint "RatingHistories___fkmatchdataid"
+            references matchdata
 );
 
 create table config
 (
     key   text not null,
     value text not null
+);
+
+create table multiplayerlinks
+(
+    id        serial                              not null
+        constraint "MultiplayerLinks_pk"
+            primary key,
+    mp_link_id text                                not null,
+    lobby_name text                                not null,
+    status      text                                not null,
+    created   timestamp default CURRENT_TIMESTAMP not null,
+    updated   timestamp
 );
