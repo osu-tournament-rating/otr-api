@@ -59,31 +59,23 @@ public class RatingHistoryController : CrudController<RatingHistory>
 			return BadRequest("No data was given or the data was invalid");
 		}
 
-		histories = histories.ToList();
-		// foreach (var h in histories)
-		// {
-		// 	if (h.MatchDataId == 0)
-		// 	{
-		// 		int? matchDataId = await _matchDataService.GetIdAsync(h.PlayerId, h.MatchId, h.GameId);
-		// 		if (matchDataId is > 0)
-		// 		{
-		// 			h.MatchDataId = matchDataId.Value;
-		// 		}
-		// 		else
-		// 		{
-		// 			return BadRequest($"Match data with player id {h.PlayerId} and osu match id {h.MatchId} and game id {h.GameId} does not exist");
-		// 		}
-		// 	}
-		// }
-		
-		var ids = await _matchDataService.GetIdsAsync(histories.Select(x => x.PlayerId).ToList(), histories.Select(x => x.MatchId).ToList(), histories.Select(x => x.GameId).ToList());
-		foreach (var h in histories)
+		var historiesList = histories.ToList();
+		var ids = await _matchDataService.GetIdsAsync(historiesList.Select(x => x.PlayerId).ToList(), historiesList.Select(x => x.MatchId).ToList(), historiesList.Select(x => x.GameId).ToList());
+		foreach (var h in historiesList)
 		{
-			int matchDataId = ids[(h.PlayerId, h.GameId)];
-			h.MatchDataId = matchDataId;
+			try
+			{
+				int matchDataId = ids[(h.PlayerId, h.GameId)];
+				h.MatchDataId = matchDataId;
+			}
+			catch (Exception e)
+			{
+				historiesList.Remove(h);
+				Logger.LogError(e, "Match data with player id {PlayerId} and osu match id {MatchId} and game id {GameId} does not exist", h.PlayerId, h.MatchId, h.GameId);
+			}
 		}
 		
-		await _service.InsertAsync(histories);
+		await _service.InsertAsync(historiesList);
 		return Ok();
 	}
 }

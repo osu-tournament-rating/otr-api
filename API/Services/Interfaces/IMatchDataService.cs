@@ -14,5 +14,5 @@ public interface IMatchDataService : IService<MatchData>
 	Task<int> GetIdForPlayerIdGameIdAsync(int playerId, long gameId);
 	Task<IEnumerable<(int id, int playerId, long gameId)>> GetIdsPlayerIdsGameIdsAsync();
 	Task<int?> GetIdAsync(int playerId, long osuMatchId, long gameId);
-	Task<Dictionary<(long, long), int>> GetIdsAsync(IEnumerable<int> playerIds, IEnumerable<long> osuMatchIds, IEnumerable<long> gameIds);
+	Task<Dictionary<(int, long), int>> GetIdsAsync(IEnumerable<int> playerIds, IEnumerable<long> osuMatchIds, IEnumerable<long> gameIds);
 }
