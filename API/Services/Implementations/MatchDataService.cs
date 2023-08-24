@@ -63,12 +63,12 @@ public class MatchDataService : ServiceBase<MatchData>, IMatchDataService
 		}
 	}
 
-	public async Task<IEnumerable<int>> GetIdsAsync(IEnumerable<int> playerIds, IEnumerable<long> osuMatchIds, IEnumerable<long> gameIds)
+	public async Task<Dictionary<(long, long), int>> GetIdsAsync(IEnumerable<int> playerIds, IEnumerable<long> osuMatchIds, IEnumerable<long> gameIds)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QueryAsync<int>("SELECT id FROM matchdata WHERE player_id = ANY(@PlayerIds) AND osu_match_id = ANY(@OsuMatchIds) AND game_id = ANY(@GameIds)",
-				new { PlayerIds = playerIds, OsuMatchIds = osuMatchIds, GameIds = gameIds });
+			return (await connection.QueryAsync<(long, long, int)>("SELECT player_id, game_id, id FROM matchdata WHERE player_id = ANY(@PlayerIds) AND osu_match_id = ANY(@OsuMatchIds) AND game_id = ANY(@GameIds)",
+				new { PlayerIds = playerIds, OsuMatchIds = osuMatchIds, GameIds = gameIds })).ToDictionary(x => (x.Item1, x.Item2), x => x.Item3);
 		}
 	}
 }
