@@ -59,23 +59,6 @@ public class RatingHistoryController : CrudController<RatingHistory>
 			return BadRequest("No data was given or the data was invalid");
 		}
 
-		histories = histories.ToList();
-		foreach (var h in histories)
-		{
-			if (h.MatchDataId == 0)
-			{
-				int? matchDataId = await _matchDataService.GetIdAsync(h.PlayerId, h.MatchId, h.GameId);
-				if (matchDataId is > 0)
-				{
-					h.MatchDataId = matchDataId.Value;
-				}
-				else
-				{
-					return BadRequest($"Match data with player id {h.PlayerId} and osu match id {h.MatchId} and game id {h.GameId} does not exist");
-				}
-			}
-		}
-		
 		await _service.InsertAsync(histories);
 		return Ok();
 	}

@@ -62,4 +62,13 @@ public class MatchDataService : ServiceBase<MatchData>, IMatchDataService
 				new { PlayerId = playerId, OsuMatchId = osuMatchId, GameId = gameId });
 		}
 	}
+
+	public async Task<IEnumerable<int>> GetIdsAsync(IEnumerable<int> playerIds, IEnumerable<long> osuMatchIds, IEnumerable<long> gameIds)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QueryAsync<int>("SELECT id FROM matchdata WHERE player_id = ANY(@PlayerIds) AND osu_match_id = ANY(@OsuMatchIds) AND game_id = ANY(@GameIds)",
+				new { PlayerIds = playerIds, OsuMatchIds = osuMatchIds, GameIds = gameIds });
+		}
+	}
 }

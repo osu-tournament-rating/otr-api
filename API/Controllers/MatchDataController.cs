@@ -34,4 +34,23 @@ public class MatchDataController : CrudController<MatchData>
 
 		return NotFound($"Match data with player id {playerId} and osu match id {osuMatchId} and game id {gameId} does not exist");
 	}
+	
+	[HttpGet("ids")]
+	public async Task<ActionResult<IEnumerable<int>>> GetIdsAsync([FromBody] IdsPostBody postBody)
+	{
+		var ids = await _service.GetIdsAsync(postBody.PlayerIds, postBody.OsuMatchIds, postBody.GameIds);
+		if (ids.Any())
+		{
+			return Ok(ids);
+		}
+
+		return NotFound();
+	}
+}
+
+public class IdsPostBody
+{
+	public IEnumerable<int> PlayerIds { get; set; }
+	public IEnumerable<long> OsuMatchIds { get; set; }
+	public IEnumerable<long> GameIds { get; set; }
 }
