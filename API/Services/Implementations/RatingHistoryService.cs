@@ -61,11 +61,11 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 		}
 	}
 
-	public Task InsertAsync(IEnumerable<RatingHistory> histories)
+	public async Task InsertAsync(IEnumerable<RatingHistory> histories)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode, match_data_id) VALUES (@PlayerId, @Mu, @Sigma, @Created, @Mode, @MatchDataId)",
+			await connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode, match_data_id) VALUES (@PlayerId, @Mu, @Sigma, @Created, @Mode, @MatchDataId)",
 				histories);
 		}
 	}
