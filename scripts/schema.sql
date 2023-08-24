@@ -64,11 +64,11 @@ create table ratings
             references players,
     mu            double precision                    not null,
     sigma         double precision                    not null,
-    mu_initial    double precision                    not null,
-    sigma_initial double precision                    not null,
     created       timestamp default CURRENT_TIMESTAMP not null,
-    updated       timestamp                           not null,
-    mode          text                                not null
+    updated       timestamp,
+    mode          text                                not null,
+    constraint ratings_playerid_mode
+        unique (player_id, mode)
 );
 
 create index "Ratings__mu"
