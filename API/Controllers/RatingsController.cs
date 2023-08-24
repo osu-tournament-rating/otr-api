@@ -30,7 +30,7 @@ public class RatingsController : CrudController<Rating>
 		{
 			return BadRequest($"Player id {rating.PlayerId} in body does not match player id {playerId} in path");
 		}
-		int? result = await _service.UpdateForPlayerAsync(playerId, rating);
+		int? result = await _service.InsertOrUpdateForPlayerAsync(playerId, rating);
 		if (result > 0)
 		{
 			return Ok();

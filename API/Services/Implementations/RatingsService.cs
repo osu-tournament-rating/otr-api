@@ -81,16 +81,22 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 		}
 	}
 
-	public async Task<int> UpdateForPlayerAsync(int playerId, Rating rating)
+	public async Task<int> InsertOrUpdateForPlayerAsync(int playerId, Rating rating)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			if(playerId != rating.PlayerId)
+			if (playerId != rating.PlayerId)
 			{
 				throw new ArgumentException("The player id in the rating object does not match the id in the route");
 			}
 
-			rating.Updated = DateTime.UtcNow;
+			rating.Updated = DateTime.UtcNow; // This doesn't work for some reason...?
+			int exists = await connection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM ratings WHERE player_id = @PlayerId AND mode = @Mode", rating);
+			if (exists == 0)
+			{
+				return await connection.ExecuteAsync("INSERT INTO ratings (player_id, mu, sigma, mode, updated) VALUES (@PlayerId, @Mu, @Sigma, @Mode, @Updated)", rating);
+			}
+			
 			return await connection.ExecuteAsync("UPDATE ratings SET mu = @Mu, sigma = @Sigma, updated = @Updated WHERE player_id = @PlayerId AND mode = @Mode", rating);
 		}
 	}

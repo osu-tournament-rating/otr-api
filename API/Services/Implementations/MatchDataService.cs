@@ -53,4 +53,13 @@ public class MatchDataService : ServiceBase<MatchData>, IMatchDataService
 			return await connection.QueryAsync<(int id, int playerId, long gameId)>("SELECT id, player_id, game_id FROM matchdata");
 		}
 	}
+
+	public async Task<int?> GetIdAsync(int playerId, long osuMatchId, long gameId)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QuerySingleOrDefaultAsync<int?>("SELECT id FROM matchdata WHERE osu_match_id = @OsuMatchId AND game_id = @GameId AND player_id = @PlayerId",
+				new { PlayerId = playerId, OsuMatchId = osuMatchId, GameId = gameId });
+		}
+	}
 }
