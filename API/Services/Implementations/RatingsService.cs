@@ -41,7 +41,7 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 
 			try
 			{
-				await connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode) VALUES (@PlayerId, @Mu, @Sigma, @Created, @Mode)", history);
+				await connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode, match_data_id) VALUES (@PlayerId, @Mu, @Sigma, @Created, @Mode, @MatchDataId)", history);
 				return await connection.ExecuteAsync("UPDATE ratings SET mu = @Mu, sigma = @Sigma WHERE player_id = @PlayerId AND mode = @Mode", entity);
 			}
 			catch (Exception e)
@@ -92,8 +92,7 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 
 			rating.Updated = DateTime.UtcNow; // This doesn't work for some reason...?
 			return await connection.ExecuteAsync("INSERT INTO ratings (player_id, mu, sigma, mode, updated) VALUES (@PlayerId, @Mu, @Sigma, @Mode, @Updated) " +
-			                                     "ON CONFLICT (player_id, mode) DO UPDATE SET mu = @Mu, sigma = @Sigma, updated = @Updated " +
-			                                     "WHERE ratings.player_id = @PlayerId AND ratings.mode = @Mode", rating);
+			                                     "ON CONFLICT (player_id, mode) DO UPDATE SET mu = @Mu, sigma = @Sigma, updated = @Updated", rating);
 		}
 	}
 
@@ -102,8 +101,7 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
 			return await connection.ExecuteAsync("INSERT INTO ratings (player_id, mu, sigma, mode, updated) VALUES (@PlayerId, @Mu, @Sigma, @Mode, @Updated) " +
-			                                     "ON CONFLICT (player_id, mode) DO UPDATE SET mu = @Mu, sigma = @Sigma, updated = @Updated " +
-			                                     "WHERE ratings.player_id = @PlayerId AND ratings.mode = @Mode", ratings);
+			                                     "ON CONFLICT (player_id, mode) DO UPDATE SET mu = @Mu, sigma = @Sigma, updated = @Updated", ratings);
 		}
 	}
 }
