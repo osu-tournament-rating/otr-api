@@ -6,3 +6,4 @@ logs/
 **/bin/
 **/appsettings.json
 **/appsettings.Development.json
+scripts/inserts
