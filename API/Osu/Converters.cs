@@ -13,6 +13,7 @@ public class Converters
 
 			foreach (var game in data.Games)
 			{
+				// TODO: Needs unit test
 				foreach (var score in game.Scores)
 				{
 					var matchData = new MatchData

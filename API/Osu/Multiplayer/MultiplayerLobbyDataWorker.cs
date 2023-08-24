@@ -62,7 +62,7 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 					await Task.Delay(INTERVAL_SECONDS * 1000, cancellationToken);
 					continue;
 				}
-
+				
 				try
 				{
 					var result = await _apiService.GetMatchAsync(link.MpLinkId);
@@ -75,8 +75,8 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 					link.LobbyName = result.Match.Name;
 
 					// TODO: Convert ACCEPTED status matches into MatchData entities
-
 					// TODO: Reference LobbyNameChecker to validate lobby name
+
 					await UpdateLinkStatusAsync(link, "REVIEW", multiplayerLinkService);
 
 					_rateLimitCounter++;

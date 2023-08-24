@@ -80,4 +80,18 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 			_logger.LogInformation("Ratings batch update complete");
 		}
 	}
+
+	public async Task<int> UpdateForPlayerAsync(int playerId, Rating rating)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			if(playerId != rating.PlayerId)
+			{
+				throw new ArgumentException("The player id in the rating object does not match the id in the route");
+			}
+
+			rating.Updated = DateTime.UtcNow;
+			return await connection.ExecuteAsync("UPDATE ratings SET mu = @Mu, sigma = @Sigma, updated = @Updated WHERE player_id = @PlayerId AND mode = @Mode", rating);
+		}
+	}
 }
