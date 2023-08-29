@@ -97,14 +97,14 @@ create table config
     value text not null
 );
 
-create table multiplayerlinks
+create table osumatches
 (
-    id        serial                              not null
-        constraint "MultiplayerLinks_pk"
+    match_id   bigint                              not null
+        constraint osumatches_pk
             primary key,
-    mp_link_id text                                not null,
-    lobby_name text                                not null,
-    status      text                                not null,
-    created   timestamp default CURRENT_TIMESTAMP not null,
-    updated   timestamp
+    name       text                                not null,
+    start_time timestamp                           not null,
+    created    timestamp default CURRENT_TIMESTAMP not null,
+    updated    timestamp,
+    end_time   timestamp                           not null
 );
