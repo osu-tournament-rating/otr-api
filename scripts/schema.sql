@@ -99,12 +99,16 @@ create table config
 
 create table osumatches
 (
-    match_id   bigint                              not null
-        constraint osumatches_pk
-            primary key,
-    name       text                                not null,
-    start_time timestamp                           not null,
-    created    timestamp default CURRENT_TIMESTAMP not null,
-    updated    timestamp,
-    end_time   timestamp                           not null
+    id                  serial,
+    match_id            bigint                              not null
+        constraint osumatches_matchid
+            unique,
+    name                text                                not null,
+    start_time          timestamp                           not null,
+    created             timestamp default CURRENT_TIMESTAMP not null,
+    updated             timestamp,
+    end_time            timestamp,
+    verification_info   text,
+    verification_source integer,
+    verification_status integer
 );
