@@ -3,18 +3,18 @@ using API.Services.Interfaces;
 
 namespace API.Osu.Multiplayer;
 
-public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
+public class OsuMatchDataWorker : IOsuMatchDataWorker
 {
 	private const int RATE_LIMIT_CAPACITY = 1000;
 	private const int RATE_LIMIT_INTERVAL_SECONDS = 60;
-	private const int INTERVAL_SECONDS = 1;
+	private const int INTERVAL_SECONDS = 10;
 	private readonly OsuApiService _apiService;
-	private readonly ILogger<MultiplayerLobbyDataWorker> _logger;
+	private readonly ILogger<OsuMatchDataWorker> _logger;
 	private readonly IServiceProvider _serviceProvider;
 	private int _rateLimitCounter;
 	private DateTime _rateLimitResetTime = DateTime.UtcNow.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
 
-	public MultiplayerLobbyDataWorker(ILogger<MultiplayerLobbyDataWorker> logger, IServiceProvider serviceProvider, OsuApiService apiService)
+	public OsuMatchDataWorker(ILogger<OsuMatchDataWorker> logger, IServiceProvider serviceProvider, OsuApiService apiService)
 	{
 		_logger = logger;
 		_serviceProvider = serviceProvider;
@@ -56,49 +56,50 @@ public class MultiplayerLobbyDataWorker : IMultiplayerLobbyDataWorker
 				var multiplayerLinkService = scope.ServiceProvider.GetRequiredService<IMultiplayerLinkService>();
 				var matchDataService = scope.ServiceProvider.GetRequiredService<IMatchDataService>();
 
-				var link = await multiplayerLinkService.GetFirstPendingOrDefaultAsync();
-				if (link == null)
+				var osuMatch = await multiplayerLinkService.GetFirstPendingOrDefaultAsync();
+				if (osuMatch == null)
 				{
 					await Task.Delay(INTERVAL_SECONDS * 1000, cancellationToken);
+					_logger.LogTrace("Nothing to process, waiting for {Interval} seconds", INTERVAL_SECONDS);
 					continue;
 				}
 				
 				try
 				{
-					var result = await _apiService.GetMatchAsync(link.MpLinkId);
+					var result = await _apiService.GetMatchAsync(osuMatch.MatchId);
 					if (result == null)
 					{
-						_logger.LogWarning("Failed to fetch data for match {MatchId} (result from API was null)", link.MpLinkId);
+						_logger.LogWarning("Failed to fetch data for match {MatchId} (result from API was null)", osuMatch.MatchId);
 						continue;
 					}
 
-					link.LobbyName = result.Match.Name;
+					osuMatch.Name = result.Match.Name;
 					
-					
-					if (!LobbyNameChecker.IsNameValid(link.LobbyName))
+					if (!LobbyNameChecker.IsNameValid(osuMatch.Name))
 					{
-						await UpdateLinkStatusAsync(link, "REJECTED", multiplayerLinkService);
+						await UpdateLinkStatusAsync(osuMatch, VerificationStatus.Rejected, multiplayerLinkService);
+						_logger.LogDebug("Match {MatchId} was rejected (ratelimit currently at {Ratelimit})", osuMatch.MatchId, _rateLimitCounter + 1);
 					}
 					else
 					{
-						await UpdateLinkStatusAsync(link, "REVIEW", multiplayerLinkService);
+						await UpdateLinkStatusAsync(osuMatch, VerificationStatus.PreVerified, multiplayerLinkService);
 					}
 					
 					_rateLimitCounter++;
 				}
 				catch (Exception e)
 				{
-					await UpdateLinkStatusAsync(link, "FAILED", multiplayerLinkService);
+					await UpdateLinkStatusAsync(osuMatch, VerificationStatus.Failure, multiplayerLinkService);
 
-					_logger.LogWarning(e, "Failed to fetch data for match {MatchId} (exception was thrown)", link.MpLinkId);
+					_logger.LogWarning(e, "Failed to fetch data for match {MatchId} (exception was thrown)", osuMatch.MatchId);
 				}
 			}
 		}
 	}
 
-	private async Task UpdateLinkStatusAsync(MultiplayerLink link, string status, IMultiplayerLinkService multiplayerLinkService)
+	private async Task UpdateLinkStatusAsync(OsuMatch link, VerificationStatus status, IMultiplayerLinkService multiplayerLinkService)
 	{
-		link.Status = status;
+		link.VerificationStatus = status;
 		link.Updated = DateTime.Now;
 
 		await multiplayerLinkService.UpdateAsync(link);

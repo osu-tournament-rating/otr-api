@@ -2,6 +2,27 @@ using Newtonsoft.Json;
 
 namespace API.Osu.Multiplayer;
 
+public enum ScoringType
+{
+	Score = 0,
+	Accuracy = 1,
+	Combo = 2,
+	ScoreV2 = 3
+}
+
+/// <summary>
+/// The mode the match was played in.
+/// </summary>
+public enum PlayMode
+{
+	Standard = 0,
+	Taiko = 1,
+	Catch = 2,
+	Mania = 3
+}
+
+
+
 public class MultiplayerLobbyData
 {
 	[JsonProperty("match")]
@@ -16,12 +37,12 @@ public class Match
     ///  Match ID
     /// </summary>
     [JsonProperty("match_id")]
-	public string MatchId { get; set; }
+	public long MatchId { get; set; }
     /// <summary>
     ///  Name of the match
     /// </summary>
     [JsonProperty("name")]
-	public string Name { get; set; }
+    public string Name { get; set; } = null!;
     /// <summary>
     ///  Start time in UTC
     /// </summary>
@@ -37,7 +58,7 @@ public class Match
 public class Game
 {
 	[JsonProperty("game_id")]
-	public string GameId { get; set; }
+	public long GameId { get; set; }
     /// <summary>
     ///  Start time in UTC
     /// </summary>
@@ -49,7 +70,7 @@ public class Game
     [JsonProperty("end_time")]
 	public DateTime EndTime { get; set; }
 	[JsonProperty("beatmap_id")]
-	public string BeatmapId { get; set; }
+	public long BeatmapId { get; set; }
     /// <summary>
     ///  Standard = 0, Taiko = 1, CTB = 2, o!m = 3
     /// </summary>

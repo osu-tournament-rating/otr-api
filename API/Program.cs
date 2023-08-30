@@ -36,12 +36,12 @@ SimpleCRUD.SetDialect(SimpleCRUD.Dialect.PostgreSQL);
 
 builder.Services.AddLogging();
 
-builder.Services.AddHostedService<MultiplayerLobbyDataWorker>();
+builder.Services.AddHostedService<OsuMatchDataWorker>();
 
 builder.Services.AddScoped<IMatchDataService, MatchDataService>();
 builder.Services.AddScoped<IRatingsService, RatingsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
-builder.Services.AddScoped<IMultiplayerLinkService, MultiplayerLinkService>();
+builder.Services.AddScoped<IMultiplayerLinkService, OsuMatchService>();
 builder.Services.AddScoped<IRatingHistoryService, RatingHistoryService>();
 
 builder.Services.AddSingleton<IOsuApiService, OsuApiService>();

@@ -7,19 +7,19 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MultiplayerLinksController : CrudController<MultiplayerLink>
+public class OsuMatchesController : CrudController<OsuMatch>
 {
-	private readonly ILogger<MultiplayerLinksController> _logger;
+	private readonly ILogger<OsuMatchesController> _logger;
 	private readonly IMultiplayerLinkService _service;
 
-	public MultiplayerLinksController(ILogger<MultiplayerLinksController> logger, IMultiplayerLinkService service) : base(logger, service)
+	public OsuMatchesController(ILogger<OsuMatchesController> logger, IMultiplayerLinkService service) : base(logger, service)
 	{
 		_logger = logger;
 		_service = service;
 	}
 
 	[HttpPost("batch")]
-	public async Task<string> PostAsync([FromBody] IEnumerable<MultiplayerLink> linkBatch)
+	public async Task<string> PostAsync([FromBody] IEnumerable<OsuMatch> linkBatch)
 	{
 		/**
 		 * FLOW:
@@ -38,18 +38,18 @@ public class MultiplayerLinksController : CrudController<MultiplayerLink>
 
 		// Check if any of the links already exist in the database
 		var ret = linkBatch.ToList();
-		var existing = (await _service.CheckExistingAsync(ret.Select(x => x.MpLinkId).ToList())).ToList();
+		var existing = (await _service.CheckExistingAsync(ret.Select(x => x.MatchId).ToList())).ToList();
 		if (existing.Any())
 		{
 			// Remove existing links from the batch
-			ret.RemoveAll(x => existing.Contains(x.MpLinkId));
+			ret.RemoveAll(x => existing.Contains(x.MatchId));
 			_logger.LogInformation("Removed {Count} existing links from the batch", existing.Count);
 		}
 
 		// Mark as pending for worker
 		ret.ForEach(async x =>
 		{
-			x.Status = "PENDING";
+			x.VerificationStatus = VerificationStatus.PendingVerification;
 			x.Created = DateTime.Now;
 			x.Updated = DateTime.Now;
 
