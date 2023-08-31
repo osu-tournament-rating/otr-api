@@ -46,8 +46,8 @@ public enum VerificationStatus
 ///  Entity representing an osu! multiplayer match. Contains properties for
 ///  whether the match has been verified and rejected
 /// </summary>
-[Table("osumatches")]
-public class OsuMatch : UpdateableEntityBase
+[Table("matches")]
+public class Match : UpdateableEntityBase
 {
 	[Column("match_id")]
 	public long MatchId { get; set; }
@@ -63,4 +63,6 @@ public class OsuMatch : UpdateableEntityBase
 	public DateTime StartTime { get; set; }
 	[Column("end_time")]
 	public DateTime? EndTime { get; set; }
+	
+	public ICollection<Game> Games { get; set; } = null!;
 }

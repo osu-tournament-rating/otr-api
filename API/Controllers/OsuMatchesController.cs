@@ -7,7 +7,7 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class OsuMatchesController : CrudController<OsuMatch>
+public class OsuMatchesController : CrudController<Match>
 {
 	private readonly ILogger<OsuMatchesController> _logger;
 	private readonly IMultiplayerLinkService _service;
@@ -19,7 +19,7 @@ public class OsuMatchesController : CrudController<OsuMatch>
 	}
 
 	[HttpPost("batch")]
-	public async Task<string> PostAsync([FromBody] IEnumerable<OsuMatch> linkBatch)
+	public async Task<string> PostAsync([FromBody] IEnumerable<Match> linkBatch)
 	{
 		/**
 		 * FLOW:

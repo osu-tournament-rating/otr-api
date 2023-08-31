@@ -6,31 +6,31 @@ using Npgsql;
 
 namespace API.Services.Implementations;
 
-public class OsuMatchService : ServiceBase<OsuMatch>, IMultiplayerLinkService
+public class OsuMatchService : ServiceBase<Match>, IMultiplayerLinkService
 {
 	public OsuMatchService(ICredentials credentials, ILogger<OsuMatchService> logger) : base(credentials, logger) {}
 
-	public async Task<OsuMatch?> GetByLobbyIdAsync(long matchId)
+	public async Task<Match?> GetByLobbyIdAsync(long matchId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QuerySingleOrDefaultAsync<OsuMatch?>("SELECT * FROM osumatches WHERE match_id = @lobbyId", new { lobbyId = matchId });
+			return await connection.QuerySingleOrDefaultAsync<Match?>("SELECT * FROM matches WHERE match_id = @lobbyId", new { lobbyId = matchId });
 		}
 	}
 
-	public async Task<IEnumerable<OsuMatch>?> GetAllPendingVerificationAsync()
+	public async Task<IEnumerable<Match>?> GetAllPendingVerificationAsync()
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QueryAsync<OsuMatch>($"SELECT * FROM osumatches WHERE verification_status = {VerificationStatus.PendingVerification:D}");
+			return await connection.QueryAsync<Match>($"SELECT * FROM matches WHERE verification_status = {VerificationStatus.PendingVerification:D}");
 		}
 	}
 
-	public async Task<OsuMatch?> GetFirstPendingOrDefaultAsync()
+	public async Task<Match?> GetFirstPendingOrDefaultAsync()
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QueryFirstOrDefaultAsync<OsuMatch?>($"SELECT * FROM osumatches WHERE verification_status = {VerificationStatus.PendingVerification:D}");
+			return await connection.QueryFirstOrDefaultAsync<Match?>($"SELECT * FROM osumatches WHERE verification_status = {VerificationStatus.PendingVerification:D}");
 		}
 	}
 

@@ -2,10 +2,10 @@ using API.Entities;
 
 namespace API.Services.Interfaces;
 
-public interface IMultiplayerLinkService : IService<OsuMatch>
+public interface IMultiplayerLinkService : IService<Match>
 {
-	Task<OsuMatch?> GetByLobbyIdAsync(long matchId);
-	Task<IEnumerable<OsuMatch>?> GetAllPendingVerificationAsync();
-	Task<OsuMatch?> GetFirstPendingOrDefaultAsync();
+	Task<Match?> GetByLobbyIdAsync(long matchId);
+	Task<IEnumerable<Match>?> GetAllPendingVerificationAsync();
+	Task<Match?> GetFirstPendingOrDefaultAsync();
 	Task<IEnumerable<long>> CheckExistingAsync(IEnumerable<long> matchIds);
 }

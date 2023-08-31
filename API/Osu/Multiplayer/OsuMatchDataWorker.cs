@@ -97,7 +97,7 @@ public class OsuMatchDataWorker : IOsuMatchDataWorker
 		}
 	}
 
-	private async Task UpdateLinkStatusAsync(OsuMatch link, VerificationStatus status, IMultiplayerLinkService multiplayerLinkService)
+	private async Task UpdateLinkStatusAsync(Entities.Match link, VerificationStatus status, IMultiplayerLinkService multiplayerLinkService)
 	{
 		link.VerificationStatus = status;
 		link.Updated = DateTime.Now;
