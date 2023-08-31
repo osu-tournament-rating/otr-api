@@ -2,6 +2,8 @@ using API.Entities.Bases;
 using Dapper;
 using Newtonsoft.Json;
 
+using static API.Osu.OsuEnums;
+
 #pragma warning disable CS8618
 
 namespace API.Entities;
@@ -55,7 +57,7 @@ public class Beatmap : EntityBase
 	public string DiffName { get; set; }
 	[JsonProperty("mode")]
 	[Column("game_mode")]
-	public GameMode GameMode { get; set; }
+	public Mode GameMode { get; set; }
 	[JsonProperty("count_normal")]
 	[Column("circle_count")]
 	public int CircleCount { get; set; }
