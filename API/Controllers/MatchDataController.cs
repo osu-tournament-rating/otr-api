@@ -6,13 +6,13 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MatchDataController : CrudController<MatchData>
+public class MatchDataController : CrudController<PlayerMatchData>
 {
 	private readonly IMatchDataService _service;
 	public MatchDataController(ILogger<MatchDataController> logger, IMatchDataService service) : base(logger, service) { _service = service; }
 
 	[HttpGet("{playerId:int}/all")]
-	public async Task<ActionResult<IEnumerable<MatchData>>> GetAllForPlayerAsync(int playerId)
+	public async Task<ActionResult<IEnumerable<PlayerMatchData>>> GetAllForPlayerAsync(int playerId)
 	{
 		var data = await _service.GetAllForPlayerAsync(playerId);
 		if (data.Any())

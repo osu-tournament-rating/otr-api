@@ -6,34 +6,34 @@ using Npgsql;
 
 namespace API.Services.Implementations;
 
-public class MatchDataService : ServiceBase<MatchData>, IMatchDataService
+public class MatchDataService : ServiceBase<PlayerMatchData>, IMatchDataService
 {
 	private const int SCORE_THRESHOLD = 10000;
 	private const double ACCURACY_THRESHOLD = 0.3;
 	private readonly string _filterQuery = $"SELECT * FROM matchdata WHERE score > {SCORE_THRESHOLD} AND accuracy > {ACCURACY_THRESHOLD}";
 	public MatchDataService(ICredentials credentials, ILogger<MatchDataService> logger) : base(credentials, logger) {}
 
-	public async Task<IEnumerable<MatchData>> GetFilteredDataAsync()
+	public async Task<IEnumerable<PlayerMatchData>> GetFilteredDataAsync()
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QueryAsync<MatchData>(_filterQuery);
+			return await connection.QueryAsync<PlayerMatchData>(_filterQuery);
 		}
 	}
 
-	public async Task<IEnumerable<MatchData>> GetAllForPlayerAsync(int playerId)
+	public async Task<IEnumerable<PlayerMatchData>> GetAllForPlayerAsync(int playerId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QueryAsync<MatchData>("SELECT * FROM matchdata WHERE player_id = @PlayerId", new { PlayerId = playerId });
+			return await connection.QueryAsync<PlayerMatchData>("SELECT * FROM matchdata WHERE player_id = @PlayerId", new { PlayerId = playerId });
 		}
 	}
 
-	public Task<IEnumerable<MatchData>> GetAllForOsuMatchIdAsync(long osuMatchId)
+	public Task<IEnumerable<PlayerMatchData>> GetAllForOsuMatchIdAsync(long osuMatchId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return connection.QueryAsync<MatchData>("SELECT * FROM matchdata WHERE osu_match_id = @OsuMatchId", new { OsuMatchId = osuMatchId });
+			return connection.QueryAsync<PlayerMatchData>("SELECT * FROM matchdata WHERE osu_match_id = @OsuMatchId", new { OsuMatchId = osuMatchId });
 		}
 	}
 

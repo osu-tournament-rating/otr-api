@@ -6,16 +6,16 @@ namespace API.Osu;
 
 public class Converters
 {
-	public static List<MatchData> MatchDataFromApiResponse(MultiplayerLobbyData data)
+	public static List<PlayerMatchData> MatchDataFromApiResponse(MultiplayerLobbyData data)
 	{
-		var matchDatas = new List<MatchData>();
+		var matchDatas = new List<PlayerMatchData>();
 
 		foreach (var game in data.Games)
 		{
 			// TODO: Needs unit test
 			foreach (var score in game.Scores)
 			{
-				var matchData = new MatchData
+				var matchData = new PlayerMatchData
 				{
 					OsuMatchId = long.TryParse(data.Match.MatchId, out long osuMatchId) ? osuMatchId : 0,
 					GameId = long.TryParse(game.GameId, out long gameId) ? gameId : 0,
