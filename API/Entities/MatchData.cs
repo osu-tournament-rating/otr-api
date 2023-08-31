@@ -5,7 +5,7 @@ using Dapper;
 
 namespace API.Entities
 {
-	[Table("matchdata")]
+	[Table("playermatchdata")]
 	public class MatchData : EntityBase
 	{
 		[Column("player_id")]

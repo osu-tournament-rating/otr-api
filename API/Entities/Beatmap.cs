@@ -1,5 +1,4 @@
 using API.Entities.Bases;
-using API.Parsers;
 using Dapper;
 using Newtonsoft.Json;
 
@@ -56,7 +55,7 @@ public class Beatmap : EntityBase
 	public string DiffName { get; set; }
 	[JsonProperty("mode")]
 	[Column("game_mode")]
-	public Mode GameMode { get; set; }
+	public GameMode GameMode { get; set; }
 	[JsonProperty("count_normal")]
 	[Column("circle_count")]
 	public int CircleCount { get; set; }
