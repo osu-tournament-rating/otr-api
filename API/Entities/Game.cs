@@ -7,8 +7,8 @@ namespace API.Entities;
 /// <summary>
 /// Represents a game as seen here: https://github.com/ppy/osu-api/wiki#response-5
 /// </summary>
-[Table("osugames")]
-public class OsuGame : EntityBase
+[Table("games")]
+public class Game : EntityBase
 {
 	/// <summary>
 	/// The id of the match as seen from the database
@@ -29,7 +29,7 @@ public class OsuGame : EntityBase
 	public int? BeatmapId { get; set; }
 	
 	[Column("play_mode")]
-	public PlayMode PlayMode { get; set; }
+	public Mode PlayMode { get; set; }
 	
 	[Column("match_type")]
 	public MatchType MatchType { get; set; }
@@ -43,5 +43,5 @@ public class OsuGame : EntityBase
 	[Column("mods")]
 	public Mods Mods { get; set; }
 	
-	public ICollection<OsuScore> Scores { get; set; } = null!;
+	public ICollection<MatchScore> Scores { get; set; } = null!;
 }
