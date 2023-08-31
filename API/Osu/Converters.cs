@@ -1,5 +1,6 @@
 using API.Entities;
 using API.Osu.Multiplayer;
+using Newtonsoft.Json;
 
 namespace API.Osu;
 
@@ -40,4 +41,13 @@ public class Converters
 			return matchDatas;
 		}
 	}
+
+	public static class OsuBeatmap
+	{
+		public static Beatmap? FromJson(string json)
+		{
+			return JsonConvert.DeserializeObject<Beatmap>(json);
+		}
+	}
+
 }
