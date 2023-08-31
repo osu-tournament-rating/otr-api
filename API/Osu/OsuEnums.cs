@@ -13,7 +13,7 @@ public class OsuEnums
 	/// <summary>
 	/// The mode the match was played in.
 	/// </summary>
-	public enum PlayMode
+	public enum Mode
 	{
 		Standard = 0,
 		Taiko = 1,
