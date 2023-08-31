@@ -11,13 +11,10 @@ namespace API.Controllers;
 public class RatingHistoryController : CrudController<RatingHistory>
 {
 	private readonly IRatingHistoryService _service;
-	private readonly IMatchDataService _matchDataService;
 
-	public RatingHistoryController(ILogger<RatingHistoryController> logger, IRatingHistoryService service,
-		IMatchDataService matchDataService) : base(logger, service)
+	public RatingHistoryController(ILogger<RatingHistoryController> logger, IRatingHistoryService service) : base(logger, service)
 	{
 		_service = service;
-		_matchDataService = matchDataService;
 	}
 
 	[HttpGet("{playerId:int}/all")]
@@ -47,35 +44,6 @@ public class RatingHistoryController : CrudController<RatingHistory>
 	public async Task<IActionResult> TruncateAsync()
 	{
 		await _service.TruncateAsync();
-		return Ok();
-	}
-	
-	[HttpPost("batch")]
-	public async Task<IActionResult> BatchAsync(IEnumerable<RatingHistory> histories)
-	{
-		// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-		if (histories == null)
-		{
-			return BadRequest("No data was given or the data was invalid");
-		}
-
-		var historiesList = histories.ToList();
-		var ids = await _matchDataService.GetIdsAsync(historiesList.Select(x => x.PlayerId).ToList(), historiesList.Select(x => x.MatchId).ToList(), historiesList.Select(x => x.GameId).ToList());
-		foreach (var h in historiesList)
-		{
-			try
-			{
-				int matchDataId = ids[(h.PlayerId, h.GameId)];
-				h.MatchDataId = matchDataId;
-			}
-			catch (Exception e)
-			{
-				historiesList.Remove(h);
-				Logger.LogError(e, "Match data with player id {PlayerId} and osu match id {MatchId} and game id {GameId} does not exist", h.PlayerId, h.MatchId, h.GameId);
-			}
-		}
-		
-		await _service.InsertAsync(historiesList);
 		return Ok();
 	}
 }

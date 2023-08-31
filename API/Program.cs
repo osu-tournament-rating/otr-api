@@ -38,7 +38,6 @@ builder.Services.AddLogging();
 
 builder.Services.AddHostedService<OsuMatchDataWorker>();
 
-builder.Services.AddScoped<IMatchDataService, MatchDataService>();
 builder.Services.AddScoped<IRatingsService, RatingsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IMultiplayerLinkService, OsuMatchService>();

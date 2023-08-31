@@ -54,7 +54,6 @@ public class OsuMatchDataWorker : IOsuMatchDataWorker
 			using (var scope = _serviceProvider.CreateScope())
 			{
 				var multiplayerLinkService = scope.ServiceProvider.GetRequiredService<IMultiplayerLinkService>();
-				var matchDataService = scope.ServiceProvider.GetRequiredService<IMatchDataService>();
 
 				var osuMatch = await multiplayerLinkService.GetFirstPendingOrDefaultAsync();
 				if (osuMatch == null)
