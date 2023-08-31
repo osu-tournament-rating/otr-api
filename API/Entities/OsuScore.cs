@@ -1,5 +1,5 @@
 using API.Entities.Bases;
-using API.Osu.Multiplayer;
+using static API.Osu.OsuEnums;
 using Dapper;
 
 namespace API.Entities;
