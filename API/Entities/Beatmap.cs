@@ -1,4 +1,5 @@
 using API.Entities.Bases;
+using API.Parsers;
 using Dapper;
 using Newtonsoft.Json;
 
@@ -17,7 +18,7 @@ public class Beatmap : EntityBase
 	public double BPM { get; set; }
 	[JsonProperty("creator_id")]
 	[Column("mapper_id")]
-	public int MapperId { get; set; }
+	public long MapperId { get; set; }
 	[JsonProperty("creator")]
 	[Column("mapper_name")]
 	public string MapperName { get; set; }
@@ -33,7 +34,7 @@ public class Beatmap : EntityBase
 	[JsonProperty("diff_size")]
 	[Column("cs")]
 	public double CS { get; set; }
-	[JsonProperty("diff_aapproach")]
+	[JsonProperty("diff_approach")]
 	[Column("ar")]
 	public double AR { get; set; }
 	[JsonProperty("diff_drain")]
@@ -55,7 +56,7 @@ public class Beatmap : EntityBase
 	public string DiffName { get; set; }
 	[JsonProperty("mode")]
 	[Column("game_mode")]
-	public int GameMode { get; set; }
+	public Mode GameMode { get; set; }
 	[JsonProperty("count_normal")]
 	[Column("circle_count")]
 	public int CircleCount { get; set; }
