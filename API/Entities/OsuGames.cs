@@ -43,5 +43,5 @@ public class OsuGame : EntityBase
 	[Column("mods")]
 	public Mods Mods { get; set; }
 	
-	public ICollection<Score> Scores { get; set; } = null!;
+	public ICollection<OsuScore> Scores { get; set; } = null!;
 }
