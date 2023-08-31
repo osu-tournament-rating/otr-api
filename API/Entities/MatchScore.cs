@@ -16,8 +16,8 @@ public class MatchScore : EntityBase
 	/// <summary>
 	/// Id of the match this score belongs to as seen from the database
 	/// </summary>
-	[Column("match_id")]
-	public int MatchId { get; set; }
+	[Column("game_id")]
+	public int GameId { get; set; }
 	[Column("team")]
 	public Team Team { get; set; }
 	[Column("score")]
