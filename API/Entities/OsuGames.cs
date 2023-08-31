@@ -19,9 +19,6 @@ public class OsuGame : EntityBase
 	[Column("game_id")]
 	public long GameId { get; set; }
 	
-	[Column("created")]
-	public DateTime Created { get; set; }
-	
 	[Column("start_time")]
 	public DateTime StartTime { get; set; }
 	
