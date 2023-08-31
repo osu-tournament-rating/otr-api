@@ -42,6 +42,8 @@ public class Game : EntityBase
 	
 	[Column("mods")]
 	public Mods Mods { get; set; }
+
+	public Match Match { get; set; } = null!;
 	
 	public ICollection<MatchScore> Scores { get; set; } = null!;
 }

@@ -14,4 +14,6 @@ public class Rating : UpdateableEntityBase
 	public double Sigma { get; set; }
 	[Column("mode")]
 	public string Mode { get; set; } = "Standard"; // TODO: Remove hardcoded mode
+
+	public Player Player { get; set; } = null!;
 }

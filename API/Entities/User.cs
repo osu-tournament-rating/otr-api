@@ -11,5 +11,6 @@ public class User : EntityBase
 	[Column("last_login")]
 	public DateTime LastLogin { get; set; }
 	
+	public Player Player { get; set; } = null!;
 	// TODO: Add information about user roles (Admin, etc.) -- These could also be displayed in the frontend as a badge
 }

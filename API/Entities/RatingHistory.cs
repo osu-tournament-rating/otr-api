@@ -20,4 +20,6 @@ public class RatingHistory : EntityBase
 	public long MatchId { get; set; }
 	[NotMapped]
 	public long GameId { get; set; }
+
+	public Player Player { get; set; } = null!;
 }
