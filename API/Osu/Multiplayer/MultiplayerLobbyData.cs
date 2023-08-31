@@ -32,14 +32,6 @@ public enum TeamType
 	TagTeamVs = 3
 }
 
-public class MultiplayerLobbyData
-{
-	[JsonProperty("match")]
-	public Match Match { get; set; }
-	[JsonProperty("games")]
-	public List<Game> Games { get; set; }
-}
-
 public enum Team
 {
 	NoTeam = 0,
@@ -87,6 +79,14 @@ public enum Mods
 	KeyMod = Key1 | Key2 | Key3 | Key4 | Key5 | Key6 | Key7 | Key8 | Key9 | KeyCoop,
 	FreeModAllowed = NoFail | Easy | Hidden | HardRock | SuddenDeath | Flashlight | FadeIn | Relax | Relax2 | SpunOut | KeyMod,
 	ScoreIncreaseMods = Hidden | HardRock | DoubleTime | Flashlight | FadeIn
+}
+
+public class MultiplayerLobbyData
+{
+	[JsonProperty("match")]
+	public Match Match { get; set; }
+	[JsonProperty("games")]
+	public List<Game> Games { get; set; }
 }
 
 public class Match
