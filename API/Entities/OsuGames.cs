@@ -19,14 +19,17 @@ public class OsuGame : EntityBase
 	[Column("game_id")]
 	public long GameId { get; set; }
 	
+	[Column("created")]
+	public DateTime Created { get; set; }
+	
 	[Column("start_time")]
 	public DateTime StartTime { get; set; }
 	
 	[Column("end_time")]
-	public DateTime EndTime { get; set; }
+	public DateTime? EndTime { get; set; }
 	
 	[Column("beatmap_id")]
-	public long BeatmapId { get; set; }
+	public int? BeatmapId { get; set; }
 	
 	[Column("play_mode")]
 	public PlayMode PlayMode { get; set; }
