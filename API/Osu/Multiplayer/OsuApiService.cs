@@ -1,4 +1,5 @@
 using API.Configurations;
+using API.Entities;
 using Newtonsoft.Json;
 
 namespace API.Osu.Multiplayer;
@@ -20,7 +21,7 @@ public class OsuApiService : IOsuApiService
 		};
 	}
 
-	public async Task<MultiplayerLobbyData?> GetMatchAsync(long matchId)
+	public async Task<OsuApiMatchData?> GetMatchAsync(long matchId)
 	{
 		_logger.LogDebug("Attempting to fetch data for match {MatchId}", matchId);
 
@@ -29,11 +30,26 @@ public class OsuApiService : IOsuApiService
 			string response = await _client.GetStringAsync($"get_match?k={_credentials.OsuApiKey}&mp={matchId}");
 			_logger.LogDebug("Successfully received response from osu! API for match {MatchId}", matchId);
 			_logger.LogTrace("Response: {Response}", response);
-			return JsonConvert.DeserializeObject<MultiplayerLobbyData>(response);
+			return JsonConvert.DeserializeObject<OsuApiMatchData>(response);
 		}
 		catch (Exception e)
 		{
 			_logger.LogError(e, "Failure while fetching data for match {MatchId}", matchId);
+			return null;
+		}
+	}
+
+	public async Task<Beatmap?> GetBeatmapAsync(long beatmapId)
+	{
+		try
+		{
+			string response = await _client.GetStringAsync($"get_beatmaps?k={_credentials.OsuApiKey}&b={beatmapId}");
+			_logger.LogDebug("Successfully received response from osu! API for beatmap {BeatmapId}", beatmapId);
+			return JsonConvert.DeserializeObject<Beatmap[]>(response)?[0];
+		}
+		catch (Exception e)
+		{
+			_logger.LogError(e, "Failure while fetching data for beatmap {BeatmapId}", beatmapId);
 			return null;
 		}
 	}

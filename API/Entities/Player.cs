@@ -9,8 +9,12 @@ public class Player : EntityBase
 	[Column("osu_id")]
 	public long OsuId { get; set; }
 
-	public Rating? Rating { get; set; }
-	public ICollection<Match>? Matches { get; set; }
+	[NotMapped]
+	public ICollection<Rating>? Ratings { get; set; } // A user can have multiple ratings, one for each mode
+	[NotMapped]
 	public User? User { get; set; }
+	[NotMapped]
+	public ICollection<Game>? Games { get; set; }
+	[NotMapped]
 	public ICollection<RatingHistory>? RatingHistories { get; set; }
 }

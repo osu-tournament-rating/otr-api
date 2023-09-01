@@ -11,15 +11,15 @@ public class RatingsController : CrudController<Rating>
 	private readonly IRatingsService _service;
 	public RatingsController(ILogger<RatingsController> logger, IRatingsService service) : base(logger, service) { _service = service; }
 
-	[HttpGet("{playerId:int}/all")]
-	public async Task<ActionResult<IEnumerable<Rating>>> GetAllForPlayerAsync(int playerId)
+	[HttpGet("{playerId:int}")]
+	public async Task<ActionResult<Rating>> GetForPlayerAsync(int playerId)
 	{
-		var data = await _service.GetAllForPlayerAsync(playerId);
-		if (data.Any())
+		var data = await _service.GetForPlayerAsync(playerId);
+		if (data != null)
 		{
 			return Ok(data);
 		}
-
+		
 		return NotFound($"User with id {playerId} does not have any data");
 	}
 

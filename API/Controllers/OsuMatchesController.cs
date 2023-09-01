@@ -1,7 +1,6 @@
 using API.Entities;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 namespace API.Controllers;
 
@@ -10,16 +9,16 @@ namespace API.Controllers;
 public class OsuMatchesController : CrudController<Match>
 {
 	private readonly ILogger<OsuMatchesController> _logger;
-	private readonly IMultiplayerLinkService _service;
+	private readonly IMatchesService _service;
 
-	public OsuMatchesController(ILogger<OsuMatchesController> logger, IMultiplayerLinkService service) : base(logger, service)
+	public OsuMatchesController(ILogger<OsuMatchesController> logger, IMatchesService service) : base(logger, service)
 	{
 		_logger = logger;
 		_service = service;
 	}
 
 	[HttpPost("batch")]
-	public async Task<string> PostAsync([FromBody] IEnumerable<Match> linkBatch)
+	public async Task<ActionResult<int>> PostAsync([FromBody] IEnumerable<long> ids)
 	{
 		/**
 		 * FLOW:
@@ -37,27 +36,18 @@ public class OsuMatchesController : CrudController<Match>
 		 */
 
 		// Check if any of the links already exist in the database
-		var ret = linkBatch.ToList();
-		var existing = (await _service.CheckExistingAsync(ret.Select(x => x.MatchId).ToList())).ToList();
-		if (existing.Any())
+		ids = ids.ToList();
+		var existingMatches = await _service.CheckExistingAsync(ids);
+		var stripped = ids.Except(existingMatches).ToList();
+		
+		var matches = stripped.Select(id => new Match { MatchId = id, VerificationStatus = VerificationStatus.PendingVerification });
+		int? result = await _service.InsertFromIdBatchAsync(matches);
+		if (result > 0)
 		{
-			// Remove existing links from the batch
-			ret.RemoveAll(x => existing.Contains(x.MatchId));
-			_logger.LogInformation("Removed {Count} existing links from the batch", existing.Count);
+			_logger.LogInformation("Successfully marked {Matches} matches as {Status}", result, VerificationStatus.PendingVerification);
+			return Ok();
 		}
-
-		// Mark as pending for worker
-		ret.ForEach(async x =>
-		{
-			x.VerificationStatus = VerificationStatus.PendingVerification;
-			x.Created = DateTime.Now;
-			x.Updated = DateTime.Now;
-
-			await _service.CreateAsync(x);
-		});
-
-		_logger.LogInformation("Created {Count} new links", ret.Count);
-
-		return JsonConvert.SerializeObject(ret);
+		
+		return StatusCode(500, $"Failed to insert matches");
 	}
 }

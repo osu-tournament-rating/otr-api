@@ -8,13 +8,23 @@ namespace API.Services.Implementations;
 
 public class PlayerService : ServiceBase<Player>, IPlayerService
 {
-	public PlayerService(ICredentials credentials, ILogger<PlayerService> logger) : base(credentials, logger) {}
+	public PlayerService(ICredentials credentials, ILogger<PlayerService> logger) : base(credentials, logger)
+	{
+	}
 
-	public async Task<Player?> GetByOsuIdAsync(int osuId)
+	public async Task<Player?> GetByOsuIdAsync(long osuId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
 			return await connection.QuerySingleOrDefaultAsync<Player>("SELECT * FROM players WHERE osu_id = @OsuId", new { OsuId = osuId });
+		}
+	}
+	
+	public async Task<IEnumerable<Player>> GetByOsuIdAsync(IEnumerable<long> osuIds)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QueryAsync<Player>("SELECT * FROM players WHERE osu_id = ANY(@OsuId)", osuIds);
 		}
 	}
 
@@ -43,4 +53,15 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		}
 	}
 
+	private async Task<Player> FetchRelationshipsAsync(Player player)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			var ratings = await connection.QueryAsync<Rating>("SELECT * FROM ratings WHERE player_id = @PlayerId AND mode = @Mode", new { PlayerId = player.Id });
+			
+			// TODO: Finish
+		}
+
+		return player;
+	}
 }

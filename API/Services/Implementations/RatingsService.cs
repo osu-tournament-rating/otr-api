@@ -17,17 +17,17 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 		_playerService = playerService;
 	}
 
-	public async Task<IEnumerable<Rating>> GetAllForPlayerAsync(int id)
+	public async Task<Rating?> GetForPlayerAsync(int playerId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QueryAsync<Rating>("SELECT * FROM ratings WHERE player_id = @PlayerId", new { PlayerId = id });
+			return await connection.QuerySingleOrDefaultAsync<Rating?>("SELECT * FROM ratings WHERE player_id = @PlayerId", new { PlayerId = playerId });
 		}
 	}
 
 	public override async Task<int?> UpdateAsync(Rating entity)
 	{
-		using(var connection = new NpgsqlConnection(ConnectionString))
+		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
 			// First, copy the current state of the entity to the history table.
 			var history = new RatingHistory

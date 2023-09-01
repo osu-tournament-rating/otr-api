@@ -21,22 +21,6 @@ create table users
     created    timestamp default CURRENT_TIMESTAMP not null
 );
 
-create table playermatchdata
-(
-    id         integer default nextval('matchdata_id_seq'::regclass) not null
-        constraint "MatchData_pk"
-            primary key,
-    player_id  integer                                               not null
-        constraint "MatchData___fkplayerid"
-            references players,
-    match_id   integer                                               not null,
-    beatmap_id integer                                               not null
-);
-
-comment on column playermatchdata.match_id is 'The ID of the match from public.osumatches';
-
-comment on column playermatchdata.beatmap_id is 'ID of the beatmap from public.beatmaps';
-
 create table ratings
 (
     id        serial
@@ -70,8 +54,6 @@ create table ratinghistories
     created       timestamp default CURRENT_TIMESTAMP not null,
     mode          text                                not null,
     match_data_id integer                             not null
-        constraint "RatingHistories___fkmatchdataid"
-            references playermatchdata
 );
 
 create table config
@@ -92,7 +74,9 @@ create table logs
 
 create table matches
 (
-    id                  integer   default nextval('osumatches_id_seq'::regclass) not null,
+    id                  integer   default nextval('osumatches_id_seq'::regclass) not null
+        constraint matches_pk
+            primary key,
     match_id            bigint                                                   not null
         constraint osumatches_matchid
             unique,
@@ -111,7 +95,9 @@ create table games
     id           integer   default nextval('osugames_id_seq'::regclass) not null
         constraint osugames_pk
             primary key,
-    match_id     integer                                                not null,
+    match_id     integer                                                not null
+        constraint games_matches_id_fk
+            references matches,
     beatmap_id   integer,
     play_mode    integer                                                not null,
     match_type   integer                                                not null,
@@ -126,24 +112,29 @@ create table games
     end_time     timestamp
 );
 
-create table scores
+create table match_scores
 (
-    id           serial
-        constraint scores_pk
+    id           integer default nextval('scores_id_seq'::regclass) not null
+        constraint match_scores_pk
             primary key,
-    match_id     integer not null,
-    team         integer not null,
-    score        bigint  not null,
-    max_combo    integer not null,
-    count_50     integer not null,
-    count_100    integer not null,
-    count_300    integer not null,
-    count_miss   integer not null,
-    perfect      boolean not null,
-    pass         boolean not null,
-    enabled_mods integer not null,
-    count_katu   integer not null,
-    count_geki   integer not null
+    game_id      integer                                            not null
+        constraint match_scores_games_id_fk
+            references games,
+    team         integer                                            not null,
+    score        bigint                                             not null,
+    max_combo    integer                                            not null,
+    count_50     integer                                            not null,
+    count_100    integer                                            not null,
+    count_300    integer                                            not null,
+    count_miss   integer                                            not null,
+    perfect      boolean                                            not null,
+    pass         boolean                                            not null,
+    enabled_mods integer                                            not null,
+    count_katu   integer                                            not null,
+    count_geki   integer                                            not null,
+    player_id    integer                                            not null
+        constraint match_scores_players_id_fk
+            references players
 );
 
 create table beatmap

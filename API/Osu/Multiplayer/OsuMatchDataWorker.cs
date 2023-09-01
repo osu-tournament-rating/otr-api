@@ -36,26 +36,17 @@ public class OsuMatchDataWorker : IOsuMatchDataWorker
 
 	private async Task BackgroundTask(CancellationToken cancellationToken = default)
 	{
-		while (!cancellationToken.IsCancellationRequested)
+		while (!cancellationToken.IsCancellationRequested && !await IsRateLimited())
 		{
-			if (_rateLimitCounter >= RATE_LIMIT_CAPACITY && DateTime.UtcNow <= _rateLimitResetTime)
-			{
-				_logger.LogDebug("Rate limit reached, waiting for reset...");
-				await Task.Delay(1000, cancellationToken);
-				continue;
-			}
-
-			if (DateTime.UtcNow > _rateLimitResetTime)
-			{
-				_rateLimitCounter = 0; // Reset the counter when the reset time has passed
-				_rateLimitResetTime = DateTime.UtcNow.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
-			}
-
 			using (var scope = _serviceProvider.CreateScope())
 			{
-				var multiplayerLinkService = scope.ServiceProvider.GetRequiredService<IMultiplayerLinkService>();
+				var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
+				var gamesService = scope.ServiceProvider.GetRequiredService<IGamesService>();
+				var matchScoresService = scope.ServiceProvider.GetRequiredService<IMatchScoresService>();
+				var beatmapService = scope.ServiceProvider.GetRequiredService<IBeatmapService>();
+				var playerService = scope.ServiceProvider.GetRequiredService<IPlayerService>();
 
-				var osuMatch = await multiplayerLinkService.GetFirstPendingOrDefaultAsync();
+				var osuMatch = await matchesService.GetFirstPendingOrDefaultAsync();
 				if (osuMatch == null)
 				{
 					await Task.Delay(INTERVAL_SECONDS * 1000, cancellationToken);
@@ -72,23 +63,13 @@ public class OsuMatchDataWorker : IOsuMatchDataWorker
 						continue;
 					}
 
-					osuMatch.Name = result.Match.Name;
-					
-					if (!LobbyNameChecker.IsNameValid(osuMatch.Name))
-					{
-						await UpdateLinkStatusAsync(osuMatch, VerificationStatus.Rejected, multiplayerLinkService);
-						_logger.LogDebug("Match {MatchId} was rejected (ratelimit currently at {Ratelimit})", osuMatch.MatchId, _rateLimitCounter + 1);
-					}
-					else
-					{
-						await UpdateLinkStatusAsync(osuMatch, VerificationStatus.PreVerified, multiplayerLinkService);
-					}
+					await ProcessOsuMatch(result, matchesService, gamesService, matchScoresService, beatmapService, playerService);
 					
 					_rateLimitCounter++;
 				}
 				catch (Exception e)
 				{
-					await UpdateLinkStatusAsync(osuMatch, VerificationStatus.Failure, multiplayerLinkService);
+					await UpdateLinkStatusAsync(osuMatch, VerificationStatus.Failure, matchesService);
 
 					_logger.LogWarning(e, "Failed to fetch data for match {MatchId} (exception was thrown)", osuMatch.MatchId);
 				}
@@ -96,12 +77,173 @@ public class OsuMatchDataWorker : IOsuMatchDataWorker
 		}
 	}
 
-	private async Task UpdateLinkStatusAsync(Entities.Match link, VerificationStatus status, IMultiplayerLinkService multiplayerLinkService)
+	private void CheckRatelimitReset()
+	{
+		if (DateTime.UtcNow > _rateLimitResetTime)
+		{
+			_rateLimitCounter = 0; // Reset the counter when the reset time has passed
+			_rateLimitResetTime = DateTime.UtcNow.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
+		}
+	}
+
+	private async Task<bool> IsRateLimited()
+	{
+		CheckRatelimitReset();
+
+		if (_rateLimitCounter >= RATE_LIMIT_CAPACITY && DateTime.UtcNow <= _rateLimitResetTime)
+		{
+			_logger.LogDebug("Rate limit reached, waiting for reset...");
+			await Task.Delay(1000);
+			return true;
+		}
+
+		return false;
+	}
+
+	private async Task UpdateLinkStatusAsync(Entities.Match link, VerificationStatus status, IMatchesService matchesService)
 	{
 		link.VerificationStatus = status;
+		link.VerificationSource = MatchVerificationSource.System;
 		link.Updated = DateTime.Now;
 
-		await multiplayerLinkService.UpdateAsync(link);
+		await matchesService.UpdateAsync(link);
 		_logger.LogDebug("Set status of MultiplayerLink {LinkId} to {Status}", link.Id, status);
+	}
+
+	private async Task ProcessOsuMatch(OsuApiMatchData osuMatch, IMatchesService matchesService,
+		IGamesService gamesService, IMatchScoresService matchScoresService, IBeatmapService beatmapService,
+		IPlayerService playerService)
+	{
+		var match = new Entities.Match();
+		var games = new List<Entities.Game>();
+		var matchScores = new List<MatchScore>();
+		
+		// TODO: Verify that we are not inserting games twice
+
+		Dictionary<long, int>? beatmapIdMapping = null;
+		var osuBeatmapIds = osuMatch.Games.Select(x => x.BeatmapId).Distinct().ToList();
+		var existingBeatmaps = await beatmapService.GetByBeatmapIdsAsync(osuBeatmapIds);
+		osuBeatmapIds.RemoveAll(x => existingBeatmaps.Any(y => y.BeatmapId == x));
+		osuBeatmapIds = osuBeatmapIds.Distinct().ToList();
+		
+		// Insert all of the beatmaps first
+		if (osuBeatmapIds.Count > 0)
+		{
+			var beatmaps = new List<Beatmap>();
+			foreach (long beatmapId in osuBeatmapIds)
+			{
+				var beatmap = await ProcessBeatmap(beatmapId);
+
+				if (beatmap != null)
+				{
+					beatmaps.Add(beatmap);
+				}
+			}
+			
+			await beatmapService.BulkInsertAsync(beatmaps);
+			existingBeatmaps = await beatmapService.GetByBeatmapIdsAsync(osuBeatmapIds);
+			
+			beatmapIdMapping = existingBeatmaps.ToDictionary(x => x.BeatmapId, x => x.Id);
+		}
+
+		if (beatmapIdMapping == null)
+		{
+			_logger.LogError("Something went very wrong, there are not beatmaps to map to");
+			return;
+		}
+		
+		match.MatchId = osuMatch.Match.MatchId;
+		match.Name = osuMatch.Match.Name;
+		match.StartTime = osuMatch.Match.StartTime;
+		match.EndTime = osuMatch.Match.EndTime;
+
+		// TODO: Instead, this needs to be a CreateIfNotExistsAsync method (currently throws an exception if the match already exists)
+		int? matchId = await matchesService.CreateAsync(match);
+		if (matchId == null)
+		{
+			_logger.LogError("Failed to create match {MatchId}", osuMatch.Match.MatchId);
+			return;
+		}
+
+		foreach (var game in osuMatch.Games)
+		{
+			var g = new Entities.Game();
+
+			g.GameId = game.GameId;
+			g.MatchId = matchId.Value;
+			g.StartTime = game.StartTime;
+			g.EndTime = game.EndTime;
+			g.Mods = game.Mods;
+			g.MatchType = game.MatchType;
+			g.PlayMode = game.PlayMode;
+			g.ScoringType = game.ScoringType;
+			g.TeamType = game.TeamType;
+			g.BeatmapId = beatmapIdMapping[game.BeatmapId];
+
+			games.Add(g);
+		}
+
+		var gameIdMapping = await gamesService.GetGameIdMappingAsync(osuMatch.Games.Select(x => x.GameId));
+		
+		// Get player ids
+		var playerOsuIds = osuMatch.Games.SelectMany(x => x.Scores).Select(y => y.UserId).Distinct().ToList();
+		// TODO: Verify that we are not inserting players twice
+		var players = await playerService.GetByOsuIdAsync(playerOsuIds);
+		var playerIdMapping = players.ToDictionary(x => x.OsuId, x => x.Id);
+		
+		// TODO: Create player if not exists
+		
+		foreach (var game in osuMatch.Games)
+		{
+			foreach (var score in game.Scores)
+			{
+				var matchScore = new MatchScore(); // TODO: needs playerid, gameid
+
+				matchScore.PlayerId = playerIdMapping[score.UserId];
+				matchScore.GameId = gameIdMapping[game.GameId];
+			
+				matchScore.Score = score.PlayerScore;
+				matchScore.MaxCombo = score.MaxCombo;
+				matchScore.Count50 = score.Count50;
+				matchScore.Count100 = score.Count100;
+				matchScore.Count300 = score.Count300;
+				matchScore.CountMiss = score.CountMiss;
+				matchScore.CountKatu = score.CountKatu;
+				matchScore.CountGeki = score.CountGeki;
+				matchScore.Perfect = score.Perfect == 1;
+				matchScore.Pass = score.Pass == 1;
+				matchScore.EnabledMods = score.EnabledMods;
+				matchScore.Team = score.Team;
+			
+				matchScores.Add(matchScore);
+			}
+		}
+		
+		int matchInsertions = await matchScoresService.BulkInsertAsync(matchScores);
+		_logger.LogInformation("Inserted {MatchInsertions} match scores", matchInsertions);
+		
+		if (!LobbyNameChecker.IsNameValid(osuMatch.Match.Name))
+		{
+			await UpdateLinkStatusAsync(match, VerificationStatus.Rejected, matchesService);
+			_logger.LogDebug("Match {MatchId} was rejected (ratelimit currently at {Ratelimit})", match.MatchId, _rateLimitCounter + 1);
+		}
+		else
+		{
+			await UpdateLinkStatusAsync(match, VerificationStatus.PreVerified, matchesService);
+		}
+	}
+
+	private async Task<Beatmap?> ProcessBeatmap(long beatmapId)
+	{
+		while (await IsRateLimited()) {} // Wait until the rate limit is reset
+
+		var beatmap = await _apiService.GetBeatmapAsync(beatmapId);
+		if (beatmap == null)
+		{
+			_logger.LogError("Failed to fetch data for beatmap {BeatmapId} (result from API was null)", beatmapId);
+			return beatmap;
+		}
+
+		return beatmap;
 	}
 }

@@ -3,7 +3,7 @@ using static API.Osu.OsuEnums;
 
 namespace API.Osu.Multiplayer;
 
-public class MultiplayerLobbyData
+public class OsuApiMatchData
 {
 	[JsonProperty("match")]
 	public Match Match { get; set; }

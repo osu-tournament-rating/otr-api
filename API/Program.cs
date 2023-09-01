@@ -40,8 +40,12 @@ builder.Services.AddHostedService<OsuMatchDataWorker>();
 
 builder.Services.AddScoped<IRatingsService, RatingsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
-builder.Services.AddScoped<IMultiplayerLinkService, OsuMatchService>();
+builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IRatingHistoryService, RatingHistoryService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IGamesService, GamesService>();
+builder.Services.AddScoped<IMatchScoresService, MatchScoresService>();
+builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 
 builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
 builder.Services.AddSingleton<ICredentials, Credentials>(serviceProvider =>

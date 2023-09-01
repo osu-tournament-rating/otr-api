@@ -6,9 +6,9 @@ using Npgsql;
 
 namespace API.Services.Implementations;
 
-public class OsuMatchService : ServiceBase<Match>, IMultiplayerLinkService
+public class MatchesService : ServiceBase<Match>, IMatchesService
 {
-	public OsuMatchService(ICredentials credentials, ILogger<OsuMatchService> logger) : base(credentials, logger) {}
+	public MatchesService(ICredentials credentials, ILogger<MatchesService> logger) : base(credentials, logger) {}
 
 	public async Task<Match?> GetByLobbyIdAsync(long matchId)
 	{
@@ -30,7 +30,7 @@ public class OsuMatchService : ServiceBase<Match>, IMultiplayerLinkService
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QueryFirstOrDefaultAsync<Match?>($"SELECT * FROM osumatches WHERE verification_status = {VerificationStatus.PendingVerification:D}");
+			return await connection.QueryFirstOrDefaultAsync<Match?>($"SELECT * FROM matches WHERE verification_status = {VerificationStatus.PendingVerification:D}");
 		}
 	}
 
@@ -38,7 +38,19 @@ public class OsuMatchService : ServiceBase<Match>, IMultiplayerLinkService
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QueryAsync<long>("SELECT match_id FROM osumatches WHERE match_id = ANY(@lobbyIds)", new { lobbyIds = matchIds });
+			return await connection.QueryAsync<long>("SELECT match_id FROM matches WHERE match_id = ANY(@lobbyIds)", new { lobbyIds = matchIds });
+		}
+	}
+
+	/// <summary>
+	/// Used to queue up matches for verification.
+	/// </summary>
+	/// <returns>Number of rows inserted</returns>
+	public async Task<int> InsertFromIdBatchAsync(IEnumerable<Match> matches)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.ExecuteAsync("INSERT INTO matches (match_id, verification_status) VALUES (@MatchId, @VerificationStatus)", matches);
 		}
 	}
 }
