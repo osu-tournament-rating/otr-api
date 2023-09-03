@@ -10,4 +10,6 @@ public interface IGamesService : IService<Game>
 	Task<Dictionary<long, int>> GetGameIdMappingAsync(IEnumerable<long> beatmapIds);
 	Task<int> CreateIfNotExistsAsync(Game dbGame);
 	Task<Game?> GetByGameIdAsync(long gameGameId);
+
+	Task<IEnumerable<Game>> GetByMatchIdAsync(long matchId);
 }

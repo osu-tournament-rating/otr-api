@@ -10,11 +10,16 @@ public class OsuMatchesController : Controller
 {
 	private readonly ILogger<OsuMatchesController> _logger;
 	private readonly IMatchesService _service;
-
-	public OsuMatchesController(ILogger<OsuMatchesController> logger, IMatchesService service)
+	private readonly IGamesService _gamesService;
+	private readonly IMatchScoresService _scoresService;
+	
+	public OsuMatchesController(ILogger<OsuMatchesController> logger, 
+		IMatchesService service, IGamesService gamesService, IMatchScoresService scoresService)
 	{
 		_logger = logger;
 		_service = service;
+		_gamesService = gamesService;
+		_scoresService = scoresService;
 	}
 
 	[HttpPost("batch")]
@@ -56,5 +61,28 @@ public class OsuMatchesController : Controller
 	{
 		var matches = await _service.GetAllAsync(true);
 		return Ok(matches);
+	}
+	
+	
+	//TODO: fix up the casting? and hopefully i didnt do a braindead implementation !!
+	[HttpGet("{matchId:long}")]
+	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long matchId)
+	{
+		var match = await _service.GetByLobbyIdAsync(matchId);
+		var games = await _gamesService.GetByMatchIdAsync(match.Id);
+		match.Games = (ICollection<Game>)games;
+		
+		foreach (var game in games)
+		{
+			var scores = await _scoresService.GetForGameAsync(game.Id);
+			game.Scores = (ICollection<MatchScore>)scores;
+		}
+		
+		if (match == null)
+		{
+			return NotFound("No matching matchId in the database.");
+		}
+
+		return Ok(match);
 	}
 }

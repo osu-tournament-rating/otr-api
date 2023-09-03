@@ -85,4 +85,12 @@ public class GamesService : ServiceBase<Game>, IGamesService
 			return await connection.QuerySingleOrDefaultAsync<Game?>("SELECT * FROM games WHERE game_id = @GameId", new { GameId = gameGameId });
 		}
 	}
+
+	public async Task<IEnumerable<Game>> GetByMatchIdAsync(long matchId)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QueryAsync<Game>("SELECT * FROM games WHERE match_id = @MatchId", new { MatchId = matchId });
+		}
+	}
 }
