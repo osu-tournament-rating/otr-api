@@ -4,6 +4,7 @@ using API.Osu.Multiplayer;
 using API.Services.Interfaces;
 using Dapper;
 using Npgsql;
+using System.Text;
 
 namespace API.Services.Implementations;
 
@@ -23,6 +24,77 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		_scoresService = scoresService;
 		_beatmapService = beatmapService;
 		_playerService = playerService;
+	}
+
+	public async Task<IEnumerable<Entities.Match>> GetAllAsync(bool onlyIncludeFiltered)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			var matchDictionary = new Dictionary<int, Entities.Match>();
+			var gameDictionary = new Dictionary<int, Entities.Game>();
+			var beatmapDictionary = new Dictionary<int, Beatmap>();
+
+			var sql = new StringBuilder(@"SELECT * FROM matches 
+              INNER JOIN games g on matches.id = g.match_id
+              INNER JOIN match_scores ms on g.id = ms.game_id
+              INNER JOIN beatmaps b on g.beatmap_id = b.id");
+
+			if (onlyIncludeFiltered)
+			{
+				sql.Append(" WHERE matches.verification_status = 1 OR matches.verification_status = 2"); // Include pre-verified for now
+			}
+			
+			await connection.QueryAsync<Entities.Match, Entities.Game, MatchScore, Beatmap, Entities.Match>(sql.ToString(),
+				(match, game, score, beatmap) =>
+				{
+					// Ensure unique matches
+					if (!matchDictionary.TryGetValue(match.Id, out var matchEntry))
+					{
+						matchEntry = match;
+						matchEntry.Games = new List<Entities.Game>();
+						matchDictionary.Add(matchEntry.Id, matchEntry);
+					}
+					
+					// Ensure unique beatmaps
+					if (!beatmapDictionary.TryGetValue(beatmap.Id, out var beatmapEntry))
+					{
+						beatmapEntry = beatmap;
+						beatmapDictionary.Add(beatmapEntry.Id, beatmapEntry);
+					}
+
+					// Ensure unique games
+					if (!gameDictionary.TryGetValue(game.Id, out var gameEntry))
+					{
+						gameEntry = game;
+						gameEntry.Scores = new List<MatchScore>();
+						gameEntry.BeatmapId = beatmapEntry.Id;
+						gameDictionary.Add(gameEntry.Id, gameEntry);
+
+						matchEntry.Games.Add(gameEntry);
+					}
+
+					gameEntry.Scores.Add(score);
+					return matchEntry;
+				});
+
+			if (onlyIncludeFiltered)
+			{
+				// Filter out bad matches
+				foreach (var match in matchDictionary.Values)
+				{
+					foreach (var game in match.Games.ToList())
+					{
+						if ((game.Scores.Count % 2) != 0)
+						{
+							// Remove all of the games that did not have an even number of players
+							match.Games.Remove(game);
+						}
+					}
+				}
+			}
+
+			return matchDictionary.Values;
+		}
 	}
 
 	public async Task<Entities.Match?> GetByLobbyIdAsync(long matchId)
@@ -89,9 +161,9 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 				// Step 1.
 				var osuPlayerIds = osuMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
 				var existingPlayers = (await _playerService.GetByOsuIdsAsync(osuPlayerIds)).ToList();
-				
+
 				var playerIdMapping = new Dictionary<long, int>();
-				
+
 				// Create the players that don't exist
 				var playersToCreate = osuPlayerIds.Except(existingPlayers.Select(x => x.OsuId)).ToList();
 				foreach (long playerId in playersToCreate)
@@ -103,10 +175,10 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 						_logger.LogError("Failed to insert player {PlayerId}", playerId);
 						continue;
 					}
-					
+
 					playerIdMapping.Add(player.OsuId, playerIdDb.Value);
 				}
-				
+
 				foreach (var player in existingPlayers)
 				{
 					playerIdMapping.Add(player.OsuId, player.Id);
@@ -115,12 +187,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 				// Step 2.
 				var osuBeatmapIds = osuMatch.Games.Select(x => x.BeatmapId).Distinct().ToList();
 				var existingBeatmaps = (await _beatmapService.GetByBeatmapIdsAsync(osuBeatmapIds)).ToList();
-				
-				var beatmapIdMapping = new Dictionary<long, int>();
-				foreach (var beatmap in existingBeatmaps)
-				{
-					beatmapIdMapping.Add(beatmap.BeatmapId, beatmap.Id);
-				}
+
+				var beatmapIdMapping = existingBeatmaps.ToDictionary(beatmap => beatmap.BeatmapId, beatmap => beatmap.Id);
 
 				// Step 3.
 				var dbMatch = new Entities.Match
@@ -148,19 +216,28 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 				// Step 4.
 				foreach (var game in osuMatch.Games)
 				{
-					if (!beatmapIdMapping.TryGetValue(game.BeatmapId, out int _))
+					int beatmapId = 0;
+					if (!beatmapIdMapping.ContainsKey(game.BeatmapId))
 					{
 						_logger.LogWarning("Failed to map beatmap id {BeatmapId} to database id", game.BeatmapId);
+					}
+					else
+					{
+						beatmapId = beatmapIdMapping[game.BeatmapId];
 					}
 
 					var dbGame = new Entities.Game
 					{
+						MatchId = matchId.Value,
 						GameId = game.GameId,
 						StartTime = game.StartTime,
 						EndTime = game.EndTime,
-						BeatmapId = 0,
+						BeatmapId = beatmapId,
 						PlayMode = game.PlayMode,
-						MatchId = matchId.Value
+						MatchType = game.MatchType,
+						ScoringType = game.ScoringType,
+						TeamType = game.TeamType,
+						Mods = game.Mods
 					};
 
 					// Insert game into database and store the ids
@@ -224,7 +301,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.ExecuteAsync("UPDATE matches SET verification_status = @Status, verification_source = @Source, verification_info = @Info WHERE match_id = @MatchId",
+			return await connection.ExecuteAsync(
+				"UPDATE matches SET verification_status = @Status, verification_source = @Source, verification_info = @Info WHERE match_id = @MatchId",
 				new { MatchId = matchId, Status = status, Source = source, Info = info });
 		}
 	}
@@ -238,12 +316,13 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
                                   INNER JOIN games g ON m.id = g.match_id
                                   INNER JOIN match_scores ms ON g.id = ms.game_id
                                   WHERE ms.player_id = @PlayerId";
+
 			var matches = (await connection.QueryAsync<Entities.Match>(matchSql, new { PlayerId = playerId })).DistinctBy(x => x.MatchId).ToList();
 
 			// 2. For each match, retrieve the associated games
 			const string gameSql = @"SELECT g.* FROM games g
                                  WHERE g.match_id = @MatchId";
-			
+
 			foreach (var match in matches)
 			{
 				match.Games = (await connection.QueryAsync<Entities.Game>(gameSql, new { MatchId = match.Id })).ToList();
@@ -251,6 +330,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 				// 3. For each game, retrieve the associated scores for the player
 				const string scoreSql = @"SELECT ms.* FROM match_scores ms
                                       WHERE ms.game_id = @GameId AND ms.player_id = @PlayerId";
+
 				foreach (var game in match.Games)
 				{
 					game.Scores = (await connection.QueryAsync<MatchScore>(scoreSql, new { GameId = game.Id, PlayerId = playerId })).ToList();
@@ -260,5 +340,4 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 			return matches;
 		}
 	}
-
 }

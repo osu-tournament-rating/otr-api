@@ -67,16 +67,6 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 		}
 	}
 
-	public virtual async Task<IEnumerable<T>?> GetAllAsync()
-	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
-		{
-			// May consider not calling .ToList for performance reasons
-			var res = (await connection.GetListAsync<T>()).ToList();
-			return res.Any() ? res : null;
-		}
-	}
-
 	public virtual async Task<bool> ExistsAsync(int id)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))

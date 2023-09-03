@@ -14,4 +14,6 @@ public interface IPlayerService : IService<Player>
 	/// </summary>
 	/// <returns></returns>
 	Task<IEnumerable<Player>> GetOutdatedAsync();
+
+	Task<IEnumerable<Player>> GetAllAsync();
 }

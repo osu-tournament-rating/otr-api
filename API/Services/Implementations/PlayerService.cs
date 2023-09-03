@@ -15,6 +15,14 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		_serviceProvider = serviceProvider;
 	}
 
+	public async Task<IEnumerable<Player>> GetAllAsync()
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QueryAsync<Player>("SELECT * FROM players WHERE username IS NOT NULL");
+		}
+	}
+
 	public async Task<Player?> GetByOsuIdAsync(long osuId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))

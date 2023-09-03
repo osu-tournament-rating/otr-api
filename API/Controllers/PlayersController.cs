@@ -15,6 +15,13 @@ public class PlayersController : Controller
 		_logger = logger;
 		_service = service;
 	}
+	
+	[HttpGet("all")]
+	public async Task<ActionResult<IEnumerable<Player>?>> GetAllAsync()
+	{
+		var players = await _service.GetAllAsync();
+		return Ok(players);
+	}
 
 	[HttpGet("{osuId:int}")]
 	public async Task<ActionResult<Player?>> Get(int osuId)

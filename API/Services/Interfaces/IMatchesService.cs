@@ -1,10 +1,12 @@
 using API.Entities;
+using API.Entities.Bases;
 using API.Osu.Multiplayer;
 
 namespace API.Services.Interfaces;
 
 public interface IMatchesService : IService<Entities.Match>
 {
+	Task<IEnumerable<Entities.Match>> GetAllAsync(bool onlyIncludeFiltered);
 	Task<Entities.Match?> GetByLobbyIdAsync(long matchId);
 	Task<IEnumerable<Entities.Match>?> GetAllPendingVerificationAsync();
 	Task<Entities.Match?> GetFirstPendingOrDefaultAsync();

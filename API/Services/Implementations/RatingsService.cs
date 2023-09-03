@@ -104,4 +104,12 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 			                                     "ON CONFLICT (player_id, mode) DO UPDATE SET mu = @Mu, sigma = @Sigma, updated = @Updated", ratings);
 		}
 	}
+
+	public async Task<IEnumerable<Rating>> GetAllAsync()
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QueryAsync<Rating>("SELECT * FROM ratings");
+		}
+	}
 }

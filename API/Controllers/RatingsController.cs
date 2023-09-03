@@ -16,6 +16,13 @@ public class RatingsController : Controller
 		_logger = logger;
 		_service = service;
 	}
+	
+	[HttpGet("all")]
+	public async Task<ActionResult<IEnumerable<Rating>?>> GetAllAsync()
+	{
+		var ratings = await _service.GetAllAsync();
+		return Ok(ratings);
+	}
 
 	[HttpGet("{playerId:int}")]
 	public async Task<ActionResult<Rating>> GetForPlayerAsync(int playerId)

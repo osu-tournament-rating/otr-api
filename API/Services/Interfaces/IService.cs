@@ -26,13 +26,6 @@ public interface IService<T> where T : class, IEntity
 	/// </summary>
 	Task<int?> DeleteAsync(int id);
 
-	// Other common operations
-
-	/// <summary>
-	///  Gets all entities from the database. If successful, returns the collection of entities, otherwise null.
-	/// </summary>
-	Task<IEnumerable<T>?> GetAllAsync();
-
 	/// <summary>
 	///  Returns true if an entity with the given ID exists in the database.
 	/// </summary>

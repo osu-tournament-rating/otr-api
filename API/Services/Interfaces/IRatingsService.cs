@@ -13,4 +13,5 @@ public interface IRatingsService : IService<Rating>
 	Task UpdateBatchAsync(IEnumerable<Rating> ratings);
 	Task<int> InsertOrUpdateForPlayerAsync(int playerId, Rating rating);
 	Task<int?> BatchInsertOrUpdateAsync(IEnumerable<Rating> ratings);
+	Task<IEnumerable<Rating>> GetAllAsync();
 }
