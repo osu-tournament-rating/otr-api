@@ -20,7 +20,7 @@ public class RatingHistoryController : CrudController<RatingHistory>
 	[HttpGet("{playerId:int}/all")]
 	public async Task<ActionResult<IEnumerable<RatingHistory>>> GetAllForPlayerAsync(int playerId)
 	{
-		var data = await _service.GetAllForPlayerAsync(playerId);
+		var data = await _service.GetForPlayerAsync(playerId);
 		if (data.Any())
 		{
 			return Ok(data);

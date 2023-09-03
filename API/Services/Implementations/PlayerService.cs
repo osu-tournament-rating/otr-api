@@ -2,6 +2,7 @@ using API.Configurations;
 using API.Entities;
 using API.Services.Interfaces;
 using Dapper;
+using Microsoft.Identity.Client;
 using Npgsql;
 
 namespace API.Services.Implementations;
@@ -28,8 +29,19 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 			using (var scope = _serviceProvider.CreateScope())
 			{
 				var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
+				var ratingsService = scope.ServiceProvider.GetRequiredService<IRatingsService>();
+				var historyService = scope.ServiceProvider.GetRequiredService<IRatingHistoryService>();
+				var webHistoryService = scope.ServiceProvider.GetRequiredService<IUserService>();
+				
 				var matchData = await matchesService.GetForPlayerAsync(player.Id);
+				var ratings = await ratingsService.GetForPlayerAsync(player.Id);
+				var ratingHistories = await historyService.GetForPlayerAsync(player.Id);
+				var webInfo = await webHistoryService.GetForPlayerAsync(player.Id);
+				
 				player.Matches = matchData.ToList();
+				player.Ratings = ratings.ToList();
+				player.RatingHistories = ratingHistories.ToList();
+				player.WebInfo = webInfo;
 			}
 			
 

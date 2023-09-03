@@ -10,7 +10,7 @@ public class UserService : ServiceBase<User>, IUserService
 {
 	public UserService(ICredentials credentials, ILogger<UserService> logger) : base(credentials, logger) {}
 
-	public async Task<User> GetByPlayerIdAsync(int playerId)
+	public async Task<User> GetForPlayerAsync(int playerId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{

@@ -18,7 +18,7 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 		_playerService = playerService;
 	}
 
-	public async Task<IEnumerable<RatingHistory>> GetAllForPlayerAsync(int playerId)
+	public async Task<IEnumerable<RatingHistory>> GetForPlayerAsync(int playerId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{

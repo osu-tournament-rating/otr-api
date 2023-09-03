@@ -17,11 +17,11 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 		_playerService = playerService;
 	}
 
-	public async Task<Rating?> GetForPlayerAsync(int playerId)
+	public async Task<IEnumerable<Rating>> GetForPlayerAsync(int playerId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QuerySingleOrDefaultAsync<Rating?>("SELECT * FROM ratings WHERE player_id = @PlayerId", new { PlayerId = playerId });
+			return await connection.QueryAsync<Rating>("SELECT * FROM ratings WHERE player_id = @PlayerId", new { PlayerId = playerId });
 		}
 	}
 
