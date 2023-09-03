@@ -80,8 +80,8 @@ create table matches
     match_id            bigint                                                   not null
         constraint osumatches_matchid
             unique,
-    name                text                                                     not null,
-    start_time          timestamp                                                not null,
+    name                text,
+    start_time          timestamp,
     created             timestamp default CURRENT_TIMESTAMP                      not null,
     updated             timestamp,
     end_time            timestamp,
@@ -129,37 +129,43 @@ create table match_scores
     count_miss   integer                                            not null,
     perfect      boolean                                            not null,
     pass         boolean                                            not null,
-    enabled_mods integer                                            not null,
+    enabled_mods integer,
     count_katu   integer                                            not null,
     count_geki   integer                                            not null,
     player_id    integer                                            not null
         constraint match_scores_players_id_fk
-            references players
+            references players,
+    constraint match_scores_gameid_playerid
+        unique (game_id, player_id)
 );
 
-create table beatmap
+create table beatmaps
 (
-    id            serial,
-    artist        text                                not null,
-    beatmap_id    bigint                              not null,
-    bpm           double precision                    not null,
-    mapper_id     bigint                              not null,
-    mapper_name   bigint                              not null,
-    sr            double precision                    not null,
-    aim_diff      double precision                    not null,
-    speed_diff    double precision                    not null,
-    cs            double precision                    not null,
-    ar            double precision                    not null,
-    hp            double precision                    not null,
-    od            double precision                    not null,
-    drain_time    double precision                    not null,
-    total_length  double precision                    not null,
-    title         text                                not null,
+    id            integer   default nextval('beatmap_id_seq'::regclass) not null
+        constraint beatmaps_pk
+            primary key,
+    artist        text                                                  not null,
+    beatmap_id    bigint                                                not null
+        constraint beatmaps_beatmapid
+            unique,
+    bpm           double precision                                      not null,
+    mapper_id     bigint                                                not null,
+    mapper_name   text                                                  not null,
+    sr            double precision                                      not null,
+    aim_diff      double precision                                      not null,
+    speed_diff    double precision                                      not null,
+    cs            double precision                                      not null,
+    ar            double precision                                      not null,
+    hp            double precision                                      not null,
+    od            double precision                                      not null,
+    drain_time    double precision                                      not null,
+    length        double precision                                      not null,
+    title         text                                                  not null,
     diff_name     text,
-    game_mode     integer                             not null,
-    circle_count  integer                             not null,
-    slider_count  integer                             not null,
-    spinner_count integer                             not null,
-    max_combo     integer                             not null,
-    created       timestamp default CURRENT_TIMESTAMP not null
+    game_mode     integer                                               not null,
+    circle_count  integer                                               not null,
+    slider_count  integer                                               not null,
+    spinner_count integer                                               not null,
+    max_combo     integer                                               not null,
+    created       timestamp default CURRENT_TIMESTAMP                   not null
 );
