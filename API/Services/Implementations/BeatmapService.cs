@@ -3,13 +3,13 @@ using API.Entities;
 using API.Services.Interfaces;
 using Dapper;
 using Npgsql;
-using NpgsqlTypes;
 
 namespace API.Services.Implementations;
 
 public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 {
-	public BeatmapService(ICredentials credentials, ILogger<BeatmapService> logger) : base(credentials, logger) {}
+	private readonly ILogger<BeatmapService> _logger;
+	public BeatmapService(ICredentials credentials, ILogger<BeatmapService> logger) : base(credentials, logger) { _logger = logger; }
 
 	public async Task<IEnumerable<Beatmap>> GetByBeatmapIdsAsync(IEnumerable<long> beatmapIds)
 	{
@@ -19,46 +19,29 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 		}
 	}
 
-	public async Task<ulong> BulkInsertAsync(IEnumerable<Beatmap> beatmaps)
+	public async Task<int> BulkInsertAsync(IEnumerable<Beatmap> beatmaps)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			await connection.OpenAsync();
-
-			using (var writer = connection.BeginBinaryImport(
-				       "COPY beatmaps (artist, beatmap_id, bpm, mapper_id, mapper_name, sr, aim_diff, speed_diff, " +
-				       "cs, ar, hp, od, drain_time, total_length, title, diff_name, " +
-				       "game_mode, circle_count, slider_count, spinner_count, max_combo) FROM STDIN (FORMAT BINARY)"))
+			int i = 0;
+			foreach (var beatmap in beatmaps)
 			{
-				foreach (var beatmap in beatmaps)
+				try
 				{
-					await writer.StartRowAsync();
+					await connection.ExecuteAsync("INSERT INTO beatmaps (artist, beatmap_id, bpm, mapper_id, mapper_name, sr, aim_diff, speed_diff, cs, ar, hp, od, drain_time, length, " +
+					                              "title, diff_name, game_mode, circle_count, slider_count, spinner_count, max_combo) VALUES " +
+					                              "(@Artist, @BeatmapId, @BPM, @MapperId, @MapperName, @SR, @AimDiff, @SpeedDiff, @CS, @AR, @HP, @OD, @DrainTime, @Length, @Title, @DiffName, " +
+					                              "@GameMode, @CircleCount, @SliderCount, @SpinnerCount, @MaxCombo) ON CONFLICT (beatmap_id) DO NOTHING", beatmap);
 
-					await writer.WriteAsync(beatmap.Artist, NpgsqlDbType.Text);
-					await writer.WriteAsync(beatmap.BeatmapId, NpgsqlDbType.Bigint);
-					await writer.WriteAsync(beatmap.BPM, NpgsqlDbType.Double);
-					await writer.WriteAsync(beatmap.MapperId, NpgsqlDbType.Bigint);
-					await writer.WriteAsync(beatmap.MapperName, NpgsqlDbType.Text);
-					await writer.WriteAsync(beatmap.SR, NpgsqlDbType.Double);
-					await writer.WriteAsync(beatmap.AimDiff, NpgsqlDbType.Double);
-					await writer.WriteAsync(beatmap.SpeedDiff, NpgsqlDbType.Double);
-					await writer.WriteAsync(beatmap.CS, NpgsqlDbType.Double);
-					await writer.WriteAsync(beatmap.AR, NpgsqlDbType.Double);
-					await writer.WriteAsync(beatmap.HP, NpgsqlDbType.Double);
-					await writer.WriteAsync(beatmap.OD, NpgsqlDbType.Double);
-					await writer.WriteAsync(beatmap.DrainTime, NpgsqlDbType.Double);
-					await writer.WriteAsync(beatmap.Length, NpgsqlDbType.Double);
-					await writer.WriteAsync(beatmap.Title, NpgsqlDbType.Text);
-					await writer.WriteAsync(beatmap.DiffName, NpgsqlDbType.Text);
-					await writer.WriteAsync((int) beatmap.GameMode, NpgsqlDbType.Integer);
-					await writer.WriteAsync(beatmap.CircleCount, NpgsqlDbType.Integer);
-					await writer.WriteAsync(beatmap.SliderCount, NpgsqlDbType.Integer);
-					await writer.WriteAsync(beatmap.SpinnerCount, NpgsqlDbType.Integer);
-					await writer.WriteAsync(beatmap.MaxCombo, NpgsqlDbType.Integer);
+					i++;
 				}
-
-				return await writer.CompleteAsync();
+				catch (Exception e)
+				{
+					_logger.LogError(e, "Failed to insert beatmap {BeatmapId} as part of bulk insert operation", beatmap.BeatmapId);
+				}
 			}
+
+			return i;
 		}
 	}
 }

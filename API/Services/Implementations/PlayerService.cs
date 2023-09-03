@@ -20,11 +20,11 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		}
 	}
 	
-	public async Task<IEnumerable<Player>> GetByOsuIdAsync(IEnumerable<long> osuIds)
+	public async Task<IEnumerable<Player>> GetByOsuIdsAsync(IEnumerable<long> osuIds)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QueryAsync<Player>("SELECT * FROM players WHERE osu_id = ANY(@OsuId)", osuIds);
+			return await connection.QueryAsync<Player>("SELECT * FROM players WHERE osu_id = ANY(@OsuIds)", new { OsuIds = osuIds });
 		}
 	}
 
@@ -51,17 +51,5 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 			var results = await connection.QueryAsync<(long osuId, int id)>("SELECT osu_id, id FROM players WHERE osu_id = ANY(@OsuIds)", new { OsuIds = osuIds.ToArray() });
 			return results.ToDictionary(x => x.osuId, x => x.id);
 		}
-	}
-
-	private async Task<Player> FetchRelationshipsAsync(Player player)
-	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
-		{
-			var ratings = await connection.QueryAsync<Rating>("SELECT * FROM ratings WHERE player_id = @PlayerId AND mode = @Mode", new { PlayerId = player.Id });
-			
-			// TODO: Finish
-		}
-
-		return player;
 	}
 }

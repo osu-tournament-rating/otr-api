@@ -28,13 +28,29 @@ public class MatchScoresService : ServiceBase<MatchScore>, IMatchScoresService
 		}
 	}
 
-	public Task<int> BulkInsertAsync(IEnumerable<MatchScore> matchScores)
+	public async Task<int> BulkInsertAsync(IEnumerable<MatchScore> matchScores)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return connection.ExecuteAsync(
+			return await connection.ExecuteAsync(
 				"INSERT INTO match_scores (game_id, team, score, max_combo, count_50, count_100, count_300, count_miss, perfect, pass, enabled_mods, count_katu, count_geki, player_id) " +
 				"VALUES (@GameId, @Team, @Score, @MaxCombo, @Count50, @Count100, @Count300, @CountMiss, @Perfect, @Pass, @EnabledMods, @CountKatu, @CountGeki, @PlayerId)", matchScores);
+		}
+	}
+
+	public async Task<int?> CreateIfNotExistsAsync(MatchScore dbScore)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			int? existing = await connection.QuerySingleOrDefaultAsync<int?>("SELECT id FROM match_scores WHERE game_id = @GameId AND player_id = @PlayerId", new { dbScore.GameId, dbScore.PlayerId });
+			if (existing != null)
+			{
+				return existing;
+			}
+
+			return await connection.QuerySingleOrDefaultAsync<int?>(
+				"INSERT INTO match_scores (game_id, team, score, max_combo, count_50, count_100, count_300, count_miss, perfect, pass, enabled_mods, count_katu, count_geki, player_id) " +
+				"VALUES (@GameId, @Team, @Score, @MaxCombo, @Count50, @Count100, @Count300, @CountMiss, @Perfect, @Pass, @EnabledMods, @CountKatu, @CountGeki, @PlayerId) RETURNING id", dbScore);
 		}
 	}
 

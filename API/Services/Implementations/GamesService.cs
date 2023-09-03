@@ -50,20 +50,39 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		}
 	}
 
-	public Task<IEnumerable<Game>> GetByGameIdsAsync(IEnumerable<int> gameIds)
+	public async Task<IEnumerable<Game>> GetByGameIdsAsync(IEnumerable<int> gameIds)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return connection.QueryAsync<Game>("SELECT * FROM games WHERE id = ANY(@GameIds)", new { GameIds = gameIds });
+			return await connection.QueryAsync<Game>("SELECT * FROM games WHERE id = ANY(@GameIds)", new { GameIds = gameIds });
 		}
 	}
 
-	public Task<Dictionary<long, int>> GetGameIdMappingAsync(IEnumerable<long> beatmapIds)
+	public async Task<Dictionary<long, int>> GetGameIdMappingAsync(IEnumerable<long> beatmapIds)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return connection.QueryAsync<long, int, KeyValuePair<long, int>>("SELECT beatmap_id, id FROM games WHERE beatmap_id = ANY(@BeatmapIds)", (beatmapId, gameId) => new KeyValuePair<long, int>(beatmapId, gameId), new { BeatmapIds = beatmapIds })
+			return await connection.QueryAsync<long, int, KeyValuePair<long, int>>("SELECT beatmap_id, id FROM games WHERE beatmap_id = ANY(@BeatmapIds)", (beatmapId, gameId) => new KeyValuePair<long, int>(beatmapId, gameId), new { BeatmapIds = beatmapIds })
 				.ContinueWith(x => x.Result.ToDictionary(y => y.Key, y => y.Value));
+		}
+	}
+
+	public async Task<int> CreateIfNotExistsAsync(Game dbGame)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.ExecuteAsync("INSERT INTO games (game_id, match_id, start_time, end_time, beatmap_id, play_mode, match_type, scoring_type, team_type, mods) VALUES " +
+			                               "(@GameId, @MatchId, @StartTime, @EndTime, @BeatmapId, @PlayMode, @MatchType, @ScoringType, @TeamType, @Mods) " +
+			                               "ON CONFLICT (game_id) DO UPDATE SET match_id = @MatchId, start_time = @StartTime, end_time = @EndTime, beatmap_id = @BeatmapId, " +
+			                               "play_mode = @PlayMode, match_type = @MatchType, scoring_type = @ScoringType, team_type = @TeamType, mods = @Mods", dbGame);
+		}
+	}
+
+	public async Task<Game?> GetByGameIdAsync(long gameGameId)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QuerySingleOrDefaultAsync<Game?>("SELECT * FROM games WHERE game_id = @GameId", new { GameId = gameGameId });
 		}
 	}
 }

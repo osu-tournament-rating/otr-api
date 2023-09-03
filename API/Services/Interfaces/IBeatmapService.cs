@@ -9,5 +9,5 @@ public interface IBeatmapService : IService<Beatmap>
 	/// Count of inserted rows
 	/// </summary>
 	/// <param name="beatmaps"></param>
-	Task<ulong> BulkInsertAsync(IEnumerable<Beatmap> beatmaps);
+	Task<int> BulkInsertAsync(IEnumerable<Beatmap> beatmaps);
 }

@@ -8,12 +8,13 @@ using static API.Osu.OsuEnums;
 
 namespace API.Entities;
 
-[Table("beatmap")]
+[Table("beatmaps")]
 public class Beatmap : EntityBase
 {
 	[Column("artist")]
 	public string Artist { get; set; }
 	[Column("beatmap_id")]
+	[JsonProperty("beatmap_id")]
 	public long BeatmapId { get; set; }
 	[Column("bpm")]
 	public double BPM { get; set; }
