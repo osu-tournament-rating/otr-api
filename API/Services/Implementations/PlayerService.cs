@@ -74,6 +74,14 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		}
 	}
 
+	public async Task<IEnumerable<Player>> GetOutdatedAsync()
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QueryAsync<Player>("SELECT * FROM players WHERE updated < NOW() - INTERVAL '14 days' OR updated IS NULL");
+		}
+	}
+
 	public async Task<Dictionary<long, int>> GetIdsByOsuIdsAsync(IEnumerable<long> osuIds)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))

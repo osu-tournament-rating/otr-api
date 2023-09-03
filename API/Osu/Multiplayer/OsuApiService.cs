@@ -4,6 +4,18 @@ using Newtonsoft.Json;
 
 namespace API.Osu.Multiplayer;
 
+public class OsuApiUser
+{
+	[JsonProperty("user_id")]
+	public long Id { get; set; }
+	
+	[JsonProperty("username")]
+	public string? Username { get; set; }
+	
+	[JsonProperty("pp_rank")]
+	public int? Rank { get; set; }
+}
+
 public class OsuApiService : IOsuApiService
 {
 	private const int RATE_LIMIT_CAPACITY = 1000;
@@ -56,13 +68,11 @@ public class OsuApiService : IOsuApiService
 
 	public async Task<Beatmap?> GetBeatmapAsync(long beatmapId)
 	{
-		string? response = null;
-
 		while (await IsRateLimited()) {}
 
 		try
 		{
-			response = await _client.GetStringAsync($"get_beatmaps?k={_credentials.OsuApiKey}&b={beatmapId}");
+			string response = await _client.GetStringAsync($"get_beatmaps?k={_credentials.OsuApiKey}&b={beatmapId}");
 			_rateLimitCounter++;
 
 			_logger.LogDebug("Successfully received response from osu! API for beatmap {BeatmapId}", beatmapId);
@@ -81,6 +91,35 @@ public class OsuApiService : IOsuApiService
 		catch (Exception e)
 		{
 			_logger.LogError(e, "Failed to get beatmap data for beatmap {BeatmapId}", beatmapId);
+			return null;
+		}
+	}
+
+	public async Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Mode mode)
+	{
+		while (await IsRateLimited()) {}
+
+		try
+		{
+			string response = await _client.GetStringAsync($"get_user?k={_credentials.OsuApiKey}&u={userId}&m={(int)mode}&type=id");
+			_rateLimitCounter++;
+		
+			_logger.LogDebug("Successfully received response from osu! API for user {UserId}", userId);
+			return JsonConvert.DeserializeObject<OsuApiUser[]>(response)?[0];
+		}
+		catch (JsonSerializationException)
+		{
+			_logger.LogError("Failed to deserialize JSON for user {UserId}", userId);
+			return null;
+		}
+		catch (IndexOutOfRangeException)
+		{
+			_logger.LogError("Failed to deserialize JSON for user {UserId}", userId);
+			return null;
+		}
+		catch (Exception e)
+		{
+			_logger.LogError(e, "Failed to get user data for user {UserId}", userId);
 			return null;
 		}
 	}

@@ -1,4 +1,5 @@
 using API.Configurations;
+using API.Osu;
 using API.Osu.Multiplayer;
 using API.Services.Implementations;
 using API.Services.Interfaces;
@@ -26,7 +27,7 @@ builder.Services.AddSerilog(configuration =>
 	configuration.MinimumLevel.Debug()
 	             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
 	             .Enrich.FromLogContext()
-	             .WriteTo.Console()
+	             .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
 	             .WriteTo.File("logs\\log.log", rollingInterval: RollingInterval.Day)
 	             .WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true);
 });
@@ -36,6 +37,7 @@ SimpleCRUD.SetDialect(SimpleCRUD.Dialect.PostgreSQL);
 
 builder.Services.AddLogging();
 
+builder.Services.AddHostedService<OsuPlayerDataWorker>();
 builder.Services.AddHostedService<OsuMatchDataWorker>();
 
 builder.Services.AddScoped<IRatingsService, RatingsService>();

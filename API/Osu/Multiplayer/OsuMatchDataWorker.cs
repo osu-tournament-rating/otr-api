@@ -3,7 +3,7 @@ using API.Services.Interfaces;
 
 namespace API.Osu.Multiplayer;
 
-public class OsuMatchDataWorker : IOsuMatchDataWorker
+public class OsuMatchDataWorker : BackgroundService
 {
 	private const int INTERVAL_SECONDS = 5;
 
@@ -19,20 +19,16 @@ public class OsuMatchDataWorker : IOsuMatchDataWorker
 	}
 
 	/// <summary>
-	///  This method constantly checks the database for pending multiplayer links and processes them.
+	///  This background service constantly checks the database for pending multiplayer links and processes them.
 	///  The osu! API rate limit is taken into account.
 	/// </summary>
 	/// <param name="cancellationToken"></param>
-	public Task StartAsync(CancellationToken cancellationToken = default)
-	{
-		_ = BackgroundTask(cancellationToken);
-		return Task.CompletedTask;
-	}
-
-	public async Task StopAsync(CancellationToken cancellationToken) => await Task.CompletedTask;
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken) => await BackgroundTask(stoppingToken);
 
 	private async Task BackgroundTask(CancellationToken cancellationToken = default)
 	{
+		_logger.LogInformation("Initialized osu! match data worker");
+
 		while (!cancellationToken.IsCancellationRequested)
 		{
 			using (var scope = _serviceProvider.CreateScope())
