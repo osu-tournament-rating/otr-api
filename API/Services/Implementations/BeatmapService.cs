@@ -49,7 +49,15 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QueryAsync<Beatmap>("SELECT * FROM beatmaps");
+			return await connection.QueryAsync<Beatmap>("SELECT * FROM beatmaps WHERE id = 1");
+		}
+	}
+
+	public async Task<Beatmap?> GetByBeatmapIdAsync(long osuBeatmapId)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QuerySingleOrDefaultAsync<Beatmap?>("SELECT * FROM beatmaps WHERE beatmap_id = @Id LIMIT 1", new { Id = osuBeatmapId });
 		}
 	}
 }

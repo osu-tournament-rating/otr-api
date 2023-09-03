@@ -12,4 +12,5 @@ public interface IBeatmapService : IService<Beatmap>
 	Task<int> BulkInsertAsync(IEnumerable<Beatmap> beatmaps);
 
 	Task<IEnumerable<Beatmap>> GetAllAsync();
+	Task<Beatmap?> GetByBeatmapIdAsync(long osuBeatmapId);
 }
