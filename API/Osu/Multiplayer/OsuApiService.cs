@@ -41,15 +41,21 @@ public class OsuApiService : IOsuApiService
 
 	public async Task<Beatmap?> GetBeatmapAsync(long beatmapId)
 	{
+		string? response = null;
 		try
 		{
-			string response = await _client.GetStringAsync($"get_beatmaps?k={_credentials.OsuApiKey}&b={beatmapId}");
+			response = await _client.GetStringAsync($"get_beatmaps?k={_credentials.OsuApiKey}&b={beatmapId}");
 			_logger.LogDebug("Successfully received response from osu! API for beatmap {BeatmapId}", beatmapId);
 			return JsonConvert.DeserializeObject<Beatmap[]>(response)?[0];
 		}
+		catch (JsonSerializationException e)
+		{
+			_logger.LogError(e, "Failure while deserializing JSON for beatmap {BeatmapId} (response: {Response})", beatmapId, response);
+			return null;
+		}
 		catch (Exception e)
 		{
-			_logger.LogError(e, "Failure while fetching data for beatmap {BeatmapId}", beatmapId);
+			_logger.LogError(e, "Failed to get beatmap data for beatmap {BeatmapId}", beatmapId);
 			return null;
 		}
 	}

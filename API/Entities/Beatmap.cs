@@ -28,10 +28,10 @@ public class Beatmap : EntityBase
 	public double SR { get; set; }
 	[JsonProperty("diff_aim")]
 	[Column("aim_diff")]
-	public double AimDiff { get; set; }
+	public double? AimDiff { get; set; } // Null in other modes
 	[JsonProperty("diff_speed")]
 	[Column("speed_diff")]
-	public double SpeedDiff { get; set; }
+	public double? SpeedDiff { get; set; } // Null in other modes
 	[JsonProperty("diff_size")]
 	[Column("cs")]
 	public double CS { get; set; }

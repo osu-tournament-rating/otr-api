@@ -14,7 +14,7 @@ public class Player : EntityBase
 	[NotMapped]
 	public User? User { get; set; }
 	[NotMapped]
-	public ICollection<Game>? Games { get; set; }
+	public ICollection<Match> Matches { get; set; }
 	[NotMapped]
 	public ICollection<RatingHistory>? RatingHistories { get; set; }
 }
