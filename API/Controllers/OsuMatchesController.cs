@@ -6,12 +6,12 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class OsuMatchesController : CrudController<Match>
+public class OsuMatchesController : Controller
 {
 	private readonly ILogger<OsuMatchesController> _logger;
 	private readonly IMatchesService _service;
 
-	public OsuMatchesController(ILogger<OsuMatchesController> logger, IMatchesService service) : base(logger, service)
+	public OsuMatchesController(ILogger<OsuMatchesController> logger, IMatchesService service)
 	{
 		_logger = logger;
 		_service = service;
@@ -49,5 +49,12 @@ public class OsuMatchesController : CrudController<Match>
 		}
 		
 		return StatusCode(500, $"Failed to insert matches");
+	}
+	
+	[HttpGet("all")]
+	public async Task<ActionResult<IEnumerable<Match>?>> GetAllAsync()
+	{
+		var matches = await _service.GetAllAsync();
+		return Ok(matches);
 	}
 }

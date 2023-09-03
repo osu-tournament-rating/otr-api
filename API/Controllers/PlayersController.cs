@@ -6,13 +6,18 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PlayersController : CrudController<Player>
+public class PlayersController : Controller
 {
+	private readonly ILogger<PlayersController> _logger;
 	private readonly IPlayerService _service;
-	public PlayersController(ILogger<PlayersController> logger, IPlayerService service) : base(logger, service) { _service = service; }
+	public PlayersController(ILogger<PlayersController> logger, IPlayerService service)
+	{
+		_logger = logger;
+		_service = service;
+	}
 
 	[HttpGet("{osuId:int}")]
-	public override async Task<ActionResult<Player?>> Get(int osuId)
+	public async Task<ActionResult<Player?>> Get(int osuId)
 	{
 		var data = await _service.GetByOsuIdAsync(osuId);
 		if (data != null)

@@ -37,8 +37,10 @@ SimpleCRUD.SetDialect(SimpleCRUD.Dialect.PostgreSQL);
 
 builder.Services.AddLogging();
 
+#if !DEBUG
 builder.Services.AddHostedService<OsuPlayerDataWorker>();
 builder.Services.AddHostedService<OsuMatchDataWorker>();
+#endif
 
 builder.Services.AddScoped<IRatingsService, RatingsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();

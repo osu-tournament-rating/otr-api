@@ -1,21 +1,27 @@
 using API.Entities;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RatingsController : CrudController<Rating>
+public class RatingsController : Controller
 {
+	private readonly ILogger<RatingsController> _logger;
 	private readonly IRatingsService _service;
-	public RatingsController(ILogger<RatingsController> logger, IRatingsService service) : base(logger, service) { _service = service; }
+	public RatingsController(ILogger<RatingsController> logger, IRatingsService service)
+	{
+		_logger = logger;
+		_service = service;
+	}
 
 	[HttpGet("{playerId:int}")]
 	public async Task<ActionResult<Rating>> GetForPlayerAsync(int playerId)
 	{
 		var data = await _service.GetForPlayerAsync(playerId);
-		if (data != null)
+		if (!data.IsNullOrEmpty())
 		{
 			return Ok(data);
 		}

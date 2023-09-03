@@ -8,12 +8,14 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RatingHistoryController : CrudController<RatingHistory>
+public class RatingHistoryController : Controller
 {
+	private readonly ILogger<RatingHistoryController> _logger;
 	private readonly IRatingHistoryService _service;
 
-	public RatingHistoryController(ILogger<RatingHistoryController> logger, IRatingHistoryService service) : base(logger, service)
+	public RatingHistoryController(ILogger<RatingHistoryController> logger, IRatingHistoryService service)
 	{
+		_logger = logger;
 		_service = service;
 	}
 
