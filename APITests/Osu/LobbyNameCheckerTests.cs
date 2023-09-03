@@ -14,6 +14,7 @@ public class LobbyNameCheckerTests
 	[TestCase("\"6 digit cup: (group\"\"3\"\") vs (group\"\"3\"\")\"")]
 	[TestCase("AHSESPORTS: (The S.S.) vs (over salted utakus)")]
 	[TestCase("BGCC2: Водоземската Мафия vs po4ina")]
+	[TestCase("Some Tournament: (ABC) vs (abc)")]
 	[TestCase("BGCC2: Водоземската Мафия vs. po4ina")]
 	[TestCase("BGCC2: Водоземската Мафия VS. po4ina")]
 	[TestCase("BGCC2: Водоземската Мафия VS po4ina")]
@@ -27,7 +28,7 @@ public class LobbyNameCheckerTests
 	[TestCase("test (a) vs. (b)")]
 	[TestCase("test (a) vs (b)")]
 	[TestCase("WDTWE (:smirk_cat:) vs (RAMSING)")]
-	[TestCase("WDTWE :smirk_cat:) vs (RAMSING")]
+	[TestCase("WDTWE :(smirk_cat:) vs (RAMSING")]
 	[TestCase("WDTWE :smirk_cat: vs RAMSING")]
 	[TestCase("CC : (8mi8) vs (-- Waffle --)")]
 	public void Patterns_Regex_ShouldNotMatch(string name) => Assert.That(LobbyNameChecker.IsNameValid(name), Is.False);
