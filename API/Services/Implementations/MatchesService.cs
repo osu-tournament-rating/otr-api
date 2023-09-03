@@ -229,4 +229,37 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 				new { MatchId = matchId, Status = status, Source = source, Info = info });
 		}
 	}
+
+	public async Task<IEnumerable<Entities.Match>> GetForPlayerAsync(int playerId)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			// 1. Retrieve the matches for the player
+			const string matchSql = @"SELECT m.* FROM matches m
+                                  INNER JOIN games g ON m.id = g.match_id
+                                  INNER JOIN match_scores ms ON g.id = ms.game_id
+                                  WHERE ms.player_id = @PlayerId";
+			var matches = (await connection.QueryAsync<Entities.Match>(matchSql, new { PlayerId = playerId })).DistinctBy(x => x.MatchId).ToList();
+
+			// 2. For each match, retrieve the associated games
+			const string gameSql = @"SELECT g.* FROM games g
+                                 WHERE g.match_id = @MatchId";
+			
+			foreach (var match in matches)
+			{
+				match.Games = (await connection.QueryAsync<Entities.Game>(gameSql, new { MatchId = match.Id })).ToList();
+
+				// 3. For each game, retrieve the associated scores for the player
+				const string scoreSql = @"SELECT ms.* FROM match_scores ms
+                                      WHERE ms.game_id = @GameId AND ms.player_id = @PlayerId";
+				foreach (var game in match.Games)
+				{
+					game.Scores = (await connection.QueryAsync<MatchScore>(scoreSql, new { GameId = game.Id, PlayerId = playerId })).ToList();
+				}
+			}
+
+			return matches;
+		}
+	}
+
 }

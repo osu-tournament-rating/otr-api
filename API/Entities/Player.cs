@@ -12,7 +12,7 @@ public class Player : EntityBase
 	[NotMapped]
 	public ICollection<Rating>? Ratings { get; set; } // A user can have multiple ratings, one for each mode
 	[NotMapped]
-	public User? User { get; set; }
+	public User? WebInfo { get; set; }
 	[NotMapped]
 	public ICollection<Match> Matches { get; set; }
 	[NotMapped]

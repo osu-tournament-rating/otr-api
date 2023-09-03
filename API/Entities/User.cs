@@ -3,7 +3,7 @@ using Dapper;
 
 namespace API.Entities;
 
-[Table("users")]
+[Table("users")] // TODO: Rename to webinfo
 public class User : EntityBase
 {
 	[Column("player_id")]
