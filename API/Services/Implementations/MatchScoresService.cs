@@ -59,7 +59,6 @@ public class MatchScoresService : ServiceBase<MatchScore>, IMatchScoresService
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
 			matchScore.Game = await connection.QuerySingleOrDefaultAsync<Game>("SELECT * FROM games WHERE id = @Id", new { Id = matchScore.GameId });
-			matchScore.Player = await connection.QuerySingleOrDefaultAsync<Player>("SELECT * FROM players WHERE id = @Id", new { Id = matchScore.PlayerId });
 			return matchScore;
 		}
 	}
