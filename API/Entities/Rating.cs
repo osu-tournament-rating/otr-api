@@ -1,4 +1,5 @@
 ﻿using API.Entities.Bases;
+using API.Osu;
 using Dapper;
 
 namespace API.Entities;
@@ -13,5 +14,5 @@ public class Rating : UpdateableEntityBase
 	[Column("sigma")]
 	public double Sigma { get; set; }
 	[Column("mode")]
-	public string Mode { get; set; } = "Standard"; // TODO: Remove hardcoded mode, use Enum over string
+	public OsuEnums.Mode Mode { get; set; }
 }
