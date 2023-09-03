@@ -49,14 +49,6 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		}
 	}
 
-	// public async Task<IEnumerable<Player>> GetByOsuIdsAsync(IEnumerable<long> osuIds)
-	// {
-	// 	using (var connection = new NpgsqlConnection(ConnectionString))
-	// 	{
-	// 		return await connection.QueryAsync<Player>("SELECT * FROM players WHERE osu_id = ANY(@OsuIds)", new { OsuIds = osuIds });
-	// 	}
-	// }
-
 	public async Task<IEnumerable<Player>> GetByOsuIdsAsync(IEnumerable<long> osuIds)
 	{
 		using(var scope = _serviceProvider.CreateScope())
