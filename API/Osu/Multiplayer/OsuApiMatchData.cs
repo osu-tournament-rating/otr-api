@@ -49,7 +49,7 @@ public class Game
     ///  End time in UTC
     /// </summary>
     [JsonProperty("end_time")]
-	public DateTime EndTime { get; set; }
+	public DateTime? EndTime { get; set; }
 	[JsonProperty("beatmap_id")]
 	public long BeatmapId { get; set; }
     /// <summary>
