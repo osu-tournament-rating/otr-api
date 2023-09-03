@@ -46,7 +46,6 @@ public class MatchScore : EntityBase
 	public Mods? EnabledMods { get; set; } = null;
 
 	public Game Game { get; set; } = null!;
-	public Player Player { get; set; } = null!;
 
 	/// <summary>
 	/// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
