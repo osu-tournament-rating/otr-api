@@ -5,7 +5,7 @@ using Dapper;
 namespace API.Entities;
 
 [Table("ratinghistories")]
-public class RatingHistory : EntityBase
+public class RatingHistory : UpdateableEntityBase
 {
 	[Column("player_id")]
 	public int PlayerId { get; set; }
@@ -13,12 +13,8 @@ public class RatingHistory : EntityBase
 	public double Mu { get; set; }
 	[Column("sigma")]
 	public double Sigma { get; set; }
-	[Column("match_data_id")]
-	public int MatchDataId { get; set; }
+	[Column("game_id")]
+	public int GameId { get; set; }
 	[Column("mode")]
 	public OsuEnums.Mode Mode { get; set; }
-	[NotMapped]
-	public long MatchId { get; set; }
-	[NotMapped]
-	public long GameId { get; set; }
 }

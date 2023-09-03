@@ -31,14 +31,10 @@ public class RatingHistoryController : Controller
 		return NotFound($"User with id {playerId} does not have any data");
 	}
 	
-	[HttpPost("danger/replace")]
-	public async Task<IActionResult> BatchReplaceAsync(IFormFile file)
+	[HttpPost("batch")]
+	public async Task<IActionResult> BatchReplaceAsync(IEnumerable<RatingHistory> histories)
 	{
-		string content = await file.ReadAsStringAsync();
-		var import = JsonConvert.DeserializeObject<IEnumerable<RatingHistory>>(content);
-		
-		await _service.ReplaceBatchAsync(import!);
-		
+		await _service.ReplaceBatchAsync(histories);
 		return Ok();
 	}
 	

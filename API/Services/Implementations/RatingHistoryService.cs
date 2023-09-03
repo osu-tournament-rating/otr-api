@@ -28,28 +28,16 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 
 	public async Task ReplaceBatchAsync(IEnumerable<RatingHistory> histories)
 	{
-		/**
-		 * USE THIS WITH CAUTION !!!
-		 */
-
-		// histories = histories.ToList();
-		// var playerIds = (await _playerService.GetAllAsync() ?? throw new InvalidOperationException("Invalid ratings")).ToDictionary(x => x.OsuId, x => x.Id);
-		//
-		// foreach (var r in histories)
-		// {
-		// 	r.PlayerId = playerIds[r.PlayerId];
-		// 	r.MatchDataId = ids[(r.PlayerId, r.GameId)];
-		// }
-		//
-		// histories = histories.OrderBy(x => x.Created);
-		// using (var connection = new NpgsqlConnection(ConnectionString))
-		// {
-		// 	await connection.ExecuteAsync("TRUNCATE TABLE ratinghistories");
-		// 	await connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode, match_data_id) VALUES (@PlayerId, @Mu, @Sigma, @Created, @Mode, @MatchDataId)",
-		// 		histories);
-		// }
-		await Task.Delay(1);
-		throw new NotImplementedException();
+		histories = histories.OrderBy(x => x.Created);
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			await connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode, game_id) VALUES " +
+			                              "(@PlayerId, @Mu, @Sigma, @Created, @Mode, @GameId) ON CONFLICT (player_id, game_id) " +
+			                              "DO UPDATE SET player_id = @PlayerId, mu = @Mu, sigma = @Sigma, mode = @Mode, game_id = @GameId, " +
+			                              "created = @Created, updated = current_timestamp",
+				histories);
+			_logger.LogInformation("Batch inserted {Count} rating histories", histories.Count());
+		}
 	}
 
 	public async Task TruncateAsync()
@@ -64,7 +52,7 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			await connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode, match_data_id) VALUES (@PlayerId, @Mu, @Sigma, @Created, @Mode, @MatchDataId)",
+			await connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode, game_id) VALUES (@PlayerId, @Mu, @Sigma, @Created, @Mode, @GameId)",
 				histories.ToList());
 		}
 	}
