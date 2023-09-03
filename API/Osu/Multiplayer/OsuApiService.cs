@@ -32,15 +32,20 @@ public class OsuApiService : IOsuApiService
 		_logger.LogDebug("Attempting to fetch data for match {MatchId}", matchId);
 
 		while (await IsRateLimited()) {}
-		
+
 		try
 		{
 			string response = await _client.GetStringAsync($"get_match?k={_credentials.OsuApiKey}&mp={matchId}");
 			_rateLimitCounter++;
-			
+
 			_logger.LogDebug("Successfully received response from osu! API for match {MatchId}", matchId);
 			_logger.LogTrace("Response: {Response}", response);
 			return JsonConvert.DeserializeObject<OsuApiMatchData>(response);
+		}
+		catch (JsonSerializationException e)
+		{
+			_logger.LogWarning("The osu! API returned an invalid body for match {MatchId}, likely due to match deletion", matchId);
+			return null;
 		}
 		catch (Exception e)
 		{
@@ -59,13 +64,18 @@ public class OsuApiService : IOsuApiService
 		{
 			response = await _client.GetStringAsync($"get_beatmaps?k={_credentials.OsuApiKey}&b={beatmapId}");
 			_rateLimitCounter++;
-			
+
 			_logger.LogDebug("Successfully received response from osu! API for beatmap {BeatmapId}", beatmapId);
 			return JsonConvert.DeserializeObject<Beatmap[]>(response)?[0];
 		}
-		catch (JsonSerializationException e)
+		catch (JsonSerializationException)
 		{
-			_logger.LogError(e, "Failure while deserializing JSON for beatmap {BeatmapId} (response: {Response})", beatmapId, response);
+			_logger.LogWarning("Failure while deserializing JSON for beatmap {BeatmapId} (map is likely deleted)", beatmapId);
+			return null;
+		}
+		catch (IndexOutOfRangeException)
+		{
+			_logger.LogWarning("Failure while deserializing JSON for beatmap {BeatmapId} (map is likely deleted)", beatmapId);
 			return null;
 		}
 		catch (Exception e)

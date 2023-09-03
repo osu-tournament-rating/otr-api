@@ -53,7 +53,6 @@ public class OsuMatchDataWorker : IOsuMatchDataWorker
 					var result = await _apiService.GetMatchAsync(osuMatch.MatchId);
 					if (result == null)
 					{
-						_logger.LogError("Failed to fetch data for match {MatchId} (result from API was null, probably a deleted match)", osuMatch.MatchId);
 						await UpdateLinkStatusAsync(osuMatch.MatchId, VerificationStatus.Failure, matchesService);
 						continue;
 					}

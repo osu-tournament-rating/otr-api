@@ -148,10 +148,9 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 				// Step 4.
 				foreach (var game in osuMatch.Games)
 				{
-					if (beatmapIdMapping.TryGetValue(game.BeatmapId, out int curBeatmapId) == false)
+					if (!beatmapIdMapping.TryGetValue(game.BeatmapId, out int _))
 					{
-						_logger.LogError("Failed to map beatmap id {BeatmapId} to database id", game.BeatmapId);
-						continue;
+						_logger.LogWarning("Failed to map beatmap id {BeatmapId} to database id", game.BeatmapId);
 					}
 
 					var dbGame = new Entities.Game
@@ -159,7 +158,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 						GameId = game.GameId,
 						StartTime = game.StartTime,
 						EndTime = game.EndTime,
-						BeatmapId = curBeatmapId,
+						BeatmapId = 0,
 						PlayMode = game.PlayMode,
 						MatchId = matchId.Value
 					};
