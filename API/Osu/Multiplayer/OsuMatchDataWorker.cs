@@ -5,15 +5,12 @@ namespace API.Osu.Multiplayer;
 
 public class OsuMatchDataWorker : IOsuMatchDataWorker
 {
-	private const int RATE_LIMIT_CAPACITY = 1000;
-	private const int RATE_LIMIT_INTERVAL_SECONDS = 60;
 	private const int INTERVAL_SECONDS = 5;
+
 	private readonly OsuApiService _apiService;
 	private readonly ILogger<OsuMatchDataWorker> _logger;
 	private readonly IServiceProvider _serviceProvider;
-	private int _rateLimitCounter;
-	private DateTime _rateLimitResetTime = DateTime.UtcNow.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
-
+	
 	public OsuMatchDataWorker(ILogger<OsuMatchDataWorker> logger, IServiceProvider serviceProvider, OsuApiService apiService)
 	{
 		_logger = logger;
@@ -36,7 +33,7 @@ public class OsuMatchDataWorker : IOsuMatchDataWorker
 
 	private async Task BackgroundTask(CancellationToken cancellationToken = default)
 	{
-		while (!cancellationToken.IsCancellationRequested && !await IsRateLimited())
+		while (!cancellationToken.IsCancellationRequested)
 		{
 			using (var scope = _serviceProvider.CreateScope())
 			{
@@ -56,13 +53,12 @@ public class OsuMatchDataWorker : IOsuMatchDataWorker
 					var result = await _apiService.GetMatchAsync(osuMatch.MatchId);
 					if (result == null)
 					{
-						_logger.LogWarning("Failed to fetch data for match {MatchId} (result from API was null)", osuMatch.MatchId);
+						_logger.LogError("Failed to fetch data for match {MatchId} (result from API was null, probably a deleted match)", osuMatch.MatchId);
+						await UpdateLinkStatusAsync(osuMatch.MatchId, VerificationStatus.Failure, matchesService);
 						continue;
 					}
 					
 					await ProcessOsuMatch(result, matchesService, beatmapsService);
-					
-					_rateLimitCounter++;
 				}
 				catch (Exception e)
 				{
@@ -72,29 +68,6 @@ public class OsuMatchDataWorker : IOsuMatchDataWorker
 				}
 			}
 		}
-	}
-
-	private void CheckRatelimitReset()
-	{
-		if (DateTime.UtcNow > _rateLimitResetTime)
-		{
-			_rateLimitCounter = 0; // Reset the counter when the reset time has passed
-			_rateLimitResetTime = DateTime.UtcNow.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
-		}
-	}
-
-	private async Task<bool> IsRateLimited()
-	{
-		CheckRatelimitReset();
-
-		if (_rateLimitCounter >= RATE_LIMIT_CAPACITY && DateTime.UtcNow <= _rateLimitResetTime)
-		{
-			_logger.LogDebug("Rate limit reached, waiting for reset...");
-			await Task.Delay(1000);
-			return true;
-		}
-
-		return false;
 	}
 
 	private async Task UpdateLinkStatusAsync(long matchId, VerificationStatus status, IMatchesService matchesService)
@@ -125,7 +98,7 @@ public class OsuMatchDataWorker : IOsuMatchDataWorker
 		if (!LobbyNameChecker.IsNameValid(osuMatch.Match.Name))
 		{
 			await UpdateLinkStatusAsync(osuMatch.Match.MatchId, VerificationStatus.Rejected, matchesService);
-			_logger.LogDebug("Match {MatchId} was rejected (ratelimit currently at {Ratelimit})", osuMatch.Match.MatchId, _rateLimitCounter + 1);
+			_logger.LogDebug("Match {MatchId} was rejected", osuMatch.Match.MatchId);
 		}
 		else
 		{
