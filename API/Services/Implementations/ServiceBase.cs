@@ -22,6 +22,7 @@ public class ServiceBase<T> : IService<T> where T : class, IEntity
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
+			_logger.LogDebug("Created entity {@Entity}", entity);
 			return await connection.InsertAsync(entity);
 		}
 	}

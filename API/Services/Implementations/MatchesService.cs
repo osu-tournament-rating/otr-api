@@ -88,8 +88,25 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 				// Step 1.
 				var osuPlayerIds = osuMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
-				var existingPlayers = await _playerService.GetByOsuIdsAsync(osuPlayerIds);
+				var existingPlayers = (await _playerService.GetByOsuIdsAsync(osuPlayerIds)).ToList();
+				
 				var playerIdMapping = new Dictionary<long, int>();
+				
+				// Create the players that don't exist
+				var playersToCreate = osuPlayerIds.Except(existingPlayers.Select(x => x.OsuId)).ToList();
+				foreach (long playerId in playersToCreate)
+				{
+					var player = new Player { OsuId = playerId };
+					int? playerIdDb = await _playerService.CreateAsync(player);
+					if (playerIdDb == null)
+					{
+						_logger.LogError("Failed to insert player {PlayerId}", playerId);
+						continue;
+					}
+					
+					playerIdMapping.Add(player.OsuId, playerIdDb.Value);
+				}
+				
 				foreach (var player in existingPlayers)
 				{
 					playerIdMapping.Add(player.OsuId, player.Id);
@@ -120,7 +137,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					"(@MatchId, @Name, @StartTime, @EndTime, @VerificationInfo, @VerificationSource, @VerificationStatus) " +
 					"ON CONFLICT (match_id) DO UPDATE SET name = @Name, start_time = @StartTime, end_time = @EndTime, verification_info = @VerificationInfo, " +
 					"verification_source = @VerificationSource, verification_status = @VerificationStatus " +
-					"RETURNING match_id", dbMatch);
+					"RETURNING id", dbMatch);
 
 				if (matchId == null)
 				{
@@ -204,11 +221,12 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		}
 	}
 
-	public async Task<int> UpdateVerificationStatusAsync(long matchId, VerificationStatus status)
+	public async Task<int> UpdateVerificationStatusAsync(long matchId, VerificationStatus status, MatchVerificationSource source, string? info = null)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.ExecuteAsync("UPDATE matches SET verification_status = @Status WHERE match_id = @MatchId", new { MatchId = matchId, Status = status });
+			return await connection.ExecuteAsync("UPDATE matches SET verification_status = @Status, verification_source = @Source, verification_info = @Info WHERE match_id = @MatchId",
+				new { MatchId = matchId, Status = status, Source = source, Info = info });
 		}
 	}
 }

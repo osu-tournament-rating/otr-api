@@ -21,5 +21,5 @@ public interface IMatchesService : IService<Entities.Match>
 	/// <returns>Primary key if created, otherwise null</returns>
 	Task<int?> CreateIfNotExistsAsync(Entities.Match match);
 	Task<bool> CreateFromApiMatchAsync(OsuApiMatchData osuMatch);
-	Task<int> UpdateVerificationStatusAsync(long matchId, VerificationStatus status);
+	Task<int> UpdateVerificationStatusAsync(long matchId, VerificationStatus status, MatchVerificationSource source, string? info = null);
 }

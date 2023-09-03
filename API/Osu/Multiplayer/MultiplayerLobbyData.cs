@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using static API.Osu.OsuEnums;
+#pragma warning disable CS0472
 
 namespace API.Osu.Multiplayer;
 
@@ -125,6 +126,6 @@ public class Score
     /// </summary>
     [JsonProperty("pass")]
 	public int Pass { get; set; }
-	[JsonProperty("enabled_mods")]
-	public Mods? EnabledMods { get; set; }
+    [JsonProperty("enabled_mods")]
+    public Mods? EnabledMods { get; set; }
 }
