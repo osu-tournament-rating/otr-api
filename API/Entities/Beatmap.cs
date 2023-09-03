@@ -1,7 +1,6 @@
 using API.Entities.Bases;
 using Dapper;
 using Newtonsoft.Json;
-
 using static API.Osu.OsuEnums;
 
 #pragma warning disable CS8618
@@ -68,6 +67,7 @@ public class Beatmap : EntityBase
 	[JsonProperty("count_spinner")]
 	[Column("spinner_count")]
 	public int SpinnerCount { get; set; }
+	[JsonProperty("max_combo")]
 	[Column("max_combo")]
 	public int MaxCombo { get; set; }
 }
