@@ -44,4 +44,12 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 			return i;
 		}
 	}
+
+	public async Task<IEnumerable<Beatmap>> GetAllAsync()
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QueryAsync<Beatmap>("SELECT * FROM beatmaps");
+		}
+	}
 }

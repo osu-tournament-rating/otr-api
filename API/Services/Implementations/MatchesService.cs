@@ -41,7 +41,9 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 			if (onlyIncludeFiltered)
 			{
-				sql.Append(" WHERE matches.verification_status = 1 OR matches.verification_status = 2"); // Include pre-verified for now
+				sql.Append(" WHERE matches.verification_status = 1 OR matches.verification_status = 2")
+				   .Append(" AND ms.score > 10000")
+				   .Append(" AND b.drain_time > 20"); // Include pre-verified for now
 			}
 			
 			await connection.QueryAsync<Entities.Match, Entities.Game, MatchScore, Beatmap, Entities.Match>(sql.ToString(),

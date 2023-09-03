@@ -10,4 +10,6 @@ public interface IBeatmapService : IService<Beatmap>
 	/// </summary>
 	/// <param name="beatmaps"></param>
 	Task<int> BulkInsertAsync(IEnumerable<Beatmap> beatmaps);
+
+	Task<IEnumerable<Beatmap>> GetAllAsync();
 }
