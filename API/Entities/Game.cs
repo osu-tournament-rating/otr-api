@@ -8,7 +8,7 @@ namespace API.Entities;
 /// Represents a game as seen here: https://github.com/ppy/osu-api/wiki#response-5
 /// </summary>
 [Table("games")]
-public class Game : EntityBase
+public class Game : UpdateableEntityBase
 {
 	/// <summary>
 	/// The id of the match as seen from the database

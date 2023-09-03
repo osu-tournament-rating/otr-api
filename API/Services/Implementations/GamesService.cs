@@ -74,7 +74,7 @@ public class GamesService : ServiceBase<Game>, IGamesService
 			return await connection.ExecuteAsync("INSERT INTO games (game_id, match_id, start_time, end_time, beatmap_id, play_mode, match_type, scoring_type, team_type, mods) VALUES " +
 			                               "(@GameId, @MatchId, @StartTime, @EndTime, @BeatmapId, @PlayMode, @MatchType, @ScoringType, @TeamType, @Mods) " +
 			                               "ON CONFLICT (game_id) DO UPDATE SET match_id = @MatchId, start_time = @StartTime, end_time = @EndTime, beatmap_id = @BeatmapId, " +
-			                               "play_mode = @PlayMode, match_type = @MatchType, scoring_type = @ScoringType, team_type = @TeamType, mods = @Mods", dbGame);
+			                               "play_mode = @PlayMode, match_type = @MatchType, scoring_type = @ScoringType, team_type = @TeamType, mods = @Mods, updated = current_timestamp", dbGame);
 		}
 	}
 
