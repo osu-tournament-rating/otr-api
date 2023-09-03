@@ -55,8 +55,8 @@ public class OsuPlayerDataWorker : BackgroundService
 						{
 							player.Updated = DateTime.UtcNow;
 							await playerService.UpdateAsync(player);
-							_logger.LogWarning("Failed to fetch data for player {PlayerId} in mode {GameMode}, updating and skipping", player.OsuId, gameModeEnum);
-							continue;
+							_logger.LogWarning("Failed to fetch data for player {PlayerId} in mode {GameMode}, skipping (user is likely restricted)", player.OsuId, gameModeEnum);
+							break;
 						}
 						
 						switch (gameModeEnum)
