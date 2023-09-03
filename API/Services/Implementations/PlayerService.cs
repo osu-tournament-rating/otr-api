@@ -51,22 +51,10 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 
 	public async Task<IEnumerable<Player>> GetByOsuIdsAsync(IEnumerable<long> osuIds)
 	{
-		using(var scope = _serviceProvider.CreateScope())
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
 			const string sql = @"SELECT * FROM players p WHERE osu_id = ANY(@OsuIds)";
-			
-			var players = (await connection.QueryAsync<Player>(sql, new { OsuIds = osuIds })).ToList();
-			foreach (var p in players)
-			{
-				var matchData = await matchesService.GetForPlayerAsync(p.Id);
-				p.Matches = matchData.ToList();
-				
-				// TODO: Get ratings and ratinghistories
-			}
-
-			return players;
+			return await connection.QueryAsync<Player>(sql, new { OsuIds = osuIds });
 		}
 	}
 
