@@ -40,7 +40,6 @@ public class OsuPlayerDataWorker : BackgroundService
 				
 				if(!playersToUpdate.Any())
 				{
-					_logger.LogDebug("Found no players to update, waiting for {Interval} seconds", UPDATE_INTERVAL_SECONDS);
 					await Task.Delay(UPDATE_INTERVAL_SECONDS * 1000, cancellationToken);
 					continue;
 				}
