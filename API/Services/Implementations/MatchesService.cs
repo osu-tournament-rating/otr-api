@@ -43,7 +43,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 			{
 				sql.Append(" WHERE matches.verification_status = 1 OR matches.verification_status = 2")
 				   .Append(" AND ms.score > 10000")
-				   .Append(" AND b.drain_time > 20"); // Include pre-verified for now
+				   .Append(" AND b.drain_time > 20")
+				   .Append(" AND b.sr < 12");
 			}
 			
 			await connection.QueryAsync<Entities.Match, Entities.Game, MatchScore, Beatmap, Entities.Match>(sql.ToString(),
