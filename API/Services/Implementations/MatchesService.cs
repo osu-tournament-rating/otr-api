@@ -85,8 +85,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 				foreach (var match in matchDictionary.Values)
 				{
 					foreach (var game in match.Games.ToList())
-					{
-						if ((game.Scores.Count % 2) != 0)
+					{										// Believe it or not, this is a thing
+						if ((game.Scores.Count % 2) != 0 || game.Scores.Count == 0)  
 						{
 							// Remove all of the games that did not have an even number of players
 							match.Games.Remove(game);
