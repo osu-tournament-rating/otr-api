@@ -112,4 +112,12 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 			return await connection.QueryAsync<Rating>("SELECT * FROM ratings");
 		}
 	}
+
+	public async Task TruncateAsync()
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			await connection.ExecuteAsync("TRUNCATE TABLE ratings");
+		}
+	}
 }
