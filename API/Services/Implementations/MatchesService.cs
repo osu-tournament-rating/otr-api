@@ -83,8 +83,6 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 			if (onlyIncludeFiltered)
 			{
-				
-				
 				// Filter out bad matches
 				var matchesToRemove = new List<Entities.Match>();
 				foreach (var match in matchDictionary.Values)
@@ -92,7 +90,6 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					var gamesToRemove = new List<Entities.Game>();
 					foreach (var game in match.Games)
 					{
-						var scoresToRemove = new List<MatchScore>();
 						if ((game.Scores.Count % 2) != 0 || game.Scores.Count == 0)
 						{
 							gamesToRemove.Add(game);
@@ -108,11 +105,6 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 								gamesToRemove.Add(game);
 								break;
 							}
-						}
-						
-						foreach (var score in scoresToRemove)
-						{
-							game.Scores.Remove(score);
 						}
 					}
 
@@ -149,7 +141,18 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 			OsuEnums.Mods.Flashlight,
 			OsuEnums.Mods.Easy,
 			OsuEnums.Mods.NoFail,
-			OsuEnums.Mods.HalfTime
+			OsuEnums.Mods.HalfTime,
+			OsuEnums.Mods.SpunOut,
+			OsuEnums.Mods.Mirror,
+			OsuEnums.Mods.Key1,
+			OsuEnums.Mods.Key2,
+			OsuEnums.Mods.Key3,
+			OsuEnums.Mods.Key4,
+			OsuEnums.Mods.Key5,
+			OsuEnums.Mods.Key6,
+			OsuEnums.Mods.Key7,
+			OsuEnums.Mods.Key8,
+			OsuEnums.Mods.Key9
 		};
 		
 		foreach (var validMod in validMods)
