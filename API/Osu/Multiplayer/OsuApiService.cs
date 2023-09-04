@@ -21,6 +21,7 @@ public class OsuApiService : IOsuApiService
 	private const int RATE_LIMIT_CAPACITY = 1000;
 	private const int RATE_LIMIT_INTERVAL_SECONDS = 60;
 	
+	private readonly object _rateLimitLock = new object();
 	private int _rateLimitCounter;
 	private DateTime _rateLimitResetTime = DateTime.UtcNow.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
 	
@@ -73,7 +74,10 @@ public class OsuApiService : IOsuApiService
 		try
 		{
 			string response = await _client.GetStringAsync($"get_beatmaps?k={_credentials.OsuApiKey}&b={beatmapId}");
-			_rateLimitCounter++;
+			lock (_rateLimitLock)
+			{
+				_rateLimitCounter++;
+			}
 
 			_logger.LogDebug("Successfully received response from osu! API for beatmap {BeatmapId}", beatmapId);
 			return JsonConvert.DeserializeObject<Beatmap[]>(response)?[0];
@@ -102,8 +106,11 @@ public class OsuApiService : IOsuApiService
 		try
 		{
 			string response = await _client.GetStringAsync($"get_user?k={_credentials.OsuApiKey}&u={userId}&m={(int)mode}&type=id");
-			_rateLimitCounter++;
-		
+			lock (_rateLimitLock)
+			{
+				_rateLimitCounter++;
+			}
+
 			_logger.LogDebug("Successfully received response from osu! API for user {UserId}", userId);
 			return JsonConvert.DeserializeObject<OsuApiUser[]>(response)?[0];
 		}
@@ -126,13 +133,16 @@ public class OsuApiService : IOsuApiService
 	
 	private void CheckRatelimitReset()
 	{
-		_logger.LogDebug("osu! API ratelimit is currently at {Requests} (freq: {Capacity}req/{Seconds}s)", _rateLimitCounter, RATE_LIMIT_CAPACITY, RATE_LIMIT_INTERVAL_SECONDS);
-		if (DateTime.UtcNow > _rateLimitResetTime)
+		lock (_rateLimitLock)
 		{
-			_rateLimitCounter = 0; // Reset the counter when the reset time has passed
-			_rateLimitResetTime = DateTime.UtcNow.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
-			
-			_logger.LogDebug("Ratelimiter reset!");
+			_logger.LogDebug("osu! API ratelimit is currently at {Requests} (freq: {Capacity}req/{Seconds}s)", _rateLimitCounter, RATE_LIMIT_CAPACITY, RATE_LIMIT_INTERVAL_SECONDS);
+			if (DateTime.UtcNow > _rateLimitResetTime)
+			{
+				_rateLimitCounter = 0; // Reset the counter when the reset time has passed
+				_rateLimitResetTime = DateTime.UtcNow.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
+            
+				_logger.LogDebug("Ratelimiter reset!");
+			}
 		}
 	}
 	
