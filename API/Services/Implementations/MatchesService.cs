@@ -253,7 +253,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 				// Step 5.
 				foreach (var game in osuMatch.Games)
 				{
-					var dbGame = await _gamesService.GetByGameIdAsync(game.GameId);
+					var dbGame = await _gamesService.GetByOsuGameIdAsync(game.GameId);
 					if (dbGame == null)
 					{
 						_logger.LogError("Failed to fetch game {GameId}", game.GameId);

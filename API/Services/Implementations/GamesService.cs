@@ -78,11 +78,19 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		}
 	}
 
-	public async Task<Game?> GetByGameIdAsync(long gameGameId)
+	public async Task<Game?> GetByOsuGameIdAsync(long osuGameId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QuerySingleOrDefaultAsync<Game?>("SELECT * FROM games WHERE game_id = @GameId", new { GameId = gameGameId });
+			return await connection.QuerySingleOrDefaultAsync<Game?>("SELECT * FROM games WHERE game_id = @GameId", new { GameId = osuGameId });
+		}
+	}
+
+	public async Task<Match?> GetMatchByGameIdAsync(int gameId)
+	{
+		using (var connection = new NpgsqlConnection(ConnectionString))
+		{
+			return await connection.QuerySingleOrDefaultAsync<Match?>("SELECT * FROM matches WHERE id = (SELECT match_id FROM games WHERE id = @GameId)", new { GameId = gameId });
 		}
 	}
 }
