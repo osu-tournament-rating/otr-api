@@ -54,7 +54,7 @@ public class OsuMatchesController : Controller
 	[HttpGet("all")]
 	public async Task<ActionResult<IEnumerable<Match>?>> GetAllAsync()
 	{
-		var matches = await _service.GetAllAsync(true);
+		var matches = (await _service.GetAllAsync(true)).ToList();
 		return Ok(matches);
 	}
 }

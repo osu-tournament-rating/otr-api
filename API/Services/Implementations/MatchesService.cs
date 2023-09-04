@@ -90,7 +90,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					var gamesToRemove = new List<Entities.Game>();
 					foreach (var game in match.Games)
 					{
-						if ((game.Scores.Count % 2) != 0 || game.Scores.Count == 0)
+						if ((game.Scores.Count % 2) != 0 || game.Scores.Count == 0 || !IsValidModCombination(game.Mods))
 						{
 							gamesToRemove.Add(game);
 							continue;
@@ -124,7 +124,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					matchDictionary.Remove(match.Id);
 				}
 			}
-
+			
 			return matchDictionary.Values;
 		}
 	}
