@@ -142,7 +142,6 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 			OsuEnums.Mods.Easy,
 			OsuEnums.Mods.NoFail,
 			OsuEnums.Mods.HalfTime,
-			OsuEnums.Mods.SpunOut,
 			OsuEnums.Mods.Mirror,
 			OsuEnums.Mods.Key1,
 			OsuEnums.Mods.Key2,
