@@ -42,6 +42,7 @@ public class OsuEnums
 	/// <copyright>
 	/// ppy 2023 https://github.com/ppy/osu-api/wiki#mods
 	/// </copyright>
+	[Flags]
 	public enum Mods
 	{
 		None           = 0,

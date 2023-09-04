@@ -1,5 +1,6 @@
 using API.Configurations;
 using API.Entities;
+using API.Osu;
 using API.Osu.Multiplayer;
 using API.Services.Interfaces;
 using Dapper;
@@ -82,22 +83,83 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 			if (onlyIncludeFiltered)
 			{
+				
+				
 				// Filter out bad matches
+				var matchesToRemove = new List<Entities.Match>();
 				foreach (var match in matchDictionary.Values)
 				{
-					foreach (var game in match.Games.ToList())
-					{										// Believe it or not, this is a thing
-						if ((game.Scores.Count % 2) != 0 || game.Scores.Count == 0)  
+					var gamesToRemove = new List<Entities.Game>();
+					foreach (var game in match.Games)
+					{
+						var scoresToRemove = new List<MatchScore>();
+						if ((game.Scores.Count % 2) != 0 || game.Scores.Count == 0)
 						{
-							// Remove all of the games that did not have an even number of players
-							match.Games.Remove(game);
+							gamesToRemove.Add(game);
+							continue;
+						}
+
+						foreach (var score in game.Scores)
+						{
+							if (!IsValidModCombination(score.EnabledMods ?? OsuEnums.Mods.None))
+							{
+								// Remove the whole game if any of the scores contain an invalid mod combination
+								// This way we don't end up in a situation where we're comparing some scores and not others
+								gamesToRemove.Add(game);
+								break;
+							}
+						}
+						
+						foreach (var score in scoresToRemove)
+						{
+							game.Scores.Remove(score);
 						}
 					}
+
+					foreach (var game in gamesToRemove)
+					{
+						match.Games.Remove(game);
+					}
+
+					if (!match.Games.Any())
+					{
+						matchesToRemove.Add(match);
+					}
+				}
+
+				foreach (var match in matchesToRemove)
+				{
+					matchDictionary.Remove(match.Id);
 				}
 			}
 
 			return matchDictionary.Values;
 		}
+	}
+	
+	private bool IsValidModCombination(OsuEnums.Mods modCombination)
+	{
+		List<OsuEnums.Mods> validMods = new()
+		{
+			OsuEnums.Mods.None,
+			OsuEnums.Mods.Hidden,
+			OsuEnums.Mods.HardRock,
+			OsuEnums.Mods.DoubleTime,
+			OsuEnums.Mods.Nightcore,
+			OsuEnums.Mods.Flashlight,
+			OsuEnums.Mods.Easy,
+			OsuEnums.Mods.NoFail,
+			OsuEnums.Mods.HalfTime
+		};
+		
+		foreach (var validMod in validMods)
+		{
+			// Remove the valid mod from the combination
+			modCombination &= ~validMod;
+		}
+
+		// If the result is not Mods.None, then there was an invalid mod in the combination
+		return modCombination == OsuEnums.Mods.None;
 	}
 
 	public async Task<Entities.Match?> GetByLobbyIdAsync(long matchId)
