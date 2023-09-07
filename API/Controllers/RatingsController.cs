@@ -64,7 +64,7 @@ public class RatingsController : Controller
 		return StatusCode(500, $"Failed to update ratings");
 	}
 	
-	[HttpPost("danger/truncate")]
+	[HttpDelete("danger/truncate")]
 	public async Task<IActionResult> TruncateAsync()
 	{
 		await _service.TruncateAsync();
