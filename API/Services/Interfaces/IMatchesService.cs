@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Enums;
 using API.Osu.Multiplayer;
 
@@ -5,8 +6,8 @@ namespace API.Services.Interfaces;
 
 public interface IMatchesService : IService<Models.Match>
 {
-	Task<IEnumerable<Models.Match>> GetAllAsync(bool onlyIncludeFiltered);
-	Task<Models.Match?> GetByOsuGameIdAsync(long osuGameId);
+	Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered);
+	Task<MatchDTO?> GetByOsuMatchIdAsync(long osuMatchId);
 	Task<Models.Match?> GetFirstPendingOrDefaultAsync();
 	Task<IEnumerable<long>> CheckExistingAsync(IEnumerable<long> matchIds);
 

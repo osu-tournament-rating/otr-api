@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Models;
 
 namespace API.Services.Interfaces;
@@ -9,10 +10,10 @@ public interface IRatingsService : IService<Rating>
 	/// </summary>
 	/// <param name="playerId"></param>
 	/// <returns></returns>
-	Task<IEnumerable<Rating>> GetForPlayerAsync(int playerId);
+	Task<IEnumerable<RatingDTO>> GetForPlayerAsync(long osuPlayerId);
 
 	Task<int> InsertOrUpdateForPlayerAsync(int playerId, Rating rating);
 	Task<int> BatchInsertOrUpdateAsync(IEnumerable<Rating> ratings);
-	Task<IEnumerable<Rating>> GetAllAsync();
+	Task<IEnumerable<RatingDTO>> GetAllAsync();
 	Task TruncateAsync();
 }

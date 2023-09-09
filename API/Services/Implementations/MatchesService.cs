@@ -1,8 +1,10 @@
+using API.DTOs;
 using API.Enums;
 using API.Models;
 using API.Osu;
 using API.Osu.Multiplayer;
 using API.Services.Interfaces;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 
@@ -12,31 +14,34 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 {
 	private readonly ILogger<MatchesService> _logger;
 	private readonly IPlayerService _playerService;
+	private readonly IMapper _mapper;
+	private readonly OtrContext _context;
 
-	public MatchesService(ILogger<MatchesService> logger, IPlayerService playerService) : base(logger)
+	public MatchesService(ILogger<MatchesService> logger, IPlayerService playerService, IMapper mapper, OtrContext context) : base(logger, context)
 	{
 		_logger = logger;
 		_playerService = playerService;
+		_mapper = mapper;
+		_context = context;
 	}
 
-	public async Task<IEnumerable<Models.Match>> GetAllAsync(bool onlyIncludeFiltered)
+	public async Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered)
 	{
-		using (var dbContext = new OtrContext()) // Replace 'YourDbContext' with the name of your actual DbContext class
+		using (_context)
 		{
-			var query = dbContext.Matches
-			                     .Include(m => m.Games)
-			                     .ThenInclude(g => g.MatchScores)
-			                     .Include(m => m.Games)
-			                     .ThenInclude(g => g.Beatmap);
+			var query = _context.Matches
+			                    .Include(m => m.Games)
+			                    .ThenInclude(g => g.MatchScores)
+			                    .Include(m => m.Games)
+			                    .ThenInclude(g => g.Beatmap).AsQueryable();
 
 			if (onlyIncludeFiltered)
 			{
-				query = (IIncludableQueryable<Models.Match, Beatmap?>)
-					query.Where(m => (m.VerificationStatusEnum == VerificationStatus.Verified || m.VerificationStatusEnum == VerificationStatus.PreVerified) &&
-					                 m.Games.Any(g => g.MatchScores.Any(ms => ms.Score > 10000) &&
-					                                  g.Beatmap!.DrainTime > 20 &&
-					                                  g.Beatmap!.Sr < 12 &&
-					                                  g.ScoringTypeEnum == OsuEnums.ScoringType.ScoreV2)); // Score v2 only
+				query = query.Where(m => (m.VerificationStatus == (int) VerificationStatus.Verified || m.VerificationStatus == (int)VerificationStatus.PreVerified) &&
+				                         m.Games.Any(g => g.MatchScores.Any(ms => ms.Score > 10000) &&
+				                                          g.Beatmap!.DrainTime > 20 &&
+				                                          g.Beatmap!.Sr < 12 &&
+				                                          g.ScoringType == (int) OsuEnums.ScoringType.ScoreV2)); // Score v2 only
 			}
 
 			var matches = await query.ToListAsync();
@@ -82,52 +87,52 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 				}
 			}
 
-			return matches;
+			return _mapper.Map<IEnumerable<MatchDTO>>(matches);
 		}
 	}
 
-	public async Task<Models.Match?> GetByOsuGameIdAsync(long osuGameId)
+	public async Task<MatchDTO?> GetByOsuMatchIdAsync(long osuMatchId)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			return await context.Matches.FirstOrDefaultAsync(x => x.Games.Any(g => g.GameId == osuGameId));
+			return _mapper.Map<MatchDTO?>(await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == osuMatchId));;
 		}
 	}
 
 	public async Task<Models.Match?> GetFirstPendingOrDefaultAsync()
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			return await context.Matches.FirstOrDefaultAsync(x => x.VerificationStatus == (int)VerificationStatus.PendingVerification);
+			return await _context.Matches.FirstOrDefaultAsync(x => x.VerificationStatus == (int)VerificationStatus.PendingVerification);
 		}
 	}
 
 	public async Task<IEnumerable<long>> CheckExistingAsync(IEnumerable<long> matchIds)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			return await context.Matches.Where(x => matchIds.Contains(x.MatchId)).Select(x => x.MatchId).ToListAsync();
+			return await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).Select(x => x.MatchId).ToListAsync();
 		}
 	}
 
 	public async Task<int> InsertFromIdBatchAsync(IEnumerable<Models.Match> matches)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			await context.Matches.AddRangeAsync(matches);
-			return await context.SaveChangesAsync();
+			await _context.Matches.AddRangeAsync(matches);
+			return await _context.SaveChangesAsync();
 		}
 	}
 
 	public async Task<bool> CreateFromApiMatchAsync(OsuApiMatchData osuMatch)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
 			try
 			{
 				// Step 1.
 				var osuPlayerIds = osuMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
-				var existingPlayers = await context.Players.Where(p => osuPlayerIds.Contains(p.OsuId)).ToListAsync();
+				var existingPlayers = await _context.Players.Where(p => osuPlayerIds.Contains(p.OsuId)).ToListAsync();
 				var playerIdMapping = existingPlayers.ToDictionary(player => player.OsuId, player => player.Id);
 
 				// Create the players that don't exist
@@ -141,11 +146,11 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 
 				// Step 2.
 				var osuBeatmapIds = osuMatch.Games.Select(x => x.BeatmapId).Distinct().ToList();
-				var existingBeatmaps = await context.Beatmaps.Where(b => osuBeatmapIds.Contains(b.BeatmapId)).ToListAsync();
+				var existingBeatmaps = await _context.Beatmaps.Where(b => osuBeatmapIds.Contains(b.BeatmapId)).ToListAsync();
 				var beatmapIdMapping = existingBeatmaps.ToDictionary(beatmap => beatmap.BeatmapId, beatmap => beatmap.Id);
 
 				// Step 3.
-				var existingMatch = await context.Matches.FirstOrDefaultAsync(m => m.MatchId == osuMatch.Match.MatchId);
+				var existingMatch = await _context.Matches.FirstOrDefaultAsync(m => m.MatchId == osuMatch.Match.MatchId);
 				if (existingMatch == null)
 				{
 					var dbMatch = new Models.Match
@@ -157,16 +162,16 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 						VerificationStatus = (int)VerificationStatus.PendingVerification
 					};
 
-					context.Matches.Add(dbMatch);
-					await context.SaveChangesAsync();
+					_context.Matches.Add(dbMatch);
+					await _context.SaveChangesAsync();
 
-					existingMatch = await context.Matches.FirstAsync(m => m.MatchId == osuMatch.Match.MatchId);
+					existingMatch = await _context.Matches.FirstAsync(m => m.MatchId == osuMatch.Match.MatchId);
 				}
 
 				// Step 4.
 				foreach (var game in osuMatch.Games)
 				{
-					var existingGame = await context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
+					var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
 					if (existingGame == null)
 					{
 						var dbGame = new Models.Game
@@ -183,15 +188,15 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 							Mods = (int)game.Mods
 						};
 
-						context.Games.Add(dbGame);
-						await context.SaveChangesAsync();
+						_context.Games.Add(dbGame);
+						await _context.SaveChangesAsync();
 					}
 				}
 
 				// Step 5.
 				foreach (var game in osuMatch.Games)
 				{
-					var dbGame = await context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
+					var dbGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
 					if (dbGame == null)
 					{
 						_logger.LogError("Failed to fetch game {GameId}", game.GameId);
@@ -200,7 +205,7 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 
 					foreach (var score in game.Scores)
 					{
-						var existingMatchScore = await context.MatchScores.FirstOrDefaultAsync(s => s.PlayerId == playerIdMapping[score.UserId] && s.GameId == dbGame.Id);
+						var existingMatchScore = await _context.MatchScores.FirstOrDefaultAsync(s => s.PlayerId == playerIdMapping[score.UserId] && s.GameId == dbGame.Id);
 						if (existingMatchScore == null)
 						{
 							var dbMatchScore = new MatchScore
@@ -221,8 +226,8 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 								EnabledMods = (int?)score.EnabledMods
 							};
 
-							context.MatchScores.Add(dbMatchScore);
-							await context.SaveChangesAsync();
+							_context.MatchScores.Add(dbMatchScore);
+							await _context.SaveChangesAsync();
 						}
 					}
 				}
@@ -239,9 +244,9 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 
 	public async Task<int> UpdateVerificationStatusAsync(long matchId, VerificationStatus status, MatchVerificationSource source, string? info = null)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			var match = await context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
+			var match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
 			if (match == null)
 			{
 				_logger.LogWarning("Match {MatchId} not found (failed to update verification status)", matchId);
@@ -251,7 +256,7 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 			match.VerificationStatus = (int)status;
 			match.VerificationSource = (int)source;
 			match.VerificationInfo = info;
-			return await context.SaveChangesAsync();
+			return await _context.SaveChangesAsync();
 		}
 	}
 

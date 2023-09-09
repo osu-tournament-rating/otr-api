@@ -1,5 +1,7 @@
+using API.DTOs;
 using API.Models;
 using API.Services.Interfaces;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.Implementations;
@@ -7,19 +9,33 @@ namespace API.Services.Implementations;
 public class RatingsService : ServiceBase<Rating>, IRatingsService
 {
 	private readonly ILogger<RatingsService> _logger;
-	public RatingsService(ILogger<RatingsService> logger) : base(logger) { _logger = logger; }
-
-	public async Task<IEnumerable<Rating>> GetForPlayerAsync(int playerId)
+	private readonly IMapper _mapper;
+	private readonly OtrContext _context;
+	public RatingsService(ILogger<RatingsService> logger, IMapper mapper, OtrContext context) : base(logger, context)
 	{
-		using (var context = new OtrContext())
+		_logger = logger;
+		_mapper = mapper;
+		_context = context;
+	}
+
+	public async Task<IEnumerable<RatingDTO>> GetForPlayerAsync(long osuPlayerId)
+	{
+		using (_context)
 		{
-			return await context.Ratings.Where(x => x.PlayerId == playerId).ToListAsync();
+			int dbId = await _context.Players.Where(x => x.OsuId == osuPlayerId).Select(x => x.Id).FirstOrDefaultAsync();
+			
+			if (dbId == 0)
+			{
+				return new List<RatingDTO>();
+			}
+			
+			return _mapper.Map<IEnumerable<RatingDTO>>(await _context.Ratings.Where(x => x.PlayerId == dbId).ToListAsync());
 		}
 	}
 
 	public override async Task<int> UpdateAsync(Rating entity)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
 			// First, copy the current state of the entity to the history table.
 			var history = new RatingHistory
@@ -31,18 +47,18 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 				Mode = entity.Mode
 			};
 
-			await context.RatingHistories.AddAsync(history);
+			await _context.RatingHistories.AddAsync(history);
 			return await base.UpdateAsync(entity);
 		}
 	}
 
 	public async Task<int> InsertOrUpdateForPlayerAsync(int playerId, Rating rating)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			var existingRating = await context.Ratings
-			                                  .Where(r => r.PlayerId == rating.PlayerId && r.Mode == rating.Mode)
-			                                  .FirstOrDefaultAsync();
+			var existingRating = await _context.Ratings
+			                                   .Where(r => r.PlayerId == rating.PlayerId && r.Mode == rating.Mode)
+			                                   .FirstOrDefaultAsync();
 
 			if (existingRating != null)
 			{
@@ -52,22 +68,22 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 			}
 			else
 			{
-				context.Ratings.Add(rating);
+				_context.Ratings.Add(rating);
 			}
 
-			return await context.SaveChangesAsync();
+			return await _context.SaveChangesAsync();
 		}
 	}
 
 	public async Task<int> BatchInsertOrUpdateAsync(IEnumerable<Rating> ratings)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
 			foreach (var rating in ratings)
 			{
-				var existingRating = await context.Ratings
-				                                  .Where(r => r.PlayerId == rating.PlayerId && r.Mode == rating.Mode)
-				                                  .FirstOrDefaultAsync();
+				var existingRating = await _context.Ratings
+				                                   .Where(r => r.PlayerId == rating.PlayerId && r.Mode == rating.Mode)
+				                                   .FirstOrDefaultAsync();
 
 				if (existingRating != null)
 				{
@@ -77,27 +93,27 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 				}
 				else
 				{
-					context.Ratings.Add(rating);
+					_context.Ratings.Add(rating);
 				}
 			}
 
-			return await context.SaveChangesAsync();
+			return await _context.SaveChangesAsync();
 		}
 	}
 
-	public async Task<IEnumerable<Rating>> GetAllAsync()
+	public async Task<IEnumerable<RatingDTO>> GetAllAsync()
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			return await context.Ratings.ToListAsync();
+			return _mapper.Map<IEnumerable<RatingDTO>>(await _context.Ratings.ToListAsync());
 		}
 	}
 
 	public async Task TruncateAsync()
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE ratings RESTART IDENTITY;");
+			await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE ratings RESTART IDENTITY;");
 		}
 	}
 }

@@ -25,16 +25,16 @@ public class RatingsController : Controller
 		return Ok(ratings);
 	}
 
-	[HttpGet("{playerId:int}")]
-	public async Task<ActionResult<Rating>> GetForPlayerAsync(int playerId)
+	[HttpGet("{osuPlayerId:long}")]
+	public async Task<ActionResult<Rating>> GetForPlayerAsync(long osuPlayerId)
 	{
-		var data = await _service.GetForPlayerAsync(playerId);
+		var data = await _service.GetForPlayerAsync(osuPlayerId);
 		if (!data.IsNullOrEmpty())
 		{
 			return Ok(data);
 		}
 
-		return NotFound($"User with id {playerId} does not have any data");
+		return NotFound($"User with id {osuPlayerId} does not have any data");
 	}
 
 	[HttpPut("{playerId:int}/update")]

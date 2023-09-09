@@ -1,8 +1,11 @@
 using API;
 using API.Configurations;
+using API.DTOs;
+using API.Models;
 using API.Osu.Multiplayer;
 using API.Services.Implementations;
 using API.Services.Interfaces;
+using AutoMapper;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
@@ -38,7 +41,25 @@ builder.Services.AddSerilog(configuration =>
 });
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
-SimpleCRUD.SetDialect(SimpleCRUD.Dialect.PostgreSQL);
+
+var configuration = new MapperConfiguration(cfg => 
+{
+	cfg.CreateMap<Beatmap, BeatmapDTO>();
+	cfg.CreateMap<API.Models.Game, GameDTO>();
+	cfg.CreateMap<API.Models.Match, MatchDTO>();
+	cfg.CreateMap<MatchScore, MatchScoreDTO>();
+	cfg.CreateMap<Player, PlayerDTO>();
+	cfg.CreateMap<Rating, RatingDTO>();
+	cfg.CreateMap<RatingHistory, RatingHistoryDTO>();
+	cfg.CreateMap<User, UserDTO>();
+});
+
+// only during development, validate your mappings; remove it before release
+#if DEBUG
+configuration.AssertConfigurationIsValid();
+#endif
+
+builder.Services.AddSingleton(configuration.CreateMapper());
 
 builder.Services.AddLogging();
 

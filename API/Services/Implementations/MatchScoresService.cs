@@ -5,5 +5,5 @@ namespace API.Services.Implementations;
 
 public class MatchScoresService : ServiceBase<MatchScore>, IMatchScoresService
 {
-	public MatchScoresService(ILogger<MatchScoresService> logger) : base(logger) {}
+	public MatchScoresService(ILogger<MatchScoresService> logger, OtrContext context) : base(logger, context) {}
 }

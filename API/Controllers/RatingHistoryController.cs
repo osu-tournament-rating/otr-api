@@ -17,16 +17,16 @@ public class RatingHistoryController : Controller
 		_service = service;
 	}
 
-	[HttpGet("{playerId:int}/all")]
-	public async Task<ActionResult<IEnumerable<RatingHistory>>> GetAllForPlayerAsync(int playerId)
+	[HttpGet("{osuPlayerId:long}/all")]
+	public async Task<ActionResult<IEnumerable<RatingHistory>>> GetAllForPlayerAsync(long osuPlayerId)
 	{
-		var data = await _service.GetForPlayerAsync(playerId);
+		var data = await _service.GetForPlayerAsync(osuPlayerId);
 		if (data.Any())
 		{
 			return Ok(data);
 		}
 
-		return NotFound($"User with id {playerId} does not have any data");
+		return NotFound($"User with id {osuPlayerId} does not have any data");
 	}
 
 	[HttpPost("batch")]

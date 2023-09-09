@@ -1,45 +1,56 @@
 using API.Configurations;
+using API.DTOs;
 using API.Models;
 using API.Services.Interfaces;
+using AutoMapper;
 using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using System.Collections;
 
 namespace API.Services.Implementations;
 
 public class PlayerService : ServiceBase<Player>, IPlayerService
 {
 	private readonly OtrContext _context;
-
-	public PlayerService(ILogger<PlayerService> logger, OtrContext context) : base(logger) { _context = context; }
-
-	public async Task<IEnumerable<Player>> GetAllAsync()
+	private readonly IMapper _mapper;
+	public PlayerService(ILogger<PlayerService> logger, OtrContext context, IMapper mapper) : base(logger, context)
 	{
-		using(var context = new OtrContext())
+		_context = context;
+		_mapper = mapper;
+	}
+
+	public async Task<IEnumerable<PlayerDTO>> GetAllAsync()
+	{
+		using(_context)
 		{
-			return await context.Players.ToListAsync();
+			return _mapper.Map<IEnumerable<PlayerDTO>>(await _context.Players
+			                                                         .Include(x => x.MatchScores)
+			                                                         .Include(x => x.RatingHistories)
+			                                                         .Include(x => x.Ratings)
+			                                                         .ToListAsync());
 		}
 	}
 
-	public async Task<Player?> GetByOsuIdAsync(long osuId)
+	public async Task<PlayerDTO?> GetByOsuIdAsync(long osuId)
 	{
 		using (_context)
 		{
-			return await _context.Players
+			return _mapper.Map<PlayerDTO?>(await _context.Players
 			                     .Include(x => x.MatchScores)
 			                     .Include(x => x.RatingHistories)
 			                     .Include(x => x.Ratings)
 			                     .Include(x => x.User)
 			                     .Where(x => x.OsuId == osuId)
-			                     .FirstOrDefaultAsync();
+			                     .FirstOrDefaultAsync());
 		}
 	}
 
-	public async Task<IEnumerable<Player>> GetByOsuIdsAsync(IEnumerable<long> osuIds)
+	public async Task<IEnumerable<PlayerDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds)
 	{
 		using (_context)
 		{
-			return await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
+			return _mapper.Map<IEnumerable<PlayerDTO>>(await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync());
 		}
 	}
 

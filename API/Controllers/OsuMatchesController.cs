@@ -64,14 +64,14 @@ public class OsuMatchesController : Controller
 		return Ok(matches);
 	}
 
-	[HttpGet("{matchId:long}")]
-	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long matchId)
+	[HttpGet("{osuMatchId:long}")]
+	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
 	{
-		var match = await _service.GetByOsuGameIdAsync(matchId);
+		var match = await _service.GetByOsuMatchIdAsync(osuMatchId);
 
 		if (match == null)
 		{
-			return NotFound($"Failed to locate match {matchId}");
+			return NotFound($"Failed to locate match {osuMatchId}");
 		}
 
 		return Ok(match);

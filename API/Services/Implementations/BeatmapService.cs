@@ -1,5 +1,7 @@
+using API.DTOs;
 using API.Models;
 using API.Services.Interfaces;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.Implementations;
@@ -7,29 +9,37 @@ namespace API.Services.Implementations;
 public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 {
 	private readonly ILogger<BeatmapService> _logger;
-	public BeatmapService(ILogger<BeatmapService> logger) : base(logger) { _logger = logger; }
+	private readonly IMapper _mapper;
+	private readonly OtrContext _context;
 
-	public async Task<IEnumerable<Beatmap>> GetByBeatmapIdsAsync(IEnumerable<long> beatmapIds)
+	public BeatmapService(ILogger<BeatmapService> logger, IMapper mapper, OtrContext context) : base(logger, context)
 	{
-		using (var context = new OtrContext())
+		_logger = logger;
+		_mapper = mapper;
+		_context = context;
+	}
+
+	public async Task<IEnumerable<BeatmapDTO>> GetByBeatmapIdsAsync(IEnumerable<long> beatmapIds)
+	{
+		using (_context)
 		{
-			return await context.Beatmaps.Where(b => beatmapIds.Contains(b.BeatmapId)).ToListAsync();
+			return _mapper.Map<IEnumerable<BeatmapDTO>>(await _context.Beatmaps.Where(b => beatmapIds.Contains(b.BeatmapId)).ToListAsync());
 		}
 	}
 
-	public async Task<IEnumerable<Beatmap>> GetAllAsync()
+	public async Task<IEnumerable<BeatmapDTO>> GetAllAsync()
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			return await context.Beatmaps.ToListAsync();
+			return _mapper.Map<IEnumerable<BeatmapDTO>>(await _context.Beatmaps.ToListAsync());
 		}
 	}
 
-	public async Task<Beatmap?> GetByBeatmapIdAsync(long osuBeatmapId)
+	public async Task<BeatmapDTO?> GetByBeatmapIdAsync(long osuBeatmapId)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			return await context.Beatmaps.FirstOrDefaultAsync(b => b.BeatmapId == osuBeatmapId);
+			return _mapper.Map<BeatmapDTO?>(await _context.Beatmaps.FirstOrDefaultAsync(b => b.BeatmapId == osuBeatmapId));
 		}
 	}
 }
