@@ -95,7 +95,12 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 	{
 		using (_context)
 		{
-			return _mapper.Map<MatchDTO?>(await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == osuMatchId));;
+			return _mapper.Map<MatchDTO?>(await _context.Matches
+			                                            .Include(x => x.Games)
+			                                            .ThenInclude(x => x.Beatmap)
+			                                            .Include(x => x.Games)
+			                                            .ThenInclude(x => x.MatchScores)
+			                                            .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
 		}
 	}
 
