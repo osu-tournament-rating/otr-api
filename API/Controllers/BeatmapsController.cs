@@ -1,3 +1,4 @@
+using API.Models;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,19 +8,17 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class BeatmapsController : Controller
 {
-	private readonly ILogger<BeatmapsController> _logger;
 	private readonly IBeatmapService _beatmapService;
+	private readonly ILogger<BeatmapsController> _logger;
+
 	public BeatmapsController(ILogger<BeatmapsController> logger, IBeatmapService beatmapService)
 	{
 		_logger = logger;
 		_beatmapService = beatmapService;
 	}
-	
+
 	[HttpGet("all")]
-	public async Task<ActionResult<IEnumerable<Beatmap>>> GetAllAsync()
-	{
-		return Ok(await _beatmapService.GetAllAsync());
-	}
+	public async Task<ActionResult<IEnumerable<Beatmap>>> GetAllAsync() => Ok(await _beatmapService.GetAllAsync());
 
 	[HttpGet("{beatmapId:long}")]
 	public async Task<ActionResult<Beatmap>> GetByOsuBeatmapIdAsync(long beatmapId)

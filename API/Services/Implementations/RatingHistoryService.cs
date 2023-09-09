@@ -1,58 +1,58 @@
-using API.Configurations;
+using API.Models;
 using API.Services.Interfaces;
-using Dapper;
-using Npgsql;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.Implementations;
 
 public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistoryService
 {
 	private readonly ILogger<RatingHistoryService> _logger;
-	private readonly IPlayerService _playerService;
-
-	public RatingHistoryService(ICredentials credentials, ILogger<RatingHistoryService> logger, IPlayerService playerService) :
-		base(credentials, logger)
-	{
-		_logger = logger;
-		_playerService = playerService;
-	}
+	public RatingHistoryService(ILogger<RatingHistoryService> logger) : base(logger) { _logger = logger; }
 
 	public async Task<IEnumerable<RatingHistory>> GetForPlayerAsync(int playerId)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			return await connection.QueryAsync<RatingHistory>("SELECT * FROM ratinghistories WHERE player_id = @PlayerId", new { PlayerId = playerId });
+			return await context.RatingHistories.Where(x => x.PlayerId == playerId).ToListAsync();
 		}
 	}
 
 	public async Task ReplaceBatchAsync(IEnumerable<RatingHistory> histories)
 	{
-		histories = histories.OrderBy(x => x.Created);
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		histories = histories.ToList();
+		using (var context = new OtrContext())
 		{
-			await connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode, game_id) VALUES " +
-			                              "(@PlayerId, @Mu, @Sigma, @Created, @Mode, @GameId) ON CONFLICT (player_id, game_id) " +
-			                              "DO UPDATE SET player_id = @PlayerId, mu = @Mu, sigma = @Sigma, mode = @Mode, game_id = @GameId, " +
-			                              "created = @Created, updated = current_timestamp",
-				histories);
+			foreach (var history in histories.OrderBy(x => x.Created))
+			{
+				var existingHistory = await context.RatingHistories
+				                                   .FirstOrDefaultAsync(h => h.PlayerId == history.PlayerId && h.GameId == history.GameId);
+
+				if (existingHistory == null)
+				{
+					context.RatingHistories.Add(history);
+				}
+				else
+				{
+					existingHistory.Mu = history.Mu;
+					existingHistory.Sigma = history.Sigma;
+					existingHistory.Mode = history.Mode;
+					existingHistory.Created = history.Created;
+					existingHistory.Updated = DateTime.UtcNow; // Assuming you have an Updated property
+
+					context.RatingHistories.Update(existingHistory);
+				}
+			}
+
+			await context.SaveChangesAsync();
 			_logger.LogInformation("Batch inserted {Count} rating histories", histories.Count());
 		}
 	}
 
 	public async Task TruncateAsync()
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			await connection.ExecuteAsync("TRUNCATE TABLE ratinghistories");
-		}
-	}
-
-	public async Task InsertAsync(IEnumerable<RatingHistory> histories)
-	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
-		{
-			await connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode, game_id) VALUES (@PlayerId, @Mu, @Sigma, @Created, @Mode, @GameId)",
-				histories.ToList());
+			await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE ratinghistories RESTART IDENTITY");
 		}
 	}
 }

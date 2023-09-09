@@ -1,20 +1,13 @@
-using API.Configurations;
 using API.Models;
 using API.Services.Interfaces;
-using Dapper;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace API.Services.Implementations;
 
 public class RatingsService : ServiceBase<Rating>, IRatingsService
 {
 	private readonly ILogger<RatingsService> _logger;
-
-	public RatingsService(ILogger<RatingsService> logger) : base(logger)
-	{
-		_logger = logger;
-	}
+	public RatingsService(ILogger<RatingsService> logger) : base(logger) { _logger = logger; }
 
 	public async Task<IEnumerable<Rating>> GetForPlayerAsync(int playerId)
 	{
@@ -43,72 +36,68 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 		}
 	}
 
-	public async Task UpdateBatchAsync(IEnumerable<Rating> ratings)
-	{
-		ratings = ratings.ToList();
-		var players = await _playerService.GetAllAsync();
-		var ids = players!.ToDictionary(x => x.OsuId, x => x.Id);
-		
-		foreach (var r in ratings)
-		{
-			// Update the playerId to be that from the database, not from osu!.
-			try
-			{
-				int id = ids[r.PlayerId];
-				r.PlayerId = id;
-			}
-			catch (Exception e)
-			{
-				_logger.LogWarning(e, "Player {@Player} has a rating update but could not be found", r);
-			}
-			
-		}
-		using (var connection = new NpgsqlConnection(ConnectionString))
-		{
-			_logger.LogInformation("A batch of {Count} ratings are being updated, this will take a while...", ratings.Count());
-			await connection.ExecuteAsync("UPDATE ratings SET mu = @Mu, sigma = @Sigma WHERE player_id = @PlayerId AND mode = @Mode",
-				ratings);
-			_logger.LogInformation("Ratings batch update complete");
-		}
-	}
-
 	public async Task<int> InsertOrUpdateForPlayerAsync(int playerId, Rating rating)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			if (playerId != rating.PlayerId)
+			var existingRating = await context.Ratings
+			                                  .Where(r => r.PlayerId == rating.PlayerId && r.Mode == rating.Mode)
+			                                  .FirstOrDefaultAsync();
+
+			if (existingRating != null)
 			{
-				throw new ArgumentException("The player id in the rating object does not match the id in the route");
+				existingRating.Mu = rating.Mu;
+				existingRating.Sigma = rating.Sigma;
+				existingRating.Updated = rating.Updated;
+			}
+			else
+			{
+				context.Ratings.Add(rating);
 			}
 
-			rating.Updated = DateTime.UtcNow; // This doesn't work for some reason...?
-			return await connection.ExecuteAsync("INSERT INTO ratings (player_id, mu, sigma, mode, updated) VALUES (@PlayerId, @Mu, @Sigma, @Mode, @Updated) " +
-			                                     "ON CONFLICT (player_id, mode) DO UPDATE SET mu = @Mu, sigma = @Sigma, updated = @Updated", rating);
+			return await context.SaveChangesAsync();
 		}
 	}
 
-	public async Task<int?> BatchInsertOrUpdateAsync(IEnumerable<Rating> ratings)
+	public async Task<int> BatchInsertOrUpdateAsync(IEnumerable<Rating> ratings)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			return await connection.ExecuteAsync("INSERT INTO ratings (player_id, mu, sigma, mode, updated) VALUES (@PlayerId, @Mu, @Sigma, @Mode, @Updated) " +
-			                                     "ON CONFLICT (player_id, mode) DO UPDATE SET mu = @Mu, sigma = @Sigma, updated = @Updated", ratings);
+			foreach (var rating in ratings)
+			{
+				var existingRating = await context.Ratings
+				                                  .Where(r => r.PlayerId == rating.PlayerId && r.Mode == rating.Mode)
+				                                  .FirstOrDefaultAsync();
+
+				if (existingRating != null)
+				{
+					existingRating.Mu = rating.Mu;
+					existingRating.Sigma = rating.Sigma;
+					existingRating.Updated = rating.Updated;
+				}
+				else
+				{
+					context.Ratings.Add(rating);
+				}
+			}
+
+			return await context.SaveChangesAsync();
 		}
 	}
 
 	public async Task<IEnumerable<Rating>> GetAllAsync()
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			return await connection.QueryAsync<Rating>("SELECT * FROM ratings");
+			return await context.Ratings.ToListAsync();
 		}
 	}
 
 	public async Task TruncateAsync()
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			await connection.ExecuteAsync("TRUNCATE TABLE ratings");
+			await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE ratings RESTART IDENTITY;");
 		}
 	}
 }

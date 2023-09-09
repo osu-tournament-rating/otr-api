@@ -1,3 +1,5 @@
+using API.Enums;
+using API.Models;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,12 +9,12 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class OsuMatchesController : Controller
 {
-	private readonly ILogger<OsuMatchesController> _logger;
-	private readonly IMatchesService _service;
 	private readonly IGamesService _gamesService;
+	private readonly ILogger<OsuMatchesController> _logger;
 	private readonly IMatchScoresService _scoresService;
-	
-	public OsuMatchesController(ILogger<OsuMatchesController> logger, 
+	private readonly IMatchesService _service;
+
+	public OsuMatchesController(ILogger<OsuMatchesController> logger,
 		IMatchesService service, IGamesService gamesService, IMatchScoresService scoresService)
 	{
 		_logger = logger;
@@ -43,25 +45,25 @@ public class OsuMatchesController : Controller
 		ids = ids.ToList();
 		var existingMatches = await _service.CheckExistingAsync(ids);
 		var stripped = ids.Except(existingMatches).ToList();
-		
-		var matches = stripped.Select(id => new Match { MatchId = id, VerificationStatus = VerificationStatus.PendingVerification });
+
+		var matches = stripped.Select(id => new Match { MatchId = id, VerificationStatus = (int)VerificationStatus.PendingVerification });
 		int? result = await _service.InsertFromIdBatchAsync(matches);
 		if (result > 0)
 		{
 			_logger.LogInformation("Successfully marked {Matches} matches as {Status}", result, VerificationStatus.PendingVerification);
 			return Ok();
 		}
-		
-		return StatusCode(500, $"Failed to insert matches");
+
+		return StatusCode(500, "Failed to insert matches");
 	}
-	
+
 	[HttpGet("all")]
 	public async Task<ActionResult<IEnumerable<Match>?>> GetAllAsync()
 	{
 		var matches = (await _service.GetAllAsync(true)).ToList();
 		return Ok(matches);
 	}
-	
+
 	[HttpGet("{matchId:long}")]
 	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long matchId)
 	{
@@ -71,16 +73,7 @@ public class OsuMatchesController : Controller
 		{
 			return NotFound($"Failed to locate match {matchId}");
 		}
-		
-		var games = (await _gamesService.GetByMatchIdAsync(match.Id)).ToList();
-		match.Games = games;
-		
-		foreach (var game in games)
-		{
-			var scores = (await _scoresService.GetForGameAsync(game.Id)).ToList();
-			game.Scores = scores;
-		}
-		
+
 		return Ok(match);
 	}
 }

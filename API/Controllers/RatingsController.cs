@@ -1,3 +1,4 @@
+using API.Models;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -10,12 +11,13 @@ public class RatingsController : Controller
 {
 	private readonly ILogger<RatingsController> _logger;
 	private readonly IRatingsService _service;
+
 	public RatingsController(ILogger<RatingsController> logger, IRatingsService service)
 	{
 		_logger = logger;
 		_service = service;
 	}
-	
+
 	[HttpGet("all")]
 	public async Task<ActionResult<IEnumerable<Rating>?>> GetAllAsync()
 	{
@@ -31,7 +33,7 @@ public class RatingsController : Controller
 		{
 			return Ok(data);
 		}
-		
+
 		return NotFound($"User with id {playerId} does not have any data");
 	}
 
@@ -42,6 +44,7 @@ public class RatingsController : Controller
 		{
 			return BadRequest($"Player id {rating.PlayerId} in body does not match player id {playerId} in path");
 		}
+
 		int? result = await _service.InsertOrUpdateForPlayerAsync(playerId, rating);
 		if (result > 0)
 		{
@@ -50,7 +53,7 @@ public class RatingsController : Controller
 
 		return StatusCode(500, $"Failed to update rating for player {playerId}");
 	}
-	
+
 	[HttpPost("batch")]
 	public async Task<ActionResult> BatchInsertOrUpdateAsync([FromBody] IEnumerable<Rating> ratings)
 	{
@@ -60,9 +63,9 @@ public class RatingsController : Controller
 			return Ok();
 		}
 
-		return StatusCode(500, $"Failed to update ratings");
+		return StatusCode(500, "Failed to update ratings");
 	}
-	
+
 	[HttpDelete("danger/truncate")]
 	public async Task<IActionResult> TruncateAsync()
 	{

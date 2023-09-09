@@ -1,3 +1,4 @@
+using API.Models;
 using Newtonsoft.Json;
 
 namespace APITests.Osu;

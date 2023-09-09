@@ -1,3 +1,4 @@
+using API.Models;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,12 +10,13 @@ public class PlayersController : Controller
 {
 	private readonly ILogger<PlayersController> _logger;
 	private readonly IPlayerService _service;
+
 	public PlayersController(ILogger<PlayersController> logger, IPlayerService service)
 	{
 		_logger = logger;
 		_service = service;
 	}
-	
+
 	[HttpGet("all")]
 	public async Task<ActionResult<IEnumerable<Player>?>> GetAllAsync()
 	{
@@ -45,7 +47,7 @@ public class PlayersController : Controller
 
 		return NotFound($"User with id {osuId} does not exist");
 	}
-	
+
 	[HttpGet("{id}/osuid")]
 	public async Task<ActionResult<long>> GetOsuIdByIdAsync(int id)
 	{

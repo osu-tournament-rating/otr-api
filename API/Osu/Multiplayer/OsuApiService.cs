@@ -1,4 +1,5 @@
 using API.Configurations;
+using API.Models;
 using Newtonsoft.Json;
 
 namespace API.Osu.Multiplayer;

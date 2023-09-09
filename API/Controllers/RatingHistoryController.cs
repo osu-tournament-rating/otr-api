@@ -1,3 +1,4 @@
+using API.Models;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,14 +28,14 @@ public class RatingHistoryController : Controller
 
 		return NotFound($"User with id {playerId} does not have any data");
 	}
-	
+
 	[HttpPost("batch")]
 	public async Task<IActionResult> BatchReplaceAsync(IEnumerable<RatingHistory> histories)
 	{
 		await _service.ReplaceBatchAsync(histories);
 		return Ok();
 	}
-	
+
 	[HttpDelete("danger/truncate")]
 	public async Task<IActionResult> TruncateAsync()
 	{

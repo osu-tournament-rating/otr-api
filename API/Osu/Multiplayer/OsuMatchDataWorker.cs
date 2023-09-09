@@ -1,3 +1,5 @@
+using API.Enums;
+using API.Models;
 using API.Services.Interfaces;
 
 namespace API.Osu.Multiplayer;
@@ -5,11 +7,10 @@ namespace API.Osu.Multiplayer;
 public class OsuMatchDataWorker : BackgroundService
 {
 	private const int INTERVAL_SECONDS = 5;
-
 	private readonly OsuApiService _apiService;
 	private readonly ILogger<OsuMatchDataWorker> _logger;
 	private readonly IServiceProvider _serviceProvider;
-	
+
 	public OsuMatchDataWorker(ILogger<OsuMatchDataWorker> logger, IServiceProvider serviceProvider, OsuApiService apiService)
 	{
 		_logger = logger;
@@ -34,7 +35,7 @@ public class OsuMatchDataWorker : BackgroundService
 			{
 				var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
 				var beatmapsService = scope.ServiceProvider.GetRequiredService<IBeatmapService>();
-				
+
 				var osuMatch = await matchesService.GetFirstPendingOrDefaultAsync();
 				if (osuMatch == null)
 				{
@@ -42,7 +43,7 @@ public class OsuMatchDataWorker : BackgroundService
 					_logger.LogTrace("Nothing to process, waiting for {Interval} seconds", INTERVAL_SECONDS);
 					continue;
 				}
-				
+
 				try
 				{
 					var result = await _apiService.GetMatchAsync(osuMatch.MatchId);
@@ -51,7 +52,7 @@ public class OsuMatchDataWorker : BackgroundService
 						await UpdateLinkStatusAsync(osuMatch.MatchId, VerificationStatus.Failure, matchesService);
 						continue;
 					}
-					
+
 					await ProcessOsuMatch(result, matchesService, beatmapsService);
 				}
 				catch (Exception e)
@@ -71,11 +72,10 @@ public class OsuMatchDataWorker : BackgroundService
 	}
 
 	/// <summary>
-	/// Steps:
-	///
-	/// 1. Process the beatmaps and ensure we are not duplicating this data
-	/// 2. Process the match, the games, and the scores
-	/// 3. Update the match verification status accordingly
+	///  Steps:
+	///  1. Process the beatmaps and ensure we are not duplicating this data
+	///  2. Process the match, the games, and the scores
+	///  3. Update the match verification status accordingly
 	/// </summary>
 	/// <param name="osuMatch"></param>
 	/// <param name="matchesService"></param>
@@ -88,7 +88,7 @@ public class OsuMatchDataWorker : BackgroundService
 	{
 		await ProcessBeatmapsAsync(osuMatch, beatmapService);
 		await matchesService.CreateFromApiMatchAsync(osuMatch);
-		
+
 		if (!LobbyNameChecker.IsNameValid(osuMatch.Match.Name))
 		{
 			await UpdateLinkStatusAsync(osuMatch.Match.MatchId, VerificationStatus.Rejected, matchesService);
@@ -109,7 +109,7 @@ public class OsuMatchDataWorker : BackgroundService
 		var existing = await beatmapService.GetByBeatmapIdsAsync(distinctBeatmapIds);
 		var idsToProcess = distinctBeatmapIds.Except(existing.Select(x => x.BeatmapId)).ToList();
 		var beatmaps = new List<Beatmap>();
-		
+
 		foreach (long beatmapId in idsToProcess)
 		{
 			// Fetch the api and store

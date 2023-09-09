@@ -40,7 +40,7 @@ public partial class Player
     public virtual ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
 
     [InverseProperty("Player")]
-    public virtual ICollection<RatingHistory> Ratinghistories { get; set; } = new List<RatingHistory>();
+    public virtual ICollection<RatingHistory> RatingHistories { get; set; } = new List<RatingHistory>();
 
     [InverseProperty("Player")]
     public virtual ICollection<Rating> Ratings { get; set; } = new List<Rating>();
