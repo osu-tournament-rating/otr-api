@@ -7,11 +7,11 @@ namespace API.Osu.Multiplayer;
 public class OsuMatchDataWorker : BackgroundService
 {
 	private const int INTERVAL_SECONDS = 5;
-	private readonly OsuApiService _apiService;
+	private readonly IOsuApiService _apiService;
 	private readonly ILogger<OsuMatchDataWorker> _logger;
 	private readonly IServiceProvider _serviceProvider;
 
-	public OsuMatchDataWorker(ILogger<OsuMatchDataWorker> logger, IServiceProvider serviceProvider, OsuApiService apiService)
+	public OsuMatchDataWorker(ILogger<OsuMatchDataWorker> logger, IServiceProvider serviceProvider, IOsuApiService apiService)
 	{
 		_logger = logger;
 		_serviceProvider = serviceProvider;

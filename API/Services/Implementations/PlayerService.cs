@@ -74,7 +74,7 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 	{
 		using (_context)
 		{
-			return await _context.Players.Where(p => p.Updated < DateTime.Now.Subtract(TimeSpan.FromDays(14)) || p.Updated == null).ToListAsync();
+			return await _context.Players.Where(p => p.Updated < DateTime.Now.AddDays(-14) || p.Updated == null).ToListAsync();
 		}
 	}
 }
