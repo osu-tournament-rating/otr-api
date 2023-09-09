@@ -34,11 +34,25 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 		}
 	}
 
-	public async Task<int> BatchInsertAsync(IEnumerable<RatingHistory> histories)
+	public async Task<int> BatchInsertAsync(IEnumerable<RatingHistoryDTO> histories)
 	{
+		var ls = new List<RatingHistory>();
+		foreach(var history in histories)
+		{
+			ls.Add(new RatingHistory
+			{
+				PlayerId = history.PlayerId,
+				Mu = history.Mu,
+				Sigma = history.Sigma,
+				Created = history.Created,
+				Mode = history.Mode,
+				MatchId = history.MatchId
+			});
+		}
+		
 		using (_context)
 		{
-			await _context.RatingHistories.AddRangeAsync(histories);
+			await _context.RatingHistories.AddRangeAsync(ls);
 			return await _context.SaveChangesAsync();
 		}
 	}

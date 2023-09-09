@@ -10,6 +10,7 @@ public partial class RatingHistory
 {
     [Key]
     [Column("id")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
     [Column("player_id")]
@@ -21,7 +22,7 @@ public partial class RatingHistory
     [Column("sigma")]
     public double Sigma { get; set; }
 
-    [Column("created", TypeName = "timestamp without time zone")]
+    [Column("created", TypeName = "timestamp with time zone")]
     public DateTime Created { get; set; }
 
     [Column("mode")]
@@ -30,7 +31,7 @@ public partial class RatingHistory
     [Column("match_id")]
     public int MatchId { get; set; }
 
-    [Column("updated", TypeName = "timestamp without time zone")]
+    [Column("updated", TypeName = "timestamp with time zone")]
     public DateTime? Updated { get; set; }
 
     [ForeignKey("MatchId")]

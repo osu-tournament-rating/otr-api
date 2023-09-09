@@ -97,7 +97,7 @@ public class Beatmap
     [JsonProperty("max_combo")]
     public int MaxCombo { get; set; }
 
-    [Column("created", TypeName = "timestamp without time zone")]
+    [Column("created", TypeName = "timestamp with time zone")]
     [JsonProperty("submit_date")] // Mapping to submit_date as the closest match
     public DateTime Created { get; set; }
 

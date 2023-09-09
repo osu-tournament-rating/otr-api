@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Models;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -30,7 +31,7 @@ public class RatingHistoryController : Controller
 	}
 
 	[HttpPost("batch")]
-	public async Task<IActionResult> BatchReplaceAsync(IEnumerable<RatingHistory> histories)
+	public async Task<IActionResult> BatchReplaceAsync(IEnumerable<RatingHistoryDTO> histories)
 	{
 		int? result = await _service.BatchInsertAsync(histories);
 		if (result > 0)

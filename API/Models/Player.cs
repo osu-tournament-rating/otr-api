@@ -15,7 +15,7 @@ public partial class Player
     [Column("osu_id")]
     public long OsuId { get; set; }
 
-    [Column("created", TypeName = "timestamp without time zone")]
+    [Column("created", TypeName = "timestamp with time zone")]
     public DateTime Created { get; set; }
 
     [Column("rank_standard")]
@@ -30,7 +30,7 @@ public partial class Player
     [Column("rank_mania")]
     public int? RankMania { get; set; }
 
-    [Column("updated", TypeName = "timestamp without time zone")]
+    [Column("updated", TypeName = "timestamp with time zone")]
     public DateTime? Updated { get; set; }
 
     [Column("username")]

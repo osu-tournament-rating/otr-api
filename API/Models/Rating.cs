@@ -10,6 +10,7 @@ public partial class Rating
 {
     [Key]
     [Column("id")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
     [Column("player_id")]
@@ -21,10 +22,10 @@ public partial class Rating
     [Column("sigma")]
     public double Sigma { get; set; }
 
-    [Column("created", TypeName = "timestamp without time zone")]
+    [Column("created", TypeName = "timestamp with time zone")]
     public DateTime Created { get; set; }
 
-    [Column("updated", TypeName = "timestamp without time zone")]
+    [Column("updated", TypeName = "timestamp with time zone")]
     public DateTime? Updated { get; set; }
 
     [Column("mode")]

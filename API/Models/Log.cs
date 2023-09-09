@@ -16,7 +16,7 @@ public partial class Log
     [Column("level")]
     public int? Level { get; set; }
 
-    [Column("timestamp", TypeName = "timestamp without time zone")]
+    [Column("timestamp", TypeName = "timestamp with time zone")]
     public DateTime? Timestamp { get; set; }
 
     [Column("exception")]

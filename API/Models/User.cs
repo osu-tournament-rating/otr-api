@@ -13,10 +13,10 @@ public partial class User
     [Column("player_id")]
     public int PlayerId { get; set; }
 
-    [Column("last_login", TypeName = "timestamp without time zone")]
+    [Column("last_login", TypeName = "timestamp with time zone")]
     public DateTime? LastLogin { get; set; }
 
-    [Column("created", TypeName = "timestamp without time zone")]
+    [Column("created", TypeName = "timestamp with time zone")]
     public DateTime Created { get; set; }
 
     /// <summary>
@@ -28,10 +28,10 @@ public partial class User
     [Column("session_token")]
     public string? SessionToken { get; set; }
 
-    [Column("updated", TypeName = "timestamp without time zone")]
+    [Column("updated", TypeName = "timestamp with time zone")]
     public DateTime? Updated { get; set; }
 
-    [Column("session_expiration", TypeName = "timestamp without time zone")]
+    [Column("session_expiration", TypeName = "timestamp with time zone")]
     public DateTime? SessionExpiration { get; set; }
 
     [ForeignKey("PlayerId")]

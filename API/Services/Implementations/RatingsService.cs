@@ -75,11 +75,24 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 		}
 	}
 
-	public async Task<int> BatchInsertAsync(IEnumerable<Rating> ratings)
+	public async Task<int> BatchInsertAsync(IEnumerable<RatingDTO> ratings)
 	{
+		var ls = new List<Rating>();
+		foreach (var rating in ratings)
+		{
+			ls.Add(new Rating
+			{
+				PlayerId = rating.PlayerId,
+				Mu = rating.Mu,
+				Sigma = rating.Sigma,
+				Created = DateTime.UtcNow,
+				Mode = rating.Mode
+			});
+		}
+		
 		using (_context)
 		{
-			await _context.Ratings.AddRangeAsync(ratings);
+			await _context.Ratings.AddRangeAsync(ls);
 			return await _context.SaveChangesAsync();
 		}
 	}

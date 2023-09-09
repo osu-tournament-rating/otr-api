@@ -16,6 +16,6 @@ public partial class Config
     [Column("id")]
     public int Id { get; set; }
 
-    [Column("created", TypeName = "timestamp without time zone")]
+    [Column("created", TypeName = "timestamp with time zone")]
     public DateTime? Created { get; set; }
 }

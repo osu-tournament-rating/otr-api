@@ -16,13 +16,13 @@ public class Match
 	public long MatchId { get; set; }
 	[Column("name")]
 	public string? Name { get; set; }
-	[Column("start_time", TypeName = "timestamp without time zone")]
+	[Column("start_time", TypeName = "timestamp with time zone")]
 	public DateTime? StartTime { get; set; }
-	[Column("created", TypeName = "timestamp without time zone")]
+	[Column("created", TypeName = "timestamp with time zone")]
 	public DateTime Created { get; set; }
-	[Column("updated", TypeName = "timestamp without time zone")]
+	[Column("updated", TypeName = "timestamp with time zone")]
 	public DateTime? Updated { get; set; }
-	[Column("end_time", TypeName = "timestamp without time zone")]
+	[Column("end_time", TypeName = "timestamp with time zone")]
 	public DateTime? EndTime { get; set; }
 	[Column("verification_info")]
 	public string? VerificationInfo { get; set; }

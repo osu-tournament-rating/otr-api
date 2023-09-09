@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Models;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -55,7 +56,7 @@ public class RatingsController : Controller
 	}
 
 	[HttpPost("batch")]
-	public async Task<ActionResult> BatchInsertOrUpdateAsync([FromBody] IEnumerable<Rating> ratings)
+	public async Task<ActionResult> BatchInsertOrUpdateAsync([FromBody] IEnumerable<RatingDTO> ratings)
 	{
 		int? result = await _service.BatchInsertAsync(ratings);
 		if (result > 0)

@@ -13,7 +13,7 @@ public interface IRatingsService : IService<Rating>
 	Task<IEnumerable<RatingDTO>> GetForPlayerAsync(long osuPlayerId);
 
 	Task<int> InsertOrUpdateForPlayerAsync(int playerId, Rating rating);
-	Task<int> BatchInsertAsync(IEnumerable<Rating> ratings);
+	Task<int> BatchInsertAsync(IEnumerable<RatingDTO> ratings);
 	Task<IEnumerable<RatingDTO>> GetAllAsync();
 	Task TruncateAsync();
 }
