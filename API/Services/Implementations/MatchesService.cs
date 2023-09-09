@@ -31,14 +31,14 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 		{
 			var query = _context.Matches
 			                    .Include(m => m.Games)
-			                    .ThenInclude(g => g.MatchScores)
+			                    .ThenInclude(g => g.Scores)
 			                    .Include(m => m.Games)
 			                    .ThenInclude(g => g.Beatmap).AsQueryable();
 
 			if (onlyIncludeFiltered)
 			{
 				query = query.Where(m => (m.VerificationStatus == (int) VerificationStatus.Verified || m.VerificationStatus == (int)VerificationStatus.PreVerified) &&
-				                         m.Games.Any(g => g.MatchScores.Any(ms => ms.Score > 10000) &&
+				                         m.Games.Any(g => g.Scores.Any(ms => ms.Score > 10000) &&
 				                                          g.Beatmap!.DrainTime > 20 &&
 				                                          g.Beatmap!.Sr < 12 &&
 				                                          g.ScoringType == (int) OsuEnums.ScoringType.ScoreV2)); // Score v2 only
@@ -54,13 +54,13 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 					var gamesToRemove = new List<Models.Game>();
 					foreach (var game in match.Games)
 					{
-						if ((game.MatchScores.Count % 2) != 0 || game.MatchScores.Count == 0 || !IsValidModCombination(game.ModsEnum))
+						if ((game.Scores.Count % 2) != 0 || game.Scores.Count == 0 || !IsValidModCombination(game.ModsEnum))
 						{
 							gamesToRemove.Add(game);
 							continue;
 						}
 
-						foreach (var score in game.MatchScores)
+						foreach (var score in game.Scores)
 						{
 							if (!IsValidModCombination(score.EnabledModsEnum ?? OsuEnums.Mods.None))
 							{
@@ -99,7 +99,7 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 			                                            .Include(x => x.Games)
 			                                            .ThenInclude(x => x.Beatmap)
 			                                            .Include(x => x.Games)
-			                                            .ThenInclude(x => x.MatchScores)
+			                                            .ThenInclude(x => x.Scores)
 			                                            .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
 		}
 	}
