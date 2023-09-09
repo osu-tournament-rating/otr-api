@@ -58,28 +58,18 @@ public class MatchScore
 			return null;
 		}
 	}
-	
 	/// <summary>
-	/// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
+	///  Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
 	/// </summary>
 	[NotMapped]
 	public double AccuracyStandard => (100 * ((300d * Count300) + (100d * Count100) + (50d * Count50))) / (300d * (Count300 + Count100 + Count50 + CountMiss));
-
 	/// <summary>
-	/// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985). ScoreV2 accuracy as shown here https://osu.ppy.sh/wiki/en/Gameplay/Accuracy
-	/// </summary>
-	[NotMapped]
-	public double AccuracyMania => (100 * ((305d * CountGeki) + (300 * Count300) + (200 * CountKatu) + (100 * Count100) + (50 * Count50))) /
-	                               (305d * (CountGeki + Count300 + CountKatu + Count100 + Count50 + CountMiss));
-	
-	/// <summary>
-	/// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
+	///  Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
 	/// </summary>
 	[NotMapped]
 	public double AccuracyTaiko => (100 * (Count300 + (0.5 * Count100))) / (Count300 + Count100 + CountMiss);
-	
 	/// <summary>
-	/// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985).
+	///  Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985).
 	/// </summary>
 	[NotMapped]
 	public double AccuracyCatch
@@ -95,4 +85,11 @@ public class MatchScore
 			return (100 * (Count300 + Count100 + Count50)) / divisor;
 		}
 	}
+	/// <summary>
+	///  Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985). ScoreV2 accuracy as shown here
+	///  https://osu.ppy.sh/wiki/en/Gameplay/Accuracy
+	/// </summary>
+	[NotMapped]
+	public double AccuracyMania => (100 * ((305d * CountGeki) + (300 * Count300) + (200 * CountKatu) + (100 * Count100) + (50 * Count50))) /
+	                               (305d * (CountGeki + Count300 + CountKatu + Count100 + Count50 + CountMiss));
 }

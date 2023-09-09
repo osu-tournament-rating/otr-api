@@ -24,8 +24,8 @@ public class PlayersController : Controller
 		return Ok(players);
 	}
 
-	[HttpGet("{osuId:int}")]
-	public async Task<ActionResult<Player?>> Get(int osuId)
+	[HttpGet("{osuId:long}")]
+	public async Task<ActionResult<Player?>> Get(long osuId)
 	{
 		var data = await _service.GetByOsuIdAsync(osuId);
 		if (data != null)
@@ -37,7 +37,7 @@ public class PlayersController : Controller
 	}
 
 	[HttpGet("{osuId:int}/id")]
-	public async Task<ActionResult<int>> GetIdByOsuIdAsync(int osuId)
+	public async Task<ActionResult<int>> GetIdByOsuIdAsync(long osuId)
 	{
 		int id = await _service.GetIdByOsuIdAsync(osuId);
 		if (id != 0)

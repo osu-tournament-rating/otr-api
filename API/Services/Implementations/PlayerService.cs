@@ -30,6 +30,7 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 			                     .Include(x => x.RatingHistories)
 			                     .Include(x => x.Ratings)
 			                     .Include(x => x.User)
+			                     .Where(x => x.OsuId == osuId)
 			                     .FirstOrDefaultAsync();
 		}
 	}
