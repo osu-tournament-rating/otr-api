@@ -9,11 +9,9 @@ namespace API.Services.Implementations;
 
 public class PlayerService : ServiceBase<Player>, IPlayerService
 {
-	private readonly IServiceProvider _serviceProvider;
-	public PlayerService(ILogger<PlayerService> logger, IServiceProvider serviceProvider) : base(logger)
-	{
-		_serviceProvider = serviceProvider;
-	}
+	private readonly OtrContext _context;
+
+	public PlayerService(ILogger<PlayerService> logger, OtrContext context) : base(logger) { _context = context; }
 
 	public async Task<IEnumerable<Player>> GetAllAsync()
 	{
@@ -25,41 +23,46 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 
 	public async Task<Player?> GetByOsuIdAsync(long osuId)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			return await context.Players.FirstOrDefaultAsync(p => p.OsuId == osuId);
+			return await _context.Players
+			                     .Include(x => x.MatchScores)
+			                     .Include(x => x.RatingHistories)
+			                     .Include(x => x.Ratings)
+			                     .Include(x => x.User)
+			                     .FirstOrDefaultAsync();
 		}
 	}
 
 	public async Task<IEnumerable<Player>> GetByOsuIdsAsync(IEnumerable<long> osuIds)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			return await context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
+			return await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 		}
 	}
 
 	public async Task<int> GetIdByOsuIdAsync(long osuId)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			return await context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
+			return await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
 		}
 	}
 
 	public async Task<long> GetOsuIdByIdAsync(int id)
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			return await context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
+			return await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
 		}
 	}
 
 	public async Task<IEnumerable<Player>> GetOutdatedAsync()
 	{
-		using (var context = new OtrContext())
+		using (_context)
 		{
-			return await context.Players.Where(p => p.Updated < DateTime.Now.Subtract(TimeSpan.FromDays(14)) || p.Updated == null).ToListAsync();
+			return await _context.Players.Where(p => p.Updated < DateTime.Now.Subtract(TimeSpan.FromDays(14)) || p.Updated == null).ToListAsync();
 		}
 	}
 }

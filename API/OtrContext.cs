@@ -24,7 +24,8 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<Rating> Ratings { get; set; }
 	public virtual DbSet<RatingHistory> RatingHistories { get; set; }
 	public virtual DbSet<User> Users { get; set; }
-	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
+	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => 
+		optionsBuilder.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
@@ -58,10 +59,13 @@ public partial class OtrContext : DbContext
 
 			entity.HasOne(g => g.Beatmap)
 			      .WithMany(b => b.Games)
-			      .HasForeignKey(g => g.BeatmapId)
 			      .OnDelete(DeleteBehavior.ClientSetNull)
 			      .HasConstraintName("games_beatmaps_id_fk")
 			      .IsRequired(false);
+
+			entity.HasMany(g => g.MatchScores)
+			      .WithOne(s => s.Game)
+			      .OnDelete(DeleteBehavior.ClientSetNull);
 		});
 
 		modelBuilder.Entity<Match>(entity =>
@@ -70,6 +74,9 @@ public partial class OtrContext : DbContext
 
 			entity.Property(e => e.Id).HasDefaultValueSql("nextval('osumatches_id_seq'::regclass)");
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+			entity.HasMany(e => e.Games).WithOne(g => g.Match);
+			entity.HasMany(e => e.RatingHistories).WithOne(h => h.Match);
 		});
 
 		modelBuilder.Entity<MatchScore>(entity =>
@@ -94,6 +101,11 @@ public partial class OtrContext : DbContext
 			entity.HasKey(e => e.Id).HasName("Player_pk");
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+			entity.HasMany(e => e.MatchScores).WithOne(m => m.Player);
+			entity.HasMany(e => e.RatingHistories).WithOne(r => r.Player);
+			entity.HasMany(e => e.Ratings).WithOne(r => r.Player);
+			entity.HasOne(e => e.User).WithOne(u => u.Player);
 		});
 
 		modelBuilder.Entity<Rating>(entity =>
@@ -114,8 +126,8 @@ public partial class OtrContext : DbContext
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-			entity.HasOne(d => d.Game)
-			      .WithMany(p => p.Ratinghistories)
+			entity.HasOne(d => d.Match)
+			      .WithMany(p => p.RatingHistories)
 			      .OnDelete(DeleteBehavior.ClientSetNull)
 			      .HasConstraintName("ratinghistories_matches_id_fk");
 
@@ -133,9 +145,10 @@ public partial class OtrContext : DbContext
 			entity.Property(e => e.Roles).HasComment("Comma-delimited list of roles (e.g. user, admin, etc.)");
 
 			entity.HasOne(d => d.Player)
-			      .WithMany(p => p.Users)
+			      .WithOne(p => p.User)
 			      .OnDelete(DeleteBehavior.ClientSetNull)
-			      .HasConstraintName("Users___fkplayerid");
+			      .HasConstraintName("Users___fkplayerid")
+			      .IsRequired(false);
 		});
 
 		OnModelCreatingPartial(modelBuilder);

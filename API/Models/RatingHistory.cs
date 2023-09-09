@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace API.Models;
 
 [Table("ratinghistories")]
-[Index("PlayerId", "GameId", Name = "ratinghistories_pk", IsUnique = true)]
+[Index("PlayerId", "MatchId", Name = "ratinghistories_pk", IsUnique = true)]
 public partial class RatingHistory
 {
     [Key]
@@ -27,17 +27,17 @@ public partial class RatingHistory
     [Column("mode")]
     public int Mode { get; set; }
 
-    [Column("game_id")]
-    public int GameId { get; set; }
+    [Column("match_id")]
+    public int MatchId { get; set; }
 
     [Column("updated", TypeName = "timestamp without time zone")]
     public DateTime? Updated { get; set; }
 
-    [ForeignKey("GameId")]
-    [InverseProperty("Ratinghistories")]
-    public virtual Match Game { get; set; } = null!;
+    [ForeignKey("MatchId")]
+    [InverseProperty("RatingHistories")]
+    public virtual Match Match { get; set; } = null!;
 
     [ForeignKey("PlayerId")]
-    [InverseProperty("Ratinghistories")]
+    [InverseProperty("RatingHistories")]
     public virtual Player Player { get; set; } = null!;
 }

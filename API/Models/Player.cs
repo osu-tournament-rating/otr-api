@@ -46,5 +46,5 @@ public partial class Player
     public virtual ICollection<Rating> Ratings { get; set; } = new List<Rating>();
 
     [InverseProperty("Player")]
-    public virtual ICollection<User> Users { get; set; } = new List<User>();
+    public virtual User? User { get; set; }
 }

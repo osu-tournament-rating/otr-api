@@ -35,6 +35,6 @@ public partial class User
     public DateTime? SessionExpiration { get; set; }
 
     [ForeignKey("PlayerId")]
-    [InverseProperty("Users")]
+    [InverseProperty("User")]
     public virtual Player Player { get; set; } = null!;
 }

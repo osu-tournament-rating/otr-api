@@ -1,8 +1,10 @@
+using API;
 using API.Configurations;
 using API.Osu.Multiplayer;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using Dapper;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
 using System.Text.Json.Serialization;
@@ -12,7 +14,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers()
-       .AddJsonOptions(o => { o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals; });
+       .AddJsonOptions(o =>
+       {
+	       o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
+	       o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+       });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -41,6 +47,12 @@ builder.Services.AddHostedService<OsuPlayerDataWorker>();
 builder.Services.AddHostedService<OsuMatchDataWorker>();
 #endif
 
+builder.Services.AddDbContext<OtrContext>(o =>
+{
+	o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection") ??
+	            throw new InvalidOperationException("Missing connection string!"));
+});
+
 builder.Services.AddScoped<IRatingsService, RatingsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
@@ -63,8 +75,6 @@ builder.Services.AddSingleton<ICredentials, Credentials>(serviceProvider =>
 
 	return new Credentials(connString, osuApiKey);
 });
-
-builder.Services.AddSingleton<OsuApiService>();
 
 var app = builder.Build();
 

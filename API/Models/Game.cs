@@ -42,7 +42,7 @@ public class Game
 	[ForeignKey("BeatmapId")]
 	[InverseProperty("Games")]
 	public virtual Beatmap? Beatmap { get; set; }
-	[InverseProperty("Game")]
+	[InverseProperty("Game")] 
 	public virtual ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
 	[NotMapped]
 	public OsuEnums.Mods ModsEnum => (OsuEnums.Mods)Mods;

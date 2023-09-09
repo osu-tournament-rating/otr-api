@@ -25,7 +25,7 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 			foreach (var history in histories.OrderBy(x => x.Created))
 			{
 				var existingHistory = await context.RatingHistories
-				                                   .FirstOrDefaultAsync(h => h.PlayerId == history.PlayerId && h.GameId == history.GameId);
+				                                   .FirstOrDefaultAsync(h => h.PlayerId == history.PlayerId && h.MatchId == history.MatchId);
 
 				if (existingHistory == null)
 				{

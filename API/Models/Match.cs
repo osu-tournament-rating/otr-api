@@ -32,8 +32,8 @@ public class Match
 	public int? VerificationStatus { get; set; }
 	[InverseProperty("Match")]
 	public virtual ICollection<Game> Games { get; set; } = new List<Game>();
-	[InverseProperty("Game")]
-	public virtual ICollection<RatingHistory> Ratinghistories { get; set; } = new List<RatingHistory>();
+	[InverseProperty("Match")]
+	public virtual ICollection<RatingHistory> RatingHistories { get; set; } = new List<RatingHistory>();
 	[NotMapped]
 	public MatchVerificationSource? VerificationSourceEnum
 	{
