@@ -11,4 +11,7 @@ public interface IGamesService : IService<Game>
 	Task<int> CreateIfNotExistsAsync(Game dbGame);
 	Task<Game?> GetByOsuGameIdAsync(long osuGameId);
 	Task<Match?> GetMatchByGameIdAsync(int gameId);
+	Task<Game?> GetByGameIdAsync(long gameGameId);
+
+	Task<IEnumerable<Game>> GetByMatchIdAsync(long matchId);
 }

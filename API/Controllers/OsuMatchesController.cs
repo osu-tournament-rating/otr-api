@@ -10,11 +10,16 @@ public class OsuMatchesController : Controller
 {
 	private readonly ILogger<OsuMatchesController> _logger;
 	private readonly IMatchesService _service;
-
-	public OsuMatchesController(ILogger<OsuMatchesController> logger, IMatchesService service)
+	private readonly IGamesService _gamesService;
+	private readonly IMatchScoresService _scoresService;
+	
+	public OsuMatchesController(ILogger<OsuMatchesController> logger, 
+		IMatchesService service, IGamesService gamesService, IMatchScoresService scoresService)
 	{
 		_logger = logger;
 		_service = service;
+		_gamesService = gamesService;
+		_scoresService = scoresService;
 	}
 
 	[HttpPost("batch")]
@@ -56,5 +61,27 @@ public class OsuMatchesController : Controller
 	{
 		var matches = (await _service.GetAllAsync(true)).ToList();
 		return Ok(matches);
+	}
+	
+	[HttpGet("{matchId:long}")]
+	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long matchId)
+	{
+		var match = await _service.GetByLobbyIdAsync(matchId);
+
+		if (match == null)
+		{
+			return NotFound($"Failed to locate match {matchId}");
+		}
+		
+		var games = (await _gamesService.GetByMatchIdAsync(match.Id)).ToList();
+		match.Games = games;
+		
+		foreach (var game in games)
+		{
+			var scores = (await _scoresService.GetForGameAsync(game.Id)).ToList();
+			game.Scores = scores;
+		}
+		
+		return Ok(match);
 	}
 }
