@@ -63,26 +63,25 @@ public class OsuMatchesController : Controller
 		return Ok(matches);
 	}
 	
-	
-	//TODO: fix up the casting? and hopefully i didnt do a braindead implementation !!
 	[HttpGet("{matchId:long}")]
 	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long matchId)
 	{
 		var match = await _service.GetByLobbyIdAsync(matchId);
-		var games = await _gamesService.GetByMatchIdAsync(match.Id);
-		match.Games = (ICollection<Game>)games;
+
+		if (match == null)
+		{
+			return NotFound($"Failed to locate match {matchId}");
+		}
+		
+		var games = (await _gamesService.GetByMatchIdAsync(match.Id)).ToList();
+		match.Games = games;
 		
 		foreach (var game in games)
 		{
-			var scores = await _scoresService.GetForGameAsync(game.Id);
-			game.Scores = (ICollection<MatchScore>)scores;
+			var scores = (await _scoresService.GetForGameAsync(game.Id)).ToList();
+			game.Scores = scores;
 		}
 		
-		if (match == null)
-		{
-			return NotFound("No matching matchId in the database.");
-		}
-
 		return Ok(match);
 	}
 }

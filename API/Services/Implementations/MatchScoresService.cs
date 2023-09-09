@@ -10,7 +10,7 @@ public class MatchScoresService : ServiceBase<MatchScore>, IMatchScoresService
 {
 	public MatchScoresService(ICredentials credentials, ILogger<MatchScoresService> logger) : base(credentials, logger) {}
 
-	public async Task<IEnumerable<MatchScore>> GetForGameAsync(long gameId)
+	public async Task<IEnumerable<MatchScore>> GetForGameAsync(int gameId)
 	{
 		using(var connection = new NpgsqlConnection(ConnectionString))
 		{
@@ -19,7 +19,7 @@ public class MatchScoresService : ServiceBase<MatchScore>, IMatchScoresService
 		}
 	}
 
-	public async Task<IEnumerable<MatchScore>> GetForPlayerAsync(long playerId)
+	public async Task<IEnumerable<MatchScore>> GetForPlayerAsync(int playerId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
