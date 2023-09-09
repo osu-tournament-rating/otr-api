@@ -1,6 +1,8 @@
 using API.Configurations;
+using API.Models;
 using API.Services.Interfaces;
 using Dapper;
+using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
 namespace API.Services.Implementations;
@@ -8,25 +10,23 @@ namespace API.Services.Implementations;
 public class RatingsService : ServiceBase<Rating>, IRatingsService
 {
 	private readonly ILogger<RatingsService> _logger;
-	private readonly IPlayerService _playerService;
 
-	public RatingsService(ICredentials credentials, ILogger<RatingsService> logger, IPlayerService playerService) : base(credentials, logger)
+	public RatingsService(ILogger<RatingsService> logger) : base(logger)
 	{
 		_logger = logger;
-		_playerService = playerService;
 	}
 
 	public async Task<IEnumerable<Rating>> GetForPlayerAsync(int playerId)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			return await connection.QueryAsync<Rating>("SELECT * FROM ratings WHERE player_id = @PlayerId", new { PlayerId = playerId });
+			return await context.Ratings.Where(x => x.PlayerId == playerId).ToListAsync();
 		}
 	}
 
-	public override async Task<int?> UpdateAsync(Rating entity)
+	public override async Task<int> UpdateAsync(Rating entity)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
 			// First, copy the current state of the entity to the history table.
 			var history = new RatingHistory
@@ -38,16 +38,8 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 				Mode = entity.Mode
 			};
 
-			try
-			{
-				await connection.ExecuteAsync("INSERT INTO ratinghistories (player_id, mu, sigma, created, mode, match_data_id) VALUES (@PlayerId, @Mu, @Sigma, @Created, @Mode, @MatchDataId)", history);
-				return await connection.ExecuteAsync("UPDATE ratings SET mu = @Mu, sigma = @Sigma WHERE player_id = @PlayerId AND mode = @Mode", entity);
-			}
-			catch (Exception e)
-			{
-				_logger.LogError(e, "Failed to update rating for player {PlayerId} in mode {Mode}", entity.PlayerId, entity.Mode);
-				return null;
-			}
+			await context.RatingHistories.AddAsync(history);
+			return await base.UpdateAsync(entity);
 		}
 	}
 

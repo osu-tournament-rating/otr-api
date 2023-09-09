@@ -28,26 +28,6 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		}
 	}
 
-	public async Task<Dictionary<long, int>> GetGameIdMappingAsync(IEnumerable<long> beatmapIds)
-	{
-		HashSet<long> beatmapIdsHashSet = beatmapIds.ToHashSet();
-		Dictionary<long, int> beatmapIdMapping;
-		
-		using (var context = new OtrContext())
-		{
-			beatmapIdMapping = await context.Beatmaps
-			                               .Where(b => beatmapIdsHashSet.Contains(b.BeatmapId))
-			                               .ToDictionaryAsync(b => b.BeatmapId, b => b.Id);
-		}
-
-		using (var context = new OtrContext())
-		{
-			return await context.Games
-			                    .Where(g => g.BeatmapId != null && beatmapIdMapping.Values.Contains(g.BeatmapId))
-			                    .ToDictionaryAsync(g => g.BeatmapId, g => g.Id);
-		}
-	}
-
 	public async Task<int> CreateIfNotExistsAsync(Game dbGame)
 	{
 		using (var context = new OtrContext())
@@ -63,6 +43,21 @@ public class GamesService : ServiceBase<Game>, IGamesService
 			return dbGame.Id;
 		}
 	}
-	public async Task<Game?> GetByOsuGameIdAsync(long osuGameId) => throw new NotImplementedException();
-	public async Task<IEnumerable<Game>> GetByMatchIdAsync(long matchId) => throw new NotImplementedException();
+
+	public async Task<Game?> GetByOsuGameIdAsync(long osuGameId)
+	{
+		using (var context = new OtrContext())
+		{
+			return await context.Games.FirstOrDefaultAsync(g => g.GameId == osuGameId);
+		}
+	}
+
+	public async Task<IEnumerable<Game>> GetByMatchIdAsync(long matchId)
+	{
+		using (var context = new OtrContext())
+		{
+			int id = await context.Matches.Where(match => match.MatchId == matchId).Select(match => match.Id).FirstOrDefaultAsync();
+			return await context.Games.Where(game => game.MatchId == id).ToListAsync();
+		}
+	}
 }

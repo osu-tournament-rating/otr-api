@@ -1,19 +1,18 @@
-using API.Configurations;
+using API.Models;
 using API.Services.Interfaces;
-using Dapper;
-using Npgsql;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.Implementations;
 
 public class UserService : ServiceBase<User>, IUserService
 {
-	public UserService(ICredentials credentials, ILogger<UserService> logger) : base(credentials, logger) {}
+	public UserService(ILogger<UserService> logger) : base(logger) {}
 
-	public async Task<User> GetForPlayerAsync(int playerId)
+	public async Task<User?> GetForPlayerAsync(int playerId)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			return await connection.QuerySingleOrDefaultAsync<User>("SELECT * FROM users WHERE player_id = @PlayerId", new { PlayerId = playerId });
+			return await context.Users.FirstOrDefaultAsync(u => u.PlayerId == playerId);
 		}
 	}
 }

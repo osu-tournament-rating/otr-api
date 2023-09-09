@@ -30,7 +30,7 @@ public partial class OtrContext : DbContext
 
     public virtual DbSet<Rating> Ratings { get; set; }
 
-    public virtual DbSet<RatingHistory> Ratinghistories { get; set; }
+    public virtual DbSet<RatingHistory> RatingHistories { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
