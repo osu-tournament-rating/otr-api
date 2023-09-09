@@ -63,7 +63,7 @@ public partial class OtrContext : DbContext
 			      .HasConstraintName("games_beatmaps_id_fk")
 			      .IsRequired(false);
 
-			entity.HasMany(g => g.Scores)
+			entity.HasMany(g => g.MatchScores)
 			      .WithOne(s => s.Game)
 			      .OnDelete(DeleteBehavior.ClientSetNull);
 		});
@@ -86,7 +86,7 @@ public partial class OtrContext : DbContext
 			entity.Property(e => e.Id).HasDefaultValueSql("nextval('scores_id_seq'::regclass)");
 
 			entity.HasOne(d => d.Game)
-			      .WithMany(p => p.Scores)
+			      .WithMany(p => p.MatchScores)
 			      .OnDelete(DeleteBehavior.ClientSetNull)
 			      .HasConstraintName("match_scores_games_id_fk");
 

@@ -13,5 +13,5 @@ public class GameDTO
 	public DateTime StartTime { get; set; }
 	public DateTime? EndTime { get; set; }
 	public BeatmapDTO? Beatmap { get; set; }
-	public List<MatchScoreDTO> Scores { get; set; } = new();
+	public List<MatchScoreDTO> MatchScores { get; set; } = new();
 }
