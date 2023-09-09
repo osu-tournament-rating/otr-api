@@ -1,25 +1,23 @@
-﻿using API.Entities.Bases;
+﻿namespace API.Services.Interfaces;
 
-namespace API.Services.Interfaces;
-
-public interface IService<T> where T : class, IEntity
+public interface IService<T> where T : class
 {
 	// CRUD operations
 
 	/// <summary>
-	///  Adds a new entity to the database. If successful, returns the primary key of the entity, otherwise null.
+	///  Adds a new entity to the database. Returns the added entity.
 	/// </summary>
-	Task<int?> CreateAsync(T entity);
+	Task<T> CreateAsync(T entity);
 
 	/// <summary>
-	///  Gets an entity from the database by its ID. Returns null if not found.
+	///  Gets an entity from the database by its primary key. Returns null if not found.
 	/// </summary>
 	Task<T?> GetAsync(int id);
 
 	/// <summary>
-	///  Updates an entity in the database by its ID. If successful, returns the primary key of the entity, otherwise null.
+	/// Updates an entity, returning the number of rows affected.
 	/// </summary>
-	Task<int?> UpdateAsync(T entity);
+	Task<int> UpdateAsync(T entity);
 
 	/// <summary>
 	///  Deletes an entity from the database by its ID. If successful, returns the primary key of the entity, otherwise null.
@@ -30,4 +28,11 @@ public interface IService<T> where T : class, IEntity
 	///  Returns true if an entity with the given ID exists in the database.
 	/// </summary>
 	Task<bool> ExistsAsync(int id);
+	
+	/// <summary>
+	/// Bulk inserts a collection of entities into the database.
+	/// </summary>
+	/// <param name="entities"></param>
+	/// <returns>Number of rows affected</returns>
+	Task<int> BulkInsertAsync(IEnumerable<T> entities);
 }

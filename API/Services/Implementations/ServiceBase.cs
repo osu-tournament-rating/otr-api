@@ -1,85 +1,71 @@
-﻿using API.Configurations;
-using API.Entities.Bases;
-using API.Services.Interfaces;
-using Dapper;
-using Npgsql;
+﻿using API.Services.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class ServiceBase<T> : IService<T> where T : class, IEntity
+public class ServiceBase<T> : IService<T> where T : class
 {
 	private readonly ILogger _logger;
 
-	public ServiceBase(ICredentials credentials, ILogger logger)
+	protected ServiceBase(ILogger logger)
 	{
 		_logger = logger;
-		ConnectionString = credentials.ConnectionString;
 	}
 
-	public string ConnectionString { get; }
-
-	public virtual async Task<int?> CreateAsync(T entity)
+	public virtual async Task<T> CreateAsync(T entity)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			_logger.LogDebug("Created entity {@Entity}", entity);
-			return await connection.InsertAsync(entity);
+			return (await context.Set<T>().AddAsync(entity)).Entity;
 		}
 	}
 
 	public virtual async Task<T?> GetAsync(int id)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			return await connection.GetAsync<T>(id);
+			return await context.Set<T>().FindAsync(id);
 		}
 	}
 
-	public virtual async Task<int?> UpdateAsync(T entity)
+	public virtual async Task<int> UpdateAsync(T entity)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			try
-			{
-				return await connection.UpdateAsync(entity);
-			}
-			catch (Exception e)
-			{
-				_logger.LogError(e, "Failed to update entity {Entity}", entity);
-				return null;
-			}
+			context.Set<T>().Update(entity);
+			return await context.SaveChangesAsync();
 		}
 	}
 
 	public virtual async Task<int?> DeleteAsync(int id)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			try
+			var entity = await context.Set<T>().FindAsync(id);
+			if (entity == null)
 			{
-				return await connection.DeleteAsync(id);
-			}
-			catch (Exception e)
-			{
-				_logger.LogError(e, "Failed to delete entity with id {Id}", id);
 				return null;
 			}
+
+			context.Set<T>().Remove(entity);
+			await context.SaveChangesAsync();
+			return id;
 		}
 	}
 
 	public virtual async Task<bool> ExistsAsync(int id)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			try
-			{
-				return await connection.QueryFirstAsync<T>("SELECT * FROM [dbo].[config] WHERE [Id] = @Id", new { Id = id }) != null;
-			}
-			catch (Exception e)
-			{
-				_logger.LogError(e, "Failed to check for existing entity with id {Id}", id);
-				return false;
-			}
+			return await context.Set<T>().FindAsync(id) != null;
+		}
+	}
+
+	public async Task<int> BulkInsertAsync(IEnumerable<T> entities)
+	{
+		using (var context = new OtrContext())
+		{
+			await context.Set<T>().AddRangeAsync(entities);
+			return await context.SaveChangesAsync();
 		}
 	}
 }

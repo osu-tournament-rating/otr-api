@@ -1,4 +1,3 @@
-using API.Entities;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;

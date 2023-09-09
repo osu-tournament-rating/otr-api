@@ -1,5 +1,4 @@
 using API.Configurations;
-using API.Osu;
 using API.Osu.Multiplayer;
 using API.Services.Implementations;
 using API.Services.Interfaces;

@@ -1,5 +1,4 @@
 using API.Configurations;
-using API.Entities;
 using API.Osu;
 using API.Osu.Multiplayer;
 using API.Services.Interfaces;
@@ -165,11 +164,18 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		return modCombination == OsuEnums.Mods.None;
 	}
 
-	public async Task<Entities.Match?> GetByLobbyIdAsync(long matchId)
+	public async Task<Entities.Match?> GetByOsuGameIdAsync(long osuGameId)
 	{
 		using (var connection = new NpgsqlConnection(ConnectionString))
 		{
-			return await connection.QuerySingleOrDefaultAsync<Entities.Match?>("SELECT * FROM matches WHERE match_id = @lobbyId", new { lobbyId = matchId });
+			int? matchId = await connection.QuerySingleOrDefaultAsync<int?>("SELECT match_id FROM games WHERE game_id = @GameId", new { GameId = osuGameId });
+
+			if (matchId == null)
+			{
+				return null;
+			}
+			
+			return await connection.QuerySingleOrDefaultAsync<Entities.Match?>("SELECT * FROM matches WHERE id = @MatchId", new { MatchId = matchId });
 		}
 	}
 
@@ -309,8 +315,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					};
 
 					// Insert game into database and store the ids
-					int rowsAffected = await _gamesService.CreateIfNotExistsAsync(dbGame);
-					if (rowsAffected == 0)
+					int id = await _gamesService.CreateIfNotExistsAsync(dbGame);
+					if (id == 0)
 					{
 						_logger.LogError("Failed to insert game {GameId}", game.GameId);
 					}

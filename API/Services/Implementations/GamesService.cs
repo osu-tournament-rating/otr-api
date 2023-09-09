@@ -1,104 +1,68 @@
-using API.Configurations;
-using API.Entities;
+using API.Models;
 using API.Services.Interfaces;
-using Dapper;
-using Npgsql;
-using NpgsqlTypes;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.Implementations;
 
 public class GamesService : ServiceBase<Game>, IGamesService
 {
-	private readonly IMatchScoresService _matchScoresService;
-	public GamesService(ICredentials credentials, ILogger<GamesService> logger, IMatchScoresService matchScoresService) : base(credentials, logger)
+	public GamesService(ILogger<GamesService> logger) : base(logger)
 	{
-		_matchScoresService = matchScoresService;
 	}
 
 	public async Task<IEnumerable<Game>> GetForPlayerAsync(int playerId)
 	{
-		var scores = await _matchScoresService.GetForPlayerAsync(playerId);
-		return scores.Select(x => x.Game);
-	}
-
-	public async Task<ulong> BulkInsertAsync(IEnumerable<Game> games)
-	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			await connection.OpenAsync();
-			using(var writer = connection.BeginBinaryImport(
-				"COPY games (match_id, beatmap_id, play_mode, match_type, scoring_type, team_type, mods, game_id, start_time, end_time) FROM STDIN (FORMAT BINARY)"))
-			{
-				await writer.StartRowAsync();
-
-				foreach (var game in games)
-				{
-					await writer.WriteAsync(game.MatchId, NpgsqlDbType.Integer);
-					await writer.WriteAsync(game.BeatmapId, NpgsqlDbType.Integer);
-					await writer.WriteAsync((int)game.PlayMode, NpgsqlDbType.Integer);
-					await writer.WriteAsync((int)game.MatchType, NpgsqlDbType.Integer);
-					await writer.WriteAsync((int)game.ScoringType, NpgsqlDbType.Integer);
-					await writer.WriteAsync((int)game.TeamType, NpgsqlDbType.Integer);
-					await writer.WriteAsync((int)game.Mods, NpgsqlDbType.Integer);
-					await writer.WriteAsync(game.GameId, NpgsqlDbType.Bigint);
-					await writer.WriteAsync(game.StartTime, NpgsqlDbType.Timestamp);
-					await writer.WriteAsync(game.EndTime, NpgsqlDbType.Timestamp);
-				}
-
-				return await writer.CompleteAsync();
-			}
+			return await context.Games.Where(g => g.MatchScores.Any(x => x.PlayerId == playerId)).ToListAsync();
 		}
 	}
 
 	public async Task<IEnumerable<Game>> GetByGameIdsAsync(IEnumerable<int> gameIds)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			return await connection.QueryAsync<Game>("SELECT * FROM games WHERE id = ANY(@GameIds)", new { GameIds = gameIds });
+			return await context.Games
+			                    .Where(game => gameIds.Contains(game.Id))
+			                    .ToListAsync();
 		}
 	}
 
 	public async Task<Dictionary<long, int>> GetGameIdMappingAsync(IEnumerable<long> beatmapIds)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		HashSet<long> beatmapIdsHashSet = beatmapIds.ToHashSet();
+		Dictionary<long, int> beatmapIdMapping;
+		
+		using (var context = new OtrContext())
 		{
-			return await connection.QueryAsync<long, int, KeyValuePair<long, int>>("SELECT beatmap_id, id FROM games WHERE beatmap_id = ANY(@BeatmapIds)", (beatmapId, gameId) => new KeyValuePair<long, int>(beatmapId, gameId), new { BeatmapIds = beatmapIds })
-				.ContinueWith(x => x.Result.ToDictionary(y => y.Key, y => y.Value));
+			beatmapIdMapping = await context.Beatmaps
+			                               .Where(b => beatmapIdsHashSet.Contains(b.BeatmapId))
+			                               .ToDictionaryAsync(b => b.BeatmapId, b => b.Id);
+		}
+
+		using (var context = new OtrContext())
+		{
+			return await context.Games
+			                    .Where(g => g.BeatmapId != null && beatmapIdMapping.Values.Contains(g.BeatmapId))
+			                    .ToDictionaryAsync(g => g.BeatmapId, g => g.Id);
 		}
 	}
 
 	public async Task<int> CreateIfNotExistsAsync(Game dbGame)
 	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
+		using (var context = new OtrContext())
 		{
-			return await connection.ExecuteAsync("INSERT INTO games (game_id, match_id, start_time, end_time, beatmap_id, play_mode, match_type, scoring_type, team_type, mods) VALUES " +
-			                               "(@GameId, @MatchId, @StartTime, @EndTime, @BeatmapId, @PlayMode, @MatchType, @ScoringType, @TeamType, @Mods) " +
-			                               "ON CONFLICT (game_id) DO UPDATE SET match_id = @MatchId, start_time = @StartTime, end_time = @EndTime, beatmap_id = @BeatmapId, " +
-			                               "play_mode = @PlayMode, match_type = @MatchType, scoring_type = @ScoringType, team_type = @TeamType, mods = @Mods, updated = current_timestamp", dbGame);
-		}
-	}
+			var existingGame = await context.Games.FirstOrDefaultAsync(g => g.MatchId == dbGame.MatchId && g.BeatmapId == dbGame.BeatmapId);
+			if (existingGame != null)
+			{
+				return existingGame.Id;
+			}
 
-	public async Task<Game?> GetByOsuGameIdAsync(long osuGameId)
-	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
-		{
-			return await connection.QuerySingleOrDefaultAsync<Game?>("SELECT * FROM games WHERE game_id = @GameId", new { GameId = osuGameId });
+			await context.Games.AddAsync(dbGame);
+			await context.SaveChangesAsync();
+			return dbGame.Id;
 		}
 	}
-
-	public async Task<Match?> GetMatchByGameIdAsync(int gameId)
-	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
-		{
-			return await connection.QuerySingleOrDefaultAsync<Match?>("SELECT * FROM matches WHERE id = (SELECT match_id FROM games WHERE id = @GameId)", new { GameId = gameId });
-		}
-	}
-
-	public async Task<IEnumerable<Game>> GetByMatchIdAsync(long matchId)
-	{
-		using (var connection = new NpgsqlConnection(ConnectionString))
-		{
-			return await connection.QueryAsync<Game>("SELECT * FROM games WHERE match_id = @MatchId", new { MatchId = matchId });
-		}
-	}
+	public async Task<Game?> GetByOsuGameIdAsync(long osuGameId) => throw new NotImplementedException();
+	public async Task<IEnumerable<Game>> GetByMatchIdAsync(long matchId) => throw new NotImplementedException();
 }

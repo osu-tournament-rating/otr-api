@@ -1,4 +1,3 @@
-using API.Entities;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -66,7 +65,7 @@ public class OsuMatchesController : Controller
 	[HttpGet("{matchId:long}")]
 	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long matchId)
 	{
-		var match = await _service.GetByLobbyIdAsync(matchId);
+		var match = await _service.GetByOsuGameIdAsync(matchId);
 
 		if (match == null)
 		{

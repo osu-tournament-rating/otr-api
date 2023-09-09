@@ -1,8 +1,5 @@
-using API.Entities;
 using API.Services.Interfaces;
-using API.Utilities;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 namespace API.Controllers;
 

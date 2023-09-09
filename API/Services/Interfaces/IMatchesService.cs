@@ -1,28 +1,27 @@
-using API.Entities;
-using API.Entities.Bases;
+using API.Enums;
 using API.Osu.Multiplayer;
 
 namespace API.Services.Interfaces;
 
-public interface IMatchesService : IService<Entities.Match>
+public interface IMatchesService : IService<Models.Match>
 {
-	Task<IEnumerable<Entities.Match>> GetAllAsync(bool onlyIncludeFiltered);
-	Task<Entities.Match?> GetByLobbyIdAsync(long matchId);
-	Task<IEnumerable<Entities.Match>?> GetAllPendingVerificationAsync();
-	Task<Entities.Match?> GetFirstPendingOrDefaultAsync();
+	Task<IEnumerable<Models.Match>> GetAllAsync(bool onlyIncludeFiltered);
+	Task<Models.Match?> GetByOsuGameIdAsync(long osuGameId);
+	Task<IEnumerable<Models.Match>?> GetAllPendingVerificationAsync();
+	Task<Models.Match?> GetFirstPendingOrDefaultAsync();
 	Task<IEnumerable<long>> CheckExistingAsync(IEnumerable<long> matchIds);
 	/// <summary>
 	/// Used to queue up matches for verification.
 	/// </summary>
 	/// <returns>Number of rows inserted</returns>
-	Task<int> InsertFromIdBatchAsync(IEnumerable<Entities.Match> matches);
+	Task<int> InsertFromIdBatchAsync(IEnumerable<Models.Match> matches);
 	/// <summary>
 	/// Creates a match if it doesn't already exist.
 	/// </summary>
 	/// <param name="match"></param>
 	/// <returns>Primary key if created, otherwise null</returns>
-	Task<int?> CreateIfNotExistsAsync(Entities.Match match);
+	Task<int?> CreateIfNotExistsAsync(Models.Match match);
 	Task<bool> CreateFromApiMatchAsync(OsuApiMatchData osuMatch);
 	Task<int> UpdateVerificationStatusAsync(long matchId, VerificationStatus status, MatchVerificationSource source, string? info = null);
-	Task<IEnumerable<Entities.Match>> GetForPlayerAsync(int playerId);
+	Task<IEnumerable<Models.Match>> GetForPlayerAsync(int playerId);
 }

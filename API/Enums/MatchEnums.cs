@@ -1,7 +1,4 @@
-using API.Entities.Bases;
-using Dapper;
-
-namespace API.Entities;
+namespace API.Enums;
 
 public enum MatchVerificationSource
 {
@@ -40,29 +37,4 @@ public enum VerificationStatus
 	///  Verification failed, requires human review
 	/// </summary>
 	Failure = 5
-}
-
-/// <summary>
-///  Entity representing an osu! multiplayer match. Contains properties for
-///  whether the match has been verified and rejected
-/// </summary>
-[Table("matches")]
-public class Match : UpdateableEntityBase
-{
-	[Column("match_id")]
-	public long MatchId { get; set; }
-	[Column("name")]
-	public string Name { get; set; } = null!;
-	[Column("verification_source")]
-	public MatchVerificationSource? VerificationSource { get; set; }
-	[Column("verification_status")]
-	public VerificationStatus? VerificationStatus { get; set; }
-	[Column("verification_info")]
-	public string? VerificationInfo { get; set; }
-	[Column("start_time")]
-	public DateTime StartTime { get; set; }
-	[Column("end_time")]
-	public DateTime? EndTime { get; set; }
-	
-	public ICollection<Game> Games { get; set; } = null!;
 }

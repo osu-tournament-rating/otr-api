@@ -1,4 +1,3 @@
-using API.Entities;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,14 +7,18 @@ namespace API.Controllers;
 [ApiController]
 public class GamesController : Controller
 {
-	private readonly IGamesService _gamesService;
+	private readonly IMatchesService _matchesService;
 
-	public GamesController(ILogger<GamesController> logger, IGamesService gamesService) { _gamesService = gamesService; }
-	
-	[HttpGet("match-from-gameid/{gameId:int}")]
-	public async Task<ActionResult<Match?>> GetMatchByGameIdAsync(int gameId)
+	public GamesController(ILogger<GamesController> logger, IMatchesService matchesService)
 	{
-		var match = await _gamesService.GetMatchByGameIdAsync(gameId);
+		_matchesService = matchesService;
+	}
+	
+	// Probably a useless endpoint
+	[HttpGet("{osuGameId:long}/match")]
+	public async Task<ActionResult<Match?>> GetMatchByGameIdAsync(long osuGameId)
+	{
+		var match = await _matchesService.GetByOsuGameIdAsync(osuGameId);
 		if (match == null)
 		{
 			return NotFound("No matching matchId in the database.");

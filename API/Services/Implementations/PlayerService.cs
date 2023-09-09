@@ -1,8 +1,6 @@
 using API.Configurations;
-using API.Entities;
 using API.Services.Interfaces;
 using Dapper;
-using Microsoft.Identity.Client;
 using Npgsql;
 
 namespace API.Services.Implementations;

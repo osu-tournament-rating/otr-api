@@ -1,4 +1,4 @@
-using API.Entities;
+using API.Models;
 
 namespace API.Services.Interfaces;
 
