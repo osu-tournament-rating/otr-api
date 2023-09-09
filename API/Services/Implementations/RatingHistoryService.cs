@@ -34,34 +34,12 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 		}
 	}
 
-	public async Task ReplaceBatchAsync(IEnumerable<RatingHistory> histories)
+	public async Task<int> BatchInsertAsync(IEnumerable<RatingHistory> histories)
 	{
-		histories = histories.ToList();
 		using (_context)
 		{
-			foreach (var history in histories.OrderBy(x => x.Created))
-			{
-				var existingHistory = await _context.RatingHistories
-				                                    .FirstOrDefaultAsync(h => h.PlayerId == history.PlayerId && h.MatchId == history.MatchId);
-
-				if (existingHistory == null)
-				{
-					_context.RatingHistories.Add(history);
-				}
-				else
-				{
-					existingHistory.Mu = history.Mu;
-					existingHistory.Sigma = history.Sigma;
-					existingHistory.Mode = history.Mode;
-					existingHistory.Created = history.Created;
-					existingHistory.Updated = DateTime.UtcNow; // Assuming you have an Updated property
-
-					_context.RatingHistories.Update(existingHistory);
-				}
-			}
-
-			await _context.SaveChangesAsync();
-			_logger.LogInformation("Batch inserted {Count} rating histories", histories.Count());
+			await _context.RatingHistories.AddRangeAsync(histories);
+			return await _context.SaveChangesAsync();
 		}
 	}
 

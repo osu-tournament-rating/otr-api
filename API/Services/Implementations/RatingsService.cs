@@ -75,28 +75,11 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 		}
 	}
 
-	public async Task<int> BatchInsertOrUpdateAsync(IEnumerable<Rating> ratings)
+	public async Task<int> BatchInsertAsync(IEnumerable<Rating> ratings)
 	{
 		using (_context)
 		{
-			foreach (var rating in ratings)
-			{
-				var existingRating = await _context.Ratings
-				                                   .Where(r => r.PlayerId == rating.PlayerId && r.Mode == rating.Mode)
-				                                   .FirstOrDefaultAsync();
-
-				if (existingRating != null)
-				{
-					existingRating.Mu = rating.Mu;
-					existingRating.Sigma = rating.Sigma;
-					existingRating.Updated = rating.Updated;
-				}
-				else
-				{
-					_context.Ratings.Add(rating);
-				}
-			}
-
+			await _context.Ratings.AddRangeAsync(ratings);
 			return await _context.SaveChangesAsync();
 		}
 	}

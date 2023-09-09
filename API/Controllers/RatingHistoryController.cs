@@ -32,8 +32,13 @@ public class RatingHistoryController : Controller
 	[HttpPost("batch")]
 	public async Task<IActionResult> BatchReplaceAsync(IEnumerable<RatingHistory> histories)
 	{
-		await _service.ReplaceBatchAsync(histories);
-		return Ok();
+		int? result = await _service.BatchInsertAsync(histories);
+		if (result > 0)
+		{
+			return Ok();
+		}
+
+		return StatusCode(500, "Failed to update ratings");
 	}
 
 	[HttpDelete("danger/truncate")]

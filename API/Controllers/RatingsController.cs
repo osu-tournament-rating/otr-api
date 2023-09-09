@@ -57,7 +57,7 @@ public class RatingsController : Controller
 	[HttpPost("batch")]
 	public async Task<ActionResult> BatchInsertOrUpdateAsync([FromBody] IEnumerable<Rating> ratings)
 	{
-		int? result = await _service.BatchInsertOrUpdateAsync(ratings);
+		int? result = await _service.BatchInsertAsync(ratings);
 		if (result > 0)
 		{
 			return Ok();
