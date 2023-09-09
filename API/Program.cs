@@ -51,6 +51,7 @@ var configuration = new MapperConfiguration(cfg =>
 	cfg.CreateMap<API.Models.Match, MatchDTO>();
 	cfg.CreateMap<MatchScore, MatchScoreDTO>();
 	cfg.CreateMap<Player, PlayerDTO>();
+	cfg.CreateMap<Player, PlayerRanksDTO>();
 	cfg.CreateMap<Rating, RatingDTO>();
 	cfg.CreateMap<RatingHistory, RatingHistoryDTO>();
 	cfg.CreateMap<User, UserDTO>();

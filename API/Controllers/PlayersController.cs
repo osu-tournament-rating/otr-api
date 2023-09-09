@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Models;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -58,5 +59,12 @@ public class PlayersController : Controller
 		}
 
 		return NotFound($"User with id {id} does not exist");
+	}
+	
+	[HttpGet("ranks/all")]
+	public async Task<ActionResult<IEnumerable<PlayerRanksDTO>>> GetAllRanksAsync()
+	{
+		var ranks = await _service.GetAllRanksAsync();
+		return Ok(ranks);
 	}
 }

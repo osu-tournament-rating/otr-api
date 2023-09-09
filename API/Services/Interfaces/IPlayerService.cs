@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Models;
+using API.Osu;
 
 namespace API.Services.Interfaces;
 
@@ -9,6 +10,7 @@ public interface IPlayerService : IService<Player>
 	Task<IEnumerable<PlayerDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds);
 	Task<int> GetIdByOsuIdAsync(long osuId);
 	Task<long> GetOsuIdByIdAsync(int id);
+	Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync();
 	/// <summary>
 	/// Returns players that haven't been updated in the last 14 days,
 	/// or players that have never been updated.

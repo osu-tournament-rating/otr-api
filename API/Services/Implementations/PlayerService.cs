@@ -1,6 +1,7 @@
 using API.Configurations;
 using API.DTOs;
 using API.Models;
+using API.Osu;
 using API.Services.Interfaces;
 using AutoMapper;
 using Dapper;
@@ -67,6 +68,14 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		using (_context)
 		{
 			return await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
+		}
+	}
+
+	public async Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync()
+	{
+		using (_context)
+		{
+			return _mapper.Map<IEnumerable<PlayerRanksDTO>>(await _context.Players.ToListAsync());
 		}
 	}
 
