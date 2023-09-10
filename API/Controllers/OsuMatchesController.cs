@@ -76,4 +76,22 @@ public class OsuMatchesController : Controller
 
 		return Ok(match);
 	}
+	
+	[HttpGet("{id:int}/osuid")]
+	public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
+	{
+		var match = await _service.GetAsync(id);
+		if (match == null)
+		{
+			return NotFound($"Match with id {id} does not exist");
+		}
+
+		long osuMatchId = match.MatchId;
+		if (osuMatchId != 0)
+		{
+			return Ok(osuMatchId);
+		}
+
+		return NotFound($"Match with id {id} does not exist");
+	}
 }
