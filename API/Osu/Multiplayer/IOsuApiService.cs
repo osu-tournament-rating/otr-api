@@ -6,5 +6,5 @@ public interface IOsuApiService
 {
 	Task<OsuApiMatchData?> GetMatchAsync(long matchId);
 	Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Mode mode);
-	Task<Beatmap?> GetBeatmapAsync(long beatmapId);
+	Task<Beatmap?> GetBeatmapAsync(long beatmapId, OsuEnums.Mods mods = OsuEnums.Mods.None);
 }

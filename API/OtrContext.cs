@@ -15,6 +15,7 @@ public partial class OtrContext : DbContext
 	}
 
 	public virtual DbSet<Beatmap> Beatmaps { get; set; }
+	public virtual DbSet<BeatmapModSr> BeatmapModSrs { get; set; }
 	public virtual DbSet<Config> Configs { get; set; }
 	public virtual DbSet<Game> Games { get; set; }
 	public virtual DbSet<Match> Matches { get; set; }
@@ -39,6 +40,22 @@ public partial class OtrContext : DbContext
 			      .HasForeignKey(g => g.BeatmapId)
 			      .OnDelete(DeleteBehavior.ClientSetNull)
 			      .HasConstraintName("games_beatmaps_id_fk");
+			
+			entity.HasOne(e => e.BeatmapModSr)
+				  .WithOne(b => b.Beatmap)
+			      .HasForeignKey<BeatmapModSr>(e => e.BeatmapId)
+			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .HasConstraintName("beatmap_mod_sr_beatmaps_id_fk");
+		});
+
+		modelBuilder.Entity<BeatmapModSr>(entity =>
+		{
+			entity.HasKey(e => new { e.BeatmapId, e.Mods }).HasName("beatmap_mod_sr_pk");
+			entity.HasOne(e => e.Beatmap)
+			      .WithOne(b => b.BeatmapModSr)
+			      .HasForeignKey<BeatmapModSr>(e => e.BeatmapId)
+			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .HasConstraintName("beatmap_mod_sr_beatmaps_id_fk");
 		});
 
 		modelBuilder.Entity<Config>(entity => { entity.Property(e => e.Id).ValueGeneratedOnAdd(); });
