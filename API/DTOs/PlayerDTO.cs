@@ -8,6 +8,7 @@ public class PlayerDTO
 	public int? RankTaiko { get; set; }
 	public int? RankCatch { get; set; }
 	public int? RankMania { get; set; }
+	
 	public ICollection<MatchScoreDTO> MatchScores { get; set; } = new List<MatchScoreDTO>();
 	public ICollection<RatingHistoryDTO> RatingHistories { get; set; } = new List<RatingHistoryDTO>();
 	public ICollection<RatingDTO> Ratings { get; set; } = new List<RatingDTO>();

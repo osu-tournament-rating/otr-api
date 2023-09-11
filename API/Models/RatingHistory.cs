@@ -10,7 +10,6 @@ public partial class RatingHistory
 {
     [Key]
     [Column("id")]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
     [Column("player_id")]

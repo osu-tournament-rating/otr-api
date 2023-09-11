@@ -47,4 +47,5 @@ public partial class Player
 
     [InverseProperty("Player")]
     public virtual User? User { get; set; }
+    
 }

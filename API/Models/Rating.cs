@@ -10,7 +10,6 @@ public partial class Rating
 {
     [Key]
     [Column("id")]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
     [Column("player_id")]

@@ -17,7 +17,6 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<Beatmap> Beatmaps { get; set; }
 	public virtual DbSet<Config> Configs { get; set; }
 	public virtual DbSet<Game> Games { get; set; }
-	public virtual DbSet<Log> Logs { get; set; }
 	public virtual DbSet<Match> Matches { get; set; }
 	public virtual DbSet<MatchScore> MatchScores { get; set; }
 	public virtual DbSet<Player> Players { get; set; }
@@ -32,8 +31,7 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<Beatmap>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("beatmaps_pk");
-
-			entity.Property(e => e.Id).HasDefaultValueSql("nextval('beatmap_id_seq'::regclass)");
+			entity.Property(e => e.Id).UseIdentityColumn();
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
 			entity.HasMany(b => b.Games)
@@ -48,8 +46,8 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<Game>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("osugames_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
 
-			entity.Property(e => e.Id).HasDefaultValueSql("nextval('osugames_id_seq'::regclass)");
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
 			entity.HasOne(d => d.Match)
@@ -71,8 +69,8 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<Match>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("matches_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
 
-			entity.Property(e => e.Id).HasDefaultValueSql("nextval('osumatches_id_seq'::regclass)");
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
 			entity.HasMany(e => e.Games).WithOne(g => g.Match);
@@ -82,8 +80,7 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<MatchScore>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("match_scores_pk");
-
-			entity.Property(e => e.Id).HasDefaultValueSql("nextval('scores_id_seq'::regclass)");
+			entity.Property(e => e.Id).UseIdentityColumn();
 
 			entity.HasOne(d => d.Game)
 			      .WithMany(p => p.MatchScores)
@@ -99,6 +96,7 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<Player>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("Player_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -111,6 +109,7 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<Rating>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("Ratings_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -123,6 +122,7 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<RatingHistory>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("RatingHistories_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -140,6 +140,7 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<User>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("User_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 			entity.Property(e => e.Roles).HasComment("Comma-delimited list of roles (e.g. user, admin, etc.)");
