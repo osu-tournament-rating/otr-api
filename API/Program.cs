@@ -100,7 +100,19 @@ builder.Services.AddSingleton<ICredentials, Credentials>(serviceProvider =>
 	return new Credentials(connString, osuApiKey);
 });
 
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("AllowSpecificOrigin", corsPolicyBuilder =>
+	{
+		corsPolicyBuilder.WithOrigins("http://localhost:3000")
+		                 .AllowAnyHeader()
+		                 .AllowAnyMethod();
+	});
+});
+
 var app = builder.Build();
+
+app.UseCors("AllowSpecificOrigin");
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
