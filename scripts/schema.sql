@@ -1,25 +1,37 @@
 create table players
 (
-    id      serial
+    id            serial
         constraint "Player_pk"
             primary key,
-    osu_id  bigint                              not null
+    osu_id        bigint                              not null
         constraint "Players_osuid"
             unique,
-    created timestamp default CURRENT_TIMESTAMP not null
+    created       timestamp default CURRENT_TIMESTAMP not null,
+    rank_standard integer,
+    rank_taiko    integer,
+    rank_catch    integer,
+    rank_mania    integer,
+    updated       timestamp,
+    username      text
 );
 
 create table users
 (
-    id         serial
+    id                 serial
         constraint "User_pk"
             primary key,
-    player_id  integer                             not null
+    player_id          integer                             not null
         constraint "Users___fkplayerid"
             references players,
-    last_login timestamp                           not null,
-    created    timestamp default CURRENT_TIMESTAMP not null
+    last_login         timestamp,
+    created            timestamp default CURRENT_TIMESTAMP not null,
+    roles              text,
+    session_token      text,
+    updated            timestamp,
+    session_expiration timestamp
 );
+
+comment on column users.roles is 'Comma-delimited list of roles (e.g. user, admin, etc.)';
 
 create table ratings
 (
@@ -33,33 +45,17 @@ create table ratings
     sigma     double precision                    not null,
     created   timestamp default CURRENT_TIMESTAMP not null,
     updated   timestamp,
-    mode      text                                not null,
+    mode      integer                             not null,
     constraint ratings_playerid_mode
         unique (player_id, mode)
 );
 
-create index "Ratings__mu"
-    on ratings (mu desc, mu desc);
-
-create table ratinghistories
-(
-    id            serial
-        constraint "RatingHistories_pk"
-            primary key,
-    player_id     integer                             not null
-        constraint "RatingHistories___fkplayerid"
-            references players,
-    mu            double precision                    not null,
-    sigma         double precision                    not null,
-    created       timestamp default CURRENT_TIMESTAMP not null,
-    mode          text                                not null,
-    match_data_id integer                             not null
-);
-
 create table config
 (
-    key   text not null,
-    value text not null
+    key     text not null,
+    value   text not null,
+    id      serial,
+    created timestamp
 );
 
 create table logs
@@ -90,6 +86,55 @@ create table matches
     verification_status integer
 );
 
+create table ratinghistories
+(
+    id        serial
+        constraint "RatingHistories_pk"
+            primary key,
+    player_id integer                             not null
+        constraint "RatingHistories___fkplayerid"
+            references players,
+    mu        double precision                    not null,
+    sigma     double precision                    not null,
+    created   timestamp default CURRENT_TIMESTAMP not null,
+    mode      integer                             not null,
+    match_id  integer                             not null
+        constraint ratinghistories_matches_id_fk
+            references matches,
+    updated   timestamp
+);
+
+create table beatmaps
+(
+    id            integer   default nextval('beatmap_id_seq'::regclass) not null
+        constraint beatmaps_pk
+            primary key,
+    artist        text                                                  not null,
+    beatmap_id    bigint                                                not null
+        constraint beatmaps_beatmapid
+            unique,
+    bpm           double precision                                      not null,
+    mapper_id     bigint                                                not null,
+    mapper_name   text                                                  not null,
+    sr            double precision                                      not null,
+    aim_diff      double precision,
+    speed_diff    double precision,
+    cs            double precision                                      not null,
+    ar            double precision                                      not null,
+    hp            double precision                                      not null,
+    od            double precision                                      not null,
+    drain_time    double precision                                      not null,
+    length        double precision                                      not null,
+    title         text                                                  not null,
+    diff_name     text,
+    game_mode     integer                                               not null,
+    circle_count  integer                                               not null,
+    slider_count  integer                                               not null,
+    spinner_count integer                                               not null,
+    max_combo     integer                                               not null,
+    created       timestamp default CURRENT_TIMESTAMP                   not null
+);
+
 create table games
 (
     id           integer   default nextval('osugames_id_seq'::regclass) not null
@@ -98,7 +143,9 @@ create table games
     match_id     integer                                                not null
         constraint games_matches_id_fk
             references matches,
-    beatmap_id   integer,
+    beatmap_id   integer
+        constraint games_beatmaps_id_fk
+            references beatmaps,
     play_mode    integer                                                not null,
     match_type   integer                                                not null,
     scoring_type integer                                                not null,
@@ -109,7 +156,8 @@ create table games
             unique,
     created      timestamp default CURRENT_TIMESTAMP                    not null,
     start_time   timestamp                                              not null,
-    end_time     timestamp
+    end_time     timestamp,
+    updated      timestamp
 );
 
 create table match_scores
@@ -139,33 +187,3 @@ create table match_scores
         unique (game_id, player_id)
 );
 
-create table beatmaps
-(
-    id            integer   default nextval('beatmap_id_seq'::regclass) not null
-        constraint beatmaps_pk
-            primary key,
-    artist        text                                                  not null,
-    beatmap_id    bigint                                                not null
-        constraint beatmaps_beatmapid
-            unique,
-    bpm           double precision                                      not null,
-    mapper_id     bigint                                                not null,
-    mapper_name   text                                                  not null,
-    sr            double precision                                      not null,
-    aim_diff      double precision                                      not null,
-    speed_diff    double precision                                      not null,
-    cs            double precision                                      not null,
-    ar            double precision                                      not null,
-    hp            double precision                                      not null,
-    od            double precision                                      not null,
-    drain_time    double precision                                      not null,
-    length        double precision                                      not null,
-    title         text                                                  not null,
-    diff_name     text,
-    game_mode     integer                                               not null,
-    circle_count  integer                                               not null,
-    slider_count  integer                                               not null,
-    spinner_count integer                                               not null,
-    max_combo     integer                                               not null,
-    created       timestamp default CURRENT_TIMESTAMP                   not null
-);
