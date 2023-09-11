@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Models;
+using API.Osu;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -66,5 +67,12 @@ public class PlayersController : Controller
 	{
 		var ranks = await _service.GetAllRanksAsync();
 		return Ok(ranks);
+	}
+	
+	[HttpGet("leaderboard/{mode:int}")]
+	public async Task<ActionResult<IEnumerable<Unmapped_PlayerRatingDTO>>> Leaderboard(int gamemode)
+	{
+		const int LEADERBOARD_LIMIT = 50;
+		return Ok(await _service.GetTopRatingsAsync(LEADERBOARD_LIMIT, (OsuEnums.Mode) gamemode));
 	}
 }

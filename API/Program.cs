@@ -2,7 +2,6 @@ using API;
 using API.Configurations;
 using API.DTOs;
 using API.Models;
-using API.Osu;
 using API.Osu.Multiplayer;
 using API.Services.Implementations;
 using API.Services.Interfaces;

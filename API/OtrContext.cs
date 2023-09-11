@@ -109,7 +109,7 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<Rating>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("Ratings_pk");
-			entity.Property(e => e.Id).UseIdentityColumn();
+			entity.Property(e => e.Id).UseIdentityAlwaysColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -122,7 +122,7 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<RatingHistory>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("RatingHistories_pk");
-			entity.Property(e => e.Id).UseIdentityColumn();
+			entity.Property(e => e.Id).UseIdentityAlwaysColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
