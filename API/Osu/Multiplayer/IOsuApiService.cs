@@ -1,4 +1,4 @@
-using API.Models;
+using API.Entities;
 
 namespace API.Osu.Multiplayer;
 

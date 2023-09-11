@@ -1,5 +1,3 @@
-using API.Models;
-
 namespace API.DTOs;
 
 public class GameDTO

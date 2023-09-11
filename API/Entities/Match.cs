@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Models;
+namespace API.Entities;
 
 [Table("matches")]
 [Index("MatchId", Name = "osumatches_matchid", IsUnique = true)]

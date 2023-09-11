@@ -1,7 +1,7 @@
 using API;
 using API.Configurations;
 using API.DTOs;
-using API.Models;
+using API.Entities;
 using API.Osu.Multiplayer;
 using API.Services.Implementations;
 using API.Services.Interfaces;
@@ -46,8 +46,8 @@ DefaultTypeMap.MatchNamesWithUnderscores = true;
 var configuration = new MapperConfiguration(cfg => 
 {
 	cfg.CreateMap<Beatmap, BeatmapDTO>();
-	cfg.CreateMap<API.Models.Game, GameDTO>();
-	cfg.CreateMap<API.Models.Match, MatchDTO>();
+	cfg.CreateMap<API.Entities.Game, GameDTO>();
+	cfg.CreateMap<API.Entities.Match, MatchDTO>();
 	cfg.CreateMap<MatchScore, MatchScoreDTO>();
 	cfg.CreateMap<Player, PlayerDTO>();
 	cfg.CreateMap<Player, PlayerRanksDTO>();

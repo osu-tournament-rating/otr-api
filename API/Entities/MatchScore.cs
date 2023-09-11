@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Models;
+namespace API.Entities;
 
 [Table("match_scores")]
 [Index("GameId", "PlayerId", Name = "match_scores_gameid_playerid", IsUnique = true)]

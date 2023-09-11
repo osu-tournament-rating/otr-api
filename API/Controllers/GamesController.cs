@@ -1,4 +1,3 @@
-using API.Models;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

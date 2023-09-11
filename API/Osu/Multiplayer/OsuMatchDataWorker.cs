@@ -1,5 +1,5 @@
+using API.Entities;
 using API.Enums;
-using API.Models;
 using API.Services.Interfaces;
 
 namespace API.Osu.Multiplayer;

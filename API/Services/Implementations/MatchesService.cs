@@ -1,6 +1,6 @@
 using API.DTOs;
+using API.Entities;
 using API.Enums;
-using API.Models;
 using API.Osu;
 using API.Osu.Multiplayer;
 using API.Services.Interfaces;
@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Query;
 
 namespace API.Services.Implementations;
 
-public class MatchesService : ServiceBase<Models.Match>, IMatchesService
+public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 {
 	private readonly ILogger<MatchesService> _logger;
 	private readonly IPlayerService _playerService;
@@ -48,10 +48,10 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 
 			if (onlyIncludeFiltered)
 			{
-				var matchesToRemove = new List<Models.Match>();
+				var matchesToRemove = new List<Entities.Match>();
 				foreach (var match in matches)
 				{
-					var gamesToRemove = new List<Models.Game>();
+					var gamesToRemove = new List<Entities.Game>();
 					foreach (var game in match.Games)
 					{
 						if ((game.MatchScores.Count % 2) != 0 || game.MatchScores.Count == 0 || !IsValidModCombination(game.ModsEnum))
@@ -104,7 +104,7 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 		}
 	}
 
-	public async Task<Models.Match?> GetFirstPendingOrDefaultAsync()
+	public async Task<Entities.Match?> GetFirstPendingOrDefaultAsync()
 	{
 		using (_context)
 		{
@@ -120,7 +120,7 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 		}
 	}
 
-	public async Task<int> InsertFromIdBatchAsync(IEnumerable<Models.Match> matches)
+	public async Task<int> InsertFromIdBatchAsync(IEnumerable<Entities.Match> matches)
 	{
 		using (_context)
 		{
@@ -158,7 +158,7 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 				var existingMatch = await _context.Matches.FirstOrDefaultAsync(m => m.MatchId == osuMatch.Match.MatchId);
 				if (existingMatch == null)
 				{
-					var dbMatch = new Models.Match
+					var dbMatch = new Entities.Match
 					{
 						MatchId = osuMatch.Match.MatchId,
 						Name = osuMatch.Match.Name,
@@ -179,7 +179,7 @@ public class MatchesService : ServiceBase<Models.Match>, IMatchesService
 					var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
 					if (existingGame == null)
 					{
-						var dbGame = new Models.Game
+						var dbGame = new Entities.Game
 						{
 							MatchId = existingMatch.Id,
 							GameId = game.GameId,
