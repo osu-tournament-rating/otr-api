@@ -35,7 +35,7 @@ public class OsuApiService : IOsuApiService
 			BaseAddress = new Uri(BaseUrl)
 		};
 
-		_semaphore = new SemaphoreSlim(RATE_LIMIT_CAPACITY, RATE_LIMIT_CAPACITY);
+		_semaphore = new SemaphoreSlim(1, 5);
 	}
 
 	public async Task<OsuApiMatchData?> GetMatchAsync(long matchId)
@@ -72,20 +72,24 @@ public class OsuApiService : IOsuApiService
 		}, userId);
 	}
 
-	private async Task EnsureRateLimit()
+	private async Task<bool> EnsureRateLimit()
 	{
 		CheckRatelimitReset();
 
 		if (_rateLimitCounter >= RATE_LIMIT_CAPACITY)
 		{
 			await _semaphore.WaitAsync();
+			return true; // Semaphore was acquired
 		}
+		return false; // Semaphore was not acquired
 	}
 
 	private async Task<T?> ExecuteApiCall<T>(Func<Task<T?>> apiCall, long id) where T : class
 	{
+		bool semaphoreAcquired = false;
 		try
 		{
+			semaphoreAcquired = await EnsureRateLimit();
 			return await apiCall();
 		}
 		catch (JsonSerializationException e)
@@ -103,9 +107,13 @@ public class OsuApiService : IOsuApiService
 			lock (_rateLimitLock)
 			{
 				_rateLimitCounter++;
+				_logger.LogDebug("osu! API ratelimit is currently at {Requests} (freq: {Capacity}req/{Seconds}s)", _rateLimitCounter, RATE_LIMIT_CAPACITY, RATE_LIMIT_CAPACITY); // Keep this log statement
 			}
 
-			_semaphore.Release();
+			if (semaphoreAcquired)
+			{
+				_semaphore.Release();
+			}
 		}
 	}
 
@@ -113,7 +121,6 @@ public class OsuApiService : IOsuApiService
 	{
 		lock (_rateLimitLock)
 		{
-			_logger.LogDebug("osu! API ratelimit is currently at {Requests} (freq: {Capacity}req/{Seconds}s)", _rateLimitCounter, RATE_LIMIT_CAPACITY, RATE_LIMIT_CAPACITY);
 			if (DateTime.UtcNow > _rateLimitResetTime)
 			{
 				_rateLimitCounter = 0;
@@ -123,4 +130,5 @@ public class OsuApiService : IOsuApiService
 			}
 		}
 	}
+
 }
