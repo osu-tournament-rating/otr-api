@@ -6,16 +6,15 @@ using API.Osu.Multiplayer;
 using API.Services.Interfaces;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 
 namespace API.Services.Implementations;
 
 public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 {
-	private readonly ILogger<MatchesService> _logger;
-	private readonly IPlayerService _playerService;
-	private readonly IMapper _mapper;
 	private readonly OtrContext _context;
+	private readonly ILogger<MatchesService> _logger;
+	private readonly IMapper _mapper;
+	private readonly IPlayerService _playerService;
 
 	public MatchesService(ILogger<MatchesService> logger, IPlayerService playerService, IMapper mapper, OtrContext context) : base(logger, context)
 	{
@@ -27,242 +26,215 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 	public async Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered)
 	{
-		using (_context)
+		var query = _context.Matches
+		                    .Include(m => m.Games)
+		                    .ThenInclude(g => g.MatchScores)
+		                    .Include(m => m.Games)
+		                    .ThenInclude(g => g.Beatmap)
+		                    .AsQueryable();
+
+		if (onlyIncludeFiltered)
 		{
-			var query = _context.Matches
-			                    .Include(m => m.Games)
-			                    .ThenInclude(g => g.MatchScores)
-			                    .Include(m => m.Games)
-			                    .ThenInclude(g => g.Beatmap).AsQueryable();
+			query = query.Where(m => (m.VerificationStatus == (int)VerificationStatus.Verified || m.VerificationStatus == (int)VerificationStatus.PreVerified) &&
+			                         m.Games.Any(g => g.MatchScores.Any(ms => ms.Score > 10000) &&
+			                                          g.Beatmap!.DrainTime > 20 &&
+			                                          g.Beatmap!.Sr < 12 &&
+			                                          g.ScoringType == (int)OsuEnums.ScoringType.ScoreV2)); // Score v2 only
+		}
 
-			if (onlyIncludeFiltered)
+		var matches = await query.ToListAsync();
+
+		if (onlyIncludeFiltered)
+		{
+			var matchesToRemove = new List<Entities.Match>();
+			foreach (var match in matches)
 			{
-				query = query.Where(m => (m.VerificationStatus == (int) VerificationStatus.Verified || m.VerificationStatus == (int)VerificationStatus.PreVerified) &&
-				                         m.Games.Any(g => g.MatchScores.Any(ms => ms.Score > 10000) &&
-				                                          g.Beatmap!.DrainTime > 20 &&
-				                                          g.Beatmap!.Sr < 12 &&
-				                                          g.ScoringType == (int) OsuEnums.ScoringType.ScoreV2)); // Score v2 only
-			}
-
-			var matches = await query.ToListAsync();
-
-			if (onlyIncludeFiltered)
-			{
-				var matchesToRemove = new List<Entities.Match>();
-				foreach (var match in matches)
+				var gamesToRemove = new List<Entities.Game>();
+				foreach (var game in match.Games)
 				{
-					var gamesToRemove = new List<Entities.Game>();
-					foreach (var game in match.Games)
+					if ((game.MatchScores.Count % 2) != 0 || game.MatchScores.Count == 0 || !IsValidModCombination(game.ModsEnum))
 					{
-						if ((game.MatchScores.Count % 2) != 0 || game.MatchScores.Count == 0 || !IsValidModCombination(game.ModsEnum))
+						gamesToRemove.Add(game);
+						continue;
+					}
+
+					foreach (var score in game.MatchScores)
+					{
+						if (!IsValidModCombination(score.EnabledModsEnum ?? OsuEnums.Mods.None))
 						{
 							gamesToRemove.Add(game);
-							continue;
+							break;
 						}
-
-						foreach (var score in game.MatchScores)
-						{
-							if (!IsValidModCombination(score.EnabledModsEnum ?? OsuEnums.Mods.None))
-							{
-								gamesToRemove.Add(game);
-								break;
-							}
-						}
-					}
-
-					foreach (var game in gamesToRemove)
-					{
-						match.Games.Remove(game);
-					}
-
-					if (!match.Games.Any())
-					{
-						matchesToRemove.Add(match);
 					}
 				}
 
-				foreach (var match in matchesToRemove)
+				foreach (var game in gamesToRemove)
 				{
-					matches.Remove(match);
+					match.Games.Remove(game);
+				}
+
+				if (!match.Games.Any())
+				{
+					matchesToRemove.Add(match);
 				}
 			}
 
-			return _mapper.Map<IEnumerable<MatchDTO>>(matches);
+			foreach (var match in matchesToRemove)
+			{
+				matches.Remove(match);
+			}
 		}
+
+		return _mapper.Map<IEnumerable<MatchDTO>>(matches);
 	}
 
-	public async Task<MatchDTO?> GetByOsuMatchIdAsync(long osuMatchId)
-	{
-		using (_context)
-		{
-			return _mapper.Map<MatchDTO?>(await _context.Matches
-			                                            .Include(x => x.Games)
-			                                            .ThenInclude(x => x.Beatmap)
-			                                            .Include(x => x.Games)
-			                                            .ThenInclude(x => x.MatchScores)
-			                                            .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
-		}
-	}
+	public async Task<MatchDTO?> GetByOsuMatchIdAsync(long osuMatchId) => _mapper.Map<MatchDTO?>(await _context.Matches
+	                                                                                                           .Include(x => x.Games)
+	                                                                                                           .ThenInclude(x => x.Beatmap)
+	                                                                                                           .Include(x => x.Games)
+	                                                                                                           .ThenInclude(x => x.MatchScores)
+	                                                                                                           .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
 
-	public async Task<Entities.Match?> GetFirstPendingOrDefaultAsync()
-	{
-		using (_context)
-		{
-			return await _context.Matches.FirstOrDefaultAsync(x => x.VerificationStatus == (int)VerificationStatus.PendingVerification);
-		}
-	}
+	public async Task<Entities.Match?> GetFirstPendingOrDefaultAsync() =>
+		await _context.Matches.FirstOrDefaultAsync(x => x.VerificationStatus == (int)VerificationStatus.PendingVerification);
 
-	public async Task<IEnumerable<long>> CheckExistingAsync(IEnumerable<long> matchIds)
-	{
-		using (_context)
-		{
-			return await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).Select(x => x.MatchId).ToListAsync();
-		}
-	}
+	public async Task<IEnumerable<long>> CheckExistingAsync(IEnumerable<long> matchIds) =>
+		await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).Select(x => x.MatchId).ToListAsync();
 
 	public async Task<int> InsertFromIdBatchAsync(IEnumerable<Entities.Match> matches)
 	{
-		using (_context)
-		{
-			await _context.Matches.AddRangeAsync(matches);
-			return await _context.SaveChangesAsync();
-		}
+		await _context.Matches.AddRangeAsync(matches);
+		return await _context.SaveChangesAsync();
 	}
 
 	public async Task<bool> CreateFromApiMatchAsync(OsuApiMatchData osuMatch)
 	{
-		using (_context)
+		try
 		{
-			try
+			// Step 1.
+			var osuPlayerIds = osuMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
+			var existingPlayers = await _context.Players.Where(p => osuPlayerIds.Contains(p.OsuId)).ToListAsync();
+			var playerIdMapping = existingPlayers.ToDictionary(player => player.OsuId, player => player.Id);
+
+			// Create the players that don't exist
+			var playersToCreate = osuPlayerIds.Except(existingPlayers.Select(x => x.OsuId)).ToList();
+			foreach (long playerId in playersToCreate)
 			{
-				// Step 1.
-				var osuPlayerIds = osuMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
-				var existingPlayers = await _context.Players.Where(p => osuPlayerIds.Contains(p.OsuId)).ToListAsync();
-				var playerIdMapping = existingPlayers.ToDictionary(player => player.OsuId, player => player.Id);
+				var newPlayer = new Player { OsuId = playerId };
+				var player = await _playerService.CreateAsync(newPlayer);
+				playerIdMapping.Add(player.OsuId, player.Id);
+			}
 
-				// Create the players that don't exist
-				var playersToCreate = osuPlayerIds.Except(existingPlayers.Select(x => x.OsuId)).ToList();
-				foreach (long playerId in playersToCreate)
+			// Step 2.
+			var osuBeatmapIds = osuMatch.Games.Select(x => x.BeatmapId).Distinct().ToList();
+			var existingBeatmaps = await _context.Beatmaps.Where(b => osuBeatmapIds.Contains(b.BeatmapId)).ToListAsync();
+			var beatmapIdMapping = existingBeatmaps.ToDictionary(beatmap => beatmap.BeatmapId, beatmap => beatmap.Id);
+
+			// Step 3.
+			var existingMatch = await _context.Matches.FirstOrDefaultAsync(m => m.MatchId == osuMatch.Match.MatchId);
+			if (existingMatch == null)
+			{
+				var dbMatch = new Entities.Match
 				{
-					var newPlayer = new Player { OsuId = playerId };
-					var player = await _playerService.CreateAsync(newPlayer);
-					playerIdMapping.Add(player.OsuId, player.Id);
-				}
+					MatchId = osuMatch.Match.MatchId,
+					Name = osuMatch.Match.Name,
+					StartTime = osuMatch.Match.StartTime,
+					EndTime = osuMatch.Match.EndTime,
+					VerificationStatus = (int)VerificationStatus.PendingVerification
+				};
 
-				// Step 2.
-				var osuBeatmapIds = osuMatch.Games.Select(x => x.BeatmapId).Distinct().ToList();
-				var existingBeatmaps = await _context.Beatmaps.Where(b => osuBeatmapIds.Contains(b.BeatmapId)).ToListAsync();
-				var beatmapIdMapping = existingBeatmaps.ToDictionary(beatmap => beatmap.BeatmapId, beatmap => beatmap.Id);
+				_context.Matches.Add(dbMatch);
+				await _context.SaveChangesAsync();
 
-				// Step 3.
-				var existingMatch = await _context.Matches.FirstOrDefaultAsync(m => m.MatchId == osuMatch.Match.MatchId);
-				if (existingMatch == null)
+				existingMatch = await _context.Matches.FirstAsync(m => m.MatchId == osuMatch.Match.MatchId);
+			}
+
+			// Step 4.
+			foreach (var game in osuMatch.Games)
+			{
+				var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
+				if (existingGame == null)
 				{
-					var dbMatch = new Entities.Match
+					var dbGame = new Entities.Game
 					{
-						MatchId = osuMatch.Match.MatchId,
-						Name = osuMatch.Match.Name,
-						StartTime = osuMatch.Match.StartTime,
-						EndTime = osuMatch.Match.EndTime,
-						VerificationStatus = (int)VerificationStatus.PendingVerification
+						MatchId = existingMatch.Id,
+						GameId = game.GameId,
+						StartTime = game.StartTime,
+						EndTime = game.EndTime,
+						BeatmapId = beatmapIdMapping[game.BeatmapId],
+						PlayMode = (int)game.PlayMode,
+						MatchType = (int)game.MatchType,
+						ScoringType = (int)game.ScoringType,
+						TeamType = (int)game.TeamType,
+						Mods = (int)game.Mods
 					};
 
-					_context.Matches.Add(dbMatch);
+					_context.Games.Add(dbGame);
 					await _context.SaveChangesAsync();
+				}
+			}
 
-					existingMatch = await _context.Matches.FirstAsync(m => m.MatchId == osuMatch.Match.MatchId);
+			// Step 5.
+			foreach (var game in osuMatch.Games)
+			{
+				var dbGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
+				if (dbGame == null)
+				{
+					_logger.LogError("Failed to fetch game {GameId}", game.GameId);
+					continue;
 				}
 
-				// Step 4.
-				foreach (var game in osuMatch.Games)
+				foreach (var score in game.Scores)
 				{
-					var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
-					if (existingGame == null)
+					var existingMatchScore = await _context.MatchScores.FirstOrDefaultAsync(s => s.PlayerId == playerIdMapping[score.UserId] && s.GameId == dbGame.Id);
+					if (existingMatchScore == null)
 					{
-						var dbGame = new Entities.Game
+						var dbMatchScore = new MatchScore
 						{
-							MatchId = existingMatch.Id,
-							GameId = game.GameId,
-							StartTime = game.StartTime,
-							EndTime = game.EndTime,
-							BeatmapId = beatmapIdMapping[game.BeatmapId],
-							PlayMode = (int)game.PlayMode,
-							MatchType = (int)game.MatchType,
-							ScoringType = (int)game.ScoringType,
-							TeamType = (int)game.TeamType,
-							Mods = (int)game.Mods
+							PlayerId = playerIdMapping[score.UserId],
+							GameId = dbGame.Id,
+							Team = (int)score.Team,
+							Score = score.PlayerScore,
+							MaxCombo = score.MaxCombo,
+							Count50 = score.Count50,
+							Count100 = score.Count100,
+							Count300 = score.Count300,
+							CountMiss = score.CountMiss,
+							CountKatu = score.CountKatu,
+							CountGeki = score.CountGeki,
+							Perfect = score.Perfect == 1,
+							Pass = score.Pass == 1,
+							EnabledMods = (int?)score.EnabledMods
 						};
 
-						_context.Games.Add(dbGame);
+						_context.MatchScores.Add(dbMatchScore);
 						await _context.SaveChangesAsync();
 					}
 				}
-
-				// Step 5.
-				foreach (var game in osuMatch.Games)
-				{
-					var dbGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
-					if (dbGame == null)
-					{
-						_logger.LogError("Failed to fetch game {GameId}", game.GameId);
-						continue;
-					}
-
-					foreach (var score in game.Scores)
-					{
-						var existingMatchScore = await _context.MatchScores.FirstOrDefaultAsync(s => s.PlayerId == playerIdMapping[score.UserId] && s.GameId == dbGame.Id);
-						if (existingMatchScore == null)
-						{
-							var dbMatchScore = new MatchScore
-							{
-								PlayerId = playerIdMapping[score.UserId],
-								GameId = dbGame.Id,
-								Team = (int)score.Team,
-								Score = score.PlayerScore,
-								MaxCombo = score.MaxCombo,
-								Count50 = score.Count50,
-								Count100 = score.Count100,
-								Count300 = score.Count300,
-								CountMiss = score.CountMiss,
-								CountKatu = score.CountKatu,
-								CountGeki = score.CountGeki,
-								Perfect = score.Perfect == 1,
-								Pass = score.Pass == 1,
-								EnabledMods = (int?)score.EnabledMods
-							};
-
-							_context.MatchScores.Add(dbMatchScore);
-							await _context.SaveChangesAsync();
-						}
-					}
-				}
-
-				return true;
 			}
-			catch (Exception e)
-			{
-				_logger.LogError(e, "An unhandled exception occurred while processing match {MatchId}", osuMatch.Match.MatchId);
-				return false;
-			}
+
+			return true;
+		}
+		catch (Exception e)
+		{
+			_logger.LogError(e, "An unhandled exception occurred while processing match {MatchId}", osuMatch.Match.MatchId);
+			return false;
 		}
 	}
 
 	public async Task<int> UpdateVerificationStatusAsync(long matchId, VerificationStatus status, MatchVerificationSource source, string? info = null)
 	{
-		using (_context)
+		var match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
+		if (match == null)
 		{
-			var match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
-			if (match == null)
-			{
-				_logger.LogWarning("Match {MatchId} not found (failed to update verification status)", matchId);
-				return 0;
-			}
-
-			match.VerificationStatus = (int)status;
-			match.VerificationSource = (int)source;
-			match.VerificationInfo = info;
-			return await _context.SaveChangesAsync();
+			_logger.LogWarning("Match {MatchId} not found (failed to update verification status)", matchId);
+			return 0;
 		}
+
+		match.VerificationStatus = (int)status;
+		match.VerificationSource = (int)source;
+		match.VerificationInfo = info;
+		return await _context.SaveChangesAsync();
 	}
 
 	private bool IsValidModCombination(OsuEnums.Mods modCombination)

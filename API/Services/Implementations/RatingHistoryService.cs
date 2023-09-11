@@ -8,9 +8,9 @@ namespace API.Services.Implementations;
 
 public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistoryService
 {
+	private readonly OtrContext _context;
 	private readonly ILogger<RatingHistoryService> _logger;
 	private readonly IMapper _mapper;
-	private readonly OtrContext _context;
 
 	public RatingHistoryService(ILogger<RatingHistoryService> logger, IMapper mapper, OtrContext context) : base(logger, context)
 	{
@@ -21,23 +21,20 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 
 	public async Task<IEnumerable<RatingHistoryDTO>> GetForPlayerAsync(long osuPlayerId)
 	{
-		using (_context)
+		int dbId = await _context.Players.Where(x => x.OsuId == osuPlayerId).Select(x => x.Id).FirstOrDefaultAsync();
+
+		if (dbId == 0)
 		{
-			int dbId = await _context.Players.Where(x => x.OsuId == osuPlayerId).Select(x => x.Id).FirstOrDefaultAsync();
-			
-			if (dbId == 0)
-			{
-				return new List<RatingHistoryDTO>();
-			}
-			
-			return _mapper.Map<IEnumerable<RatingHistoryDTO>>(await _context.RatingHistories.Where(x => x.PlayerId == dbId).ToListAsync());
+			return new List<RatingHistoryDTO>();
 		}
+
+		return _mapper.Map<IEnumerable<RatingHistoryDTO>>(await _context.RatingHistories.Where(x => x.PlayerId == dbId).ToListAsync());
 	}
 
 	public async Task<int> BatchInsertAsync(IEnumerable<RatingHistoryDTO> histories)
 	{
 		var ls = new List<RatingHistory>();
-		foreach(var history in histories)
+		foreach (var history in histories)
 		{
 			ls.Add(new RatingHistory
 			{
@@ -49,19 +46,10 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 				MatchId = history.MatchId
 			});
 		}
-		
-		using (_context)
-		{
-			await _context.RatingHistories.AddRangeAsync(ls);
-			return await _context.SaveChangesAsync();
-		}
+
+		await _context.RatingHistories.AddRangeAsync(ls);
+		return await _context.SaveChangesAsync();
 	}
 
-	public async Task TruncateAsync()
-	{
-		using (_context)
-		{
-			await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE ratinghistories RESTART IDENTITY");
-		}
-	}
+	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE ratinghistories RESTART IDENTITY");
 }

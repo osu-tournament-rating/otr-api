@@ -18,89 +18,40 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		_mapper = mapper;
 	}
 
-	public async Task<IEnumerable<PlayerDTO>> GetAllAsync()
-	{
-		using (_context)
-		{
-			return _mapper.Map<IEnumerable<PlayerDTO>>(await _context.Players
-			                                                         .Include(x => x.MatchScores)
-			                                                         .Include(x => x.RatingHistories)
-			                                                         .Include(x => x.Ratings)
-			                                                         .ToListAsync());
-		}
-	}
+	public async Task<IEnumerable<PlayerDTO>> GetAllAsync() => _mapper.Map<IEnumerable<PlayerDTO>>(await _context.Players
+	                                                                                                             .Include(x => x.MatchScores)
+	                                                                                                             .Include(x => x.RatingHistories)
+	                                                                                                             .Include(x => x.Ratings)
+	                                                                                                             .ToListAsync());
 
-	public async Task<PlayerDTO?> GetByOsuIdAsync(long osuId)
-	{
-		using (_context)
-		{
-			return _mapper.Map<PlayerDTO?>(await _context.Players
-			                                             .Include(x => x.MatchScores)
-			                                             .Include(x => x.RatingHistories)
-			                                             .Include(x => x.Ratings)
-			                                             .Include(x => x.User)
-			                                             .Where(x => x.OsuId == osuId)
-			                                             .FirstOrDefaultAsync());
-		}
-	}
+	public async Task<PlayerDTO?> GetByOsuIdAsync(long osuId) => _mapper.Map<PlayerDTO?>(await _context.Players
+	                                                                                                   .Include(x => x.MatchScores)
+	                                                                                                   .Include(x => x.RatingHistories)
+	                                                                                                   .Include(x => x.Ratings)
+	                                                                                                   .Include(x => x.User)
+	                                                                                                   .Where(x => x.OsuId == osuId)
+	                                                                                                   .FirstOrDefaultAsync());
 
-	public async Task<IEnumerable<PlayerDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds)
-	{
-		using (_context)
-		{
-			return _mapper.Map<IEnumerable<PlayerDTO>>(await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync());
-		}
-	}
+	public async Task<IEnumerable<PlayerDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds) =>
+		_mapper.Map<IEnumerable<PlayerDTO>>(await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync());
 
-	public async Task<int> GetIdByOsuIdAsync(long osuId)
-	{
-		using (_context)
-		{
-			return await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
-		}
-	}
+	public async Task<int> GetIdByOsuIdAsync(long osuId) => await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
+	public async Task<long> GetOsuIdByIdAsync(int id) => await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
+	public async Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync() => _mapper.Map<IEnumerable<PlayerRanksDTO>>(await _context.Players.ToListAsync());
 
-	public async Task<long> GetOsuIdByIdAsync(int id)
-	{
-		using (_context)
-		{
-			return await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
-		}
-	}
+	public async Task<IEnumerable<Unmapped_PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode) => await (from p in _context.Players
+	                                                                                                                 join r in _context.Ratings on p.Id equals r.PlayerId
+	                                                                                                                 where r.Mode == (int)mode
+	                                                                                                                 orderby r.Mu descending
+	                                                                                                                 select new Unmapped_PlayerRatingDTO
+	                                                                                                                 {
+		                                                                                                                 OsuId = p.OsuId,
+		                                                                                                                 Username = p.Username,
+		                                                                                                                 Mu = r.Mu,
+		                                                                                                                 Sigma = r.Sigma
+	                                                                                                                 })
+	                                                                                                                .Take(n)
+	                                                                                                                .ToListAsync();
 
-	public async Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync()
-	{
-		using (_context)
-		{
-			return _mapper.Map<IEnumerable<PlayerRanksDTO>>(await _context.Players.ToListAsync());
-		}
-	}
-
-	public async Task<IEnumerable<Unmapped_PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode)
-	{
-		using (_context)
-		{
-			return await (from p in _context.Players
-			              join r in _context.Ratings on p.Id equals r.PlayerId
-			              where r.Mode == (int)mode
-			              orderby r.Mu descending
-			              select new Unmapped_PlayerRatingDTO
-			              {
-				              OsuId = p.OsuId,
-				              Username = p.Username,
-				              Mu = r.Mu,
-				              Sigma = r.Sigma
-			              })
-			             .Take(n)
-			             .ToListAsync();
-		}
-	}
-
-	public async Task<IEnumerable<Player>> GetOutdatedAsync()
-	{
-		using (_context)
-		{
-			return await _context.Players.Where(p => p.Updated < DateTime.Now.AddDays(-14) || p.Updated == null).ToListAsync();
-		}
-	}
+	public async Task<IEnumerable<Player>> GetOutdatedAsync() => await _context.Players.Where(p => p.Updated < DateTime.Now.AddDays(-14) || p.Updated == null).ToListAsync();
 }
