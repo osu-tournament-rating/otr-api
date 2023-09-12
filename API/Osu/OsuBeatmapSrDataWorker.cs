@@ -32,6 +32,7 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 			{
 				var beatmapsService = scope.ServiceProvider.GetRequiredService<IBeatmapService>();
 				await ProcessBeatmapModSrsAsync(beatmapsService);
+				await Task.Delay(30 * 1000, stoppingToken);
 			}
 		}
 	}
@@ -46,7 +47,7 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 			
 			if (beatmap == null)
 			{
-				_logger.LogWarning("Failed to fetch beatmap {BeatmapId} (result from API was null)", osuMapId);
+				_logger.LogWarning("Failed to fetch beatmap while processing mod sr {BeatmapId} (result from API was null)", osuMapId);
 				continue;
 			}
 			
@@ -56,6 +57,8 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 				Mods = (int)mods,
 				PostModSr = beatmap.Sr
 			});
+			
+			_logger.LogDebug("Inserted mod sr for {BeatmapId} with mods {Mods}", osuMapId, mods);
 		}
 	}
 }

@@ -34,21 +34,36 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 	public async Task<HashSet<(int, OsuEnums.Mods)>> GetUnprocessedSrBeatmapIdsAsync()
 	{
 		var mods = new[] { OsuEnums.Mods.HardRock, OsuEnums.Mods.DoubleTime, OsuEnums.Mods.Easy, OsuEnums.Mods.HalfTime };
-		var existing = _context.BeatmapModSrs.Select(b => new
+		var disregardedModsMatrix = new Dictionary<OsuEnums.Mode, OsuEnums.Mods[]>()
+		{
+			{ OsuEnums.Mode.Mania, new[] { OsuEnums.Mods.HardRock, OsuEnums.Mods.Easy } },
+			{ OsuEnums.Mode.Catch, new[] { OsuEnums.Mods.HardRock, OsuEnums.Mods.Easy } },
+			{ OsuEnums.Mode.Taiko, new[] { OsuEnums.Mods.HardRock, OsuEnums.Mods.Easy } },
+		};
+		
+		var existing = _context.BeatmapModSrs
+		                       .Select(b => new
 		                       {
 			                       b.BeatmapId,
 			                       b.Mods
 		                       })
 		                       .ToImmutableHashSet();
 
-		var all = await _context.Beatmaps.Select(b => b.Id).ToListAsync();
+		var all = await _context.Beatmaps.ToDictionaryAsync(b => b.Id, b => b.GameMode);
 
 		HashSet<(int, OsuEnums.Mods)> toProcess = new();
 
 		foreach (var mod in mods)
 		{
-			foreach (int id in all)
+			foreach ((int id, int mode) in all)
 			{
+				OsuEnums.Mode modeEnum = (OsuEnums.Mode)mode;
+				
+				if (disregardedModsMatrix.ContainsKey(modeEnum) && disregardedModsMatrix[modeEnum].Contains(mod))
+				{
+					continue;
+				}
+				
 				var toCheck = new { BeatmapId = id, Mods = (int)mod };
 				if (!existing.Contains(toCheck))
 				{
@@ -66,5 +81,9 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 		await _context.SaveChangesAsync();
 	}
 
-	public async Task InsertModSrAsync(BeatmapModSr beatmapModSr) => await _context.BeatmapModSrs.AddAsync(beatmapModSr);
+	public async Task InsertModSrAsync(BeatmapModSr beatmapModSr)
+	{
+		await _context.BeatmapModSrs.AddAsync(beatmapModSr);
+		await _context.SaveChangesAsync();
+	}
 }
