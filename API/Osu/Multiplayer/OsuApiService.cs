@@ -22,8 +22,7 @@ public class OsuApiService : IOsuApiService
     private readonly HttpClient _client;
     private readonly ICredentials _credentials;
     private readonly ILogger<OsuApiService> _logger;
-
-    private SemaphoreSlim _semaphore = new(1);
+    private readonly SemaphoreSlim _semaphore = new(1);
 
     private int _rateLimitCounter;
     private DateTime _rateLimitResetTime = DateTime.Now.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
@@ -75,7 +74,7 @@ public class OsuApiService : IOsuApiService
 
         if (_rateLimitCounter >= RATE_LIMIT_CAPACITY)
         {
-            await Task.Delay(RATE_LIMIT_INTERVAL_SECONDS * 1000); // Wait for the rate limit interval to pass
+            await Task.Delay(_rateLimitResetTime - DateTime.Now); // Wait for the rate limit interval to pass
             CheckRatelimitReset();
         }
         
@@ -92,7 +91,7 @@ public class OsuApiService : IOsuApiService
         }
         catch (JsonSerializationException e)
         {
-            _logger.LogWarning("The osu! API returned an invalid body for id {Id}, likely due to deletion", id);
+            _logger.LogWarning("The osu! API returned an invalid body for id {Id} of type {T}, likely due to deletion", id, typeof(T));
             return null;
         }
         catch (Exception e)

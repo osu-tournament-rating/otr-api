@@ -23,7 +23,7 @@ public class Beatmap
 
     [Column("bpm")]
     [JsonProperty("bpm")]
-    public double Bpm { get; set; }
+    public double? Bpm { get; set; }
 
     [Column("mapper_id")]
     [JsonProperty("creator_id")]
@@ -95,7 +95,7 @@ public class Beatmap
 
     [Column("max_combo")]
     [JsonProperty("max_combo")]
-    public int MaxCombo { get; set; }
+    public int? MaxCombo { get; set; }
 
     [Column("created", TypeName = "timestamp with time zone")]
     [JsonProperty("submit_date")] // Mapping to submit_date as the closest match
