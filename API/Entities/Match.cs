@@ -48,13 +48,13 @@ public class Match
 		}
 	}
 	[NotMapped]
-	public VerificationStatus? VerificationStatusEnum
+	public MatchVerificationStatus? VerificationStatusEnum
 	{
 		get
 		{
 			if (VerificationStatus != null)
 			{
-				return (VerificationStatus)VerificationStatus;
+				return (MatchVerificationStatus)VerificationStatus;
 			}
 
 			return null;

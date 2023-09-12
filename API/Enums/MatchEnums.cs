@@ -10,7 +10,7 @@ public enum MatchVerificationSource
 ///  An enum representing the status of a match verification.
 ///  Verified matches are considered legitimate and will be used in the rating algorithm.
 /// </summary>
-public enum VerificationStatus
+public enum MatchVerificationStatus
 {
 	/// <summary>
 	///  Fully verified as legitimate and will be incorporated into the rating algorithm.

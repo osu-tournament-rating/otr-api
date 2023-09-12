@@ -35,7 +35,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 		if (onlyIncludeFiltered)
 		{
-			query = query.Where(m => (m.VerificationStatus == (int)VerificationStatus.Verified || m.VerificationStatus == (int)VerificationStatus.PreVerified) &&
+			query = query.Where(m => (m.VerificationStatus == (int)MatchVerificationStatus.Verified || m.VerificationStatus == (int)MatchVerificationStatus.PreVerified) &&
 			                         m.Games.Any(g => g.MatchScores.Any(ms => ms.Score > 10000) &&
 			                                          g.Beatmap!.DrainTime > 20 &&
 			                                          g.Beatmap!.Sr < 12 &&
@@ -96,7 +96,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	                                                                                                           .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
 
 	public async Task<Entities.Match?> GetFirstPendingOrDefaultAsync() =>
-		await _context.Matches.FirstOrDefaultAsync(x => x.VerificationStatus == (int)VerificationStatus.PendingVerification);
+		await _context.Matches.FirstOrDefaultAsync(x => x.VerificationStatus == (int)MatchVerificationStatus.PendingVerification);
 
 	public async Task<IEnumerable<long>> CheckExistingAsync(IEnumerable<long> matchIds) =>
 		await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).Select(x => x.MatchId).ToListAsync();
@@ -140,7 +140,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					Name = osuMatch.Match.Name,
 					StartTime = osuMatch.Match.StartTime,
 					EndTime = osuMatch.Match.EndTime,
-					VerificationStatus = (int)VerificationStatus.PendingVerification
+					VerificationStatus = (int)MatchVerificationStatus.PendingVerification
 				};
 
 				_context.Matches.Add(dbMatch);
@@ -222,7 +222,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		}
 	}
 
-	public async Task<int> UpdateVerificationStatusAsync(long matchId, VerificationStatus status, MatchVerificationSource source, string? info = null)
+	public async Task<int> UpdateVerificationStatusAsync(long matchId, MatchVerificationStatus status, MatchVerificationSource source, string? info = null)
 	{
 		var match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
 		if (match == null)

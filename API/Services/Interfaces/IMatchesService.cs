@@ -18,5 +18,5 @@ public interface IMatchesService : IService<Entities.Match>
 	Task<int> InsertFromIdBatchAsync(IEnumerable<Entities.Match> matches);
 
 	Task<bool> CreateFromApiMatchAsync(OsuApiMatchData osuMatch);
-	Task<int> UpdateVerificationStatusAsync(long matchId, VerificationStatus status, MatchVerificationSource source, string? info = null);
+	Task<int> UpdateVerificationStatusAsync(long matchId, MatchVerificationStatus status, MatchVerificationSource source, string? info = null);
 }

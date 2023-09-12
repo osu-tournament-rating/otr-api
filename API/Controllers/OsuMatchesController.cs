@@ -46,11 +46,11 @@ public class OsuMatchesController : Controller
 		var existingMatches = await _service.CheckExistingAsync(ids);
 		var stripped = ids.Except(existingMatches).ToList();
 
-		var matches = stripped.Select(id => new Match { MatchId = id, VerificationStatus = (int)VerificationStatus.PendingVerification });
+		var matches = stripped.Select(id => new Match { MatchId = id, VerificationStatus = (int)MatchVerificationStatus.PendingVerification });
 		int? result = await _service.InsertFromIdBatchAsync(matches);
 		if (result > 0)
 		{
-			_logger.LogInformation("Successfully marked {Matches} matches as {Status}", result, VerificationStatus.PendingVerification);
+			_logger.LogInformation("Successfully marked {Matches} matches as {Status}", result, MatchVerificationStatus.PendingVerification);
 			return Ok();
 		}
 

@@ -49,7 +49,7 @@ public class OsuMatchDataWorker : BackgroundService
 					var result = await _apiService.GetMatchAsync(osuMatch.MatchId);
 					if (result == null)
 					{
-						await UpdateLinkStatusAsync(osuMatch.MatchId, VerificationStatus.Failure, matchesService);
+						await UpdateLinkStatusAsync(osuMatch.MatchId, MatchVerificationStatus.Failure, matchesService);
 						continue;
 					}
 
@@ -57,7 +57,7 @@ public class OsuMatchDataWorker : BackgroundService
 				}
 				catch (Exception e)
 				{
-					await UpdateLinkStatusAsync(osuMatch.MatchId, VerificationStatus.Failure, matchesService);
+					await UpdateLinkStatusAsync(osuMatch.MatchId, MatchVerificationStatus.Failure, matchesService);
 
 					_logger.LogWarning(e, "Failed to fetch data for match {MatchId} (exception was thrown)", osuMatch.MatchId);
 				}
@@ -65,7 +65,7 @@ public class OsuMatchDataWorker : BackgroundService
 		}
 	}
 
-	private async Task UpdateLinkStatusAsync(long matchId, VerificationStatus status, IMatchesService matchesService)
+	private async Task UpdateLinkStatusAsync(long matchId, MatchVerificationStatus status, IMatchesService matchesService)
 	{
 		await matchesService.UpdateVerificationStatusAsync(matchId, status, MatchVerificationSource.System);
 		_logger.LogDebug("Set status of MultiplayerLink {LinkId} to {Status}", matchId, status);
@@ -91,12 +91,12 @@ public class OsuMatchDataWorker : BackgroundService
 
 		if (!LobbyNameChecker.IsNameValid(osuMatch.Match.Name))
 		{
-			await UpdateLinkStatusAsync(osuMatch.Match.MatchId, VerificationStatus.Rejected, matchesService);
+			await UpdateLinkStatusAsync(osuMatch.Match.MatchId, MatchVerificationStatus.Rejected, matchesService);
 			_logger.LogDebug("Match {MatchId} was rejected", osuMatch.Match.MatchId);
 		}
 		else
 		{
-			await UpdateLinkStatusAsync(osuMatch.Match.MatchId, VerificationStatus.PreVerified, matchesService);
+			await UpdateLinkStatusAsync(osuMatch.Match.MatchId, MatchVerificationStatus.PreVerified, matchesService);
 		}
 
 		_logger.LogInformation("Match with id {MatchId} was processed", osuMatch.Match.MatchId);
