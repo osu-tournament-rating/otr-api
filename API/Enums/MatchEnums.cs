@@ -34,7 +34,7 @@ public enum MatchVerificationStatus
 	/// </summary>
 	Unknown = 4,
 	/// <summary>
-	///  Verification failed, requires human review
+	///  Automatic verification failed, requires human review
 	/// </summary>
 	Failure = 5
 }
