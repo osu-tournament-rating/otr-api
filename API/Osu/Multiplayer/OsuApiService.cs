@@ -22,7 +22,7 @@ public class OsuApiService : IOsuApiService
     private readonly HttpClient _client;
     private readonly ICredentials _credentials;
     private readonly ILogger<OsuApiService> _logger;
-    private readonly SemaphoreSlim _semaphore = new(1);
+    private readonly SemaphoreSlim _semaphore = new(10);
 
     private int _rateLimitCounter;
     private DateTime _rateLimitResetTime = DateTime.Now.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
