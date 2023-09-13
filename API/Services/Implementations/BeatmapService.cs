@@ -37,8 +37,7 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 		var disregardedModsMatrix = new Dictionary<OsuEnums.Mode, OsuEnums.Mods[]>()
 		{
 			{ OsuEnums.Mode.Mania, new[] { OsuEnums.Mods.HardRock, OsuEnums.Mods.Easy } },
-			{ OsuEnums.Mode.Catch, new[] { OsuEnums.Mods.HardRock, OsuEnums.Mods.Easy } },
-			{ OsuEnums.Mode.Taiko, new[] { OsuEnums.Mods.HardRock, OsuEnums.Mods.Easy } },
+			{ OsuEnums.Mode.Taiko, new[] { OsuEnums.Mods.HardRock, OsuEnums.Mods.Easy } }
 		};
 		
 		var existing = _context.BeatmapModSrs
