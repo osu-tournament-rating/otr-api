@@ -163,7 +163,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					
 					_context.Matches.Add(dbMatch);
 					await _context.SaveChangesAsync();
-					_logger.LogInformation("Saved match {@Match}", dbMatch);
+					_logger.LogInformation("Saved match {MatchId}", dbMatch.MatchId);
 
 					existingMatch = await _context.Matches.FirstAsync(m => m.MatchId == osuMatch.Match.MatchId);
 				}
@@ -175,7 +175,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					existingMatch.VerificationStatus = (int)verificationStatus;
 					_context.Matches.Update(existingMatch);
 					
-					_logger.LogInformation("Updated match {@Match}", existingMatch);
+					_logger.LogInformation("Updated match {MatchId}", existingMatch.MatchId);
 					await _context.SaveChangesAsync();
 				}
 			}
@@ -218,7 +218,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					_context.Games.Add(dbGame);
 					await _context.SaveChangesAsync();
 					
-					_logger.LogDebug("Saved game {@Game}", dbGame);
+					_logger.LogDebug("Saved game {GameId}", dbGame.GameId);
 				}
 				else if (existingGame.BeatmapId == null)
 				{
