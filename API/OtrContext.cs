@@ -83,6 +83,7 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<Match>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("matches_pk");
+			entity.HasIndex(e => e.MatchId).IsUnique();
 			entity.Property(e => e.Id).UseIdentityColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
