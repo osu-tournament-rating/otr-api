@@ -18,11 +18,12 @@ public class OsuApiService : IOsuApiService
 {
     private const int RATE_LIMIT_CAPACITY = 1000;
     private const int RATE_LIMIT_INTERVAL_SECONDS = 60;
+    private const int MAX_CONCURRENT_THREADS = 5;
     private const string BaseUrl = "https://osu.ppy.sh/api/";
     private readonly HttpClient _client;
     private readonly ICredentials _credentials;
     private readonly ILogger<OsuApiService> _logger;
-    private readonly SemaphoreSlim _semaphore = new(10);
+    private readonly SemaphoreSlim _semaphore = new(MAX_CONCURRENT_THREADS, MAX_CONCURRENT_THREADS);
 
     private int _rateLimitCounter;
     private DateTime _rateLimitResetTime = DateTime.Now.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
