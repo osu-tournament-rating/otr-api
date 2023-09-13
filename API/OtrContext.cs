@@ -50,7 +50,6 @@ public partial class OtrContext : DbContext
 
 		modelBuilder.Entity<BeatmapModSr>(entity =>
 		{
-			entity.HasKey(e => new { e.BeatmapId, e.Mods }).HasName("beatmap_mod_sr_pk");
 			entity.HasOne(e => e.Beatmap)
 			      .WithOne(b => b.BeatmapModSr)
 			      .HasForeignKey<BeatmapModSr>(e => e.BeatmapId)
