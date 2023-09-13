@@ -14,6 +14,4 @@ public class BeatmapModSr
 	public int Mods { get; set; }
 	[Column("post_mod_sr")]
 	public double PostModSr { get; set; }
-	[InverseProperty("BeatmapModSr")]
-	public virtual Beatmap Beatmap { get; set; } = null!;
 }

@@ -130,7 +130,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "BeatmapId" }, "beatmaps_beatmapid")
                         .IsUnique();
 
-                    b.ToTable("beatmaps");
+                    b.ToTable("beatmaps", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.BeatmapModSr", b =>
@@ -149,10 +149,9 @@ namespace API.Migrations
 
                     b.HasKey("BeatmapId", "Mods");
 
-                    b.HasIndex("BeatmapId")
-                        .IsUnique();
+                    b.HasIndex("BeatmapId");
 
-                    b.ToTable("beatmap_mod_sr");
+                    b.ToTable("beatmap_mod_sr", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.Config", b =>
@@ -178,7 +177,7 @@ namespace API.Migrations
                         .HasColumnType("text")
                         .HasColumnName("value");
 
-                    b.ToTable("config");
+                    b.ToTable("config", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.Game", b =>
@@ -250,7 +249,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "GameId" }, "osugames_gameid")
                         .IsUnique();
 
-                    b.ToTable("games");
+                    b.ToTable("games", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.Match", b =>
@@ -306,7 +305,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "MatchId" }, "osumatches_matchid")
                         .IsUnique();
 
-                    b.ToTable("matches");
+                    b.ToTable("matches", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.MatchScore", b =>
@@ -382,7 +381,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "GameId", "PlayerId" }, "match_scores_gameid_playerid")
                         .IsUnique();
 
-                    b.ToTable("match_scores");
+                    b.ToTable("match_scores", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.Player", b =>
@@ -434,7 +433,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "OsuId" }, "Players_osuid")
                         .IsUnique();
 
-                    b.ToTable("players");
+                    b.ToTable("players", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.Rating", b =>
@@ -478,7 +477,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "PlayerId", "Mode" }, "ratings_playerid_mode")
                         .IsUnique();
 
-                    b.ToTable("ratings");
+                    b.ToTable("ratings", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.RatingHistory", b =>
@@ -528,7 +527,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "PlayerId", "MatchId" }, "ratinghistories_pk")
                         .IsUnique();
 
-                    b.ToTable("ratinghistories");
+                    b.ToTable("ratinghistories", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.User", b =>
@@ -577,18 +576,16 @@ namespace API.Migrations
                     b.HasIndex("PlayerId")
                         .IsUnique();
 
-                    b.ToTable("users");
+                    b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.BeatmapModSr", b =>
                 {
-                    b.HasOne("API.Entities.Beatmap", "Beatmap")
+                    b.HasOne("API.Entities.Beatmap", null)
                         .WithOne("BeatmapModSr")
                         .HasForeignKey("API.Entities.BeatmapModSr", "BeatmapId")
-                        .IsRequired()
-                        .HasConstraintName("beatmap_mod_sr_beatmaps_id_fk");
-
-                    b.Navigation("Beatmap");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("API.Entities.Game", b =>

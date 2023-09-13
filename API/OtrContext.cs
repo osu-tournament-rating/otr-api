@@ -40,21 +40,18 @@ public partial class OtrContext : DbContext
 			      .HasForeignKey(g => g.BeatmapId)
 			      .OnDelete(DeleteBehavior.ClientSetNull)
 			      .HasConstraintName("games_beatmaps_id_fk");
-			
-			entity.HasOne(e => e.BeatmapModSr)
-				  .WithOne(b => b.Beatmap)
-			      .HasForeignKey<BeatmapModSr>(e => e.BeatmapId)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
-			      .HasConstraintName("beatmap_mod_sr_beatmaps_id_fk");
+
+			entity.HasOne(e => e.BeatmapModSr);
 		});
 
 		modelBuilder.Entity<BeatmapModSr>(entity =>
 		{
-			entity.HasOne(e => e.Beatmap)
-			      .WithOne(b => b.BeatmapModSr)
-			      .HasForeignKey<BeatmapModSr>(e => e.BeatmapId)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
-			      .HasConstraintName("beatmap_mod_sr_beatmaps_id_fk");
+			entity
+				.HasKey(b => new { b.BeatmapId, b.Mods });
+
+			entity
+				.HasIndex(b => b.BeatmapId)
+				.IsUnique(false);
 		});
 
 		modelBuilder.Entity<Config>(entity => { entity.Property(e => e.Id).ValueGeneratedOnAdd(); });
