@@ -13,7 +13,13 @@ public class ServiceBase<T> : IService<T> where T : class
 		_context = context;
 	}
 
-	public virtual async Task<T> CreateAsync(T entity) => (await _context.Set<T>().AddAsync(entity)).Entity;
+	public virtual async Task<T> CreateAsync(T entity)
+	{
+		var created = (await _context.Set<T>().AddAsync(entity)).Entity;
+		await _context.SaveChangesAsync();
+
+		return created;
+	}
 	public virtual async Task<T?> GetAsync(int id) => await _context.Set<T>().FindAsync(id);
 
 	public virtual async Task<int> UpdateAsync(T entity)
