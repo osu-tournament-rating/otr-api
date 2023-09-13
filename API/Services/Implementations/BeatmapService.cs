@@ -79,6 +79,7 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 	{
 		await _context.BeatmapModSrs.AddRangeAsync(beatmapModSrs);
 		await _context.SaveChangesAsync();
+		_logger.LogDebug("Successfully inserted {Count} {T} as part of a bulk insert operation", beatmapModSrs.Count(), typeof(BeatmapModSr));
 	}
 
 	public async Task InsertModSrAsync(BeatmapModSr beatmapModSr)
