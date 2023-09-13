@@ -53,7 +53,7 @@ public class OsuMatchDataWorker : BackgroundService
 						continue;
 					}
 
-					await ProcessOsuMatch(result, matchesService, beatmapsService);
+					await ProcessOsuMatch(result, matchesService, beatmapsService, osuMatch.VerificationStatus == (int)MatchVerificationStatus.Verified);
 				}
 				catch (Exception e)
 				{
@@ -84,22 +84,30 @@ public class OsuMatchDataWorker : BackgroundService
 	/// <param name="beatmapService"></param>
 	/// <param name="playerService"></param>
 	/// <exception cref="NullReferenceException"></exception>
-	private async Task ProcessOsuMatch(OsuApiMatchData osuMatch, IMatchesService matchesService, IBeatmapService beatmapService)
+	private async Task ProcessOsuMatch(OsuApiMatchData osuMatch, IMatchesService matchesService, IBeatmapService beatmapService, bool verified)
 	{
 		await ProcessBeatmapsAsync(osuMatch, beatmapService);
 		await matchesService.CreateFromApiMatchAsync(osuMatch);
 
-		if (!LobbyNameChecker.IsNameValid(osuMatch.Match.Name))
+		MatchVerificationStatus verificationStatus;
+		if (verified)
 		{
-			await UpdateLinkStatusAsync(osuMatch.Match.MatchId, MatchVerificationStatus.Rejected, matchesService);
-			_logger.LogDebug("Match {MatchId} was rejected", osuMatch.Match.MatchId);
+			verificationStatus = MatchVerificationStatus.Verified;
 		}
 		else
 		{
-			await UpdateLinkStatusAsync(osuMatch.Match.MatchId, MatchVerificationStatus.PreVerified, matchesService);
+			if (!LobbyNameChecker.IsNameValid(osuMatch.Match.Name))
+			{
+				verificationStatus = MatchVerificationStatus.Rejected;
+			}
+			else
+			{
+				verificationStatus = MatchVerificationStatus.PreVerified;
+			}
 		}
 
-		_logger.LogInformation("Match with id {MatchId} was processed", osuMatch.Match.MatchId);
+		await UpdateLinkStatusAsync(osuMatch.Match.MatchId, verificationStatus, matchesService);
+		_logger.LogInformation("Match with id {MatchId} was processed as {Status}", osuMatch.Match.MatchId, verificationStatus);
 	}
 
 	private async Task ProcessBeatmapsAsync(OsuApiMatchData osuMatch, IBeatmapService beatmapService)
