@@ -90,7 +90,10 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 				PostModSr = beatmap.Sr
 			});
 		}
-		
-		await beatmapService.BulkInsertAsync(toAdd);
+
+		if (toAdd.Any())
+		{
+			await beatmapService.BulkInsertAsync(toAdd);
+		}
 	}
 }
