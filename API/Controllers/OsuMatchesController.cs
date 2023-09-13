@@ -25,7 +25,7 @@ public class OsuMatchesController : Controller
 	}
 
 	[HttpPost("batch")]
-	public async Task<ActionResult<int>> PostAsync([FromBody] IEnumerable<long> ids)
+	public async Task<ActionResult<int>> PostAsync([FromBody] IEnumerable<long> ids, bool confirmedVerified = false)
 	{
 		/**
 		 * FLOW:
@@ -47,7 +47,13 @@ public class OsuMatchesController : Controller
 		var existingMatches = await _service.CheckExistingAsync(ids);
 		var stripped = ids.Except(existingMatches).ToList();
 
-		var matches = stripped.Select(id => new Match { MatchId = id, VerificationStatus = (int)MatchVerificationStatus.PendingVerification });
+		var verification = MatchVerificationStatus.PendingVerification;
+		if (confirmedVerified)
+		{
+			verification = MatchVerificationStatus.Verified;
+		}
+
+		var matches = stripped.Select(id => new Match { MatchId = id, VerificationStatus = (int)verification });
 		int? result = await _service.InsertFromIdBatchAsync(matches);
 		if (result > 0)
 		{
