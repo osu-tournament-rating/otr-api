@@ -25,6 +25,12 @@ public class OsuMatchesController : Controller
 		_scoresService = scoresService;
 	}
 
+	[HttpPost("force-update")]
+	public async Task<ActionResult> ForceUpdateAsync([FromBody] long id)
+	{
+		return Ok(await _service.UpdateVerificationStatusAsync(id, MatchVerificationStatus.PendingVerification, MatchVerificationSource.Admin));
+	}
+
 	[HttpPost("batch")]
 	public async Task<ActionResult<int>> PostAsync([FromBody] IEnumerable<long> ids, bool confirmedVerified = false)
 	{
