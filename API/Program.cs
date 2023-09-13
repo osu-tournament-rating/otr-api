@@ -44,10 +44,9 @@ builder.Services.AddSerilog(configuration =>
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-var configuration = new MapperConfiguration(cfg => 
+var configuration = new MapperConfiguration(cfg =>
 {
 	cfg.CreateMap<Beatmap, BeatmapDTO>();
-	cfg.CreateMap<BeatmapModSr, BeatmapModSrDTO>();
 	cfg.CreateMap<API.Entities.Game, GameDTO>();
 	cfg.CreateMap<API.Entities.Match, MatchDTO>();
 	cfg.CreateMap<MatchScore, MatchScoreDTO>();
@@ -78,6 +77,8 @@ builder.Services.AddDbContext<OtrContext>(o =>
 	o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection") ??
 	            throw new InvalidOperationException("Missing connection string!"));
 });
+
+builder.Services.AddScoped<IGameSrCalculator, GameSrCalculator>();
 
 builder.Services.AddScoped<IRatingsService, RatingsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();

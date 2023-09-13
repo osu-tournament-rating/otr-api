@@ -34,12 +34,12 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 	public async Task<HashSet<(int, OsuEnums.Mods)>> GetUnprocessedSrBeatmapIdsAsync()
 	{
 		var mods = new[] { OsuEnums.Mods.HardRock, OsuEnums.Mods.DoubleTime, OsuEnums.Mods.Easy, OsuEnums.Mods.HalfTime };
-		var disregardedModsMatrix = new Dictionary<OsuEnums.Mode, OsuEnums.Mods[]>()
+		var disregardedModsMatrix = new Dictionary<OsuEnums.Mode, OsuEnums.Mods[]>
 		{
 			{ OsuEnums.Mode.Mania, new[] { OsuEnums.Mods.HardRock, OsuEnums.Mods.Easy } },
 			{ OsuEnums.Mode.Taiko, new[] { OsuEnums.Mods.HardRock, OsuEnums.Mods.Easy } }
 		};
-		
+
 		var existing = _context.BeatmapModSrs
 		                       .Select(b => new
 		                       {
@@ -56,13 +56,13 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 		{
 			foreach ((int id, int mode) in all)
 			{
-				OsuEnums.Mode modeEnum = (OsuEnums.Mode)mode;
-				
+				var modeEnum = (OsuEnums.Mode)mode;
+
 				if (disregardedModsMatrix.ContainsKey(modeEnum) && disregardedModsMatrix[modeEnum].Contains(mod))
 				{
 					continue;
 				}
-				
+
 				var toCheck = new { BeatmapId = id, Mods = (int)mod };
 				if (!existing.Contains(toCheck))
 				{
@@ -85,5 +85,31 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 	{
 		await _context.BeatmapModSrs.AddAsync(beatmapModSr);
 		await _context.SaveChangesAsync();
+	}
+
+	public async Task<double> GetDoubleTimeSrAsync(int beatmapId) => await GetSrForModAsync(beatmapId, OsuEnums.Mods.DoubleTime);
+	public async Task<double> GetHardRockSrAsync(int beatmapId) => await GetSrForModAsync(beatmapId, OsuEnums.Mods.HardRock);
+	public async Task<double> GetEasySrAsync(int beatmapId) => await GetSrForModAsync(beatmapId, OsuEnums.Mods.Easy);
+	public async Task<double> GetHalfTimeSrAsync(int beatmapId) => await GetSrForModAsync(beatmapId, OsuEnums.Mods.HalfTime);
+
+	private async Task<double> GetSrForModAsync(int beatmapId, OsuEnums.Mods mod)
+	{
+		var existingSr = await _context.BeatmapModSrs.FirstOrDefaultAsync(b => b.BeatmapId == beatmapId && b.Mods == (int)mod);
+		if (existingSr != null)
+		{
+			return existingSr.PostModSr;
+		}
+
+		_logger.LogWarning("Failed to identify PostModSr for beatmap {BeatmapId} with mod {Mod}! Returning default " +
+		                   "value, this may be inaccurate!", beatmapId, mod);
+
+		var existingBeatmap = await _context.Beatmaps.FirstOrDefaultAsync(x => x.Id == beatmapId);
+		if (existingBeatmap == null)
+		{
+			_logger.LogError("Failed to resolve beatmap {BeatmapId} from database while looking for PostModSr! " +
+			                 "Returning an unexpected value of -1!", beatmapId);
+		}
+
+		return -1;
 	}
 }

@@ -26,6 +26,8 @@ public class Game
 	public int TeamType { get; set; }
 	[Column("mods")]
 	public int Mods { get; set; }
+	[Column("post_mod_sr")]
+	public double PostModSr { get; set; }
 	[Column("game_id")]
 	public long GameId { get; set; }
 	[Column("created", TypeName = "timestamp with time zone")]
@@ -42,7 +44,7 @@ public class Game
 	[ForeignKey("BeatmapId")]
 	[InverseProperty("Games")]
 	public virtual Beatmap? Beatmap { get; set; }
-	[InverseProperty("Game")] 
+	[InverseProperty("Game")]
 	public virtual ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
 	[NotMapped]
 	public OsuEnums.Mods ModsEnum => (OsuEnums.Mods)Mods;

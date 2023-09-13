@@ -11,17 +11,22 @@ namespace API.Services.Implementations;
 
 public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 {
+	private readonly IBeatmapService _beatmapService;
 	private readonly OtrContext _context;
+	private readonly IGameSrCalculator _gameSrCalculator;
 	private readonly ILogger<MatchesService> _logger;
 	private readonly IMapper _mapper;
 	private readonly IPlayerService _playerService;
 
-	public MatchesService(ILogger<MatchesService> logger, IPlayerService playerService, IMapper mapper, OtrContext context) : base(logger, context)
+	public MatchesService(ILogger<MatchesService> logger, IPlayerService playerService,
+		IBeatmapService beatmapService, IMapper mapper, OtrContext context, IGameSrCalculator gameSrCalculator) : base(logger, context)
 	{
 		_logger = logger;
 		_playerService = playerService;
+		_beatmapService = beatmapService;
 		_mapper = mapper;
 		_context = context;
+		_gameSrCalculator = gameSrCalculator;
 	}
 
 	public async Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered)
@@ -129,6 +134,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 			var osuBeatmapIds = osuMatch.Games.Select(x => x.BeatmapId).Distinct().ToList();
 			var existingBeatmaps = await _context.Beatmaps.Where(b => osuBeatmapIds.Contains(b.BeatmapId)).ToListAsync();
 			var beatmapIdMapping = existingBeatmaps.ToDictionary(beatmap => beatmap.BeatmapId, beatmap => beatmap.Id);
+			var beatmapSrMapping = existingBeatmaps.ToDictionary(beatmap => beatmap.BeatmapId, beatmap => beatmap.Sr);
 
 			// Step 3.
 			var existingMatch = await _context.Matches.FirstOrDefaultAsync(m => m.MatchId == osuMatch.Match.MatchId);
@@ -166,7 +172,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 						MatchType = (int)game.MatchType,
 						ScoringType = (int)game.ScoringType,
 						TeamType = (int)game.TeamType,
-						Mods = (int)game.Mods
+						Mods = (int)game.Mods,
+						PostModSr = await CalculatePostModSr(game, beatmapIdMapping[game.BeatmapId], beatmapSrMapping[game.BeatmapId])
 					};
 
 					_context.Games.Add(dbGame);
@@ -235,6 +242,21 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		match.VerificationSource = (int)source;
 		match.VerificationInfo = info;
 		return await _context.SaveChangesAsync();
+	}
+
+	/// <summary>
+	///  Calculates the effective "post-mod SR" of a given game.
+	///  This is used by the rating algorithm specifically.
+	/// </summary>
+	/// <param name="game"></param>
+	/// <param name="baseSr">The default nomod SR of the beatmap</param>
+	/// <returns>SR after mods are applied</returns>
+	private async Task<double> CalculatePostModSr(Osu.Multiplayer.Game game, int beatmapDbId, double baseSr)
+	{
+		var baseMods = game.Mods;
+		var appliedMods = game.Scores.Select(x => x.EnabledMods).Where(x => x != null);
+
+		return await _gameSrCalculator.Calculate(baseSr, beatmapDbId, baseMods, appliedMods);
 	}
 
 	private bool IsValidModCombination(OsuEnums.Mods modCombination)

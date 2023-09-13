@@ -1,5 +1,3 @@
-using API.Entities;
-
 namespace API.DTOs;
 
 public class BeatmapDTO
@@ -18,5 +16,4 @@ public class BeatmapDTO
 	public double Length { get; set; }
 	public string Title { get; set; } = null!;
 	public string? DiffName { get; set; }
-	public ICollection<BeatmapModSrDTO> BeatmapModSrs { get; set; } = null!;
 }

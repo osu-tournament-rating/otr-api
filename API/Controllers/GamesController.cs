@@ -7,5 +7,13 @@ namespace API.Controllers;
 [ApiController]
 public class GamesController : Controller
 {
-	public GamesController(ILogger<GamesController> logger) { }
+	private readonly IGamesService _gamesService;
+	public GamesController(ILogger<GamesController> logger, IGamesService gamesService) { _gamesService = gamesService; }
+
+	[HttpPost("recalc-postmod-sr")]
+	public async Task<ActionResult> RecalcPostModSr()
+	{
+		await _gamesService.UpdateAllPostModSrsAsync();
+		return Ok();
+	}
 }
