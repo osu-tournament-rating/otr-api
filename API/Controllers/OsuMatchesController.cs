@@ -50,15 +50,13 @@ public class OsuMatchesController : Controller
 		// If we are verifying a match that already exists, we need to update the verification status
 		if (confirmedVerified)
 		{
-			var verifiedMatches = existingMatches.Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Verified);
-			if (verifiedMatches.Any())
+			foreach (var verifiedMatch in existingMatches)
 			{
-				foreach (var verifiedMatch in verifiedMatches)
-				{
-					await _service.UpdateVerificationStatusAsync(verifiedMatch.MatchId, MatchVerificationStatus.Verified, MatchVerificationSource.Admin);
-				}
+				await _service.UpdateVerificationStatusAsync(verifiedMatch.MatchId, MatchVerificationStatus.Verified, MatchVerificationSource.Admin);
 			}
 		}
+		
+		// Continue processing the rest of the links
 		
 		var stripped = ids.Except(existingMatches.Select(x => x.MatchId)).ToList();
 

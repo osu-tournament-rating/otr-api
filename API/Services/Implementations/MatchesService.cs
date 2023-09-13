@@ -285,6 +285,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		match.VerificationStatus = (int)status;
 		match.VerificationSource = (int)source;
 		match.VerificationInfo = info;
+		
+		_logger.LogInformation("Updated verification status of match {MatchId} to {Status} (source: {Source}, info: {Info})", matchId, status, source, info);
 		return await _context.SaveChangesAsync();
 	}
 
