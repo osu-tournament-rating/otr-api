@@ -61,15 +61,18 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 					_logger.LogError("A beatmap with id {Id} scheduled for processing returned null! Was it deleted from the database?", mapId);
 					continue;
 				}
-				
-				await beatmapService.InsertModSrAsync(new BeatmapModSr
+
+				var insert = new BeatmapModSr
 				{
 					BeatmapId = mapId,
 					Mods = (int)mods,
 					PostModSr = storedMap.Sr
-				});
+				};
 				
-				_logger.LogWarning("Failed to fetch beatmap while processing mod sr {BeatmapId} (result from API was null)", osuMapId);
+				await beatmapService.InsertModSrAsync(insert);
+				
+				_logger.LogWarning("Failed to fetch beatmap while processing mod sr (result from API was null), " +
+				                   "inserted default nomod SR for map: {@BeatmapSr}", insert);
 				continue;
 			}
 			
