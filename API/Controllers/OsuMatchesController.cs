@@ -51,10 +51,9 @@ public class OsuMatchesController : Controller
 		if (result > 0)
 		{
 			_logger.LogInformation("Successfully marked {Matches} matches as {Status}", result, MatchVerificationStatus.PendingVerification);
-			return Ok();
 		}
 
-		return StatusCode(500, "Failed to insert matches");
+		return Ok();
 	}
 
 	[HttpGet("all")]
