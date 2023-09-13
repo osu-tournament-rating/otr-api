@@ -103,8 +103,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	public async Task<Entities.Match?> GetFirstPendingUnpopulatedVerifiedOrDefaultAsync() => await _context.Matches.FirstOrDefaultAsync(x =>
 		x.VerificationStatus == (int)MatchVerificationStatus.PendingVerification || (x.VerificationStatus == (int)MatchVerificationStatus.Verified && x.Name == null));
 
-	public async Task<IEnumerable<long>> CheckExistingAsync(IEnumerable<long> matchIds) =>
-		await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).Select(x => x.MatchId).ToListAsync();
+	public async Task<IEnumerable<Entities.Match>> CheckExistingAsync(IEnumerable<long> matchIds) =>
+		await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
 
 	public async Task<int> InsertFromIdBatchAsync(IEnumerable<Entities.Match> matches)
 	{

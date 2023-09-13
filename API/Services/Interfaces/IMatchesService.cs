@@ -9,7 +9,7 @@ public interface IMatchesService : IService<Entities.Match>
 	Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered);
 	Task<MatchDTO?> GetByOsuMatchIdAsync(long osuMatchId);
 	Task<Entities.Match?> GetFirstPendingUnpopulatedVerifiedOrDefaultAsync();
-	Task<IEnumerable<long>> CheckExistingAsync(IEnumerable<long> matchIds);
+	Task<IEnumerable<Entities.Match>> CheckExistingAsync(IEnumerable<long> matchIds);
 
 	/// <summary>
 	///  Used to queue up matches for verification.

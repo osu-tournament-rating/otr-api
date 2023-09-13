@@ -3,6 +3,7 @@ using API.Entities;
 using API.Enums;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+// ReSharper disable PossibleMultipleEnumeration
 
 namespace API.Controllers;
 
@@ -45,7 +46,21 @@ public class OsuMatchesController : Controller
 		// Check if any of the links already exist in the database
 		ids = ids.ToList();
 		var existingMatches = await _service.CheckExistingAsync(ids);
-		var stripped = ids.Except(existingMatches).ToList();
+		
+		// If we are verifying a match that already exists, we need to update the verification status
+		if (confirmedVerified)
+		{
+			var verifiedMatches = existingMatches.Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Verified);
+			if (verifiedMatches.Any())
+			{
+				foreach (var verifiedMatch in verifiedMatches)
+				{
+					await _service.UpdateVerificationStatusAsync(verifiedMatch.MatchId, MatchVerificationStatus.Verified, MatchVerificationSource.Admin);
+				}
+			}
+		}
+		
+		var stripped = ids.Except(existingMatches.Select(x => x.MatchId)).ToList();
 
 		var verification = MatchVerificationStatus.PendingVerification;
 		if (confirmedVerified)
