@@ -55,6 +55,7 @@ public class OsuApiService : IOsuApiService
         {
             string response = await _client.GetStringAsync($"get_beatmaps?k={_credentials.OsuApiKey}&b={beatmapId}&mods={(int)mods}");
             _logger.LogDebug("Successfully received response from osu! API for beatmap {BeatmapId}", beatmapId);
+            
             return JsonConvert.DeserializeObject<Beatmap[]>(response)?[0];
         }, beatmapId);
     }

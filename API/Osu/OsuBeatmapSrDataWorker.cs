@@ -47,6 +47,28 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 			
 			if (beatmap == null)
 			{
+				/**
+				 * Insert with defaults -- this is extremely rare but does happen
+				 * 
+				 * Case:
+				 * We have already processed the beatmap data before,
+				 * but between now and then, the beatmap has been deleted from osu
+				 */
+				var storedMap = await beatmapService.GetAsync(mapId);
+
+				if (storedMap == null)
+				{
+					_logger.LogError("A beatmap with id {Id} scheduled for processing returned null! Was it deleted from the database?", mapId);
+					continue;
+				}
+				
+				await beatmapService.InsertModSrAsync(new BeatmapModSr
+				{
+					BeatmapId = mapId,
+					Mods = (int)mods,
+					PostModSr = storedMap.Sr
+				});
+				
 				_logger.LogWarning("Failed to fetch beatmap while processing mod sr {BeatmapId} (result from API was null)", osuMapId);
 				continue;
 			}
