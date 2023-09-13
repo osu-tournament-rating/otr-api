@@ -178,6 +178,20 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 			// Step 4.
 			foreach (var game in osuMatch.Games)
 			{
+				int? beatmapIdResult = null;
+				double? beatmapSrResult = null;
+				
+				if (beatmapIdMapping.TryGetValue(game.BeatmapId, out int _result))
+				{
+					// The beatmap was probably deleted from osu!, thus it doesn't exist in our database.
+					beatmapIdResult = _result;
+				}
+				
+				if (beatmapSrMapping.TryGetValue(game.BeatmapId, out double _srResult))
+				{
+					beatmapSrResult = _srResult;
+				}
+				
 				var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
 				if (existingGame == null)
 				{
@@ -187,26 +201,26 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 						GameId = game.GameId,
 						StartTime = game.StartTime,
 						EndTime = game.EndTime,
-						BeatmapId = beatmapIdMapping[game.BeatmapId],
+						BeatmapId = beatmapIdResult,
 						PlayMode = (int)game.PlayMode,
 						MatchType = (int)game.MatchType,
 						ScoringType = (int)game.ScoringType,
 						TeamType = (int)game.TeamType,
 						Mods = (int)game.Mods,
-						PostModSr = await CalculatePostModSr(game, beatmapIdMapping[game.BeatmapId], beatmapSrMapping[game.BeatmapId])
+						PostModSr = await CalculatePostModSr(game, beatmapIdResult ?? -1, beatmapSrResult ?? -1),
 					};
 
 					_context.Games.Add(dbGame);
 					await _context.SaveChangesAsync();
 				}
-				else if (existingGame.BeatmapId == null && beatmapIdMapping.TryGetValue(game.BeatmapId, out int beatmapModelId))
+				else if (existingGame.BeatmapId == null)
 				{
-					existingGame.BeatmapId = beatmapModelId;
+					existingGame.BeatmapId = beatmapIdResult;
 					_context.Games.Update(existingGame);
 					await _context.SaveChangesAsync();
 
 					
-					_logger.LogInformation("Updated game {GameId} with beatmap {BeatmapId} (beatmapId for game object was null)", existingGame.GameId, beatmapModelId);
+					_logger.LogInformation("Updated game {GameId} with beatmap {BeatmapId} (beatmapId for game object was null)", existingGame.GameId, beatmapIdResult);
 				}
 			}
 			
