@@ -28,7 +28,12 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 
 	public async Task<IEnumerable<BeatmapDTO>> GetAllAsync() => _mapper.Map<IEnumerable<BeatmapDTO>>(await _context.Beatmaps.ToListAsync());
 
-	public async Task<BeatmapDTO?> GetByBeatmapIdAsync(long osuBeatmapId) =>
+	public async Task<Beatmap?> GetBeatmapByBeatmapIdAsync(long osuBeatmapId)
+	{
+		return await _context.Beatmaps.Where(x => x.BeatmapId == osuBeatmapId).FirstOrDefaultAsync();
+	}
+
+	public async Task<BeatmapDTO?> GetBeatmapDTOByBeatmapIdAsync(long osuBeatmapId) =>
 		_mapper.Map<BeatmapDTO?>(await _context.Beatmaps.FirstOrDefaultAsync(b => b.BeatmapId == osuBeatmapId));
 
 	public async Task<HashSet<(int, OsuEnums.Mods)>> GetUnprocessedSrBeatmapIdsAsync()

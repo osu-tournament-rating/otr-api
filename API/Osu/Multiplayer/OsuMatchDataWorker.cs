@@ -36,7 +36,7 @@ public class OsuMatchDataWorker : BackgroundService
 				var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
 				var beatmapsService = scope.ServiceProvider.GetRequiredService<IBeatmapService>();
 
-				var osuMatch = await matchesService.GetFirstPendingOrDefaultAsync();
+				var osuMatch = await matchesService.GetFirstPendingUnpopulatedVerifiedOrDefaultAsync();
 				if (osuMatch == null)
 				{
 					await Task.Delay(INTERVAL_SECONDS * 1000, cancellationToken);
@@ -119,8 +119,13 @@ public class OsuMatchDataWorker : BackgroundService
 				_logger.LogWarning("Failed to fetch beatmap {BeatmapId} (result from API was null)", beatmapId);
 				continue;
 			}
-
-			beatmaps.Add(beatmap);
+			
+			var existingBeatmap = await beatmapService.GetBeatmapByBeatmapIdAsync(beatmapId);
+			if (existingBeatmap == null)
+			{
+				// Only insert new beatmaps
+				beatmaps.Add(beatmap);
+			}
 		}
 
 		await beatmapService.BulkInsertAsync(beatmaps);

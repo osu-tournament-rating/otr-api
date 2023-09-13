@@ -23,7 +23,7 @@ public class BeatmapsController : Controller
 	[HttpGet("{beatmapId:long}")]
 	public async Task<ActionResult<Beatmap>> GetByOsuBeatmapIdAsync(long beatmapId)
 	{
-		var beatmap = await _beatmapService.GetByBeatmapIdAsync(beatmapId);
+		var beatmap = await _beatmapService.GetBeatmapDTOByBeatmapIdAsync(beatmapId);
 		if (beatmap == null)
 		{
 			return NotFound("No matching beatmapId in the database.");

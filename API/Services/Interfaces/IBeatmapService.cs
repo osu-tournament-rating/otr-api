@@ -9,7 +9,8 @@ public interface IBeatmapService : IService<Beatmap>
 	Task<long> GetBeatmapIdAsync(int id);
 	Task<IEnumerable<BeatmapDTO>> GetByBeatmapIdsAsync(IEnumerable<long> beatmapIds);
 	Task<IEnumerable<BeatmapDTO>> GetAllAsync();
-	Task<BeatmapDTO?> GetByBeatmapIdAsync(long osuBeatmapId);
+	Task<Beatmap?> GetBeatmapByBeatmapIdAsync(long osuBeatmapId);
+	Task<BeatmapDTO?> GetBeatmapDTOByBeatmapIdAsync(long osuBeatmapId);
 
 	/// <summary>
 	///  Returns all beatmap IDs that have not been processed yet with respect to the SR calculation for different mods.

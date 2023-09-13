@@ -5,7 +5,6 @@ using API.Osu;
 using API.Osu.Multiplayer;
 using API.Services.Interfaces;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.Implementations;
@@ -101,8 +100,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	                                                                                                           .ThenInclude(x => x.MatchScores)
 	                                                                                                           .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
 
-	public async Task<Entities.Match?> GetFirstPendingOrDefaultAsync() =>
-		await _context.Matches.FirstOrDefaultAsync(x => x.VerificationStatus == (int)MatchVerificationStatus.PendingVerification);
+	public async Task<Entities.Match?> GetFirstPendingUnpopulatedVerifiedOrDefaultAsync() => await _context.Matches.FirstOrDefaultAsync(x =>
+		x.VerificationStatus == (int)MatchVerificationStatus.PendingVerification || (x.VerificationStatus == (int)MatchVerificationStatus.Verified && x.Name == null));
 
 	public async Task<IEnumerable<long>> CheckExistingAsync(IEnumerable<long> matchIds) =>
 		await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).Select(x => x.MatchId).ToListAsync();
@@ -115,6 +114,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 	public async Task<bool> CreateFromApiMatchAsync(OsuApiMatchData osuMatch)
 	{
+		_logger.LogInformation("Processing match {MatchId}", osuMatch.Match.MatchId);
 		try
 		{
 			// Step 1.
@@ -139,21 +139,40 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 			// Step 3.
 			var existingMatch = await _context.Matches.FirstOrDefaultAsync(m => m.MatchId == osuMatch.Match.MatchId);
-			if (existingMatch == null)
+			if (existingMatch == null || existingMatch.Name == null)
 			{
-				var dbMatch = new Entities.Match
+				var verificationStatus = MatchVerificationStatus.PendingVerification;
+
+				if (existingMatch?.VerificationStatusEnum == MatchVerificationStatus.Verified)
 				{
-					MatchId = osuMatch.Match.MatchId,
-					Name = osuMatch.Match.Name,
-					StartTime = osuMatch.Match.StartTime,
-					EndTime = osuMatch.Match.EndTime,
-					VerificationStatus = (int)MatchVerificationStatus.PendingVerification
-				};
+					verificationStatus = MatchVerificationStatus.Verified;
+				}
 
-				_context.Matches.Add(dbMatch);
-				await _context.SaveChangesAsync();
+				if (existingMatch == null)
+				{
+					var dbMatch = new Entities.Match
+					{
+						MatchId = osuMatch.Match.MatchId,
+						Name = osuMatch.Match.Name,
+						StartTime = osuMatch.Match.StartTime,
+						EndTime = osuMatch.Match.EndTime,
+						VerificationStatus = (int)verificationStatus
+					};
+					
+					_context.Matches.Add(dbMatch);
+					await _context.SaveChangesAsync();
 
-				existingMatch = await _context.Matches.FirstAsync(m => m.MatchId == osuMatch.Match.MatchId);
+					existingMatch = await _context.Matches.FirstAsync(m => m.MatchId == osuMatch.Match.MatchId);
+				}
+				else
+				{
+					existingMatch.Name = osuMatch.Match.Name;
+					existingMatch.StartTime = osuMatch.Match.StartTime;
+					existingMatch.EndTime = osuMatch.Match.EndTime;
+					existingMatch.VerificationStatus = (int)verificationStatus;
+					_context.Matches.Update(existingMatch);
+					await _context.SaveChangesAsync();
+				}
 			}
 
 			// Step 4.
@@ -180,8 +199,17 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					_context.Games.Add(dbGame);
 					await _context.SaveChangesAsync();
 				}
-			}
+				else if (existingGame.BeatmapId == null && beatmapIdMapping.TryGetValue(game.BeatmapId, out int beatmapModelId))
+				{
+					existingGame.BeatmapId = beatmapModelId;
+					_context.Games.Update(existingGame);
+					await _context.SaveChangesAsync();
 
+					
+					_logger.LogInformation("Updated game {GameId} with beatmap {BeatmapId} (beatmapId for game object was null)", existingGame.GameId, beatmapModelId);
+				}
+			}
+			
 			// Step 5.
 			foreach (var game in osuMatch.Games)
 			{
@@ -220,7 +248,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					}
 				}
 			}
-
+			
+			await _context.SaveChangesAsync();
 			return true;
 		}
 		catch (Exception e)
@@ -249,7 +278,9 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	{
 		var matches = await _context.Matches
 		                            .Include(x => x.Games)
-		                            .Where(x => x.Games.Any(y => y.MatchScores.Any(z => z.Player.OsuId == osuId))).ToListAsync();
+		                            .Where(x => x.Games.Any(y => y.MatchScores.Any(z => z.Player.OsuId == osuId)))
+		                            .ToListAsync();
+
 		return new Unmapped_PlayerMatchesDTO
 		{
 			OsuId = osuId,
