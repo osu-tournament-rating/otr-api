@@ -47,6 +47,7 @@ DefaultTypeMap.MatchNamesWithUnderscores = true;
 var configuration = new MapperConfiguration(cfg => 
 {
 	cfg.CreateMap<Beatmap, BeatmapDTO>();
+	cfg.CreateMap<BeatmapModSr, BeatmapModSrDTO>();
 	cfg.CreateMap<API.Entities.Game, GameDTO>();
 	cfg.CreateMap<API.Entities.Match, MatchDTO>();
 	cfg.CreateMap<MatchScore, MatchScoreDTO>();

@@ -41,7 +41,7 @@ public partial class OtrContext : DbContext
 			      .OnDelete(DeleteBehavior.ClientSetNull)
 			      .HasConstraintName("games_beatmaps_id_fk");
 
-			entity.HasOne(e => e.BeatmapModSr);
+			entity.HasMany(e => e.BeatmapModSrs);
 		});
 
 		modelBuilder.Entity<BeatmapModSr>(entity =>

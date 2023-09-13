@@ -1,10 +1,12 @@
+using API.Entities;
+
 namespace API.DTOs;
 
 public class BeatmapDTO
 {
 	public string Artist { get; set; } = null!;
 	public long BeatmapId { get; set; }
-	public double Bpm { get; set; }
+	public double? Bpm { get; set; }
 	public long MapperId { get; set; }
 	public string MapperName { get; set; } = null!;
 	public double Sr { get; set; }
@@ -16,4 +18,5 @@ public class BeatmapDTO
 	public double Length { get; set; }
 	public string Title { get; set; } = null!;
 	public string? DiffName { get; set; }
+	public ICollection<BeatmapModSrDTO> BeatmapModSrs { get; set; } = null!;
 }
