@@ -96,9 +96,14 @@ public class OsuApiService : IOsuApiService
             _logger.LogWarning("The osu! API returned an invalid body for id {Id} of type {T}, likely due to deletion", id, typeof(T));
             return null;
         }
+        catch (IndexOutOfRangeException e)
+        {
+            _logger.LogWarning("The osu! API returned null for id {Id} of type {T}", id, typeof(T));
+            return null;
+        }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failure while fetching data for id {Id}", id);
+            _logger.LogError(e, "Failure while fetching data for id {Id} (api call was made expecting type {T})", id, typeof(T));
             return null;
         }
         finally
