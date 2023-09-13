@@ -40,8 +40,15 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 	private async Task ProcessBeatmapModSrsAsync(IBeatmapService beatmapService)
 	{
 		var maps = await beatmapService.GetUnprocessedSrBeatmapIdsAsync();
+		var toAdd = new List<BeatmapModSr>();
 		foreach ((int mapId, OsuEnums.Mods mods) in maps)
 		{
+			if(toAdd.Count == 1000)
+			{
+				await beatmapService.BulkInsertAsync(toAdd);
+				toAdd.Clear();
+			}
+			
 			long osuMapId = await beatmapService.GetBeatmapIdAsync(mapId);
 			var beatmap = await _osuApiService.GetBeatmapAsync(osuMapId, mods);
 			
@@ -69,21 +76,21 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 					PostModSr = storedMap.Sr
 				};
 				
-				await beatmapService.InsertModSrAsync(insert);
+				toAdd.Add(insert);
 				
 				_logger.LogWarning("Failed to fetch beatmap while processing mod sr (result from API was null), " +
-				                   "inserted default nomod SR for map: {@BeatmapSr}", insert);
+				                   "cached default nomod SR for map: {@BeatmapSr}", insert);
 				continue;
 			}
 			
-			await beatmapService.InsertModSrAsync(new BeatmapModSr
+			toAdd.Add(new BeatmapModSr
 			{
 				BeatmapId = mapId,
 				Mods = (int)mods,
 				PostModSr = beatmap.Sr
 			});
-			
-			_logger.LogDebug("Inserted mod sr for {BeatmapId} with mods {Mods}", osuMapId, mods);
 		}
+		
+		await beatmapService.BulkInsertAsync(toAdd);
 	}
 }
