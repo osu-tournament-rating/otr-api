@@ -90,7 +90,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 	public async Task<MatchDTO?> GetByOsuMatchIdAsync(long osuMatchId) => _mapper.Map<MatchDTO?>(await _context.Matches
 	                                                                                                           .Include(x => x.Games)
-	                                                                                                           .ThenInclude(x => x.Beatmap)
+	                                                                                                           .ThenInclude(g => g.Beatmap)
 	                                                                                                           .Include(x => x.Games)
 	                                                                                                           .ThenInclude(x => x.MatchScores)
 	                                                                                                           .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));

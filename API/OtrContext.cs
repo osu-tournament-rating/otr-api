@@ -42,6 +42,7 @@ public partial class OtrContext : DbContext
 			      .HasConstraintName("games_beatmaps_id_fk");
 
 			entity.HasMany(e => e.BeatmapModSrs);
+			entity.Navigation(e => e.BeatmapModSrs).AutoInclude();
 		});
 
 		modelBuilder.Entity<BeatmapModSr>(entity =>
