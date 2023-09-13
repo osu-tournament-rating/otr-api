@@ -53,5 +53,5 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 	                                                                                                                .Take(n)
 	                                                                                                                .ToListAsync();
 
-	public async Task<IEnumerable<Player>> GetOutdatedAsync() => await _context.Players.Where(p => p.Updated < DateTime.Now.AddDays(-14) || p.Updated == null).ToListAsync();
+	public async Task<IEnumerable<Player>> GetOutdatedAsync() => await _context.Players.Where(p => p.Updated == null).ToListAsync();
 }

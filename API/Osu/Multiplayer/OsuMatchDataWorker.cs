@@ -68,7 +68,6 @@ public class OsuMatchDataWorker : BackgroundService
 	private async Task UpdateLinkStatusAsync(long matchId, MatchVerificationStatus status, IMatchesService matchesService)
 	{
 		await matchesService.UpdateVerificationStatusAsync(matchId, status, MatchVerificationSource.System);
-		_logger.LogDebug("Set status of MultiplayerLink {LinkId} to {Status}", matchId, status);
 	}
 
 	/// <summary>
