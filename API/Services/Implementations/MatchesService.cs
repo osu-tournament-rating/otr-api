@@ -5,6 +5,7 @@ using API.Osu;
 using API.Osu.Multiplayer;
 using API.Services.Interfaces;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.Implementations;
@@ -242,6 +243,18 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		match.VerificationSource = (int)source;
 		match.VerificationInfo = info;
 		return await _context.SaveChangesAsync();
+	}
+
+	public async Task<Unmapped_PlayerMatchesDTO> GetPlayerMatchesAsync(long osuId)
+	{
+		var matches = await _context.Matches
+		                            .Include(x => x.Games)
+		                            .Where(x => x.Games.Any(y => y.MatchScores.Any(z => z.Player.OsuId == osuId))).ToListAsync();
+		return new Unmapped_PlayerMatchesDTO
+		{
+			OsuId = osuId,
+			Matches = _mapper.Map<ICollection<MatchDTO>>(matches)
+		};
 	}
 
 	/// <summary>

@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Entities;
 using API.Enums;
 using API.Services.Interfaces;
@@ -74,6 +75,12 @@ public class OsuMatchesController : Controller
 		}
 
 		return Ok(match);
+	}
+	
+	[HttpGet("player/{osuId:long}")]
+	public async Task<ActionResult<IEnumerable<Unmapped_PlayerMatchesDTO>>> GetMatchesAsync(long osuId)
+	{
+		return Ok(await _service.GetPlayerMatchesAsync(osuId));
 	}
 	
 	[HttpGet("{id:int}/osuid")]
