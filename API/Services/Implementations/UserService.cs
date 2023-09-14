@@ -15,6 +15,14 @@ public class UserService : ServiceBase<User>, IUserService
 
 	public async Task<User?> GetForPlayerAsync(int playerId) => await _context.Users.FirstOrDefaultAsync(u => u.PlayerId == playerId);
 
+	public async Task<User> GetOrCreateSystemUserAsync()
+	{
+		return await _context.Users.FirstOrDefaultAsync(u => u.Player.OsuId == -1) ?? await CreateAsync(new User
+		{
+			Roles = new[] { "System" }
+		});
+	}
+
 	public async Task<bool> HasRoleAsync(long osuId, string role)
 	{
 		return await _context.Users.AnyAsync(u => u.Player.OsuId == osuId && u.Roles.Contains(role));

@@ -55,11 +55,34 @@ public class LoginController : Controller
 
 		var user = await AuthenticateUserAsync(osuUserId);
 
-		string tokenString = GenerateJSONWebToken(user, osuUserId);
+		string tokenString = GenerateJSONWebToken(user, osuUserId.ToString());
 		return Ok(new { token = tokenString });
 	}
 	
-	private string GenerateJSONWebToken(User user, long osuUserId)
+	[AllowAnonymous]
+	[HttpPost("system")]
+	public async Task<IActionResult> AdminLogin()
+	{
+		_logger.LogDebug("Attempting system login");
+		
+		if (!HttpContext.Request.Headers.ContainsKey("Authorization"))
+		{
+			return Unauthorized("Missing authorization header");
+		}
+
+		string validationKey = _configuration["Auth:PrivilegedClientSecret"] ?? throw new Exception("Missing Auth:PrivilegedClientSecret in configuration!!");
+		if (HttpContext.Request.Headers["Authorization"] != validationKey)
+		{
+			return Unauthorized("Invalid authorization header");
+		}
+		
+		var user = await AuthenticateSystemUserAsync();
+
+		string tokenString = GenerateJSONWebToken(user, "system");
+		return Ok(new { token = tokenString });
+	}
+	
+	private string GenerateJSONWebToken(User user, string name)
 	{
 		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
 		var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -71,7 +94,7 @@ public class LoginController : Controller
 		
 		var claims = new List<Claim>
 		{
-			new(JwtRegisteredClaimNames.Name, osuUserId.ToString())
+			new(JwtRegisteredClaimNames.Name, name)
 		};
 
 		foreach (string role in user.Roles)
@@ -117,6 +140,17 @@ public class LoginController : Controller
 		user.Updated = DateTime.UtcNow;
 		user.PlayerId = validatedPlayer.Id;
 		await _userService.UpdateAsync(user);
+		return user;
+	}
+	
+	private async Task<User> AuthenticateSystemUserAsync()
+	{
+		var user = await _userService.GetOrCreateSystemUserAsync();
+		
+		user.LastLogin = DateTime.UtcNow;
+		user.Updated = DateTime.UtcNow;
+		await _userService.UpdateAsync(user);
+		_logger.LogInformation("Authenticated system user");
 		return user;
 	}
 }
