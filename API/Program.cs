@@ -10,7 +10,6 @@ using AutoMapper;
 using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;

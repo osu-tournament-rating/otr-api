@@ -1,7 +1,5 @@
-using API.DTOs;
 using API.Entities;
 using API.Services.Interfaces;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.Implementations;

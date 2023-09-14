@@ -1,6 +1,4 @@
-using API.DTOs;
 using API.Entities;
-using API.Services.Implementations;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +18,7 @@ public class LoginController : Controller
 	private readonly IPlayerService _playerService;
 	private readonly IUserService _userService;
 
-	public LoginController(ILogger<LoginController> logger, IConfiguration configuration, 
+	public LoginController(ILogger<LoginController> logger, IConfiguration configuration,
 		IPlayerService playerService, IUserService userService)
 	{
 		_logger = logger;
@@ -35,6 +33,17 @@ public class LoginController : Controller
 	{
 		_logger.LogDebug("Attempting login for user with osu id {OsuId}", osuUserId);
 		
+		if (!HttpContext.Request.Headers.ContainsKey("Authorization"))
+		{
+			return Unauthorized("Missing authorization header");
+		}
+
+		string validationKey = _configuration["Auth:LoginAuthSecret"] ?? throw new Exception("Missing Auth:LoginAuthSecret in configuration!!");
+		if(HttpContext.Request.Headers["Authorization"] != validationKey)
+		{
+			return Unauthorized("Invalid authorization header");
+		}
+		
 		var player = await _playerService.GetPlayerDTOByOsuIdAsync(osuUserId);
 		if (player == null)
 		{
@@ -44,26 +53,32 @@ public class LoginController : Controller
 			});
 		}
 
-		await AuthenticateUserAsync(osuUserId);
+		var user = await AuthenticateUserAsync(osuUserId);
 
-		var tokenString = GenerateJSONWebToken(osuUserId);
-		return Ok(new {token = tokenString});
+		string tokenString = GenerateJSONWebToken(user, osuUserId);
+		return Ok(new { token = tokenString });
 	}
-
-	private string GenerateJSONWebToken(long osuUserId)
+	
+	private string GenerateJSONWebToken(User user, long osuUserId)
 	{
 		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
 		var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+		if(user == null)
+		{
+			throw new ArgumentNullException(nameof(user));
+		}
+		
 		var claims = new[]
 		{
-			new Claim(JwtRegisteredClaimNames.Name, osuUserId.ToString())
+			new Claim(JwtRegisteredClaimNames.Name, osuUserId.ToString()),
+			new Claim("roles", user.Roles ?? string.Empty),
 		};
 		
 		var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
 			_configuration["Jwt:Issuer"],
 			claims,
-			expires: DateTime.Now.AddMinutes(120),
+			expires: DateTime.Now.AddSeconds(10),
 			signingCredentials: credentials);
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
@@ -87,6 +102,7 @@ public class LoginController : Controller
 			// First time visitor
 			user.LastLogin = DateTime.UtcNow;
 			user.Updated = DateTime.UtcNow;
+			user.PlayerId = validatedPlayer.Id;
 			await _userService.UpdateAsync(user);
 		}
 		
