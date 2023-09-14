@@ -40,10 +40,10 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 		if (onlyIncludeFiltered)
 		{
-			query = query.Where(m => (m.VerificationStatus == (int)MatchVerificationStatus.Verified || m.VerificationStatus == (int)MatchVerificationStatus.PreVerified) &&
+			query = query.Where(m => (m.VerificationStatus == (int)MatchVerificationStatus.Verified) &&
 			                         m.Games.Any(g => g.MatchScores.Any(ms => ms.Score > 10000) &&
 			                                          g.Beatmap!.DrainTime > 20 &&
-			                                          g.Beatmap!.Sr < 12 &&
+			                                          g.Beatmap!.Sr < 10 &&
 			                                          g.ScoringType == (int)OsuEnums.ScoringType.ScoreV2)); // Score v2 only
 		}
 
