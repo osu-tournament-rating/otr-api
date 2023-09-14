@@ -9,13 +9,11 @@ namespace API.Services.Implementations;
 public class UserService : ServiceBase<User>, IUserService
 {
 	private readonly OtrContext _context;
-	private readonly IMapper _mapper;
 
-	public UserService(ILogger<UserService> logger, IMapper mapper, OtrContext context) : base(logger, context)
+	public UserService(ILogger<UserService> logger, OtrContext context) : base(logger, context)
 	{
-		_mapper = mapper;
 		_context = context;
 	}
 
-	public async Task<UserDTO?> GetForPlayerAsync(int playerId) => _mapper.Map<UserDTO?>(await _context.Users.FirstOrDefaultAsync(u => u.PlayerId == playerId));
+	public async Task<User?> GetForPlayerAsync(int playerId) => await _context.Users.FirstOrDefaultAsync(u => u.PlayerId == playerId);
 }

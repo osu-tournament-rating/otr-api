@@ -6,7 +6,8 @@ namespace API.Services.Interfaces;
 
 public interface IPlayerService : IService<Player>
 {
-	Task<PlayerDTO?> GetByOsuIdAsync(long osuId);
+	Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false);
+	Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false);
 	Task<IEnumerable<PlayerDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds);
 	Task<int> GetIdByOsuIdAsync(long osuId);
 	Task<long> GetOsuIdByIdAsync(int id);

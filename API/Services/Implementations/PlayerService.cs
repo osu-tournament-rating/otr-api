@@ -24,13 +24,26 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 	                                                                                                             .Include(x => x.Ratings)
 	                                                                                                             .ToListAsync());
 
-	public async Task<PlayerDTO?> GetByOsuIdAsync(long osuId) => _mapper.Map<PlayerDTO?>(await _context.Players
-	                                                                                                   .Include(x => x.MatchScores)
-	                                                                                                   .Include(x => x.RatingHistories)
-	                                                                                                   .Include(x => x.Ratings)
-	                                                                                                   .Include(x => x.User)
-	                                                                                                   .Where(x => x.OsuId == osuId)
-	                                                                                                   .FirstOrDefaultAsync());
+	public async Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false)
+	{
+		if (!eagerLoad)
+		{
+			return await _context.Players.Where(x => x.OsuId == osuId).FirstOrDefaultAsync();
+		}
+
+		return await _context.Players
+		                     .Include(x => x.MatchScores)
+		                     .Include(x => x.RatingHistories)
+		                     .Include(x => x.Ratings)
+		                     .Include(x => x.User)
+		                     .Where(x => x.OsuId == osuId)
+		                     .FirstOrDefaultAsync();
+	}
+
+	public async Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false)
+	{
+		return _mapper.Map<PlayerDTO?>(await GetPlayerByOsuIdAsync(osuId, eagerLoad));
+	}
 
 	public async Task<IEnumerable<PlayerDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds) =>
 		_mapper.Map<IEnumerable<PlayerDTO>>(await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync());

@@ -25,14 +25,8 @@ public partial class User
     [Column("roles")]
     public string? Roles { get; set; }
 
-    [Column("session_token")]
-    public string? SessionToken { get; set; }
-
     [Column("updated", TypeName = "timestamp with time zone")]
     public DateTime? Updated { get; set; }
-
-    [Column("session_expiration", TypeName = "timestamp with time zone")]
-    public DateTime? SessionExpiration { get; set; }
 
     [ForeignKey("PlayerId")]
     [InverseProperty("User")]

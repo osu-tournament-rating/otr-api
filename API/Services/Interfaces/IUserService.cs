@@ -5,5 +5,5 @@ namespace API.Services.Interfaces;
 
 public interface IUserService : IService<User>
 {
-	Task<UserDTO?> GetForPlayerAsync(int playerId);
+	Task<User?> GetForPlayerAsync(int playerId);
 }

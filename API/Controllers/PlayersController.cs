@@ -29,7 +29,7 @@ public class PlayersController : Controller
 	[HttpGet("{osuId:long}")]
 	public async Task<ActionResult<Player?>> Get(long osuId)
 	{
-		var data = await _service.GetByOsuIdAsync(osuId);
+		var data = await _service.GetPlayerDTOByOsuIdAsync(osuId, true);
 		if (data != null)
 		{
 			return Ok(data);

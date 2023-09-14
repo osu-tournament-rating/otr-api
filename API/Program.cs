@@ -8,9 +8,13 @@ using API.Services.Implementations;
 using API.Services.Interfaces;
 using AutoMapper;
 using Dapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
+using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -113,6 +117,22 @@ builder.Services.AddCors(options =>
 	});
 });
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+       .AddJwtBearer(options =>
+       {
+	       options.TokenValidationParameters = new TokenValidationParameters
+	       {
+		       ValidateIssuer = true,
+		       ValidateAudience = true,
+		       ValidateLifetime = true,
+		       ValidateIssuerSigningKey = true,
+		       ValidIssuer = builder.Configuration["Jwt:Issuer"],
+		       ValidAudience = builder.Configuration["Jwt:Issuer"],
+		       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? 
+		                                                                          throw new Exception($"Missing Jwt:Key in configuration!")))
+	       };
+       });
+
 var app = builder.Build();
 
 app.UseCors("AllowSpecificOrigin");
@@ -128,6 +148,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
