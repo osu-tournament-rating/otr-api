@@ -560,10 +560,10 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("player_id");
 
-                    b.Property<string>("Roles")
-                        .HasColumnType("text")
-                        .HasColumnName("roles")
-                        .HasComment("Comma-delimited list of roles (e.g. user, admin, etc.)");
+                    b.Property<string[]>("Roles")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("roles");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")

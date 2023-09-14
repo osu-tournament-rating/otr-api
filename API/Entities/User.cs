@@ -23,7 +23,7 @@ public partial class User
     /// Comma-delimited list of roles (e.g. user, admin, etc.)
     /// </summary>
     [Column("roles")]
-    public string? Roles { get; set; }
+    public string[] Roles { get; set; } = Array.Empty<string>();
 
     [Column("updated", TypeName = "timestamp with time zone")]
     public DateTime? Updated { get; set; }

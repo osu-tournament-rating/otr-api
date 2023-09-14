@@ -158,7 +158,7 @@ public partial class OtrContext : DbContext
 			entity.Property(e => e.Id).UseIdentityColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
-			entity.Property(e => e.Roles).HasComment("Comma-delimited list of roles (e.g. user, admin, etc.)");
+			entity.Property(e => e.Roles);
 
 			entity.HasOne(d => d.Player)
 			      .WithOne(p => p.User)

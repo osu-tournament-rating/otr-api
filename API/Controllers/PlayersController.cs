@@ -4,12 +4,11 @@ using API.Osu;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace API.Controllers;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class PlayersController : Controller
 {
@@ -32,19 +31,6 @@ public class PlayersController : Controller
 	[HttpGet("{osuId:long}")]
 	public async Task<ActionResult<Player?>> Get(long osuId)
 	{
-		var currentUser = HttpContext.User;
-
-		if (!currentUser.HasClaim(c => c.Type == JwtRegisteredClaimNames.Name))
-		{
-			return Unauthorized();
-		}
-		
-		var userId = currentUser.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Name)?.Value;
-		if (userId == null || userId != osuId.ToString())
-		{
-			return Unauthorized("You are not authorized to view this user's profile");
-		}
-		
 		var data = await _service.GetPlayerDTOByOsuIdAsync(osuId, true);
 		if (data != null)
 		{

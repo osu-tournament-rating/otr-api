@@ -14,4 +14,9 @@ public class UserService : ServiceBase<User>, IUserService
 	}
 
 	public async Task<User?> GetForPlayerAsync(int playerId) => await _context.Users.FirstOrDefaultAsync(u => u.PlayerId == playerId);
+
+	public async Task<bool> HasRoleAsync(long osuId, string role)
+	{
+		return await _context.Users.AnyAsync(u => u.Player.OsuId == osuId && u.Roles.Contains(role));
+	}
 }

@@ -38,7 +38,7 @@ public class LoginController : Controller
 			return Unauthorized("Missing authorization header");
 		}
 
-		string validationKey = _configuration["Auth:LoginAuthSecret"] ?? throw new Exception("Missing Auth:LoginAuthSecret in configuration!!");
+		string validationKey = _configuration["Auth:WebLoginAuthSecret"] ?? throw new Exception("Missing Auth:WebLoginAuthSecret in configuration!!");
 		if(HttpContext.Request.Headers["Authorization"] != validationKey)
 		{
 			return Unauthorized("Invalid authorization header");
@@ -69,16 +69,20 @@ public class LoginController : Controller
 			throw new ArgumentNullException(nameof(user));
 		}
 		
-		var claims = new[]
+		var claims = new List<Claim>
 		{
-			new Claim(JwtRegisteredClaimNames.Name, osuUserId.ToString()),
-			new Claim("roles", user.Roles ?? string.Empty),
+			new(JwtRegisteredClaimNames.Name, osuUserId.ToString())
 		};
+
+		foreach (string role in user.Roles)
+		{
+			claims.Add(new Claim(ClaimTypes.Role, role));
+		}
 		
 		var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
 			_configuration["Jwt:Issuer"],
 			claims,
-			expires: DateTime.Now.AddSeconds(10),
+			expires: DateTime.Now.AddDays(1),
 			signingCredentials: credentials);
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
@@ -97,21 +101,22 @@ public class LoginController : Controller
 		}
 
 		var user = await _userService.GetForPlayerAsync(validatedPlayer.Id);
-		if (user != null)
+		if (user == null)
 		{
 			// First time visitor
-			user.LastLogin = DateTime.UtcNow;
-			user.Updated = DateTime.UtcNow;
-			user.PlayerId = validatedPlayer.Id;
-			await _userService.UpdateAsync(user);
+			return await _userService.CreateAsync(new User
+			{
+				PlayerId = validatedPlayer.Id,
+				Created = DateTime.UtcNow,
+				LastLogin = DateTime.UtcNow,
+				Roles = Array.Empty<string>(),
+			});
 		}
 		
-		return await _userService.CreateAsync(new User
-		{
-			PlayerId = validatedPlayer.Id,
-			Created = DateTime.UtcNow,
-			LastLogin = DateTime.UtcNow,
-			Roles = string.Empty,
-		});
+		user.LastLogin = DateTime.UtcNow;
+		user.Updated = DateTime.UtcNow;
+		user.PlayerId = validatedPlayer.Id;
+		await _userService.UpdateAsync(user);
+		return user;
 	}
 }

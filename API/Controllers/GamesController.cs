@@ -1,10 +1,12 @@
 using API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class GamesController : Controller
 {
 	private readonly IGamesService _gamesService;
