@@ -11,7 +11,7 @@ public partial class User
     public int Id { get; set; }
 
     [Column("player_id")]
-    public int PlayerId { get; set; }
+    public int? PlayerId { get; set; }
 
     [Column("last_login", TypeName = "timestamp with time zone")]
     public DateTime? LastLogin { get; set; }
