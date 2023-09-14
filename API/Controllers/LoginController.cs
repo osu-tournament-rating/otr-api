@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace API.Controllers;
@@ -45,17 +46,23 @@ public class LoginController : Controller
 
 		await AuthenticateUserAsync(osuUserId);
 
-		var tokenString = GenerateJSONWebToken();
+		var tokenString = GenerateJSONWebToken(osuUserId);
 		return Ok(new {token = tokenString});
 	}
 
-	private string GenerateJSONWebToken()
+	private string GenerateJSONWebToken(long osuUserId)
 	{
 		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
 		var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+		var claims = new[]
+		{
+			new Claim(JwtRegisteredClaimNames.Name, osuUserId.ToString())
+		};
+		
 		var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
 			_configuration["Jwt:Issuer"],
+			claims,
 			expires: DateTime.Now.AddMinutes(120),
 			signingCredentials: credentials);
 
