@@ -35,6 +35,9 @@ public partial class Player
 
     [Column("username")]
     public string? Username { get; set; }
+    
+    [Column("country")]
+    public string? Country { get; set; }
 
     [InverseProperty("Player")]
     public virtual ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();

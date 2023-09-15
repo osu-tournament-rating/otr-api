@@ -11,6 +11,8 @@ using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using OsuSharp;
+using OsuSharp.Extensions;
 using Serilog;
 using Serilog.Events;
 using System.Text;
@@ -92,6 +94,15 @@ builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IMatchScoresService, MatchScoresService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 
+builder.Services.AddOsuSharp(options =>
+{
+	options.Configuration = new OsuClientConfiguration
+	{
+		ClientId = int.Parse(builder.Configuration["Osu:ClientId"]!),
+		ClientSecret = builder.Configuration["Osu:ClientSecret"]!,
+	};
+});
+
 builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
 builder.Services.AddSingleton<ICredentials, Credentials>(serviceProvider =>
 {
@@ -129,6 +140,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		       ValidAudience = builder.Configuration["Jwt:Issuer"],
 		       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? 
 		                                                                          throw new Exception($"Missing Jwt:Key in configuration!")))
+	       };
+	       
+	       options.Events = new JwtBearerEvents();
+	       options.Events.OnMessageReceived = context =>
+	       {
+		       if (context.Request.Cookies.ContainsKey("OTR-Access-Token"))
+		       {
+			       context.Token = context.Request.Cookies["OTR-Access-Token"];
+		       }
+		       
+		       return Task.CompletedTask;
 	       };
        });
 

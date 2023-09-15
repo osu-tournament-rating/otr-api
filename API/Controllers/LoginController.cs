@@ -3,68 +3,87 @@ using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using OsuSharp.Exceptions;
+using OsuSharp.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
 namespace API.Controllers;
 
+public class LoginWrapper
+{
+	public string Code { get; set; }
+}
+
 [ApiController]
 [Route("api/[controller]")]
 public class LoginController : Controller
 {
-	private readonly ILogger<LoginController> _logger;
 	private readonly IConfiguration _configuration;
+	private readonly ILogger<LoginController> _logger;
+	private readonly IOsuClient _osuClient;
 	private readonly IPlayerService _playerService;
 	private readonly IUserService _userService;
 
 	public LoginController(ILogger<LoginController> logger, IConfiguration configuration,
-		IPlayerService playerService, IUserService userService)
+		IPlayerService playerService, IUserService userService, IOsuClient osuClient)
 	{
 		_logger = logger;
 		_configuration = configuration;
 		_playerService = playerService;
 		_userService = userService;
+		_osuClient = osuClient;
 	}
-	
+
 	[AllowAnonymous]
 	[HttpPost]
-	public async Task<IActionResult> Login([FromBody] long osuUserId)
+	public async Task<IActionResult> Login([FromBody] LoginWrapper login)
 	{
-		_logger.LogDebug("Attempting login for user with osu id {OsuId}", osuUserId);
-		
-		if (!HttpContext.Request.Headers.ContainsKey("Authorization"))
+		string code = login.Code;
+		_logger.LogDebug("Attempting login for user with code {Code}", code);
+
+		if (string.IsNullOrEmpty(login.Code))
 		{
-			return Unauthorized("Missing authorization header");
+			return BadRequest("Missing code");
 		}
 
-		string validationKey = _configuration["Auth:WebLoginAuthSecret"] ?? throw new Exception("Missing Auth:WebLoginAuthSecret in configuration!!");
-		if(HttpContext.Request.Headers["Authorization"] != validationKey)
+		try
 		{
-			return Unauthorized("Invalid authorization header");
-		}
-		
-		var player = await _playerService.GetPlayerDTOByOsuIdAsync(osuUserId);
-		if (player == null)
-		{
-			await _playerService.CreateAsync(new Player
+			var osuUser = await AuthorizeAsync(code);
+			long osuUserId = osuUser.Id;
+
+			var player = await _playerService.GetPlayerByOsuIdAsync(osuUserId);
+			if (player == null)
 			{
-				OsuId = osuUserId
-			});
+				player = await _playerService.CreateAsync(new Player
+				{
+					OsuId = osuUserId
+				});
+			}
+
+			var user = await AuthenticateUserAsync(player);
+
+			string tokenString = GenerateJSONWebToken(user, osuUserId.ToString());
+
+			Response.Cookies.Append("OTR-Access-Token", tokenString, new CookieOptions
+				{ HttpOnly = true, SameSite = SameSiteMode.Strict }); // Add secure = true in production
+
+			return Ok();
 		}
-
-		var user = await AuthenticateUserAsync(osuUserId);
-
-		string tokenString = GenerateJSONWebToken(user, osuUserId.ToString());
-		return Ok(new { token = tokenString });
+		catch (ApiException e)
+		{
+			_logger.LogWarning(e, "Too many requests, aborting processing of login request");
+			return StatusCode(429, "Too many requests! This endpoint may be under stress.");
+		}
 	}
-	
+
 	[AllowAnonymous]
 	[HttpPost("system")]
 	public async Task<IActionResult> AdminLogin()
 	{
 		_logger.LogDebug("Attempting system login");
-		
+
 		if (!HttpContext.Request.Headers.ContainsKey("Authorization"))
 		{
 			return Unauthorized("Missing authorization header");
@@ -75,23 +94,23 @@ public class LoginController : Controller
 		{
 			return Unauthorized("Invalid authorization header");
 		}
-		
+
 		var user = await AuthenticateSystemUserAsync();
 
 		string tokenString = GenerateJSONWebToken(user, "system");
 		return Ok(new { token = tokenString });
 	}
-	
+
 	private string GenerateJSONWebToken(User user, string name)
 	{
 		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
 		var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-		if(user == null)
+		if (user == null)
 		{
 			throw new ArgumentNullException(nameof(user));
 		}
-		
+
 		var claims = new List<Claim>
 		{
 			new(JwtRegisteredClaimNames.Name, name)
@@ -101,7 +120,7 @@ public class LoginController : Controller
 		{
 			claims.Add(new Claim(ClaimTypes.Role, role));
 		}
-		
+
 		var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
 			_configuration["Jwt:Issuer"],
 			claims,
@@ -110,43 +129,40 @@ public class LoginController : Controller
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
-	
-	private async Task<User> AuthenticateUserAsync(long osuUserId)
-	{
-		var validatedPlayer = await _playerService.GetPlayerByOsuIdAsync(osuUserId);
-		if (validatedPlayer == null)
-		{
-			// Create missing player
-			validatedPlayer = await _playerService.CreateAsync(new Player
-			{
-				OsuId = osuUserId
-			});
-		}
 
-		var user = await _userService.GetForPlayerAsync(validatedPlayer.Id);
+	private async Task<User> AuthenticateUserAsync(Player associatedPlayer)
+	{
+		var user = await _userService.GetForPlayerAsync(associatedPlayer.Id);
 		if (user == null)
 		{
 			// First time visitor
 			return await _userService.CreateAsync(new User
 			{
-				PlayerId = validatedPlayer.Id,
+				PlayerId = associatedPlayer.Id,
 				Created = DateTime.UtcNow,
 				LastLogin = DateTime.UtcNow,
-				Roles = Array.Empty<string>(),
+				Roles = Array.Empty<string>()
 			});
 		}
-		
+
 		user.LastLogin = DateTime.UtcNow;
 		user.Updated = DateTime.UtcNow;
-		user.PlayerId = validatedPlayer.Id;
+		user.PlayerId = associatedPlayer.Id;
 		await _userService.UpdateAsync(user);
 		return user;
 	}
-	
+
+	private async Task<IGlobalUser> AuthorizeAsync(string osuCode)
+	{
+		// Use OsuSharp to validate that the user is who they say they are
+		await _osuClient.GetAccessTokenFromCodeAsync(osuCode, "http://localhost:3000/auth");
+		return await _osuClient.GetCurrentUserAsync();
+	}
+
 	private async Task<User> AuthenticateSystemUserAsync()
 	{
 		var user = await _userService.GetOrCreateSystemUserAsync();
-		
+
 		user.LastLogin = DateTime.UtcNow;
 		user.Updated = DateTime.UtcNow;
 		await _userService.UpdateAsync(user);

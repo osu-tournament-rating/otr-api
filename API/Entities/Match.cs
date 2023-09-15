@@ -16,6 +16,12 @@ public class Match
 	public long MatchId { get; set; }
 	[Column("name")]
 	public string? Name { get; set; }
+	[Column("abbreviation")]
+	public string? Abbreviation { get; set; }
+	[Column("forum")]
+	public string? Forum { get; set; }
+	[Column("tournament_name")]
+	public string? TournamentName { get; set; }
 	[Column("start_time", TypeName = "timestamp with time zone")]
 	public DateTime? StartTime { get; set; }
 	[Column("created", TypeName = "timestamp with time zone")]
@@ -30,6 +36,9 @@ public class Match
 	public int? VerificationSource { get; set; }
 	[Column("verification_status")]
 	public int? VerificationStatus { get; set; }
+	[Column("submitted_by_user")]
+	public int? SubmitterUserId { get; set; }
+	public User? SubmittedBy { get; set; }	
 	[InverseProperty("Match")]
 	public virtual ICollection<Game> Games { get; set; } = new List<Game>();
 	[InverseProperty("Match")]

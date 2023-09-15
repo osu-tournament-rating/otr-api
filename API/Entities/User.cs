@@ -31,4 +31,5 @@ public partial class User
     [ForeignKey("PlayerId")]
     [InverseProperty("User")]
     public virtual Player Player { get; set; } = null!;
+    public IEnumerable<Match>? SubmittedMatches { get; set; }
 }

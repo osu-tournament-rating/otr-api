@@ -265,6 +265,10 @@ namespace API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Abbreviation")
+                        .HasColumnType("text")
+                        .HasColumnName("abbreviation");
+
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -274,6 +278,10 @@ namespace API.Migrations
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_time");
+
+                    b.Property<string>("Forum")
+                        .HasColumnType("text")
+                        .HasColumnName("forum");
 
                     b.Property<long>("MatchId")
                         .HasColumnType("bigint")
@@ -286,6 +294,14 @@ namespace API.Migrations
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_time");
+
+                    b.Property<int?>("SubmitterUserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("submitted_by_user");
+
+                    b.Property<string>("TournamentName")
+                        .HasColumnType("text")
+                        .HasColumnName("tournament_name");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
@@ -308,6 +324,8 @@ namespace API.Migrations
 
                     b.HasIndex("MatchId")
                         .IsUnique();
+
+                    b.HasIndex("SubmitterUserId");
 
                     b.HasIndex(new[] { "MatchId" }, "osumatches_matchid")
                         .IsUnique();
@@ -399,6 +417,10 @@ namespace API.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Country")
+                        .HasColumnType("text")
+                        .HasColumnName("country");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -605,6 +627,15 @@ namespace API.Migrations
                     b.Navigation("Match");
                 });
 
+            modelBuilder.Entity("API.Entities.Match", b =>
+                {
+                    b.HasOne("API.Entities.User", "SubmittedBy")
+                        .WithMany("SubmittedMatches")
+                        .HasForeignKey("SubmitterUserId");
+
+                    b.Navigation("SubmittedBy");
+                });
+
             modelBuilder.Entity("API.Entities.MatchScore", b =>
                 {
                     b.HasOne("API.Entities.Game", "Game")
@@ -692,6 +723,11 @@ namespace API.Migrations
                     b.Navigation("Ratings");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("API.Entities.User", b =>
+                {
+                    b.Navigation("SubmittedMatches");
                 });
 #pragma warning restore 612, 618
         }
