@@ -13,4 +13,5 @@ public class PlayerDTO
 	public ICollection<RatingHistoryDTO> RatingHistories { get; set; } = new List<RatingHistoryDTO>();
 	public ICollection<RatingDTO> Ratings { get; set; } = new List<RatingDTO>();
 	public UserDTO? User { get; set; }
+	public Unmapped_PlayerStatisticsDTO? Statistics { get; set; } = new();
 }
