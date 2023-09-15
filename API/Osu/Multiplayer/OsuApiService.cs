@@ -12,6 +12,8 @@ public class OsuApiUser
 	public string? Username { get; set; }
 	[JsonProperty("pp_rank")]
 	public int? Rank { get; set; }
+    [JsonProperty("country")]
+    public string Country { get; set; } = null!;
 }
 
 public class OsuApiService : IOsuApiService

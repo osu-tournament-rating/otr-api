@@ -73,6 +73,8 @@ public class OsuPlayerDataWorker : BackgroundService
 								player.RankMania = apiResult.Rank;
 								break;
 						}
+
+						player.Country = apiResult.Country;
 					}
 
 					player.Updated = DateTime.UtcNow;
