@@ -524,6 +524,10 @@ namespace API.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<int>("GlobalRank")
+                        .HasColumnType("integer")
+                        .HasColumnName("global_rank");
+
                     b.Property<int>("MatchId")
                         .HasColumnType("integer")
                         .HasColumnName("match_id");
