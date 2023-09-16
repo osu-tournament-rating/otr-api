@@ -41,4 +41,10 @@ public class Unmapped_PlayerStatisticsDTO
 	public string? MostPlayedOpponent { get; set; }
 	public string? BestPerformingOpponent { get; set; }
 	public string? WorstPerformingOpponent { get; set; }
+	
+	// Trend bools
+	public bool IsRatingPositiveTrend { get; set; }
+	public bool IsGlobalRankPositiveTrend { get; set; }
+	public bool IsCountryRankPositiveTrend { get; set; }
+	public bool IsPercentilePositiveTrend { get; set; }
 }

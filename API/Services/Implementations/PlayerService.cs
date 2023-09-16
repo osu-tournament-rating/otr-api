@@ -125,12 +125,12 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 				                                        .Select(x => x.GlobalRank)
 				                                        .FirstOrDefaultAsync() + 1;
 
-				stats.Percentile = (await _context.Ratings.WhereMode(modeInt).OrderByMuDescending().ToListAsync()).TakeWhile(x => x.PlayerId != player.Id).Count() + 1 /
-				                   (double)await _context.Ratings.WhereMode(modeInt).CountAsync() + 1;
+				stats.Percentile = 100 * (1 - (((await _context.Ratings.WhereMode(modeInt).OrderByMuDescending().ToListAsync()).TakeWhile(x => x.PlayerId != player.Id).Count() + 1) /
+				                    (double)await _context.Ratings.WhereMode(modeInt).CountAsync()));
 
-				stats.HighestPercentile =
-					await _context.RatingHistories.WherePlayer(osuId).OrderByMuDescending().Take(1).Select(x => x.GlobalRank).FirstOrDefaultAsync() + 1 /
-					(double)await _context.Ratings.Where(x => x.Mode == modeInt).CountAsync() + 1;
+				stats.HighestPercentile = 100 *
+					(await _context.RatingHistories.WherePlayer(osuId).OrderByMuDescending().Take(1).Select(x => x.GlobalRank).FirstOrDefaultAsync() /
+						(double)await _context.Ratings.Where(x => x.Mode == modeInt).CountAsync() + 1);
 
 				stats.MatchesPlayed = await _context.MatchScores
 				                                    .WherePlayer(osuId)

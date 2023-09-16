@@ -2,37 +2,48 @@ using API.DTOs;
 using API.Entities;
 using API.Enums;
 using API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-// ReSharper disable PossibleMultipleEnumeration
 
+// ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;
 
+public class BatchWrapper
+{
+	public string? TournamentName { get; set; }
+	public string? Abbreviation { get; set; }
+	public string ForumPost { get; set; } = null!;
+	public int SubmitterId { get; set; }
+	public IEnumerable<long> Ids { get; set; } = new List<long>();
+}
+
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class OsuMatchesController : Controller
 {
 	private readonly IGamesService _gamesService;
 	private readonly ILogger<OsuMatchesController> _logger;
 	private readonly IMatchScoresService _scoresService;
+	private readonly IPlayerService _playerService;
 	private readonly IMatchesService _service;
 
 	public OsuMatchesController(ILogger<OsuMatchesController> logger,
-		IMatchesService service, IGamesService gamesService, IMatchScoresService scoresService)
+		IMatchesService service, IGamesService gamesService, IMatchScoresService scoresService, IPlayerService playerService)
 	{
 		_logger = logger;
 		_service = service;
 		_gamesService = gamesService;
 		_scoresService = scoresService;
+		_playerService = playerService;
 	}
 
 	[HttpPost("force-update")]
-	public async Task<ActionResult> ForceUpdateAsync([FromBody] long id)
-	{
-		return Ok(await _service.UpdateVerificationStatusAsync(id, MatchVerificationStatus.PendingVerification, MatchVerificationSource.Admin));
-	}
+	public async Task<ActionResult> ForceUpdateAsync([FromBody] long id) =>
+		Ok(await _service.UpdateVerificationStatusAsync(id, MatchVerificationStatus.PendingVerification, MatchVerificationSource.Admin));
 
 	[HttpPost("batch")]
-	public async Task<ActionResult<int>> PostAsync([FromBody] IEnumerable<long> ids, bool confirmedVerified = false)
+	public async Task<ActionResult<int>> PostAsync([FromBody] BatchWrapper wrapper, [FromQuery] bool verified = false)
 	{
 		/**
 		 * FLOW:
@@ -50,29 +61,45 @@ public class OsuMatchesController : Controller
 		 */
 
 		// Check if any of the links already exist in the database
+		var ids = wrapper.Ids;
 		ids = ids.ToList();
 		var existingMatches = await _service.CheckExistingAsync(ids);
-		
+
 		// If we are verifying a match that already exists, we need to update the verification status
-		if (confirmedVerified)
+		if (verified)
 		{
 			foreach (var verifiedMatch in existingMatches)
 			{
-				await _service.UpdateVerificationStatusAsync(verifiedMatch.MatchId, MatchVerificationStatus.Verified, MatchVerificationSource.Admin);
+				verifiedMatch.VerificationStatus = (int)MatchVerificationStatus.Verified;
+				verifiedMatch.VerificationSource = (int)MatchVerificationSource.Admin;
+				verifiedMatch.TournamentName = wrapper.TournamentName;
+				verifiedMatch.Abbreviation = wrapper.Abbreviation;
+				verifiedMatch.Forum = wrapper.ForumPost;
+				verifiedMatch.SubmitterUserId = wrapper.SubmitterId;
+				await _service.UpdateAsync(verifiedMatch);
+				_logger.LogInformation("Updated {@Match}", verifiedMatch);
 			}
 		}
-		
+
 		// Continue processing the rest of the links
-		
+
 		var stripped = ids.Except(existingMatches.Select(x => x.MatchId)).ToList();
 
 		var verification = MatchVerificationStatus.PendingVerification;
-		if (confirmedVerified)
+		if (verified)
 		{
 			verification = MatchVerificationStatus.Verified;
 		}
 
-		var matches = stripped.Select(id => new Match { MatchId = id, VerificationStatus = (int)verification });
+		var matches = stripped.Select(id => new Match
+		{
+			MatchId = id, VerificationStatus = (int)verification,
+			TournamentName = wrapper.TournamentName,
+			Abbreviation = wrapper.Abbreviation,
+			Forum = wrapper.ForumPost,
+			SubmitterUserId = wrapper.SubmitterId
+		});
+
 		int? result = await _service.InsertFromIdBatchAsync(matches);
 		if (result > 0)
 		{
@@ -101,13 +128,10 @@ public class OsuMatchesController : Controller
 
 		return Ok(match);
 	}
-	
+
 	[HttpGet("player/{osuId:long}")]
-	public async Task<ActionResult<IEnumerable<Unmapped_PlayerMatchesDTO>>> GetMatchesAsync(long osuId)
-	{
-		return Ok(await _service.GetPlayerMatchesAsync(osuId));
-	}
-	
+	public async Task<ActionResult<IEnumerable<Unmapped_PlayerMatchesDTO>>> GetMatchesAsync(long osuId) => Ok(await _service.GetPlayerMatchesAsync(osuId));
+
 	[HttpGet("{id:int}/osuid")]
 	public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
 	{
