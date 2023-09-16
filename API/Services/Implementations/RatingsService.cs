@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Services.Interfaces;
+using API.Utilities;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -88,4 +89,41 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 
 	public async Task<IEnumerable<RatingDTO>> GetAllAsync() => _mapper.Map<IEnumerable<RatingDTO>>(await _context.Ratings.ToListAsync());
 	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE ratings RESTART IDENTITY;");
+
+	public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
+	{
+		var teammateRatings = await _context.MatchScores
+		                                    .Include(x => x.Player)
+		                                    .ThenInclude(x => x.Ratings)
+		                                    .WhereVerified()
+		                                    .WhereNotHeadToHead()
+		                                    .WhereTeammate(osuPlayerId)
+		                                    .Select(x => x.Player.Ratings.FirstOrDefault(y => y.Mode == mode))
+		                                    .ToListAsync();
+		
+		return (int)teammateRatings.Where(x => x != null).Average(x => x!.Mu);
+	}
+
+	public async Task<int> AverageOpponentRating(long osuPlayerId, int mode)
+	{
+		var headToHeadOpponentRatings = await _context.MatchScores
+		                                   .Include(x => x.Player)
+		                                   .ThenInclude(x => x.Ratings)
+		                                   .WhereHeadToHead()
+		                                   .WhereVerified()
+		                                   .WhereOpponent(osuPlayerId)
+		                                   .Select(x => x.Player.Ratings.FirstOrDefault(y => y.Mode == mode))
+		                                   .ToListAsync();
+		
+		var teamVsOpponentRatings = await _context.MatchScores
+		                                   .Include(x => x.Player)
+		                                   .ThenInclude(x => x.Ratings)
+		                                   .WhereNotHeadToHead()
+		                                   .WhereVerified()
+		                                   .WhereOpponent(osuPlayerId)
+		                                   .Select(x => x.Player.Ratings.FirstOrDefault(y => y.Mode == mode))
+		                                   .ToListAsync();
+		
+		return (int)headToHeadOpponentRatings.Concat(teamVsOpponentRatings).Where(x => x != null).Average(x => x!.Mu);
+	}
 }

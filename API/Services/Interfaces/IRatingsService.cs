@@ -16,4 +16,6 @@ public interface IRatingsService : IService<Rating>
 	Task<int> BatchInsertAsync(IEnumerable<RatingDTO> ratings);
 	Task<IEnumerable<RatingDTO>> GetAllAsync();
 	Task TruncateAsync();
+	Task<int> AverageTeammateRating(long osuPlayerId, int mode);
+	Task<int> AverageOpponentRating(long osuPlayerId, int mode);
 }

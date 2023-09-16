@@ -21,6 +21,13 @@ public class PlayersController : Controller
 		_service = service;
 	}
 
+	[HttpGet("stats/{osuId:long}")]
+	public async Task<IActionResult> GetPlayerStatsAsync(long osuId, [FromQuery]int mode = 0)
+	{
+		var stats = await _service.GetPlayerStatisticsAsync(osuId, (OsuEnums.Mode) mode);
+		return Ok(stats);
+	}
+
 	[HttpGet("all")]
 	public async Task<ActionResult<IEnumerable<Player>?>> GetAllAsync()
 	{

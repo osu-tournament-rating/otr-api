@@ -11,4 +11,5 @@ public interface IGamesService : IService<Game>
 	Task<IEnumerable<GameDTO>> GetByMatchIdAsync(long matchId);
 	Task<IEnumerable<Game>> GetAllAsync();
 	Task UpdateAllPostModSrsAsync();
+	Task<int> CountGameWinsAsync(long osuPlayerId, int mode);
 }

@@ -78,5 +78,50 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		await _context.SaveChangesAsync();
 		_logger.LogInformation("Successfully updated {Count} games", all.Count());
 	}
+
+	public async Task<int> CountGameWinsAsync(long osuPlayerId, int mode)
+	{
+		/**
+		 * This one's a little tricky. For purely head-to-head matches, which are ideally 1v1,
+		 * we simply return the number of matches where the player's score is higher than the opponent's.
+		 *
+		 * For team matches, we need to do a little more work. We need to find the player's team, and then
+		 * find the opposing team. Then, we need to sum both team's scores. If the sum of the player's team
+		 * is greater than the opponent, then this is counted as a win.
+		 *
+		 * TODO: Implement accuracy win condition
+		 */
+		int wins = 0;
+		var games = await _context.Games.Where(x => x.MatchScores.Any(y => y.Player.OsuId == osuPlayerId) && x.PlayMode == mode).ToListAsync();
+		// Process HeadToHead (includes 1v1 team games)
+		var headToHeadGames = games.Where(x => x.MatchScores.Count == 2).ToList();
+		foreach (var game in headToHeadGames)
+		{
+			var playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId);
+			var opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId);
+			if (playerScore.Score > opponentScore.Score)
+			{
+				wins++;
+			}
+		}
+		
+		// Team games
+		var teamGames = games.Where(x => x.TeamTypeEnum != OsuEnums.TeamType.HeadToHead && x.MatchScores.Count >= 4).ToList();
+		foreach (var game in teamGames)
+		{
+			var playerTeam = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
+			var opponentTeam = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Team;
+
+			var playerTeamScores = game.MatchScores.Where(x => x.Team == playerTeam).Sum(x => x.Score);
+			var opponentTeamScores = game.MatchScores.Where(x => x.Team == opponentTeam).Sum(x => x.Score);
+
+			if (playerTeamScores > opponentTeamScores)
+			{
+				wins++;
+			}
+		}
+
+		return wins;
+	}
 	// ReSharper enable PossibleMultipleEnumeration
 }
