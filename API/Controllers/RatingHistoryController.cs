@@ -21,7 +21,7 @@ public class RatingHistoryController : Controller
 	[HttpGet("{osuPlayerId:long}/all")]
 	public async Task<ActionResult<IEnumerable<RatingHistory>>> GetAllForPlayerAsync(long osuPlayerId)
 	{
-		var data = await _service.GetForPlayerAsync(osuPlayerId);
+		var data = await _service.GetForPlayerAsync(osuPlayerId, DateTime.MinValue);
 		if (data.Any())
 		{
 			return Ok(data);

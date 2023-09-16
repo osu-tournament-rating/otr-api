@@ -10,10 +10,11 @@ public class MatchScoresService : ServiceBase<MatchScore>, IMatchScoresService
 	private readonly OtrContext _context;
 	public MatchScoresService(ILogger<MatchScoresService> logger, OtrContext context) : base(logger, context) { _context = context; }
 
-	public async Task<int> AverageTeammateScore(long osuPlayerId, int mode)
+	public async Task<int> AverageTeammateScore(long osuPlayerId, int mode, DateTime fromTime)
 	{
 		var teammateScores = await _context.MatchScores
 		                                        .WhereVerified()
+		                                        .After(fromTime)
 		                                        .WhereMode(mode)
 		                                        .WhereTeammate(osuPlayerId)
 		                                        .Select(ms => ms.Score)
@@ -21,10 +22,11 @@ public class MatchScoresService : ServiceBase<MatchScore>, IMatchScoresService
 		return (int) teammateScores.Average();
 	}
 
-	public async Task<int> AverageOpponentScore(long osuPlayerId, int mode)
+	public async Task<int> AverageOpponentScore(long osuPlayerId, int mode, DateTime fromTime)
 	{
 		var oppScoresHeadToHead = await _context.MatchScores
 		                                        .WhereVerified()
+		                                        .After(fromTime)
 		                                        .WhereMode(mode)
 		                                        .WhereHeadToHead()
 		                                        .WhereOpponent(osuPlayerId)
@@ -33,6 +35,7 @@ public class MatchScoresService : ServiceBase<MatchScore>, IMatchScoresService
 		
 		var oppScoresTeamVs = await _context.MatchScores
 		                                    .WhereVerified()
+		                                    .After(fromTime)
 		                                    .WhereMode(mode)
 		                                    .WhereTeamVs()
 		                                    .WhereOpponent(osuPlayerId)

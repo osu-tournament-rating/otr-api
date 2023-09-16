@@ -1,3 +1,5 @@
+using API.Entities;
+
 namespace API.DTOs;
 
 public class RatingHistoryDTO
@@ -8,4 +10,6 @@ public class RatingHistoryDTO
 	public int Mode { get; set; }
 	public int MatchId { get; set; }
 	public DateTime Created { get; set; }
+	public int MuCasted => (int) Mu;
+	public int SigmaCasted => (int) Sigma;
 }

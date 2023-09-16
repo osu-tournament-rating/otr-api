@@ -76,6 +76,7 @@ public class OsuMatchesController : Controller
 				verifiedMatch.Abbreviation = wrapper.Abbreviation;
 				verifiedMatch.Forum = wrapper.ForumPost;
 				verifiedMatch.SubmitterUserId = wrapper.SubmitterId;
+				verifiedMatch.Updated = DateTime.UtcNow;
 				await _service.UpdateAsync(verifiedMatch);
 				_logger.LogInformation("Updated {@Match}", verifiedMatch);
 			}
@@ -130,7 +131,7 @@ public class OsuMatchesController : Controller
 	}
 
 	[HttpGet("player/{osuId:long}")]
-	public async Task<ActionResult<IEnumerable<Unmapped_PlayerMatchesDTO>>> GetMatchesAsync(long osuId) => Ok(await _service.GetPlayerMatchesAsync(osuId));
+	public async Task<ActionResult<IEnumerable<Unmapped_PlayerMatchesDTO>>> GetMatchesAsync(long osuId) => Ok(await _service.GetPlayerMatchesAsync(osuId, DateTime.MinValue));
 
 	[HttpGet("{id:int}/osuid")]
 	public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)

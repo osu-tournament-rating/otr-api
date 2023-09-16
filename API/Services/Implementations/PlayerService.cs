@@ -11,8 +11,8 @@ namespace API.Services.Implementations;
 public class PlayerService : ServiceBase<Player>, IPlayerService
 {
 	private readonly OtrContext _context;
-	private readonly IServiceProvider _serviceProvider;
 	private readonly IMapper _mapper;
+	private readonly IServiceProvider _serviceProvider;
 
 	public PlayerService(ILogger<PlayerService> logger, OtrContext context, IServiceProvider serviceProvider, IMapper mapper) : base(logger, context)
 	{
@@ -27,32 +27,45 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 	                                                                                                             .Include(x => x.Ratings)
 	                                                                                                             .ToListAsync());
 
-	public async Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false)
+	public async Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int offsetDays = -1)
 	{
 		if (!eagerLoad)
 		{
 			return await _context.Players.Where(x => x.OsuId == osuId).FirstOrDefaultAsync();
 		}
 
-		return await _context.Players
-		                     .Include(x => x.MatchScores)
+		var time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
+
+		var p = await _context.Players
+		                     .Include(x => x.MatchScores).ThenInclude(x => x.Game)
 		                     .Include(x => x.RatingHistories)
 		                     .Include(x => x.Ratings)
 		                     .Include(x => x.User)
 		                     .Where(x => x.OsuId == osuId)
 		                     .FirstOrDefaultAsync();
+
+		if (p == null)
+		{
+			return null;
+		}
+		
+		// Filter scores and histories that are old
+		p.MatchScores = p.MatchScores.Where(x => x.Game.Created > time).ToList();
+		p.RatingHistories = p.RatingHistories.Where(x => x.Created > time).ToList();
+		return p;
 	}
 
-	public async Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false)
+	public async Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false, int offsetDays = -1)
 	{
-		var obj = _mapper.Map<PlayerDTO?>(await GetPlayerByOsuIdAsync(osuId, eagerLoad));
+		var time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
+		var obj = _mapper.Map<PlayerDTO?>(await GetPlayerByOsuIdAsync(osuId, eagerLoad, offsetDays));
 
 		if (obj == null)
 		{
 			return obj;
 		}
 
-		obj.Statistics = await GetPlayerStatisticsAsync(osuId, OsuEnums.Mode.Standard);
+		obj.Statistics = await GetPlayerStatisticsAsync(osuId, OsuEnums.Mode.Standard, time);
 		return obj;
 	}
 
@@ -83,20 +96,25 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		var stats = new Unmapped_PlayerStatisticsDTO();
 
 		var time = fromPointInTime ?? DateTime.MinValue;
-		
+
 		using (var scope = _serviceProvider.CreateScope())
 		{
 			var ratingsService = scope.ServiceProvider.GetRequiredService<IRatingsService>();
 			var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
 			var gamesService = scope.ServiceProvider.GetRequiredService<IGamesService>();
-			
-			var player = await _context.Players.FirstOrDefaultAsync(p => p.OsuId == osuId);
+
+			int offsetDays = (int)DateTime.UtcNow.Subtract(fromPointInTime ?? DateTime.MinValue).TotalDays;
+			var player = await GetPlayerByOsuIdAsync(osuId, true, offsetDays);
 			if (player == null)
 			{
 				return stats;
 			}
 
-			var rating = await _context.Ratings.Where(r => r.PlayerId == player.Id && r.Mode == modeInt).FirstOrDefaultAsync();
+			var rating = await _context.Ratings
+			                           .WherePlayer(player.OsuId)
+			                           .WhereMode(modeInt)
+			                           .FirstOrDefaultAsync();
+			
 			if (rating != null)
 			{
 				stats.Rating = (int)rating.Mu;
@@ -105,17 +123,27 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 				stats.Ranking = RatingUtils.GetRankingClassName(stats.Rating);
 				stats.NextRanking = RatingUtils.GetNextRankingClassName(stats.Rating);
 
-				var ratingHistories = await _context.RatingHistories.Where(r => r.PlayerId == player.Id && r.Mode == modeInt && r.Created >= time).OrderBy(x => x.Created).ToListAsync();
+				var ratingHistories = await _context.RatingHistories
+				                                    .WherePlayer(player.OsuId)
+				                                    .WhereMode(modeInt)
+				                                    .After(time)
+				                                    .OrderBy(x => x.Created)
+				                                    .ToListAsync();
+
 				if (ratingHistories.Any())
 				{
 					stats.HighestRating = (int)ratingHistories.Max(r => r.Mu);
+					int? ratingGainedSincePeriod = stats.Rating - (int?)player.RatingHistories.FirstOrDefault(x => x.Mode == modeInt)?.Mu;
+					stats.RatingGainedSincePeriod = ratingGainedSincePeriod ?? 0;
 				}
 
 				stats.CountryRank = (await _context.Ratings.Where(x => x.Player.Country == player.Country)
-				                                  .OrderByMuDescending()
-				                                  .ToListAsync())
-				                                  .TakeWhile(x => x.PlayerId != player.Id && x.Mode != modeInt)
-				                                  .Count() + 1;
+				                                   .WhereMode(modeInt)
+				                                   .OrderByMuDescending()
+				                                   .ToListAsync())
+				                    .TakeWhile(x => x.PlayerId != player.Id && x.Mode != modeInt)
+				                    .Count() +
+				                    1;
 
 				// Add 1 to represent rank, as this is an index
 				stats.GlobalRank = (await _context.Ratings.WhereMode(modeInt).OrderByMuDescending().ToListAsync()).TakeWhile(x => x.PlayerId != player.Id).Count() + 1;
@@ -123,32 +151,41 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 				                                        .OrderByMuDescending()
 				                                        .Take(1)
 				                                        .Select(x => x.GlobalRank)
-				                                        .FirstOrDefaultAsync() + 1;
+				                                        .FirstOrDefaultAsync() +
+				                          1;
 
-				stats.Percentile = 100 * (1 - (((await _context.Ratings.WhereMode(modeInt).OrderByMuDescending().ToListAsync()).TakeWhile(x => x.PlayerId != player.Id).Count() + 1) /
-				                    (double)await _context.Ratings.WhereMode(modeInt).CountAsync()));
+				stats.Percentile = 100 *
+				                   (1 -
+				                    (((await _context.Ratings.WhereMode(modeInt).OrderByMuDescending().ToListAsync()).TakeWhile(x => x.PlayerId != player.Id).Count() + 1) /
+				                     (double)await _context.Ratings.WhereMode(modeInt).CountAsync()));
 
 				stats.HighestPercentile = 100 *
-					(await _context.RatingHistories.WherePlayer(osuId).OrderByMuDescending().Take(1).Select(x => x.GlobalRank).FirstOrDefaultAsync() /
-						(double)await _context.Ratings.Where(x => x.Mode == modeInt).CountAsync() + 1);
+				                          ((await _context.RatingHistories.WherePlayer(osuId).OrderByMuDescending().Take(1).Select(x => x.GlobalRank).FirstOrDefaultAsync() /
+				                            (double)await _context.Ratings.WhereMode(modeInt).CountAsync()) +
+				                           1);
 
 				stats.MatchesPlayed = await _context.MatchScores
 				                                    .WherePlayer(osuId)
 				                                    .WhereMode(modeInt)
+				                                    .After(time)
 				                                    .Select(x => x.Game.Match)
 				                                    .Distinct()
 				                                    .CountAsync();
 
-				stats.GamesPlayed = await _context.MatchScores.Where(x => x.PlayerId == player.Id && x.Game.PlayMode == modeInt).Select(x => x.GameId).Distinct().CountAsync();
+				stats.GamesPlayed = await _context.MatchScores
+				                                  .WherePlayer(player.OsuId)
+				                                  .WhereMode(modeInt)
+				                                  .After(time)
+				                                  .Select(x => x.GameId).Distinct().CountAsync();
 
-				stats.GamesWon = await gamesService.CountGameWinsAsync(osuId, modeInt);
-				stats.MatchesWon = await matchesService.CountMatchWinsAsync(osuId, modeInt);
+				stats.GamesWon = await gamesService.CountGameWinsAsync(osuId, modeInt, time);
+				stats.MatchesWon = await matchesService.CountMatchWinsAsync(osuId, modeInt, time);
 
 				stats.AverageOpponentRating = await ratingsService.AverageOpponentRating(osuId, modeInt);
 				stats.AverageTeammateRating = await ratingsService.AverageTeammateRating(osuId, modeInt);
 			}
 		}
-		
+
 		return stats;
 	}
 

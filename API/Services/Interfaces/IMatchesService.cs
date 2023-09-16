@@ -19,6 +19,6 @@ public interface IMatchesService : IService<Entities.Match>
 
 	Task<bool> CreateFromApiMatchAsync(OsuApiMatchData osuMatch);
 	Task<int> UpdateVerificationStatusAsync(long matchId, MatchVerificationStatus status, MatchVerificationSource source, string? info = null);
-	Task<Unmapped_PlayerMatchesDTO> GetPlayerMatchesAsync(long osuId);
-	Task<int> CountMatchWinsAsync(long osuPlayerId, int mode);
+	Task<Unmapped_PlayerMatchesDTO> GetPlayerMatchesAsync(long osuId, DateTime fromTime);
+	Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime);
 }

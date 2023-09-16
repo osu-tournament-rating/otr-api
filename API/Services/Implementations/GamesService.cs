@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Entities;
 using API.Osu;
 using API.Services.Interfaces;
+using API.Utilities;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -79,7 +80,7 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		_logger.LogInformation("Successfully updated {Count} games", all.Count());
 	}
 
-	public async Task<int> CountGameWinsAsync(long osuPlayerId, int mode)
+	public async Task<int> CountGameWinsAsync(long osuPlayerId, int mode, DateTime fromTime)
 	{
 		/**
 		 * This one's a little tricky. For purely head-to-head matches, which are ideally 1v1,
@@ -92,7 +93,9 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		 * TODO: Implement accuracy win condition
 		 */
 		int wins = 0;
-		var games = await _context.Games.Where(x => x.MatchScores.Any(y => y.Player.OsuId == osuPlayerId) && x.PlayMode == mode).ToListAsync();
+		var games = await _context.Games
+		                          .After(fromTime)
+		                          .Where(x => x.MatchScores.Any(y => y.Player.OsuId == osuPlayerId) && x.PlayMode == mode).ToListAsync();
 		// Process HeadToHead (includes 1v1 team games)
 		var headToHeadGames = games.Where(x => x.MatchScores.Count == 2).ToList();
 		foreach (var game in headToHeadGames)

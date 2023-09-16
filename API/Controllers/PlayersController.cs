@@ -36,9 +36,9 @@ public class PlayersController : Controller
 	}
 
 	[HttpGet("{osuId:long}")]
-	public async Task<ActionResult<Player?>> Get(long osuId)
+	public async Task<ActionResult<PlayerDTO?>> Get(long osuId, [FromQuery]int offsetDays = -1)
 	{
-		var data = await _service.GetPlayerDTOByOsuIdAsync(osuId, true);
+		var data = await _service.GetPlayerDTOByOsuIdAsync(osuId, true, offsetDays);
 		if (data != null)
 		{
 			return Ok(data);

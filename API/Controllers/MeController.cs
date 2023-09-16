@@ -16,7 +16,7 @@ public class MeController : Controller
 	public MeController(IPlayerService playerService) { _playerService = playerService; }
 
 	[HttpGet]
-	public async Task<ActionResult<PlayerDTO>> GetAsync()
+	public async Task<ActionResult<PlayerDTO>> GetAsync([FromQuery]int offsetDays = -1)
 	{
 		if(!HttpContext.User.HasClaim(x => x.Type == JwtRegisteredClaimNames.Name))
 		{
@@ -35,7 +35,7 @@ public class MeController : Controller
 		}
 		
 		
-		var player = await _playerService.GetPlayerDTOByOsuIdAsync(res, true);
+		var player = await _playerService.GetPlayerDTOByOsuIdAsync(res, true, offsetDays);
 		return Ok(player);
 	}
 }

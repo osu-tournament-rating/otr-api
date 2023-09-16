@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Services.Interfaces;
+using API.Utilities;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,16 +20,11 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 		_context = context;
 	}
 
-	public async Task<IEnumerable<RatingHistoryDTO>> GetForPlayerAsync(long osuPlayerId)
+	public async Task<IEnumerable<RatingHistoryDTO>> GetForPlayerAsync(long osuPlayerId, DateTime fromTime)
 	{
-		int dbId = await _context.Players.Where(x => x.OsuId == osuPlayerId).Select(x => x.Id).FirstOrDefaultAsync();
-
-		if (dbId == 0)
-		{
-			return new List<RatingHistoryDTO>();
-		}
-
-		return _mapper.Map<IEnumerable<RatingHistoryDTO>>(await _context.RatingHistories.Where(x => x.PlayerId == dbId).ToListAsync());
+		return _mapper.Map<IEnumerable<RatingHistoryDTO>>(await _context.RatingHistories
+		                                                                .WherePlayer(osuPlayerId)
+		                                                                .After(fromTime).ToListAsync());
 	}
 
 	public async Task<int> BatchInsertAsync(IEnumerable<RatingHistoryDTO> histories)

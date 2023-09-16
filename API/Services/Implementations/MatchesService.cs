@@ -4,6 +4,7 @@ using API.Enums;
 using API.Osu;
 using API.Osu.Multiplayer;
 using API.Services.Interfaces;
+using API.Utilities;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -298,10 +299,11 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		return await _context.SaveChangesAsync();
 	}
 
-	public async Task<Unmapped_PlayerMatchesDTO> GetPlayerMatchesAsync(long osuId)
+	public async Task<Unmapped_PlayerMatchesDTO> GetPlayerMatchesAsync(long osuId, DateTime fromTime)
 	{
 		var matches = await _context.Matches
 		                            .Include(x => x.Games)
+		                            .After(fromTime)
 		                            .Where(x => x.Games.Any(y => y.MatchScores.Any(z => z.Player.OsuId == osuId)))
 		                            .ToListAsync();
 
@@ -312,10 +314,12 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		};
 	}
 
-	public async Task<int> CountMatchWinsAsync(long osuPlayerId, int mode)
+	public async Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime)
 	{
 		int wins = 0;
-		var matches = await _context.Matches.Where(x => x.Games.Any(y => y.PlayMode == mode && y.MatchScores.Any(z => z.Player.OsuId == osuPlayerId))).ToListAsync();
+		var matches = await _context.Matches
+		                            .After(fromTime)
+		                            .Where(x => x.Games.Any(y => y.PlayMode == mode && y.MatchScores.Any(z => z.Player.OsuId == osuPlayerId))).ToListAsync();
 		foreach (var match in matches)
 		{
 			// For head to head (lobby size 2), calculate the winner based on score
