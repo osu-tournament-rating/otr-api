@@ -371,6 +371,21 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		return wins;
 	}
 
+	public async Task<IEnumerable<Unmapped_VerifiedTournamentDTO>> GetAllVerifiedTournamentsAsync()
+	{
+		return await _context.Matches
+		                                .WhereVerified()
+		                                .GroupBy(x => x.TournamentName)
+		                                .Where(x => x.Key != null)
+		                                .Select(x => new Unmapped_VerifiedTournamentDTO
+		                                {
+			                                TournamentName = x.Key,
+			                                Abbreviation = x.First().Abbreviation,
+			                                ForumPost = x.First().Forum
+		                                })
+		                                .ToListAsync();
+	}
+
 	/// <summary>
 	///  Calculates the effective "post-mod SR" of a given game.
 	///  This is used by the rating algorithm specifically.
