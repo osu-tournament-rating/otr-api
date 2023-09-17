@@ -158,8 +158,9 @@ public class LoginController : Controller
 
 	private async Task<IGlobalUser> AuthorizeAsync(string osuCode)
 	{
+		string cbUrl = _configuration["Auth:ClientCallbackUrl"] ?? throw new Exception("Missing Auth:ClientCallbackUrl in configuration!!");
 		// Use OsuSharp to validate that the user is who they say they are
-		await _osuClient.GetAccessTokenFromCodeAsync(osuCode, "http://localhost:3000/auth");
+		await _osuClient.GetAccessTokenFromCodeAsync(osuCode, cbUrl);
 		return await _osuClient.GetCurrentUserAsync();
 	}
 
