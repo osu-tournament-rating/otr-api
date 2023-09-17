@@ -121,7 +121,8 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowSpecificOrigin", corsPolicyBuilder =>
 	{
-		corsPolicyBuilder.WithOrigins("http://localhost:3000", " http://localhost:5075")
+		corsPolicyBuilder.WithOrigins("http://localhost:3000", " http://localhost:5075", "https://staging.otr.stagec.xyz",
+			                 "https://otr.stagec.xyz")
 		                 .AllowAnyHeader()
 		                 .AllowAnyMethod();
 	});
