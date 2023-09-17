@@ -99,7 +99,7 @@ builder.Services.AddOsuSharp(options =>
 	options.Configuration = new OsuClientConfiguration
 	{
 		ClientId = int.Parse(builder.Configuration["Osu:ClientId"]!),
-		ClientSecret = builder.Configuration["Osu:ClientSecret"]!,
+		ClientSecret = builder.Configuration["Osu:ClientSecret"]!
 	};
 });
 
@@ -121,10 +121,10 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowSpecificOrigin", corsPolicyBuilder =>
 	{
-		corsPolicyBuilder.WithOrigins("http://localhost:3000", " http://localhost:5075", "https://staging.otr.stagec.xyz",
-			                 "https://otr.stagec.xyz")
-		                 .AllowAnyHeader()
-		                 .AllowAnyMethod();
+		corsPolicyBuilder
+			.AllowAnyOrigin()
+			.AllowAnyHeader()
+			.AllowAnyMethod();
 	});
 });
 
@@ -139,10 +139,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		       ValidateIssuerSigningKey = true,
 		       ValidIssuer = builder.Configuration["Jwt:Issuer"],
 		       ValidAudience = builder.Configuration["Jwt:Issuer"],
-		       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? 
-		                                                                          throw new Exception($"Missing Jwt:Key in configuration!")))
+		       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ??
+		                                                                          throw new Exception("Missing Jwt:Key in configuration!")))
 	       };
-	       
+
 	       options.Events = new JwtBearerEvents();
 	       options.Events.OnMessageReceived = context =>
 	       {
@@ -150,7 +150,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		       {
 			       context.Token = context.Request.Cookies["OTR-Access-Token"];
 		       }
-		       
+
 		       return Task.CompletedTask;
 	       };
        });
