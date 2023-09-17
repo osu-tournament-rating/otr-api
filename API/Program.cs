@@ -58,7 +58,11 @@ var configuration = new MapperConfiguration(cfg =>
 	cfg.CreateMap<Player, PlayerDTO>().ForMember(x => x.Statistics, opt => opt.Ignore());
 	cfg.CreateMap<Player, PlayerRanksDTO>();
 	cfg.CreateMap<Rating, RatingDTO>();
-	cfg.CreateMap<RatingHistory, RatingHistoryDTO>();
+	cfg.CreateMap<RatingHistory, RatingHistoryDTO>()
+	   .ForMember(x => x.MatchName, opt => opt.MapFrom(y => y.Match.Name))
+	   .ForMember(x => x.OsuMatchId, opt => opt.MapFrom(y => y.Match.MatchId))
+	   .ForMember(x => x.TournamentName, opt => opt.MapFrom(y => y.Match.TournamentName))
+	   .ForMember(x => x.Abbreviation, opt => opt.MapFrom(y => y.Match.Abbreviation));
 	cfg.CreateMap<User, UserDTO>();
 });
 

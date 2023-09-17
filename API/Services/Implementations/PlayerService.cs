@@ -39,6 +39,7 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		var p = await _context.Players
 		                     .Include(x => x.MatchScores).ThenInclude(x => x.Game)
 		                     .Include(x => x.RatingHistories)
+		                     .ThenInclude(x => x.Match)
 		                     .Include(x => x.Ratings)
 		                     .Include(x => x.User)
 		                     .Where(x => x.OsuId == osuId)
