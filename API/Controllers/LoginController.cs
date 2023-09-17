@@ -66,16 +66,20 @@ public class LoginController : Controller
 
 			string tokenString = GenerateJSONWebToken(user, osuUserId.ToString());
 
+			bool secure = false;
+#if !DEBUG
+			secure = true;
+#endif
 			Response.Cookies.Append("OTR-Access-Token", tokenString, new CookieOptions
-				{ HttpOnly = true, SameSite = SameSiteMode.Strict }); // Add secure = true in production
+				{ HttpOnly = true, SameSite = SameSiteMode.Strict, Secure = secure, IsEssential = true}); // Add secure = true in production
+
+			return Ok();
 		}
 		catch (ApiException e)
 		{
 			_logger.LogWarning(e, "Too many requests, aborting processing of login request");
-			// return StatusCode(429, "Too many requests! This endpoint may be under stress.");
+			return StatusCode(429, "Too many requests! This endpoint may be under stress.");
 		}
-		
-		return Ok();
 	}
 
 	[AllowAnonymous]
