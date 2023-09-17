@@ -68,14 +68,14 @@ public class LoginController : Controller
 
 			Response.Cookies.Append("OTR-Access-Token", tokenString, new CookieOptions
 				{ HttpOnly = true, SameSite = SameSiteMode.Strict }); // Add secure = true in production
-
-			return Ok();
 		}
 		catch (ApiException e)
 		{
 			_logger.LogWarning(e, "Too many requests, aborting processing of login request");
-			return StatusCode(429, "Too many requests! This endpoint may be under stress.");
+			// return StatusCode(429, "Too many requests! This endpoint may be under stress.");
 		}
+		
+		return Ok();
 	}
 
 	[AllowAnonymous]
