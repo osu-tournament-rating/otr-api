@@ -83,6 +83,8 @@ builder.Services.AddDbContext<OtrContext>(o =>
 	            throw new InvalidOperationException("Missing connection string!"));
 });
 
+builder.Services.AddDistributedMemoryCache();
+
 builder.Services.AddScoped<IGameSrCalculator, GameSrCalculator>();
 
 builder.Services.AddScoped<IRatingsService, RatingsService>();

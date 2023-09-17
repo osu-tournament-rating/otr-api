@@ -14,7 +14,7 @@ public class TournamentsController : Controller
 
 	public TournamentsController(IMatchesService matchesService) { _matchesService = matchesService; }
 	
-	[HttpGet("all")]
+	[HttpGet("verified")]
 	public async Task<ActionResult<IEnumerable<Unmapped_VerifiedTournamentDTO>>> GetAllAsync()
 	{
 		return Ok(await _matchesService.GetAllVerifiedTournamentsAsync());

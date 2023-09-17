@@ -377,6 +377,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		                                .WhereVerified()
 		                                .GroupBy(x => x.TournamentName)
 		                                .Where(x => x.Key != null)
+		                                .OrderBy(x => x.Key)
 		                                .Select(x => new Unmapped_VerifiedTournamentDTO
 		                                {
 			                                TournamentName = x.Key,

@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="12.0.1" />
+        <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="4.0.2" />
         <PackageReference Include="Dapper.ParameterExtensions" Version="2022.7.7.1" />
         <PackageReference Include="Dapper.SimpleCRUD" Version="2.3.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.11" />
@@ -20,6 +21,7 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.11" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.4" />
         <PackageReference Include="OsuSharp" Version="6.3.1" />
