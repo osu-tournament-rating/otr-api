@@ -71,7 +71,7 @@ public class LoginController : Controller
 			secure = true;
 #endif
 			Response.Cookies.Append("OTR-Access-Token", tokenString, new CookieOptions
-				{ HttpOnly = true, SameSite = SameSiteMode.Strict, Secure = secure, IsEssential = true}); // Add secure = true in production
+				{ HttpOnly = true, SameSite = SameSiteMode.Strict, Secure = secure, IsEssential = true});
 
 			return Ok();
 		}
