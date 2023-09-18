@@ -77,7 +77,7 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 			return obj;
 		}
 
-		obj.Statistics = await GetPlayerStatisticsAsync(osuId, mode, time);
+		obj.Statistics = await GetVerifiedPlayerStatisticsAsync(osuId, mode, time);
 		return obj;
 	}
 
@@ -102,7 +102,7 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 	                                                                                                                .Take(n)
 	                                                                                                                .ToListAsync();
 
-	public async Task<Unmapped_PlayerStatisticsDTO> GetPlayerStatisticsAsync(long osuId, OsuEnums.Mode mode, DateTime? fromPointInTime = null)
+	public async Task<Unmapped_PlayerStatisticsDTO> GetVerifiedPlayerStatisticsAsync(long osuId, OsuEnums.Mode mode, DateTime? fromPointInTime = null)
 	{
 		int modeInt = (int)mode;
 		var stats = new Unmapped_PlayerStatisticsDTO();
