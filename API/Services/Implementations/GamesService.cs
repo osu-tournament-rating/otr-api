@@ -104,11 +104,18 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		                      .Where(x => x.MatchScores.Count == 2).ToList();
 		foreach (var game in headToHeadGames)
 		{
-			var playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId);
-			var opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId);
-			if (playerScore.Score > opponentScore.Score)
+			try
 			{
-				wins++;
+				var playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId);
+				var opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId);
+				if (playerScore.Score > opponentScore.Score)
+				{
+					wins++;
+				}
+			}
+			catch (Exception)
+			{
+				//
 			}
 		}
 		
@@ -116,15 +123,22 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		var teamGames = games.Where(x => x.TeamTypeEnum != OsuEnums.TeamType.HeadToHead && x.MatchScores.Count >= 4).ToList();
 		foreach (var game in teamGames)
 		{
-			var playerTeam = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
-			var opponentTeam = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId && x.Team != playerTeam).Team;
-
-			var playerTeamScores = game.MatchScores.Where(x => x.Team == playerTeam).Sum(x => x.Score);
-			var opponentTeamScores = game.MatchScores.Where(x => x.Team == opponentTeam).Sum(x => x.Score);
-
-			if (playerTeamScores > opponentTeamScores)
+			try
 			{
-				wins++;
+				var playerTeam = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
+				var opponentTeam = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId && x.Team != playerTeam).Team;
+
+				var playerTeamScores = game.MatchScores.Where(x => x.Team == playerTeam).Sum(x => x.Score);
+				var opponentTeamScores = game.MatchScores.Where(x => x.Team == opponentTeam).Sum(x => x.Score);
+
+				if (playerTeamScores > opponentTeamScores)
+				{
+					wins++;
+				}
+			}
+			catch (Exception)
+			{
+				//
 			}
 		}
 
