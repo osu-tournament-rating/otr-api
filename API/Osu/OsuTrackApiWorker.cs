@@ -47,7 +47,6 @@ public class OsuTrackApiWorker : BackgroundService
 					var ratingHistoryService = scope.ServiceProvider.GetRequiredService<IRatingHistoryService>();
 
 					var playersToUpdate = (await playerService.GetPlayersWhereMissingGlobalRankAsync()).ToList();
-					_logger.LogInformation("Identified {PlayerCount} players to update earliest ranks for", playersToUpdate.Count);
 
 					if (!playersToUpdate.Any())
 					{
@@ -55,6 +54,7 @@ public class OsuTrackApiWorker : BackgroundService
 						continue;
 					}
 
+					_logger.LogInformation("Identified {PlayerCount} players to update earliest ranks for", playersToUpdate.Count);
 					var modes = new[] { OsuEnums.Mode.Standard, OsuEnums.Mode.Taiko, OsuEnums.Mode.Catch, OsuEnums.Mode.Mania };
 					foreach (var player in playersToUpdate)
 					{
