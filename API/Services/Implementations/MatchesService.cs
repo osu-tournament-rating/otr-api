@@ -318,47 +318,68 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	{
 		int wins = 0;
 		var matches = await _context.Matches
+		                            .WhereVerified()
 		                            .After(fromTime)
+		                            .Include(x => x.Games)
+		                            .ThenInclude(x => x.MatchScores)
+		                            .ThenInclude(x => x.Player)
 		                            .Where(x => x.Games.Any(y => y.PlayMode == mode && y.MatchScores.Any(z => z.Player.OsuId == osuPlayerId))).ToListAsync();
 		foreach (var match in matches)
 		{
 			// For head to head (lobby size 2), calculate the winner based on score
 			int pointsPlayer = 0;
 			int pointsOpponent = 0;
+			int team = 0;
+			foreach (var game in match.Games)
+			{
+				if(!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
+				{
+					continue;
+				}
+
+				team = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
+			}
 			
 			foreach(var game in match.Games)
 			{
-				if (game.MatchScores.Count == 2)
+				try
 				{
-					long playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Score;
-					long opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Score;
+					if (game.MatchScores.Count == 2)
+					{
+						long playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Score;
+						long opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Score;
 
-					if (playerScore > opponentScore)
-					{
-						pointsPlayer++;
+						if (playerScore > opponentScore)
+						{
+							pointsPlayer++;
+						}
+						else
+						{
+							pointsOpponent++;
+						}
 					}
-					else
+					else if (game.MatchScores.Count >= 4)
 					{
-						pointsOpponent++;
+						// Identify player team, sum the scores, then add points this way
+						var playerTeam = team;
+						var opponentTeam = game.MatchScores.FirstOrDefault(x => x.Team != playerTeam)?.Team;
+
+						var playerTeamScores  = game.MatchScores.Where(x => x.Team == playerTeam).Sum(x => x.Score);
+						var opponentTeamScores = game.MatchScores.Where(x => x.Team == opponentTeam).Sum(x => x.Score);
+					
+						if (playerTeamScores > opponentTeamScores)
+						{
+							pointsPlayer++;
+						}
+						else
+						{
+							pointsOpponent++;
+						}
 					}
 				}
-				else if (game.MatchScores.Count >= 4)
+				catch (Exception e)
 				{
-					// Identify player team, sum the scores, then add points this way
-					var playerTeam = (OsuEnums.Team) game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
-					var opponentTeam = (OsuEnums.Team) game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Team;
-					
-					var playerTeamScores  = game.MatchScores.Where(x => x.Team == (int)playerTeam).Sum(x => x.Score);
-					var opponentTeamScores = game.MatchScores.Where(x => x.Team == (int)opponentTeam).Sum(x => x.Score);
-					
-					if (playerTeamScores > opponentTeamScores)
-					{
-						pointsPlayer++;
-					}
-					else
-					{
-						pointsOpponent++;
-					}
+					_logger.LogWarning(e, "Error occurred while calculating match wins for player {OsuId}", osuPlayerId);
 				}
 			}
 			
@@ -377,6 +398,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		                                .WhereVerified()
 		                                .GroupBy(x => x.TournamentName)
 		                                .Where(x => x.Key != null)
+		                                .OrderBy(x => x.Key)
 		                                .Select(x => new Unmapped_VerifiedTournamentDTO
 		                                {
 			                                TournamentName = x.Key,

@@ -1,11 +1,15 @@
+using API.DTOs;
 using API.Entities;
 using API.Enums;
 using API.Osu;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace API.Utilities;
 
 public static class QueryExtensions
 {
+	// Player
+	public static IQueryable<Player> WhereOsuId(this IQueryable<Player> query, long osuId) => query.AsQueryable().Where(x => x.OsuId == osuId);
 	// Match
 	public static IQueryable<Match> WhereVerified(this IQueryable<Match> query) => query.AsQueryable().Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Verified);
 	public static IQueryable<Match> After(this IQueryable<Match> query, DateTime after) => query.AsQueryable().Where(x => x.StartTime > after);

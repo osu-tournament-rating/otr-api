@@ -18,4 +18,10 @@ public interface IRatingsService : IService<Rating>
 	Task TruncateAsync();
 	Task<int> AverageTeammateRating(long osuPlayerId, int mode);
 	Task<int> AverageOpponentRating(long osuPlayerId, int mode);
+	/// <summary>
+	/// Returns the most recently updated rating entry for a player, indiciating an update to the player's rating.
+	/// This is used to determine if the player's cache needs to be reset
+	/// </summary>
+	/// <returns></returns>
+	Task<DateTime> GetRecentCreatedDate(long osuPlayerId);
 }

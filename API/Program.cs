@@ -58,7 +58,11 @@ var configuration = new MapperConfiguration(cfg =>
 	cfg.CreateMap<Player, PlayerDTO>().ForMember(x => x.Statistics, opt => opt.Ignore());
 	cfg.CreateMap<Player, PlayerRanksDTO>();
 	cfg.CreateMap<Rating, RatingDTO>();
-	cfg.CreateMap<RatingHistory, RatingHistoryDTO>();
+	cfg.CreateMap<RatingHistory, RatingHistoryDTO>()
+	   .ForMember(x => x.MatchName, opt => opt.MapFrom(y => y.Match.Name))
+	   .ForMember(x => x.OsuMatchId, opt => opt.MapFrom(y => y.Match.MatchId))
+	   .ForMember(x => x.TournamentName, opt => opt.MapFrom(y => y.Match.TournamentName))
+	   .ForMember(x => x.Abbreviation, opt => opt.MapFrom(y => y.Match.Abbreviation));
 	cfg.CreateMap<User, UserDTO>();
 });
 
@@ -82,6 +86,8 @@ builder.Services.AddDbContext<OtrContext>(o =>
 	o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection") ??
 	            throw new InvalidOperationException("Missing connection string!"));
 });
+
+builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddScoped<IGameSrCalculator, GameSrCalculator>();
 
@@ -150,6 +156,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		       if (context.Request.Cookies.ContainsKey("OTR-Access-Token"))
 		       {
 			       context.Token = context.Request.Cookies["OTR-Access-Token"];
+		       }
+		       else if (context.Request.Headers.ContainsKey("Authorization"))
+		       {
+			       context.Token = context.Request.Headers.Authorization;
 		       }
 
 		       return Task.CompletedTask;

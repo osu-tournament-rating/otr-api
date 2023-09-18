@@ -18,7 +18,7 @@ public class BatchWrapper
 }
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Admin, System")]
 [Route("api/[controller]")]
 public class OsuMatchesController : Controller
 {

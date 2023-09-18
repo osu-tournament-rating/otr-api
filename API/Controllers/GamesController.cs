@@ -6,7 +6,7 @@ namespace API.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Admin, System")]
 public class GamesController : Controller
 {
 	private readonly IGamesService _gamesService;

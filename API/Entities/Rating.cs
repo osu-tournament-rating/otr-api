@@ -20,6 +20,12 @@ public partial class Rating
 
     [Column("sigma")]
     public double Sigma { get; set; }
+    
+    [Column("mu_initial")]
+    public double MuInitial { get; set; }
+    
+    [Column("sigma_initial")]
+    public double SigmaInitial { get; set; }
 
     [Column("created", TypeName = "timestamp with time zone")]
     public DateTime Created { get; set; }

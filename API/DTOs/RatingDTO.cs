@@ -6,4 +6,5 @@ public class RatingDTO
 	public double Mu { get; set; }
 	public double Sigma { get; set; }
 	public int Mode { get; set; }
+	public DateTime Created { get; set; }
 }

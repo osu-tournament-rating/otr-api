@@ -1,12 +1,14 @@
 using API.DTOs;
 using API.Entities;
 using API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin, System")]
 public class RatingHistoryController : Controller
 {
 	private readonly ILogger<RatingHistoryController> _logger;

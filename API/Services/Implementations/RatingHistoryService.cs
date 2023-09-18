@@ -23,6 +23,7 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 	public async Task<IEnumerable<RatingHistoryDTO>> GetForPlayerAsync(long osuPlayerId, DateTime fromTime)
 	{
 		return _mapper.Map<IEnumerable<RatingHistoryDTO>>(await _context.RatingHistories
+		                                                                .Include(x => x.Match)
 		                                                                .WherePlayer(osuPlayerId)
 		                                                                .After(fromTime).ToListAsync());
 	}

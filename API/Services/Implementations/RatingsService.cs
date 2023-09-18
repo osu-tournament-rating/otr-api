@@ -126,4 +126,9 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 		
 		return (int)headToHeadOpponentRatings.Concat(teamVsOpponentRatings).Where(x => x != null).Average(x => x!.Mu);
 	}
+
+	public async Task<DateTime> GetRecentCreatedDate(long osuPlayerId)
+	{
+		return await _context.Ratings.WherePlayer(osuPlayerId).OrderByDescending(x => x.Created).Select(x => x.Created).FirstAsync();
+	}
 }
