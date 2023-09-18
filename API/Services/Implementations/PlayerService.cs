@@ -159,22 +159,22 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 
 				// Add 1 to represent rank, as this is an index
 				stats.GlobalRank = (await _context.Ratings.WhereMode(modeInt).OrderByMuDescending().ToListAsync()).TakeWhile(x => x.PlayerId != player.Id).Count() + 1;
-				stats.HighestGlobalRank = await _context.RatingHistories.WherePlayer(osuId)
-				                                        .OrderByMuDescending()
-				                                        .Take(1)
-				                                        .Select(x => x.GlobalRank)
-				                                        .FirstOrDefaultAsync() +
-				                          1;
+				// stats.HighestGlobalRank = await _context.RatingHistories.WherePlayer(osuId)
+				//                                         .OrderByMuDescending()
+				//                                         .Take(1)
+				//                                         .Select(x => x.GlobalRank)
+				//                                         .FirstOrDefaultAsync() +
+				//                           1;
 
 				stats.Percentile = 100 *
 				                   (1 -
 				                    (((await _context.Ratings.WhereMode(modeInt).OrderByMuDescending().ToListAsync()).TakeWhile(x => x.PlayerId != player.Id).Count() + 1) /
 				                     (double)await _context.Ratings.WhereMode(modeInt).CountAsync()));
 
-				stats.HighestPercentile = 100 *
-				                          ((await _context.RatingHistories.WherePlayer(osuId).OrderByMuDescending().Take(1).Select(x => x.GlobalRank).FirstOrDefaultAsync() /
-				                            (double)await _context.Ratings.WhereMode(modeInt).CountAsync()) +
-				                           1);
+				// stats.HighestPercentile = 100 *
+				//                           ((await _context.RatingHistories.WherePlayer(osuId).OrderByMuDescending().Take(1).Select(x => x.GlobalRank).FirstOrDefaultAsync() /
+				//                             (double)await _context.Ratings.WhereMode(modeInt).CountAsync()) +
+				//                            1);
 
 				stats.MatchesPlayed = await _context.MatchScores
 				                                    .WherePlayer(osuId)

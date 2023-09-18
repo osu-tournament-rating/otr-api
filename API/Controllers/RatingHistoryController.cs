@@ -33,7 +33,7 @@ public class RatingHistoryController : Controller
 	}
 
 	[HttpPost("batch")]
-	public async Task<IActionResult> BatchReplaceAsync(IEnumerable<RatingHistoryDTO> histories)
+	public async Task<IActionResult> BatchReplaceAsync([FromBody] IEnumerable<RatingHistoryDTO> histories)
 	{
 		int? result = await _service.BatchInsertAsync(histories);
 		if (result > 0)

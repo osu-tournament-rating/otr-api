@@ -30,9 +30,6 @@ public partial class RatingHistory
     [Column("match_id")]
     public int MatchId { get; set; }
     
-    [Column("global_rank")]
-    public int GlobalRank { get; set; }
-
     [Column("updated", TypeName = "timestamp with time zone")]
     public DateTime? Updated { get; set; }
 
