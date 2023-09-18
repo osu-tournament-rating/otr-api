@@ -38,6 +38,30 @@ public partial class Player
     
     [Column("country")]
     public string? Country { get; set; }
+    
+    [Column("earliest_osu_global_rank")]
+    public int? EarliestOsuGlobalRank { get; set; }
+    
+    [Column("earliest_mania_global_rank")]
+    public int? EarliestManiaGlobalRank { get; set; }
+
+    [Column("earliest_taiko_global_rank")]
+    public int? EarliestTaikoGlobalRank { get; set; }
+    
+    [Column("earliest_catch_global_rank")]
+    public int? EarliestCatchGlobalRank { get; set; }
+    
+    [Column("earliest_osu_global_rank_date")]
+    public DateTime? EarliestOsuGlobalRankDate { get; set; }
+    
+    [Column("earliest_mania_global_rank_date")]
+    public DateTime? EarliestManiaGlobalRankDate { get; set; }
+    
+    [Column("earliest_taiko_global_rank_date")]
+    public DateTime? EarliestTaikoGlobalRankDate { get; set; }
+    
+    [Column("earliest_catch_global_rank_date")]
+    public DateTime? EarliestCatchGlobalRankDate { get; set; }
 
     [InverseProperty("Player")]
     public virtual ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
