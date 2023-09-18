@@ -177,6 +177,7 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 				//                            1);
 
 				stats.MatchesPlayed = await _context.MatchScores
+				                                    .WhereVerified()
 				                                    .WherePlayer(osuId)
 				                                    .WhereMode(modeInt)
 				                                    .After(time)
@@ -185,6 +186,7 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 				                                    .CountAsync();
 
 				stats.GamesPlayed = await _context.MatchScores
+				                                  .WhereVerified()
 				                                  .WherePlayer(player.OsuId)
 				                                  .WhereMode(modeInt)
 				                                  .After(time)
