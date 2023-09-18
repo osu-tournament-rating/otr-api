@@ -5,6 +5,7 @@ using API.Services.Interfaces;
 using API.Utilities;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.Internal.TypeHandlers;
 
 namespace API.Services.Implementations;
 
@@ -27,7 +28,7 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 	                                                                                                             .Include(x => x.Ratings)
 	                                                                                                             .ToListAsync());
 
-	public async Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int offsetDays = -1)
+	public async Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1)
 	{
 		if (!eagerLoad)
 		{
@@ -37,12 +38,13 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		var time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
 
 		var p = await _context.Players
-		                     .Include(x => x.MatchScores).ThenInclude(x => x.Game)
-		                     .Include(x => x.RatingHistories)
+		                     .Include(x => x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == mode))
+		                     .ThenInclude(x => x.Game)
+		                     .Include(x => x.RatingHistories.Where(y => y.Created > time && y.Mode == mode))
 		                     .ThenInclude(x => x.Match)
-		                     .Include(x => x.Ratings)
+		                     .Include(x => x.Ratings.Where(y => y.Mode == mode))
 		                     .Include(x => x.User)
-		                     .Where(x => x.OsuId == osuId)
+		                     .WhereOsuId(osuId)
 		                     .FirstOrDefaultAsync();
 
 		if (p == null)
@@ -50,23 +52,20 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 			return null;
 		}
 		
-		// Filter scores and histories that are old
-		p.MatchScores = p.MatchScores.Where(x => x.Game.Created > time).ToList();
-		p.RatingHistories = p.RatingHistories.Where(x => x.Created > time).ToList();
 		return p;
 	}
 
-	public async Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false, int offsetDays = -1)
+	public async Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false, OsuEnums.Mode mode = OsuEnums.Mode.Standard, int offsetDays = -1)
 	{
 		var time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
-		var obj = _mapper.Map<PlayerDTO?>(await GetPlayerByOsuIdAsync(osuId, eagerLoad, offsetDays));
+		var obj = _mapper.Map<PlayerDTO?>(await GetPlayerByOsuIdAsync(osuId, eagerLoad, (int)mode, offsetDays));
 
 		if (obj == null)
 		{
 			return obj;
 		}
 
-		obj.Statistics = await GetPlayerStatisticsAsync(osuId, OsuEnums.Mode.Standard, time);
+		obj.Statistics = await GetPlayerStatisticsAsync(osuId, mode, time);
 		return obj;
 	}
 
@@ -179,8 +178,11 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 				                                  .After(time)
 				                                  .Select(x => x.GameId).Distinct().CountAsync();
 
-				stats.GamesWon = await gamesService.CountGameWinsAsync(osuId, modeInt, time);
 				stats.MatchesWon = await matchesService.CountMatchWinsAsync(osuId, modeInt, time);
+				stats.GamesWon = await gamesService.CountGameWinsAsync(osuId, modeInt, time);
+				
+				stats.GamesLost = stats.GamesPlayed - stats.GamesWon;
+				stats.MatchesLost = stats.MatchesPlayed - stats.MatchesWon;
 
 				stats.AverageOpponentRating = await ratingsService.AverageOpponentRating(osuId, modeInt);
 				stats.AverageTeammateRating = await ratingsService.AverageTeammateRating(osuId, modeInt);

@@ -94,10 +94,14 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		 */
 		int wins = 0;
 		var games = await _context.Games
+		                          .WhereVerified()
+		                          .Include(x => x.MatchScores)
+		                          .ThenInclude(x => x.Player)
 		                          .After(fromTime)
 		                          .Where(x => x.MatchScores.Any(y => y.Player.OsuId == osuPlayerId) && x.PlayMode == mode).ToListAsync();
 		// Process HeadToHead (includes 1v1 team games)
-		var headToHeadGames = games.Where(x => x.MatchScores.Count == 2).ToList();
+		var headToHeadGames = games
+		                      .Where(x => x.MatchScores.Count == 2).ToList();
 		foreach (var game in headToHeadGames)
 		{
 			var playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId);
@@ -113,7 +117,7 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		foreach (var game in teamGames)
 		{
 			var playerTeam = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
-			var opponentTeam = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Team;
+			var opponentTeam = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId && x.Team != playerTeam).Team;
 
 			var playerTeamScores = game.MatchScores.Where(x => x.Team == playerTeam).Sum(x => x.Score);
 			var opponentTeamScores = game.MatchScores.Where(x => x.Team == opponentTeam).Sum(x => x.Score);

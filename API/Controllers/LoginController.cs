@@ -93,6 +93,7 @@ public class LoginController : Controller
 			return Unauthorized("Missing authorization header");
 		}
 
+		_logger.LogDebug("Authorization header found, validating");
 		string validationKey = _configuration["Auth:PrivilegedClientSecret"] ?? throw new Exception("Missing Auth:PrivilegedClientSecret in configuration!!");
 		if (HttpContext.Request.Headers["Authorization"] != validationKey)
 		{

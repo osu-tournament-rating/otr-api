@@ -1,11 +1,14 @@
 using API.Entities;
 using API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 
 namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin, System")]
 public class BeatmapsController : Controller
 {
 	private readonly IBeatmapService _beatmapService;

@@ -6,8 +6,8 @@ namespace API.Services.Interfaces;
 
 public interface IPlayerService : IService<Player>
 {
-	Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int offsetDays = -1);
-	Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false, int offsetDays = -1);
+	Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1);
+	Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false, OsuEnums.Mode mode = OsuEnums.Mode.Standard, int offsetDays = -1);
 	Task<IEnumerable<PlayerDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds);
 	Task<int> GetIdByOsuIdAsync(long osuId);
 	Task<long> GetOsuIdByIdAsync(int id);

@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Osu;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -56,7 +57,7 @@ public class MeController : Controller
 				// Invalidate cache if the player's ratings have been updated since the cache was created.
 				await _cache.RemoveAsync(key);
 
-				var newDto = await _playerService.GetPlayerDTOByOsuIdAsync(osuPlayerId, true, offsetDays);
+				var newDto = await _playerService.GetPlayerDTOByOsuIdAsync(osuPlayerId, true, (OsuEnums.Mode) mode, offsetDays);
 				if (newDto == null)
 				{
 					return NotFound();
@@ -70,7 +71,7 @@ public class MeController : Controller
 		}
 		else
 		{
-			var player = await _playerService.GetPlayerDTOByOsuIdAsync(osuPlayerId, true, offsetDays);
+			var player = await _playerService.GetPlayerDTOByOsuIdAsync(osuPlayerId, true, (OsuEnums.Mode) mode, offsetDays);
 			if (player == null)
 			{
 				return NotFound();

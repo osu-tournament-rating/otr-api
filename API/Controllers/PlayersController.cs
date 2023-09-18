@@ -4,21 +4,29 @@ using API.Osu;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace API.Controllers;
 
 [ApiController]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin, System")]
 [Route("api/[controller]")]
 public class PlayersController : Controller
 {
 	private readonly ILogger<PlayersController> _logger;
+	private readonly IDistributedCache _cache;
 	private readonly IPlayerService _service;
+	private readonly IRatingsService _ratingsService;
 
-	public PlayersController(ILogger<PlayersController> logger, IPlayerService service)
+	public PlayersController(ILogger<PlayersController> logger, IDistributedCache cache, 
+		IPlayerService service, IRatingsService ratingsService)
 	{
 		_logger = logger;
+		_cache = cache;
 		_service = service;
+		_ratingsService = ratingsService;
 	}
 
 	[HttpGet("stats/{osuId:long}")]
@@ -36,9 +44,33 @@ public class PlayersController : Controller
 	}
 
 	[HttpGet("{osuId:long}")]
-	public async Task<ActionResult<PlayerDTO?>> Get(long osuId, [FromQuery]int offsetDays = -1)
+	public async Task<ActionResult<PlayerDTO?>> Get(long osuId, [FromQuery]int mode = 0, [FromQuery]int offsetDays = -1)
 	{
-		var data = await _service.GetPlayerDTOByOsuIdAsync(osuId, true, offsetDays);
+		string key = $"{osuId}_{offsetDays}_{mode}";
+		byte[]? cachedPlayer = await _cache.GetAsync(key);
+		var modeEnum = (OsuEnums.Mode)mode;
+		if (cachedPlayer != null)
+		{
+			// Serialize into collection of objects, then filter by offset days.
+			var recentCreatedDate = await _ratingsService.GetRecentCreatedDate(osuId);
+			var cachedObj = JsonConvert.DeserializeObject<PlayerDTO>(Encoding.UTF8.GetString(cachedPlayer));
+			if (cachedObj!.Ratings.MaxBy(x => x.Created)?.Created < recentCreatedDate)
+			{
+				// Invalidate cache if the player's ratings have been updated since the cache was created.
+				await _cache.RemoveAsync(key);
+
+				var newDto = await _service.GetPlayerDTOByOsuIdAsync(osuId, true, modeEnum, offsetDays);
+				if (newDto == null)
+				{
+					return NotFound($"User with id {osuId} does not exist");
+				}
+
+				return Ok(newDto);
+			}
+
+			return Ok(cachedObj);
+		}
+		var data = await _service.GetPlayerDTOByOsuIdAsync(osuId, true, modeEnum, offsetDays);
 		if (data != null)
 		{
 			return Ok(data);

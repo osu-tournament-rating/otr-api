@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -8,6 +9,7 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "Admin, System")]
 public class RatingsController : Controller
 {
 	private readonly ILogger<RatingsController> _logger;

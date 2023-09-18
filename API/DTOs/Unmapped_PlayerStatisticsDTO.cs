@@ -19,7 +19,9 @@ public class Unmapped_PlayerStatisticsDTO
 	public int MatchesPlayed { get; set; }
 	public int GamesPlayed { get; set; }
 	public int MatchesWon { get; set; }
+	public int MatchesLost { get; set; }
 	public int GamesWon { get; set; }
+	public int GamesLost { get; set; }
 	public int AverageOpponentRating { get; set; }
 	public int AverageTeammateRating { get; set; }
 	public int BestWinStreak { get; set; }

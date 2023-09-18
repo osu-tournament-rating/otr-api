@@ -7,7 +7,7 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "Admin, System")]
 public class TournamentsController : Controller
 {
 	private readonly IMatchesService _matchesService;

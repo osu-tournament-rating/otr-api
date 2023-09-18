@@ -157,6 +157,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		       {
 			       context.Token = context.Request.Cookies["OTR-Access-Token"];
 		       }
+		       else if (context.Request.Headers.ContainsKey("Authorization"))
+		       {
+			       context.Token = context.Request.Headers.Authorization;
+		       }
 
 		       return Task.CompletedTask;
 	       };
