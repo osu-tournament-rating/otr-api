@@ -21,5 +21,7 @@ public interface IPlayerService : IService<Player>
 	/// <returns></returns>
 	Task<IEnumerable<Player>> GetOutdatedAsync();
 
+	Task<IEnumerable<Player>> GetPlayersWhereMissingGlobalRankAsync();
+
 	Task<IEnumerable<PlayerDTO>> GetAllAsync();
 }

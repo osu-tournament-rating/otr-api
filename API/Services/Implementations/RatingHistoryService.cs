@@ -48,5 +48,10 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 		return await _context.SaveChangesAsync();
 	}
 
+	public async Task<RatingHistory?> GetOldestForPlayerAsync(long osuId, int mode)
+	{
+		return await _context.RatingHistories.WherePlayer(osuId).WhereMode(mode).OrderBy(x => x.Created).FirstOrDefaultAsync();
+	}
+	
 	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE ratinghistories RESTART IDENTITY");
 }

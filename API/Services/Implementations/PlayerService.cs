@@ -22,6 +22,18 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		_mapper = mapper;
 	}
 
+	public async Task<IEnumerable<Player>> GetPlayersWhereMissingGlobalRankAsync()
+	{
+		// Get all players that are missing an earliest global rank in any mode (but have a current rank in that mode)
+		var players = await _context.Players.Where(x => (x.EarliestOsuGlobalRank == null && x.RankStandard != null) ||
+		                                                 (x.EarliestTaikoGlobalRank == null && x.RankTaiko != null) ||
+		                                                 (x.EarliestCatchGlobalRank == null && x.RankCatch != null) ||
+		                                                 (x.EarliestManiaGlobalRank == null && x.RankMania != null))
+		                                     .ToListAsync();
+
+		return players;
+	}
+
 	public async Task<IEnumerable<PlayerDTO>> GetAllAsync() => _mapper.Map<IEnumerable<PlayerDTO>>(await _context.Players
 	                                                                                                             .Include(x => x.MatchScores)
 	                                                                                                             .Include(x => x.RatingHistories)
