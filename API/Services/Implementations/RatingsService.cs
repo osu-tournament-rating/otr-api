@@ -131,4 +131,17 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 	{
 		return await _context.Ratings.WherePlayer(osuPlayerId).OrderByDescending(x => x.Created).Select(x => x.Created).FirstAsync();
 	}
+
+	public async Task<bool> IsRatingPositiveTrendAsync(long osuId, int modeInt, DateTime time)
+	{
+		var ratingPrevious = await _context.RatingHistories
+		                                   .WherePlayer(osuId)
+		                                   .WhereMode(modeInt)
+		                                   .OrderByDescending(x => x.Created)
+		                                   .Where(x => x.Created <= time).Select(x => x.Mu).FirstOrDefaultAsync();
+		
+		var ratingCurrent = await _context.Ratings.WherePlayer(osuId).WhereMode(modeInt).Select(x => x.Mu).FirstOrDefaultAsync();
+
+		return ratingCurrent > ratingPrevious;
+	}
 }

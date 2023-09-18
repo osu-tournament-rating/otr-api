@@ -191,6 +191,9 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 
 				stats.AverageOpponentRating = await ratingsService.AverageOpponentRating(osuId, modeInt);
 				stats.AverageTeammateRating = await ratingsService.AverageTeammateRating(osuId, modeInt);
+				
+				// Trend
+				stats.IsRatingPositiveTrend = await ratingsService.IsRatingPositiveTrendAsync(osuId, modeInt, time);
 			}
 		}
 

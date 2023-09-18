@@ -24,4 +24,12 @@ public interface IRatingsService : IService<Rating>
 	/// </summary>
 	/// <returns></returns>
 	Task<DateTime> GetRecentCreatedDate(long osuPlayerId);
+	/// <summary>
+	/// Returns whether the user's rating is trending upwards or downwards
+	/// </summary>
+	/// <param name="osuId"></param>
+	/// <param name="modeInt"></param>
+	/// <param name="time"></param>
+	/// <returns>True for upwards trend, false for downwards</returns>
+	Task<bool> IsRatingPositiveTrendAsync(long osuId, int modeInt, DateTime time);
 }
