@@ -62,7 +62,6 @@ public class MeController : Controller
 				{
 					return NotFound();
 				}
-
 				await _cache.SetStringAsync(key, JsonConvert.SerializeObject(newDto));
 				return Ok(newDto);
 			}

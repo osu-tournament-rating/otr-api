@@ -192,6 +192,30 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 				stats.AverageOpponentRating = await ratingsService.AverageOpponentRating(osuId, modeInt);
 				stats.AverageTeammateRating = await ratingsService.AverageTeammateRating(osuId, modeInt);
 				
+				stats.PlayedHR = await _context.MatchScores
+				                              .WhereVerified()
+				                              .WherePlayer(osuId)
+				                              .WhereMode(modeInt)
+				                              .WhereMods(OsuEnums.Mods.HardRock)
+				                              .After(time)
+				                              .CountAsync();
+				
+				stats.PlayedHD = await _context.MatchScores
+				                              .WhereVerified()
+				                              .WherePlayer(osuId)
+				                              .WhereMode(modeInt)
+				                              .WhereMods(OsuEnums.Mods.Hidden)
+				                              .After(time)
+				                              .CountAsync();
+				
+				stats.PlayedDT = await _context.MatchScores
+				                              .WhereVerified()
+				                              .WherePlayer(osuId)
+				                              .WhereMode(modeInt)
+				                              .WhereMods(OsuEnums.Mods.DoubleTime)
+				                              .After(time)
+				                              .CountAsync();
+				
 				// Trend
 				stats.IsRatingPositiveTrend = await ratingsService.IsRatingPositiveTrendAsync(osuId, modeInt, time);
 			}
