@@ -324,6 +324,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		                            .ThenInclude(x => x.MatchScores)
 		                            .ThenInclude(x => x.Player)
 		                            .Where(x => x.Games.Any(y => y.PlayMode == mode && y.MatchScores.Any(z => z.Player.OsuId == osuPlayerId))).ToListAsync();
+		
 		foreach (var match in matches)
 		{
 			// For head to head (lobby size 2), calculate the winner based on score

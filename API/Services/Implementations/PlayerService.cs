@@ -46,7 +46,7 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 	{
 		if (!eagerLoad)
 		{
-			return await _context.Players.Where(x => x.OsuId == osuId).FirstOrDefaultAsync();
+			return await _context.Players.WhereOsuId(osuId).FirstOrDefaultAsync();
 		}
 
 		var time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);

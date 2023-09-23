@@ -59,7 +59,7 @@ public class PlayersController : Controller
 				// Invalidate cache if the player's ratings have been updated since the cache was created.
 				await _cache.RemoveAsync(key);
 
-				var newDto = await _service.GetPlayerDTOByOsuIdAsync(osuId, true, modeEnum, offsetDays);
+				var newDto = await _service.GetPlayerDTOByOsuIdAsync(osuId, false, modeEnum, offsetDays);
 				if (newDto == null)
 				{
 					return NotFound($"User with id {osuId} does not exist");
@@ -70,7 +70,7 @@ public class PlayersController : Controller
 
 			return Ok(cachedObj);
 		}
-		var data = await _service.GetPlayerDTOByOsuIdAsync(osuId, true, modeEnum, offsetDays);
+		var data = await _service.GetPlayerDTOByOsuIdAsync(osuId, false, modeEnum, offsetDays);
 		if (data != null)
 		{
 			return Ok(data);
