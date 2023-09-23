@@ -5,18 +5,20 @@ using API.Services.Interfaces;
 using API.Utilities;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.Internal.TypeHandlers;
+using System.Diagnostics;
 
 namespace API.Services.Implementations;
 
 public class PlayerService : ServiceBase<Player>, IPlayerService
 {
 	private readonly OtrContext _context;
+	private readonly ILogger<PlayerService> _logger;
 	private readonly IMapper _mapper;
 	private readonly IServiceProvider _serviceProvider;
 
 	public PlayerService(ILogger<PlayerService> logger, OtrContext context, IServiceProvider serviceProvider, IMapper mapper) : base(logger, context)
 	{
+		_logger = logger;
 		_context = context;
 		_serviceProvider = serviceProvider;
 		_mapper = mapper;
@@ -26,10 +28,10 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 	{
 		// Get all players that are missing an earliest global rank in any mode (but have a current rank in that mode)
 		var players = await _context.Players.Where(x => (x.EarliestOsuGlobalRank == null && x.RankStandard != null) ||
-		                                                 (x.EarliestTaikoGlobalRank == null && x.RankTaiko != null) ||
-		                                                 (x.EarliestCatchGlobalRank == null && x.RankCatch != null) ||
-		                                                 (x.EarliestManiaGlobalRank == null && x.RankMania != null))
-		                                     .ToListAsync();
+		                                                (x.EarliestTaikoGlobalRank == null && x.RankTaiko != null) ||
+		                                                (x.EarliestCatchGlobalRank == null && x.RankCatch != null) ||
+		                                                (x.EarliestManiaGlobalRank == null && x.RankMania != null))
+		                            .ToListAsync();
 
 		return players;
 	}
@@ -50,20 +52,20 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		var time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
 
 		var p = await _context.Players
-		                     .Include(x => x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == mode))
-		                     .ThenInclude(x => x.Game)
-		                     .Include(x => x.RatingHistories.Where(y => y.Created > time && y.Mode == mode))
-		                     .ThenInclude(x => x.Match)
-		                     .Include(x => x.Ratings.Where(y => y.Mode == mode))
-		                     .Include(x => x.User)
-		                     .WhereOsuId(osuId)
-		                     .FirstOrDefaultAsync();
+		                      .Include(x => x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == mode))
+		                      .ThenInclude(x => x.Game)
+		                      .Include(x => x.RatingHistories.Where(y => y.Created > time && y.Mode == mode))
+		                      .ThenInclude(x => x.Match)
+		                      .Include(x => x.Ratings.Where(y => y.Mode == mode))
+		                      .Include(x => x.User)
+		                      .WhereOsuId(osuId)
+		                      .FirstOrDefaultAsync();
 
 		if (p == null)
 		{
 			return null;
 		}
-		
+
 		return p;
 	}
 
@@ -104,6 +106,9 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 
 	public async Task<Unmapped_PlayerStatisticsDTO> GetVerifiedPlayerStatisticsAsync(long osuId, OsuEnums.Mode mode, DateTime? fromPointInTime = null)
 	{
+		var sw = new Stopwatch();
+		sw.Start();
+
 		int modeInt = (int)mode;
 		var stats = new Unmapped_PlayerStatisticsDTO();
 
@@ -111,12 +116,14 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 
 		using (var scope = _serviceProvider.CreateScope())
 		{
+			_logger.LogInformation("Created scope for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
 			var ratingsService = scope.ServiceProvider.GetRequiredService<IRatingsService>();
 			var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
 			var gamesService = scope.ServiceProvider.GetRequiredService<IGamesService>();
 
 			int offsetDays = (int)DateTime.UtcNow.Subtract(fromPointInTime ?? DateTime.MinValue).TotalDays;
 			var player = await GetPlayerByOsuIdAsync(osuId, true, offsetDays);
+			_logger.LogInformation("Got player for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
 			if (player == null)
 			{
 				return stats;
@@ -126,7 +133,9 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 			                           .WherePlayer(player.OsuId)
 			                           .WhereMode(modeInt)
 			                           .FirstOrDefaultAsync();
-			
+
+			_logger.LogInformation("Got rating for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
+
 			if (rating != null)
 			{
 				stats.Rating = (int)rating.Mu;
@@ -142,30 +151,50 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 				                                    .OrderBy(x => x.Created)
 				                                    .ToListAsync();
 
+				_logger.LogInformation("Got rating histories for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
+
 				if (ratingHistories.Any())
 				{
 					stats.HighestRating = (int)ratingHistories.Max(r => r.Mu);
 					int? ratingGainedSincePeriod = stats.Rating - (int?)player.RatingHistories.FirstOrDefault(x => x.Mode == modeInt)?.Mu;
+
+					_logger.LogInformation("Got highest rating for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
+
 					stats.RatingGainedSincePeriod = ratingGainedSincePeriod ?? 0;
 				}
 
-				stats.CountryRank = (await _context.Ratings
-				                                   .Include(x => x.Player)
-				                                   .Where(x => x.Player.Country == player.Country)
-				                                   .WhereMode(modeInt)
-				                                   .OrderByMuDescending()
-				                                   .ToListAsync())
-				                    .TakeWhile(x => x.PlayerId != player.Id)
-				                    .Count() + 1;
+				int countryIndex = _context.Ratings
+				                           .Where(x => x.Player.Country == player.Country)
+				                           .WhereMode(modeInt)
+				                           .OrderByMuDescending()
+				                           .Select(x => x.PlayerId)
+				                           .AsEnumerable() // Transfer the execution to client-side after this point
+				                           .TakeWhile(x => x != player.Id)
+				                           .Count();
 
-				// Add 1 to represent rank, as this is an index
-				stats.GlobalRank = (await _context.Ratings.WhereMode(modeInt).OrderByMuDescending().ToListAsync()).TakeWhile(x => x.PlayerId != player.Id).Count() + 1;
+				stats.CountryRank = countryIndex + 1;
 
-				stats.Percentile = 100 *
-				                   (1 -
-				                    (((await _context.Ratings.WhereMode(modeInt).OrderByMuDescending().ToListAsync()).TakeWhile(x => x.PlayerId != player.Id).Count() + 1) /
-				                     (double)await _context.Ratings.WhereMode(modeInt).CountAsync()));
+				_logger.LogInformation("Got country rank for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
 
+				int globalIndex = _context.Ratings
+				                          .WhereMode(modeInt)
+				                          .OrderByMuDescending()
+				                          .Select(x => x.PlayerId) // Only select the PlayerId, instead of the whole entity
+				                          .AsEnumerable()          // Transfer the execution to client-side after this point
+				                          .TakeWhile(x => x != player.Id)
+				                          .Count();
+
+				stats.GlobalRank = globalIndex + 1;
+
+				_logger.LogInformation("Got global rank for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
+
+				int totalRatings = await _context.Ratings
+				                                 .WhereMode(modeInt)
+				                                 .CountAsync();
+
+				stats.Percentile = 100 * (1 - (stats.GlobalRank / (double)totalRatings));
+
+				_logger.LogInformation("Got percentile for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
 
 				stats.MatchesPlayed = await _context.MatchScores
 				                                    .WhereVerified()
@@ -176,51 +205,66 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 				                                    .Distinct()
 				                                    .CountAsync();
 
+				_logger.LogInformation("Got matches played for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
+
 				stats.GamesPlayed = await _context.MatchScores
 				                                  .WhereVerified()
 				                                  .WherePlayer(player.OsuId)
 				                                  .WhereMode(modeInt)
 				                                  .After(time)
-				                                  .Select(x => x.GameId).Distinct().CountAsync();
+				                                  .Select(x => x.GameId)
+				                                  .Distinct()
+				                                  .CountAsync();
+
+				_logger.LogInformation("Got games played for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
 
 				stats.MatchesWon = await matchesService.CountMatchWinsAsync(osuId, modeInt, time);
 				stats.GamesWon = await gamesService.CountGameWinsAsync(osuId, modeInt, time);
-				
+
+				_logger.LogInformation("Got matches won & games lost for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
+
 				stats.GamesLost = stats.GamesPlayed - stats.GamesWon;
 				stats.MatchesLost = stats.MatchesPlayed - stats.MatchesWon;
 
 				stats.AverageOpponentRating = await ratingsService.AverageOpponentRating(osuId, modeInt);
+				_logger.LogInformation("Got average opponent rating for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
 				stats.AverageTeammateRating = await ratingsService.AverageTeammateRating(osuId, modeInt);
-				
+				_logger.LogInformation("Got average teammate rating for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
+
 				stats.PlayedHR = await _context.MatchScores
-				                              .WhereVerified()
-				                              .WherePlayer(osuId)
-				                              .WhereMode(modeInt)
-				                              .WhereMods(OsuEnums.Mods.HardRock)
-				                              .After(time)
-				                              .CountAsync();
-				
+				                               .WhereVerified()
+				                               .WherePlayer(osuId)
+				                               .WhereMode(modeInt)
+				                               .WhereMods(OsuEnums.Mods.HardRock)
+				                               .After(time)
+				                               .CountAsync();
+
 				stats.PlayedHD = await _context.MatchScores
-				                              .WhereVerified()
-				                              .WherePlayer(osuId)
-				                              .WhereMode(modeInt)
-				                              .WhereMods(OsuEnums.Mods.Hidden)
-				                              .After(time)
-				                              .CountAsync();
-				
+				                               .WhereVerified()
+				                               .WherePlayer(osuId)
+				                               .WhereMode(modeInt)
+				                               .WhereMods(OsuEnums.Mods.Hidden)
+				                               .After(time)
+				                               .CountAsync();
+
 				stats.PlayedDT = await _context.MatchScores
-				                              .WhereVerified()
-				                              .WherePlayer(osuId)
-				                              .WhereMode(modeInt)
-				                              .WhereMods(OsuEnums.Mods.DoubleTime)
-				                              .After(time)
-				                              .CountAsync();
-				
+				                               .WhereVerified()
+				                               .WherePlayer(osuId)
+				                               .WhereMode(modeInt)
+				                               .WhereMods(OsuEnums.Mods.DoubleTime)
+				                               .After(time)
+				                               .CountAsync();
+
+				_logger.LogInformation("Got played HR, HD & DT for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
+
 				// Trend
 				stats.IsRatingPositiveTrend = await ratingsService.IsRatingPositiveTrendAsync(osuId, modeInt, time);
+
+				_logger.LogInformation("Got is rating positive trend for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
 			}
 		}
 
+		_logger.LogInformation("Returned statistics for {OsuId} in {ElapsedMilliseconds}ms", osuId, sw.ElapsedMilliseconds);
 		return stats;
 	}
 

@@ -69,7 +69,11 @@ public static class QueryExtensions
 	/// <param name="query"></param>
 	/// <param name="osuPlayerId"></param>
 	/// <returns></returns>
-	public static IQueryable<MatchScore> WhereOpponent(this IQueryable<MatchScore> query, long osuPlayerId) => query.AsQueryable().Where(x => x.Player.OsuId != osuPlayerId);
+	public static IQueryable<MatchScore> WhereOpponent(this IQueryable<MatchScore> query, long osuPlayerId) => query.AsQueryable()
+	                                                                                                                .Where(x =>
+		                                                                                                                x.Game.MatchScores.Any(y =>
+			                                                                                                                y.Player.OsuId == osuPlayerId) &&
+		                                                                                                                x.Player.OsuId != osuPlayerId);
 
 	/// <summary>
 	///  Selects all match scores, other than the provided player's, that are on the same team as the provided player. Excludes
@@ -79,13 +83,16 @@ public static class QueryExtensions
 	/// <param name="osuPlayerId"></param>
 	/// <returns></returns>
 	public static IQueryable<MatchScore> WhereTeammate(this IQueryable<MatchScore> query, long osuPlayerId) => query.AsQueryable()
-	                                                                                                                .Where(x => x.Player.OsuId != osuPlayerId &&
-	                                                                                                                            x.Game.TeamType !=
-	                                                                                                                            (int)OsuEnums.TeamType.HeadToHead &&
-	                                                                                                                            x.Team ==
-	                                                                                                                            x.Game.MatchScores.First(y =>
-		                                                                                                                             y.Player.OsuId == osuPlayerId)
-	                                                                                                                             .Team);
+	                                                                                                                .Where(x =>
+		                                                                                                                x.Game.MatchScores.Any(x =>
+			                                                                                                                x.Player.OsuId == osuPlayerId) &&
+		                                                                                                                x.Player.OsuId != osuPlayerId &&
+		                                                                                                                x.Game.TeamType !=
+		                                                                                                                (int)OsuEnums.TeamType.HeadToHead &&
+		                                                                                                                x.Team ==
+		                                                                                                                x.Game.MatchScores.First(y =>
+			                                                                                                                 y.Player.OsuId == osuPlayerId)
+		                                                                                                                 .Team);
 
 	/// <summary>
 	///  Selects all MatchScores for a given playMode (e.g. mania)

@@ -92,40 +92,39 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 
 	public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
 	{
-		var teammateRatings = await _context.MatchScores
-		                                    .Include(x => x.Player)
-		                                    .ThenInclude(x => x.Ratings)
-		                                    .WhereVerified()
-		                                    .WhereNotHeadToHead()
-		                                    .WhereTeammate(osuPlayerId)
-		                                    .Select(x => x.Player.Ratings.FirstOrDefault(y => y.Mode == mode))
-		                                    .ToListAsync();
-		
-		return (int)teammateRatings.Where(x => x != null).Average(x => x!.Mu);
+		var averageRating = await _context.MatchScores
+		                                  .WhereVerified()
+		                                  .WhereNotHeadToHead()
+		                                  .WhereTeammate(osuPlayerId)
+		                                  .SelectMany(x => x.Player.Ratings)
+		                                  .Where(rating => rating != null && rating.Mode == mode)
+		                                  .AverageAsync(rating => (double?)rating.Mu) ?? 0.0;
+    
+		return (int)averageRating;
 	}
+
 
 	public async Task<int> AverageOpponentRating(long osuPlayerId, int mode)
 	{
-		var headToHeadOpponentRatings = await _context.MatchScores
-		                                   .Include(x => x.Player)
-		                                   .ThenInclude(x => x.Ratings)
-		                                   .WhereHeadToHead()
-		                                   .WhereVerified()
-		                                   .WhereOpponent(osuPlayerId)
-		                                   .Select(x => x.Player.Ratings.FirstOrDefault(y => y.Mode == mode))
-		                                   .ToListAsync();
-		
-		var teamVsOpponentRatings = await _context.MatchScores
-		                                   .Include(x => x.Player)
-		                                   .ThenInclude(x => x.Ratings)
-		                                   .WhereNotHeadToHead()
-		                                   .WhereVerified()
-		                                   .WhereOpponent(osuPlayerId)
-		                                   .Select(x => x.Player.Ratings.FirstOrDefault(y => y.Mode == mode))
-		                                   .ToListAsync();
-		
-		return (int)headToHeadOpponentRatings.Concat(teamVsOpponentRatings).Where(x => x != null).Average(x => x!.Mu);
+		// Define a query to select MatchScores with verified status
+		var verifiedMatchScores = _context.MatchScores.WhereVerified();
+
+		// Filter MatchScores to only those where the opponent is the given player
+		var opponentMatchScores = verifiedMatchScores.WhereOpponent(osuPlayerId);
+
+		// Project to the player IDs instead of including whole player entities
+		var opponentPlayerIds = await opponentMatchScores.Select(x => x.PlayerId).ToListAsync();
+
+		// Use the player IDs to filter the Ratings directly, avoiding unnecessary Includes
+		var opponentRatings = _context.Ratings
+		                              .Where(x => opponentPlayerIds.Contains(x.PlayerId) && x.Mode == mode);
+
+		// Calculate the average rating
+		var averageRating = await opponentRatings.AverageAsync(x => x.Mu);
+
+		return (int)averageRating;
 	}
+
 
 	public async Task<DateTime> GetRecentCreatedDate(long osuPlayerId)
 	{
