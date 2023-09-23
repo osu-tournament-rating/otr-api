@@ -110,7 +110,11 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		sw.Start();
 
 		int modeInt = (int)mode;
-		var stats = new Unmapped_PlayerStatisticsDTO();
+		var stats = new Unmapped_PlayerStatisticsDTO()
+		{
+			OsuId = osuId,
+			Created = DateTime.UtcNow,
+		};
 
 		var time = fromPointInTime ?? DateTime.MinValue;
 

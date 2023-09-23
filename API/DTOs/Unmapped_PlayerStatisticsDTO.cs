@@ -1,7 +1,10 @@
+using API.Entities;
+
 namespace API.DTOs;
 
 public class Unmapped_PlayerStatisticsDTO
 {
+	public long OsuId { get; set; }
 	/// <summary>
 	/// The current ranking of the user, e.g. Platinum, Diamond
 	/// </summary>
@@ -56,4 +59,5 @@ public class Unmapped_PlayerStatisticsDTO
 	/// </summary>
 	public int RatingGainedSincePeriod { get; set; }
 	public bool IsRatingPositiveTrend { get; set; }
+	public DateTime Created { get; set; }
 }

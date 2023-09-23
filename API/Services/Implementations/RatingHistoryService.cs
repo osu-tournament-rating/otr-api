@@ -20,12 +20,21 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 		_context = context;
 	}
 
-	public async Task<IEnumerable<RatingHistoryDTO>> GetForPlayerAsync(long osuPlayerId, DateTime fromTime)
+	public async Task<IEnumerable<RatingHistoryDTO>> GetForPlayerAsync(long osuPlayerId, int mode, DateTime fromTime)
 	{
 		return _mapper.Map<IEnumerable<RatingHistoryDTO>>(await _context.RatingHistories
 		                                                                .Include(x => x.Match)
 		                                                                .WherePlayer(osuPlayerId)
+		                                                                .WhereMode(mode)
 		                                                                .After(fromTime).ToListAsync());
+	}
+
+	public async Task<IEnumerable<RatingHistoryDTO>> GetForPlayerAsync(long osuPlayerId)
+	{
+		return _mapper.Map<IEnumerable<RatingHistoryDTO>>(await _context.RatingHistories
+		                                                                .Include(x => x.Match)
+		                                                                .WherePlayer(osuPlayerId)
+		                                                                .ToListAsync());
 	}
 
 	public async Task<int> BatchInsertAsync(IEnumerable<RatingHistoryDTO> histories)

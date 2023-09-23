@@ -19,8 +19,7 @@ public interface IRatingsService : IService<Rating>
 	Task<int> AverageTeammateRating(long osuPlayerId, int mode);
 	Task<int> AverageOpponentRating(long osuPlayerId, int mode);
 	/// <summary>
-	/// Returns the most recently updated rating entry for a player, indiciating an update to the player's rating.
-	/// This is used to determine if the player's cache needs to be reset
+	/// Returns the creation date of the most recently create rating entry for a player
 	/// </summary>
 	/// <returns></returns>
 	Task<DateTime> GetRecentCreatedDate(long osuPlayerId);
