@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Entities;
 using API.Osu;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -18,12 +19,14 @@ public class MeController : Controller
 	private readonly IPlayerService _playerService;
 	private readonly IRatingsService _ratingsService;
 	private readonly IRatingHistoryService _ratingHistoryService;
+	private readonly IUserService _userService;
 	private readonly IDistributedCache _cache;
-	public MeController(IPlayerService playerService, IRatingsService ratingsService, IRatingHistoryService ratingHistoryService, IDistributedCache cache)
+	public MeController(IPlayerService playerService, IRatingsService ratingsService, IRatingHistoryService ratingHistoryService, IUserService userService, IDistributedCache cache)
 	{
 		_playerService = playerService;
 		_ratingsService = ratingsService;
 		_ratingHistoryService = ratingHistoryService;
+		_userService = userService;
 		_cache = cache;
 	}
 	
@@ -41,6 +44,20 @@ public class MeController : Controller
 		}
 
 		return osuPlayerId;
+	}
+
+	[HttpGet]
+	public async Task<ActionResult<User>> GetLoggedInUserAsync()
+	{
+		long? osuId = GetOsuId();
+		
+		if(!osuId.HasValue)
+		{
+			return BadRequest("User's login seems corrupted, couldn't identify osuId.");
+		}
+
+		var user = await _userService.GetForPlayerAsync(osuId.Value);
+		return Ok(user);
 	}
 
 	[HttpGet("statistics")]
