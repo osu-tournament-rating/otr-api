@@ -82,6 +82,8 @@ public partial class OtrContext : DbContext
 			entity.HasIndex(x => x.MatchId);
 			entity.HasIndex(x => x.TeamType);
 			entity.HasIndex(x => new { x.TeamType, x.Id });
+			entity.HasIndex(x => x.StartTime);
+			entity.HasIndex(x => x.PlayMode);
 		});
 
 		modelBuilder.Entity<Match>(entity =>
@@ -98,6 +100,7 @@ public partial class OtrContext : DbContext
 			entity.HasMany(e => e.RatingHistories).WithOne(h => h.Match);
 
 			entity.HasIndex(x => x.VerificationStatus);
+			entity.HasIndex(x => x.StartTime);
 		});
 
 		modelBuilder.Entity<MatchScore>(entity =>
@@ -117,6 +120,8 @@ public partial class OtrContext : DbContext
 
 			entity.HasIndex(x => x.GameId);
 			entity.HasIndex(x => new { x.GameId, x.Team });
+			entity.HasIndex(x => x.Team);
+			entity.HasIndex(x => x.EnabledMods);
 		});
 
 		modelBuilder.Entity<Player>(entity =>
@@ -147,6 +152,7 @@ public partial class OtrContext : DbContext
 			      .HasConstraintName("Ratings___fkplayerid");
 
 			entity.HasIndex(x => x.Mode);
+			entity.HasIndex(x => x.Mu);
 		});
 
 		modelBuilder.Entity<RatingHistory>(entity =>
@@ -167,6 +173,8 @@ public partial class OtrContext : DbContext
 			      .HasConstraintName("RatingHistories___fkplayerid");
 
 			entity.HasIndex(x => x.Mode);
+			entity.HasIndex(x => x.Mu);
+			entity.HasIndex(x => x.Created);
 		});
 
 		modelBuilder.Entity<User>(entity =>
