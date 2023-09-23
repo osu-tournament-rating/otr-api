@@ -78,6 +78,10 @@ public partial class OtrContext : DbContext
 			entity.HasMany(g => g.MatchScores)
 			      .WithOne(s => s.Game)
 			      .OnDelete(DeleteBehavior.ClientSetNull);
+
+			entity.HasIndex(x => x.MatchId);
+			entity.HasIndex(x => x.TeamType);
+			entity.HasIndex(x => new { x.TeamType, x.Id });
 		});
 
 		modelBuilder.Entity<Match>(entity =>
@@ -92,6 +96,8 @@ public partial class OtrContext : DbContext
 			entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedMatches).HasForeignKey(e => e.SubmitterUserId).IsRequired(false);
 			entity.HasMany(e => e.Games).WithOne(g => g.Match);
 			entity.HasMany(e => e.RatingHistories).WithOne(h => h.Match);
+
+			entity.HasIndex(x => x.VerificationStatus);
 		});
 
 		modelBuilder.Entity<MatchScore>(entity =>
@@ -108,6 +114,9 @@ public partial class OtrContext : DbContext
 			      .WithMany(p => p.MatchScores)
 			      .OnDelete(DeleteBehavior.ClientSetNull)
 			      .HasConstraintName("match_scores_players_id_fk");
+
+			entity.HasIndex(x => x.GameId);
+			entity.HasIndex(x => new { x.GameId, x.Team });
 		});
 
 		modelBuilder.Entity<Player>(entity =>
@@ -121,6 +130,8 @@ public partial class OtrContext : DbContext
 			entity.HasMany(e => e.RatingHistories).WithOne(r => r.Player);
 			entity.HasMany(e => e.Ratings).WithOne(r => r.Player);
 			entity.HasOne(e => e.User).WithOne(u => u.Player);
+
+			entity.HasIndex(x => x.OsuId);
 		});
 
 		modelBuilder.Entity<Rating>(entity =>
@@ -134,6 +145,8 @@ public partial class OtrContext : DbContext
 			      .WithMany(p => p.Ratings)
 			      .OnDelete(DeleteBehavior.ClientSetNull)
 			      .HasConstraintName("Ratings___fkplayerid");
+
+			entity.HasIndex(x => x.Mode);
 		});
 
 		modelBuilder.Entity<RatingHistory>(entity =>
@@ -152,6 +165,8 @@ public partial class OtrContext : DbContext
 			      .WithMany(p => p.RatingHistories)
 			      .OnDelete(DeleteBehavior.ClientSetNull)
 			      .HasConstraintName("RatingHistories___fkplayerid");
+
+			entity.HasIndex(x => x.Mode);
 		});
 
 		modelBuilder.Entity<User>(entity =>

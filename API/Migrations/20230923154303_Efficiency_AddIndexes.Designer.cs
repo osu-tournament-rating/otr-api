@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20230923154303_Efficiency_AddIndexes")]
+    partial class Efficiency_AddIndexes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -252,8 +255,6 @@ namespace API.Migrations
 
                     b.HasIndex("TeamType");
 
-                    b.HasIndex("TeamType", "Id");
-
                     b.HasIndex(new[] { "GameId" }, "osugames_gameid")
                         .IsUnique();
 
@@ -330,8 +331,6 @@ namespace API.Migrations
                         .IsUnique();
 
                     b.HasIndex("SubmitterUserId");
-
-                    b.HasIndex("VerificationStatus");
 
                     b.HasIndex(new[] { "MatchId" }, "osumatches_matchid")
                         .IsUnique();
@@ -410,8 +409,6 @@ namespace API.Migrations
                     b.HasIndex("GameId");
 
                     b.HasIndex("PlayerId");
-
-                    b.HasIndex("GameId", "Team");
 
                     b.HasIndex(new[] { "GameId", "PlayerId" }, "match_scores_gameid_playerid")
                         .IsUnique();
@@ -500,8 +497,6 @@ namespace API.Migrations
 
                     b.HasKey("Id")
                         .HasName("Player_pk");
-
-                    b.HasIndex("OsuId");
 
                     b.HasIndex(new[] { "OsuId" }, "Players_osuid")
                         .IsUnique();
@@ -606,8 +601,6 @@ namespace API.Migrations
                         .HasName("RatingHistories_pk");
 
                     b.HasIndex("MatchId");
-
-                    b.HasIndex("Mode");
 
                     b.HasIndex(new[] { "PlayerId", "MatchId" }, "ratinghistories_pk")
                         .IsUnique();

@@ -40,7 +40,7 @@ builder.Services.AddSerilog(configuration =>
 
 	configuration.MinimumLevel.Debug()
 	             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-	             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+	             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
 	             .Enrich.FromLogContext()
 	             .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
 	             .WriteTo.File("logs\\log.log", rollingInterval: RollingInterval.Day)
