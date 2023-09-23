@@ -141,6 +141,7 @@ public partial class OtrContext : DbContext
 
 			entity.HasIndex(x => x.OsuId);
 			entity.HasIndex(x => x.Country);
+			entity.HasIndex(x => x.Username);
 		});
 
 		modelBuilder.Entity<Rating>(entity =>

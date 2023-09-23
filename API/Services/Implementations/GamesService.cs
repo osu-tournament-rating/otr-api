@@ -144,28 +144,37 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		return wins;
 	}
 
-	public Task<string?> MostPlayedTeammateNameAsync(long osuPlayerId, int mode, DateTime fromDate)
+	public async Task<string?> MostPlayedTeammateNameAsync(long osuPlayerId, int mode, DateTime fromDate)
 	{
 		var verifiedMatchScores = _context.MatchScores.WhereVerified();
-		var teammateMatchScores = verifiedMatchScores
-		                          .WhereMode(mode)
-		                          .After(fromDate)
-		                          .WhereTeammate(osuPlayerId);
+		var teammateMatchScores = verifiedMatchScores.WhereTeammate(osuPlayerId)
+		                                             .WhereMode(mode)
+		                                             .After(fromDate);
+    
+		var teammateNames = await (from oms in teammateMatchScores
+		                           join p in _context.Players on oms.PlayerId equals p.Id
+		                           where p.Username != null
+		                           select p.Username).ToListAsync();
 
-		var teammateIds = teammateMatchScores.Select(x => x.PlayerId);
-		var teammateNames = _context.Players.Where(x => teammateIds.Contains(x.Id)).Select(x => x.Username);
-		return teammateNames.GroupBy(x => x).OrderByDescending(x => x.Count()).Select(x => x.Key).FirstOrDefaultAsync();
+		var mostPlayedTeammate = teammateNames.GroupBy(x => x).MaxBy(g => g.Count());
+
+		return mostPlayedTeammate?.Key;
 	}
 
-	public Task<string?> MostPlayedOpponentNameAsync(long osuPlayerId, int mode, DateTime fromDate)
+	public async Task<string?> MostPlayedOpponentNameAsync(long osuPlayerId, int mode, DateTime fromDate)
 	{
 		var verifiedMatchScores = _context.MatchScores.WhereVerified();
 		var opponentMatchScores = verifiedMatchScores.WhereOpponent(osuPlayerId)
 		                                             .WhereMode(mode)
 		                                             .After(fromDate);
+    
+		var opponentNames = await (from oms in opponentMatchScores
+		                           join p in _context.Players on oms.PlayerId equals p.Id
+		                           where p.Username != null
+		                           select p.Username).ToListAsync();
 
-		var opponentIds = opponentMatchScores.Select(x => x.PlayerId);
-		var opponentNames = _context.Players.Where(x => opponentIds.Contains(x.Id)).Select(x => x.Username);
-		return opponentNames.GroupBy(x => x).OrderByDescending(x => x.Count()).Select(x => x.Key).FirstOrDefaultAsync();
+		var mostPlayedOpponent = opponentNames.GroupBy(x => x).MaxBy(g => g.Count());
+
+		return mostPlayedOpponent?.Key;
 	}
 }

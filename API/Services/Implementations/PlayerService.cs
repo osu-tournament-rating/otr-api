@@ -264,12 +264,13 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 
 			_logger.LogInformation("Got played HR, HD & DT for {OsuId} after {ElapsedMilliseconds}", osuId, sw.ElapsedMilliseconds);
 
-			stats.MostPlayedTeammate = await ratingsService.BestPerformingTeammateNameAsync(osuId, modeInt, time);
+			stats.MostPlayedTeammate = await gamesService.MostPlayedTeammateNameAsync(osuId, modeInt, time);
+			stats.MostPlayedOpponent = await gamesService.MostPlayedOpponentNameAsync(osuId, modeInt, time);
+
 			stats.BestPerformingTeammate = await ratingsService.BestPerformingTeammateNameAsync(osuId, modeInt, time);
 			stats.WorstPerformingTeammate = await ratingsService.WorstPerformingTeammateNameAsync(osuId, modeInt, time);
 			stats.BestPerformingOpponent = await ratingsService.BestPerformingOpponentNameAsync(osuId, modeInt, time);
 			stats.WorstPerformingOpponent = await ratingsService.WorstPerformingOpponentNameAsync(osuId, modeInt, time);
-			stats.MostPlayedOpponent = await ratingsService.BestPerformingOpponentNameAsync(osuId, modeInt, time);
 			
 			// Trend
 			stats.IsRatingPositiveTrend = await ratingsService.IsRatingPositiveTrendAsync(osuId, modeInt, time);

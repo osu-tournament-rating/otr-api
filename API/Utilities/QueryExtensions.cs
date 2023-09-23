@@ -73,7 +73,8 @@ public static class QueryExtensions
 	                                                                                                                .Where(x =>
 		                                                                                                                x.Game.MatchScores.Any(y =>
 			                                                                                                                y.Player.OsuId == osuPlayerId) &&
-		                                                                                                                x.Player.OsuId != osuPlayerId);
+		                                                                                                                x.Player.OsuId != osuPlayerId &&
+		                                                                                                                x.Team != x.Game.MatchScores.First(y => y.Player.OsuId == osuPlayerId).Team);
 
 	/// <summary>
 	///  Selects all match scores, other than the provided player's, that are on the same team as the provided player. Excludes
