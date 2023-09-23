@@ -46,7 +46,7 @@ public class Unmapped_PlayerStatisticsDTO
 	public int PlayedHR { get; set; }
 	public int PlayedHD { get; set; }
 	public int PlayedDT { get; set; }
-	public string? MostPlayedTeammateName { get; set; }
+	public string? MostPlayedTeammate { get; set; }
 	public string? BestPerformingTeammate { get; set; }
 	public string? WorstPerformingTeammate { get; set; }
 	public string? MostPlayedOpponent { get; set; }

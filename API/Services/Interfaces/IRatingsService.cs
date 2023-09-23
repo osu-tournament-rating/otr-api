@@ -18,6 +18,10 @@ public interface IRatingsService : IService<Rating>
 	Task TruncateAsync();
 	Task<int> AverageTeammateRating(long osuPlayerId, int mode);
 	Task<int> AverageOpponentRating(long osuPlayerId, int mode);
+	Task<string?> BestPerformingTeammateNameAsync(long osuPlayerId, int mode, DateTime fromDate);
+	Task<string?> WorstPerformingTeammateNameAsync(long osuPlayerId, int mode, DateTime fromDate);
+	Task<string?> BestPerformingOpponentNameAsync(long osuPlayerId, int mode, DateTime fromDate);
+	Task<string?> WorstPerformingOpponentNameAsync(long osuPlayerId, int mode, DateTime fromDate);
 	/// <summary>
 	/// Returns the creation date of the most recently create rating entry for a player
 	/// </summary>

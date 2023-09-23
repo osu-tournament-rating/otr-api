@@ -92,17 +92,17 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 
 	public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
 	{
-		var averageRating = await _context.MatchScores
-		                                  .WhereVerified()
-		                                  .WhereNotHeadToHead()
-		                                  .WhereTeammate(osuPlayerId)
-		                                  .SelectMany(x => x.Player.Ratings)
-		                                  .Where(rating => rating != null && rating.Mode == mode)
-		                                  .AverageAsync(rating => (double?)rating.Mu) ?? 0.0;
-    
+		double averageRating = await _context.MatchScores
+		                                     .WhereVerified()
+		                                     .WhereNotHeadToHead()
+		                                     .WhereTeammate(osuPlayerId)
+		                                     .SelectMany(x => x.Player.Ratings)
+		                                     .Where(rating => rating != null && rating.Mode == mode)
+		                                     .AverageAsync(rating => (double?)rating.Mu) ??
+		                       0.0;
+
 		return (int)averageRating;
 	}
-
 
 	public async Task<int> AverageOpponentRating(long osuPlayerId, int mode)
 	{
@@ -117,29 +117,140 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 
 		// Use the player IDs to filter the Ratings directly, avoiding unnecessary Includes
 		var opponentRatings = _context.Ratings
-		                              .Where(x => opponentPlayerIds.Contains(x.PlayerId) && x.Mode == mode);
+		                              .WhereMode(mode)
+		                              .Where(x => opponentPlayerIds.Contains(x.PlayerId));
 
 		// Calculate the average rating
-		var averageRating = await opponentRatings.AverageAsync(x => x.Mu);
+		double averageRating = await opponentRatings.AverageAsync(x => x.Mu);
 
 		return (int)averageRating;
 	}
 
-
-	public async Task<DateTime> GetRecentCreatedDate(long osuPlayerId)
+	public async Task<string?> BestPerformingTeammateNameAsync(long osuPlayerId, int mode, DateTime fromDate)
 	{
-		return await _context.Ratings.WherePlayer(osuPlayerId).OrderByDescending(x => x.Created).Select(x => x.Created).FirstAsync();
+		var verifiedScores = _context.MatchScores.WhereVerified();
+		var teammateScores = verifiedScores.WhereTeammate(osuPlayerId)
+		                                   .WhereMode(mode)
+		                                   .After(fromDate);
+
+		if (!teammateScores.Any())
+		{
+			return null;
+		}
+
+		var teammatePlayerIds = await teammateScores.Select(x => x.PlayerId).ToListAsync();
+		
+		teammatePlayerIds = teammatePlayerIds.Distinct().ToList();
+
+		var teammateRatings = _context.Ratings
+		                              .Where(x => teammatePlayerIds.Contains(x.PlayerId) && x.Mode == mode);
+
+		double bestRating = await teammateRatings.MaxAsync(x => x.Mu);
+		int bestRatingPlayerId = await teammateRatings.Where(x => x.Mu == bestRating).Select(x => x.PlayerId).FirstOrDefaultAsync();
+		string? bestRatingPlayerName = await _context.Players.Where(x => x.Id == bestRatingPlayerId).Select(x => x.Username).FirstOrDefaultAsync();
+
+		return bestRatingPlayerName;
 	}
+
+	public async Task<string?> WorstPerformingTeammateNameAsync(long osuPlayerId, int mode, DateTime fromDate)
+	{
+		var verifiedScores = _context.MatchScores.WhereVerified();
+		var teammateScores = verifiedScores.WhereTeammate(osuPlayerId)
+		                                   .WhereMode(mode)
+		                                   .After(fromDate);
+		
+		if (!teammateScores.Any())
+		{
+			return null;
+		}
+
+		var teammatePlayerIds = await teammateScores
+		                              .Select(x => x.PlayerId)
+		                              .ToListAsync();
+
+		teammatePlayerIds = teammatePlayerIds.Distinct().ToList();
+
+		var teammateRatings = _context.Ratings
+		                              .Where(x => teammatePlayerIds.Contains(x.PlayerId) && x.Mode == mode);
+
+		double worstRating = await teammateRatings.MinAsync(x => x.Mu);
+		int worstRatingPlayerId = await teammateRatings.Where(x => x.Mu == worstRating).Select(x => x.PlayerId).FirstOrDefaultAsync();
+		string? worstRatingPlayerName = await _context.Players.Where(x => x.Id == worstRatingPlayerId).Select(x => x.Username).FirstOrDefaultAsync();
+
+		return worstRatingPlayerName;
+	}
+
+	public async Task<string?> BestPerformingOpponentNameAsync(long osuPlayerId, int mode, DateTime fromDate)
+	{
+		var verifiedScores = _context.MatchScores.WhereVerified();
+		var opponentScores = verifiedScores.WhereOpponent(osuPlayerId)
+		                                   .WhereMode(mode)
+		                                   .After(fromDate);
+		
+		if (!opponentScores.Any())
+		{
+			return null;
+		}
+
+		var opponentPlayerIds = await opponentScores
+		                              .Select(x => x.PlayerId)
+		                              .ToListAsync();
+
+		opponentPlayerIds = opponentPlayerIds.Distinct().ToList();
+
+		var opponentRatings = _context.Ratings
+		                              .Where(x => opponentPlayerIds.Contains(x.PlayerId) && x.Mode == mode);
+
+		double bestRating = await opponentRatings.MaxAsync(x => x.Mu);
+		int bestRatingPlayerId = await opponentRatings.Where(x => x.Mu == bestRating).Select(x => x.PlayerId).FirstOrDefaultAsync();
+		string? bestRatingPlayerName = await _context.Players.Where(x => x.Id == bestRatingPlayerId).Select(x => x.Username).FirstOrDefaultAsync();
+
+		return bestRatingPlayerName;
+	}
+
+	public async Task<string?> WorstPerformingOpponentNameAsync(long osuPlayerId, int mode, DateTime fromDate)
+	{
+		var verifiedScores = _context.MatchScores.WhereVerified();
+		var opponentScores = verifiedScores
+		                     .WhereMode(mode)
+		                     .WhereOpponent(osuPlayerId)
+		                     .After(fromDate);
+		
+		if (!opponentScores.Any())
+		{
+			return null;
+		}
+
+		var opponentPlayerIds = await opponentScores
+		                              .Select(x => x.PlayerId)
+		                              .ToListAsync();
+
+		opponentPlayerIds = opponentPlayerIds.Distinct().ToList();
+
+		var opponentRatings = _context.Ratings
+		                              .Where(x => opponentPlayerIds.Contains(x.PlayerId) && x.Mode == mode);
+
+		double worstRating = await opponentRatings.MinAsync(x => x.Mu);
+		int worstRatingPlayerId = await opponentRatings.Where(x => x.Mu == worstRating).Select(x => x.PlayerId).FirstOrDefaultAsync();
+		string? worstRatingPlayerName = await _context.Players.Where(x => x.Id == worstRatingPlayerId).Select(x => x.Username).FirstOrDefaultAsync();
+
+		return worstRatingPlayerName;
+	}
+
+	public async Task<DateTime> GetRecentCreatedDate(long osuPlayerId) =>
+		await _context.Ratings.WherePlayer(osuPlayerId).OrderByDescending(x => x.Created).Select(x => x.Created).FirstAsync();
 
 	public async Task<bool> IsRatingPositiveTrendAsync(long osuId, int modeInt, DateTime time)
 	{
-		var ratingPrevious = await _context.RatingHistories
-		                                   .WherePlayer(osuId)
-		                                   .WhereMode(modeInt)
-		                                   .OrderByDescending(x => x.Created)
-		                                   .Where(x => x.Created <= time).Select(x => x.Mu).FirstOrDefaultAsync();
-		
-		var ratingCurrent = await _context.Ratings.WherePlayer(osuId).WhereMode(modeInt).Select(x => x.Mu).FirstOrDefaultAsync();
+		double ratingPrevious = await _context.RatingHistories
+		                                      .WherePlayer(osuId)
+		                                      .WhereMode(modeInt)
+		                                      .OrderByDescending(x => x.Created)
+		                                      .Where(x => x.Created <= time)
+		                                      .Select(x => x.Mu)
+		                                      .FirstOrDefaultAsync();
+
+		double ratingCurrent = await _context.Ratings.WherePlayer(osuId).WhereMode(modeInt).Select(x => x.Mu).FirstOrDefaultAsync();
 
 		return ratingCurrent > ratingPrevious;
 	}

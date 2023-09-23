@@ -11,8 +11,8 @@ namespace API.Services.Implementations;
 public class GamesService : ServiceBase<Game>, IGamesService
 {
 	private readonly OtrContext _context;
-	private readonly ILogger<GamesService> _logger;
 	private readonly IGameSrCalculator _gameSrCalculator;
+	private readonly ILogger<GamesService> _logger;
 	private readonly IMapper _mapper;
 
 	public GamesService(ILogger<GamesService> logger, IGameSrCalculator gameSrCalculator, IMapper mapper, OtrContext context) : base(logger, context)
@@ -44,21 +44,16 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		return _mapper.Map<IEnumerable<GameDTO>>(await _context.Games.Where(game => game.MatchId == id).ToListAsync());
 	}
 
-	public async Task<IEnumerable<Game>> GetAllAsync()
-	{
-		return await _context.Games
-		                     .Include(b => b.Beatmap)
-		                     .Include(g => g.MatchScores)
-		                     .ToListAsync();
-	}
-
-	// ReSharper disable PossibleMultipleEnumeration
+	public async Task<IEnumerable<Game>> GetAllAsync() => await _context.Games
+	                                                                    .Include(b => b.Beatmap)
+	                                                                    .Include(g => g.MatchScores)
+	                                                                    .ToListAsync(); // ReSharper disable PossibleMultipleEnumeration
 	public async Task UpdateAllPostModSrsAsync()
 	{
 		_logger.LogInformation("Beginning batch update of post-mod SRs");
 		var all = await GetAllAsync();
 		_logger.LogInformation("Identified {Count} games to update (all games in database)", all.Count());
-		
+
 		foreach (var game in all)
 		{
 			var beatmap = game.Beatmap;
@@ -68,7 +63,7 @@ public class GamesService : ServiceBase<Game>, IGamesService
 				_logger.LogWarning("Could not find beatmap for game {GameId}", game.GameId);
 				continue;
 			}
-			
+
 			var mods = game.ModsEnum;
 			var playerMods = game.MatchScores.Select(x => x.EnabledModsEnum);
 
@@ -98,10 +93,14 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		                          .Include(x => x.MatchScores)
 		                          .ThenInclude(x => x.Player)
 		                          .After(fromTime)
-		                          .Where(x => x.MatchScores.Any(y => y.Player.OsuId == osuPlayerId) && x.PlayMode == mode).ToListAsync();
+		                          .Where(x => x.MatchScores.Any(y => y.Player.OsuId == osuPlayerId) && x.PlayMode == mode)
+		                          .ToListAsync();
+
 		// Process HeadToHead (includes 1v1 team games)
 		var headToHeadGames = games
-		                      .Where(x => x.MatchScores.Count == 2).ToList();
+		                      .Where(x => x.MatchScores.Count == 2)
+		                      .ToList();
+
 		foreach (var game in headToHeadGames)
 		{
 			try
@@ -118,18 +117,18 @@ public class GamesService : ServiceBase<Game>, IGamesService
 				//
 			}
 		}
-		
+
 		// Team games
 		var teamGames = games.Where(x => x.TeamTypeEnum != OsuEnums.TeamType.HeadToHead && x.MatchScores.Count >= 4).ToList();
 		foreach (var game in teamGames)
 		{
 			try
 			{
-				var playerTeam = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
-				var opponentTeam = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId && x.Team != playerTeam).Team;
+				int playerTeam = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
+				int opponentTeam = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId && x.Team != playerTeam).Team;
 
-				var playerTeamScores = game.MatchScores.Where(x => x.Team == playerTeam).Sum(x => x.Score);
-				var opponentTeamScores = game.MatchScores.Where(x => x.Team == opponentTeam).Sum(x => x.Score);
+				long playerTeamScores = game.MatchScores.Where(x => x.Team == playerTeam).Sum(x => x.Score);
+				long opponentTeamScores = game.MatchScores.Where(x => x.Team == opponentTeam).Sum(x => x.Score);
 
 				if (playerTeamScores > opponentTeamScores)
 				{
@@ -144,5 +143,29 @@ public class GamesService : ServiceBase<Game>, IGamesService
 
 		return wins;
 	}
-	// ReSharper enable PossibleMultipleEnumeration
+
+	public Task<string?> MostPlayedTeammateNameAsync(long osuPlayerId, int mode, DateTime fromDate)
+	{
+		var verifiedMatchScores = _context.MatchScores.WhereVerified();
+		var teammateMatchScores = verifiedMatchScores
+		                          .WhereMode(mode)
+		                          .After(fromDate)
+		                          .WhereTeammate(osuPlayerId);
+
+		var teammateIds = teammateMatchScores.Select(x => x.PlayerId);
+		var teammateNames = _context.Players.Where(x => teammateIds.Contains(x.Id)).Select(x => x.Username);
+		return teammateNames.GroupBy(x => x).OrderByDescending(x => x.Count()).Select(x => x.Key).FirstOrDefaultAsync();
+	}
+
+	public Task<string?> MostPlayedOpponentNameAsync(long osuPlayerId, int mode, DateTime fromDate)
+	{
+		var verifiedMatchScores = _context.MatchScores.WhereVerified();
+		var opponentMatchScores = verifiedMatchScores.WhereOpponent(osuPlayerId)
+		                                             .WhereMode(mode)
+		                                             .After(fromDate);
+
+		var opponentIds = opponentMatchScores.Select(x => x.PlayerId);
+		var opponentNames = _context.Players.Where(x => opponentIds.Contains(x.Id)).Select(x => x.Username);
+		return opponentNames.GroupBy(x => x).OrderByDescending(x => x.Count()).Select(x => x.Key).FirstOrDefaultAsync();
+	}
 }
