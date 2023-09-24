@@ -38,12 +38,11 @@ public class LoginController : Controller
 
 	[AllowAnonymous]
 	[HttpPost]
-	public async Task<IActionResult> Login([FromBody] LoginWrapper login)
+	public async Task<IActionResult> Login([FromQuery] string code)
 	{
-		string code = login.Code;
 		_logger.LogDebug("Attempting login for user with code {Code}", code);
 
-		if (string.IsNullOrEmpty(login.Code))
+		if (string.IsNullOrEmpty(code))
 		{
 			return BadRequest("Missing code");
 		}
