@@ -42,7 +42,7 @@ jobs:
 
     - name: Build and Push Docker Image
       run: |
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest ./API
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest .
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
 
   deploy:
@@ -62,7 +62,7 @@ jobs:
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
           docker stop ${{ secrets.DOCKER_IMAGE_NAME }} || true
           docker rm ${{ secrets.DOCKER_IMAGE_NAME }} || true
-          docker run -d --name ${{ secrets.DOCKER_IMAGE_NAME }} -p 3002:80 ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest \
+          docker run -d --name ${{ secrets.DOCKER_IMAGE_NAME }} -p 3002:80 \
           -e ConnectionStrings__DefaultConnection=${{ secrets.PROD_CONNECTION_STRINGS_DEFAULT_CONNECTION }} \
           -e Osu__ApiKey=${{ secrets.OSU_API_KEY_V1 }} \
           -e Osu__ClientId=${{ secrets.OSU_CLIENT_ID }} \
@@ -71,4 +71,5 @@ jobs:
           -e Jwt__Issuer=${{ secrets.PROD_JWT_ISSUER }} \
           -e Auth__WebLoginAuthSecret=${{ secrets.PROD_AUTH_WEB_LOGIN_AUTH_SECRET }} \
           -e Auth__PrivilegedClientSecret=${{ secrets.PROD_AUTH_PRIVILEGED_CLIENT_SECRET }} \
-          -e Auth__ClientCallbackUrl=${{ secrets.PROD_AUTH_CLIENT_CALLBACK_URL }}
+          -e Auth__ClientCallbackUrl=${{ secrets.PROD_AUTH_CLIENT_CALLBACK_URL }} \
+          ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
