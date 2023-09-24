@@ -86,7 +86,7 @@ public class LoginController : Controller
 	[HttpPost("system")]
 	public async Task<IActionResult> AdminLogin()
 	{
-		_logger.LogDebug("Attempting system login");
+		_logger.LogInformation("Attempting system login");
 
 		if (!HttpContext.Request.Headers.ContainsKey("Authorization"))
 		{

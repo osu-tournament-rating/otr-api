@@ -39,7 +39,7 @@ builder.Services.AddSerilog(configuration =>
 	                    throw new InvalidOperationException("Missing connection string!");
 
 	configuration.MinimumLevel.Debug()
-	             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+	             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
 	             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
 	             .Enrich.FromLogContext()
 	             .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
@@ -183,9 +183,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<RequestLoggingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.Logger.LogInformation("Running!");
 
 app.Run();
