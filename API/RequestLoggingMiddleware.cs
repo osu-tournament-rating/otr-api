@@ -65,7 +65,7 @@ public class RequestLoggingMiddleware
 		response.Body.Seek(0, SeekOrigin.Begin);
 
 		//Return the string for the response, including the status code (e.g. 200, 404, 401, etc.)
-		_logger.LogInformation("Returned status {StatusCode} to {Scheme} {Method} {Host}{Path}{QueryString}", response.StatusCode, 
-			response.HttpContext.Request.Scheme, response.HttpContext.Request.Method, response.HttpContext.Request.Host, response.HttpContext.Request.Path, response.HttpContext.Request.QueryString);
+		_logger.LogInformation("Returned status {StatusCode} to {Scheme} {Method} {Host}{Path}{QueryString} with body '{Body}'", response.StatusCode, 
+			response.HttpContext.Request.Scheme, response.HttpContext.Request.Method, response.HttpContext.Request.Host, response.HttpContext.Request.Path, response.HttpContext.Request.QueryString, text);
 	}
 }
