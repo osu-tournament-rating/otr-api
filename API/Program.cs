@@ -170,8 +170,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-app.UseCors("AllowSpecificOrigin");
-
+// Set switch for Npgsql
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // Configure the HTTP request pipeline.
@@ -182,6 +181,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting(); // UseRouting should come first before UseCors
+
+app.UseCors("AllowSpecificOrigin"); // Placed after UseRouting and before UseAuthentication and UseAuthorization
 
 app.UseMiddleware<RequestLoggingMiddleware>();
 
