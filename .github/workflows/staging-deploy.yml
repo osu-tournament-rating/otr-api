@@ -1,0 +1,74 @@
+name: .NET CI/CD
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '7.0'
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore
+
+    - name: Test
+      run: dotnet test ./APITests/APITests.csproj --no-build --verbosity normal
+
+  publish:
+    needs: build_test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and Push Docker Image
+      run: |
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DEV_DOCKER_IMAGE_NAME }}:latest ./API
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DEV_DOCKER_IMAGE_NAME }}:latest
+
+  deploy:
+    needs: publish
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy to Production Server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        script: |
+          # Your deployment script here, e.g.:
+          cd ~/otr-deploy/prod
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DEV_DOCKER_IMAGE_NAME }}:latest
+          docker stop ${{ secrets.DEV_DOCKER_IMAGE_NAME }} || true
+          docker rm ${{ secrets.DEV_DOCKER_IMAGE_NAME }} || true
+          docker run -d --name ${{ secrets.DEV_DOCKER_IMAGE_NAME }} -p 3002:80 ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DEV_DOCKER_IMAGE_NAME }}:latest \
+          -e ConnectionStrings__DefaultConnection=${{ secrets.DEV_CONNECTION_STRINGS_DEFAULT_CONNECTION }} \
+          -e Osu__ApiKey=${{ secrets.OSU_API_KEY_V1 }} \
+          -e Osu__ClientId=${{ secrets.OSU_CLIENT_ID }} \
+          -e Osu__ClientSecret=${{ secrets.OSU_CLIENT_SECRET }} \
+          -e Jwt__Key=${{ secrets.DEV_JWT_KEY }} \
+          -e Jwt__Issuer=${{ secrets.DEV_JWT_ISSUER }} \
+          -e Auth__WebLoginAuthSecret=${{ secrets.DEV_AUTH_WEB_LOGIN_AUTH_SECRET }} \
+          -e Auth__PrivilegedClientSecret=${{ secrets.DEV_AUTH_PRIVILEGED_CLIENT_SECRET }} \
+          -e Auth__ClientCallbackUrl=${{ secrets.DEV_AUTH_CLIENT_CALLBACK_URL }}
