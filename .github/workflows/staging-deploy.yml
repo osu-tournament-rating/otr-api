@@ -58,7 +58,6 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         script: |
           # Your deployment script here, e.g.:
-          cd ~/otr-deploy/staging
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DEV_DOCKER_IMAGE_NAME }}:latest
           docker stop ${{ secrets.DEV_DOCKER_IMAGE_NAME }} || true
           docker rm ${{ secrets.DEV_DOCKER_IMAGE_NAME }} || true
