@@ -57,18 +57,17 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_KEY }}
         script: |
-          # Your deployment script here, e.g.:
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DEV_DOCKER_IMAGE_NAME }}:latest
-          docker stop ${{ secrets.DEV_DOCKER_IMAGE_NAME }} || true
-          docker rm ${{ secrets.DEV_DOCKER_IMAGE_NAME }} || true
-          docker run -d --name ${{ secrets.DEV_DOCKER_IMAGE_NAME }} -p 3002:80 \
-          -e ConnectionStrings__DefaultConnection=${{ secrets.DEV_CONNECTION_STRINGS_DEFAULT_CONNECTION }} \
-          -e Osu__ApiKey=${{ secrets.OSU_API_KEY_V1 }} \
-          -e Osu__ClientId=${{ secrets.OSU_CLIENT_ID }} \
-          -e Osu__ClientSecret=${{ secrets.OSU_CLIENT_SECRET }} \
-          -e Jwt__Key=${{ secrets.DEV_JWT_KEY }} \
-          -e Jwt__Issuer=${{ secrets.DEV_JWT_ISSUER }} \
-          -e Auth__WebLoginAuthSecret=${{ secrets.DEV_AUTH_WEB_LOGIN_AUTH_SECRET }} \
-          -e Auth__PrivilegedClientSecret=${{ secrets.DEV_AUTH_PRIVILEGED_CLIENT_SECRET }} \
-          -e Auth__ClientCallbackUrl=${{ secrets.DEV_AUTH_CLIENT_CALLBACK_URL }} \
-          ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DEV_DOCKER_IMAGE_NAME }}:latest
+          docker pull '${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DEV_DOCKER_IMAGE_NAME }}:latest'
+          docker stop '${{ secrets.DEV_DOCKER_IMAGE_NAME }}' || true
+          docker rm '${{ secrets.DEV_DOCKER_IMAGE_NAME }}' || true
+          docker run -d --name '${{ secrets.DEV_DOCKER_IMAGE_NAME }}' -p 3002:80 \
+          -e 'ConnectionStrings__DefaultConnection=${{ secrets.DEV_CONNECTION_STRINGS_DEFAULT_CONNECTION }}' \
+          -e 'Osu__ApiKey=${{ secrets.OSU_API_KEY_V1 }}' \
+          -e 'Osu__ClientId=${{ secrets.OSU_CLIENT_ID }}' \
+          -e 'Osu__ClientSecret=${{ secrets.OSU_CLIENT_SECRET }}' \
+          -e 'Jwt__Key=${{ secrets.DEV_JWT_KEY }}' \
+          -e 'Jwt__Issuer=${{ secrets.DEV_JWT_ISSUER }}' \
+          -e 'Auth__WebLoginAuthSecret=${{ secrets.DEV_AUTH_WEB_LOGIN_AUTH_SECRET }}' \
+          -e 'Auth__PrivilegedClientSecret=${{ secrets.DEV_AUTH_PRIVILEGED_CLIENT_SECRET }}' \
+          -e 'Auth__ClientCallbackUrl=${{ secrets.DEV_AUTH_CLIENT_CALLBACK_URL }}' \
+          '${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DEV_DOCKER_IMAGE_NAME }}:latest'
