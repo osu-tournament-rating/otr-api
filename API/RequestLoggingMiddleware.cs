@@ -18,44 +18,69 @@ public class RequestLoggingMiddleware
 		await LogRequest(context.Request);
 
 		var originalBodyStream = context.Response.Body;
-		
-		using (var responseBody = new MemoryStream())
-		{
-			context.Response.Body = responseBody;
-			
-			await _next(context);
-			await LogResponse(context.Response);
 
-			await responseBody.CopyToAsync(originalBodyStream);
+		try
+		{
+			using (var responseBody = new MemoryStream())
+			{
+				context.Response.Body = responseBody;
+
+				await _next(context);
+
+				await LogResponse(context.Response);
+
+				// Reset the position to the beginning of the stream before copying.
+				responseBody.Position = 0;
+
+				await responseBody.CopyToAsync(originalBodyStream);
+			}
+		}
+		finally
+		{
+			// Ensure the Response.Body is set back to the original stream in case of an error.
+			context.Response.Body = originalBodyStream;
 		}
 	}
 
 	private async Task LogRequest(HttpRequest request)
 	{
-		var body = request.Body;
-
-		//This line allows us to set the reader for the request back at the beginning of its stream.
 		request.EnableBuffering();
-
-		//We now need to read the request stream.  First, we create a new byte[] with the same length as the request stream...
-		var buffer = new byte[Convert.ToInt32(request.ContentLength)];
-
-		//...Then we copy the entire request stream into the new buffer.
-		await request.Body.ReadAsync(buffer, 0, buffer.Length);
-
-		//We convert the byte[] into a string using UTF8 encoding...
-		var bodyAsText = Encoding.UTF8.GetString(buffer);
-
-		//..and finally, assign the read body back to the request body, which is allowed because of EnableRewind()
-		request.Body = body;
-		
-		if(bodyAsText.Length > 500)
+    
+		var body = request.Body;
+		try
 		{
-			bodyAsText = bodyAsText[..500] + "...";
+			// Create a new memory stream.
+			var memStream = new MemoryStream();
+			await body.CopyToAsync(memStream);
+        
+			// Reset the position of the memory stream to be read from the beginning.
+			memStream.Position = 0;
+        
+			// Read from the memory stream and convert to string for logging.
+			var buffer = new byte[memStream.Length];
+			await memStream.ReadAsync(buffer, 0, buffer.Length);
+			var bodyAsText = Encoding.UTF8.GetString(buffer);
+        
+			if (bodyAsText.Length > 500)
+			{
+				bodyAsText = bodyAsText[..500] + "...";
+			}
+        
+			_logger.LogInformation("User with claims {@Claims} on scheme {Scheme} requests {Method} {Host}{Path}{QueryString} with body '{Body}'",
+				request.HttpContext.User.Claims, request.Scheme, request.Method, request.Host, request.Path, request.QueryString, bodyAsText);
+        
+			// Reset the memory stream position again before assigning it back to the request body to be read by subsequent middlewares.
+			memStream.Position = 0;
+			request.Body = memStream;
 		}
-
-		_logger.LogInformation("User with claims {@Claims} on scheme {Scheme} requests {Method} {Host}{Path}{QueryString} with body '{Body}'",
-			request.HttpContext.User.Claims, request.Scheme, request.Method, request.Host, request.Path, request.QueryString, bodyAsText);
+		finally
+		{
+			// If there is any exception, make sure the original inaccessible body is still assigned back to the request.
+			if (request.Body != body)
+			{
+				body.Dispose();
+			}
+		}
 	}
 	
 	private async Task LogResponse(HttpResponse response)
