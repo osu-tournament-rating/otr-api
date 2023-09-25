@@ -48,6 +48,11 @@ public class RequestLoggingMiddleware
 
 		//..and finally, assign the read body back to the request body, which is allowed because of EnableRewind()
 		request.Body = body;
+		
+		if(bodyAsText.Length > 500)
+		{
+			bodyAsText = bodyAsText[..500] + "...";
+		}
 
 		_logger.LogInformation("User with claims {@Claims} on scheme {Scheme} requests {Method} {Host}{Path}{QueryString} with body '{Body}'",
 			request.HttpContext.User.Claims, request.Scheme, request.Method, request.Host, request.Path, request.QueryString, bodyAsText);
