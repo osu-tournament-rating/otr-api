@@ -26,11 +26,11 @@ public class LeaderboardService : ILeaderboardService
 		{
 			var osuId = await _playerService.GetOsuIdByIdAsync(rating.PlayerId);
 			var player = await _playerService.GetPlayerByOsuIdAsync(osuId, false, mode);
-			var matchesPlayed = await _matchesService.CountMatchesPlayedAsync(rating.PlayerId, mode, fromTime);
-			var winRate = await _matchesService.GetWinRateAsync(rating.Player.OsuId, mode, fromTime);
+			var matchesPlayed = await _matchesService.CountMatchesPlayedAsync(osuId, mode, fromTime);
+			var winRate = await _matchesService.GetWinRateAsync(osuId, mode, fromTime);
 			leaderboard.Add(new Unmapped_LeaderboardDTO
 			{
-				GlobalRank = await _ratingsService.GetGlobalRankAsync(player.OsuId, mode),
+				GlobalRank = await _ratingsService.GetGlobalRankAsync(osuId, mode),
 				Name = player.Username,
 				Tier = RatingUtils.GetRankingClassName((int)rating.Mu),
 				Rating = (int)rating.Mu,

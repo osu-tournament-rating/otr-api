@@ -419,13 +419,13 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	public async Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime)
 	{
 		return await _context.MatchScores
-		              .WhereVerified()
-		              .WherePlayer(osuPlayerId)
-		              .WhereMode(mode)
-		              .After(fromTime)
-		              .Select(x => x.Game.Match)
-		              .Distinct()
-		              .CountAsync();
+		                     .WhereVerified()
+		                     .WherePlayer(osuPlayerId)
+		                     .WhereMode(mode)
+		                     .After(fromTime)
+		                     .Include(x => x.Game)
+		                     .GroupBy(x => x.Game.MatchId)
+		                     .CountAsync();
 	}
 
 	public async Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime)
