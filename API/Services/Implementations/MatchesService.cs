@@ -323,7 +323,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		                            .Include(x => x.Games)
 		                            .ThenInclude(x => x.MatchScores)
 		                            .ThenInclude(x => x.Player)
-		                            .Where(x => x.Games.Any(y => y.PlayMode == mode && y.MatchScores.Any(z => z.Player.OsuId == osuPlayerId))).ToListAsync();
+		                            .Where(x => x.Games.Any(y => y.PlayMode == mode && y.MatchScores.Any(z => z.Player.OsuId == osuPlayerId)))
+		                            .ToListAsync();
 		
 		foreach (var match in matches)
 		{
@@ -347,6 +348,12 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 				{
 					if (game.MatchScores.Count == 2)
 					{
+						// Assuming this is a 1v1...
+						if(!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
+						{
+							continue;
+						}
+						
 						long playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Score;
 						long opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Score;
 
@@ -407,6 +414,31 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 			                                ForumPost = x.First().Forum
 		                                })
 		                                .ToListAsync();
+	}
+
+	public async Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime)
+	{
+		return await _context.MatchScores
+		              .WhereVerified()
+		              .WherePlayer(osuPlayerId)
+		              .WhereMode(mode)
+		              .After(fromTime)
+		              .Select(x => x.Game.Match)
+		              .Distinct()
+		              .CountAsync();
+	}
+
+	public async Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime)
+	{
+		int played = await CountMatchesPlayedAsync(osuPlayerId, mode, fromTime);
+		int won = await CountMatchWinsAsync(osuPlayerId, mode, fromTime);
+		
+		if (played == 0)
+		{
+			return 0;
+		}
+		
+		return (double)won / played;
 	}
 
 	/// <summary>

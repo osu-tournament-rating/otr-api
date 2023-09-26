@@ -101,6 +101,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IMatchScoresService, MatchScoresService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
+builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 
 builder.Services.AddOsuSharp(options =>
 {

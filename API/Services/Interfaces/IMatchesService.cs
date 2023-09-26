@@ -22,4 +22,6 @@ public interface IMatchesService : IService<Entities.Match>
 	Task<Unmapped_PlayerMatchesDTO> GetPlayerMatchesAsync(long osuId, DateTime fromTime);
 	Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime);
 	Task<IEnumerable<Unmapped_VerifiedTournamentDTO>> GetAllVerifiedTournamentsAsync();
+	Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime);
+	Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime);
 }

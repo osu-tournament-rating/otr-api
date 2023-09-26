@@ -178,14 +178,7 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 
 			stats.Percentile = 100 * (1 - (stats.GlobalRank / (double)totalRatings));
 
-			stats.MatchesPlayed = await _context.MatchScores
-			                                    .WhereVerified()
-			                                    .WherePlayer(osuId)
-			                                    .WhereMode(modeInt)
-			                                    .After(time)
-			                                    .Select(x => x.Game.Match)
-			                                    .Distinct()
-			                                    .CountAsync();
+			stats.MatchesPlayed = await matchesService.CountMatchesPlayedAsync(osuId, modeInt, time);
 
 			stats.GamesPlayed = await _context.MatchScores
 			                                  .WhereVerified()

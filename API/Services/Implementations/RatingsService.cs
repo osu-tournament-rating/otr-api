@@ -268,8 +268,13 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 		return ratingCurrent > ratingPrevious;
 	}
 
-	public Task<IEnumerable<Unmapped_LeaderboardDTO>> GetLeaderboardAsync(int mode, int page, int pageSize)
+	public async Task<IEnumerable<Rating>> GetTopRatingsAsync(int page, int pageSize, int mode)
 	{
-		throw new NotImplementedException();
+		return await _context.Ratings
+		                   .WhereMode(mode)
+		                   .OrderByMuDescending()
+		                   .Skip(page * pageSize)
+		                   .Take(pageSize)
+		                   .ToListAsync();
 	}
 }
