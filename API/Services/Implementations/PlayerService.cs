@@ -170,15 +170,7 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 
 			stats.CountryRank = countryIndex + 1;
 
-			int globalIndex = _context.Ratings
-			                          .WhereMode(modeInt)
-			                          .OrderByMuDescending()
-			                          .Select(x => x.PlayerId) // Only select the PlayerId, instead of the whole entity
-			                          .AsEnumerable()          // Transfer the execution to client-side after this point
-			                          .TakeWhile(x => x != player.Id)
-			                          .Count();
-
-			stats.GlobalRank = globalIndex + 1;
+			stats.GlobalRank = await ratingsService.GetGlobalRankAsync(osuId, modeInt);
 
 			int totalRatings = await _context.Ratings
 			                                 .WhereMode(modeInt)

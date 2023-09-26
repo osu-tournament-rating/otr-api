@@ -90,6 +90,19 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 	public async Task<IEnumerable<RatingDTO>> GetAllAsync() => _mapper.Map<IEnumerable<RatingDTO>>(await _context.Ratings.ToListAsync());
 	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE ratings RESTART IDENTITY;");
 
+	public async Task<int> GetGlobalRankAsync(long osuPlayerId, int mode)
+	{
+		int globalIndex = (await _context.Ratings
+		                          .WhereMode(mode)
+		                          .OrderByMuDescending()
+		                          .Select(x => x.Player.OsuId)
+		                          .ToListAsync())
+		                          .TakeWhile(x => x != osuPlayerId)
+		                          .Count();
+
+		return globalIndex + 1;
+	}
+
 	public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
 	{
 		double averageRating = await _context.MatchScores
