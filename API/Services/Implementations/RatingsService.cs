@@ -267,4 +267,9 @@ public class RatingsService : ServiceBase<Rating>, IRatingsService
 
 		return ratingCurrent > ratingPrevious;
 	}
+
+	public Task<IEnumerable<Unmapped_LeaderboardDTO>> GetLeaderboardAsync(int mode, int page, int pageSize)
+	{
+		throw new NotImplementedException();
+	}
 }

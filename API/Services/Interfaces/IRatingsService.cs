@@ -36,4 +36,5 @@ public interface IRatingsService : IService<Rating>
 	/// <param name="time"></param>
 	/// <returns>True for upwards trend, false for downwards</returns>
 	Task<bool> IsRatingPositiveTrendAsync(long osuId, int modeInt, DateTime time);
+	Task<IEnumerable<Unmapped_LeaderboardDTO>> GetLeaderboardAsync(int mode, int page, int pageSize);
 }
