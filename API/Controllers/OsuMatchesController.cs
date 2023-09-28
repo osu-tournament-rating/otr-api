@@ -15,6 +15,7 @@ public class BatchWrapper
 	public string ForumPost { get; set; } = null!;
 	public int RankRangeLowerBound { get; set; }
 	public int TeamSize { get; set; }
+	public int Mode { get; set; }
 	public int SubmitterId { get; set; }
 	public IEnumerable<long> Ids { get; set; } = new List<long>();
 }
@@ -80,6 +81,7 @@ public class OsuMatchesController : Controller
 				verifiedMatch.SubmitterUserId = wrapper.SubmitterId;
 				verifiedMatch.RankRangeLowerBound = wrapper.RankRangeLowerBound;
 				verifiedMatch.TeamSize = wrapper.TeamSize;
+				verifiedMatch.Mode = wrapper.Mode;
 				verifiedMatch.Updated = DateTime.UtcNow;
 				await _service.UpdateAsync(verifiedMatch);
 				_logger.LogInformation("Updated {@Match}", verifiedMatch);
@@ -104,7 +106,8 @@ public class OsuMatchesController : Controller
 			Forum = wrapper.ForumPost,
 			SubmitterUserId = wrapper.SubmitterId,
 			RankRangeLowerBound = wrapper.RankRangeLowerBound,
-			TeamSize = wrapper.TeamSize
+			TeamSize = wrapper.TeamSize,
+			Mode = wrapper.Mode
 		});
 
 		int? result = await _service.InsertFromIdBatchAsync(matches);
