@@ -35,7 +35,8 @@ public class LeaderboardService : ILeaderboardService
 				Tier = RatingUtils.GetRankingClassName((int)rating.Mu),
 				Rating = (int)rating.Mu,
 				MatchesPlayed = matchesPlayed,
-				WinRate = winRate
+				WinRate = winRate,
+				OsuId = osuId
 			});
 		}
 
