@@ -4,6 +4,7 @@ using API.Enums;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 
 // ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;
@@ -21,7 +22,7 @@ public class BatchWrapper
 }
 
 [ApiController]
-[Authorize(Roles = "Admin, System")]
+[Authorize]
 [Route("api/[controller]")]
 public class OsuMatchesController : Controller
 {
@@ -42,6 +43,7 @@ public class OsuMatchesController : Controller
 	}
 
 	[HttpPost("force-update")]
+	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult> ForceUpdateAsync([FromBody] long id) =>
 		Ok(await _service.UpdateVerificationStatusAsync(id, MatchVerificationStatus.PendingVerification, MatchVerificationSource.Admin));
 
@@ -126,6 +128,7 @@ public class OsuMatchesController : Controller
 	}
 
 	[HttpGet("all")]
+	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<IEnumerable<Match>?>> GetAllAsync()
 	{
 		var matches = (await _service.GetAllAsync(true)).ToList();
@@ -133,6 +136,7 @@ public class OsuMatchesController : Controller
 	}
 
 	[HttpGet("{osuMatchId:long}")]
+	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
 	{
 		var match = await _service.GetByOsuMatchIdAsync(osuMatchId);
@@ -146,9 +150,11 @@ public class OsuMatchesController : Controller
 	}
 
 	[HttpGet("player/{osuId:long}")]
+	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<IEnumerable<Unmapped_PlayerMatchesDTO>>> GetMatchesAsync(long osuId) => Ok(await _service.GetPlayerMatchesAsync(osuId, DateTime.MinValue));
 
 	[HttpGet("{id:int}/osuid")]
+	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
 	{
 		var match = await _service.GetAsync(id);
