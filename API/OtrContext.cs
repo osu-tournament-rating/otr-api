@@ -110,6 +110,8 @@ public partial class OtrContext : DbContext
 			entity.HasKey(e => e.Id).HasName("match_scores_pk");
 			entity.Property(e => e.Id).UseIdentityColumn();
 
+			entity.Property(e => e.IsValid).HasDefaultValue(true);
+
 			entity.HasOne(d => d.Game)
 			      .WithMany(p => p.MatchScores)
 			      .OnDelete(DeleteBehavior.ClientSetNull)

@@ -1,5 +1,6 @@
 ﻿using API.Osu;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -41,7 +42,7 @@ public class MatchScore
 	[Column("player_id")]
 	public int PlayerId { get; set; }
 	[Column("is_valid")]
-	public bool IsValid { get; set; } = true;
+	public bool? IsValid { get; set; }
 	[InverseProperty("MatchScores")]
 	public virtual Game Game { get; set; } = null!;
 	[ForeignKey("PlayerId")]
