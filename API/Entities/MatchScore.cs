@@ -40,6 +40,8 @@ public class MatchScore
 	public int CountGeki { get; set; }
 	[Column("player_id")]
 	public int PlayerId { get; set; }
+	[Column("is_valid")]
+	public bool IsValid { get; set; } = true;
 	[InverseProperty("MatchScores")]
 	public virtual Game Game { get; set; } = null!;
 	[ForeignKey("PlayerId")]
