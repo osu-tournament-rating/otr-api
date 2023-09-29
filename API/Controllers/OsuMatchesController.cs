@@ -71,6 +71,12 @@ public class OsuMatchesController : Controller
 		// If we are verifying a match that already exists, we need to update the verification status
 		if (verified)
 		{
+			// Check authorization
+			if (!User.IsInRole("Admin"))
+			{
+				return Unauthorized("You are not authorized to verify matches");
+			}
+			
 			foreach (var verifiedMatch in existingMatches)
 			{
 				verifiedMatch.VerificationStatus = (int)MatchVerificationStatus.Verified;
