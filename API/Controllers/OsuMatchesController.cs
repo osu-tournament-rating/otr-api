@@ -131,7 +131,7 @@ public class OsuMatchesController : Controller
 	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<IEnumerable<Match>?>> GetAllAsync()
 	{
-		var matches = (await _service.GetAllAsync(true)).ToList();
+		var matches = await _service.GetAllAsync(true);
 		return Ok(matches);
 	}
 

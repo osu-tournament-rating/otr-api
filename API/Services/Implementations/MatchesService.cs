@@ -37,6 +37,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		                    .ThenInclude(g => g.MatchScores)
 		                    .Include(m => m.Games)
 		                    .ThenInclude(g => g.Beatmap)
+		                    .OrderBy(m => m.StartTime)
 		                    .AsQueryable();
 
 		if (onlyIncludeFiltered)
