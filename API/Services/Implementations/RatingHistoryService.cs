@@ -26,7 +26,9 @@ public class RatingHistoryService : ServiceBase<RatingHistory>, IRatingHistorySe
 		                                                                .Include(x => x.Match)
 		                                                                .WherePlayer(osuPlayerId)
 		                                                                .WhereMode(mode)
-		                                                                .After(fromTime).ToListAsync());
+		                                                                .After(fromTime)
+		                                                                .OrderBy(x => x.Created)
+		                                                                .ToListAsync());
 	}
 
 	public async Task<IEnumerable<RatingHistoryDTO>> GetForPlayerAsync(long osuPlayerId)
