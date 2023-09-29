@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace API.Osu;
@@ -11,9 +12,12 @@ public static class LobbyNameChecker
 		@"^[\w\s\.""'-]+:(\s*.+\|)?\s*.*\s+vs\.?\s+.*$"
 	};
 
-	public static bool IsNameValid(string name)
+	public static bool IsNameValid(string name, string abbreviation)
 	{
+		var abbreviationLobbyTitlePrefix = new StringBuilder(abbreviation)
+		         .Append(':')
+		         .ToString();
 		// We don't want a name where there is a space immediately before the colon
-		return !name.Contains(" :") && patterns.Any(pattern => Regex.IsMatch(name, pattern, RegexOptions.IgnoreCase));
+		return name.StartsWith(abbreviationLobbyTitlePrefix) && patterns.Any(pattern => Regex.IsMatch(name, pattern, RegexOptions.IgnoreCase));
 	}
 }

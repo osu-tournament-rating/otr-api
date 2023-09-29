@@ -88,6 +88,8 @@ public class OsuMatchDataWorker : BackgroundService
 		await ProcessBeatmapsAsync(osuMatch, beatmapService);
 		await matchesService.CreateFromApiMatchAsync(osuMatch);
 
+		string? abbreviation = await matchesService.GetMatchAbbreviationAsync(osuMatch.Match.MatchId);
+
 		MatchVerificationStatus verificationStatus;
 		if (verified)
 		{
@@ -95,7 +97,7 @@ public class OsuMatchDataWorker : BackgroundService
 		}
 		else
 		{
-			if (!LobbyNameChecker.IsNameValid(osuMatch.Match.Name))
+			if (!LobbyNameChecker.IsNameValid(osuMatch.Match.Name, abbreviation ?? string.Empty))
 			{
 				verificationStatus = MatchVerificationStatus.Rejected;
 			}

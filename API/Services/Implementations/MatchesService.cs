@@ -441,6 +441,11 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		return (double)won / played;
 	}
 
+	public async Task<string?> GetMatchAbbreviationAsync(long osuMatchId)
+	{
+		return await _context.Matches.Where(x => x.MatchId == osuMatchId).Select(x => x.Abbreviation).FirstOrDefaultAsync();
+	}
+
 	/// <summary>
 	///  Calculates the effective "post-mod SR" of a given game.
 	///  This is used by the rating algorithm specifically.
