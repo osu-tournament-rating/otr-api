@@ -1,4 +1,5 @@
-﻿using API.Osu;
+﻿using API.Enums;
+using API.Osu;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -30,6 +31,10 @@ public class Game
 	public double PostModSr { get; set; }
 	[Column("game_id")]
 	public long GameId { get; set; }
+	[Column("verification_status")]
+	public int? VerificationStatus { get; set; }
+	[Column("rejection_reason")]
+	public int? RejectionReason { get; set; }
 	[Column("created", TypeName = "timestamp with time zone")]
 	public DateTime Created { get; set; }
 	[Column("start_time", TypeName = "timestamp with time zone")]
@@ -54,4 +59,8 @@ public class Game
 	public OsuEnums.ScoringType ScoringTypeEnum => (OsuEnums.ScoringType)ScoringType;
 	[NotMapped]
 	public OsuEnums.TeamType TeamTypeEnum => (OsuEnums.TeamType)TeamType;
+	[NotMapped]
+	public GameVerificationStatus? VerificationStatusEnum => VerificationStatus.HasValue ? (GameVerificationStatus)VerificationStatus : null;
+	[NotMapped]
+	public GameRejectionReason? RejectionReasonEnum => RejectionReason.HasValue ? (GameRejectionReason)RejectionReason : null;
 }
