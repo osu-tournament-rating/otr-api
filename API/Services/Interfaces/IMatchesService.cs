@@ -8,7 +8,7 @@ public interface IMatchesService : IService<Entities.Match>
 {
 	Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered);
 	Task<MatchDTO?> GetByOsuMatchIdAsync(long osuMatchId);
-	Task<Entities.Match?> GetFirstPendingUnpopulatedVerifiedOrDefaultAsync();
+	Task<Entities.Match?> GetFirstUnprocessedOrIncompleteMatchAsync();
 	Task<IEnumerable<Entities.Match>> CheckExistingAsync(IEnumerable<long> matchIds);
 
 	/// <summary>

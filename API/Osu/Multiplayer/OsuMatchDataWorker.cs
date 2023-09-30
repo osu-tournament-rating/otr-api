@@ -36,7 +36,7 @@ public class OsuMatchDataWorker : BackgroundService
 				var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
 				var beatmapsService = scope.ServiceProvider.GetRequiredService<IBeatmapService>();
 
-				var osuMatch = await matchesService.GetFirstPendingUnpopulatedVerifiedOrDefaultAsync();
+				var osuMatch = await matchesService.GetFirstUnprocessedOrIncompleteMatchAsync();
 				if (osuMatch == null)
 				{
 					await Task.Delay(INTERVAL_SECONDS * 1000, cancellationToken);
