@@ -18,6 +18,22 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	private readonly ILogger<MatchesService> _logger;
 	private readonly IMapper _mapper;
 	private readonly IPlayerService _playerService;
+	
+	private readonly OsuEnums.Mods[] _allowedMods =
+	{
+		OsuEnums.Mods.None,
+		OsuEnums.Mods.NoFail,
+		OsuEnums.Mods.Easy,
+		OsuEnums.Mods.Hidden,
+		OsuEnums.Mods.HardRock,
+		OsuEnums.Mods.DoubleTime,
+		OsuEnums.Mods.Nightcore,
+		OsuEnums.Mods.Flashlight,
+		OsuEnums.Mods.HalfTime,
+		OsuEnums.Mods.Mirror,
+		OsuEnums.Mods.FadeIn,
+		OsuEnums.Mods.ScoreV2
+	};
 
 	public MatchesService(ILogger<MatchesService> logger, IPlayerService playerService,
 		IBeatmapService beatmapService, IMapper mapper, OtrContext context, IGameSrCalculator gameSrCalculator) : base(logger, context)
@@ -101,7 +117,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	                                                                                                           .ThenInclude(x => x.MatchScores)
 	                                                                                                           .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
 
-	public async Task<Entities.Match?> GetFirstPendingUnpopulatedVerifiedOrDefaultAsync() => await _context.Matches.FirstOrDefaultAsync(x =>
+	public async Task<Entities.Match?> GetFirstUnprocessedOrIncompleteMatchAsync() => await _context.Matches.FirstOrDefaultAsync(x =>
 		x.VerificationStatus == (int)MatchVerificationStatus.PendingVerification || (x.VerificationStatus == (int)MatchVerificationStatus.Verified && x.Name == null));
 
 	public async Task<IEnumerable<Entities.Match>> CheckExistingAsync(IEnumerable<long> matchIds) =>
@@ -116,21 +132,6 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	public async Task<bool> CreateFromApiMatchAsync(OsuApiMatchData osuMatch)
 	{
 		_logger.LogInformation("Processing match {MatchId}", osuMatch.Match.MatchId);
-		OsuEnums.Mods[] allowedMods =
-		{
-			OsuEnums.Mods.None,
-			OsuEnums.Mods.NoFail,
-			OsuEnums.Mods.Easy,
-			OsuEnums.Mods.Hidden,
-			OsuEnums.Mods.HardRock,
-			OsuEnums.Mods.DoubleTime,
-			OsuEnums.Mods.Nightcore,
-			OsuEnums.Mods.Flashlight,
-			OsuEnums.Mods.HalfTime,
-			OsuEnums.Mods.Mirror,
-			OsuEnums.Mods.FadeIn,
-			OsuEnums.Mods.ScoreV2
-		};
 		try
 		{
 			// Step 1.
@@ -234,7 +235,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 						gameRejectionReason = GameRejectionReason.TeamSizeMismatch;
 					}
 					// Ensure the game and all of its scores have mods that are allowed in the whitelist
-					else if (!allowedMods.Contains(game.Mods) || !game.Scores.Any(x => x.EnabledMods.HasValue && allowedMods.Contains(x.EnabledMods.Value)))
+					else if (!_allowedMods.Contains(game.Mods) || !game.Scores.Any(x => x.EnabledMods.HasValue && _allowedMods.Contains(x.EnabledMods.Value)))
 					{
 						gameRejectionReason = GameRejectionReason.BadMods;
 					}
