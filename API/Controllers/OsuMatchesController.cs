@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Entities;
 using API.Enums;
 using API.Services.Interfaces;
+using API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
@@ -74,15 +75,22 @@ public class OsuMatchesController : Controller
 		if (verified)
 		{
 			// Check authorization
-			if (!User.IsInRole("Admin"))
+			if (!User.IsInRole("MatchVerifier"))
 			{
 				return Unauthorized("You are not authorized to verify matches");
+			}
+
+			int verifier = (int)MatchVerificationSource.MatchVerifier;
+
+			if (User.IsInRole("Admin"))
+			{
+				verifier = (int)MatchVerificationSource.Admin;
 			}
 			
 			foreach (var verifiedMatch in existingMatches)
 			{
 				verifiedMatch.VerificationStatus = (int)MatchVerificationStatus.Verified;
-				verifiedMatch.VerificationSource = (int)MatchVerificationSource.Admin;
+				verifiedMatch.VerificationSource = verifier;
 				verifiedMatch.TournamentName = wrapper.TournamentName;
 				verifiedMatch.Abbreviation = wrapper.Abbreviation;
 				verifiedMatch.Forum = wrapper.ForumPost;

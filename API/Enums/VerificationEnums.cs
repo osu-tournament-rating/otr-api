@@ -3,7 +3,11 @@ namespace API.Enums;
 public enum MatchVerificationSource
 {
 	System,
-	Admin
+	Admin,
+	/// <summary>
+	/// Someone who has the ability to verify matches
+	/// </summary>
+	MatchVerifier
 }
 
 /// <summary>
