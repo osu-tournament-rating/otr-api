@@ -323,6 +323,12 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 				foreach (var score in game.Scores)
 				{
+					if (score.PlayerScore == 0)
+					{
+						// We shouldn't have any here because we remove them above, but just in case.
+						continue;
+					}
+					
 					var existingMatchScore = await _context.MatchScores.FirstOrDefaultAsync(s => s.PlayerId == playerIdMapping[score.UserId] && s.GameId == dbGame.Id);
 					if (existingMatchScore == null)
 					{
