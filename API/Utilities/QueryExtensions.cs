@@ -43,7 +43,7 @@ public static class QueryExtensions
 	/// <param name="query"></param>
 	/// <returns></returns>
 	public static IQueryable<MatchScore> WhereVerified(this IQueryable<MatchScore> query) =>
-		query.AsQueryable().Where(x => x.Game.Match.VerificationStatus == (int)MatchVerificationStatus.Verified);
+		query.AsQueryable().Where(x => (!x.IsValid.HasValue || x.IsValid.Value == true) && x.Game.Match.VerificationStatus == (int)MatchVerificationStatus.Verified);
 
 	/// <summary>
 	///  Selects all HeadToHead scores
