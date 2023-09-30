@@ -18,6 +18,22 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	private readonly ILogger<MatchesService> _logger;
 	private readonly IMapper _mapper;
 	private readonly IPlayerService _playerService;
+	
+	private readonly OsuEnums.Mods[] _allowedMods =
+	{
+		OsuEnums.Mods.None,
+		OsuEnums.Mods.NoFail,
+		OsuEnums.Mods.Easy,
+		OsuEnums.Mods.Hidden,
+		OsuEnums.Mods.HardRock,
+		OsuEnums.Mods.DoubleTime,
+		OsuEnums.Mods.Nightcore,
+		OsuEnums.Mods.Flashlight,
+		OsuEnums.Mods.HalfTime,
+		OsuEnums.Mods.Mirror,
+		OsuEnums.Mods.FadeIn,
+		OsuEnums.Mods.ScoreV2
+	};
 
 	public MatchesService(ILogger<MatchesService> logger, IPlayerService playerService,
 		IBeatmapService beatmapService, IMapper mapper, OtrContext context, IGameSrCalculator gameSrCalculator) : base(logger, context)
@@ -102,7 +118,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	                                                                                                           .ThenInclude(x => x.MatchScores)
 	                                                                                                           .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
 
-	public async Task<Entities.Match?> GetFirstPendingUnpopulatedVerifiedOrDefaultAsync() => await _context.Matches.FirstOrDefaultAsync(x =>
+	public async Task<Entities.Match?> GetFirstUnprocessedOrIncompleteMatchAsync() => await _context.Matches.FirstOrDefaultAsync(x =>
 		x.VerificationStatus == (int)MatchVerificationStatus.PendingVerification || (x.VerificationStatus == (int)MatchVerificationStatus.Verified && x.Name == null));
 
 	public async Task<IEnumerable<Entities.Match>> CheckExistingAsync(IEnumerable<long> matchIds) =>
@@ -200,8 +216,71 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 				}
 				
 				var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
+
+				// Automation checks for new entries
 				if (existingGame == null)
 				{
+					GameRejectionReason? gameRejectionReason = null;
+					var gameVerificationStatus = existingMatch.VerificationStatusEnum == MatchVerificationStatus.Verified
+						? GameVerificationStatus.Verified
+						: GameVerificationStatus.PreVerified;
+
+					int? expectedTeamSize = existingMatch.TeamSize;
+					int? expectedGameMode = existingMatch.Mode;
+
+					// Remove all scores that are zero, then check team size
+					game.Scores.RemoveAll(x => x.PlayerScore == 0);
+
+					if (expectedTeamSize.HasValue && (game.Scores.Count / 2) != expectedTeamSize.Value)
+					{
+						gameRejectionReason = GameRejectionReason.TeamSizeMismatch;
+					}
+					// Ensure the game and all of its scores have mods that are allowed in the whitelist
+					else if (!_allowedMods.Contains(game.Mods) || !game.Scores.Any(x => x.EnabledMods.HasValue && _allowedMods.Contains(x.EnabledMods.Value)))
+					{
+						gameRejectionReason = GameRejectionReason.BadMods;
+					}
+					// Validate team mode settings
+					else if (expectedTeamSize.HasValue)
+					{
+						if (expectedTeamSize.Value == 1)
+						{
+							// Head to head or teamvs is allowed
+							if (game.TeamType != OsuEnums.TeamType.HeadToHead && game.TeamType != OsuEnums.TeamType.TeamVs)
+							{
+								gameRejectionReason = GameRejectionReason.TeamTypeMismatch;
+							}
+						}
+						else
+						{
+							if (expectedTeamSize <= 0)
+							{
+								_logger.LogError("Match {MatchId} has an invalid expected team size ({TeamSize})!!", existingMatch.MatchId, expectedTeamSize);
+							}
+
+							// Ensure game mode is team vs as we know the expected team size (should be) greater than 1
+							if (game.TeamType != OsuEnums.TeamType.TeamVs)
+							{
+								gameRejectionReason = GameRejectionReason.TeamTypeMismatch;
+							}
+						}
+					}
+					else if (expectedGameMode.HasValue)
+					{
+						int gamePlayMode = (int)game.PlayMode;
+						if (expectedGameMode.Value != gamePlayMode)
+						{
+							gameRejectionReason = GameRejectionReason.GameModeMismatch;
+						}
+					}
+					
+					// If we have a rejection reason, set the game verification status to rejected
+					if (gameRejectionReason != null)
+					{
+						gameVerificationStatus = GameVerificationStatus.Rejected;
+						_logger.LogInformation("Game {GameId} was rejected for reason {Reason}", game.GameId, gameRejectionReason);
+					}
+
 					var dbGame = new Entities.Game
 					{
 						MatchId = existingMatch.Id,
@@ -215,6 +294,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 						TeamType = (int)game.TeamType,
 						Mods = (int)game.Mods,
 						PostModSr = await CalculatePostModSr(game, beatmapIdResult ?? -1, beatmapSrResult ?? -1),
+						VerificationStatus = (int)gameVerificationStatus,
+						RejectionReason = gameRejectionReason.HasValue ? (int?)gameRejectionReason.Value : null
 					};
 
 					_context.Games.Add(dbGame);
@@ -244,6 +325,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 				foreach (var score in game.Scores)
 				{
+					bool isValid = score.PlayerScore != 0;
+
 					var existingMatchScore = await _context.MatchScores.FirstOrDefaultAsync(s => s.PlayerId == playerIdMapping[score.UserId] && s.GameId == dbGame.Id);
 					if (existingMatchScore == null)
 					{
@@ -262,7 +345,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 							CountGeki = score.CountGeki,
 							Perfect = score.Perfect == 1,
 							Pass = score.Pass == 1,
-							EnabledMods = (int?)score.EnabledMods
+							EnabledMods = (int?)score.EnabledMods,
+							IsValid = isValid
 						};
 
 						_context.MatchScores.Add(dbMatchScore);

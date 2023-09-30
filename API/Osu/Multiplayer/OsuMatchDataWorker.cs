@@ -36,7 +36,7 @@ public class OsuMatchDataWorker : BackgroundService
 				var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
 				var beatmapsService = scope.ServiceProvider.GetRequiredService<IBeatmapService>();
 
-				var osuMatch = await matchesService.GetFirstPendingUnpopulatedVerifiedOrDefaultAsync();
+				var osuMatch = await matchesService.GetFirstUnprocessedOrIncompleteMatchAsync();
 				if (osuMatch == null)
 				{
 					await Task.Delay(INTERVAL_SECONDS * 1000, cancellationToken);
@@ -65,9 +65,9 @@ public class OsuMatchDataWorker : BackgroundService
 		}
 	}
 
-	private async Task UpdateLinkStatusAsync(long matchId, MatchVerificationStatus status, IMatchesService matchesService)
+	private async Task UpdateLinkStatusAsync(long matchId, MatchVerificationStatus status, IMatchesService matchesService, string? verificationInfo = null)
 	{
-		await matchesService.UpdateVerificationStatusAsync(matchId, status, MatchVerificationSource.System);
+		await matchesService.UpdateVerificationStatusAsync(matchId, status, MatchVerificationSource.System, verificationInfo);
 	}
 
 	/// <summary>
@@ -90,6 +90,7 @@ public class OsuMatchDataWorker : BackgroundService
 
 		string? abbreviation = await matchesService.GetMatchAbbreviationAsync(osuMatch.Match.MatchId);
 
+		string? verificationInfo = null;
 		MatchVerificationStatus verificationStatus;
 		if (verified)
 		{
@@ -100,6 +101,8 @@ public class OsuMatchDataWorker : BackgroundService
 			if (!LobbyNameChecker.IsNameValid(osuMatch.Match.Name, abbreviation ?? string.Empty))
 			{
 				verificationStatus = MatchVerificationStatus.Rejected;
+				verificationInfo = $"Failed to validate lobby name against regex patterns. " +
+				                   $"Expected result like '{abbreviation}: (Team A) vs. (Team B)' but received '{osuMatch.Match.Name}' instead.";
 			}
 			else
 			{
@@ -107,7 +110,7 @@ public class OsuMatchDataWorker : BackgroundService
 			}
 		}
 
-		await UpdateLinkStatusAsync(osuMatch.Match.MatchId, verificationStatus, matchesService);
+		await UpdateLinkStatusAsync(osuMatch.Match.MatchId, verificationStatus, matchesService, verificationInfo);
 		_logger.LogInformation("Match with id {MatchId} was processed as {Status}", osuMatch.Match.MatchId, verificationStatus);
 	}
 

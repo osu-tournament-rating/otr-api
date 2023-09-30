@@ -80,5 +80,9 @@ public enum GameRejectionReason
 	/// <summary>
 	/// The game was deemed to contain foul play, cheating, or something else that would make it illegitimate for our purposes
 	/// </summary>
-	NotCompetitive = 5
+	NotCompetitive = 5,
+	/// <summary>
+	/// Game had an invalid team type, i.e. expected TeamVs but got something else
+	/// </summary>
+	TeamTypeMismatch = 6
 }
