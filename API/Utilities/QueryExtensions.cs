@@ -15,9 +15,9 @@ public static class QueryExtensions
 
 	// Game
 	public static IQueryable<Game> WhereVerified(this IQueryable<Game> query) =>
-		query.AsQueryable().Where(x => x.Match.VerificationStatus == (int)MatchVerificationStatus.Verified);
+		query.AsQueryable().Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified);
 
-	public static IQueryable<Game> WhereTeamVsTeam(this IQueryable<Game> query) => query.AsQueryable().Where(x => x.TeamType == (int)OsuEnums.TeamType.TeamVs);
+	public static IQueryable<Game> WhereTeamVs(this IQueryable<Game> query) => query.AsQueryable().Where(x => x.TeamType == (int)OsuEnums.TeamType.TeamVs);
 	public static IQueryable<Game> WhereHeadToHead(this IQueryable<Game> query) => query.AsQueryable().Where(x => x.TeamType == (int)OsuEnums.TeamType.HeadToHead);
 	public static IQueryable<Game> After(this IQueryable<Game> query, DateTime after) => query.AsQueryable().Where(x => x.StartTime > after);
 
