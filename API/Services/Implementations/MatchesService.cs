@@ -324,12 +324,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 				foreach (var score in game.Scores)
 				{
-					if (score.PlayerScore == 0)
-					{
-						// We shouldn't have any here because we remove them above, but just in case.
-						continue;
-					}
-					
+					bool isValid = score.PlayerScore != 0;
+
 					var existingMatchScore = await _context.MatchScores.FirstOrDefaultAsync(s => s.PlayerId == playerIdMapping[score.UserId] && s.GameId == dbGame.Id);
 					if (existingMatchScore == null)
 					{
@@ -348,7 +344,8 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 							CountGeki = score.CountGeki,
 							Perfect = score.Perfect == 1,
 							Pass = score.Pass == 1,
-							EnabledMods = (int?)score.EnabledMods
+							EnabledMods = (int?)score.EnabledMods,
+							IsValid = isValid
 						};
 
 						_context.MatchScores.Add(dbMatchScore);
