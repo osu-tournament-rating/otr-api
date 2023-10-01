@@ -19,20 +19,18 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	private readonly IMapper _mapper;
 	private readonly IPlayerService _playerService;
 	
-	private readonly OsuEnums.Mods[] _allowedMods =
+	private readonly OsuEnums.Mods[] _unallowedMods =
 	{
-		OsuEnums.Mods.None,
-		OsuEnums.Mods.NoFail,
-		OsuEnums.Mods.Easy,
-		OsuEnums.Mods.Hidden,
-		OsuEnums.Mods.HardRock,
-		OsuEnums.Mods.DoubleTime,
-		OsuEnums.Mods.Nightcore,
-		OsuEnums.Mods.Flashlight,
-		OsuEnums.Mods.HalfTime,
-		OsuEnums.Mods.Mirror,
-		OsuEnums.Mods.FadeIn,
-		OsuEnums.Mods.ScoreV2
+		OsuEnums.Mods.TouchDevice,
+		OsuEnums.Mods.SuddenDeath,
+		OsuEnums.Mods.Relax,
+		OsuEnums.Mods.Autoplay,
+		OsuEnums.Mods.SpunOut,
+		OsuEnums.Mods.Relax2, // Autopilot
+		OsuEnums.Mods.Perfect,
+		OsuEnums.Mods.Random,
+		OsuEnums.Mods.Cinema,
+		OsuEnums.Mods.Target
 	};
 
 	public MatchesService(ILogger<MatchesService> logger, IPlayerService playerService,
@@ -237,17 +235,19 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					}
 					// Ensure the game and all of its scores have mods that are allowed in the whitelist
 					// Checking game.Mods
-					bool gameContainsBadMods = _allowedMods.All(allowedMod => game.Mods.HasFlag(allowedMod)) != game.Mods.HasFlag(game.Mods);
+					bool gameContainsBadMods = _unallowedMods.Any(unallowedMod => game.Mods.HasFlag(unallowedMod));
 
 					// Checking each game.Scores
 					bool gameScoresHaveBadMods = game.Scores.Any(score => 
 						score.EnabledMods.HasValue &&
-						_allowedMods.All(allowedMod => score.EnabledMods.Value.HasFlag(allowedMod)) != score.EnabledMods.Value.HasFlag(score.EnabledMods.Value)
+						_unallowedMods.Any(unallowedMod => score.EnabledMods.Value.HasFlag(unallowedMod))
 					);
+
 					if (gameContainsBadMods || gameScoresHaveBadMods)
 					{
 						gameRejectionReason = GameRejectionReason.BadMods;
 					}
+
 					// Validate team mode settings
 					else if (expectedTeamSize.HasValue)
 					{
