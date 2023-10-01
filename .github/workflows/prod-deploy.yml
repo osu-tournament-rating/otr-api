@@ -60,7 +60,7 @@ jobs:
           docker pull '${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest'
           docker stop '${{ secrets.DOCKER_IMAGE_NAME }}' || true
           docker rm '${{ secrets.DOCKER_IMAGE_NAME }}' || true
-          docker run -d --name '${{ secrets.DOCKER_IMAGE_NAME }}' -p 3002:80 \
+          docker run -d --name '${{ secrets.DOCKER_IMAGE_NAME }}' -p 3002:80 --restart always \
           -e 'ConnectionStrings__DefaultConnection=${{ secrets.PROD_CONNECTION_STRINGS_DEFAULT_CONNECTION }}' \
           -e 'Osu__ApiKey=${{ secrets.OSU_API_KEY_V1 }}' \
           -e 'Osu__ClientId=${{ secrets.OSU_CLIENT_ID }}' \
