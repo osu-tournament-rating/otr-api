@@ -7,7 +7,7 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin, System")]
+[Authorize]
 public class TournamentsController : Controller
 {
 	private readonly IMatchesService _matchesService;
@@ -15,6 +15,7 @@ public class TournamentsController : Controller
 	public TournamentsController(IMatchesService matchesService) { _matchesService = matchesService; }
 	
 	[HttpGet("verified")]
+	[Authorize(Roles = "MatchVerifier, Admin, System")]
 	public async Task<ActionResult<IEnumerable<Unmapped_VerifiedTournamentDTO>>> GetAllAsync()
 	{
 		return Ok(await _matchesService.GetAllVerifiedTournamentsAsync());
