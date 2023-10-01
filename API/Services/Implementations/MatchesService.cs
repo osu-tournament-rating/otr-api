@@ -236,7 +236,9 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 						gameRejectionReason = GameRejectionReason.TeamSizeMismatch;
 					}
 					// Ensure the game and all of its scores have mods that are allowed in the whitelist
-					else if (!_allowedMods.Contains(game.Mods) || !game.Scores.Any(x => x.EnabledMods.HasValue && _allowedMods.Contains(x.EnabledMods.Value)))
+					bool gameContainsBadMods = !_allowedMods.Contains(game.Mods);
+					bool gameScoresHaveBadMods = game.Scores.Any(x => x.EnabledMods.HasValue && !_allowedMods.Contains(x.EnabledMods.Value));
+					if (gameContainsBadMods || gameScoresHaveBadMods)
 					{
 						gameRejectionReason = GameRejectionReason.BadMods;
 					}
