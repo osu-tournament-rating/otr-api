@@ -237,7 +237,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					}
 					// Ensure the game and all of its scores have mods that are allowed in the whitelist
 					bool gameContainsBadMods = !_allowedMods.Contains(game.Mods);
-					bool gameScoresHaveBadMods = game.Scores.Any(x => x.EnabledMods.HasValue && !_allowedMods.Contains(x.EnabledMods.Value));
+					bool gameScoresHaveBadMods = game.Scores.Any(x => x.EnabledMods.HasValue && !_allowedMods.Any(y => y.HasFlag(x.EnabledMods.Value)));
 					if (gameContainsBadMods || gameScoresHaveBadMods)
 					{
 						gameRejectionReason = GameRejectionReason.BadMods;
