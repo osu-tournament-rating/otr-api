@@ -43,7 +43,7 @@ builder.Services.AddSerilog(configuration =>
 	             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
 	             .Enrich.FromLogContext()
 	             .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-	             .WriteTo.File("logs\\log.log", rollingInterval: RollingInterval.Day)
+	             .WriteTo.File(Path.Join("logs", "log.log"), rollingInterval: RollingInterval.Day)
 	             .WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true);
 });
 
