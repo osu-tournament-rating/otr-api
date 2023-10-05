@@ -1,4 +1,5 @@
 using API.Entities;
+using API.Enums;
 using API.Osu.Multiplayer;
 using API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -9,13 +10,15 @@ public class ApiMatchService : IApiMatchService
 {
 	private readonly OtrContext _context;
 	private readonly IPlayerService _playerService;
+	private readonly IBeatmapService _beatmapService;
 	private readonly ILogger<ApiMatchService> _logger;
 
-	public ApiMatchService(ILogger<ApiMatchService> logger, OtrContext context, IPlayerService playerService)
+	public ApiMatchService(ILogger<ApiMatchService> logger, OtrContext context, IPlayerService playerService, IBeatmapService beatmapService)
 	{
 		_logger = logger;
 		_context = context;
 		_playerService = playerService;
+		_beatmapService = beatmapService;
 	}
 
 	public async Task CreateFromApiMatchAsync(OsuApiMatchData apiMatch)
@@ -23,6 +26,8 @@ public class ApiMatchService : IApiMatchService
 		_logger.LogInformation("Processing match {MatchId}", apiMatch.Match.MatchId);
 
 		await CreatePlayersAsync(apiMatch);
+		await CreateBeatmapsAsync(apiMatch);
+		await CreateMatchAsync(apiMatch);
 	}
 
 	private async Task CreatePlayersAsync(OsuApiMatchData apiMatch)
@@ -75,17 +80,56 @@ public class ApiMatchService : IApiMatchService
 	/// <summary>
 	/// Saves the beatmaps identified in the match to the database.
 	/// </summary>
-	/// <param name="apiMatch"></param>
-	private async Task SaveBeatmapsAsync(OsuApiMatchData apiMatch)
+	private async Task CreateBeatmapsAsync(OsuApiMatchData apiMatch)
 	{
 		var beatmapIds = GetBeatmapIds(apiMatch);
-		
-		// Create them if they don't exist
-		await _context.Beatmaps.AddRangeAsync(beatmapIds.Select(x => new Beatmap { BeatmapId = x }));
+		await _beatmapService.CreateIfNotExistsAsync(beatmapIds);
 	}
 
 	private IEnumerable<long> GetBeatmapIds(OsuApiMatchData apiMatch)
 	{
 		return apiMatch.Games.Select(x => x.BeatmapId);
+	}
+	
+	// Match
+	private async Task CreateMatchAsync(OsuApiMatchData apiMatch)
+	{
+		var existingMatch = await ExistingMatch(apiMatch);
+		
+		if (existingMatch == null || MatchNeedsPopulation(apiMatch, existingMatch))
+		{
+			await CreatePendingMatchAsync(apiMatch);
+			existingMatch = await ExistingMatch(apiMatch);
+		}
+	}
+	
+	private async Task<Entities.Match?> ExistingMatch(OsuApiMatchData apiMatch) => await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == apiMatch.Match.MatchId);
+
+	private bool MatchNeedsPopulation(OsuApiMatchData apiMatch, Entities.Match existingMatch)
+	{
+		if (apiMatch.Match.MatchId != existingMatch.MatchId)
+		{
+			_logger.LogError("Match ID mismatch during processing: {ApiMatchId} vs {ExistingMatchId}", apiMatch.Match.MatchId, existingMatch.MatchId);
+			return false;
+		}
+
+		return existingMatch.Name != apiMatch.Match.Name;
+	}
+
+	private async Task CreatePendingMatchAsync(OsuApiMatchData apiMatch)
+	{
+		var match = new Entities.Match
+		{
+			MatchId = apiMatch.Match.MatchId,
+			Name = apiMatch.Match.Name,
+			StartTime = apiMatch.Match.StartTime,
+			EndTime = apiMatch.Match.EndTime,
+			VerificationStatus = (int) MatchVerificationStatus.PendingVerification
+		};
+
+		await _context.Matches.AddAsync(match);
+		await _context.SaveChangesAsync();
+		
+		_logger.LogInformation("Saved new match: {MatchId} (name: {MatchName})", match.Id, match.Name);
 	}
 }

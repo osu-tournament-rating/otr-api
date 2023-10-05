@@ -97,6 +97,22 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 	public async Task<double> GetEasySrAsync(int beatmapId) => await GetSrForModAsync(beatmapId, OsuEnums.Mods.Easy);
 	public async Task<double> GetHalfTimeSrAsync(int beatmapId) => await GetSrForModAsync(beatmapId, OsuEnums.Mods.HalfTime);
 
+	public async Task CreateIfNotExistsAsync(IEnumerable<long> beatmapIds)
+	{
+		foreach (long id in beatmapIds)
+		{
+			if (!await _context.Beatmaps.AnyAsync(x => x.BeatmapId == id))
+			{
+				await _context.Beatmaps.AddAsync(new Beatmap
+				{
+					BeatmapId = id
+				});
+			}
+		}
+
+		await _context.SaveChangesAsync();
+	}
+
 	private async Task<double> GetSrForModAsync(int beatmapId, OsuEnums.Mods mod)
 	{
 		var existingSr = await _context.BeatmapModSrs.FirstOrDefaultAsync(b => b.BeatmapId == beatmapId && b.Mods == (int)mod);
