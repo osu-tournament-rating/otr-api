@@ -77,7 +77,6 @@ builder.Services.AddLogging();
 
 builder.Services.AddHostedService<OsuPlayerDataWorker>();
 builder.Services.AddHostedService<OsuMatchDataWorker>();
-builder.Services.AddHostedService<OsuBeatmapSrDataWorker>();
 builder.Services.AddHostedService<OsuTrackApiWorker>();
 
 builder.Services.AddDbContext<OtrContext>(o =>
