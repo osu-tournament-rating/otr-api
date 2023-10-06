@@ -75,13 +75,10 @@ builder.Services.AddSingleton(configuration.CreateMapper());
 
 builder.Services.AddLogging();
 
-#if !DEBUG
 builder.Services.AddHostedService<OsuPlayerDataWorker>();
 builder.Services.AddHostedService<OsuMatchDataWorker>();
 builder.Services.AddHostedService<OsuBeatmapSrDataWorker>();
 builder.Services.AddHostedService<OsuTrackApiWorker>();
-#endif
-
 
 builder.Services.AddDbContext<OtrContext>(o =>
 {
