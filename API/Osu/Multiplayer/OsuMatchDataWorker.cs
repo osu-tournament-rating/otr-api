@@ -35,6 +35,7 @@ public class OsuMatchDataWorker : BackgroundService
 			{
 				var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
 				var beatmapsService = scope.ServiceProvider.GetRequiredService<IBeatmapService>();
+				var apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchService>();
 
 				var osuMatch = await matchesService.GetFirstUnprocessedOrIncompleteMatchAsync();
 				if (osuMatch == null)
@@ -53,7 +54,8 @@ public class OsuMatchDataWorker : BackgroundService
 						continue;
 					}
 
-					await ProcessOsuMatch(result, matchesService, beatmapsService, osuMatch.VerificationStatus == (int)MatchVerificationStatus.Verified);
+					bool isVerified = osuMatch.VerificationStatus == (int)MatchVerificationStatus.Verified;
+					await ProcessOsuMatch(result, matchesService, beatmapsService, apiMatchService, isVerified);
 				}
 				catch (Exception e)
 				{
@@ -83,10 +85,10 @@ public class OsuMatchDataWorker : BackgroundService
 	/// <param name="beatmapService"></param>
 	/// <param name="playerService"></param>
 	/// <exception cref="NullReferenceException"></exception>
-	private async Task ProcessOsuMatch(OsuApiMatchData osuMatch, IMatchesService matchesService, IBeatmapService beatmapService, bool verified)
+	private async Task ProcessOsuMatch(OsuApiMatchData osuMatch, IMatchesService matchesService, IBeatmapService beatmapService, IApiMatchService apiMatchService, bool verified)
 	{
 		await ProcessBeatmapsAsync(osuMatch, beatmapService);
-		await matchesService.CreateFromApiMatchAsync(osuMatch);
+		await apiMatchService.CreateFromApiMatchAsync(osuMatch);
 
 		string? abbreviation = await matchesService.GetMatchAbbreviationAsync(osuMatch.Match.MatchId);
 

@@ -17,6 +17,7 @@ public interface IMatchesService : IService<Entities.Match>
 	/// <returns>Number of rows inserted</returns>
 	Task<int> InsertFromIdBatchAsync(IEnumerable<Entities.Match> matches);
 
+	[Obsolete("Use ApiMatchService.CreateFromApiMatchAsync instead", true)]
 	Task<bool> CreateFromApiMatchAsync(OsuApiMatchData osuMatch);
 	Task<int> UpdateVerificationStatusAsync(long matchId, MatchVerificationStatus status, MatchVerificationSource source, string? info = null);
 	Task<Unmapped_PlayerMatchesDTO> GetPlayerMatchesAsync(long osuId, DateTime fromTime);

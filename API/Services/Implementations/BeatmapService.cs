@@ -113,6 +113,16 @@ public class BeatmapService : ServiceBase<Beatmap>, IBeatmapService
 		await _context.SaveChangesAsync();
 	}
 
+	public async Task<int?> GetIdByBeatmapIdAsync(long gameBeatmapId)
+	{
+		if (!await _context.Beatmaps.AnyAsync(x => x.BeatmapId == gameBeatmapId))
+		{
+			return null;
+		}
+		
+		return await _context.Beatmaps.Where(x => x.BeatmapId == gameBeatmapId).Select(x => x.Id).FirstOrDefaultAsync();
+	}
+
 	private async Task<double> GetSrForModAsync(int beatmapId, OsuEnums.Mods mod)
 	{
 		var existingSr = await _context.BeatmapModSrs.FirstOrDefaultAsync(b => b.BeatmapId == beatmapId && b.Mods == (int)mod);

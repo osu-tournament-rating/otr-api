@@ -25,4 +25,5 @@ public interface IBeatmapService : IService<Beatmap>
 	Task<double> GetEasySrAsync(int beatmapId);
 	Task<double> GetHalfTimeSrAsync(int beatmapId);
 	Task CreateIfNotExistsAsync(IEnumerable<long> beatmapIds);
+	Task<int?> GetIdByBeatmapIdAsync(long gameBeatmapId);
 }
