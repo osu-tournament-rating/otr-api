@@ -10,6 +10,7 @@ namespace API.Services.Implementations;
 public class ApiMatchService : IApiMatchService
 {
 	private readonly IBeatmapService _beatmapService;
+	private readonly IOsuApiService _osuApiService;
 	private readonly OtrContext _context;
 	private readonly ILogger<ApiMatchService> _logger;
 	private readonly IPlayerService _playerService;
@@ -28,12 +29,13 @@ public class ApiMatchService : IApiMatchService
 		OsuEnums.Mods.Target
 	};
 
-	public ApiMatchService(ILogger<ApiMatchService> logger, OtrContext context, IPlayerService playerService, IBeatmapService beatmapService)
+	public ApiMatchService(ILogger<ApiMatchService> logger, OtrContext context, IPlayerService playerService, IBeatmapService beatmapService, IOsuApiService osuApiService)
 	{
 		_logger = logger;
 		_context = context;
 		_playerService = playerService;
 		_beatmapService = beatmapService;
+		_osuApiService = osuApiService;
 	}
 
 	public async Task CreateFromApiMatchAsync(OsuApiMatchData apiMatch)
@@ -49,17 +51,23 @@ public class ApiMatchService : IApiMatchService
 	{
 		var existingPlayersMapping = await ExistingPlayersMapping(apiMatch);
 
-		if (existingPlayersMapping == null || !existingPlayersMapping.Any())
+		if (existingPlayersMapping == null)
 		{
 			return;
 		}
 
 		foreach (long osuId in GetUserIdsFromMatch(apiMatch)!)
 		{
+			if (existingPlayersMapping.ContainsKey(osuId))
+			{
+				// No need to create the player, they already exist
+				continue;
+			}
+			
 			var newPlayer = new Player { OsuId = osuId };
 			var player = await _playerService.CreateAsync(newPlayer);
 
-			_logger.LogInformation("Saved new player: {PlayerId} (osuId: {OsuId})", player.Id, osuId);
+			_logger.LogInformation("Saved new player: {PlayerId} (osuId: {OsuId}) from match {MatchId}", player.Id, osuId, apiMatch.Match.MatchId);
 		}
 	}
 
@@ -93,12 +101,32 @@ public class ApiMatchService : IApiMatchService
 	// Beatmaps
 
 	/// <summary>
-	///  Saves the beatmaps identified in the match to the database.
+	///  Saves the beatmaps identified in the match to the database. Only save complete beatmaps. This does call the osu! API.
 	/// </summary>
 	private async Task CreateBeatmapsAsync(OsuApiMatchData apiMatch)
 	{
-		var beatmapIds = GetBeatmapIds(apiMatch);
-		await _beatmapService.CreateIfNotExistsAsync(beatmapIds);
+		var beatmapIds = GetBeatmapIds(apiMatch).ToList();
+		
+		var beatmapsToSave = new List<Beatmap>();
+		int countSaved = 0;
+		
+		foreach(long beatmapId in beatmapIds)
+		{
+			var existingBeatmap = await _beatmapService.GetBeatmapByBeatmapIdAsync(beatmapId);
+			if (existingBeatmap == null)
+			{
+				var beatmap = await _osuApiService.GetBeatmapAsync(beatmapId, $"Beatmap {beatmapId} from match {apiMatch.Match.MatchId} does not exist in database");
+
+				if (beatmap != null)
+				{
+					beatmapsToSave.Add(beatmap);
+					countSaved++;
+				}
+			}
+		}
+
+		await _beatmapService.BulkInsertAsync(beatmapsToSave);
+		_logger.LogInformation("Saved {Count} beatmaps from match {MatchId}", countSaved, apiMatch.Match.MatchId);
 	}
 
 	private IEnumerable<long> GetBeatmapIds(OsuApiMatchData apiMatch) => apiMatch.Games.Select(x => x.BeatmapId);
@@ -336,7 +364,7 @@ public class ApiMatchService : IApiMatchService
 			return false; // We can't verify a game if we don't know the mode
 		}
 
-		if (expectedMode is <= 0 or > 3)
+		if (expectedMode is < 0 or > 3)
 		{
 			_logger.LogWarning("Mode for match {MatchId} is invalid: {Mode}", match.MatchId, expectedMode);
 			return false;

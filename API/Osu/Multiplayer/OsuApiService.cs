@@ -40,34 +40,35 @@ public class OsuApiService : IOsuApiService
         };
     }
 
-    public async Task<OsuApiMatchData?> GetMatchAsync(long matchId)
+    public async Task<OsuApiMatchData?> GetMatchAsync(long matchId, string reason)
     {
         return await ExecuteApiCall(async () =>
         {
             string response = await _client.GetStringAsync($"get_match?k={_credentials.OsuApiKey}&mp={matchId}");
-            _logger.LogDebug("Successfully received response from osu! API for match {MatchId}", matchId);
-            _logger.LogTrace("Response: {Response}", response);
+            _logger.LogDebug("Successfully received response from osu! API for match {MatchId} [{Reason}]", matchId, reason);
+
             return JsonConvert.DeserializeObject<OsuApiMatchData>(response);
         }, matchId);
     }
 
-    public async Task<Beatmap?> GetBeatmapAsync(long beatmapId, OsuEnums.Mods mods = OsuEnums.Mods.None)
+    public async Task<Beatmap?> GetBeatmapAsync(long beatmapId, string reason, OsuEnums.Mods mods = OsuEnums.Mods.None)
     {
         return await ExecuteApiCall(async () =>
         {
             string response = await _client.GetStringAsync($"get_beatmaps?k={_credentials.OsuApiKey}&b={beatmapId}&mods={(int)mods}");
-            _logger.LogDebug("Successfully received response from osu! API for beatmap {BeatmapId}", beatmapId);
+            _logger.LogDebug("Successfully received response from osu! API for beatmap {BeatmapId} [{Reason}]", beatmapId, reason);
             
             return JsonConvert.DeserializeObject<Beatmap[]>(response)?[0];
         }, beatmapId);
     }
 
-    public async Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Mode mode)
+    public async Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Mode mode, string reason)
     {
         return await ExecuteApiCall(async () =>
         {
             string response = await _client.GetStringAsync($"get_user?k={_credentials.OsuApiKey}&u={userId}&m={(int)mode}&type=id");
-            _logger.LogDebug("Successfully received response from osu! API for user {UserId}", userId);
+            _logger.LogDebug("Successfully received response from osu! API for user {UserId} [{Reason}]", userId, reason);
+         
             return JsonConvert.DeserializeObject<OsuApiUser[]>(response)?[0];
         }, userId);
     }

@@ -50,7 +50,7 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 			}
 			
 			long osuMapId = await beatmapService.GetBeatmapIdAsync(mapId);
-			var beatmap = await _osuApiService.GetBeatmapAsync(osuMapId, mods);
+			var beatmap = await _osuApiService.GetBeatmapAsync(osuMapId, "osu! beatmap SR data worker identified maps that need to be processed", mods);
 			
 			if (beatmap == null)
 			{

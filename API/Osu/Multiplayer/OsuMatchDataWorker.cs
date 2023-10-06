@@ -47,7 +47,7 @@ public class OsuMatchDataWorker : BackgroundService
 
 				try
 				{
-					var result = await _apiService.GetMatchAsync(osuMatch.MatchId);
+					var result = await _apiService.GetMatchAsync(osuMatch.MatchId, "Identified osu! match that needs to be processed (matchesService.GetFirstUnprocessedOrIncompleteMatchAsync() returned a value)");
 					if (result == null)
 					{
 						await UpdateLinkStatusAsync(osuMatch.MatchId, MatchVerificationStatus.Failure, matchesService);
@@ -127,7 +127,7 @@ public class OsuMatchDataWorker : BackgroundService
 		foreach (long beatmapId in idsToProcess)
 		{
 			// Fetch the api and store
-			var beatmap = await _apiService.GetBeatmapAsync(beatmapId);
+			var beatmap = await _apiService.GetBeatmapAsync(beatmapId, $"Identified beatmap from match {osuMatch.Match.MatchId} that needs to be processed");
 			if (beatmap == null)
 			{
 				_logger.LogWarning("Failed to fetch beatmap {BeatmapId} (result from API was null)", beatmapId);

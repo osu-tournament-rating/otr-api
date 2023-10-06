@@ -155,6 +155,7 @@ public class OsuTrackApiWorker : BackgroundService
 							}
 						}
 
+						_logger.LogInformation("Updated earliest known ranks for player {PlayerId}", player.OsuId);
 						await playerService.UpdateAsync(player);
 					}
 				}

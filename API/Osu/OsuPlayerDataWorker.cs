@@ -48,7 +48,7 @@ public class OsuPlayerDataWorker : BackgroundService
 					// Fetch ranks for all 4 game modes and update accordingly.
 					foreach (var gameModeEnum in Enum.GetValues<OsuEnums.Mode>())
 					{
-						var apiResult = await _apiService.GetUserAsync(player.OsuId, gameModeEnum);
+						var apiResult = await _apiService.GetUserAsync(player.OsuId, gameModeEnum, $"Identified player that needs to have ranks updated for mode {gameModeEnum}");
 						if (apiResult == null)
 						{
 							player.Updated = DateTime.UtcNow;
