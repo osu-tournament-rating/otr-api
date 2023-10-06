@@ -41,6 +41,7 @@ builder.Services.AddSerilog(configuration =>
 	configuration.MinimumLevel.Debug()
 	             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
 	             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+	             .MinimumLevel.Override("OsuSharp", LogEventLevel.Fatal)
 	             .Enrich.FromLogContext()
 	             .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
 	             .WriteTo.File(Path.Join("logs", "log.log"), rollingInterval: RollingInterval.Day)
