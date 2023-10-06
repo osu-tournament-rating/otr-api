@@ -310,7 +310,7 @@ public class ApiMatchService : IApiMatchService
 		await _context.SaveChangesAsync();
 
 		_logger.LogDebug("Saved game {GameId}", dbGame.GameId);
-		return gameRejectionReason.HasValue;
+		return !gameRejectionReason.HasValue;
 	}
 	
 	private GameRejectionReason? CheckForGameRejection(Osu.Multiplayer.Game game, Entities.Match existingMatch)
