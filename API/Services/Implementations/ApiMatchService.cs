@@ -154,11 +154,13 @@ public class ApiMatchService : IApiMatchService
 			return;
 		}
 
-		await ProcessGamesAsync(apiMatch.Games, existingMatch);
-		foreach(var game in apiMatch.Games)
+		var nonRejectedGames = (await ProcessGamesAsync(apiMatch.Games, existingMatch)).ToList();
+		foreach (var game in nonRejectedGames)
 		{
 			await ProcessScoresAsync(game);
 		}
+		
+		_logger.LogInformation("Saved scores for {Count} non-rejected games from match {MatchId}", nonRejectedGames.Count, apiMatch.Match.MatchId);
 	}
 
 	private async Task<Entities.Match?> ExistingMatch(OsuApiMatchData apiMatch) => await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == apiMatch.Match.MatchId);
@@ -222,8 +224,15 @@ public class ApiMatchService : IApiMatchService
 	}
 
 	// Games
-	public async Task ProcessGamesAsync(IEnumerable<Osu.Multiplayer.Game> osuMatchGames, Entities.Match existingMatch)
+	/// <summary>
+	/// Processes all games in the match and persists them.
+	/// </summary>
+	/// <param name="osuMatchGames"></param>
+	/// <param name="existingMatch"></param>
+	/// <returns>A list of non-rejected games</returns>
+	public async Task<IEnumerable<Osu.Multiplayer.Game>> ProcessGamesAsync(IEnumerable<Osu.Multiplayer.Game> osuMatchGames, Entities.Match existingMatch)
 	{
+		var nonRejectedGames = new List<Osu.Multiplayer.Game>();
 		foreach (var game in osuMatchGames)
 		{
 			int? beatmapIdResult = await GetBeatmapDatabaseIdAsync(game);
@@ -232,7 +241,11 @@ public class ApiMatchService : IApiMatchService
 
 			if (existingGame == null)
 			{
-				await AddNewGameAsync(game, existingMatch, beatmapIdResult);
+				bool gameNotRejected = await AddNewGameAsync(game, existingMatch, beatmapIdResult);
+				if(gameNotRejected)
+				{
+					nonRejectedGames.Add(game);
+				}
 			}
 			else
 			{
@@ -246,6 +259,8 @@ public class ApiMatchService : IApiMatchService
 				}
 			}
 		}
+
+		return nonRejectedGames;
 	}
 
 	private async Task<int?> GetBeatmapDatabaseIdAsync(Osu.Multiplayer.Game game)
@@ -254,7 +269,14 @@ public class ApiMatchService : IApiMatchService
 		return id;
 	}
 
-	private async Task AddNewGameAsync(Osu.Multiplayer.Game game, Entities.Match existingMatch, int? beatmapIdResult)
+	/// <summary>
+	/// Persists a new game to the database
+	/// </summary>
+	/// <param name="game"></param>
+	/// <param name="existingMatch"></param>
+	/// <param name="beatmapIdResult"></param>
+	/// <returns>true if the game was not rejected, false if the game was rejected for any reason</returns>
+	private async Task<bool> AddNewGameAsync(Osu.Multiplayer.Game game, Entities.Match existingMatch, int? beatmapIdResult)
 	{
 		var gameRejectionReason = CheckForGameRejection(game, existingMatch);
 
@@ -288,6 +310,7 @@ public class ApiMatchService : IApiMatchService
 		await _context.SaveChangesAsync();
 
 		_logger.LogDebug("Saved game {GameId}", dbGame.GameId);
+		return gameRejectionReason.HasValue;
 	}
 	
 	private GameRejectionReason? CheckForGameRejection(Osu.Multiplayer.Game game, Entities.Match existingMatch)
