@@ -38,14 +38,20 @@ builder.Services.AddSerilog(configuration =>
 	string connString = builder.Configuration.GetConnectionString("DefaultConnection") ??
 	                    throw new InvalidOperationException("Missing connection string!");
 
-	configuration.MinimumLevel.Debug()
-	             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-	             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
-	             .MinimumLevel.Override("OsuSharp", LogEventLevel.Fatal)
-	             .Enrich.FromLogContext()
-	             .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-	             .WriteTo.File(Path.Join("logs", "log.log"), rollingInterval: RollingInterval.Day)
-	             .WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true);
+#if DEBUG
+	configuration.MinimumLevel.Debug();
+#else
+	configuration.MinimumLevel.Information();
+#endif
+	
+	configuration
+		.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+		.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+		.MinimumLevel.Override("OsuSharp", LogEventLevel.Fatal)
+		.Enrich.FromLogContext()
+		.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+		.WriteTo.File(Path.Join("logs", "log.log"), rollingInterval: RollingInterval.Day)
+		.WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true);
 });
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -64,6 +70,7 @@ var configuration = new MapperConfiguration(cfg =>
 	   .ForMember(x => x.OsuMatchId, opt => opt.MapFrom(y => y.Match.MatchId))
 	   .ForMember(x => x.TournamentName, opt => opt.MapFrom(y => y.Match.TournamentName))
 	   .ForMember(x => x.Abbreviation, opt => opt.MapFrom(y => y.Match.Abbreviation));
+
 	cfg.CreateMap<User, UserDTO>();
 });
 
