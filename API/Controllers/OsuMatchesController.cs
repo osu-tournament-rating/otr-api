@@ -75,14 +75,14 @@ public class OsuMatchesController : Controller
 		if (verified)
 		{
 			// Check authorization
-			if (!User.IsInRole("MatchVerifier"))
+			if (!User.IsMatchVerifier() && !User.IsAdmin())
 			{
 				return Unauthorized("You are not authorized to verify matches");
 			}
 
 			int verifier = (int)MatchVerificationSource.MatchVerifier;
 
-			if (User.IsInRole("Admin"))
+			if (User.IsAdmin())
 			{
 				verifier = (int)MatchVerificationSource.Admin;
 			}
