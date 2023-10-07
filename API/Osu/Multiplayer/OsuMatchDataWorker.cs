@@ -50,7 +50,8 @@ public class OsuMatchDataWorker : BackgroundService
 					var result = await _apiService.GetMatchAsync(osuMatch.MatchId, "Identified osu! match that needs to be processed (matchesService.GetFirstUnprocessedOrIncompleteMatchAsync() returned a value)");
 					if (result == null)
 					{
-						await UpdateLinkStatusAsync(osuMatch.MatchId, MatchVerificationStatus.Failure, matchesService);
+						await matchesService.UpdateVerificationStatusAsync(osuMatch.MatchId, MatchVerificationStatus.Failure, MatchVerificationSource.System,
+							"osu! API returned null result");
 						continue;
 					}
 
@@ -59,18 +60,14 @@ public class OsuMatchDataWorker : BackgroundService
 				}
 				catch (Exception e)
 				{
-					await UpdateLinkStatusAsync(osuMatch.MatchId, MatchVerificationStatus.Failure, matchesService);
+					await matchesService.UpdateVerificationStatusAsync(osuMatch.MatchId, MatchVerificationStatus.Failure, MatchVerificationSource.System, "Exception was thrown while processing match");
 
 					_logger.LogWarning(e, "Failed to fetch data for match {MatchId} (exception was thrown)", osuMatch.MatchId);
 				}
 			}
 		}
 	}
-
-	private async Task UpdateLinkStatusAsync(long matchId, MatchVerificationStatus status, IMatchesService matchesService, string? verificationInfo = null)
-	{
-		await matchesService.UpdateVerificationStatusAsync(matchId, status, MatchVerificationSource.System, verificationInfo);
-	}
+	
 
 	/// <summary>
 	///  Steps:
@@ -112,7 +109,7 @@ public class OsuMatchDataWorker : BackgroundService
 			}
 		}
 
-		await UpdateLinkStatusAsync(osuMatch.Match.MatchId, verificationStatus, matchesService, verificationInfo);
+		await matchesService.UpdateVerificationStatusAsync(osuMatch.Match.MatchId, verificationStatus, MatchVerificationSource.System, verificationInfo);
 		_logger.LogInformation("Match with id {MatchId} was processed as {Status}", osuMatch.Match.MatchId, verificationStatus);
 	}
 

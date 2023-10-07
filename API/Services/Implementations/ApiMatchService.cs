@@ -160,6 +160,19 @@ public class ApiMatchService : IApiMatchService
 			await ProcessScoresAsync(game);
 		}
 		
+		double ratioInvalidGames = (double)nonRejectedGames.Count / apiMatch.Games.Count;
+		if (ratioInvalidGames >= 0.5)
+		{
+			// If the match contains 50%+ of invalid games, we reject the entire match
+			existingMatch.VerificationStatus = (int)MatchVerificationStatus.Rejected;
+			existingMatch.VerificationInfo = "More than 50% of this match's games were rejected during automation checks.";
+
+			_context.Matches.Update(existingMatch);
+			await _context.SaveChangesAsync();
+			
+			_logger.LogInformation("Match {MatchId} was rejected because more than 50% of its games were rejected", apiMatch.Match.MatchId);
+		}
+		
 		_logger.LogInformation("Saved scores for {Count} non-rejected games from match {MatchId}", nonRejectedGames.Count, apiMatch.Match.MatchId);
 	}
 
