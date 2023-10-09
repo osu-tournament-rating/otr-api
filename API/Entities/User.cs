@@ -32,4 +32,6 @@ public partial class User
     [InverseProperty("User")]
     public virtual Player Player { get; set; } = null!;
     public IEnumerable<Match>? SubmittedMatches { get; set; }
+    // Assuming the user has permission to verify, the matches they do verify will be here
+    public IEnumerable<Match>? VerifiedMatches { get; set; }
 }

@@ -106,6 +106,8 @@ public class MatchAutomationChecksTests
 		Assert.That(match.Games.First().MatchScores.First().Count300, Is.EqualTo(890));
 		Assert.That(match.Games.First().MatchScores.Count, Is.EqualTo(2));
 	});
+	
+	// Matches
 
 	/// <summary>
 	///  Tests the flow of a match being processed for
@@ -240,6 +242,8 @@ public class MatchAutomationChecksTests
 		match.Name = string.Empty;
 		Assert.That(MatchAutomationChecks.PassesNameCheck(match), Is.False);
 	}
+	
+	// Games
 
 	[Test]
 	public void Game_FailsTeamSizeCheck()

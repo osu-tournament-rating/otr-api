@@ -100,12 +100,7 @@ public static class GameAutomationChecks
 			return true;
 		}
 		
-		if (game.Match.TeamSize < 2)
-		{
-			_logger.Information("{Prefix} Match {MatchId} has a TeamVs team type, but team size is less than 2, can't verify game {GameId}", _logPrefix, game.Match.Id, game.GameId);
-			return false;
-		}
-
+		// TeamVs can be used for any team size
 		return true;
 	}
 }

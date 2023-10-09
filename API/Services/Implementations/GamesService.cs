@@ -23,6 +23,12 @@ public class GamesService : ServiceBase<Game>, IGamesService
 		_context = context;
 	}
 
+	public override async Task<int> UpdateAsync(Game game)
+	{
+		game.Updated = DateTime.UtcNow;
+		return await base.UpdateAsync(game);
+	}
+
 	public async Task<int> CreateIfNotExistsAsync(Game dbGame)
 	{
 		var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.MatchId == dbGame.MatchId && g.BeatmapId == dbGame.BeatmapId);

@@ -8,14 +8,15 @@ public interface IMatchesService : IService<Entities.Match>
 {
 	Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered);
 	Task<MatchDTO?> GetByOsuMatchIdAsync(long osuMatchId);
-	Task<Entities.Match?> GetFirstUnprocessedOrIncompleteMatchAsync();
+	Task<IList<Entities.Match>> GetMatchesNeedingAutoCheckAsync();
+	Task<IList<Entities.Match>> GetNeedApiProcessingAsync();
 	Task<IEnumerable<Entities.Match>> CheckExistingAsync(IEnumerable<long> matchIds);
 
 	/// <summary>
 	///  Used to queue up matches for verification.
 	/// </summary>
 	/// <returns>Number of rows inserted</returns>
-	Task<int> InsertFromIdBatchAsync(IEnumerable<Entities.Match> matches);
+	Task<int> BatchInsertAsync(IEnumerable<Entities.Match> matches);
 	Task<int> UpdateVerificationStatusAsync(long matchId, MatchVerificationStatus status, MatchVerificationSource source, string? info = null);
 	Task<Unmapped_PlayerMatchesDTO> GetPlayerMatchesAsync(long osuId, DateTime fromTime);
 	Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime);

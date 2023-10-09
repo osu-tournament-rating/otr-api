@@ -2,7 +2,6 @@ using API.DTOs;
 using API.Entities;
 using API.Enums;
 using API.Osu;
-using API.Osu.Multiplayer;
 using API.Services.Interfaces;
 using API.Utilities;
 using AutoMapper;
@@ -42,6 +41,24 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		_mapper = mapper;
 		_context = context;
 		_gameSrCalculator = gameSrCalculator;
+	}
+
+	public override async Task<Match?> GetAsync(int id)
+	{
+		// Get the match with all associated data
+		return await _context.Matches
+		                     .Include(x => x.Games)
+		                     .ThenInclude(x => x.MatchScores)
+		                     .Include(x => x.Games)
+		                     .ThenInclude(x => x.Beatmap)
+		                     .FirstOrDefaultAsync(x => x.Id == id);
+	}
+
+	public override async Task<int> UpdateAsync(Entities.Match entity)
+	{
+		entity.Updated = DateTime.UtcNow;
+		_context.Matches.Update(entity);
+		return await _context.SaveChangesAsync();
 	}
 
 	public async Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered)
@@ -116,13 +133,22 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	                                                                                                           .ThenInclude(x => x.MatchScores)
 	                                                                                                           .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
 
-	public async Task<Entities.Match?> GetFirstUnprocessedOrIncompleteMatchAsync() => await _context.Matches.FirstOrDefaultAsync(x =>
-		x.VerificationStatus == (int)MatchVerificationStatus.PendingVerification || (x.VerificationStatus == (int)MatchVerificationStatus.Verified && x.Name == null));
+	public async Task<IList<Entities.Match>> GetMatchesNeedingAutoCheckAsync()
+	{
+		return await _context.Matches
+		                     .Where(x => x.NeedsAutoCheck == true)
+		                     .ToListAsync();
+	}
+
+	public async Task<IList<Match>> GetNeedApiProcessingAsync()
+	{
+		return await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();
+	}
 
 	public async Task<IEnumerable<Entities.Match>> CheckExistingAsync(IEnumerable<long> matchIds) =>
 		await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
 
-	public async Task<int> InsertFromIdBatchAsync(IEnumerable<Entities.Match> matches)
+	public async Task<int> BatchInsertAsync(IEnumerable<Entities.Match> matches)
 	{
 		await _context.Matches.AddRangeAsync(matches);
 		return await _context.SaveChangesAsync();

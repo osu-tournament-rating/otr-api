@@ -1,5 +1,6 @@
 using API.Entities;
 using API.Enums;
+using API.Osu.AutomationChecks;
 using API.Services.Interfaces;
 
 namespace API.Osu.Multiplayer;
@@ -19,7 +20,7 @@ public class OsuMatchDataWorker : BackgroundService
 	}
 
 	/// <summary>
-	///  This background service constantly checks the database for pending multiplayer links and processes them.
+	///  This background service constantly checks the database for pending matches and processes them.
 	///  The osu! API rate limit is taken into account.
 	/// </summary>
 	/// <param name="cancellationToken"></param>
@@ -34,111 +35,79 @@ public class OsuMatchDataWorker : BackgroundService
 			using (var scope = _serviceProvider.CreateScope())
 			{
 				var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
-				var beatmapsService = scope.ServiceProvider.GetRequiredService<IBeatmapService>();
 				var apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchService>();
-
-				var osuMatch = await matchesService.GetFirstUnprocessedOrIncompleteMatchAsync();
-				if (osuMatch == null)
+				var gamesService = scope.ServiceProvider.GetRequiredService<IGamesService>();
+				
+				var matchesToCheck = await matchesService.GetNeedApiProcessingAsync();
+				if (!matchesToCheck.Any())
 				{
 					await Task.Delay(INTERVAL_SECONDS * 1000, cancellationToken);
-					_logger.LogTrace("Nothing to process, waiting for {Interval} seconds", INTERVAL_SECONDS);
+					_logger.LogTrace("No matches needing auto checks, waiting for {Interval} seconds", INTERVAL_SECONDS);
 					continue;
 				}
 
-				try
+				foreach (var match in matchesToCheck)
 				{
-					var result = await _apiService.GetMatchAsync(osuMatch.MatchId, "Identified osu! match that needs to be processed (matchesService.GetFirstUnprocessedOrIncompleteMatchAsync() returned a value)");
-					if (result == null)
+					try
 					{
-						await matchesService.UpdateVerificationStatusAsync(osuMatch.MatchId, MatchVerificationStatus.Failure, MatchVerificationSource.System,
-							"osu! API returned null result");
-						continue;
+						// Matches at this point should only contain data posted from the API.
+						// We need to call the osu! API on these matches and persist them.
+					
+						// After, we do automation checks to filter out invalid matches based solely
+						// on what is in the database.
+						var updatedEntity = await ProcessMatchAsync(match.MatchId, apiMatchService);
+						
+						// Now that we've updated the entity, and stored all of it's matches and games,
+						// we need to perform automation checks and update the verification statuses accordingly.
+
+						if (updatedEntity == null)
+						{
+							_logger.LogWarning("Failed to process match {MatchId} because result from ApiMatchService processing was null", match.MatchId);
+							continue;
+						}
+						
+						// Match verification checks
+						if (!MatchAutomationChecks.PassesAllChecks(updatedEntity))
+						{
+							updatedEntity.VerificationStatus = (int)MatchVerificationStatus.Rejected;
+							updatedEntity.VerificationSource = (int)MatchVerificationSource.System;
+							updatedEntity.VerificationInfo = "Failed automated checks";
+
+							await matchesService.UpdateAsync(updatedEntity);
+							continue;
+						}
+						
+						// Game verification checks
+						foreach (var game in updatedEntity.Games)
+						{
+							if (!GameAutomationChecks.PassesAutomationChecks(game))
+							{
+								game.VerificationStatus = (int)GameVerificationStatus.Rejected;
+								game.RejectionReason = (int)GameRejectionReason.FailedAutomationChecks;
+								
+								await gamesService.UpdateAsync(game);
+							}
+						}
+						
+						// Score verification checks
 					}
-
-					bool isVerified = osuMatch.VerificationStatus == (int)MatchVerificationStatus.Verified;
-					await ProcessOsuMatch(result, matchesService, beatmapsService, apiMatchService, isVerified);
-				}
-				catch (Exception e)
-				{
-					await matchesService.UpdateVerificationStatusAsync(osuMatch.MatchId, MatchVerificationStatus.Failure, MatchVerificationSource.System, "Exception was thrown while processing match");
-
-					_logger.LogWarning(e, "Failed to fetch data for match {MatchId} (exception was thrown)", osuMatch.MatchId);
+					catch (Exception e)
+					{
+						_logger.LogError("Failed to automatically process match {MatchId}: {Message}", match.MatchId, e.Message);
+					}
 				}
 			}
 		}
 	}
-	
 
-	/// <summary>
-	///  Steps:
-	///  1. Process the beatmaps and ensure we are not duplicating this data
-	///  2. Process the match, the games, and the scores
-	///  3. Update the match verification status accordingly
-	/// </summary>
-	/// <param name="osuMatch"></param>
-	/// <param name="matchesService"></param>
-	/// <param name="gamesService"></param>
-	/// <param name="matchScoresService"></param>
-	/// <param name="beatmapService"></param>
-	/// <param name="playerService"></param>
-	/// <exception cref="NullReferenceException"></exception>
-	private async Task ProcessOsuMatch(OsuApiMatchData osuMatch, IMatchesService matchesService, IBeatmapService beatmapService, IApiMatchService apiMatchService, bool verified)
+	private async Task<Entities.Match?> ProcessMatchAsync(long osuMatchId, IApiMatchService apiMatchService)
 	{
-		await ProcessBeatmapsAsync(osuMatch, beatmapService);
-		await apiMatchService.CreateFromApiMatchAsync(osuMatch);
-
-		string? abbreviation = await matchesService.GetMatchAbbreviationAsync(osuMatch.Match.MatchId);
-
-		string? verificationInfo = null;
-		MatchVerificationStatus verificationStatus;
-		if (verified)
+		var osuMatch = await _apiService.GetMatchAsync(osuMatchId, $"{osuMatchId} was identified as a match that needs to be processed");
+		if (osuMatch == null)
 		{
-			verificationStatus = MatchVerificationStatus.Verified;
+			return null;
 		}
-		else
-		{
-			if (!LobbyNameChecker.IsNameValid(osuMatch.Match.Name, abbreviation ?? string.Empty))
-			{
-				verificationStatus = MatchVerificationStatus.Rejected;
-				verificationInfo = $"Failed to validate lobby name against regex patterns. " +
-				                   $"Expected result like '{abbreviation}: (Team A) vs. (Team B)' but received '{osuMatch.Match.Name}' instead.";
-			}
-			else
-			{
-				verificationStatus = MatchVerificationStatus.PreVerified;
-			}
-		}
-
-		await matchesService.UpdateVerificationStatusAsync(osuMatch.Match.MatchId, verificationStatus, MatchVerificationSource.System, verificationInfo);
-		_logger.LogInformation("Match with id {MatchId} was processed as {Status}", osuMatch.Match.MatchId, verificationStatus);
-	}
-
-	private async Task ProcessBeatmapsAsync(OsuApiMatchData osuMatch, IBeatmapService beatmapService)
-	{
-		// Processes and inserts beatmaps into the database if they don't already exist.
-		var distinctBeatmapIds = osuMatch.Games.Select(x => x.BeatmapId).Distinct().ToList();
-		var existing = await beatmapService.GetByBeatmapIdsAsync(distinctBeatmapIds);
-		var idsToProcess = distinctBeatmapIds.Except(existing.Select(x => x.BeatmapId)).ToList();
-		var beatmaps = new List<Beatmap>();
-
-		foreach (long beatmapId in idsToProcess)
-		{
-			// Fetch the api and store
-			var beatmap = await _apiService.GetBeatmapAsync(beatmapId, $"Identified beatmap from match {osuMatch.Match.MatchId} that needs to be processed");
-			if (beatmap == null)
-			{
-				_logger.LogWarning("Failed to fetch beatmap {BeatmapId} (result from API was null)", beatmapId);
-				continue;
-			}
-			
-			var existingBeatmap = await beatmapService.GetBeatmapByBeatmapIdAsync(beatmapId);
-			if (existingBeatmap == null)
-			{
-				// Only insert new beatmaps
-				beatmaps.Add(beatmap);
-			}
-		}
-
-		await beatmapService.BulkInsertAsync(beatmaps);
+		
+		return await apiMatchService.CreateFromApiMatchAsync(osuMatch);
 	}
 }

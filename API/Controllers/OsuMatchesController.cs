@@ -99,6 +99,8 @@ public class OsuMatchesController : Controller
 				verifiedMatch.TeamSize = wrapper.TeamSize;
 				verifiedMatch.Mode = wrapper.Mode;
 				verifiedMatch.Updated = DateTime.UtcNow;
+				verifiedMatch.NeedsAutoCheck = true;
+				verifiedMatch.IsApiProcessed = false;
 				await _service.UpdateAsync(verifiedMatch);
 				_logger.LogInformation("Updated {@Match}", verifiedMatch);
 			}
@@ -116,20 +118,23 @@ public class OsuMatchesController : Controller
 
 		var matches = stripped.Select(id => new Match
 		{
-			MatchId = id, VerificationStatus = (int)verification,
+			MatchId = id, 
+			VerificationStatus = (int)verification,
 			TournamentName = wrapper.TournamentName,
 			Abbreviation = wrapper.Abbreviation,
 			Forum = wrapper.ForumPost,
 			SubmitterUserId = wrapper.SubmitterId,
 			RankRangeLowerBound = wrapper.RankRangeLowerBound,
 			TeamSize = wrapper.TeamSize,
-			Mode = wrapper.Mode
+			Mode = wrapper.Mode,
+			NeedsAutoCheck = true,
+			IsApiProcessed = false
 		});
 
-		int? result = await _service.InsertFromIdBatchAsync(matches);
+		int? result = await _service.BatchInsertAsync(matches);
 		if (result > 0)
 		{
-			_logger.LogInformation("Successfully marked {Matches} matches as {Status}", result, MatchVerificationStatus.PendingVerification);
+			_logger.LogInformation("Successfully inserted {Matches} new matches as {Status}", result, verification);
 		}
 
 		return Ok();

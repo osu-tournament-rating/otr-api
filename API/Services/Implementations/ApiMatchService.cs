@@ -11,40 +11,39 @@ public class ApiMatchService : IApiMatchService
 {
 	private readonly IBeatmapService _beatmapService;
 	private readonly IOsuApiService _osuApiService;
+	private readonly IMatchesService _matchesService;
+	private readonly IGamesService _gamesService;
+	private readonly IMatchScoresService _matchScoresService;
 	private readonly OtrContext _context;
 	private readonly ILogger<ApiMatchService> _logger;
 	private readonly IPlayerService _playerService;
-	
-	private readonly OsuEnums.Mods[] _unallowedMods =
-	{
-		OsuEnums.Mods.TouchDevice,
-		OsuEnums.Mods.SuddenDeath,
-		OsuEnums.Mods.Relax,
-		OsuEnums.Mods.Autoplay,
-		OsuEnums.Mods.SpunOut,
-		OsuEnums.Mods.Relax2, // Autopilot
-		OsuEnums.Mods.Perfect,
-		OsuEnums.Mods.Random,
-		OsuEnums.Mods.Cinema,
-		OsuEnums.Mods.Target
-	};
 
-	public ApiMatchService(ILogger<ApiMatchService> logger, OtrContext context, IPlayerService playerService, IBeatmapService beatmapService, IOsuApiService osuApiService)
+	/// <summary>
+	/// Strictly responsible for processing matches from the osu! API and adding them to the database. This includes:
+	/// * Player data
+	/// * Beatmap data
+	/// * Match data, game data, and score data
+	/// </summary>
+	public ApiMatchService(ILogger<ApiMatchService> logger, OtrContext context, IPlayerService playerService, 
+		IBeatmapService beatmapService, IOsuApiService osuApiService, IMatchesService matchesService, IGamesService gamesService, IMatchScoresService matchScoresService)
 	{
 		_logger = logger;
 		_context = context;
 		_playerService = playerService;
 		_beatmapService = beatmapService;
 		_osuApiService = osuApiService;
+		_matchesService = matchesService;
+		_gamesService = gamesService;
+		_matchScoresService = matchScoresService;
 	}
 
-	public async Task CreateFromApiMatchAsync(OsuApiMatchData apiMatch)
+	public async Task<Entities.Match?> CreateFromApiMatchAsync(OsuApiMatchData apiMatch, bool verified = false)
 	{
 		_logger.LogInformation("Processing match {MatchId}", apiMatch.Match.MatchId);
 
 		await CreatePlayersAsync(apiMatch);
 		await CreateBeatmapsAsync(apiMatch);
-		await ProcessMatchAsync(apiMatch);
+		return await UpdateMatchDataAsync(apiMatch);
 	}
 
 	private async Task CreatePlayersAsync(OsuApiMatchData apiMatch)
@@ -132,154 +131,94 @@ public class ApiMatchService : IApiMatchService
 	private IEnumerable<long> GetBeatmapIds(OsuApiMatchData apiMatch) => apiMatch.Games.Select(x => x.BeatmapId);
 
 	// Match
-	private async Task ProcessMatchAsync(OsuApiMatchData apiMatch)
+	/// <summary>
+	/// Updates an existing database match with data from the osu! API.
+	/// </summary>
+	/// <param name="apiMatch"></param>
+	/// <returns></returns>
+	/// <exception cref="NullReferenceException">If the existing match is null</exception>
+	/// <exception cref="InvalidOperationException">If the Match.IsApiProcessed flag is null or if it is true</exception>
+	private async Task<Entities.Match?> UpdateMatchDataAsync(OsuApiMatchData apiMatch)
 	{
 		var existingMatch = await ExistingMatch(apiMatch);
 
 		if (existingMatch == null)
 		{
-			await CreatePendingMatchAsync(apiMatch);
-		}
-		else if (MatchNeedsPopulation(apiMatch, existingMatch))
-		{
-			await UpdateMatchAsync(apiMatch, existingMatch);
+			throw new NullReferenceException($"Match {apiMatch.Match.MatchId} does not exist in database. This should not be possible as it should have been created by POST /api/matches/batch");
 		}
 
-		existingMatch = await ExistingMatch(apiMatch);
-		// If the match is still null, something is seriously wrong.
-
-		if (existingMatch == null)
+		if (existingMatch.IsApiProcessed == null)
 		{
-			_logger.LogError("Match {MatchId} is null after processing! This should never happen! Aborting adding of games & associated scores!", apiMatch.Match.MatchId);
-			return;
+			throw new InvalidOperationException($"Match {apiMatch.Match.MatchId} has no IsApiProcessed value! This should not be possible as it should have been set by POST /api/matches/batch");
 		}
 
-		var nonRejectedGames = (await ProcessGamesAsync(apiMatch.Games, existingMatch)).ToList();
-		foreach (var game in nonRejectedGames)
+		if (existingMatch.IsApiProcessed.Value)
 		{
-			await ProcessScoresAsync(game);
+			// The match has already been marked as api processed. This shouldn't be possible.
+			throw new InvalidOperationException($"Match {apiMatch.Match.MatchId} has already been marked as api processed! This should not be possible as it should have been set by POST /api/matches/batch");
+		}
+
+		existingMatch = await UpdateMatchAsync(apiMatch, existingMatch);
+
+		var persistedGames = await CreateGamesAsync(apiMatch.Games, existingMatch);
+		foreach (var game in apiMatch.Games)
+		{
+			await CreateScoresAsync(game);
 		}
 		
-		double ratioInvalidGames = (double)nonRejectedGames.Count / apiMatch.Games.Count;
-		if (ratioInvalidGames >= 0.5)
-		{
-			// If the match contains 50%+ of invalid games, we reject the entire match
-			existingMatch.VerificationStatus = (int)MatchVerificationStatus.Rejected;
-			existingMatch.VerificationInfo = "More than 50% of this match's games were rejected during automation checks.";
-
-			_context.Matches.Update(existingMatch);
-			await _context.SaveChangesAsync();
-			
-			_logger.LogInformation("Match {MatchId} was rejected because more than 50% of its games were rejected", apiMatch.Match.MatchId);
-		}
+		_logger.LogInformation("Saved scores for {Count} non-rejected games from match {MatchId}", persistedGames.Count, apiMatch.Match.MatchId);
 		
-		_logger.LogInformation("Saved scores for {Count} non-rejected games from match {MatchId}", nonRejectedGames.Count, apiMatch.Match.MatchId);
+		// Fetch the full entity from the database once again to ensure we have the latest populated data
+		return await _matchesService.GetAsync(existingMatch.Id);
 	}
 
 	private async Task<Entities.Match?> ExistingMatch(OsuApiMatchData apiMatch) => await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == apiMatch.Match.MatchId);
 
-	/// <summary>
-	///  If the existing match is missing substantial data, it needs to be populated.
-	/// </summary>
-	/// <param name="apiMatch"></param>
-	/// <param name="existingMatch"></param>
-	/// <returns></returns>
-	private bool MatchNeedsPopulation(OsuApiMatchData apiMatch, Entities.Match existingMatch)
-	{
-		if (apiMatch.Match.MatchId != existingMatch.MatchId)
-		{
-			_logger.LogError("Match ID mismatch during processing: {ApiMatchId} vs {ExistingMatchId}", apiMatch.Match.MatchId, existingMatch.MatchId);
-			return false;
-		}
-
-		return existingMatch.Name == null || existingMatch.Name != apiMatch.Match.Name;
-	}
-
-	private async Task CreatePendingMatchAsync(OsuApiMatchData apiMatch)
-	{
-		var match = new Entities.Match
-		{
-			MatchId = apiMatch.Match.MatchId,
-			Name = apiMatch.Match.Name,
-			StartTime = apiMatch.Match.StartTime,
-			EndTime = apiMatch.Match.EndTime,
-			VerificationStatus = DetermineVerificationStatus(apiMatch)
-		};
-
-		_context.Matches.Add(match);
-		await _context.SaveChangesAsync();
-
-		_logger.LogInformation("Saved new match: {MatchId} (name: {MatchName})", match.MatchId, match.Name);
-	}
-
-	private int DetermineVerificationStatus(OsuApiMatchData apiMatch)
-	{
-		var existingMatch = ExistingMatch(apiMatch).Result;
-		if (existingMatch?.VerificationStatusEnum == MatchVerificationStatus.Verified)
-		{
-			return (int)MatchVerificationStatus.Verified;
-		}
-
-		return (int)MatchVerificationStatus.PendingVerification;
-	}
-
-	private async Task UpdateMatchAsync(OsuApiMatchData apiMatch, Entities.Match existingMatch)
+	private async Task<Entities.Match> UpdateMatchAsync(OsuApiMatchData apiMatch, Entities.Match existingMatch)
 	{
 		existingMatch.Name = apiMatch.Match.Name;
 		existingMatch.StartTime = apiMatch.Match.StartTime;
 		existingMatch.EndTime = apiMatch.Match.EndTime;
-		existingMatch.VerificationStatus = DetermineVerificationStatus(apiMatch);
+		existingMatch.IsApiProcessed = true;
 
-		_context.Matches.Update(existingMatch);
-		await _context.SaveChangesAsync();
+		await _matchesService.UpdateAsync(existingMatch);
 
 		_logger.LogInformation("Updated match: {MatchId} (name: {MatchName})", existingMatch.MatchId, existingMatch.Name);
+		return existingMatch;
 	}
 
 	// Games
 	/// <summary>
-	/// Processes all games in the match and persists them.
+	/// Persists all games from the osu! API to the database.
 	/// </summary>
 	/// <param name="osuMatchGames"></param>
 	/// <param name="existingMatch"></param>
-	/// <returns>A list of non-rejected games</returns>
-	public async Task<IEnumerable<Osu.Multiplayer.Game>> ProcessGamesAsync(IEnumerable<Osu.Multiplayer.Game> osuMatchGames, Entities.Match existingMatch)
+	/// <returns>List of persisted entities</returns>
+	public async Task<IList<Entities.Game>> CreateGamesAsync(IEnumerable<Osu.Multiplayer.Game> osuMatchGames, Entities.Match existingMatch)
 	{
-		var nonRejectedGames = new List<Osu.Multiplayer.Game>();
+		var persisted = new List<Entities.Game>();
 		foreach (var game in osuMatchGames)
 		{
-			int? beatmapIdResult = await GetBeatmapDatabaseIdAsync(game);
+			int? beatmapIdResult = await _beatmapService.GetIdByBeatmapIdAsync(game.BeatmapId);
 
 			var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
 
 			if (existingGame == null)
 			{
-				bool gameNotRejected = await AddNewGameAsync(game, existingMatch, beatmapIdResult);
-				if(gameNotRejected)
+				var newGame = await AddNewGameAsync(game, existingMatch, beatmapIdResult);
+
+				if (newGame == null)
 				{
-					nonRejectedGames.Add(game);
+					// Something seriously went wrong.
+					_logger.LogError("Failed to save new game {GameId}!", game.GameId);
+					continue;
 				}
-			}
-			else
-			{
-				if (existingGame.BeatmapId == null && beatmapIdResult != null)
-				{
-					existingGame.BeatmapId = beatmapIdResult;
-					_context.Games.Update(existingGame);
-					await _context.SaveChangesAsync();
-					
-					_logger.LogInformation("Game had missing beatmap ID, updated game {GameId} to include beatmap id {BeatmapId}", existingGame.GameId, beatmapIdResult);
-				}
+				
+				persisted.Add(newGame);
 			}
 		}
 
-		return nonRejectedGames;
-	}
-
-	private async Task<int?> GetBeatmapDatabaseIdAsync(Osu.Multiplayer.Game game)
-	{
-		int? id = await _beatmapService.GetIdByBeatmapIdAsync(game.BeatmapId);
-		return id;
+		return persisted;
 	}
 
 	/// <summary>
@@ -288,21 +227,8 @@ public class ApiMatchService : IApiMatchService
 	/// <param name="game"></param>
 	/// <param name="existingMatch"></param>
 	/// <param name="beatmapIdResult"></param>
-	/// <returns>true if the game was not rejected, false if the game was rejected for any reason</returns>
-	private async Task<bool> AddNewGameAsync(Osu.Multiplayer.Game game, Entities.Match existingMatch, int? beatmapIdResult)
+	private async Task<Entities.Game?> AddNewGameAsync(Osu.Multiplayer.Game game, Entities.Match existingMatch, int? beatmapIdResult)
 	{
-		var gameRejectionReason = CheckForGameRejection(game, existingMatch);
-
-		var gameVerificationStatus = existingMatch.VerificationStatusEnum == MatchVerificationStatus.Verified
-			? GameVerificationStatus.Verified
-			: GameVerificationStatus.PreVerified;
-
-		if (gameRejectionReason.HasValue)
-		{
-			gameVerificationStatus = GameVerificationStatus.Rejected;
-			_logger.LogInformation("Game {GameId} was rejected for reason {Reason}", game.GameId, gameRejectionReason.Value);
-		}
-
 		var dbGame = new Entities.Game
 		{
 			MatchId = existingMatch.Id,
@@ -314,99 +240,18 @@ public class ApiMatchService : IApiMatchService
 			MatchType = (int)game.MatchType,
 			ScoringType = (int)game.ScoringType,
 			TeamType = (int)game.TeamType,
-			Mods = (int)game.Mods,
-			VerificationStatus = (int)gameVerificationStatus,
-			RejectionReason = gameRejectionReason.HasValue ? (int?)gameRejectionReason.Value : null
+			Mods = (int)game.Mods
 		};
 
-		await _context.Games.AddAsync(dbGame);
-		await _context.SaveChangesAsync();
-
+		var persisted = await _gamesService.CreateAsync(dbGame);
 		_logger.LogDebug("Saved game {GameId}", dbGame.GameId);
-		return !gameRejectionReason.HasValue;
-	}
-	
-	private GameRejectionReason? CheckForGameRejection(Osu.Multiplayer.Game game, Entities.Match existingMatch)
-	{
-		GameRejectionReason? result = null;
 
-		if(!GameHasCorrectTeamSize(game, existingMatch))
+		if (persisted == null)
 		{
-			result = GameRejectionReason.TeamSizeMismatch;
+			_logger.LogError("Failed to save game {GameId}!", dbGame.GameId);
 		}
-		else if (GameHasBadMods(game) || GameScoresHaveBadMods(game))
-		{
-			result = GameRejectionReason.BadMods;
-		}
-		else if (!GameHasCorrectTeamType(game, existingMatch))
-		{
-			result = GameRejectionReason.TeamTypeMismatch;
-		}
-		else if (!GameHasCorrectMode(game, existingMatch))
-		{
-			result = GameRejectionReason.GameModeMismatch;
-		}
-
-		return result;
-	}
-
-	private bool GameHasCorrectTeamSize(Osu.Multiplayer.Game game, Entities.Match match)
-	{
-		int? teamSize = match.TeamSize;
-		if (teamSize == null)
-		{
-			_logger.LogInformation("Match {MatchId} has no team size, can't verify game {GameId}", match.MatchId, game.GameId);
-			return false; // We can't verify a game if we don't know the team size
-		}
-
-		return (game.Scores.Count / 2) == teamSize;
-	}
-
-	private bool GameHasBadMods(Osu.Multiplayer.Game game) => _unallowedMods.Any(unallowedMod => game.Mods.HasFlag(unallowedMod));
-	private bool GameScoresHaveBadMods(Osu.Multiplayer.Game game) => game.Scores.Any(score => 
-		score.EnabledMods.HasValue &&
-		_unallowedMods.Any(unallowedMod => score.EnabledMods.Value.HasFlag(unallowedMod))
-	);
-
-	private bool GameHasCorrectTeamType(Osu.Multiplayer.Game game, Entities.Match match)
-	{
-		int? expectedTeamSize = match.TeamSize;
-		if (expectedTeamSize == null)
-		{
-			_logger.LogWarning("Match {MatchId} has no team size, can't verify game {GameId}", match.MatchId, game.GameId);
-			return false; // We can't verify a game if we don't know the team size
-		}
-
-		if (expectedTeamSize <= 0)
-		{
-			_logger.LogWarning("Encountered unexpected team size {TeamSize} for match {MatchId}", expectedTeamSize, match.MatchId);
-			return false; // Invalid expected team size
-		}
-
-		if (expectedTeamSize == 1)
-		{
-			return game.TeamType == OsuEnums.TeamType.HeadToHead;
-		}
-
-		return game.TeamType == OsuEnums.TeamType.TeamVs; // We only consider TeamVs
-	}
-
-	private bool GameHasCorrectMode(Osu.Multiplayer.Game game, Entities.Match match)
-	{
-		int? expectedMode = match.Mode;
-		if (expectedMode == null)
-		{
-			_logger.LogWarning("Match {MatchId} has no mode, can't verify game {GameId}", match.MatchId, game.GameId);
-			return false; // We can't verify a game if we don't know the mode
-		}
-
-		if (expectedMode is < 0 or > 3)
-		{
-			_logger.LogWarning("Mode for match {MatchId} is invalid: {Mode}", match.MatchId, expectedMode);
-			return false;
-		}
-
-		return (int) game.PlayMode == expectedMode;
+		
+		return persisted;
 	}
 	
 	private async Task<Entities.Game?> GetGameFromDatabase(long gameId)
@@ -415,7 +260,7 @@ public class ApiMatchService : IApiMatchService
 	}
 	
 	// Scores
-	private async Task ProcessScoresAsync(Osu.Multiplayer.Game game)
+	private async Task CreateScoresAsync(Osu.Multiplayer.Game game)
 	{
 		var dbGame = await GetGameFromDatabase(game.GameId);
 		if (dbGame == null)
@@ -427,14 +272,8 @@ public class ApiMatchService : IApiMatchService
 		int countSaved = 0;
 		foreach (var score in game.Scores)
 		{
-			if (!ScoreIsValid(score))
-			{
-				_logger.LogDebug("Skipping processing of score [Player: {PlayerId} // Score: {ScoreAmount} // Game: {GameId}] because it is not valid!", score.UserId, score.PlayerScore, game.GameId);
-				continue;
-			}
-			
 			int playerId = await _playerService.GetIdByOsuIdAsync(score.UserId);
-			if(playerId == default)
+			if (playerId == default)
 			{
 				_logger.LogWarning("Failed to resolve player ID for player {PlayerId} while processing scores for game {GameId}! This score will be missing!", score.UserId, game.GameId);
 				continue;
@@ -461,8 +300,7 @@ public class ApiMatchService : IApiMatchService
 					IsValid = true // We know this score is valid because we checked it above
 				};
 
-				_context.MatchScores.Add(dbMatchScore);
-				await _context.SaveChangesAsync();
+				await _matchScoresService.CreateAsync(dbMatchScore);
 
 				countSaved++;
 			}
@@ -471,11 +309,6 @@ public class ApiMatchService : IApiMatchService
 		_logger.LogDebug("Saved {Count} scores for game {GameId}", countSaved, game.GameId);
 	}
 
-	private bool ScoreIsValid(Score score)
-	{
-		return score.PlayerScore > 0;
-	}
-	
 	private async Task<bool> ScoreExistsInDatabaseAsync(long gameId, int playerId)
 	{
 		return await _context.MatchScores.AnyAsync(x => x.GameId == gameId && x.PlayerId == playerId);

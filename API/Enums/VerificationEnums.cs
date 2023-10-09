@@ -64,29 +64,13 @@ public enum GameRejectionReason
 	/// <summary>
 	/// Game was rejected because it was a warmup according to automated checks
 	/// </summary>
-	WarmupAutomated = 0,
+	FailedAutomationChecks = 0,
 	/// <summary>
 	/// Manually flagged as a warmup
 	/// </summary>
-	WarmupManual = 1,
+	Warmup = 1,
 	/// <summary>
-	/// Game was played in another mode compared to what was expected
+	/// This match appears to be a non-competitive match (perhaps there was a cheater or something else)
 	/// </summary>
-	GameModeMismatch = 2,
-	/// <summary>
-	/// Game was played with a different team size compared to what was expected
-	/// </summary>
-	TeamSizeMismatch = 3,
-	/// <summary>
-	/// Mods such as relax, autopilot, etc. were present in the game
-	/// </summary>
-	BadMods = 4,
-	/// <summary>
-	/// The game was deemed to contain foul play, cheating, or something else that would make it illegitimate for our purposes
-	/// </summary>
-	NotCompetitive = 5,
-	/// <summary>
-	/// Game had an invalid team type, i.e. expected TeamVs but got something else
-	/// </summary>
-	TeamTypeMismatch = 6
+	NotCompetitive = 2
 }

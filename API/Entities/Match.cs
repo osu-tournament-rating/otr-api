@@ -54,7 +54,19 @@ public class Match
 	public int? VerificationStatus { get; set; }
 	[Column("submitted_by_user")]
 	public int? SubmitterUserId { get; set; }
+	[Column("verified_by_user")]
+	public int? VerifierUserId { get; set; }
+	/// <summary>
+	/// Checked by a background worker to see if the match needs to be processed.
+	/// </summary>
+	[Column("needs_auto_check")]
+	public bool? NeedsAutoCheck { get; set; }
+	/// <summary>
+	/// A flag indicating whether this match needs to be processed by the API. 
+	/// </summary>
+	public bool? IsApiProcessed { get; set; }
 	public User? SubmittedBy { get; set; }	
+	public User? VerifiedBy { get; set; }
 	[InverseProperty("Match")]
 	public virtual ICollection<Game> Games { get; set; } = new List<Game>();
 	[InverseProperty("Match")]
