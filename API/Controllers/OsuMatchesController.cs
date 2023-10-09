@@ -43,11 +43,6 @@ public class OsuMatchesController : Controller
 		_playerService = playerService;
 	}
 
-	[HttpPost("force-update")]
-	[Authorize(Roles = "Admin, System")]
-	public async Task<ActionResult> ForceUpdateAsync([FromBody] long id) =>
-		Ok(await _service.UpdateVerificationStatusAsync(id, MatchVerificationStatus.PendingVerification, MatchVerificationSource.Admin));
-
 	[HttpPost("batch")]
 	public async Task<ActionResult<int>> PostAsync([FromBody] BatchWrapper wrapper, [FromQuery] bool verified = false)
 	{

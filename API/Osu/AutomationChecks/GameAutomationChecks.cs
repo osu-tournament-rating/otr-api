@@ -32,7 +32,7 @@ public static class GameAutomationChecks
 		
 		if(countRed != teamSize || countBlue != teamSize)
 		{
-			_logger.Information("{Prefix} Match {MatchId} has an imbalanced team size: {Size}, can't verify game {GameId}", _logPrefix, game.Match.Id, game.Match.TeamSize, game.GameId);
+			_logger.Information("{Prefix} Match {MatchId} has an imbalanced team size: [Red: {Red} | Blue: {Blue}], can't verify game {GameId}", _logPrefix, game.Match.Id, countRed, countBlue, game.GameId);
 			return false;
 		}
 

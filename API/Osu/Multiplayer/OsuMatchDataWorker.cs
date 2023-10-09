@@ -1,6 +1,7 @@
 using API.Entities;
 using API.Enums;
 using API.Osu.AutomationChecks;
+using API.Services.Implementations;
 using API.Services.Interfaces;
 
 namespace API.Osu.Multiplayer;
@@ -37,69 +38,90 @@ public class OsuMatchDataWorker : BackgroundService
 				var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesService>();
 				var apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchService>();
 				var gamesService = scope.ServiceProvider.GetRequiredService<IGamesService>();
+				var matchScoresService = scope.ServiceProvider.GetRequiredService<IMatchScoresService>();
 				
-				var matchesToCheck = await matchesService.GetNeedApiProcessingAsync();
-				if (!matchesToCheck.Any())
-				{
-					await Task.Delay(INTERVAL_SECONDS * 1000, cancellationToken);
-					_logger.LogTrace("No matches needing auto checks, waiting for {Interval} seconds", INTERVAL_SECONDS);
-					continue;
-				}
-
-				foreach (var match in matchesToCheck)
-				{
-					try
-					{
-						// Matches at this point should only contain data posted from the API.
-						// We need to call the osu! API on these matches and persist them.
-					
-						// After, we do automation checks to filter out invalid matches based solely
-						// on what is in the database.
-						var updatedEntity = await ProcessMatchAsync(match.MatchId, apiMatchService);
-						
-						// Now that we've updated the entity, and stored all of it's matches and games,
-						// we need to perform automation checks and update the verification statuses accordingly.
-
-						if (updatedEntity == null)
-						{
-							_logger.LogWarning("Failed to process match {MatchId} because result from ApiMatchService processing was null", match.MatchId);
-							continue;
-						}
-						
-						// Match verification checks
-						if (!MatchAutomationChecks.PassesAllChecks(updatedEntity))
-						{
-							updatedEntity.VerificationStatus = (int)MatchVerificationStatus.Rejected;
-							updatedEntity.VerificationSource = (int)MatchVerificationSource.System;
-							updatedEntity.VerificationInfo = "Failed automated checks";
-
-							await matchesService.UpdateAsync(updatedEntity);
-							continue;
-						}
-						
-						// Game verification checks
-						foreach (var game in updatedEntity.Games)
-						{
-							if (!GameAutomationChecks.PassesAutomationChecks(game))
-							{
-								game.VerificationStatus = (int)GameVerificationStatus.Rejected;
-								game.RejectionReason = (int)GameRejectionReason.FailedAutomationChecks;
-								
-								await gamesService.UpdateAsync(game);
-							}
-						}
-						
-						// Score verification checks
-					}
-					catch (Exception e)
-					{
-						_logger.LogError("Failed to automatically process match {MatchId}: {Message}", match.MatchId, e.Message);
-					}
-				}
+				await ProcessMatchesOsuApiAsync(cancellationToken, matchesService, apiMatchService, gamesService);
+				await ProcessMatchesNeedingAutomatedChecksAsync(cancellationToken, matchesService, gamesService, matchScoresService);
 			}
 		}
 	}
 
+	private async Task ProcessMatchesNeedingAutomatedChecksAsync(CancellationToken cancellationToken, IMatchesService matchesService, IGamesService gamesService,
+		IMatchScoresService matchScoresService)
+	{
+		if (cancellationToken.IsCancellationRequested)
+		{
+			return;
+		}
+		
+		var matchesToCheck = await matchesService.GetMatchesNeedingAutoCheckAsync();
+
+		foreach (var match in matchesToCheck)
+		{
+			// Match verification checks
+			if (!MatchAutomationChecks.PassesAllChecks(match))
+			{
+				match.VerificationStatus = (int)MatchVerificationStatus.Rejected;
+				match.VerificationSource = (int)MatchVerificationSource.System;
+				match.VerificationInfo = "Failed automated checks";
+
+				await matchesService.UpdateAsync(match);
+				
+				_logger.LogInformation("Match {Match} failed automated checks", match.MatchId);
+				continue;
+			}
+
+			// Game verification checks
+			foreach (var game in match.Games)
+			{
+				if (!GameAutomationChecks.PassesAutomationChecks(game))
+				{
+					game.VerificationStatus = (int)GameVerificationStatus.Rejected;
+					game.RejectionReason = (int)GameRejectionReason.FailedAutomationChecks;
+
+					await gamesService.UpdateAsync(game);
+				}
+			}
+
+			// Score verification checks
+			
+			match.NeedsAutoCheck = false;
+			await matchesService.UpdateAsync(match);
+			
+			_logger.LogInformation("Match {Match} has passed automated checks", match.MatchId);
+		}
+	}
+
+	private async Task ProcessMatchesOsuApiAsync(CancellationToken cancellationToken, IMatchesService matchesService, IApiMatchService apiMatchService, IGamesService gamesService)
+	{
+		var matchesToCheck = await matchesService.GetNeedApiProcessingAsync();
+		if (!matchesToCheck.Any())
+		{
+			await Task.Delay(INTERVAL_SECONDS * 1000, cancellationToken);
+			_logger.LogTrace("No matches needing auto checks, waiting for {Interval} seconds", INTERVAL_SECONDS);
+			return;
+		}
+
+		foreach (var match in matchesToCheck)
+		{
+			try
+			{
+				// Matches at this point should only contain data posted from the web interface.
+				// We need to call the osu! API on these matches and persist them.
+				var updatedEntity = await ProcessMatchAsync(match.MatchId, apiMatchService);
+
+				if (updatedEntity == null)
+				{
+					_logger.LogWarning("Failed to process match {MatchId} because result from ApiMatchService processing was null", match.MatchId);
+				}
+			}
+			catch (Exception e)
+			{
+				_logger.LogError("Failed to automatically process match {MatchId}: {Message}", match.MatchId, e.Message);
+			}
+		}
+	}
+	
 	private async Task<Entities.Match?> ProcessMatchAsync(long osuMatchId, IApiMatchService apiMatchService)
 	{
 		var osuMatch = await _apiService.GetMatchAsync(osuMatchId, $"{osuMatchId} was identified as a match that needs to be processed");

@@ -249,8 +249,22 @@ public class MatchAutomationChecksTests
 	public void Game_FailsTeamSizeCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.TeamSize = 2;
+		match.TeamSize = 4;
 
+		Assert.That(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()), Is.False);
+	}
+
+	[Test]
+	public void Game_FailsTeamSizeCheck_Unbalanced_Teams()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Games.First()!.MatchScores.Add(new MatchScore()
+		{
+			PlayerId = -1,
+			Score = 500,
+			Team = (int) OsuEnums.Team.Red
+		});
+		
 		Assert.That(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()), Is.False);
 	}
 

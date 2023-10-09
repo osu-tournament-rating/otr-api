@@ -37,7 +37,7 @@ public class ApiMatchService : IApiMatchService
 		_matchScoresService = matchScoresService;
 	}
 
-	public async Task<Entities.Match?> CreateFromApiMatchAsync(OsuApiMatchData apiMatch, bool verified = false)
+	public async Task<Entities.Match?> CreateFromApiMatchAsync(OsuApiMatchData apiMatch)
 	{
 		_logger.LogInformation("Processing match {MatchId}", apiMatch.Match.MatchId);
 

@@ -135,8 +135,11 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 	public async Task<IList<Entities.Match>> GetMatchesNeedingAutoCheckAsync()
 	{
+		// We only want api processed matches because the verification checks require the data from the API
 		return await _context.Matches
-		                     .Where(x => x.NeedsAutoCheck == true)
+		                     .Include(x => x.Games)
+		                     .ThenInclude(x => x.MatchScores)
+		                     .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
 		                     .ToListAsync();
 	}
 
