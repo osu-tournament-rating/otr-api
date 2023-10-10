@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.Implementations;
 
-public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
+public class MatchesService : ServiceBase<Match>, IMatchesService
 {
 	private readonly IBeatmapService _beatmapService;
 	private readonly OtrContext _context;
@@ -17,7 +17,6 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	private readonly ILogger<MatchesService> _logger;
 	private readonly IMapper _mapper;
 	private readonly IPlayerService _playerService;
-	
 	private readonly OsuEnums.Mods[] _unallowedMods =
 	{
 		OsuEnums.Mods.TouchDevice,
@@ -43,18 +42,16 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		_gameSrCalculator = gameSrCalculator;
 	}
 
-	public override async Task<Match?> GetAsync(int id)
-	{
+	public override async Task<Match?> GetAsync(int id) =>
 		// Get the match with all associated data
-		return await _context.Matches
-		                     .Include(x => x.Games)
-		                     .ThenInclude(x => x.MatchScores)
-		                     .Include(x => x.Games)
-		                     .ThenInclude(x => x.Beatmap)
-		                     .FirstOrDefaultAsync(x => x.Id == id);
-	}
+		await _context.Matches
+		              .Include(x => x.Games)
+		              .ThenInclude(x => x.MatchScores)
+		              .Include(x => x.Games)
+		              .ThenInclude(x => x.Beatmap)
+		              .FirstOrDefaultAsync(x => x.Id == id);
 
-	public override async Task<int> UpdateAsync(Entities.Match entity)
+	public override async Task<int> UpdateAsync(Match entity)
 	{
 		entity.Updated = DateTime.UtcNow;
 		_context.Matches.Update(entity);
@@ -64,7 +61,9 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	public async Task RefreshAllVerifiedAsync()
 	{
 		_logger.LogWarning("Refreshing all verified matches");
-		await _context.Matches.Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Verified).ExecuteUpdateAsync(x => x.SetProperty(y => y.IsApiProcessed, false).SetProperty(y => y.NeedsAutoCheck, true));
+		await _context.Matches.Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Verified)
+		              .ExecuteUpdateAsync(x => x.SetProperty(y => y.IsApiProcessed, false).SetProperty(y => y.NeedsAutoCheck, true));
+
 		_logger.LogWarning("Refreshed all verified matches");
 	}
 
@@ -80,7 +79,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 		if (onlyIncludeFiltered)
 		{
-			query = query.Where(m => (m.VerificationStatus == (int)MatchVerificationStatus.Verified) &&
+			query = query.Where(m => m.VerificationStatus == (int)MatchVerificationStatus.Verified &&
 			                         m.Games.Any(g => g.MatchScores.Any(ms => ms.Score > 10000) &&
 			                                          g.Beatmap!.DrainTime > 20 &&
 			                                          g.Beatmap!.Sr < 10 &&
@@ -91,10 +90,10 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 
 		if (onlyIncludeFiltered)
 		{
-			var matchesToRemove = new List<Entities.Match>();
+			var matchesToRemove = new List<Match>();
 			foreach (var match in matches)
 			{
-				var gamesToRemove = new List<Entities.Game>();
+				var gamesToRemove = new List<Game>();
 				foreach (var game in match.Games)
 				{
 					if ((game.MatchScores.Count % 2) != 0 || game.MatchScores.Count == 0 || !IsValidModCombination(game.ModsEnum))
@@ -140,25 +139,30 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 	                                                                                                           .ThenInclude(x => x.MatchScores)
 	                                                                                                           .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
 
-	public async Task<IList<Entities.Match>> GetMatchesNeedingAutoCheckAsync()
-	{
+	public async Task<IList<Match>> GetMatchesNeedingAutoCheckAsync() =>
 		// We only want api processed matches because the verification checks require the data from the API
-		return await _context.Matches
-		                     .Include(x => x.Games)
-		                     .ThenInclude(x => x.MatchScores)
-		                     .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
-		                     .ToListAsync();
-	}
+		await _context.Matches
+		              .Include(x => x.Games)
+		              .ThenInclude(x => x.MatchScores)
+		              .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
+		              .ToListAsync();
 
-	public async Task<IList<Match>> GetNeedApiProcessingAsync()
-	{
-		return await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();
-	}
+	public async Task<Match?> GetFirstMatchNeedingApiProcessingAsync() => await _context.Matches
+	                                                                                    .Include(x => x.Games)
+	                                                                                    .ThenInclude(x => x.MatchScores)
+	                                                                                    .Where(x => x.IsApiProcessed == false)
+	                                                                                    .FirstOrDefaultAsync();
 
-	public async Task<IEnumerable<Entities.Match>> CheckExistingAsync(IEnumerable<long> matchIds) =>
-		await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
+	public async Task<Match?> GetFirstMatchNeedingAutoCheckAsync() => await _context.Matches
+	                                                                                .Include(x => x.Games)
+	                                                                                .ThenInclude(x => x.MatchScores)
+	                                                                                .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
+	                                                                                .FirstOrDefaultAsync();
 
-	public async Task<int> BatchInsertAsync(IEnumerable<Entities.Match> matches)
+	public async Task<IList<Match>> GetNeedApiProcessingAsync() => await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();
+	public async Task<IEnumerable<Match>> CheckExistingAsync(IEnumerable<long> matchIds) => await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
+
+	public async Task<int> BatchInsertAsync(IEnumerable<Match> matches)
 	{
 		await _context.Matches.AddRangeAsync(matches);
 		return await _context.SaveChangesAsync();
@@ -176,7 +180,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		match.VerificationStatus = (int)status;
 		match.VerificationSource = (int)source;
 		match.VerificationInfo = info;
-		
+
 		_logger.LogInformation("Updated verification status of match {MatchId} to {Status} (source: {Source}, info: {Info})", matchId, status, source, info);
 		return await _context.SaveChangesAsync();
 	}
@@ -207,7 +211,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		                            .ThenInclude(x => x.Player)
 		                            .Where(x => x.Games.Any(y => y.PlayMode == mode && y.MatchScores.Any(z => z.Player.OsuId == osuPlayerId)))
 		                            .ToListAsync();
-		
+
 		foreach (var match in matches)
 		{
 			// For head to head (lobby size 2), calculate the winner based on score
@@ -216,26 +220,26 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 			int team = 0;
 			foreach (var game in match.Games)
 			{
-				if(!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
+				if (!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
 				{
 					continue;
 				}
 
 				team = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
 			}
-			
-			foreach(var game in match.Games)
+
+			foreach (var game in match.Games)
 			{
 				try
 				{
 					if (game.MatchScores.Count == 2)
 					{
 						// Assuming this is a 1v1...
-						if(!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
+						if (!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
 						{
 							continue;
 						}
-						
+
 						long playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Score;
 						long opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Score;
 
@@ -251,12 +255,12 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					else if (game.MatchScores.Count >= 4)
 					{
 						// Identify player team, sum the scores, then add points this way
-						var playerTeam = team;
-						var opponentTeam = game.MatchScores.FirstOrDefault(x => x.Team != playerTeam)?.Team;
+						int playerTeam = team;
+						int? opponentTeam = game.MatchScores.FirstOrDefault(x => x.Team != playerTeam)?.Team;
 
-						var playerTeamScores  = game.MatchScores.Where(x => x.Team == playerTeam).Sum(x => x.Score);
-						var opponentTeamScores = game.MatchScores.Where(x => x.Team == opponentTeam).Sum(x => x.Score);
-					
+						long playerTeamScores = game.MatchScores.Where(x => x.Team == playerTeam).Sum(x => x.Score);
+						long opponentTeamScores = game.MatchScores.Where(x => x.Team == opponentTeam).Sum(x => x.Score);
+
 						if (playerTeamScores > opponentTeamScores)
 						{
 							pointsPlayer++;
@@ -272,7 +276,7 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 					_logger.LogWarning(e, "Error occurred while calculating match wins for player {OsuId}", osuPlayerId);
 				}
 			}
-			
+
 			if (pointsPlayer > pointsOpponent)
 			{
 				wins++;
@@ -282,51 +286,43 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		return wins;
 	}
 
-	public async Task<IEnumerable<Unmapped_VerifiedTournamentDTO>> GetAllVerifiedTournamentsAsync()
-	{
-		return await _context.Matches
-		                                .WhereVerified()
-		                                .GroupBy(x => x.TournamentName)
-		                                .Where(x => x.Key != null)
-		                                .OrderBy(x => x.Key)
-		                                .Select(x => new Unmapped_VerifiedTournamentDTO
-		                                {
-			                                TournamentName = x.Key,
-			                                Abbreviation = x.First().Abbreviation,
-			                                ForumPost = x.First().Forum
-		                                })
-		                                .ToListAsync();
-	}
+	public async Task<IEnumerable<Unmapped_VerifiedTournamentDTO>> GetAllVerifiedTournamentsAsync() => await _context.Matches
+	                                                                                                                 .WhereVerified()
+	                                                                                                                 .GroupBy(x => x.TournamentName)
+	                                                                                                                 .Where(x => x.Key != null)
+	                                                                                                                 .OrderBy(x => x.Key)
+	                                                                                                                 .Select(x => new Unmapped_VerifiedTournamentDTO
+	                                                                                                                 {
+		                                                                                                                 TournamentName = x.Key,
+		                                                                                                                 Abbreviation = x.First().Abbreviation,
+		                                                                                                                 ForumPost = x.First().Forum
+	                                                                                                                 })
+	                                                                                                                 .ToListAsync();
 
-	public async Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime)
-	{
-		return await _context.MatchScores
-		                     .WhereVerified()
-		                     .WherePlayer(osuPlayerId)
-		                     .WhereMode(mode)
-		                     .After(fromTime)
-		                     .Include(x => x.Game)
-		                     .GroupBy(x => x.Game.MatchId)
-		                     .CountAsync();
-	}
+	public async Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime) => await _context.MatchScores
+	                                                                                                               .WhereVerified()
+	                                                                                                               .WherePlayer(osuPlayerId)
+	                                                                                                               .WhereMode(mode)
+	                                                                                                               .After(fromTime)
+	                                                                                                               .Include(x => x.Game)
+	                                                                                                               .GroupBy(x => x.Game.MatchId)
+	                                                                                                               .CountAsync();
 
 	public async Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime)
 	{
 		int played = await CountMatchesPlayedAsync(osuPlayerId, mode, fromTime);
 		int won = await CountMatchWinsAsync(osuPlayerId, mode, fromTime);
-		
+
 		if (played == 0)
 		{
 			return 0;
 		}
-		
+
 		return (double)won / played;
 	}
 
-	public async Task<string?> GetMatchAbbreviationAsync(long osuMatchId)
-	{
-		return await _context.Matches.Where(x => x.MatchId == osuMatchId).Select(x => x.Abbreviation).FirstOrDefaultAsync();
-	}
+	public async Task<string?> GetMatchAbbreviationAsync(long osuMatchId) =>
+		await _context.Matches.Where(x => x.MatchId == osuMatchId).Select(x => x.Abbreviation).FirstOrDefaultAsync();
 
 	/// <summary>
 	///  Calculates the effective "post-mod SR" of a given game.

@@ -81,8 +81,6 @@ public partial class OtrContext : DbContext
 
 			entity.HasIndex(x => x.GameId);
 			entity.HasIndex(x => x.MatchId);
-			entity.HasIndex(x => x.StartTime);
-			entity.HasIndex(x => x.PlayMode);
 		});
 
 		modelBuilder.Entity<Match>(entity =>
@@ -99,8 +97,6 @@ public partial class OtrContext : DbContext
 			entity.HasMany(e => e.Games).WithOne(g => g.Match);
 			entity.HasMany(e => e.RatingHistories).WithOne(h => h.Match);
 
-			entity.HasIndex(x => x.VerificationStatus);
-			entity.HasIndex(x => x.StartTime);
 			entity.HasIndex(x => x.MatchId);
 		});
 
@@ -122,10 +118,6 @@ public partial class OtrContext : DbContext
 			      .HasConstraintName("match_scores_players_id_fk");
 
 			entity.HasIndex(x => x.PlayerId);
-			entity.HasIndex(x => x.GameId);
-			entity.HasIndex(x => new { x.GameId, x.Team });
-			entity.HasIndex(x => x.Team);
-			entity.HasIndex(x => x.EnabledMods);
 		});
 
 		modelBuilder.Entity<Player>(entity =>
@@ -141,8 +133,6 @@ public partial class OtrContext : DbContext
 			entity.HasOne(e => e.User).WithOne(u => u.Player);
 
 			entity.HasIndex(x => x.OsuId);
-			entity.HasIndex(x => x.Country);
-			entity.HasIndex(x => x.Username);
 		});
 
 		modelBuilder.Entity<Rating>(entity =>
@@ -158,9 +148,6 @@ public partial class OtrContext : DbContext
 			      .HasConstraintName("Ratings___fkplayerid");
 
 			entity.HasIndex(x => x.PlayerId);
-			entity.HasIndex(x => x.Mode);
-			entity.HasIndex(x => x.Mu);
-			entity.HasIndex(x => new { x.PlayerId, x.Mode });
 		});
 
 		modelBuilder.Entity<RatingHistory>(entity =>
@@ -180,9 +167,7 @@ public partial class OtrContext : DbContext
 			      .OnDelete(DeleteBehavior.ClientSetNull)
 			      .HasConstraintName("RatingHistories___fkplayerid");
 
-			entity.HasIndex(x => x.Mode);
-			entity.HasIndex(x => x.Mu);
-			entity.HasIndex(x => x.Created);
+			entity.HasIndex(x => x.PlayerId);
 		});
 
 		modelBuilder.Entity<User>(entity =>

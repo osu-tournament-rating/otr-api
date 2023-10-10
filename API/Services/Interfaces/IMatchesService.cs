@@ -10,6 +10,8 @@ public interface IMatchesService : IService<Entities.Match>
 	Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered);
 	Task<MatchDTO?> GetByOsuMatchIdAsync(long osuMatchId);
 	Task<IList<Entities.Match>> GetMatchesNeedingAutoCheckAsync();
+	Task<Entities.Match?> GetFirstMatchNeedingApiProcessingAsync();
+	Task<Entities.Match?> GetFirstMatchNeedingAutoCheckAsync();
 	Task<IList<Entities.Match>> GetNeedApiProcessingAsync();
 	Task<IEnumerable<Entities.Match>> CheckExistingAsync(IEnumerable<long> matchIds);
 
