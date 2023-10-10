@@ -81,8 +81,6 @@ public partial class OtrContext : DbContext
 
 			entity.HasIndex(x => x.GameId);
 			entity.HasIndex(x => x.MatchId);
-			entity.HasIndex(x => x.TeamType);
-			entity.HasIndex(x => new { x.TeamType, x.Id });
 			entity.HasIndex(x => x.StartTime);
 			entity.HasIndex(x => x.PlayMode);
 		});
