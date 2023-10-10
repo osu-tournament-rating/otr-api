@@ -66,7 +66,7 @@ public class ApiMatchService : IApiMatchService
 			var newPlayer = new Player { OsuId = osuId };
 			var player = await _playerService.CreateAsync(newPlayer);
 
-			_logger.LogInformation("Saved new player: {PlayerId} (osuId: {OsuId}) from match {MatchId}", player.Id, osuId, apiMatch.Match.MatchId);
+			_logger.LogInformation("Saved new player: {PlayerId} (osuId: {OsuId}) from match {MatchId}", player?.Id, osuId, apiMatch.Match.MatchId);
 		}
 	}
 
@@ -104,7 +104,12 @@ public class ApiMatchService : IApiMatchService
 	/// </summary>
 	private async Task CreateBeatmapsAsync(OsuApiMatchData apiMatch)
 	{
-		var beatmapIds = GetBeatmapIds(apiMatch).ToList();
+		var beatmapIds = GetBeatmapIds(apiMatch).Distinct().ToList();
+
+		if (beatmapIds.Count == 0)
+		{
+			return;
+		}
 		
 		var beatmapsToSave = new List<Beatmap>();
 		int countSaved = 0;
@@ -125,7 +130,11 @@ public class ApiMatchService : IApiMatchService
 		}
 
 		await _beatmapService.BulkInsertAsync(beatmapsToSave);
-		_logger.LogInformation("Saved {Count} beatmaps from match {MatchId}", countSaved, apiMatch.Match.MatchId);
+
+		if (countSaved > 0)
+		{
+			_logger.LogInformation("Saved {Count} beatmaps from match {MatchId}", countSaved, apiMatch.Match.MatchId);
+		}
 	}
 
 	private IEnumerable<long> GetBeatmapIds(OsuApiMatchData apiMatch) => apiMatch.Games.Select(x => x.BeatmapId);
@@ -165,8 +174,11 @@ public class ApiMatchService : IApiMatchService
 		{
 			await CreateScoresAsync(game);
 		}
-		
-		_logger.LogInformation("Saved scores for {Count} non-rejected games from match {MatchId}", persistedGames.Count, apiMatch.Match.MatchId);
+
+		if (persistedGames.Count > 0)
+		{
+			_logger.LogInformation("Saved scores for {Count} non-rejected games from match {MatchId}", persistedGames.Count, apiMatch.Match.MatchId);
+		}
 		
 		// Fetch the full entity from the database once again to ensure we have the latest populated data
 		return await _matchesService.GetAsync(existingMatch.Id);
@@ -305,12 +317,15 @@ public class ApiMatchService : IApiMatchService
 				countSaved++;
 			}
 		}
-		
-		_logger.LogDebug("Saved {Count} scores for game {GameId}", countSaved, game.GameId);
+
+		if (countSaved > 0)
+		{
+			_logger.LogDebug("Saved {Count} new scores for game {GameId}", countSaved, game.GameId);
+		}
 	}
 
 	private async Task<bool> ScoreExistsInDatabaseAsync(long gameId, int playerId)
 	{
-		return await _context.MatchScores.AnyAsync(x => x.GameId == gameId && x.PlayerId == playerId);
+		return await _context.MatchScores.AnyAsync(x => x.Game.GameId == gameId && x.PlayerId == playerId);
 	}
 }

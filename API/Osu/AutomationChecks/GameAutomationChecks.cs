@@ -9,7 +9,7 @@ public static class GameAutomationChecks
 	
 	public static bool PassesAutomationChecks(Game game)
 	{
-		return PassesTeamSizeCheck(game) && PassesModeCheck(game) && PassesScoringTypeCheck(game) && PassesModsCheck(game) && PassesTeamTypeCheck(game);
+		return PassesScoringTypeCheck(game) && PassesModeCheck(game) && PassesTeamTypeCheck(game) && PassesTeamSizeCheck(game) && PassesModsCheck(game);
 	}
 
 	public static bool PassesTeamSizeCheck(Game game)
@@ -29,6 +29,14 @@ public static class GameAutomationChecks
 		
 		int countRed = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Red);
 		int countBlue = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Blue);
+
+		if (countRed == 0 && countBlue == 0)
+		{
+			// We likely have a situation where the team size is > 0, and the game is TeamVs,
+			// but the match itself is HeadToHead. This is a problem.
+			_logger.Information("{Prefix} Match {MatchId} has no team size for red or blue, can't verify game {GameId} (likely a warmup)", _logPrefix, game.Match.Id, game.GameId);
+			return false;
+		}
 		
 		if(countRed != teamSize || countBlue != teamSize)
 		{

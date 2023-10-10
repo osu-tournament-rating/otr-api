@@ -10,7 +10,7 @@ public static class QueryExtensions
 	public static IQueryable<Player> WhereOsuId(this IQueryable<Player> query, long osuId) => query.AsQueryable().Where(x => x.OsuId == osuId);
 
 	// Match
-	public static IQueryable<Match> WhereVerified(this IQueryable<Match> query) => query.AsQueryable().Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Verified);
+	public static IQueryable<Match> WhereVerified(this IQueryable<Match> query) => query.AsQueryable().Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Verified && x.IsApiProcessed == true && x.NeedsAutoCheck == false);
 	public static IQueryable<Match> After(this IQueryable<Match> query, DateTime after) => query.AsQueryable().Where(x => x.StartTime > after);
 
 	// Game

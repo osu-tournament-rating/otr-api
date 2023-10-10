@@ -45,7 +45,7 @@ public class OsuMatchDataWorker : BackgroundService
 			}
 		}
 	}
-
+	
 	private async Task ProcessMatchesNeedingAutomatedChecksAsync(CancellationToken cancellationToken, IMatchesService matchesService, IGamesService gamesService,
 		IMatchScoresService matchScoresService)
 	{
@@ -65,6 +65,8 @@ public class OsuMatchDataWorker : BackgroundService
 				match.VerificationSource = (int)MatchVerificationSource.System;
 				match.VerificationInfo = "Failed automated checks";
 
+				match.NeedsAutoCheck = false;
+
 				await matchesService.UpdateAsync(match);
 				
 				_logger.LogInformation("Match {Match} failed automated checks", match.MatchId);
@@ -78,12 +80,41 @@ public class OsuMatchDataWorker : BackgroundService
 				{
 					game.VerificationStatus = (int)GameVerificationStatus.Rejected;
 					game.RejectionReason = (int)GameRejectionReason.FailedAutomationChecks;
+					_logger.LogInformation("Game {Game} failed automation checks", game.GameId);
 
 					await gamesService.UpdateAsync(game);
 				}
+				else
+				{
+					// Game has passed automation checks
+					game.VerificationStatus = (int)GameVerificationStatus.PreVerified;
+					if (match.VerificationStatus == (int)MatchVerificationStatus.Verified)
+					{
+						game.VerificationStatus = (int)GameVerificationStatus.Verified;
+					}
+					
+					_logger.LogDebug("Game {Game} passed automation checks and is marked as {Status}", game.GameId, (GameVerificationStatus)game.VerificationStatus);
+				}
+				
+				// Score verification checks
+				foreach (var score in game.MatchScores)
+				{
+					if (!ScoreAutomationChecks.PassesAutomationChecks(score))
+					{
+						score.IsValid = false;
+						await matchScoresService.UpdateAsync(score);
+						
+						_logger.LogDebug("Score [Player: {Player} | Game: {Game}] failed automation checks", score.PlayerId, game.GameId);
+					}
+					else
+					{
+						score.IsValid = true;
+						await matchScoresService.UpdateAsync(score);
+						
+						_logger.LogTrace("Score [Player: {Player} | Game: {Game}] passed automation checks", score.PlayerId, game.GameId);
+					}
+				}
 			}
-
-			// Score verification checks
 			
 			match.NeedsAutoCheck = false;
 			await matchesService.UpdateAsync(match);

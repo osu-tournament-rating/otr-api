@@ -61,6 +61,13 @@ public class MatchesService : ServiceBase<Entities.Match>, IMatchesService
 		return await _context.SaveChangesAsync();
 	}
 
+	public async Task RefreshAllVerifiedAsync()
+	{
+		_logger.LogWarning("Refreshing all verified matches");
+		await _context.Matches.Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Verified).ExecuteUpdateAsync(x => x.SetProperty(y => y.IsApiProcessed, false).SetProperty(y => y.NeedsAutoCheck, true));
+		_logger.LogWarning("Refreshed all verified matches");
+	}
+
 	public async Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered)
 	{
 		var query = _context.Matches

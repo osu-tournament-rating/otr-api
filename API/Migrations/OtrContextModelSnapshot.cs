@@ -302,7 +302,8 @@ namespace API.Migrations
                         .HasColumnName("forum");
 
                     b.Property<bool?>("IsApiProcessed")
-                        .HasColumnType("boolean");
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_api_processed");
 
                     b.Property<long>("MatchId")
                         .HasColumnType("bigint")

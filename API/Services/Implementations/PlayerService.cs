@@ -24,6 +24,12 @@ public class PlayerService : ServiceBase<Player>, IPlayerService
 		_mapper = mapper;
 	}
 
+	public override async Task<Player?> CreateAsync(Player player)
+	{
+		player.Created = DateTime.UtcNow;
+		return await base.CreateAsync(player);
+	}
+
 	public async Task<IEnumerable<Player>> GetPlayersWhereMissingGlobalRankAsync()
 	{
 		// Get all players that are missing an earliest global rank in any mode (but have a current rank in that mode)

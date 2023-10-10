@@ -64,6 +64,7 @@ public class Match
 	/// <summary>
 	/// A flag indicating whether this match needs to be processed by the API. 
 	/// </summary>
+	[Column("is_api_processed")]
 	public bool? IsApiProcessed { get; set; }
 	public User? SubmittedBy { get; set; }	
 	public User? VerifiedBy { get; set; }

@@ -31,18 +31,26 @@ public class OsuMatchesController : Controller
 	private readonly ILogger<OsuMatchesController> _logger;
 	private readonly IMatchScoresService _scoresService;
 	private readonly IPlayerService _playerService;
-	private readonly IMatchesService _service;
+	private readonly IMatchesService _matchesService;
 
 	public OsuMatchesController(ILogger<OsuMatchesController> logger,
-		IMatchesService service, IGamesService gamesService, IMatchScoresService scoresService, IPlayerService playerService)
+		IMatchesService matchesService, IGamesService gamesService, IMatchScoresService scoresService, IPlayerService playerService)
 	{
 		_logger = logger;
-		_service = service;
+		_matchesService = matchesService;
 		_gamesService = gamesService;
 		_scoresService = scoresService;
 		_playerService = playerService;
 	}
 
+	[HttpPost("refresh/verified")]
+	public async Task<IActionResult> RefreshAllVerifiedAsync()
+	{
+		// Refreshes all verified matches such that they will be repopulated by the osu! API and re-processed for automation checks.
+		await _matchesService.RefreshAllVerifiedAsync();
+		return Ok();
+	}
+	
 	[HttpPost("batch")]
 	public async Task<ActionResult<int>> PostAsync([FromBody] BatchWrapper wrapper, [FromQuery] bool verified = false)
 	{
@@ -64,7 +72,7 @@ public class OsuMatchesController : Controller
 		// Check if any of the links already exist in the database
 		var ids = wrapper.Ids;
 		ids = ids.ToList();
-		var existingMatches = await _service.CheckExistingAsync(ids);
+		var existingMatches = await _matchesService.CheckExistingAsync(ids);
 
 		// If we are verifying a match that already exists, we need to update the verification status
 		if (verified)
@@ -96,7 +104,8 @@ public class OsuMatchesController : Controller
 				verifiedMatch.Updated = DateTime.UtcNow;
 				verifiedMatch.NeedsAutoCheck = true;
 				verifiedMatch.IsApiProcessed = false;
-				await _service.UpdateAsync(verifiedMatch);
+				verifiedMatch.VerifierUserId = wrapper.SubmitterId;
+				await _matchesService.UpdateAsync(verifiedMatch);
 				_logger.LogInformation("Updated {@Match}", verifiedMatch);
 			}
 		}
@@ -123,10 +132,11 @@ public class OsuMatchesController : Controller
 			TeamSize = wrapper.TeamSize,
 			Mode = wrapper.Mode,
 			NeedsAutoCheck = true,
-			IsApiProcessed = false
+			IsApiProcessed = false,
+			VerifierUserId = verified ? wrapper.SubmitterId : null
 		});
 
-		int? result = await _service.BatchInsertAsync(matches);
+		int? result = await _matchesService.BatchInsertAsync(matches);
 		if (result > 0)
 		{
 			_logger.LogInformation("Successfully inserted {Matches} new matches as {Status}", result, verification);
@@ -139,7 +149,7 @@ public class OsuMatchesController : Controller
 	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<IEnumerable<Match>?>> GetAllAsync()
 	{
-		var matches = await _service.GetAllAsync(true);
+		var matches = await _matchesService.GetAllAsync(true);
 		return Ok(matches);
 	}
 
@@ -147,7 +157,7 @@ public class OsuMatchesController : Controller
 	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
 	{
-		var match = await _service.GetByOsuMatchIdAsync(osuMatchId);
+		var match = await _matchesService.GetByOsuMatchIdAsync(osuMatchId);
 
 		if (match == null)
 		{
@@ -159,13 +169,13 @@ public class OsuMatchesController : Controller
 
 	[HttpGet("player/{osuId:long}")]
 	[Authorize(Roles = "Admin, System")]
-	public async Task<ActionResult<IEnumerable<Unmapped_PlayerMatchesDTO>>> GetMatchesAsync(long osuId) => Ok(await _service.GetPlayerMatchesAsync(osuId, DateTime.MinValue));
+	public async Task<ActionResult<IEnumerable<Unmapped_PlayerMatchesDTO>>> GetMatchesAsync(long osuId) => Ok(await _matchesService.GetPlayerMatchesAsync(osuId, DateTime.MinValue));
 
 	[HttpGet("{id:int}/osuid")]
 	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
 	{
-		var match = await _service.GetAsync(id);
+		var match = await _matchesService.GetAsync(id);
 		if (match == null)
 		{
 			return NotFound($"Match with id {id} does not exist");
