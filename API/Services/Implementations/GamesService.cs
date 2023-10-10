@@ -74,7 +74,7 @@ public class GamesService : ServiceBase<Game>, IGamesService
 			var playerMods = game.MatchScores.Select(x => x.EnabledModsEnum);
 
 			game.PostModSr = await _gameSrCalculator.Calculate(beatmap.Sr, beatmap.Id, mods, playerMods);
-			_context.Games.Update(game);
+			await UpdateAsync(game);
 		}
 
 		await _context.SaveChangesAsync();
