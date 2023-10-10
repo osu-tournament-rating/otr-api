@@ -101,15 +101,22 @@ public class OsuMatchDataWorker : BackgroundService
 				{
 					if (!ScoreAutomationChecks.PassesAutomationChecks(score))
 					{
-						score.IsValid = false;
-						await matchScoresService.UpdateAsync(score);
+						if (score.IsValid == true)
+						{
+							// Avoid unnecessary db calls
+							score.IsValid = false;
+							await matchScoresService.UpdateAsync(score);
+						}
 						
 						_logger.LogDebug("Score [Player: {Player} | Game: {Game}] failed automation checks", score.PlayerId, game.GameId);
 					}
 					else
 					{
-						score.IsValid = true;
-						await matchScoresService.UpdateAsync(score);
+						if (score.IsValid == false)
+						{
+							score.IsValid = true;
+							await matchScoresService.UpdateAsync(score);
+						}
 						
 						_logger.LogTrace("Score [Player: {Player} | Game: {Game}] passed automation checks", score.PlayerId, game.GameId);
 					}
