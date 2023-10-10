@@ -44,6 +44,7 @@ public class OsuMatchesController : Controller
 	}
 
 	[HttpPost("refresh/verified")]
+	[Authorize(Roles = "Admin, System")]
 	public async Task<IActionResult> RefreshAllVerifiedAsync()
 	{
 		// Refreshes all verified matches such that they will be repopulated by the osu! API and re-processed for automation checks.
