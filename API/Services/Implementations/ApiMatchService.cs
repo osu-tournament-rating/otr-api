@@ -177,7 +177,7 @@ public class ApiMatchService : IApiMatchService
 
 		if (persistedGames.Count > 0)
 		{
-			_logger.LogInformation("Saved scores for {Count} non-rejected games from match {MatchId}", persistedGames.Count, apiMatch.Match.MatchId);
+			_logger.LogInformation("Saved scores for {Count} games from match {MatchId}", persistedGames.Count, apiMatch.Match.MatchId);
 		}
 		
 		// Fetch the full entity from the database once again to ensure we have the latest populated data
