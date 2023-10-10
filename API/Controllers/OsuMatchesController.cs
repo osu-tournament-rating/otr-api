@@ -97,6 +97,7 @@ public class OsuMatchesController : Controller
 				verifiedMatch.NeedsAutoCheck = true;
 				verifiedMatch.IsApiProcessed = false;
 				verifiedMatch.VerifierUserId = wrapper.SubmitterId;
+				
 				await _matchesService.UpdateAsync(verifiedMatch);
 				_logger.LogInformation("Updated {@Match}", verifiedMatch);
 			}

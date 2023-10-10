@@ -9,7 +9,7 @@ public static class MatchAutomationChecks
 	
 	public static bool PassesAllChecks(Match match)
 	{
-		return PassesNameCheck(match);
+		return GameModeExists(match) && PassesNameCheck(match);
 	}
 
 	public static bool PassesNameCheck(Match match)
@@ -39,5 +39,11 @@ public static class MatchAutomationChecks
 		}
 
 		return true;
+	}
+
+	public static bool GameModeExists(Match match)
+	{
+		_logger.Information("{Prefix} Match {Match} has game mode {Mode}", _logPrefix, match.MatchId, match.Mode);
+		return match.Mode != null;
 	}
 }

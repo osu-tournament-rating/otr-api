@@ -1,7 +1,5 @@
-using API.Entities;
 using API.Enums;
 using API.Osu.AutomationChecks;
-using API.Services.Implementations;
 using API.Services.Interfaces;
 
 namespace API.Osu.Multiplayer;
@@ -55,9 +53,11 @@ public class OsuMatchDataWorker : BackgroundService
 		}
 		
 		var matchesToCheck = await matchesService.GetMatchesNeedingAutoCheckAsync();
+		_logger.LogInformation("Identified {Count} matches needing automated checks", matchesToCheck.Count);
 
 		foreach (var match in matchesToCheck)
 		{
+			_logger.LogInformation("Performing automated checks on match {Match}", match.MatchId);
 			// Match verification checks
 			if (!MatchAutomationChecks.PassesAllChecks(match))
 			{
@@ -93,7 +93,7 @@ public class OsuMatchDataWorker : BackgroundService
 						game.VerificationStatus = (int)GameVerificationStatus.Verified;
 					}
 					
-					_logger.LogDebug("Game {Game} passed automation checks and is marked as {Status}", game.GameId, (GameVerificationStatus)game.VerificationStatus);
+					_logger.LogInformation("Game {Game} passed automation checks and is marked as {Status}", game.GameId, (GameVerificationStatus)game.VerificationStatus);
 				}
 				
 				// Score verification checks
