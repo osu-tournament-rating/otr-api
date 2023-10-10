@@ -37,6 +37,12 @@ public static class GameAutomationChecks
 			_logger.Information("{Prefix} Match {MatchId} has no team size for red or blue, can't verify game {GameId} (likely a warmup)", _logPrefix, game.Match.MatchId, game.GameId);
 			return false;
 		}
+
+		if (countRed != countBlue)
+		{
+			_logger.Information("{Prefix} Match {MatchId} has a mismatched team size: [Red: {Red} | Blue: {Blue}], can't verify game {GameId}", _logPrefix, game.Match.MatchId, countRed, countBlue, game.GameId);
+			return false;
+		}
 		
 		if(countRed != teamSize || countBlue != teamSize)
 		{
