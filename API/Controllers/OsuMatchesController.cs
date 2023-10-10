@@ -43,15 +43,6 @@ public class OsuMatchesController : Controller
 		_playerService = playerService;
 	}
 
-	[HttpPost("refresh/verified")]
-	[Authorize(Roles = "Admin, System")]
-	public async Task<IActionResult> RefreshAllVerifiedAsync()
-	{
-		// Refreshes all verified matches such that they will be repopulated by the osu! API and re-processed for automation checks.
-		await _matchesService.RefreshAllVerifiedAsync();
-		return Ok();
-	}
-	
 	[HttpPost("batch")]
 	public async Task<ActionResult<int>> PostAsync([FromBody] BatchWrapper wrapper, [FromQuery] bool verified = false)
 	{
