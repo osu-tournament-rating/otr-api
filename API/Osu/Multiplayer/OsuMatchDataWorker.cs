@@ -71,13 +71,29 @@ public class OsuMatchDataWorker : BackgroundService
 		{
 			match.VerificationStatus = (int)MatchVerificationStatus.Rejected;
 			match.VerificationSource = (int)MatchVerificationSource.System;
-			match.VerificationInfo = "Failed automated checks";
+			match.VerificationInfo = "Failed automation checks";
 
 			match.NeedsAutoCheck = false;
+			_logger.LogInformation("Match {Match} failed automation checks", match.MatchId);
+		}
+		else
+		{
+			if (match.VerificationStatus == (int)MatchVerificationStatus.Rejected)
+			{
+				// The match was previously rejected, but is now rectified of this status.
 
-			await matchesService.UpdateAsync(match);
-			
-			_logger.LogInformation("Match {Match} failed automated checks", match.MatchId);
+				if (match.VerifiedBy != null)
+				{
+					match.VerificationStatus = (int)MatchVerificationStatus.Verified;
+				}
+				else
+				{
+					match.VerificationStatus = (int)MatchVerificationStatus.PreVerified;
+				}
+				
+				match.VerificationSource = (int)MatchVerificationSource.System;
+				match.VerificationInfo = null;
+			}
 		}
 
 		// Game verification checks
