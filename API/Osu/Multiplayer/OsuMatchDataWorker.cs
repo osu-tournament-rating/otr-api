@@ -133,7 +133,7 @@ public class OsuMatchDataWorker : BackgroundService
 		match.NeedsAutoCheck = false;
 		await matchesService.UpdateAsync(match);
 		
-		_logger.LogInformation("Match {Match} has passed automated checks", match.MatchId);
+		_logger.LogInformation("Match {Match} has completed automated checks", match.MatchId);
 	}
 
 	private async Task ProcessMatchesOsuApiAsync(Entities.Match match, IMatchesService matchesService, IApiMatchService apiMatchService, IGamesService gamesService)
