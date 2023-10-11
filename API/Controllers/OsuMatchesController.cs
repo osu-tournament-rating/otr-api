@@ -138,6 +138,14 @@ public class OsuMatchesController : Controller
 		return Ok();
 	}
 
+	[HttpPost("refresh/AutomationChecks/invalid")]
+	public async Task<IActionResult> RefreshAutomationChecksAsync()
+	{
+		// Marks invalid matches as needing automation checks
+		await _matchesService.RefreshAutomationChecks(true);
+		return Ok();
+	}
+
 	[HttpGet("all")]
 	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<IEnumerable<Match>?>> GetAllAsync()

@@ -6,7 +6,7 @@ namespace API.Services.Interfaces;
 
 public interface IMatchesService : IService<Entities.Match>
 {
-	Task RefreshAllVerifiedAsync();
+	Task RefreshAutomationChecks(bool invalidOnly = true);
 	Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered);
 	Task<MatchDTO?> GetDTOByOsuMatchIdAsync(long osuMatchId);
 	Task<Entities.Match?> GetByMatchIdAsync(long matchId);

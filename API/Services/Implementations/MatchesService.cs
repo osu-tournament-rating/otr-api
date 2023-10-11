@@ -67,6 +67,20 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 		_logger.LogWarning("Refreshed all verified matches");
 	}
 
+	public async Task RefreshAutomationChecks(bool invalidOnly = true)
+	{
+		var query = _context.Matches
+		                      .Where(x => x.NeedsAutoCheck == false && x.IsApiProcessed == true);
+
+		if (invalidOnly)
+		{
+			query = query.Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Rejected);
+		}
+		
+		await query.ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
+		_logger.LogInformation("Refreshed automation checks for {Count} matches", await query.CountAsync());
+	}
+
 	public async Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered)
 	{
 		var query = _context.Matches
