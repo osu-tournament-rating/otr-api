@@ -8,7 +8,8 @@ public interface IMatchesService : IService<Entities.Match>
 {
 	Task RefreshAllVerifiedAsync();
 	Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered);
-	Task<MatchDTO?> GetByOsuMatchIdAsync(long osuMatchId);
+	Task<MatchDTO?> GetDTOByOsuMatchIdAsync(long osuMatchId);
+	Task<Entities.Match?> GetByMatchIdAsync(long matchId);
 	Task<IList<Entities.Match>> GetMatchesNeedingAutoCheckAsync();
 	Task<Entities.Match?> GetFirstMatchNeedingApiProcessingAsync();
 	Task<Entities.Match?> GetFirstMatchNeedingAutoCheckAsync();
@@ -27,4 +28,6 @@ public interface IMatchesService : IService<Entities.Match>
 	Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime);
 	Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime);
 	Task<string?> GetMatchAbbreviationAsync(long osuMatchId);
+	Task UpdateAsApiProcessed(Entities.Match match);
+	Task UpdateAsAutoChecked(Entities.Match match);
 }

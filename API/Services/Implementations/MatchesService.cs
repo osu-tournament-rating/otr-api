@@ -132,12 +132,14 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 		return _mapper.Map<IEnumerable<MatchDTO>>(matches);
 	}
 
-	public async Task<MatchDTO?> GetByOsuMatchIdAsync(long osuMatchId) => _mapper.Map<MatchDTO?>(await _context.Matches
+	public async Task<MatchDTO?> GetDTOByOsuMatchIdAsync(long osuMatchId) => _mapper.Map<MatchDTO?>(await _context.Matches
 	                                                                                                           .Include(x => x.Games)
 	                                                                                                           .ThenInclude(g => g.Beatmap)
 	                                                                                                           .Include(x => x.Games)
 	                                                                                                           .ThenInclude(x => x.MatchScores)
 	                                                                                                           .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
+
+	public async Task<Entities.Match?> GetByMatchIdAsync(long matchId) => await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
 
 	public async Task<IList<Match>> GetMatchesNeedingAutoCheckAsync() =>
 		// We only want api processed matches because the verification checks require the data from the API
@@ -150,13 +152,13 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 	public async Task<Match?> GetFirstMatchNeedingApiProcessingAsync() => await _context.Matches
 	                                                                                    .Include(x => x.Games)
 	                                                                                    .ThenInclude(x => x.MatchScores)
-	                                                                                    .Where(x => x.IsApiProcessed == false && x.VerificationStatus != (int)MatchVerificationStatus.Failure)
+	                                                                                    .Where(x => x.IsApiProcessed == false)
 	                                                                                    .FirstOrDefaultAsync();
 
 	public async Task<Match?> GetFirstMatchNeedingAutoCheckAsync() => await _context.Matches
 	                                                                                .Include(x => x.Games)
 	                                                                                .ThenInclude(x => x.MatchScores)
-	                                                                                .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true && x.VerificationStatus != (int)MatchVerificationStatus.Failure)
+	                                                                                .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
 	                                                                                .FirstOrDefaultAsync();
 
 	public async Task<IList<Match>> GetNeedApiProcessingAsync() => await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();
@@ -323,6 +325,17 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 
 	public async Task<string?> GetMatchAbbreviationAsync(long osuMatchId) =>
 		await _context.Matches.Where(x => x.MatchId == osuMatchId).Select(x => x.Abbreviation).FirstOrDefaultAsync();
+
+	public async Task UpdateAsApiProcessed(Match match)
+	{
+		match.IsApiProcessed = true;
+		await UpdateAsync(match);
+	}
+	public async Task UpdateAsAutoChecked(Match match)
+	{
+		match.NeedsAutoCheck = false;
+		await UpdateAsync(match);
+	}
 
 	/// <summary>
 	///  Calculates the effective "post-mod SR" of a given game.

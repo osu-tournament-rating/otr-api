@@ -201,4 +201,9 @@ app.MapControllers();
 
 app.Logger.LogInformation("Running!");
 
+// Migrations
+using var scope = app.Services.CreateScope();
+var context = scope.ServiceProvider.GetRequiredService<OtrContext>();
+context.Database.Migrate();
+
 app.Run();

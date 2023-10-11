@@ -211,10 +211,6 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("match_id");
 
-                    b.Property<int>("MatchType")
-                        .HasColumnType("integer")
-                        .HasColumnName("match_type");
-
                     b.Property<int>("Mods")
                         .HasColumnType("integer")
                         .HasColumnName("mods");

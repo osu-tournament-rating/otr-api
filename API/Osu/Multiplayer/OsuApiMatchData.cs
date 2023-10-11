@@ -61,7 +61,7 @@ public class Game
     ///  Couldn't find
     /// </summary>
     [JsonProperty("match_type")]
-	public MatchType MatchType { get; set; }
+	public object? MatchType { get; set; }
     /// <summary>
     ///  Winning condition: score = 0, accuracy = 1, combo = 2, score v2 = 3
     /// </summary>

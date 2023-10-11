@@ -160,11 +160,13 @@ public class OsuMatchDataWorker : BackgroundService
 		var osuMatch = await _apiService.GetMatchAsync(osuMatchId, $"{osuMatchId} was identified as a match that needs to be processed");
 		if (osuMatch == null)
 		{
-			var existingEntity = await matchesService.GetByOsuMatchIdAsync(osuMatchId);
+			var existingEntity = await matchesService.GetByMatchIdAsync(osuMatchId);
 			if (existingEntity != null)
 			{
 				await matchesService.UpdateVerificationStatusAsync(osuMatchId, MatchVerificationStatus.Failure, MatchVerificationSource.System,
 					"Failed to fetch match from osu! API");
+
+				await matchesService.UpdateAsApiProcessed(existingEntity);
 			}
 			
 			return null;

@@ -249,7 +249,6 @@ public class ApiMatchService : IApiMatchService
 			EndTime = game.EndTime,
 			BeatmapId = beatmapIdResult,
 			PlayMode = (int)game.PlayMode,
-			MatchType = (int)game.MatchType,
 			ScoringType = (int)game.ScoringType,
 			TeamType = (int)game.TeamType,
 			Mods = (int)game.Mods

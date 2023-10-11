@@ -19,8 +19,6 @@ public class Game
 	public int? BeatmapId { get; set; }
 	[Column("play_mode")]
 	public int PlayMode { get; set; }
-	[Column("match_type")]
-	public int MatchType { get; set; }
 	[Column("scoring_type")]
 	public int ScoringType { get; set; }
 	[Column("team_type")]

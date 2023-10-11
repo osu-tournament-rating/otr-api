@@ -3,7 +3,6 @@ namespace API.DTOs;
 public class GameDTO
 {
 	public int PlayMode { get; set; }
-	public int MatchType { get; set; }
 	public int ScoringType { get; set; }
 	public int TeamType { get; set; }
 	public int Mods { get; set; }

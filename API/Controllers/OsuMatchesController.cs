@@ -150,7 +150,7 @@ public class OsuMatchesController : Controller
 	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
 	{
-		var match = await _matchesService.GetByOsuMatchIdAsync(osuMatchId);
+		var match = await _matchesService.GetDTOByOsuMatchIdAsync(osuMatchId);
 
 		if (match == null)
 		{
