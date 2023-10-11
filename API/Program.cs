@@ -204,6 +204,7 @@ app.Logger.LogInformation("Running!");
 // Migrations
 using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<OtrContext>();
-context.Database.Migrate();
+await context.Database.MigrateAsync();
+Serilog.Log.Information("Applied pending migrations (if any)");
 
 app.Run();
