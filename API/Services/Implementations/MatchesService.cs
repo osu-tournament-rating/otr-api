@@ -150,13 +150,13 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 	public async Task<Match?> GetFirstMatchNeedingApiProcessingAsync() => await _context.Matches
 	                                                                                    .Include(x => x.Games)
 	                                                                                    .ThenInclude(x => x.MatchScores)
-	                                                                                    .Where(x => x.IsApiProcessed == false)
+	                                                                                    .Where(x => x.IsApiProcessed == false && x.VerificationStatus != (int)MatchVerificationStatus.Failure)
 	                                                                                    .FirstOrDefaultAsync();
 
 	public async Task<Match?> GetFirstMatchNeedingAutoCheckAsync() => await _context.Matches
 	                                                                                .Include(x => x.Games)
 	                                                                                .ThenInclude(x => x.MatchScores)
-	                                                                                .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
+	                                                                                .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true && x.VerificationStatus != (int)MatchVerificationStatus.Failure)
 	                                                                                .FirstOrDefaultAsync();
 
 	public async Task<IList<Match>> GetNeedApiProcessingAsync() => await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();

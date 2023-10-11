@@ -1,6 +1,7 @@
 using API.Enums;
 using API.Osu.AutomationChecks;
 using API.Services.Interfaces;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace API.Osu.Multiplayer;
 
@@ -37,24 +38,33 @@ public class OsuMatchDataWorker : BackgroundService
 				var apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchService>();
 				var gamesService = scope.ServiceProvider.GetRequiredService<IGamesService>();
 				var matchScoresService = scope.ServiceProvider.GetRequiredService<IMatchScoresService>();
+						
+				var apiMatch = await matchesService.GetFirstMatchNeedingApiProcessingAsync();
+				var autoCheckMatch = await matchesService.GetFirstMatchNeedingAutoCheckAsync();
 				
-				await ProcessMatchesOsuApiAsync(cancellationToken, matchesService, apiMatchService, gamesService);
-				await ProcessMatchesNeedingAutomatedChecksAsync(cancellationToken, matchesService, gamesService, matchScoresService);
+				if(apiMatch == null && autoCheckMatch == null)
+				{
+					_logger.LogDebug("No matches need processing, sleeping for {Interval} seconds", INTERVAL_SECONDS);
+					await Task.Delay(TimeSpan.FromSeconds(INTERVAL_SECONDS), cancellationToken);
+					continue;
+				}
+				
+				if (apiMatch != null)
+				{
+					await ProcessMatchesOsuApiAsync(apiMatch, matchesService, apiMatchService, gamesService);
+				}
+
+				if (autoCheckMatch != null)
+				{
+					await ProcessMatchesNeedingAutomatedChecksAsync(autoCheckMatch, matchesService, gamesService, matchScoresService);
+				}
 			}
 		}
 	}
 	
-	private async Task ProcessMatchesNeedingAutomatedChecksAsync(CancellationToken cancellationToken, IMatchesService matchesService, IGamesService gamesService,
+	private async Task ProcessMatchesNeedingAutomatedChecksAsync(Entities.Match match, IMatchesService matchesService, IGamesService gamesService,
 		IMatchScoresService matchScoresService)
 	{
-		var match = await matchesService.GetFirstMatchNeedingAutoCheckAsync();
-
-		if (match == null || cancellationToken.IsCancellationRequested)
-		{
-			await Task.Delay(TimeSpan.FromSeconds(INTERVAL_SECONDS), cancellationToken);
-			return;
-		}
-		
 		_logger.LogInformation("Performing automated checks on match {Match}", match.MatchId);
 		// Match verification checks
 		if (!MatchAutomationChecks.PassesAllChecks(match))
@@ -126,20 +136,13 @@ public class OsuMatchDataWorker : BackgroundService
 		_logger.LogInformation("Match {Match} has passed automated checks", match.MatchId);
 	}
 
-	private async Task ProcessMatchesOsuApiAsync(CancellationToken cancellationToken, IMatchesService matchesService, IApiMatchService apiMatchService, IGamesService gamesService)
+	private async Task ProcessMatchesOsuApiAsync(Entities.Match match, IMatchesService matchesService, IApiMatchService apiMatchService, IGamesService gamesService)
 	{
-		var match = await matchesService.GetFirstMatchNeedingApiProcessingAsync();
-		if (match == null || cancellationToken.IsCancellationRequested)
-		{
-			await Task.Delay(TimeSpan.FromSeconds(INTERVAL_SECONDS), cancellationToken);
-			return;
-		}
-
 		try
 		{
 			// Matches at this point should only contain data posted from the web interface.
 			// We need to call the osu! API on these matches and persist them.
-			var updatedEntity = await ProcessMatchAsync(match.MatchId, apiMatchService);
+			var updatedEntity = await ProcessMatchAsync(match.MatchId, apiMatchService, matchesService);
 
 			if (updatedEntity == null)
 			{
@@ -152,11 +155,18 @@ public class OsuMatchDataWorker : BackgroundService
 		}
 	}
 	
-	private async Task<Entities.Match?> ProcessMatchAsync(long osuMatchId, IApiMatchService apiMatchService)
+	private async Task<Entities.Match?> ProcessMatchAsync(long osuMatchId, IApiMatchService apiMatchService, IMatchesService matchesService)
 	{
 		var osuMatch = await _apiService.GetMatchAsync(osuMatchId, $"{osuMatchId} was identified as a match that needs to be processed");
 		if (osuMatch == null)
 		{
+			var existingEntity = await matchesService.GetByOsuMatchIdAsync(osuMatchId);
+			if (existingEntity != null)
+			{
+				await matchesService.UpdateVerificationStatusAsync(osuMatchId, MatchVerificationStatus.Failure, MatchVerificationSource.System,
+					"Failed to fetch match from osu! API");
+			}
+			
 			return null;
 		}
 		
