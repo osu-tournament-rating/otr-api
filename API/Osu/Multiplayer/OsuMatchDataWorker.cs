@@ -100,7 +100,7 @@ public class OsuMatchDataWorker : BackgroundService
 					game.VerificationStatus = (int)GameVerificationStatus.Verified;
 				}
 				
-				_logger.LogInformation("Game {Game} passed automation checks and is marked as {Status}", game.GameId, (GameVerificationStatus)game.VerificationStatus);
+				_logger.LogDebug("Game {Game} passed automation checks and is marked as {Status}", game.GameId, (GameVerificationStatus)game.VerificationStatus);
 			}
 			
 			// Score verification checks
