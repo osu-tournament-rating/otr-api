@@ -26,6 +26,18 @@ public static class GameAutomationChecks
 			_logger.Information("{Prefix} Match {MatchId} has an invalid team size: {Size}, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.Match.TeamSize, game.GameId);
 			return false;
 		}
+
+		if (teamSize == 1)
+		{
+			int countPlayers = game.MatchScores.Count();
+			bool satisfiesOneVersusOne = countPlayers == 2;
+			if (!satisfiesOneVersusOne)
+			{
+				_logger.Information("{Prefix} Match {MatchId} has a team size of 1, but does not have 2 players, can't verify game {GameId} [had {CountPlayers} players]", _logPrefix, game.Match.MatchId, game.GameId, countPlayers);
+			}
+
+			return satisfiesOneVersusOne;
+		}
 		
 		int countRed = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Red);
 		int countBlue = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Blue);
