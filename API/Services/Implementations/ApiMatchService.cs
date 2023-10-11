@@ -192,6 +192,7 @@ public class ApiMatchService : IApiMatchService
 		existingMatch.StartTime = apiMatch.Match.StartTime;
 		existingMatch.EndTime = apiMatch.Match.EndTime;
 		existingMatch.IsApiProcessed = true;
+		existingMatch.VerificationInfo = null;
 
 		await _matchesService.UpdateAsync(existingMatch);
 
