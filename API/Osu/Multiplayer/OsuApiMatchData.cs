@@ -7,12 +7,12 @@ namespace API.Osu.Multiplayer;
 public class OsuApiMatchData
 {
 	[JsonProperty("match")]
-	public Match Match { get; set; }
+	public OsuApiMatch OsuApiMatch { get; set; }
 	[JsonProperty("games")]
-	public List<Game> Games { get; set; }
+	public List<OsuApiGame> Games { get; set; }
 }
 
-public class Match
+public class OsuApiMatch
 {
     /// <summary>
     ///  Match ID
@@ -36,7 +36,7 @@ public class Match
 	public DateTime? EndTime { get; set; }
 }
 
-public class Game
+public class OsuApiGame
 {
 	[JsonProperty("game_id")]
 	public long GameId { get; set; }
@@ -78,10 +78,10 @@ public class Game
     [JsonProperty("mods")]
 	public Mods Mods { get; set; }
 	[JsonProperty("scores")]
-	public List<Score> Scores { get; set; }
+	public List<OsuApiScore> Scores { get; set; }
 }
 
-public class Score
+public class OsuApiScore
 {
     /// <summary>
     ///  0 based index of player's slot

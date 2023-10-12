@@ -18,6 +18,6 @@ public class ConvertersTests
 		});
 		
 		Assert.That(data, Is.Not.Null);
-		Assert.That(data!.Match.MatchId, Is.EqualTo(101194028));
+		Assert.That(data!.OsuApiMatch.MatchId, Is.EqualTo(101194028));
 	});
 }

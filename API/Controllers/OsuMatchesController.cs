@@ -139,6 +139,7 @@ public class OsuMatchesController : Controller
 	}
 
 	[HttpPost("refresh/AutomationChecks/invalid")]
+	[Authorize(Roles = "Admin, System")]
 	public async Task<IActionResult> RefreshAutomationChecksAsync()
 	{
 		// Marks invalid matches as needing automation checks

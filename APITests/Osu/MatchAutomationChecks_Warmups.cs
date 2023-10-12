@@ -25,15 +25,15 @@ public class MatchAutomationChecks_Warmups
 	private static API.Entities.Match GetMatchForOsuMatch(OsuApiMatchData matchData)
 	{
 		var match = new API.Entities.Match();
-		match.MatchId = matchData.Match.MatchId;
-		match.Name = matchData.Match.Name;
-		match.StartTime = matchData.Match.StartTime;
-		match.EndTime = matchData.Match.EndTime;
-		match.Games = new List<API.Entities.Game>();
+		match.MatchId = matchData.OsuApiMatch.MatchId;
+		match.Name = matchData.OsuApiMatch.Name;
+		match.StartTime = matchData.OsuApiMatch.StartTime;
+		match.EndTime = matchData.OsuApiMatch.EndTime;
+		match.Games = new List<Game>();
 
 		foreach (var game in matchData.Games)
 		{
-			var toAdd = new API.Entities.Game
+			var toAdd = new Game
 			{
 				GameId = game.GameId,
 				Match = match,

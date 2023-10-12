@@ -153,7 +153,7 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 	                                                                                                           .ThenInclude(x => x.MatchScores)
 	                                                                                                           .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
 
-	public async Task<Entities.Match?> GetByMatchIdAsync(long matchId) => await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
+	public async Task<Match?> GetByMatchIdAsync(long matchId) => await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
 
 	public async Task<IList<Match>> GetMatchesNeedingAutoCheckAsync() =>
 		// We only want api processed matches because the verification checks require the data from the API
@@ -355,13 +355,13 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 	///  Calculates the effective "post-mod SR" of a given game.
 	///  This is used by the rating algorithm specifically.
 	/// </summary>
-	/// <param name="game"></param>
+	/// <param name="osuApiGame"></param>
 	/// <param name="baseSr">The default nomod SR of the beatmap</param>
 	/// <returns>SR after mods are applied</returns>
-	private async Task<double> CalculatePostModSr(Osu.Multiplayer.Game game, int beatmapDbId, double baseSr)
+	private async Task<double> CalculatePostModSr(Osu.Multiplayer.OsuApiGame osuApiGame, int beatmapDbId, double baseSr)
 	{
-		var baseMods = game.Mods;
-		var appliedMods = game.Scores.Select(x => x.EnabledMods).Where(x => x != null);
+		var baseMods = osuApiGame.Mods;
+		var appliedMods = osuApiGame.Scores.Select(x => x.EnabledMods).Where(x => x != null);
 
 		return await _gameSrCalculator.Calculate(baseSr, beatmapDbId, baseMods, appliedMods);
 	}
