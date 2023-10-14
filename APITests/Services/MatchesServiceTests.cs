@@ -11,7 +11,6 @@ public class MatchesServiceTests
 {
 	private readonly Mock<ILogger<MatchesService>> _matchesServiceMock = new();
 	private readonly Mock<IMapper> _mapper = new();
-	private readonly Mock<IGameSrCalculator> _gameSrCalculator = new();
 	
 	public MatchesServiceTests(TestDatabaseFixture testDatabaseFixture) { _fixture = testDatabaseFixture; }
 
@@ -21,8 +20,8 @@ public class MatchesServiceTests
 	public async Task GetMatch_ByOsuId_Returns_Correct_Values()
 	{
 		// arrange
-		using var context = _fixture.Context;
-		var matchesService = new MatchesService(_matchesServiceMock.Object, _mapper.Object, context, _gameSrCalculator.Object);
+		using var context = _fixture.CreateContext();
+		var matchesService = new MatchesService(_matchesServiceMock.Object, _mapper.Object, context);
 
 		// act
 		var match = await matchesService.GetByMatchIdAsync(105297522);
