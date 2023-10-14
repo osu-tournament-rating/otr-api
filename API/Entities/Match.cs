@@ -56,6 +56,8 @@ public class Match
 	public int? SubmitterUserId { get; set; }
 	[Column("verified_by_user")]
 	public int? VerifierUserId { get; set; }
+	[Column("tournament_id")]
+	public int? TournamentId { get; set; }
 	/// <summary>
 	/// Checked by a background worker to see if the match needs to be processed.
 	/// </summary>
@@ -72,6 +74,9 @@ public class Match
 	public virtual ICollection<Game> Games { get; set; } = new List<Game>();
 	[InverseProperty("Match")]
 	public virtual ICollection<RatingHistory> RatingHistories { get; set; } = new List<RatingHistory>();
+	[InverseProperty("Matches")]
+	public virtual Tournament? Tournament { get; set; }
+	
 	[NotMapped]
 	public MatchVerificationSource? VerificationSourceEnum
 	{

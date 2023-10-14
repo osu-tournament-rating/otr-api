@@ -22,13 +22,14 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <Content Include="apptests.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Bases\" />
+      <Folder Include="Controllers\" />
     </ItemGroup>
 
 </Project>

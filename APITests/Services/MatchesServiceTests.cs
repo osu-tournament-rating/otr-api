@@ -37,5 +37,14 @@ public class MatchesServiceTests
 		{
 			Assert.Equal(8, game.MatchScores.Count);
 		}
+		
+		// assert - details
+		Assert.NotNull(match.Tournament);
+		
+		Assert.Equal("osu! World Cup 2022", match.Tournament.Name);
+		Assert.Equal("OWC2022", match.Tournament.Abbreviation);
+		Assert.Equal("https://osu.ppy.sh/wiki/en/Tournaments/OWC/2022", match.Tournament.ForumUrl);
+		Assert.Equal(0, match.Tournament.Mode);
+		Assert.Equal(4, match.Tournament.TeamSize);
 	}
 }

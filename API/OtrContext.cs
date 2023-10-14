@@ -23,6 +23,7 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<Player> Players { get; set; }
 	public virtual DbSet<Rating> Ratings { get; set; }
 	public virtual DbSet<RatingHistory> RatingHistories { get; set; }
+	public virtual DbSet<Tournament> Tournaments { get; set; }
 	public virtual DbSet<User> Users { get; set; }
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => 
 		optionsBuilder.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
@@ -96,6 +97,7 @@ public partial class OtrContext : DbContext
 			entity.HasOne(e => e.VerifiedBy).WithMany(u => u.VerifiedMatches).HasForeignKey(e => e.VerifierUserId).IsRequired(false);
 			entity.HasMany(e => e.Games).WithOne(g => g.Match);
 			entity.HasMany(e => e.RatingHistories).WithOne(h => h.Match);
+			entity.HasOne(e => e.Tournament).WithMany(t => t.Matches).IsRequired(false);
 
 			entity.HasIndex(x => x.MatchId);
 		});
@@ -168,6 +170,23 @@ public partial class OtrContext : DbContext
 			      .HasConstraintName("RatingHistories___fkplayerid");
 
 			entity.HasIndex(x => x.PlayerId);
+		});
+
+		modelBuilder.Entity<Tournament>(entity =>
+		{
+			entity.HasKey(e => e.Id).HasName("Tournaments_pk");
+			
+			entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+			
+			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+			entity.HasMany(e => e.Matches)
+			      .WithOne(m => m.Tournament)
+			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .HasConstraintName("Tournaments___fkmatchid")
+			      .IsRequired(false);
+			
+			entity.HasIndex(e => new { e.Name, e.Abbreviation }).IsUnique();
 		});
 
 		modelBuilder.Entity<User>(entity =>

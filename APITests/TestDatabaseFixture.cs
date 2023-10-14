@@ -20,6 +20,9 @@ public class TestDatabaseFixture : IDisposable
 		var optionsBuilder = new DbContextOptionsBuilder<OtrContext>();
 		optionsBuilder.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
 		Context = new OtrContext(optionsBuilder.Options, Configuration);
+		
+		// Apply pending migrations
+		Context.Database.Migrate();
 	}
 
 	public void Dispose()

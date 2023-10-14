@@ -325,6 +325,10 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("team_size");
 
+                    b.Property<int?>("TournamentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("tournament_id");
+
                     b.Property<string>("TournamentName")
                         .HasColumnType("text")
                         .HasColumnName("tournament_name");
@@ -356,6 +360,8 @@ namespace API.Migrations
                         .IsUnique();
 
                     b.HasIndex("SubmitterUserId");
+
+                    b.HasIndex("TournamentId");
 
                     b.HasIndex("VerifierUserId");
 
@@ -643,6 +649,61 @@ namespace API.Migrations
                     b.ToTable("ratinghistories");
                 });
 
+            modelBuilder.Entity("API.Entities.Tournament", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Abbreviation")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("abbreviation");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("ForumUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("forum_url");
+
+                    b.Property<int>("Mode")
+                        .HasColumnType("integer")
+                        .HasColumnName("mode");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<int>("RankRangeLowerBound")
+                        .HasColumnType("integer")
+                        .HasColumnName("rank_range_lower_bound");
+
+                    b.Property<int>("TeamSize")
+                        .HasColumnType("integer")
+                        .HasColumnName("team_size");
+
+                    b.Property<DateTime?>("Updated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated");
+
+                    b.HasKey("Id")
+                        .HasName("Tournaments_pk");
+
+                    b.HasIndex("Name", "Abbreviation")
+                        .IsUnique();
+
+                    b.ToTable("tournaments");
+                });
+
             modelBuilder.Entity("API.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -717,11 +778,18 @@ namespace API.Migrations
                         .WithMany("SubmittedMatches")
                         .HasForeignKey("SubmitterUserId");
 
+                    b.HasOne("API.Entities.Tournament", "Tournament")
+                        .WithMany("Matches")
+                        .HasForeignKey("TournamentId")
+                        .HasConstraintName("Tournaments___fkmatchid");
+
                     b.HasOne("API.Entities.User", "VerifiedBy")
                         .WithMany("VerifiedMatches")
                         .HasForeignKey("VerifierUserId");
 
                     b.Navigation("SubmittedBy");
+
+                    b.Navigation("Tournament");
 
                     b.Navigation("VerifiedBy");
                 });
@@ -813,6 +881,11 @@ namespace API.Migrations
                     b.Navigation("Ratings");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("API.Entities.Tournament", b =>
+                {
+                    b.Navigation("Matches");
                 });
 
             modelBuilder.Entity("API.Entities.User", b =>
