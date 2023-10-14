@@ -5,7 +5,6 @@ using API.Services.Interfaces;
 using API.Utilities;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 namespace API.Services.Implementations;
 
