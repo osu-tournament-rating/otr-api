@@ -5,5 +5,6 @@ logs/
 **/obj/
 **/bin/
 **/appsettings.json
-**/appsettings.Development.json
+**/appsettings.*.json
 scripts/inserts
+**/apptests.json
