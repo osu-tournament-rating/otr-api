@@ -83,7 +83,7 @@ public class LoginController : Controller
 
 	[AllowAnonymous]
 	[HttpPost("system")]
-	public async Task<IActionResult> AdminLogin()
+	public async Task<IActionResult> SystemLogin()
 	{
 		_logger.LogInformation("Attempting system login");
 
@@ -91,7 +91,7 @@ public class LoginController : Controller
 		{
 			return Unauthorized("Missing authorization header");
 		}
-
+		
 		_logger.LogDebug("Authorization header found, validating");
 		string validationKey = _configuration["Auth:PrivilegedClientSecret"] ?? throw new Exception("Missing Auth:PrivilegedClientSecret in configuration!!");
 		if (HttpContext.Request.Headers["Authorization"] != validationKey)
@@ -100,6 +100,11 @@ public class LoginController : Controller
 		}
 
 		var user = await AuthenticateSystemUserAsync();
+
+		if (user == null)
+		{
+			return StatusCode(500, "Failed to fetch system user from database");
+		}
 
 		string tokenString = GenerateJSONWebToken(user, "system");
 		return Ok(new { token = tokenString });
@@ -164,10 +169,15 @@ public class LoginController : Controller
 		return await _osuClient.GetCurrentUserAsync();
 	}
 
-	private async Task<User> AuthenticateSystemUserAsync()
+	private async Task<User?> AuthenticateSystemUserAsync()
 	{
 		var user = await _userService.GetOrCreateSystemUserAsync();
 
+		if (user == null)
+		{
+			return null;
+		}
+		
 		user.LastLogin = DateTime.UtcNow;
 		user.Updated = DateTime.UtcNow;
 		await _userService.UpdateAsync(user);

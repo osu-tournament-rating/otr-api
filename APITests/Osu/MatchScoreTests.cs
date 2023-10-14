@@ -5,9 +5,9 @@ namespace APITests.Osu;
 
 public class MatchScoreTests
 {
-	[Test]
-	[TestCase(1100, 22, 0, 0, 98.69)]
-	[TestCase(899, 25, 8, 21, 95.35)]
+	[Theory]
+	[InlineData(1100, 22, 0, 0, 98.69)]
+	[InlineData(899, 25, 8, 21, 95.35)]
 	public void StandardAccuracy_Computation_IsCorrect(int threeHundreds, int oneHundreds, int fifties, int misses, double expectedAccuracy)
 	{
 		var matchScore = new MatchScore
@@ -18,12 +18,12 @@ public class MatchScoreTests
 			CountMiss = misses
 		};
 		
-		Assert.That(Math.Abs(expectedAccuracy - matchScore.AccuracyStandard), Is.LessThan(0.01));
+		Assert.True(Math.Abs(expectedAccuracy - matchScore.AccuracyStandard) < 0.01);
 	}
 	
-	[Test]
-	[TestCase(2990, 157, 0, 0, 0, 0, 99.92)]
-	[TestCase(2539, 237, 0, 2, 0, 2, 99.74)]
+	[Theory]
+	[InlineData(2990, 157, 0, 0, 0, 0, 99.92)]
+	[InlineData(2539, 237, 0, 2, 0, 2, 99.74)]
 	public void ManiaAccuracy_Computation_IsCorrect(int max, int threeHundreds, int twoHundreds, int oneHundreds, int fifties, int misses, double expectedAccuracy)
 	{
 		var matchScore = new MatchScore
@@ -36,12 +36,12 @@ public class MatchScoreTests
 			CountMiss = misses
 		};
 		
-		Assert.That(Math.Abs(expectedAccuracy - matchScore.AccuracyMania), Is.LessThan(0.01));
+		Assert.InRange(matchScore.AccuracyMania, expectedAccuracy - 0.01, expectedAccuracy + 0.01);
 	}
 
-	[Test]
-	[TestCase(1563, 62, 0, 9, 97.55)]
-	[TestCase(1814, 70, 0, 0, 98.14)]
+	[Theory]
+	[InlineData(1563, 62, 0, 9, 97.55)]
+	[InlineData(1814, 70, 0, 0, 98.14)]
 	public void TaikoAccuracy_Computation_IsCorrect(int threeHundreds, int oneHundreds, int fifties, int misses, double expectedAccuracy)
 	{
 		var matchScore = new MatchScore
@@ -52,11 +52,11 @@ public class MatchScoreTests
 			CountMiss = misses
 		};
 		
-		Assert.That(Math.Abs(expectedAccuracy - matchScore.AccuracyTaiko), Is.LessThan(0.01));
+		Assert.InRange(matchScore.AccuracyTaiko, expectedAccuracy - 0.01, expectedAccuracy + 0.01);
 	}
 
-	[Test]
-	[TestCase(1522, 4, 164, 21, 6, 98.43)]
+	[Theory]
+	[InlineData(1522, 4, 164, 21, 6, 98.43)]
 	public void CatchAccuracy_Computation_IsCorrect(int threeHundreds, int oneHundreds, int fifties, int katu, int misses, double expectedAccuracy)
 	{
 		var matchScore = new MatchScore
@@ -68,10 +68,10 @@ public class MatchScoreTests
 			CountMiss = misses
 		};
 		
-		Assert.That(Math.Abs(expectedAccuracy - matchScore.AccuracyCatch), Is.LessThan(0.01));
+		Assert.InRange(matchScore.AccuracyCatch, expectedAccuracy - 0.01, expectedAccuracy + 0.01);
 	}
 
-	[Test]
+	[Fact]
 	public void Accuracy_IncludedInJsonSerialization()
 	{
 		var matchScore = new MatchScore()
@@ -80,7 +80,7 @@ public class MatchScoreTests
 		};
 
 		string json = JsonConvert.SerializeObject(matchScore);
-		Assert.That(json, Contains.Substring("Accuracy"));
-		Assert.That(json.Contains("100.0"));
+		Assert.Contains("Accuracy", json);
+		Assert.Contains("100.0", json);
 	}
 }

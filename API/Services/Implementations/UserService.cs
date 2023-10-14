@@ -6,10 +6,12 @@ namespace API.Services.Implementations;
 
 public class UserService : ServiceBase<User>, IUserService
 {
+	private readonly ILogger<UserService> _logger;
 	private readonly OtrContext _context;
 
 	public UserService(ILogger<UserService> logger, OtrContext context) : base(logger, context)
 	{
+		_logger = logger;
 		_context = context;
 	}
 
@@ -19,12 +21,26 @@ public class UserService : ServiceBase<User>, IUserService
 	                                                                        .AsNoTracking()
 	                                                                        .FirstOrDefaultAsync(x => x.Player.OsuId == osuId);
 
-	public async Task<User> GetOrCreateSystemUserAsync()
+	public async Task<User?> GetOrCreateSystemUserAsync()
 	{
-		return await _context.Users.FirstOrDefaultAsync(u => u.Player.OsuId == -1) ?? await CreateAsync(new User
+		var sysUser = await _context.Users.FirstOrDefaultAsync(u => u.Roles.Contains("System"));
+		if (sysUser == null)
 		{
-			Roles = new[] { "System" }
-		});
+			var created = await CreateAsync(new User
+			{
+				Roles = new[] { "System" }
+			});
+
+			if (created == null)
+			{
+				_logger.LogError("Failed to create system user");
+				return null;
+			}
+
+			return created;
+		}
+
+		return sysUser;
 	}
 
 	public async Task<bool> HasRoleAsync(long osuId, string role)

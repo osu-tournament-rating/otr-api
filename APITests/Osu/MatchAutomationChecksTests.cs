@@ -11,8 +11,7 @@ public class MatchAutomationChecksTests
 {
 	private readonly Mock<IMatchesService> _matchesServiceMock = new();
 
-	[SetUp]
-	public void Setup()
+	public MatchAutomationChecksTests()
 	{
 		var match = new API.Entities.Match
 		{
@@ -91,35 +90,38 @@ public class MatchAutomationChecksTests
 		                   });
 	}
 
-	[Test]
-	public void Mock_ReturnsCorrectObject() => Assert.Multiple(() =>
+	[Fact]
+	public async Task Mock_ReturnsCorrectObject()
 	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		var match = (await _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync()).First();
 
-		Assert.That(match, Is.Not.Null);
-		Assert.That(match.Name, Is.EqualTo("STT3: (the voices are back) vs (la planta)"));
+		Assert.NotNull(match);
+		Assert.Equal("STT3: (the voices are back) vs (la planta)", match.Name);
 
-		Assert.That(match.Games.First(), Is.Not.Null);
-		Assert.That(match.Games.First().Mods, Is.EqualTo((int)(OsuEnums.Mods.NoFail | OsuEnums.Mods.DoubleTime)));
+		var firstGame = match.Games.First();
+		Assert.NotNull(firstGame);
+		Assert.Equal((int)(OsuEnums.Mods.NoFail | OsuEnums.Mods.DoubleTime), firstGame.Mods);
 
-		Assert.That(match.Games.First().MatchScores, Is.Not.Null);
-		Assert.That(match.Games.First().MatchScores.First().Count300, Is.EqualTo(890));
-		Assert.That(match.Games.First().MatchScores.Count, Is.EqualTo(2));
-	});
+		var firstMatchScore = firstGame.MatchScores.First();
+		Assert.NotNull(firstMatchScore);
+		Assert.Equal(890, firstMatchScore.Count300);
+		Assert.Equal(2, firstGame.MatchScores.Count);
+	}
+
 	
 	// Matches
 
 	/// <summary>
 	///  Tests the flow of a match being processed for
 	/// </summary>
-	[Test]
+	[Fact]
 	public void Match_PassesAutomatedChecks()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		Assert.That(MatchAutomationChecks.PassesAllChecks(match), Is.True);
+		Assert.True(MatchAutomationChecks.PassesAllChecks(match));
 	}
 
-	[Test]
+	[Fact]
 	public void Match_Games_PassAutomatedChecks()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -128,12 +130,12 @@ public class MatchAutomationChecksTests
 		{
 			foreach (var game in match.Games)
 			{
-				Assert.That(GameAutomationChecks.PassesAutomationChecks(game), Is.True);
+				Assert.True(GameAutomationChecks.PassesAutomationChecks(game));
 			}
 		});
 	}
 
-	[Test]
+	[Fact]
 	public void Match_Games_PassTeamSizeCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -142,12 +144,12 @@ public class MatchAutomationChecksTests
 		{
 			foreach (var game in match.Games)
 			{
-				Assert.That(GameAutomationChecks.PassesTeamSizeCheck(game), Is.True);
+				Assert.True(GameAutomationChecks.PassesTeamSizeCheck(game));
 			}
 		});
 	}
 
-	[Test]
+	[Fact]
 	public void Match_Games_PassModeCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -156,12 +158,12 @@ public class MatchAutomationChecksTests
 		{
 			foreach (var game in match.Games)
 			{
-				Assert.That(GameAutomationChecks.PassesModeCheck(game), Is.True);
+				Assert.True(GameAutomationChecks.PassesModeCheck(game));
 			}
 		});
 	}
 
-	[Test]
+	[Fact]
 	public void Match_Games_PassScoringTypeCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -170,12 +172,12 @@ public class MatchAutomationChecksTests
 		{
 			foreach (var game in match.Games)
 			{
-				Assert.That(GameAutomationChecks.PassesScoringTypeCheck(game), Is.True);
+				Assert.True(GameAutomationChecks.PassesScoringTypeCheck(game));
 			}
 		});
 	}
 
-	[Test]
+	[Fact]
 	public void Match_Games_PassModsCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -184,12 +186,12 @@ public class MatchAutomationChecksTests
 		{
 			foreach (var game in match.Games)
 			{
-				Assert.That(GameAutomationChecks.PassesModsCheck(game), Is.True);
+				Assert.True(GameAutomationChecks.PassesModsCheck(game));
 			}
 		});
 	}
 
-	[Test]
+	[Fact]
 	public void Match_Games_PassTeamTypeCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -198,63 +200,63 @@ public class MatchAutomationChecksTests
 		{
 			foreach (var game in match.Games)
 			{
-				Assert.That(GameAutomationChecks.PassesTeamTypeCheck(game), Is.True);
+				Assert.True(GameAutomationChecks.PassesTeamTypeCheck(game));
 			}
 		});
 	}
 
-	[Test]
+	[Fact]
 	public void Match_FailsNameCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Name = "STT4: (the voices are back) vs (la planta)";
-		Assert.That(MatchAutomationChecks.PassesNameCheck(match), Is.False);
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
 	}
 
-	[Test]
+	[Fact]
 	public void Match_FailsNameCheck_WithNullAbbreviation()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Abbreviation = null;
-		Assert.That(MatchAutomationChecks.PassesNameCheck(match), Is.False);
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
 	}
 
-	[Test]
+	[Fact]
 	public void Match_FailsNameCheck_WithEmptyAbbreviation()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Abbreviation = string.Empty;
-		Assert.That(MatchAutomationChecks.PassesNameCheck(match), Is.False);
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
 	}
 
-	[Test]
+	[Fact]
 	public void Match_FailsNameCheck_WithNullName()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Name = null;
-		Assert.That(MatchAutomationChecks.PassesNameCheck(match), Is.False);
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
 	}
 
-	[Test]
+	[Fact]
 	public void Match_FailsNameCheck_WithEmptyName()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Name = string.Empty;
-		Assert.That(MatchAutomationChecks.PassesNameCheck(match), Is.False);
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
 	}
 	
 	// Games
 
-	[Test]
+	[Fact]
 	public void Game_FailsTeamSizeCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.TeamSize = 4;
 
-		Assert.That(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()), Is.False);
+		Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
 	}
 
-	[Test]
+	[Fact]
 	public void Game_FailsTeamSizeCheck_Unbalanced_Teams()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -265,69 +267,69 @@ public class MatchAutomationChecksTests
 			Team = (int) OsuEnums.Team.Red
 		});
 		
-		Assert.That(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()), Is.False);
+		Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
 	}
 
-	[Test]
+	[Fact]
 	public void Game_FailsModsCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Games.First().Mods = (int)OsuEnums.Mods.Relax;
 
-		Assert.That(GameAutomationChecks.PassesModsCheck(match.Games.First()), Is.False);
+		Assert.False(GameAutomationChecks.PassesModsCheck(match.Games.First()));
 	}
 	
-	[Test]
+	[Fact]
 	public void Game_FailsModeCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Games.First().PlayMode = (int)OsuEnums.Mode.Catch;
 
-		Assert.That(GameAutomationChecks.PassesModeCheck(match.Games.First()), Is.False);
+		Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
 	}
 	
-	[Test]
+	[Fact]
 	public void Game_FailsScoringTypeCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Games.First().ScoringType = (int)OsuEnums.ScoringType.Combo;
 
-		Assert.That(GameAutomationChecks.PassesScoringTypeCheck(match.Games.First()), Is.False);
+		Assert.False(GameAutomationChecks.PassesScoringTypeCheck(match.Games.First()));
 	}
 	
-	[Test]
+	[Fact]
 	public void Game_FailsTeamTypeCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Games.First().TeamType = (int)OsuEnums.TeamType.TagCoop;
 
-		Assert.That(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()), Is.False);
+		Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
 		
 		match.Games.First().TeamType = (int)OsuEnums.TeamType.TagTeamVs;
-		Assert.That(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()), Is.False);
+		Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
 	}
 
-	[Test]
+	[Fact]
 	public void Game_PassesTeamTypeCheck_HeadToHead()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Games.First().TeamType = (int)OsuEnums.TeamType.HeadToHead;
 
-		Assert.That(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()), Is.True);
+		Assert.True(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
 	}
 
-	[Test]
+	[Fact]
 	public void Game_FailsTeamTypeCheck_HeadToHead_When_TeamSize_Is_2()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Games.First().TeamType = (int)OsuEnums.TeamType.HeadToHead;
 		match.TeamSize = 2;
 
-		Assert.That(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()), Is.False);
+		Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
 	}
 	
 	// Scores
-	[Test]
+	[Fact]
 	public void Scores_PassAutomationChecks()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -336,12 +338,12 @@ public class MatchAutomationChecksTests
 		{
 			foreach (var score in match.Games.SelectMany(x => x.MatchScores))
 			{
-				Assert.That(ScoreAutomationChecks.PassesAutomationChecks(score), Is.True);
+				Assert.True(ScoreAutomationChecks.PassesAutomationChecks(score));
 			}
 		});
 	}
 
-	[Test]
+	[Fact]
 	public void Scores_PassScoreRequirementCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -350,7 +352,7 @@ public class MatchAutomationChecksTests
 		{
 			foreach (var score in match.Games.SelectMany(x => x.MatchScores))
 			{
-				Assert.That(ScoreAutomationChecks.PassesModsCheck(score), Is.True);
+				Assert.True(ScoreAutomationChecks.PassesModsCheck(score));
 			}
 		});
 	}

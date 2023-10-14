@@ -5,7 +5,6 @@ using API.Osu.Multiplayer;
 using API.Services.Interfaces;
 using Moq;
 using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace APITests.Osu;
 
@@ -15,11 +14,11 @@ public class MatchAutomationChecks_Warmups
 	private static API.Entities.Match _dbMatch = GetMatchForOsuMatch(_matchData);
 	private readonly Mock<IMatchesService> _matchesServiceMock = new();
 
-	[Test]
+	[Fact]
 	public void Ensure_GameFailure_BadTeamSize()
 	{
 		var game = _dbMatch.Games.First();
-		Assert.That(GameAutomationChecks.PassesTeamSizeCheck(game), Is.False);
+		Assert.False(GameAutomationChecks.PassesTeamSizeCheck(game));
 	}
 
 	private static API.Entities.Match GetMatchForOsuMatch(OsuApiMatchData matchData)

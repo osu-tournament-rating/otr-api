@@ -5,7 +5,6 @@ using API.Services.Interfaces;
 using API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using StackExchange.Redis;
 
 // ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;

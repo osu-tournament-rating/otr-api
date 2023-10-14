@@ -1,7 +1,7 @@
+using API.Entities;
 using API.Enums;
 using API.Osu.AutomationChecks;
 using API.Services.Interfaces;
-using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace API.Osu.Multiplayer;
 
@@ -62,7 +62,7 @@ public class OsuMatchDataWorker : BackgroundService
 		}
 	}
 	
-	private async Task ProcessMatchesNeedingAutomatedChecksAsync(Entities.Match match, IMatchesService matchesService, IGamesService gamesService,
+	private async Task ProcessMatchesNeedingAutomatedChecksAsync(Match match, IMatchesService matchesService, IGamesService gamesService,
 		IMatchScoresService matchScoresService)
 	{
 		_logger.LogInformation("Performing automated checks on match {Match}", match.MatchId);
@@ -152,7 +152,7 @@ public class OsuMatchDataWorker : BackgroundService
 		_logger.LogInformation("Match {Match} has completed automated checks", match.MatchId);
 	}
 
-	private async Task ProcessMatchesOsuApiAsync(Entities.Match match, IMatchesService matchesService, IApiMatchService apiMatchService, IGamesService gamesService)
+	private async Task ProcessMatchesOsuApiAsync(Match match, IMatchesService matchesService, IApiMatchService apiMatchService, IGamesService gamesService)
 	{
 		try
 		{
@@ -171,7 +171,7 @@ public class OsuMatchDataWorker : BackgroundService
 		}
 	}
 	
-	private async Task<Entities.Match?> ProcessMatchAsync(long osuMatchId, IApiMatchService apiMatchService, IMatchesService matchesService)
+	private async Task<Match?> ProcessMatchAsync(long osuMatchId, IApiMatchService apiMatchService, IMatchesService matchesService)
 	{
 		var osuMatch = await _apiService.GetMatchAsync(osuMatchId, $"{osuMatchId} was identified as a match that needs to be processed");
 		if (osuMatch == null)

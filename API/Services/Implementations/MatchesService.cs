@@ -11,32 +11,14 @@ namespace API.Services.Implementations;
 
 public class MatchesService : ServiceBase<Match>, IMatchesService
 {
-	private readonly IBeatmapService _beatmapService;
 	private readonly OtrContext _context;
 	private readonly IGameSrCalculator _gameSrCalculator;
 	private readonly ILogger<MatchesService> _logger;
 	private readonly IMapper _mapper;
-	private readonly IPlayerService _playerService;
-	private readonly OsuEnums.Mods[] _unallowedMods =
-	{
-		OsuEnums.Mods.TouchDevice,
-		OsuEnums.Mods.SuddenDeath,
-		OsuEnums.Mods.Relax,
-		OsuEnums.Mods.Autoplay,
-		OsuEnums.Mods.SpunOut,
-		OsuEnums.Mods.Relax2, // Autopilot
-		OsuEnums.Mods.Perfect,
-		OsuEnums.Mods.Random,
-		OsuEnums.Mods.Cinema,
-		OsuEnums.Mods.Target
-	};
 
-	public MatchesService(ILogger<MatchesService> logger, IPlayerService playerService,
-		IBeatmapService beatmapService, IMapper mapper, OtrContext context, IGameSrCalculator gameSrCalculator) : base(logger, context)
+	public MatchesService(ILogger<MatchesService> logger, IMapper mapper, OtrContext context, IGameSrCalculator gameSrCalculator) : base(logger, context)
 	{
 		_logger = logger;
-		_playerService = playerService;
-		_beatmapService = beatmapService;
 		_mapper = mapper;
 		_context = context;
 		_gameSrCalculator = gameSrCalculator;
@@ -94,10 +76,7 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 		if (onlyIncludeFiltered)
 		{
 			query = query.Where(m => m.VerificationStatus == (int)MatchVerificationStatus.Verified &&
-			                         m.Games.Any(g => g.MatchScores.Any(ms => ms.Score > 10000) &&
-			                                          g.Beatmap!.DrainTime > 20 &&
-			                                          g.Beatmap!.Sr < 10 &&
-			                                          g.ScoringType == (int)OsuEnums.ScoringType.ScoreV2)); // Score v2 only
+			                         m.Games.Any(g => g.ScoringType == (int)OsuEnums.ScoringType.ScoreV2)); // Score v2 only
 		}
 
 		var matches = await query.ToListAsync();
@@ -153,7 +132,10 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 	                                                                                                           .ThenInclude(x => x.MatchScores)
 	                                                                                                           .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
 
-	public async Task<Match?> GetByMatchIdAsync(long matchId) => await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
+	public async Task<Match?> GetByMatchIdAsync(long matchId) => await _context.Matches
+	                                                                           .Include(x => x.Games)
+	                                                                           .ThenInclude(x => x.MatchScores)
+	                                                                           .FirstOrDefaultAsync(x => x.MatchId == matchId);
 
 	public async Task<IList<Match>> GetMatchesNeedingAutoCheckAsync() =>
 		// We only want api processed matches because the verification checks require the data from the API
