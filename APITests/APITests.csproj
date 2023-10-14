@@ -27,9 +27,4 @@
         </Content>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Bases\" />
-      <Folder Include="Controllers\" />
-    </ItemGroup>
-
 </Project>
