@@ -12,16 +12,14 @@ namespace API.Services.Implementations;
 public class MatchesService : ServiceBase<Match>, IMatchesService
 {
 	private readonly OtrContext _context;
-	private readonly IGameSrCalculator _gameSrCalculator;
 	private readonly ILogger<MatchesService> _logger;
 	private readonly IMapper _mapper;
 
-	public MatchesService(ILogger<MatchesService> logger, IMapper mapper, OtrContext context, IGameSrCalculator gameSrCalculator) : base(logger, context)
+	public MatchesService(ILogger<MatchesService> logger, IMapper mapper, OtrContext context) : base(logger, context)
 	{
 		_logger = logger;
 		_mapper = mapper;
 		_context = context;
-		_gameSrCalculator = gameSrCalculator;
 	}
 
 	public override async Task<Match?> GetAsync(int id) =>
@@ -135,6 +133,7 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 	public async Task<Match?> GetByMatchIdAsync(long matchId) => await _context.Matches
 	                                                                           .Include(x => x.Games)
 	                                                                           .ThenInclude(x => x.MatchScores)
+	                                                                           .Include(x => x.Tournament)
 	                                                                           .FirstOrDefaultAsync(x => x.MatchId == matchId);
 
 	public async Task<IList<Match>> GetMatchesNeedingAutoCheckAsync() =>
@@ -142,6 +141,7 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 		await _context.Matches
 		              .Include(x => x.Games)
 		              .ThenInclude(x => x.MatchScores)
+		              .Include(x => x.Tournament)
 		              .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
 		              .ToListAsync();
 
@@ -331,21 +331,6 @@ public class MatchesService : ServiceBase<Match>, IMatchesService
 	{
 		match.NeedsAutoCheck = false;
 		await UpdateAsync(match);
-	}
-
-	/// <summary>
-	///  Calculates the effective "post-mod SR" of a given game.
-	///  This is used by the rating algorithm specifically.
-	/// </summary>
-	/// <param name="osuApiGame"></param>
-	/// <param name="baseSr">The default nomod SR of the beatmap</param>
-	/// <returns>SR after mods are applied</returns>
-	private async Task<double> CalculatePostModSr(Osu.Multiplayer.OsuApiGame osuApiGame, int beatmapDbId, double baseSr)
-	{
-		var baseMods = osuApiGame.Mods;
-		var appliedMods = osuApiGame.Scores.Select(x => x.EnabledMods).Where(x => x != null);
-
-		return await _gameSrCalculator.Calculate(baseSr, beatmapDbId, baseMods, appliedMods);
 	}
 
 	private bool IsValidModCombination(OsuEnums.Mods modCombination)
