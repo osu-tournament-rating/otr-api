@@ -26,20 +26,13 @@ public class BatchWrapper
 [Route("api/[controller]")]
 public class OsuMatchesController : Controller
 {
-	private readonly IGamesService _gamesService;
 	private readonly ILogger<OsuMatchesController> _logger;
-	private readonly IMatchScoresService _scoresService;
-	private readonly IPlayerService _playerService;
 	private readonly IMatchesService _matchesService;
 
-	public OsuMatchesController(ILogger<OsuMatchesController> logger,
-		IMatchesService matchesService, IGamesService gamesService, IMatchScoresService scoresService, IPlayerService playerService)
+	public OsuMatchesController(ILogger<OsuMatchesController> logger, IMatchesService matchesService)
 	{
 		_logger = logger;
 		_matchesService = matchesService;
-		_gamesService = gamesService;
-		_scoresService = scoresService;
-		_playerService = playerService;
 	}
 
 	[HttpPost("batch")]
