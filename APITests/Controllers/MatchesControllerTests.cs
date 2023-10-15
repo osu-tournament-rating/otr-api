@@ -1,7 +1,9 @@
+using API;
 using API.Controllers;
 using API.Enums;
 using API.Services.Implementations;
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -12,25 +14,28 @@ namespace APITests.Controllers;
 public class MatchesControllerTests
 {
 	private readonly TestDatabaseFixture _fixture;
-	private readonly OsuMatchesController _controller;
+	private readonly Mock<ILogger<OsuMatchesController>> _loggerMock;
+	private readonly Mock<ILogger<MatchesService>> _matchesLoggerMock;
+	private readonly Mock<ILogger<TournamentsService>> _tournamentsLoggerMock;
+	private readonly Mock<IMapper> _mapperMock;
 
 	public MatchesControllerTests(TestDatabaseFixture testDatabaseFixture)
 	{
-		var loggerMock = new Mock<ILogger<OsuMatchesController>>();
-		var matchesLoggerMock = new Mock<ILogger<MatchesService>>();
-		var mapperMock = new Mock<IMapper>();
-		
-		var matchesService = new MatchesService(matchesLoggerMock.Object, mapperMock.Object, testDatabaseFixture.CreateContext());
+		_loggerMock = new Mock<ILogger<OsuMatchesController>>();
+		_matchesLoggerMock = new Mock<ILogger<MatchesService>>();
+		_tournamentsLoggerMock = new Mock<ILogger<TournamentsService>>();
+		_mapperMock = new Mock<IMapper>();
 		
 		_fixture = testDatabaseFixture;
-		_controller = new OsuMatchesController(loggerMock.Object, matchesService);
 	}
 
 	[Fact]
 	public async Task WebSubmissionFlow_Valid()
 	{
 		// arrange
-		
+		using var context = _fixture.CreateContext();
+		var controller = OsuMatchesController(context);
+
 		/**
 		 * Flow:
 		 *
@@ -39,7 +44,6 @@ public class MatchesControllerTests
 		 * 3. The API validates the links and returns a 200 OK response if everything is good
 		 */
 
-		using var context = _fixture.CreateContext();
 		var dummyUserId = (await context.Users.FirstAsync()).Id;
 		var batch = new BatchWrapper
 		{
@@ -60,8 +64,9 @@ public class MatchesControllerTests
 
 		// act
 		await context.Database.BeginTransactionAsync();
-		var result = await _controller.PostAsync(batch); // NOT sending as verified
+		var result = await controller.PostAsync(batch); // NOT sending as verified
 
+		// Ensures results are not committed to the database
 		context.ChangeTracker.Clear();
 		
 		// At this point, tournament data should be stored in the database and all matches should be marked as pending.
@@ -73,7 +78,7 @@ public class MatchesControllerTests
 
 
 		// assert
-		Assert.Equal(200, result.Value);
+		Assert.Equal(typeof(OkResult), result.GetType());
 		
 		Assert.NotNull(tournament);
 		Assert.Equal("My Special Tournament", tournament.Name);
@@ -88,5 +93,15 @@ public class MatchesControllerTests
 		Assert.Equal((int)MatchVerificationStatus.PendingVerification, matches[0].VerificationStatus);
 		Assert.Equal(13242343242, matches[0].MatchId);
 		Assert.Equal(tournament.Id, matches[0].TournamentId);
+		Assert.Equal(dummyUserId, matches[0].SubmitterUserId);
+	}
+
+	private OsuMatchesController OsuMatchesController(OtrContext context)
+	{
+		var matchesService = new MatchesService(_matchesLoggerMock.Object, _mapperMock.Object, context);
+		var tournamentsService = new TournamentsService(_tournamentsLoggerMock.Object, context, matchesService);
+
+		var controller = new OsuMatchesController(_loggerMock.Object, matchesService, tournamentsService);
+		return controller;
 	}
 }
