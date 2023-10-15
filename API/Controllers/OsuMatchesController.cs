@@ -11,8 +11,8 @@ namespace API.Controllers;
 
 public class BatchWrapper
 {
-	public string? TournamentName { get; set; }
-	public string? Abbreviation { get; set; }
+	public string TournamentName { get; set; } = null!;
+	public string Abbreviation { get; set; } = null!;
 	public string ForumPost { get; set; } = null!;
 	public int RankRangeLowerBound { get; set; }
 	public int TeamSize { get; set; }
@@ -28,15 +28,17 @@ public class OsuMatchesController : Controller
 {
 	private readonly ILogger<OsuMatchesController> _logger;
 	private readonly IMatchesService _matchesService;
+	private readonly ITournamentsService _tournamentsService;
 
-	public OsuMatchesController(ILogger<OsuMatchesController> logger, IMatchesService matchesService)
+	public OsuMatchesController(ILogger<OsuMatchesController> logger, IMatchesService matchesService, ITournamentsService tournamentsService)
 	{
 		_logger = logger;
 		_matchesService = matchesService;
+		_tournamentsService = tournamentsService;
 	}
 
 	[HttpPost("batch")]
-	public async Task<ActionResult<int>> PostAsync([FromBody] BatchWrapper wrapper, [FromQuery] bool verified = false)
+	public async Task<IActionResult> PostAsync([FromBody] BatchWrapper wrapper, [FromQuery] bool verified = false)
 	{
 		/**
 		 * FLOW:
@@ -53,46 +55,35 @@ public class OsuMatchesController : Controller
 		 * periodically and processes them automatically.
 		 */
 
-		// Check if any of the links already exist in the database
-		var ids = wrapper.Ids;
-		ids = ids.ToList();
-		var existingMatches = await _matchesService.CheckExistingAsync(ids);
-
-		// If we are verifying a match that already exists, we need to update the verification status
-		if (verified)
+		if (verified && !User.IsMatchVerifier())
 		{
-			// Check authorization
-			if (!User.IsMatchVerifier() && !User.IsAdmin())
-			{
-				return Unauthorized("You are not authorized to verify matches");
-			}
+			return Unauthorized("You are not authorized to verify matches");
+		}
 
-			int verifier = (int)MatchVerificationSource.MatchVerifier;
+		var ids = wrapper.Ids.ToList();
+		
+		// Gather tournament information
+		var existingMatches = await _matchesService.CheckExistingAsync(ids);
+		
+		if(!verified && await _tournamentsService.ExistsAsync(wrapper.TournamentName, wrapper.Mode))
+		{
+			return BadRequest($"Tournament {wrapper.TournamentName} already exists for this mode");
+		}
+		
+		var tournament = await _tournamentsService.CreateAsync(wrapper, verified);
 
-			if (User.IsAdmin())
-			{
-				verifier = (int)MatchVerificationSource.Admin;
-			}
+		int? verifier = IdentifyVerifier(verified);
+		foreach (var verifiedMatch in existingMatches)
+		{
+			verifiedMatch.VerificationStatus = (int)MatchVerificationStatus.Verified;
+			verifiedMatch.VerificationSource = verifier;
+			verifiedMatch.NeedsAutoCheck = true;
+			verifiedMatch.IsApiProcessed = false;
+			verifiedMatch.VerifierUserId = wrapper.SubmitterId;
+			verifiedMatch.SubmitterUserId = wrapper.SubmitterId;
 			
-			foreach (var verifiedMatch in existingMatches)
-			{
-				verifiedMatch.VerificationStatus = (int)MatchVerificationStatus.Verified;
-				verifiedMatch.VerificationSource = verifier;
-				verifiedMatch.TournamentName = wrapper.TournamentName;
-				verifiedMatch.Abbreviation = wrapper.Abbreviation;
-				verifiedMatch.Forum = wrapper.ForumPost;
-				verifiedMatch.SubmitterUserId = wrapper.SubmitterId;
-				verifiedMatch.RankRangeLowerBound = wrapper.RankRangeLowerBound;
-				verifiedMatch.TeamSize = wrapper.TeamSize;
-				verifiedMatch.Mode = wrapper.Mode;
-				verifiedMatch.Updated = DateTime.UtcNow;
-				verifiedMatch.NeedsAutoCheck = true;
-				verifiedMatch.IsApiProcessed = false;
-				verifiedMatch.VerifierUserId = wrapper.SubmitterId;
-				
-				await _matchesService.UpdateAsync(verifiedMatch);
-				_logger.LogInformation("Updated {@Match}", verifiedMatch);
-			}
+			await _matchesService.UpdateAsync(verifiedMatch);
+			_logger.LogInformation("Updated {@Match}", verifiedMatch);
 		}
 
 		// Continue processing the rest of the links
@@ -107,18 +98,17 @@ public class OsuMatchesController : Controller
 
 		var matches = stripped.Select(id => new Match
 		{
-			MatchId = id, 
+			MatchId = id,
 			VerificationStatus = (int)verification,
-			TournamentName = wrapper.TournamentName,
-			Abbreviation = wrapper.Abbreviation,
-			Forum = wrapper.ForumPost,
 			SubmitterUserId = wrapper.SubmitterId,
 			RankRangeLowerBound = wrapper.RankRangeLowerBound,
 			TeamSize = wrapper.TeamSize,
 			Mode = wrapper.Mode,
 			NeedsAutoCheck = true,
 			IsApiProcessed = false,
-			VerifierUserId = verified ? wrapper.SubmitterId : null
+			VerificationSource = verifier,
+			VerifierUserId = verified ? wrapper.SubmitterId : null,
+			TournamentId = tournament.Id
 		});
 
 		int? result = await _matchesService.BatchInsertAsync(matches);
@@ -128,6 +118,29 @@ public class OsuMatchesController : Controller
 		}
 
 		return Ok();
+	}
+
+	private int? IdentifyVerifier(bool verified)
+	{
+		if (!verified)
+		{
+			return null;
+		}
+		
+		// We need to know what entity verified the match
+		int verifier = (int) MatchVerificationSource.MatchVerifier;
+
+		if (User.IsAdmin())
+		{
+			verifier = (int) MatchVerificationSource.Admin;
+		}
+
+		if (User.IsSystem())
+		{
+			verifier = (int) MatchVerificationSource.System;
+		}
+
+		return verifier;
 	}
 
 	[HttpPost("refresh/AutomationChecks/invalid")]
