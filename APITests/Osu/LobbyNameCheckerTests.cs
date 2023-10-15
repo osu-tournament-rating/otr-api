@@ -38,4 +38,34 @@ public class LobbyNameCheckerTests
 	[InlineData("WDTWE :smirk_cat: vs RAMSING", "WDTWE")]
 	[InlineData("WDTWE :(smirk_cat:) vs (RAMSING", "WDTWE")]
 	public void Patterns_Regex_ShouldNotMatch(string name, string abbreviation) => Assert.False(LobbyNameChecker.IsNameValid(name, abbreviation));
+
+    [Fact]
+    public void Patterns_ReturnsFalse_WhenNameIsNull() => Assert.False(LobbyNameChecker.IsNameValid(null!, "test"));
+    
+    [Fact]
+    public void Patterns_ReturnsFalse_WhenNameIsEmpty() => Assert.False(LobbyNameChecker.IsNameValid(string.Empty, "test"));
+    
+    [Fact]
+    public void Patterns_ReturnsFalse_WhenAbbreviationIsNull() => Assert.False(LobbyNameChecker.IsNameValid("test", null!));
+    
+    [Fact]
+    public void Patterns_ReturnsFalse_WhenAbbreviationIsEmpty() => Assert.False(LobbyNameChecker.IsNameValid("test", string.Empty));
+    
+    [Fact]
+    public void NameCheck_ReturnsFalse_WhenNameDoesNotStartWithAbbreviation() => Assert.False(LobbyNameChecker.IsNameValid("test", "test2"));
+    
+	[Fact]
+	public void NameCheck_ReturnsFalse_WhenMatchAbbreviationIsNull() => Assert.False(LobbyNameChecker.IsNameValid("test", null!));
+	
+	[Fact]
+	public void NameCheck_ReturnsFalse_WhenMatchAbbreviationIsEmpty() => Assert.False(LobbyNameChecker.IsNameValid("test", string.Empty));
+	
+	[Fact]
+	public void NameCheck_ReturnsFalse_WhenMatchNameIsNull() => Assert.False(LobbyNameChecker.IsNameValid(null!, "test"));
+	
+	[Fact]
+	public void NameCheck_ReturnsFalse_WhenMatchNameIsEmpty() => Assert.False(LobbyNameChecker.IsNameValid(string.Empty, "test"));
+	
+	[Fact]
+	public void NameCheck_ReturnsTrue_IgnoreCase() => Assert.True(LobbyNameChecker.IsNameValid("test: (A) vs (B)", "TEST"));
 }

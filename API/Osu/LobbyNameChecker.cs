@@ -12,6 +12,11 @@ public static class LobbyNameChecker
 
 	public static bool IsNameValid(string name, string abbreviation)
 	{
-		return name.StartsWith(abbreviation) && patterns.Any(pattern => Regex.IsMatch(name, pattern, RegexOptions.IgnoreCase));
+		if (string.IsNullOrEmpty(abbreviation) || string.IsNullOrEmpty(name))
+		{
+			return false;
+		}
+		
+		return name.StartsWith(abbreviation, StringComparison.OrdinalIgnoreCase) && patterns.Any(pattern => Regex.IsMatch(name, pattern, RegexOptions.IgnoreCase));
 	}
 }

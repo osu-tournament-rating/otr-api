@@ -28,7 +28,7 @@ public class MatchesControllerTests
 		
 		_fixture = testDatabaseFixture;
 	}
-
+	
 	[Fact]
 	public async Task WebSubmissionFlow_Valid()
 	{

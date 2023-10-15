@@ -4,9 +4,11 @@ using API.Osu;
 using API.Osu.AutomationChecks;
 using API.Services.Interfaces;
 using Moq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace APITests.Osu;
 
+[SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method")]
 public class MatchAutomationChecksTests
 {
 	private readonly Mock<IMatchesService> _matchesServiceMock = new();
@@ -243,6 +245,54 @@ public class MatchAutomationChecksTests
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Name = string.Empty;
 		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+
+	[Fact]
+	public void Match_NameCheck_ReturnsFalse_WhenNullAbbreviation()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Abbreviation = null;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+	
+	[Fact]
+	public void Match_NameCheck_ReturnsFalse_WhenEmptyAbbreviation()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Abbreviation = string.Empty;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+	
+	[Fact]
+	public void Match_NameCheck_ReturnsFalse_WhenNullName()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Name = null;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+	
+	[Fact]
+	public void Match_NameCheck_ReturnsFalse_WhenEmptyName()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Name = string.Empty;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+	
+	[Fact]
+	public void Match_NameCheck_ReturnsFalse_WhenNameDoesNotStartWithAbbreviation()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Name = "STT4: (the voices are back) vs (la planta)";
+		match.Abbreviation = "STT3";
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+
+	[Fact]
+	public void Match_NameCheck_ReturnsTrue_WhenValid()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		Assert.True(MatchAutomationChecks.PassesNameCheck(match));
 	}
 	
 	// Games
