@@ -1,3 +1,4 @@
+using API.Controllers;
 using API.Entities;
 using API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,7 @@ public class TournamentsService : ServiceBase<Tournament>, ITournamentsService
 				}
 			}
 			
-			if(associatedTournament == null)
+			if (associatedTournament == null)
 			{
 				_logger.LogError("Could not create tournament from match {MatchId}", match.MatchId);
 				continue;
@@ -46,6 +47,61 @@ public class TournamentsService : ServiceBase<Tournament>, ITournamentsService
 			await _matchesService.UpdateAsync(updated);
 			_logger.LogInformation("Linked tournament {TournamentName} ({TournamentId}) to match {MatchId}", associatedTournament.Name, associatedTournament.Id, match.MatchId);
 		}
+	}
+
+	public async Task<bool> ExistsAsync(string name, int mode)
+	{
+		return await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
+	}
+	
+	public async Task<Tournament> CreateAsync(BatchWrapper wrapper, bool updateExisting = false)
+	{
+		if (updateExisting && await ExistsAsync(wrapper.TournamentName, wrapper.Mode))
+		{
+			return await UpdateExisting(wrapper);
+		}
+		
+		return await CreateFromWrapperAsync(wrapper);
+	}
+
+	private async Task<Tournament> UpdateExisting(BatchWrapper wrapper)
+	{
+		var existing = await GetAsync(wrapper.TournamentName);
+
+		if (existing == null)
+		{
+			throw new Exception("Tournament does not exist, this method assumes the tournament exists.");
+		}
+
+		existing.Abbreviation = wrapper.Abbreviation;
+		existing.ForumUrl = wrapper.ForumPost;
+		existing.Mode = wrapper.Mode;
+		existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
+		existing.TeamSize = wrapper.TeamSize;
+		
+		await UpdateAsync(existing);
+		return existing;
+	}
+	
+	private async Task<Tournament> CreateFromWrapperAsync(BatchWrapper wrapper)
+	{
+		var tournament = new Tournament
+		{
+			Name = wrapper.TournamentName,
+			Abbreviation = wrapper.Abbreviation,
+			ForumUrl = wrapper.ForumPost,
+			Mode = wrapper.Mode,
+			RankRangeLowerBound = wrapper.RankRangeLowerBound,
+			TeamSize = wrapper.TeamSize
+		};
+
+		var result = await CreateAsync(tournament);
+		if (result == null)
+		{
+			throw new Exception("Tournament could not be created.");
+		}
+
+		return result;
 	}
 
 	private async Task<IList<Match>> MatchesWithoutTournamentAsync()
