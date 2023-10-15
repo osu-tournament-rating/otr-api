@@ -2,6 +2,7 @@ using API;
 using API.Controllers;
 using API.Enums;
 using API.Repositories.Implementations;
+using API.Services.Implementations;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,15 +16,25 @@ public class MatchesControllerTests
 {
 	private readonly TestDatabaseFixture _fixture;
 	private readonly Mock<ILogger<OsuMatchesController>> _loggerMock;
-	private readonly Mock<ILogger<MatchesRepository>> _matchesLoggerMock;
-	private readonly Mock<ILogger<TournamentsRepository>> _tournamentsLoggerMock;
+	
+	private readonly Mock<ILogger<MatchesService>> _matchesServiceLoggerMock;
+	private readonly Mock<ILogger<TournamentsService>> _tournamentsServiceLoggerMock;
+	
+	private readonly Mock<ILogger<MatchesRepository>> _matchesRepositoryLoggerMock;
+	private readonly Mock<ILogger<TournamentsRepository>> _tournamentsRepositoryLoggerMock;
+	
 	private readonly Mock<IMapper> _mapperMock;
 
 	public MatchesControllerTests(TestDatabaseFixture fixture)
 	{
 		_loggerMock = new Mock<ILogger<OsuMatchesController>>();
-		_matchesLoggerMock = new Mock<ILogger<MatchesRepository>>();
-		_tournamentsLoggerMock = new Mock<ILogger<TournamentsRepository>>();
+		
+		_matchesServiceLoggerMock = new Mock<ILogger<MatchesService>>();
+		_tournamentsServiceLoggerMock = new Mock<ILogger<TournamentsService>>();
+
+		_matchesRepositoryLoggerMock = new Mock<ILogger<MatchesRepository>>();
+		_tournamentsRepositoryLoggerMock = new Mock<ILogger<TournamentsRepository>>();
+		
 		_mapperMock = new Mock<IMapper>();
 		
 		_fixture = fixture;
@@ -98,8 +109,11 @@ public class MatchesControllerTests
 
 	private OsuMatchesController OsuMatchesController(OtrContext context)
 	{
-		var matchesService = new MatchesRepository(_matchesLoggerMock.Object, _mapperMock.Object, context);
-		var tournamentsService = new TournamentsRepository(_tournamentsLoggerMock.Object, context, matchesService);
+		var matchesRepository = new MatchesRepository(_matchesRepositoryLoggerMock.Object, _mapperMock.Object, context);
+		var tournamentsRepository = new TournamentsRepository(_tournamentsRepositoryLoggerMock.Object, context, matchesRepository);
+		
+		var matchesService = new MatchesService(_matchesServiceLoggerMock.Object, matchesRepository, tournamentsRepository, _mapperMock.Object);
+		var tournamentsService = new TournamentsService(tournamentsRepository);
 
 		var controller = new OsuMatchesController(_loggerMock.Object, matchesService, tournamentsService);
 		return controller;

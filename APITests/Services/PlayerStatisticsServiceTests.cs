@@ -19,8 +19,8 @@ public class PlayerStatisticsServiceTests
 	{
 		// arrange
 		using var context = _fixture.CreateContext();
-		var playerStatsService = GetService(context);
-		var matchStatsService = GetMatchStatsService(context);
+		var playerStatsService = GetGameStatsRepository(context);
+		var matchStatsService = GetMatchStatsRepository(context);
 		
 		// act
 		// Get a dummy player to test against
@@ -28,61 +28,62 @@ public class PlayerStatisticsServiceTests
 		var dateMin = DateTime.MinValue;
 		var dateMax = DateTime.MaxValue;
 		const int mode = 0;
-		var stats = await playerStatsService.GetForPlayerAsync(player.Id, mode, dateMin, dateMax);
-		var matchStats = await matchStatsService.GetForPlayerAsync(player.Id, mode, dateMin, dateMax);
+		var gameStats = (await playerStatsService.GetForPlayerAsync(player!.Id, mode, dateMin, dateMax)).First();
+		var matchStats = (await matchStatsService.GetForPlayerAsync(player.Id, mode, dateMin, dateMax)).First();
 
 		// assert
-		Assert.NotNull(stats);
+		Assert.NotNull(gameStats);
 		
-		Assert.IsType<int>(stats.Id);
-		Assert.IsType<string>(stats.Tier);
-		Assert.IsType<int>(stats.Mode);
-		Assert.IsType<int>(stats.CurrentRating);
-		Assert.IsType<int>(stats.CurrentGlobalRank);
-		Assert.IsType<int>(stats.CurrentCountryRank);
-		Assert.IsType<double>(stats.Percentile);
-		Assert.IsType<int>(stats.RatingLeftForNextTier);
-		Assert.IsType<int>(stats.RatingGained);
-		Assert.IsType<int>(stats.HighestRating);
-		Assert.IsType<int>(stats.MatchesPlayed);
-		Assert.IsType<int>(stats.MapsPlayed);
-		Assert.IsType<int>(stats.MatchesWon);
-		Assert.IsType<int>(stats.MapsWon);
-		Assert.IsType<int>(stats.AverageOpponentRating);
-		Assert.IsType<int>(stats.AverageTeammateRating);
-		Assert.IsType<int>(stats.BestWinStreak);
-		Assert.IsType<int>(stats.AverageScore);
-		Assert.IsType<int>(stats.AverageMisses);
-		Assert.IsType<int>(stats.AverageAccuracy);
-		Assert.IsType<int>(stats.AveragePlacing);
-		Assert.IsType<int>(stats.PlayedHR);
-		Assert.IsType<int>(stats.PlayedHD);
-		Assert.IsType<int>(stats.PlayedDT);
+		Assert.IsType<int>(gameStats.Id);
+		Assert.IsType<int>(gameStats.PlayerId);
+		Assert.IsType<int>(gameStats.GameId);
+		Assert.IsType<int>(gameStats.Mode);
+		
+		Assert.IsType<bool>(gameStats.Won);
+		Assert.IsType<double>(gameStats.AverageOpponentRating);
+		Assert.IsType<double>(gameStats.AverageTeammateRating);
+		Assert.IsType<int>(gameStats.Placing);
+		Assert.IsType<bool>(gameStats.PlayedHR);
+		Assert.IsType<bool>(gameStats.PlayedHD);
+		Assert.IsType<bool>(gameStats.PlayedDT);
 
-		Assert.IsType<string>(stats.MostPlayedTeammate);
-		Assert.IsType<string>(stats.MostPlayedOpponent);
-		Assert.IsType<string>(stats.BestTeammate);
-		Assert.IsType<string>(stats.BestOpponent);
-		Assert.IsType<string>(stats.WorstTeammate);
-		Assert.IsType<string>(stats.WorstOpponent);
+		Assert.IsType<int[]>(gameStats.TeammateIds);
+		Assert.IsType<int[]>(gameStats.OpponentIds);
 
-		Assert.IsType<int>(matchStats.Rating);
-		Assert.IsType<int>()
+		Assert.IsType<int>(matchStats.PlayerId);
+		Assert.IsType<int>(matchStats.MatchId);
+		Assert.IsType<bool>(matchStats.Won);
+		Assert.IsType<double>(matchStats.MatchCost);
+		Assert.IsType<int>(matchStats.PointsEarned);
+		Assert.IsType<double>(matchStats.RatingBefore);
+		Assert.IsType<double>(matchStats.RatingAfter);
+		Assert.IsType<double>(matchStats.RatingChange);
+		Assert.IsType<double>(matchStats.VolatilityBefore);
+		Assert.IsType<double>(matchStats.VolatilityAfter);
 		Assert.IsType<int>(matchStats.AverageScore);
 		Assert.IsType<int>(matchStats.AverageMisses);
 		Assert.IsType<double>(matchStats.AverageAccuracy);
-		Assert.IsType<int>(matchStats.AverageMapsPlayed);
-	}
-
-	private IPlayerStatisticsRepository GetService(OtrContext context)
-	{
-		var loggerMock = new Mock<ILogger<PlayerStatisticsRepository>>();
-		return new PlayerStatisticsRepository(loggerMock.Object, context);
+		Assert.IsType<int>(matchStats.GamesPlayed);
+		
+		Assert.IsType<int>(matchStats.GlobalRankBefore);
+		Assert.IsType<int>(matchStats.GlobalRankAfter);
+		Assert.IsType<int>(matchStats.CountryRankBefore);
+		Assert.IsType<int>(matchStats.CountryRankAfter);
+		Assert.IsType<double>(matchStats.PercentileBefore);
+		Assert.IsType<double>(matchStats.PercentileAfter);
 	}
 	
-	private IPlayerMatchStatisticsService GetMatchStatsService(OtrContext context)
+	// TODO: DTO that aggregates a collection of stats, including 
+
+	private IPlayerGameStatisticsRepository GetGameStatsRepository(OtrContext context)
 	{
-		var loggerMock = new Mock<ILogger<PlayerMatchStatisticsService>>();
-		return new PlayerMatchStatisticsService(loggerMock.Object, context);
+		var loggerMock = new Mock<ILogger<PlayerGameStatisticsRepository>>();
+		return new PlayerGameStatisticsRepository(context);
+	}
+	
+	private IPlayerMatchStatisticsRepository GetMatchStatsRepository(OtrContext context)
+	{
+		var loggerMock = new Mock<ILogger<PlayerMatchStatisticsRepository>>();
+		return new PlayerMatchStatisticsRepository(context);
 	}
 }

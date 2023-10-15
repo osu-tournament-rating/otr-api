@@ -21,6 +21,8 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<Match> Matches { get; set; }
 	public virtual DbSet<MatchScore> MatchScores { get; set; }
 	public virtual DbSet<Player> Players { get; set; }
+	public virtual DbSet<PlayerGameStatistics> PlayerGameStatistics { get; set; }
+	public virtual DbSet<PlayerMatchStatistics> PlayerMatchStatistics { get; set; }
 	public virtual DbSet<Rating> Ratings { get; set; }
 	public virtual DbSet<RatingHistory> RatingHistories { get; set; }
 	public virtual DbSet<Tournament> Tournaments { get; set; }
@@ -80,8 +82,16 @@ public partial class OtrContext : DbContext
 			      .WithOne(s => s.Game)
 			      .OnDelete(DeleteBehavior.ClientSetNull);
 
+			entity.HasMany(g => g.Statistics)
+			      .WithOne(s => s.Game)
+			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .HasConstraintName("games_player_statistics_game_id_fk")
+			      .HasForeignKey(s => s.GameId)
+			      .IsRequired();
+
 			entity.HasIndex(x => x.GameId);
 			entity.HasIndex(x => x.MatchId);
+			entity.HasIndex(x => x.StartTime);
 		});
 
 		modelBuilder.Entity<Match>(entity =>
@@ -98,6 +108,7 @@ public partial class OtrContext : DbContext
 			entity.HasMany(e => e.Games).WithOne(g => g.Match);
 			entity.HasMany(e => e.RatingHistories).WithOne(h => h.Match);
 			entity.HasOne(e => e.Tournament).WithMany(t => t.Matches).IsRequired(false);
+			entity.HasMany(e => e.Statistics).WithOne(s => s.Match).HasForeignKey(e => e.MatchId).IsRequired();
 
 			entity.HasIndex(x => x.MatchId);
 		});
@@ -135,6 +146,32 @@ public partial class OtrContext : DbContext
 			entity.HasOne(e => e.User).WithOne(u => u.Player);
 
 			entity.HasIndex(x => x.OsuId);
+		});
+
+		modelBuilder.Entity<PlayerGameStatistics>(entity =>
+		{
+			entity.HasKey(e => e.Id).HasName("PlayerGameStatistics_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
+			
+			entity.HasOne(e => e.Player).WithMany(e => e.GameStatistics).HasForeignKey(e => e.PlayerId);
+			entity.HasOne(e => e.Game).WithMany(e => e.Statistics).HasForeignKey(e => e.GameId);
+
+			entity.HasIndex(e => e.PlayerId);
+			entity.HasIndex(e => e.GameId);
+			entity.HasIndex(e => new { e.PlayerId, e.GameId }).IsUnique();
+		});
+		
+		modelBuilder.Entity<PlayerMatchStatistics>(entity =>
+		{
+			entity.HasKey(e => e.Id).HasName("PlayerMatchStatistics_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
+			
+			entity.HasOne(e => e.Player).WithMany(e => e.MatchStatistics).HasForeignKey(e => e.PlayerId);
+			entity.HasOne(e => e.Match).WithMany(e => e.Statistics).HasForeignKey(e => e.MatchId);
+
+			entity.HasIndex(e => e.PlayerId);
+			entity.HasIndex(e => e.MatchId);
+			entity.HasIndex(e => new { e.PlayerId, e.MatchId }).IsUnique();
 		});
 
 		modelBuilder.Entity<Rating>(entity =>

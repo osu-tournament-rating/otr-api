@@ -2,7 +2,7 @@ using API.Entities;
 
 namespace API.Repositories.Interfaces;
 
-public interface IPlayerStatisticsRepository : IRepository<PlayerStatistics>
+public interface IPlayerGameStatisticsRepository : IRepository<PlayerGameStatistics>
 {
-	Task<PlayerStatistics?> GetForPlayerAsync(int playerId, DateTime dateMin, DateTime dateMax);
+	Task<IEnumerable<PlayerGameStatistics>> GetForPlayerAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax);
 }
