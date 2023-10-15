@@ -2,7 +2,7 @@ using API.Entities;
 using API.Enums;
 using API.Osu;
 using API.Osu.AutomationChecks;
-using API.Services.Interfaces;
+using API.Repositories.Interfaces;
 using Moq;
 using System.Diagnostics.CodeAnalysis;
 
@@ -11,7 +11,7 @@ namespace APITests.Osu;
 [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method")]
 public class MatchAutomationChecksTests
 {
-	private readonly Mock<IMatchesService> _matchesServiceMock = new();
+	private readonly Mock<IMatchesRepository> _matchesServiceMock = new();
 
 	public MatchAutomationChecksTests()
 	{

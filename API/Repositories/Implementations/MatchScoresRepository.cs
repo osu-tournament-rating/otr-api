@@ -1,14 +1,14 @@
 using API.Entities;
-using API.Services.Interfaces;
+using API.Repositories.Interfaces;
 using API.Utilities;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Services.Implementations;
+namespace API.Repositories.Implementations;
 
-public class MatchScoresService : ServiceBase<MatchScore>, IMatchScoresService
+public class MatchScoresRepository : RepositoryBase<MatchScore>, IMatchScoresRepository
 {
 	private readonly OtrContext _context;
-	public MatchScoresService(ILogger<MatchScoresService> logger, OtrContext context) : base(logger, context) { _context = context; }
+	public MatchScoresRepository(OtrContext context) : base(context) { _context = context; }
 
 	public async Task<int> AverageTeammateScore(long osuPlayerId, int mode, DateTime fromTime)
 	{

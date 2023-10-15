@@ -11,7 +11,7 @@ public static class RatingUtils
 	public const int RatingGrandmaster = 2499;
 	public const int RatingEliteGrandmaster = 2799;
 	
-	public static string GetRankingClassName(int rating) => rating switch
+	public static string GetTier(int rating) => rating switch
 	{
 		< RatingSilver => "Bronze",
 		< RatingGold => "Silver",
@@ -23,19 +23,19 @@ public static class RatingUtils
 		_ => "Elite Grandmaster"
 	};
 	
-	public static string GetNextRankingClassName(int rating) => rating switch
+	public static string GetNextTier(int rating) => rating switch
 	{
-		< RatingSilver => GetRankingClassName(RatingSilver),
-		< RatingGold => GetRankingClassName(RatingGold),
-		< RatingPlatinum => GetRankingClassName(RatingPlatinum),
-		< RatingDiamond => GetRankingClassName(RatingDiamond),
-		< RatingMaster => GetRankingClassName(RatingMaster),
-		< RatingGrandmaster => GetRankingClassName(RatingGrandmaster),
-		< RatingEliteGrandmaster => GetRankingClassName(RatingEliteGrandmaster),
-		_ => GetRankingClassName(RatingEliteGrandmaster)
+		< RatingSilver => GetTier(RatingSilver),
+		< RatingGold => GetTier(RatingGold),
+		< RatingPlatinum => GetTier(RatingPlatinum),
+		< RatingDiamond => GetTier(RatingDiamond),
+		< RatingMaster => GetTier(RatingMaster),
+		< RatingGrandmaster => GetTier(RatingGrandmaster),
+		< RatingEliteGrandmaster => GetTier(RatingEliteGrandmaster),
+		_ => GetTier(RatingEliteGrandmaster)
 	};
 
-	public static int GetRatingNeededForNextRank(int rating) => rating switch
+	public static int GetRatingForNextTier(int rating) => rating switch
 	{
 		< RatingSilver => RatingSilver - rating,
 		< RatingGold => RatingGold - rating,

@@ -1,33 +1,25 @@
+using API.Controllers;
 using API.DTOs;
-using API.Entities;
-using API.Enums;
 
 namespace API.Services.Interfaces;
 
-public interface IMatchesService : IService<Match>
+public interface IMatchesService
 {
+	/// <summary>
+	/// Marks matches as needing automated checks
+	/// </summary>
+	/// <param name="invalidOnly">If true, this method only applies to matches that are not Verified or PreVerified</param>
+	/// <returns></returns>
 	Task RefreshAutomationChecks(bool invalidOnly = true);
 	Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered);
-	Task<MatchDTO?> GetDTOByOsuMatchIdAsync(long osuMatchId);
-	Task<Match?> GetByMatchIdAsync(long matchId);
-	Task<IList<Match>> GetMatchesNeedingAutoCheckAsync();
-	Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
-	Task<Match?> GetFirstMatchNeedingAutoCheckAsync();
-	Task<IList<Match>> GetNeedApiProcessingAsync();
-	Task<IEnumerable<Match>> CheckExistingAsync(IEnumerable<long> matchIds);
-
+	Task<MatchDTO?> GetAsync(long osuMatchId);
+	Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(long osuPlayerId, int mode, DateTime start, DateTime end);
 	/// <summary>
-	///  Used to queue up matches for verification.
+	/// Inserts or updates based on user input. Only updates if verified is true.
 	/// </summary>
-	/// <returns>Number of rows inserted</returns>
-	Task<int> BatchInsertAsync(IEnumerable<Match> matches);
-	Task<int> UpdateVerificationStatusAsync(long matchId, MatchVerificationStatus status, MatchVerificationSource source, string? info = null);
-	Task<Unmapped_PlayerMatchesDTO> GetPlayerMatchesAsync(long osuId, DateTime fromTime);
-	Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime);
-	Task<IEnumerable<Unmapped_VerifiedTournamentDTO>> GetAllVerifiedTournamentsAsync();
-	Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime);
-	Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime);
-	Task<string?> GetMatchAbbreviationAsync(long osuMatchId);
-	Task UpdateAsApiProcessed(Match match);
-	Task UpdateAsAutoChecked(Match match);
+	/// <param name="batchWrapper"></param>
+	/// <param name="verified">Whether to mark the matches inserted as verified. Also allows overwriting of existing values.</param>
+	/// <param name="verifier">The entity who verified the matches (int representation of <see cref="MatchVerificationSource")/></param>
+	/// <returns></returns>
+	Task BatchInsertOrUpdateAsync(BatchWrapper batchWrapper, bool verified, int? verifier);
 }

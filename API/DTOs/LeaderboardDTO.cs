@@ -1,6 +1,6 @@
 namespace API.DTOs;
 
-public class Unmapped_LeaderboardDTO
+public class LeaderboardDTO
 {
 	public int GlobalRank { get; set; }
 	public string Name { get; set; } = null!;

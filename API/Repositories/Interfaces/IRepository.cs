@@ -1,6 +1,6 @@
-﻿namespace API.Services.Interfaces;
+﻿namespace API.Repositories.Interfaces;
 
-public interface IService<T> where T : class
+public interface IRepository<T> where T : class
 {
 	// CRUD operations
 

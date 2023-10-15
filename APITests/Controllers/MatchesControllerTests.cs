@@ -1,7 +1,7 @@
 using API;
 using API.Controllers;
 using API.Enums;
-using API.Services.Implementations;
+using API.Repositories.Implementations;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,18 +15,18 @@ public class MatchesControllerTests
 {
 	private readonly TestDatabaseFixture _fixture;
 	private readonly Mock<ILogger<OsuMatchesController>> _loggerMock;
-	private readonly Mock<ILogger<MatchesService>> _matchesLoggerMock;
-	private readonly Mock<ILogger<TournamentsService>> _tournamentsLoggerMock;
+	private readonly Mock<ILogger<MatchesRepository>> _matchesLoggerMock;
+	private readonly Mock<ILogger<TournamentsRepository>> _tournamentsLoggerMock;
 	private readonly Mock<IMapper> _mapperMock;
 
-	public MatchesControllerTests(TestDatabaseFixture testDatabaseFixture)
+	public MatchesControllerTests(TestDatabaseFixture fixture)
 	{
 		_loggerMock = new Mock<ILogger<OsuMatchesController>>();
-		_matchesLoggerMock = new Mock<ILogger<MatchesService>>();
-		_tournamentsLoggerMock = new Mock<ILogger<TournamentsService>>();
+		_matchesLoggerMock = new Mock<ILogger<MatchesRepository>>();
+		_tournamentsLoggerMock = new Mock<ILogger<TournamentsRepository>>();
 		_mapperMock = new Mock<IMapper>();
 		
-		_fixture = testDatabaseFixture;
+		_fixture = fixture;
 	}
 	
 	[Fact]
@@ -98,8 +98,8 @@ public class MatchesControllerTests
 
 	private OsuMatchesController OsuMatchesController(OtrContext context)
 	{
-		var matchesService = new MatchesService(_matchesLoggerMock.Object, _mapperMock.Object, context);
-		var tournamentsService = new TournamentsService(_tournamentsLoggerMock.Object, context, matchesService);
+		var matchesService = new MatchesRepository(_matchesLoggerMock.Object, _mapperMock.Object, context);
+		var tournamentsService = new TournamentsRepository(_tournamentsLoggerMock.Object, context, matchesService);
 
 		var controller = new OsuMatchesController(_loggerMock.Object, matchesService, tournamentsService);
 		return controller;

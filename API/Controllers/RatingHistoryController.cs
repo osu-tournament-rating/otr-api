@@ -11,12 +11,10 @@ namespace API.Controllers;
 [Authorize(Roles = "Admin, System")]
 public class RatingHistoryController : Controller
 {
-	private readonly ILogger<RatingHistoryController> _logger;
 	private readonly IRatingHistoryService _service;
 
-	public RatingHistoryController(ILogger<RatingHistoryController> logger, IRatingHistoryService service)
+	public RatingHistoryController(IRatingHistoryService service)
 	{
-		_logger = logger;
 		_service = service;
 	}
 

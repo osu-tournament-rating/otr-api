@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Osu;
+using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,29 +18,28 @@ public class PlayersController : Controller
 {
 	private readonly ILogger<PlayersController> _logger;
 	private readonly IDistributedCache _cache;
-	private readonly IPlayerService _service;
-	private readonly IRatingsService _ratingsService;
+	private readonly IPlayerService _playerService;
+	private readonly IRatingsRepository _ratingsRepository;
 
 	public PlayersController(ILogger<PlayersController> logger, IDistributedCache cache, 
-		IPlayerService service, IRatingsService ratingsService)
+		IPlayerService playerService, IRatingsRepository ratingsRepository)
 	{
 		_logger = logger;
 		_cache = cache;
-		_service = service;
-		_ratingsService = ratingsService;
+		_playerService = playerService;
+		_ratingsRepository = ratingsRepository;
 	}
 
 	[HttpGet("stats/{osuId:long}")]
 	public async Task<IActionResult> GetPlayerStatsAsync(long osuId, [FromQuery]int mode = 0)
 	{
-		var stats = await _service.GetVerifiedPlayerStatisticsAsync(osuId, (OsuEnums.Mode) mode);
-		return Ok(stats);
+		throw new NotImplementedException(); // TODO: Needs to call the PlayerStatisticsService
 	}
 
 	[HttpGet("all")]
 	public async Task<ActionResult<IEnumerable<Player>?>> GetAllAsync()
 	{
-		var players = await _service.GetAllAsync();
+		var players = await _playerService.GetAllAsync();
 		return Ok(players);
 	}
 
@@ -52,14 +52,14 @@ public class PlayersController : Controller
 		if (cachedPlayer != null)
 		{
 			// Serialize into collection of objects, then filter by offset days.
-			var recentCreatedDate = await _ratingsService.GetRecentCreatedDate(osuId);
+			var recentCreatedDate = await _ratingsRepository.GetRecentCreatedDate(osuId);
 			var cachedObj = JsonConvert.DeserializeObject<PlayerDTO>(Encoding.UTF8.GetString(cachedPlayer));
 			if (cachedObj!.Ratings.MaxBy(x => x.Created)?.Created < recentCreatedDate)
 			{
 				// Invalidate cache if the player's ratings have been updated since the cache was created.
 				await _cache.RemoveAsync(key);
 
-				var newDto = await _service.GetPlayerDTOByOsuIdAsync(osuId, false, modeEnum, offsetDays);
+				var newDto = await _playerService.GetByOsuIdAsync(osuId, false, modeEnum, offsetDays);
 				if (newDto == null)
 				{
 					return NotFound($"User with id {osuId} does not exist");
@@ -70,7 +70,7 @@ public class PlayersController : Controller
 
 			return Ok(cachedObj);
 		}
-		var data = await _service.GetPlayerDTOByOsuIdAsync(osuId, false, modeEnum, offsetDays);
+		var data = await _playerService.GetByOsuIdAsync(osuId, false, modeEnum, offsetDays);
 		if (data != null)
 		{
 			return Ok(data);
@@ -82,8 +82,8 @@ public class PlayersController : Controller
 	[HttpGet("{osuId:int}/id")]
 	public async Task<ActionResult<int>> GetIdByOsuIdAsync(long osuId)
 	{
-		int id = await _service.GetIdByOsuIdAsync(osuId);
-		if (id != 0)
+		int? id = await _playerService.GetIdAsync(osuId);
+		if (id != null)
 		{
 			return Ok(id);
 		}
@@ -92,10 +92,10 @@ public class PlayersController : Controller
 	}
 
 	[HttpGet("{id}/osuid")]
-	public async Task<ActionResult<long>> GetOsuIdByIdAsync(int id)
+	public async Task<ActionResult<long>> GetOsuIdAsync(int id)
 	{
-		long osuId = await _service.GetOsuIdByIdAsync(id);
-		if (osuId != 0)
+		long? osuId = await _playerService.GetOsuIdAsync(id);
+		if (osuId != null)
 		{
 			return Ok(osuId);
 		}
@@ -106,14 +106,14 @@ public class PlayersController : Controller
 	[HttpGet("ranks/all")]
 	public async Task<ActionResult<IEnumerable<PlayerRanksDTO>>> GetAllRanksAsync()
 	{
-		var ranks = await _service.GetAllRanksAsync();
+		var ranks = await _playerService.GetAllRanksAsync();
 		return Ok(ranks);
 	}
 	
 	[HttpGet("leaderboard/{mode:int}")]
-	public async Task<ActionResult<IEnumerable<Unmapped_PlayerRatingDTO>>> Leaderboard(int gamemode)
+	public async Task<ActionResult<IEnumerable<PlayerRatingDTO>>> Leaderboard(int gamemode)
 	{
 		const int LEADERBOARD_LIMIT = 50;
-		return Ok(await _service.GetTopRatingsAsync(LEADERBOARD_LIMIT, (OsuEnums.Mode) gamemode));
+		return Ok(await _playerService.GetTopRatingsAsync(LEADERBOARD_LIMIT, (OsuEnums.Mode) gamemode));
 	}
 }

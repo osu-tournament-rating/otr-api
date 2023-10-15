@@ -1,6 +1,6 @@
 namespace API.DTOs;
 
-public class Unmapped_PlayerRatingDTO
+public class PlayerRatingDTO
 {
 	public long OsuId { get; set; }
 	public string Username { get; set; } = null!;

@@ -1,6 +1,5 @@
 using API.DTOs;
 using API.Entities;
-using API.Osu;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,47 +59,47 @@ public class MeController : Controller
 		return Ok(user);
 	}
 
-	[HttpGet("statistics")]
-	public async Task<ActionResult<Unmapped_PlayerStatisticsDTO>> GetAsync([FromQuery]int offsetDays = -1, [FromQuery]int mode = 0)
-	{
-		long? osuId = GetOsuId();
-		
-		if(!osuId.HasValue)
-		{
-			return BadRequest("User's login seems corrupted, couldn't identify osuId.");
-		}
-
-		string osuIdKey = HttpContext.User.Claims.First(x => x.Type == JwtRegisteredClaimNames.Name).Value;
-		string key = $"stats_{osuIdKey}_{offsetDays}_{mode}";
-		
-		byte[]? cachedStatsBytes = await _cache.GetAsync(key);
-		var recentCreatedDate = await _ratingsService.GetRecentCreatedDate(osuId.Value);
-
-		if (cachedStatsBytes == null)
-		{
-			// Invalidate cache if the player's ratings have been updated since the cache was created.
-			await _cache.RemoveAsync(key);
-
-			var freshStats = await _playerService.GetVerifiedPlayerStatisticsAsync(osuId.Value, (OsuEnums.Mode) mode, FromTime(offsetDays));
-			await _cache.SetStringAsync(key, JsonConvert.SerializeObject(freshStats));
-
-			return Ok(freshStats);
-		}
-		
-		var cachedObj = JsonConvert.DeserializeObject<Unmapped_PlayerStatisticsDTO>(Encoding.UTF8.GetString(cachedStatsBytes));
-		if (cachedObj!.Created < recentCreatedDate)
-		{
-			// Invalidate cache if the player's ratings have been updated since the cache was created.
-			await _cache.RemoveAsync(key);
-
-			var freshStats = await _playerService.GetVerifiedPlayerStatisticsAsync(osuId.Value, (OsuEnums.Mode) mode, FromTime(offsetDays));
-			await _cache.SetStringAsync(key, JsonConvert.SerializeObject(freshStats));
-
-			return Ok(freshStats);
-		}
-		
-		return Ok(cachedObj);
-	}
+	// [HttpGet("statistics")]
+	// public async Task<ActionResult<Unmapped_PlayerStatisticsDTO>> GetAsync([FromQuery]int offsetDays = -1, [FromQuery]int mode = 0)
+	// {
+	// 	long? osuId = GetOsuId();
+	// 	
+	// 	if(!osuId.HasValue)
+	// 	{
+	// 		return BadRequest("User's login seems corrupted, couldn't identify osuId.");
+	// 	}
+	//
+	// 	string osuIdKey = HttpContext.User.Claims.First(x => x.Type == JwtRegisteredClaimNames.Name).Value;
+	// 	string key = $"stats_{osuIdKey}_{offsetDays}_{mode}";
+	// 	
+	// 	byte[]? cachedStatsBytes = await _cache.GetAsync(key);
+	// 	var recentCreatedDate = await _ratingsService.GetRecentCreatedDate(osuId.Value);
+	//
+	// 	if (cachedStatsBytes == null)
+	// 	{
+	// 		// Invalidate cache if the player's ratings have been updated since the cache was created.
+	// 		await _cache.RemoveAsync(key);
+	//
+	// 		var freshStats = await _playerService.GetVerifiedPlayerStatisticsAsync(osuId.Value, (OsuEnums.Mode) mode, FromTime(offsetDays));
+	// 		await _cache.SetStringAsync(key, JsonConvert.SerializeObject(freshStats));
+	//
+	// 		return Ok(freshStats);
+	// 	}
+	// 	
+	// 	var cachedObj = JsonConvert.DeserializeObject<Unmapped_PlayerStatisticsDTO>(Encoding.UTF8.GetString(cachedStatsBytes));
+	// 	if (cachedObj!.Created < recentCreatedDate)
+	// 	{
+	// 		// Invalidate cache if the player's ratings have been updated since the cache was created.
+	// 		await _cache.RemoveAsync(key);
+	//
+	// 		var freshStats = await _playerService.GetVerifiedPlayerStatisticsAsync(osuId.Value, (OsuEnums.Mode) mode, FromTime(offsetDays));
+	// 		await _cache.SetStringAsync(key, JsonConvert.SerializeObject(freshStats));
+	//
+	// 		return Ok(freshStats);
+	// 	}
+	// 	
+	// 	return Ok(cachedObj);
+	// }
 	
 	[HttpGet("ratinghistories")]
 	public async Task<ActionResult<IEnumerable<RatingHistoryDTO>>> GetRatingHistoriesAsync([FromQuery]int offsetDays = -1, [FromQuery]int mode = 0)

@@ -1,6 +1,7 @@
 using API.Entities;
 using API.Enums;
 using API.Osu;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Utilities;
 
@@ -12,7 +13,20 @@ public static class QueryExtensions
 	// Match
 	public static IQueryable<Match> WhereVerified(this IQueryable<Match> query) => query.AsQueryable().Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Verified && x.IsApiProcessed == true && x.NeedsAutoCheck == false);
 	public static IQueryable<Match> After(this IQueryable<Match> query, DateTime after) => query.AsQueryable().Where(x => x.StartTime > after);
+	public static IQueryable<Match> Before(this IQueryable<Match> query, DateTime before) => query.AsQueryable().Where(x => x.StartTime < before);
+	public static IQueryable<Match> WhereMode(this IQueryable<Match> query, int playMode) => query.AsQueryable().Where(x => x.Tournament != null && x.Tournament.Mode == playMode);
 
+	public static IQueryable<Match> IncludeAllChildren(this IQueryable<Match> query) => query.AsQueryable()
+	                                                                                         .Include(x => x.Games)
+	                                                                                         .ThenInclude(x => x.MatchScores)
+	                                                                                         .Include(x => x.Games)
+	                                                                                         .ThenInclude(x => x.Beatmap);
+
+	public static IQueryable<Match> WherePlayerParticipated(this IQueryable<Match> query, long osuPlayerId) => query.AsQueryable()
+	                                                                                                                .Where(x =>
+		                                                                                                                x.Games.Any(y =>
+			                                                                                                                y.MatchScores.Any(z =>
+				                                                                                                                z.Player.OsuId == osuPlayerId)));
 	// Game
 	public static IQueryable<Game> WhereVerified(this IQueryable<Game> query) =>
 		query.AsQueryable().Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified && x.RejectionReason == null);

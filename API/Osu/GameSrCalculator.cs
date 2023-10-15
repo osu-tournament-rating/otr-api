@@ -1,12 +1,12 @@
-using API.Services.Interfaces;
+using API.Repositories.Interfaces;
 
 namespace API.Osu;
 
 public class GameSrCalculator : IGameSrCalculator
 {
-	private readonly IBeatmapService _beatmapService;
+	private readonly IBeatmapRepository _beatmapRepository;
 
-	public GameSrCalculator(IBeatmapService beatmapService) { _beatmapService = beatmapService; }
+	public GameSrCalculator(IBeatmapRepository beatmapRepository) { _beatmapRepository = beatmapRepository; }
 	
 	public async Task<double> Calculate(double baseSr, int beatmapId, OsuEnums.Mods baseMods, IEnumerable<OsuEnums.Mods?> playerAppliedMods)
 	{
@@ -16,22 +16,22 @@ public class GameSrCalculator : IGameSrCalculator
 		{
 			if (baseMods.HasFlag(OsuEnums.Mods.DoubleTime))
 			{
-				return await _beatmapService.GetDoubleTimeSrAsync(beatmapId);
+				return await _beatmapRepository.GetDoubleTimeSrAsync(beatmapId);
 			}
 
 			if (baseMods.HasFlag(OsuEnums.Mods.HardRock))
 			{
-				return await _beatmapService.GetHardRockSrAsync(beatmapId);
+				return await _beatmapRepository.GetHardRockSrAsync(beatmapId);
 			}
 
 			if (baseMods.HasFlag(OsuEnums.Mods.Easy))
 			{
-				return await _beatmapService.GetEasySrAsync(beatmapId);
+				return await _beatmapRepository.GetEasySrAsync(beatmapId);
 			}
 
 			if (baseMods.HasFlag(OsuEnums.Mods.HalfTime))
 			{
-				return await _beatmapService.GetHalfTimeSrAsync(beatmapId);
+				return await _beatmapRepository.GetHalfTimeSrAsync(beatmapId);
 			}
 
 			return baseSr;
@@ -42,7 +42,7 @@ public class GameSrCalculator : IGameSrCalculator
 		// it is assumed the other mod combinations are loosely equivalent to HR in difficulty
 		if (containsHardRock)
 		{
-			return await _beatmapService.GetHardRockSrAsync(beatmapId);
+			return await _beatmapRepository.GetHardRockSrAsync(beatmapId);
 		}
 
 		// If all else fails, return the base SR (this can happen quite frequently i.e. NM maps)

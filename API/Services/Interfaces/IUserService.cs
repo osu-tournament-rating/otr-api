@@ -2,8 +2,9 @@ using API.Entities;
 
 namespace API.Services.Interfaces;
 
-public interface IUserService : IService<User>
+public interface IUserService
 {
+	// TODO: Change to DTOs
 	Task<User?> GetForPlayerAsync(int playerId);
 	Task<User?> GetForPlayerAsync(long osuId);
 	Task<User?> GetOrCreateSystemUserAsync();

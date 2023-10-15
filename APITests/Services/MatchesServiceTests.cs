@@ -1,5 +1,4 @@
-using API.Osu;
-using API.Services.Implementations;
+using API.Repositories.Implementations;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -9,7 +8,7 @@ namespace APITests.Services;
 [Collection("DatabaseCollection")]
 public class MatchesServiceTests
 {
-	private readonly Mock<ILogger<MatchesService>> _matchesServiceMock = new();
+	private readonly Mock<ILogger<MatchesRepository>> _matchesServiceMock = new();
 	private readonly Mock<IMapper> _mapper = new();
 	
 	public MatchesServiceTests(TestDatabaseFixture testDatabaseFixture) { _fixture = testDatabaseFixture; }
@@ -21,7 +20,7 @@ public class MatchesServiceTests
 	{
 		// arrange
 		using var context = _fixture.CreateContext();
-		var matchesService = new MatchesService(_matchesServiceMock.Object, _mapper.Object, context);
+		var matchesService = new MatchesRepository(_matchesServiceMock.Object, _mapper.Object, context);
 
 		// act
 		var match = await matchesService.GetByMatchIdAsync(105297522);

@@ -48,7 +48,7 @@ public class RatingsController : Controller
 			return BadRequest($"Player id {rating.PlayerId} in body does not match player id {playerId} in path");
 		}
 
-		int? result = await _service.InsertOrUpdateForPlayerAsync(playerId, rating);
+		int? result = await _service.InsertOrUpdateAsync(playerId, rating);
 		if (result > 0)
 		{
 			return Ok();

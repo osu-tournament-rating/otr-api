@@ -1,6 +1,6 @@
 using API.Entities;
 using API.Osu.Multiplayer;
-using API.Services.Interfaces;
+using API.Repositories.Interfaces;
 
 namespace API.Osu;
 
@@ -30,26 +30,26 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 		{
 			using (var scope = _serviceProvider.CreateScope())
 			{
-				var beatmapsService = scope.ServiceProvider.GetRequiredService<IBeatmapService>();
+				var beatmapsService = scope.ServiceProvider.GetRequiredService<IBeatmapRepository>();
 				await ProcessBeatmapModSrsAsync(beatmapsService);
 				await Task.Delay(30 * 1000, stoppingToken);
 			}
 		}
 	}
 
-	private async Task ProcessBeatmapModSrsAsync(IBeatmapService beatmapService)
+	private async Task ProcessBeatmapModSrsAsync(IBeatmapRepository beatmapRepository)
 	{
-		var maps = await beatmapService.GetUnprocessedSrBeatmapIdsAsync();
+		var maps = await beatmapRepository.GetUnprocessedSrBeatmapIdsAsync();
 		var toAdd = new List<BeatmapModSr>();
 		foreach ((int mapId, OsuEnums.Mods mods) in maps)
 		{
 			if(toAdd.Count == 1000)
 			{
-				await beatmapService.BulkInsertAsync(toAdd);
+				await beatmapRepository.BulkInsertAsync(toAdd);
 				toAdd.Clear();
 			}
 			
-			long osuMapId = await beatmapService.GetBeatmapIdAsync(mapId);
+			long osuMapId = await beatmapRepository.GetBeatmapIdAsync(mapId);
 			var beatmap = await _osuApiService.GetBeatmapAsync(osuMapId, "osu! beatmap SR data worker identified maps that need to be processed", mods);
 			
 			if (beatmap == null)
@@ -61,7 +61,7 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 				 * We have already processed the beatmap data before,
 				 * but between now and then, the beatmap has been deleted from osu
 				 */
-				var storedMap = await beatmapService.GetAsync(mapId);
+				var storedMap = await beatmapRepository.GetByOsuIdAsync(mapId);
 
 				if (storedMap == null)
 				{
@@ -93,7 +93,7 @@ public class OsuBeatmapSrDataWorker : BackgroundService
 
 		if (toAdd.Any())
 		{
-			await beatmapService.BulkInsertAsync(toAdd);
+			await beatmapRepository.BulkInsertAsync(toAdd);
 		}
 	}
 }

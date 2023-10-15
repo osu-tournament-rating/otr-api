@@ -1,4 +1,4 @@
-using API.Services.Interfaces;
+using API.Repositories.Interfaces;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -43,8 +43,8 @@ public class OsuTrackApiWorker : BackgroundService
 				await _semaphore.WaitAsync(stoppingToken);
 				using (var scope = _serviceProvider.CreateScope())
 				{
-					var playerService = scope.ServiceProvider.GetRequiredService<IPlayerService>();
-					var ratingHistoryService = scope.ServiceProvider.GetRequiredService<IRatingHistoryService>();
+					var playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+					var ratingHistoryService = scope.ServiceProvider.GetRequiredService<IRatingHistoryRepository>();
 
 					var playersToUpdate = (await playerService.GetPlayersWhereMissingGlobalRankAsync()).ToList();
 

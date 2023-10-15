@@ -1,8 +1,8 @@
 using API.Entities;
 
-namespace API.Services.Interfaces;
+namespace API.Repositories.Interfaces;
 
-public interface IMatchScoresService : IService<MatchScore>
+public interface IMatchScoresRepository : IRepository<MatchScore>
 {
 	public Task<int> AverageTeammateScore(long osuPlayerId, int mode, DateTime fromTime);
 	public Task<int> AverageOpponentScore(long osuPlayerId, int mode, DateTime fromTime);

@@ -1,5 +1,5 @@
 using API.Osu.Multiplayer;
-using API.Services.Interfaces;
+using API.Repositories.Interfaces;
 
 namespace API.Osu;
 
@@ -34,7 +34,7 @@ public class OsuPlayerDataWorker : BackgroundService
 			 */
 			using (var scope = _serviceProvider.CreateScope())
 			{
-				var playerService = scope.ServiceProvider.GetRequiredService<IPlayerService>();
+				var playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
 				var playersToUpdate = (await playerService.GetOutdatedAsync()).ToList();
 				
 				if(!playersToUpdate.Any())

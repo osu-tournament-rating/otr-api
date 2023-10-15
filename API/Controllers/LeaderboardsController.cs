@@ -12,10 +12,13 @@ public class LeaderboardsController : Controller
 {
 	private readonly ILeaderboardService _leaderboardService;
 
-	public LeaderboardsController(ILeaderboardService leaderboardService) { _leaderboardService = leaderboardService; }
+	public LeaderboardsController(ILeaderboardService leaderboardService)
+	{
+		_leaderboardService = leaderboardService;
+	}
 
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<Unmapped_LeaderboardDTO>>> GetAsync([FromQuery]int mode, [FromQuery]int page = 0, [FromQuery]int pageSize = 25)
+	public async Task<ActionResult<IEnumerable<LeaderboardDTO>>> GetAsync([FromQuery]int mode, [FromQuery]int page = 0, [FromQuery]int pageSize = 25)
 	{
 		return Ok(await _leaderboardService.GetLeaderboardAsync(mode, page, pageSize));
 	}

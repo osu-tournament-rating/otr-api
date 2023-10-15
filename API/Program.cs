@@ -4,6 +4,8 @@ using API.DTOs;
 using API.Entities;
 using API.Osu;
 using API.Osu.Multiplayer;
+using API.Repositories.Implementations;
+using API.Repositories.Interfaces;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -97,16 +99,26 @@ builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddScoped<IGameSrCalculator, GameSrCalculator>();
 
+// Repositories
+builder.Services.AddScoped<IRatingsRepository, RatingsRepository>();
+builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
+builder.Services.AddScoped<IRatingHistoryRepository, RatingHistoryRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IGamesRepository, GamesRepository>();
+builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
+builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
+builder.Services.AddScoped<IApiMatchRepository, ApiMatchRepository>();
+builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
+
+// Services
 builder.Services.AddScoped<IRatingsService, RatingsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IRatingHistoryService, RatingHistoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IGamesService, GamesService>();
-builder.Services.AddScoped<IMatchScoresService, MatchScoresService>();
-builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
-builder.Services.AddScoped<IApiMatchService, ApiMatchService>();
+builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
 
 builder.Services.AddOsuSharp(options =>

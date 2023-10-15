@@ -60,62 +60,13 @@ public class OsuMatchesController : Controller
 			return Unauthorized("You are not authorized to verify matches");
 		}
 
-		var ids = wrapper.Ids.ToList();
-		
 		// Gather tournament information
-		var existingMatches = await _matchesService.CheckExistingAsync(ids);
-		
 		if(!verified && await _tournamentsService.ExistsAsync(wrapper.TournamentName, wrapper.Mode))
 		{
 			return BadRequest($"Tournament {wrapper.TournamentName} already exists for this mode");
 		}
-		
-		var tournament = await _tournamentsService.CreateAsync(wrapper, verified);
 
-		int? verifier = IdentifyVerifier(verified);
-		foreach (var verifiedMatch in existingMatches)
-		{
-			verifiedMatch.VerificationStatus = (int)MatchVerificationStatus.Verified;
-			verifiedMatch.VerificationSource = verifier;
-			verifiedMatch.NeedsAutoCheck = true;
-			verifiedMatch.IsApiProcessed = false;
-			verifiedMatch.VerifierUserId = wrapper.SubmitterId;
-			verifiedMatch.SubmitterUserId = wrapper.SubmitterId;
-			
-			await _matchesService.UpdateAsync(verifiedMatch);
-			_logger.LogInformation("Updated {@Match}", verifiedMatch);
-		}
-
-		// Continue processing the rest of the links
-
-		var stripped = ids.Except(existingMatches.Select(x => x.MatchId)).ToList();
-
-		var verification = MatchVerificationStatus.PendingVerification;
-		if (verified)
-		{
-			verification = MatchVerificationStatus.Verified;
-		}
-
-		var matches = stripped.Select(id => new Match
-		{
-			MatchId = id,
-			VerificationStatus = (int)verification,
-			SubmitterUserId = wrapper.SubmitterId,
-			RankRangeLowerBound = wrapper.RankRangeLowerBound,
-			TeamSize = wrapper.TeamSize,
-			Mode = wrapper.Mode,
-			NeedsAutoCheck = true,
-			IsApiProcessed = false,
-			VerificationSource = verifier,
-			VerifierUserId = verified ? wrapper.SubmitterId : null,
-			TournamentId = tournament.Id
-		});
-
-		int? result = await _matchesService.BatchInsertAsync(matches);
-		if (result > 0)
-		{
-			_logger.LogInformation("Successfully inserted {Matches} new matches as {Status}", result, verification);
-		}
+		await _matchesService.BatchInsertOrUpdateAsync(wrapper, verified, IdentifyVerifier(verified));
 
 		return Ok();
 	}
@@ -148,7 +99,7 @@ public class OsuMatchesController : Controller
 	public async Task<IActionResult> RefreshAutomationChecksAsync()
 	{
 		// Marks invalid matches as needing automation checks
-		await _matchesService.RefreshAutomationChecks(true);
+		await _matchesService.RefreshAutomationChecks();
 		return Ok();
 	}
 
@@ -164,7 +115,7 @@ public class OsuMatchesController : Controller
 	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
 	{
-		var match = await _matchesService.GetDTOByOsuMatchIdAsync(osuMatchId);
+		var match = await _matchesService.GetAsync(osuMatchId);
 
 		if (match == null)
 		{
@@ -176,7 +127,7 @@ public class OsuMatchesController : Controller
 
 	[HttpGet("player/{osuId:long}")]
 	[Authorize(Roles = "Admin, System")]
-	public async Task<ActionResult<IEnumerable<Unmapped_PlayerMatchesDTO>>> GetMatchesAsync(long osuId) => Ok(await _matchesService.GetPlayerMatchesAsync(osuId, DateTime.MinValue));
+	public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatchesAsync(long osuId, int mode) => Ok(await _matchesService.GetAllForPlayerAsync(osuId, mode, DateTime.MinValue, DateTime.MaxValue));
 
 	[HttpGet("{id:int}/osuid")]
 	[Authorize(Roles = "Admin, System")]

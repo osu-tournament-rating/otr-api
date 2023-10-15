@@ -1,5 +1,5 @@
 using API.Entities;
-using API.Services.Interfaces;
+using API.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -23,16 +23,16 @@ public class LoginController : Controller
 	private readonly IConfiguration _configuration;
 	private readonly ILogger<LoginController> _logger;
 	private readonly IOsuClient _osuClient;
-	private readonly IPlayerService _playerService;
-	private readonly IUserService _userService;
+	private readonly IPlayerRepository _playerRepository;
+	private readonly IUserRepository _userRepository;
 
 	public LoginController(ILogger<LoginController> logger, IConfiguration configuration,
-		IPlayerService playerService, IUserService userService, IOsuClient osuClient)
+		IPlayerRepository playerRepository, IUserRepository userRepository, IOsuClient osuClient)
 	{
 		_logger = logger;
 		_configuration = configuration;
-		_playerService = playerService;
-		_userService = userService;
+		_playerRepository = playerRepository;
+		_userRepository = userRepository;
 		_osuClient = osuClient;
 	}
 
@@ -52,10 +52,10 @@ public class LoginController : Controller
 			var osuUser = await AuthorizeAsync(code);
 			long osuUserId = osuUser.Id;
 
-			var player = await _playerService.GetPlayerByOsuIdAsync(osuUserId);
+			var player = await _playerRepository.GetPlayerByOsuIdAsync(osuUserId);
 			if (player == null)
 			{
-				player = await _playerService.CreateAsync(new Player
+				player = await _playerRepository.CreateAsync(new Player
 				{
 					OsuId = osuUserId
 				});
@@ -141,11 +141,11 @@ public class LoginController : Controller
 
 	private async Task<User> AuthenticateUserAsync(Player associatedPlayer)
 	{
-		var user = await _userService.GetForPlayerAsync(associatedPlayer.Id);
+		var user = await _userRepository.GetForPlayerAsync(associatedPlayer.Id);
 		if (user == null)
 		{
 			// First time visitor
-			return await _userService.CreateAsync(new User
+			return await _userRepository.CreateAsync(new User
 			{
 				PlayerId = associatedPlayer.Id,
 				Created = DateTime.UtcNow,
@@ -157,7 +157,7 @@ public class LoginController : Controller
 		user.LastLogin = DateTime.UtcNow;
 		user.Updated = DateTime.UtcNow;
 		user.PlayerId = associatedPlayer.Id;
-		await _userService.UpdateAsync(user);
+		await _userRepository.UpdateAsync(user);
 		return user;
 	}
 
@@ -171,7 +171,7 @@ public class LoginController : Controller
 
 	private async Task<User?> AuthenticateSystemUserAsync()
 	{
-		var user = await _userService.GetOrCreateSystemUserAsync();
+		var user = await _userRepository.GetOrCreateSystemUserAsync();
 
 		if (user == null)
 		{
@@ -180,7 +180,7 @@ public class LoginController : Controller
 		
 		user.LastLogin = DateTime.UtcNow;
 		user.Updated = DateTime.UtcNow;
-		await _userService.UpdateAsync(user);
+		await _userRepository.UpdateAsync(user);
 		_logger.LogInformation("Authenticated system user");
 		return user;
 	}

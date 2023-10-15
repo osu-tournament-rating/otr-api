@@ -2,7 +2,7 @@ using API.Entities;
 using API.Osu;
 using API.Osu.AutomationChecks;
 using API.Osu.Multiplayer;
-using API.Services.Interfaces;
+using API.Repositories.Interfaces;
 using Moq;
 using Newtonsoft.Json;
 
@@ -12,7 +12,7 @@ public class MatchAutomationChecks_Warmups
 {
 	private static OsuApiMatchData _matchData = JsonConvert.DeserializeObject<OsuApiMatchData>(_json)!;
 	private static API.Entities.Match _dbMatch = GetMatchForOsuMatch(_matchData);
-	private readonly Mock<IMatchesService> _matchesServiceMock = new();
+	private readonly Mock<IMatchesRepository> _matchesServiceMock = new();
 
 	[Fact]
 	public void Ensure_GameFailure_BadTeamSize()

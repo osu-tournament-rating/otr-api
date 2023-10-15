@@ -1,15 +1,14 @@
-﻿using API.Services.Interfaces;
+﻿using API.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
-namespace API.Services.Implementations;
+namespace API.Repositories.Implementations;
 
-public class ServiceBase<T> : IService<T> where T : class
+public class RepositoryBase<T> : IRepository<T> where T : class
 {
 	private readonly OtrContext _context;
-	private readonly ILogger _logger;
 
-	protected ServiceBase(ILogger logger, OtrContext context)
+	protected RepositoryBase(OtrContext context)
 	{
-		_logger = logger;
 		_context = context;
 	}
 
@@ -48,4 +47,6 @@ public class ServiceBase<T> : IService<T> where T : class
 		await _context.Set<T>().AddRangeAsync(entities);
 		return await _context.SaveChangesAsync();
 	}
+	
+	public virtual async Task<IEnumerable<T>> GetAllAsync() => await _context.Set<T>().ToListAsync();
 }

@@ -1,20 +1,20 @@
 using API.Entities;
 using API.Osu.Multiplayer;
-using API.Services.Interfaces;
+using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Services.Implementations;
+namespace API.Repositories.Implementations;
 
-public class ApiMatchService : IApiMatchService
+public class ApiMatchRepository : IApiMatchRepository
 {
-	private readonly IBeatmapService _beatmapService;
+	private readonly IBeatmapRepository _beatmapRepository;
 	private readonly IOsuApiService _osuApiService;
-	private readonly IMatchesService _matchesService;
-	private readonly IGamesService _gamesService;
-	private readonly IMatchScoresService _matchScoresService;
+	private readonly IMatchesRepository _matchesRepository;
+	private readonly IGamesRepository _gamesRepository;
+	private readonly IMatchScoresRepository _matchScoresRepository;
 	private readonly OtrContext _context;
-	private readonly ILogger<ApiMatchService> _logger;
-	private readonly IPlayerService _playerService;
+	private readonly ILogger<ApiMatchRepository> _logger;
+	private readonly IPlayerRepository _playerRepository;
 
 	/// <summary>
 	/// Strictly responsible for processing matches from the osu! API and adding them to the database. This includes:
@@ -22,17 +22,17 @@ public class ApiMatchService : IApiMatchService
 	/// * Beatmap data
 	/// * Match data, game data, and score data
 	/// </summary>
-	public ApiMatchService(ILogger<ApiMatchService> logger, OtrContext context, IPlayerService playerService, 
-		IBeatmapService beatmapService, IOsuApiService osuApiService, IMatchesService matchesService, IGamesService gamesService, IMatchScoresService matchScoresService)
+	public ApiMatchRepository(ILogger<ApiMatchRepository> logger, OtrContext context, IPlayerRepository playerRepository, 
+		IBeatmapRepository beatmapRepository, IOsuApiService osuApiService, IMatchesRepository matchesRepository, IGamesRepository gamesRepository, IMatchScoresRepository matchScoresRepository)
 	{
 		_logger = logger;
 		_context = context;
-		_playerService = playerService;
-		_beatmapService = beatmapService;
+		_playerRepository = playerRepository;
+		_beatmapRepository = beatmapRepository;
 		_osuApiService = osuApiService;
-		_matchesService = matchesService;
-		_gamesService = gamesService;
-		_matchScoresService = matchScoresService;
+		_matchesRepository = matchesRepository;
+		_gamesRepository = gamesRepository;
+		_matchScoresRepository = matchScoresRepository;
 	}
 
 	public async Task<Match?> CreateFromApiMatchAsync(OsuApiMatchData apiMatch)
@@ -62,7 +62,7 @@ public class ApiMatchService : IApiMatchService
 			}
 			
 			var newPlayer = new Player { OsuId = osuId };
-			var player = await _playerService.CreateAsync(newPlayer);
+			var player = await _playerRepository.CreateAsync(newPlayer);
 
 			_logger.LogInformation("Saved new player: {PlayerId} (osuId: {OsuId}) from match {MatchId}", player?.Id, osuId, apiMatch.OsuApiMatch.MatchId);
 		}
@@ -114,7 +114,7 @@ public class ApiMatchService : IApiMatchService
 		
 		foreach(long beatmapId in beatmapIds)
 		{
-			var existingBeatmap = await _beatmapService.GetBeatmapByBeatmapIdAsync(beatmapId);
+			var existingBeatmap = await _beatmapRepository.GetByOsuIdAsync(beatmapId);
 			if (existingBeatmap == null)
 			{
 				var beatmap = await _osuApiService.GetBeatmapAsync(beatmapId, $"Beatmap {beatmapId} from match {apiMatch.OsuApiMatch.MatchId} does not exist in database");
@@ -127,7 +127,7 @@ public class ApiMatchService : IApiMatchService
 			}
 		}
 
-		await _beatmapService.BulkInsertAsync(beatmapsToSave);
+		await _beatmapRepository.BulkInsertAsync(beatmapsToSave);
 
 		if (countSaved > 0)
 		{
@@ -179,7 +179,7 @@ public class ApiMatchService : IApiMatchService
 		}
 		
 		// Fetch the full entity from the database once again to ensure we have the latest populated data
-		return await _matchesService.GetAsync(existingMatch.Id);
+		return await _matchesRepository.GetAsync(existingMatch.Id);
 	}
 
 	private async Task<Match?> ExistingMatch(OsuApiMatchData apiMatch) => await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == apiMatch.OsuApiMatch.MatchId);
@@ -192,7 +192,7 @@ public class ApiMatchService : IApiMatchService
 		existingMatch.IsApiProcessed = true;
 		existingMatch.VerificationInfo = null;
 
-		await _matchesService.UpdateAsync(existingMatch);
+		await _matchesRepository.UpdateAsync(existingMatch);
 
 		_logger.LogInformation("Updated match: {MatchId} (name: {MatchName})", existingMatch.MatchId, existingMatch.Name);
 		return existingMatch;
@@ -210,7 +210,7 @@ public class ApiMatchService : IApiMatchService
 		var persisted = new List<Game>();
 		foreach (var game in osuMatchGames)
 		{
-			int? beatmapIdResult = await _beatmapService.GetIdByBeatmapIdAsync(game.BeatmapId);
+			int? beatmapIdResult = await _beatmapRepository.GetIdByBeatmapIdAsync(game.BeatmapId);
 
 			var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
 
@@ -253,7 +253,7 @@ public class ApiMatchService : IApiMatchService
 			Mods = (int)osuApiGame.Mods
 		};
 
-		var persisted = await _gamesService.CreateAsync(dbGame);
+		var persisted = await _gamesRepository.CreateAsync(dbGame);
 		_logger.LogDebug("Saved game {GameId}", dbGame.GameId);
 
 		if (persisted == null)
@@ -282,7 +282,7 @@ public class ApiMatchService : IApiMatchService
 		int countSaved = 0;
 		foreach (var score in osuApiGame.Scores)
 		{
-			int playerId = await _playerService.GetIdByOsuIdAsync(score.UserId);
+			int playerId = await _playerRepository.GetIdByOsuIdAsync(score.UserId);
 			if (playerId == default)
 			{
 				_logger.LogWarning("Failed to resolve player ID for player {PlayerId} while processing scores for game {GameId}! This score will be missing!", score.UserId, osuApiGame.GameId);
@@ -310,7 +310,7 @@ public class ApiMatchService : IApiMatchService
 					IsValid = true // We know this score is valid because we checked it above
 				};
 
-				await _matchScoresService.CreateAsync(dbMatchScore);
+				await _matchScoresRepository.CreateAsync(dbMatchScore);
 
 				countSaved++;
 			}
