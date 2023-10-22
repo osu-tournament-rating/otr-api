@@ -77,7 +77,6 @@ public class OsuPlayerDataWorker : BackgroundService
 						player.Country = apiResult.Country;
 					}
 
-					player.Updated = DateTime.UtcNow;
 					await playerService.UpdateAsync(player);
 				}
 			}

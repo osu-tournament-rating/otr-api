@@ -17,7 +17,7 @@ public interface IPlayerRepository : IRepository<Player>
 	Task<IEnumerable<Player>> GetOutdatedAsync();
 	Task<IEnumerable<Player>> GetPlayersWhereMissingGlobalRankAsync();
 	Task<IEnumerable<Player>> GetByOsuIdsAsync(IEnumerable<long> osuIds);
-	Task<IEnumerable<Player>> GetAllAsync();
+	Task<IEnumerable<Player>> GetAllAsync(bool eagerLoad = false);
 	Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode);
 	Task<string?> GetUsernameAsync(long osuId);
 }

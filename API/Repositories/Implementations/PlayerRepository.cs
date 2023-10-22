@@ -39,12 +39,20 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 	public async Task<IEnumerable<Player>> GetByOsuIdsAsync(IEnumerable<long> osuIds) => await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
-	public override async Task<IEnumerable<Player>> GetAllAsync() => await _context.Players
-	                                                                      .Include(x => x.MatchScores)
-	                                                                      .Include(x => x.RatingHistories)
-	                                                                      .Include(x => x.Ratings)
-	                                                                      .AsNoTracking()
-	                                                                      .ToListAsync();
+	public async Task<IEnumerable<Player>> GetAllAsync(bool eagerLoad)
+	{
+		if (eagerLoad)
+		{
+			return await _context.Players
+			                     .Include(x => x.MatchScores)
+			                     .Include(x => x.RatingHistories)
+			                     .Include(x => x.Ratings)
+			                     .AsNoTracking()
+			                     .ToListAsync();
+		}
+
+		return await _context.Players.AsNoTracking().ToListAsync();
+	}
 
 	public async Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1)
 	{
