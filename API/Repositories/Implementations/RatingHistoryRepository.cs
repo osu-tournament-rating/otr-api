@@ -13,7 +13,7 @@ public class RatingHistoryRepository : RepositoryBase<RatingHistory>, IRatingHis
 
 	public async Task<IEnumerable<RatingHistory>> GetForPlayerAsync(long osuPlayerId, int mode, DateTime fromTime) => await _context.RatingHistories
 	                                                                                                                                .Include(x => x.Match)
-	                                                                                                                                .WherePlayer(osuPlayerId)
+	                                                                                                                                .WhereOsuPlayerId(osuPlayerId)
 	                                                                                                                                .WhereMode(mode)
 	                                                                                                                                .After(fromTime)
 	                                                                                                                                .OrderBy(x => x.Created)
@@ -21,7 +21,7 @@ public class RatingHistoryRepository : RepositoryBase<RatingHistory>, IRatingHis
 
 	public async Task<IEnumerable<RatingHistory>> GetForPlayerAsync(long osuPlayerId) => await _context.RatingHistories
 	                                                                                                   .Include(x => x.Match)
-	                                                                                                   .WherePlayer(osuPlayerId)
+	                                                                                                   .WhereOsuPlayerId(osuPlayerId)
 	                                                                                                   .ToListAsync();
 
 	public async Task<int> BatchInsertAsync(IEnumerable<RatingHistoryDTO> histories)
@@ -45,7 +45,7 @@ public class RatingHistoryRepository : RepositoryBase<RatingHistory>, IRatingHis
 	}
 
 	public async Task<RatingHistory?> GetOldestForPlayerAsync(long osuId, int mode) =>
-		await _context.RatingHistories.WherePlayer(osuId).WhereMode(mode).OrderBy(x => x.Created).FirstOrDefaultAsync();
+		await _context.RatingHistories.WhereOsuPlayerId(osuId).WhereMode(mode).OrderBy(x => x.Created).FirstOrDefaultAsync();
 
 	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE ratinghistories RESTART IDENTITY");
 }

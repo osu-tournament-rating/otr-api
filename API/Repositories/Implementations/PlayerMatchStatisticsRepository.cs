@@ -19,6 +19,13 @@ public class PlayerMatchStatisticsRepository : IPlayerMatchStatisticsRepository
 		                                     stats.Match.Tournament != null && stats.Match.Tournament.Mode == mode &&
 		                                     stats.Match.StartTime >= dateMin &&
 		                                     stats.Match.StartTime <= dateMax)
+		                     .OrderBy(x => x.Match.StartTime)
 		                     .ToListAsync();
+	}
+
+	public async Task InsertAsync(PlayerMatchStatistics postBody)
+	{
+		await _context.PlayerMatchStatistics.AddAsync(postBody);
+		await _context.SaveChangesAsync();
 	}
 }

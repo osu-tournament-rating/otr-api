@@ -107,6 +107,8 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	                                                                                                                .Take(n)
 	                                                                                                                .ToListAsync();
 
+	public async Task<string?> GetUsernameAsync(long osuId) => await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
+
 	public async Task<Unmapped_PlayerStatisticsDTO> GetVerifiedPlayerStatisticsAsync(long osuId, OsuEnums.Mode mode, DateTime? fromPointInTime = null)
 	{
 		int modeInt = (int)mode;
@@ -132,7 +134,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 			}
 
 			var rating = await _context.Ratings
-			                           .WherePlayer(player.OsuId)
+			                           .WhereOsuPlayerId(player.OsuId)
 			                           .WhereMode(modeInt)
 			                           .FirstOrDefaultAsync();
 
@@ -148,7 +150,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 			stats.NextRanking = RatingUtils.GetNextTier(stats.Rating);
 
 			var ratingHistories = await _context.RatingHistories
-			                                    .WherePlayer(player.OsuId)
+			                                    .WhereOsuPlayerId(player.OsuId)
 			                                    .WhereMode(modeInt)
 			                                    .After(time)
 			                                    .OrderBy(x => x.Created)
@@ -185,7 +187,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 			stats.GamesPlayed = await _context.MatchScores
 			                                  .WhereVerified()
-			                                  .WherePlayer(player.OsuId)
+			                                  .WhereOsuPlayerId(player.OsuId)
 			                                  .WhereMode(modeInt)
 			                                  .After(time)
 			                                  .Select(x => x.GameId)
@@ -203,7 +205,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 			stats.PlayedHR = await _context.MatchScores
 			                               .WhereVerified()
-			                               .WherePlayer(osuId)
+			                               .WhereOsuPlayerId(osuId)
 			                               .WhereMode(modeInt)
 			                               .WhereMods(OsuEnums.Mods.HardRock)
 			                               .After(time)
@@ -211,7 +213,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 			stats.PlayedHD = await _context.MatchScores
 			                               .WhereVerified()
-			                               .WherePlayer(osuId)
+			                               .WhereOsuPlayerId(osuId)
 			                               .WhereMode(modeInt)
 			                               .WhereMods(OsuEnums.Mods.Hidden)
 			                               .After(time)
@@ -219,7 +221,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 			stats.PlayedDT = await _context.MatchScores
 			                               .WhereVerified()
-			                               .WherePlayer(osuId)
+			                               .WhereOsuPlayerId(osuId)
 			                               .WhereMode(modeInt)
 			                               .WhereMods(OsuEnums.Mods.DoubleTime)
 			                               .After(time)

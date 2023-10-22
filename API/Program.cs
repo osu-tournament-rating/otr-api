@@ -110,7 +110,6 @@ builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
 builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
 builder.Services.AddScoped<IApiMatchRepository, ApiMatchRepository>();
 builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
-builder.Services.AddScoped<IPlayerGameStatisticsRepository, PlayerGameStatisticsRepository>();
 builder.Services.AddScoped<IPlayerMatchStatisticsRepository, PlayerMatchStatisticsRepository>();
 
 // Services
@@ -122,6 +121,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
+builder.Services.AddScoped<IPlayerStatisticsService, PlayerStatisticsService>();
+builder.Services.AddScoped<IPlayerScoreStatsService, PlayerScoreStatisticsService>();
 
 builder.Services.AddOsuSharp(options =>
 {

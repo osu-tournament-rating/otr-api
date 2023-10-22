@@ -274,7 +274,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
 	public async Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime) => await _context.MatchScores
 	                                                                                                               .WhereVerified()
-	                                                                                                               .WherePlayer(osuPlayerId)
+	                                                                                                               .WhereOsuPlayerId(osuPlayerId)
 	                                                                                                               .WhereMode(mode)
 	                                                                                                               .After(fromTime)
 	                                                                                                               .Include(x => x.Game)

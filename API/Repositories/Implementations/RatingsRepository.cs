@@ -247,19 +247,19 @@ public class RatingsRepository : RepositoryBase<Rating>, IRatingsRepository
 	}
 
 	public async Task<DateTime> GetRecentCreatedDate(long osuPlayerId) =>
-		await _context.Ratings.WherePlayer(osuPlayerId).OrderByDescending(x => x.Created).Select(x => x.Created).FirstAsync();
+		await _context.Ratings.WhereOsuPlayerId(osuPlayerId).OrderByDescending(x => x.Created).Select(x => x.Created).FirstAsync();
 
 	public async Task<bool> IsRatingPositiveTrendAsync(long osuId, int modeInt, DateTime time)
 	{
 		double ratingPrevious = await _context.RatingHistories
-		                                      .WherePlayer(osuId)
+		                                      .WhereOsuPlayerId(osuId)
 		                                      .WhereMode(modeInt)
 		                                      .OrderByDescending(x => x.Created)
 		                                      .Where(x => x.Created <= time)
 		                                      .Select(x => x.Mu)
 		                                      .FirstOrDefaultAsync();
 
-		double ratingCurrent = await _context.Ratings.WherePlayer(osuId).WhereMode(modeInt).Select(x => x.Mu).FirstOrDefaultAsync();
+		double ratingCurrent = await _context.Ratings.WhereOsuPlayerId(osuId).WhereMode(modeInt).Select(x => x.Mu).FirstOrDefaultAsync();
 
 		return ratingCurrent > ratingPrevious;
 	}

@@ -10,6 +10,7 @@ public interface IPlayerService
 	Task<IEnumerable<PlayerDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds);
 	Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync();
 	Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode);
+	Task<string?> GetUsernameAsync(long osuId);
 	Task<int?> GetIdAsync(long osuId);
 	Task<long?> GetOsuIdAsync(int id);
 }

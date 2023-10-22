@@ -75,7 +75,5 @@ public partial class Player
     [InverseProperty("Player")]
     public virtual User? User { get; set; }
     [InverseProperty("Player")]
-    public virtual IEnumerable<PlayerGameStatistics> GameStatistics { get; set; } = null!;
-    [InverseProperty("Player")]
     public IEnumerable<PlayerMatchStatistics> MatchStatistics { get; set; } = null!;
 }

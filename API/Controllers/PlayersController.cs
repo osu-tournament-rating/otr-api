@@ -16,24 +16,15 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class PlayersController : Controller
 {
-	private readonly ILogger<PlayersController> _logger;
 	private readonly IDistributedCache _cache;
 	private readonly IPlayerService _playerService;
 	private readonly IRatingsRepository _ratingsRepository;
 
-	public PlayersController(ILogger<PlayersController> logger, IDistributedCache cache, 
-		IPlayerService playerService, IRatingsRepository ratingsRepository)
+	public PlayersController(IDistributedCache cache, IPlayerService playerService, IRatingsRepository ratingsRepository)
 	{
-		_logger = logger;
 		_cache = cache;
 		_playerService = playerService;
 		_ratingsRepository = ratingsRepository;
-	}
-
-	[HttpGet("stats/{osuId:long}")]
-	public async Task<IActionResult> GetPlayerStatsAsync(long osuId, [FromQuery]int mode = 0)
-	{
-		throw new NotImplementedException(); // TODO: Needs to call the PlayerStatisticsService
 	}
 
 	[HttpGet("all")]
