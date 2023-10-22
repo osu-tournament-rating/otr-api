@@ -68,7 +68,9 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 			                         m.Games.Any(g => g.ScoringType == (int)OsuEnums.ScoringType.ScoreV2)); // Score v2 only
 		}
 
-		var matches = await query.ToListAsync();
+		var matches = await query
+		                    .AsNoTracking()
+		                    .ToListAsync();
 
 		// TODO: Remove - we have game verification for this reason
 		if (onlyIncludeFiltered)
