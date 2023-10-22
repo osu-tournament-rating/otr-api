@@ -12,12 +12,10 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 {
 	private readonly OtrContext _context;
 	private readonly IMapper _mapper;
-	private readonly IServiceProvider _serviceProvider;
 
-	public PlayerRepository(OtrContext context, IServiceProvider serviceProvider, IMapper mapper) : base(context)
+	public PlayerRepository(OtrContext context, IMapper mapper) : base(context)
 	{
 		_context = context;
-		_serviceProvider = serviceProvider;
 		_mapper = mapper;
 	}
 
@@ -41,10 +39,11 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 	public async Task<IEnumerable<Player>> GetByOsuIdsAsync(IEnumerable<long> osuIds) => await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
-	public async Task<IEnumerable<Player>> GetAllAsync() => await _context.Players
+	public override async Task<IEnumerable<Player>> GetAllAsync() => await _context.Players
 	                                                                      .Include(x => x.MatchScores)
 	                                                                      .Include(x => x.RatingHistories)
 	                                                                      .Include(x => x.Ratings)
+	                                                                      .AsNoTracking()
 	                                                                      .ToListAsync();
 
 	public async Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1)
