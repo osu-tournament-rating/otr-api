@@ -9,7 +9,7 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "Admin, System")]
 public class StatsController : Controller
 {
 	private readonly ILogger<StatsController> _logger;
@@ -31,9 +31,17 @@ public class StatsController : Controller
 		return Ok(result);
 	}
 
+	[HttpPost]
 	public async Task<IActionResult> PostAsync(PlayerMatchStatistics postBody)
 	{
 		await _statisticsService.InsertAsync(postBody);
+		return Ok();
+	}
+
+	[HttpDelete]
+	public async Task<IActionResult> TruncateAsync()
+	{
+		await _statisticsService.TruncateAsync();
 		return Ok();
 	}
 }
