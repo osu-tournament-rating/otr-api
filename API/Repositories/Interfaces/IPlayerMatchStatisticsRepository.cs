@@ -6,4 +6,5 @@ public interface IPlayerMatchStatisticsRepository
 {
 	Task<IEnumerable<PlayerMatchStatistics>> GetForPlayerAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax);
 	Task InsertAsync(PlayerMatchStatistics postBody);
+	Task TruncateAsync();
 }

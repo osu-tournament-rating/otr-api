@@ -28,4 +28,6 @@ public class PlayerMatchStatisticsRepository : IPlayerMatchStatisticsRepository
 		await _context.PlayerMatchStatistics.AddAsync(postBody);
 		await _context.SaveChangesAsync();
 	}
+
+	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE player_match_statistics RESTART IDENTITY;"); 
 }

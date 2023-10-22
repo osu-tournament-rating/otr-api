@@ -32,6 +32,11 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		await _matchStatsRepository.InsertAsync(postBody);
 	}
 
+	public async Task TruncateAsync()
+	{
+		await _matchStatsRepository.TruncateAsync();
+	}
+
 	private async Task<PlayerMatchStatisticsDTO?> GetMatchStatsAsync(int id, long osuId, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		var stats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
