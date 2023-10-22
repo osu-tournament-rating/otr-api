@@ -76,7 +76,6 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 	public async Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false, OsuEnums.Mode mode = OsuEnums.Mode.Standard, int offsetDays = -1)
 	{
-		var time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
 		var obj = _mapper.Map<PlayerDTO?>(await GetPlayerByOsuIdAsync(osuId, eagerLoad, (int)mode, offsetDays));
 
 		if (obj == null)
@@ -84,11 +83,8 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 			return obj;
 		}
 
-		obj.Statistics = await GetVerifiedPlayerStatisticsAsync(osuId, mode, time);
 		return obj;
 	}
-
-	
 
 	public async Task<int> GetIdByOsuIdAsync(long osuId) => await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
 	public async Task<long> GetOsuIdByIdAsync(int id) => await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
@@ -109,138 +105,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 	public async Task<string?> GetUsernameAsync(long osuId) => await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
 
-	public async Task<Unmapped_PlayerStatisticsDTO> GetVerifiedPlayerStatisticsAsync(long osuId, OsuEnums.Mode mode, DateTime? fromPointInTime = null)
-	{
-		int modeInt = (int)mode;
-		var stats = new Unmapped_PlayerStatisticsDTO
-		{
-			OsuId = osuId,
-			Created = DateTime.UtcNow
-		};
-
-		var time = fromPointInTime ?? DateTime.MinValue;
-
-		using (var scope = _serviceProvider.CreateScope())
-		{
-			var ratingsService = scope.ServiceProvider.GetRequiredService<IRatingsRepository>();
-			var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
-			var gamesService = scope.ServiceProvider.GetRequiredService<IGamesRepository>();
-
-			int offsetDays = (int)DateTime.UtcNow.Subtract(fromPointInTime ?? DateTime.MinValue).TotalDays;
-			var player = await GetPlayerByOsuIdAsync(osuId, true, offsetDays);
-			if (player == null)
-			{
-				return stats;
-			}
-
-			var rating = await _context.Ratings
-			                           .WhereOsuPlayerId(player.OsuId)
-			                           .WhereMode(modeInt)
-			                           .FirstOrDefaultAsync();
-
-			if (rating == null)
-			{
-				return stats;
-			}
-
-			stats.Rating = (int)rating.Mu;
-			stats.RatingDelta = RatingUtils.GetRatingDelta(stats.Rating);
-			stats.RatingForNextRank = RatingUtils.GetRatingForNextTier(stats.Rating);
-			stats.Ranking = RatingUtils.GetTier(stats.Rating);
-			stats.NextRanking = RatingUtils.GetNextTier(stats.Rating);
-
-			var ratingHistories = await _context.RatingHistories
-			                                    .WhereOsuPlayerId(player.OsuId)
-			                                    .WhereMode(modeInt)
-			                                    .After(time)
-			                                    .OrderBy(x => x.Created)
-			                                    .ToListAsync();
-
-			if (ratingHistories.Any())
-			{
-				stats.HighestRating = (int)ratingHistories.Max(r => r.Mu);
-				int? ratingGainedSincePeriod = stats.Rating - (int?)player.RatingHistories.FirstOrDefault(x => x.Mode == modeInt)?.Mu;
-
-				stats.RatingGainedSincePeriod = ratingGainedSincePeriod ?? 0;
-			}
-
-			int countryIndex = _context.Ratings
-			                           .Where(x => x.Player.Country == player.Country)
-			                           .WhereMode(modeInt)
-			                           .OrderByMuDescending()
-			                           .Select(x => x.PlayerId)
-			                           .AsEnumerable() // Transfer the execution to client-side after this point
-			                           .TakeWhile(x => x != player.Id)
-			                           .Count();
-
-			stats.CountryRank = countryIndex + 1;
-
-			stats.GlobalRank = await ratingsService.GetGlobalRankAsync(osuId, modeInt);
-
-			int totalRatings = await _context.Ratings
-			                                 .WhereMode(modeInt)
-			                                 .CountAsync();
-
-			stats.Percentile = 100 * (1 - (stats.GlobalRank / (double)totalRatings));
-
-			stats.MatchesPlayed = await matchesService.CountMatchesPlayedAsync(osuId, modeInt, time);
-
-			stats.GamesPlayed = await _context.MatchScores
-			                                  .WhereVerified()
-			                                  .WhereOsuPlayerId(player.OsuId)
-			                                  .WhereMode(modeInt)
-			                                  .After(time)
-			                                  .Select(x => x.GameId)
-			                                  .Distinct()
-			                                  .CountAsync();
-
-			stats.MatchesWon = await matchesService.CountMatchWinsAsync(osuId, modeInt, time);
-			stats.GamesWon = await gamesService.CountGameWinsAsync(osuId, modeInt, time);
-
-			stats.GamesLost = stats.GamesPlayed - stats.GamesWon;
-			stats.MatchesLost = stats.MatchesPlayed - stats.MatchesWon;
-
-			stats.AverageOpponentRating = await ratingsService.AverageOpponentRating(osuId, modeInt);
-			stats.AverageTeammateRating = await ratingsService.AverageTeammateRating(osuId, modeInt);
-
-			stats.PlayedHR = await _context.MatchScores
-			                               .WhereVerified()
-			                               .WhereOsuPlayerId(osuId)
-			                               .WhereMode(modeInt)
-			                               .WhereMods(OsuEnums.Mods.HardRock)
-			                               .After(time)
-			                               .CountAsync();
-
-			stats.PlayedHD = await _context.MatchScores
-			                               .WhereVerified()
-			                               .WhereOsuPlayerId(osuId)
-			                               .WhereMode(modeInt)
-			                               .WhereMods(OsuEnums.Mods.Hidden)
-			                               .After(time)
-			                               .CountAsync();
-
-			stats.PlayedDT = await _context.MatchScores
-			                               .WhereVerified()
-			                               .WhereOsuPlayerId(osuId)
-			                               .WhereMode(modeInt)
-			                               .WhereMods(OsuEnums.Mods.DoubleTime)
-			                               .After(time)
-			                               .CountAsync();
-
-			stats.MostPlayedTeammate = await gamesService.MostPlayedTeammateNameAsync(osuId, modeInt, time);
-			stats.MostPlayedOpponent = await gamesService.MostPlayedOpponentNameAsync(osuId, modeInt, time);
-
-			stats.BestPerformingTeammate = await ratingsService.BestPerformingTeammateNameAsync(osuId, modeInt, time);
-			stats.WorstPerformingTeammate = await ratingsService.WorstPerformingTeammateNameAsync(osuId, modeInt, time);
-			stats.BestPerformingOpponent = await ratingsService.BestPerformingOpponentNameAsync(osuId, modeInt, time);
-			stats.WorstPerformingOpponent = await ratingsService.WorstPerformingOpponentNameAsync(osuId, modeInt, time);
-			
-			// Trend
-			stats.IsRatingPositiveTrend = await ratingsService.IsRatingPositiveTrendAsync(osuId, modeInt, time);
-		}
-
-		return stats;
-	}
+	
 
 	// This is used by a scheduled task to automatically populate user info, such as username, country, etc.
 	public async Task<IEnumerable<Player>> GetOutdatedAsync() => await _context.Players.Where(p => p.Updated == null).ToListAsync();

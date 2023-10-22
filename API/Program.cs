@@ -64,7 +64,6 @@ var configuration = new MapperConfiguration(cfg =>
 	cfg.CreateMap<Game, GameDTO>();
 	cfg.CreateMap<Match, MatchDTO>();
 	cfg.CreateMap<MatchScore, MatchScoreDTO>();
-	cfg.CreateMap<Player, PlayerDTO>().ForMember(x => x.Statistics, opt => opt.Ignore());
 	cfg.CreateMap<Player, PlayerRanksDTO>();
 	cfg.CreateMap<Rating, RatingDTO>();
 	cfg.CreateMap<RatingHistory, RatingHistoryDTO>()
