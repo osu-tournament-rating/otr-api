@@ -57,6 +57,8 @@ public class StatsControllerTests
 		Assert.IsType<int>(scoreStats.CountPlayedFL);
 		Assert.IsType<int>(scoreStats.CountPlayedHDDT);
 		Assert.IsType<int>(scoreStats.CountPlayedHDHR);
+		
+		// todo: add match stats tests
 	}
 
 	[Fact]
