@@ -35,6 +35,11 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		await _matchStatsRepository.InsertAsync(postBody);
 	}
 
+	public async Task InsertAsync(MatchRatingStatistics postBody)
+	{
+		await _ratingStatsRepository.InsertAsync(postBody);
+	}
+
 	public async Task TruncateAsync()
 	{
 		await _matchStatsRepository.TruncateAsync();

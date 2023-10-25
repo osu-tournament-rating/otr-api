@@ -14,34 +14,41 @@ public class StatsController : Controller
 {
 	private readonly ILogger<StatsController> _logger;
 	private readonly IDistributedCache _cache;
-	private readonly IPlayerStatisticsService _statisticsService;
+	private readonly IPlayerStatisticsService _playerStatsService;
 
-	public StatsController(ILogger<StatsController> logger, IDistributedCache cache, IPlayerStatisticsService statisticsService)
+	public StatsController(ILogger<StatsController> logger, IDistributedCache cache, IPlayerStatisticsService playerStatsService)
 	{
 		_logger = logger;
 		_cache = cache;
-		_statisticsService = statisticsService;
+		_playerStatsService = playerStatsService;
 	}
 	
 	[HttpGet("{osuId:long}")]
 	[AllowAnonymous]
 	public async Task<ActionResult<PlayerStatisticsDTO>> GetAsync(long osuId, [FromQuery]int mode = 0, [FromQuery] DateTime? dateMin = null, [FromQuery] DateTime? dateMax = null)
 	{
-		var result = await _statisticsService.GetAsync(osuId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.MaxValue);
+		var result = await _playerStatsService.GetAsync(osuId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.MaxValue);
 		return Ok(result);
 	}
 
-	[HttpPost]
+	[HttpPost("/matchstats")]
 	public async Task<IActionResult> PostAsync(PlayerMatchStatistics postBody)
 	{
-		await _statisticsService.InsertAsync(postBody);
+		await _playerStatsService.InsertAsync(postBody);
+		return Ok();
+	}
+	
+	[HttpPost("/ratingstats")]
+	public async Task<IActionResult> PostAsync(MatchRatingStatistics postBody)
+	{
+		await _playerStatsService.InsertAsync(postBody);
 		return Ok();
 	}
 
 	[HttpDelete]
 	public async Task<IActionResult> TruncateAsync()
 	{
-		await _statisticsService.TruncateAsync();
+		await _playerStatsService.TruncateAsync();
 		return Ok();
 	}
 }
