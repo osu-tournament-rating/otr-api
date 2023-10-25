@@ -76,4 +76,6 @@ public partial class Player
     public virtual User? User { get; set; }
     [InverseProperty("Player")]
     public IEnumerable<PlayerMatchStatistics> MatchStatistics { get; set; } = null!;
+    [InverseProperty("Player")]
+    public IEnumerable<MatchRatingStatistics> MatchRatingStatistics { get; set; } = null!;
 }

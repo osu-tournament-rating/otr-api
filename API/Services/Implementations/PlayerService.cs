@@ -55,4 +55,6 @@ public class PlayerService : IPlayerService
 
 		return result;
 	}
+
+	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _playerRepository.GetIdMappingAsync();
 }

@@ -26,4 +26,5 @@ public interface IMatchesRepository : IRepository<Match>
 	Task UpdateAsApiProcessed(Match match);
 	Task UpdateAsAutoChecked(Match match);
 	Task SetRequireAutoCheckAsync(bool invalidOnly = true);
+	Task<Dictionary<long, int>> GetIdMappingAsync();
 }

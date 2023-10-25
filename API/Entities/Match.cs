@@ -77,7 +77,9 @@ public class Match
 	[InverseProperty("Matches")]
 	public virtual Tournament? Tournament { get; set; }
 	[InverseProperty("Match")]
-	public virtual ICollection<PlayerMatchStatistics> Statistics { get; set; } = new List<PlayerMatchStatistics>(); 
+	public virtual ICollection<PlayerMatchStatistics> Statistics { get; set; } = new List<PlayerMatchStatistics>();
+	[InverseProperty("Match")]
+	public virtual ICollection<MatchRatingStatistics> RatingStatistics { get; set; } = new List<MatchRatingStatistics>();
 	
 	[NotMapped]
 	public MatchVerificationSource? VerificationSourceEnum

@@ -147,4 +147,11 @@ public class OsuMatchesController : Controller
 
 		return NotFound($"Match with id {id} does not exist");
 	}
+	
+	[HttpGet("id-mapping")]
+	public async Task<ActionResult<Dictionary<long, int>>> GetIdMappingAsync()
+	{
+		var mapping = await _matchesService.GetIdMappingAsync();
+		return Ok(mapping);
+	}
 }

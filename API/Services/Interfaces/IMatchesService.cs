@@ -22,4 +22,10 @@ public interface IMatchesService
 	/// <param name="verifier">The entity who verified the matches (int representation of <see cref="MatchVerificationSource")/></param>
 	/// <returns></returns>
 	Task BatchInsertOrUpdateAsync(BatchWrapper batchWrapper, bool verified, int? verifier);
+
+	/// <summary>
+	/// A unique mapping of osu! match ids to our internal ids.
+	/// </summary>
+	/// <returns></returns>
+	Task<Dictionary<long, int>> GetIdMappingAsync();
 }

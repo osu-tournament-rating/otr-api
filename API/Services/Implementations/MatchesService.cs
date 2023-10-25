@@ -75,7 +75,8 @@ public class MatchesService : IMatchesService
 			_logger.LogInformation("Successfully inserted {Matches} new matches as {Status}", result, verificationStatus);
 		}
 	}
-	
+
+	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _matchesRepository.GetIdMappingAsync();
 	public async Task RefreshAutomationChecks(bool invalidOnly = true) => await _matchesRepository.SetRequireAutoCheckAsync();
 
 	public async Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered)

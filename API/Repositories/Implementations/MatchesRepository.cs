@@ -321,6 +321,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		}
 	}
 
+	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _context.Matches.AsNoTracking().ToDictionaryAsync(x => x.MatchId, x => x.Id);
+
 	private bool IsValidModCombination(OsuEnums.Mods modCombination)
 	{
 		List<OsuEnums.Mods> validMods = new()

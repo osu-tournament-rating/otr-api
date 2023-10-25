@@ -9,12 +9,15 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 {
 	private readonly IPlayerRepository _playerRepository;
 	private readonly IPlayerMatchStatisticsRepository _matchStatsRepository;
+	private readonly IMatchRatingStatisticsRepository _ratingStatsRepository;
 	private readonly IPlayerScoreStatsService _playerScoreStatsService;
 
-	public PlayerStatisticsService(IPlayerRepository playerRepository, IPlayerMatchStatisticsRepository matchStatsRepository, IPlayerScoreStatsService playerScoreStatsService)
+	public PlayerStatisticsService(IPlayerRepository playerRepository, IPlayerMatchStatisticsRepository matchStatsRepository, 
+		IMatchRatingStatisticsRepository ratingStatsRepository, IPlayerScoreStatsService playerScoreStatsService)
 	{
 		_playerRepository = playerRepository;
 		_matchStatsRepository = matchStatsRepository;
+		_ratingStatsRepository = ratingStatsRepository;
 		_playerScoreStatsService = playerScoreStatsService;
 	}
 	
@@ -39,34 +42,35 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 
 	private async Task<PlayerMatchStatisticsDTO?> GetMatchStatsAsync(int id, long osuId, int mode, DateTime dateMin, DateTime dateMax)
 	{
-		var stats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
+		var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
+		var ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
 
-		if (!stats.Any())
+		if (!matchStats.Any())
 		{
 			return null;
 		}
 		
 		return new PlayerMatchStatisticsDTO
 		{
-			HighestRating = (int) stats.Max(x => x.RatingAfter),
-			HighestGlobalRank = stats.Min(x => x.GlobalRankAfter),
-			HighestCountryRank = stats.Min(x => x.CountryRankAfter),
-			HighestPercentile = stats.Max(x => x.PercentileAfter),
-			RatingGained = stats.First().RatingAfter - stats.Last().RatingAfter,
-			GamesWon = stats.Sum(x => x.GamesWon),
-			GamesLost = stats.Sum(x => x.GamesLost),
-			MatchesWon = stats.Count(x => x.Won),
-			MatchesLost = stats.Count(x => !x.Won),
-			AverageTeammateRating = stats.Average(x => x.AverageTeammateRating),
-			AverageOpponentRating = stats.Average(x => x.AverageOpponentRating),
-			BestWinStreak = GetHighestWinStreak(stats),
-			MatchAverageScoreAggregate = stats.Average(x => x.AverageScore),
-			MatchAverageAccuracyAggregate = stats.Average(x => x.AverageAccuracy),
-			MatchAverageMissesAggregate = stats.Average(x => x.AverageMisses),
-			AverageGamesPlayedAggregate = stats.Average(x => x.GamesPlayed),
-			AveragePlacingAggregate = stats.Average(x => x.AveragePlacement),
-			MostPlayedTeammateName = await _playerRepository.GetUsernameAsync(MostPlayedTeammateId(stats)),
-			MostPlayedOpponentName = await _playerRepository.GetUsernameAsync(MostPlayedOpponentId(stats)),
+			HighestRating = (int) ratingStats.Max(x => x.RatingAfter),
+			HighestGlobalRank = ratingStats.Min(x => x.GlobalRankAfter),
+			HighestCountryRank = ratingStats.Min(x => x.CountryRankAfter),
+			HighestPercentile = ratingStats.Max(x => x.PercentileAfter),
+			RatingGained = ratingStats.First().RatingAfter - ratingStats.Last().RatingAfter,
+			GamesWon = matchStats.Sum(x => x.GamesWon),
+			GamesLost = matchStats.Sum(x => x.GamesLost),
+			MatchesWon = matchStats.Count(x => x.Won),
+			MatchesLost = matchStats.Count(x => !x.Won),
+			AverageTeammateRating = ratingStats.Average(x => x.AverageTeammateRating),
+			AverageOpponentRating = ratingStats.Average(x => x.AverageOpponentRating),
+			BestWinStreak = GetHighestWinStreak(matchStats),
+			MatchAverageScoreAggregate = matchStats.Average(x => x.AverageScore),
+			MatchAverageAccuracyAggregate = matchStats.Average(x => x.AverageAccuracy),
+			MatchAverageMissesAggregate = matchStats.Average(x => x.AverageMisses),
+			AverageGamesPlayedAggregate = matchStats.Average(x => x.GamesPlayed),
+			AveragePlacingAggregate = matchStats.Average(x => x.AveragePlacement),
+			MostPlayedTeammateName = await _playerRepository.GetUsernameAsync(MostPlayedTeammateId(matchStats)),
+			MostPlayedOpponentName = await _playerRepository.GetUsernameAsync(MostPlayedOpponentId(matchStats)),
 		};
 	}
 	

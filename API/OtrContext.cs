@@ -19,6 +19,7 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<Config> Configs { get; set; }
 	public virtual DbSet<Game> Games { get; set; }
 	public virtual DbSet<Match> Matches { get; set; }
+	public virtual DbSet<MatchRatingStatistics> MatchRatingStatistics { get; set; }
 	public virtual DbSet<MatchScore> MatchScores { get; set; }
 	public virtual DbSet<Player> Players { get; set; }
 	public virtual DbSet<PlayerMatchStatistics> PlayerMatchStatistics { get; set; }
@@ -26,6 +27,7 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<RatingHistory> RatingHistories { get; set; }
 	public virtual DbSet<Tournament> Tournaments { get; set; }
 	public virtual DbSet<User> Users { get; set; }
+
 	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => 
 		optionsBuilder.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
 
@@ -103,6 +105,15 @@ public partial class OtrContext : DbContext
 			entity.HasMany(e => e.Statistics).WithOne(s => s.Match).HasForeignKey(e => e.MatchId).IsRequired();
 
 			entity.HasIndex(x => x.MatchId);
+		});
+
+		modelBuilder.Entity<MatchRatingStatistics>(entity =>
+		{
+			entity.HasKey(e => e.Id).HasName("match_rating_statistics_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
+			
+			entity.HasOne(e => e.Player).WithMany(e => e.MatchRatingStatistics).HasForeignKey(e => e.PlayerId);
+			entity.HasOne(e => e.Match).WithMany(e => e.RatingStatistics).HasForeignKey(e => e.MatchId);
 		});
 
 		modelBuilder.Entity<MatchScore>(entity =>

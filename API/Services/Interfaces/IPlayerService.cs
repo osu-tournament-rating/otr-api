@@ -13,4 +13,9 @@ public interface IPlayerService
 	Task<string?> GetUsernameAsync(long osuId);
 	Task<int?> GetIdAsync(long osuId);
 	Task<long?> GetOsuIdAsync(int id);
+	/// <summary>
+	/// A unique mapping of osu! user ids to our internal ids.
+	/// </summary>
+	/// <returns></returns>
+	Task<Dictionary<long, int>> GetIdMappingAsync();
 }
