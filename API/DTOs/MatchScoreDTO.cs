@@ -6,6 +6,7 @@ public class MatchScoreDTO
 	public int Team { get; set; }
 	public long Score { get; set; }
 	public int? EnabledMods { get; set; }
+	public int Misses { get; set; }
 	public double AccuracyStandard { get; set; }
 	public double AccuracyTaiko { get; set; }
 	public double AccuracyCatch { get; set; }

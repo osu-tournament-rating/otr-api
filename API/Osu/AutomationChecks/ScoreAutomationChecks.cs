@@ -11,7 +11,7 @@ public static class ScoreAutomationChecks
 
 	public static bool PassesModsCheck(MatchScore score)
 	{
-		if(score.EnabledMods == null)
+		if (score.EnabledMods == null)
 		{
 			return true;
 		}
