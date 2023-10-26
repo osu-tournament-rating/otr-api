@@ -105,7 +105,7 @@ public class OsuMatchesController : Controller
 
 	[HttpGet("all")]
 	[Authorize(Roles = "Admin, System")]
-	public async Task<ActionResult<IEnumerable<Match>?>> GetAllAsync()
+	public async Task<ActionResult<IEnumerable<MatchDTO>>> GetAllAsync()
 	{
 		var matches = await _matchesService.GetAllAsync(true);
 		return Ok(matches);
