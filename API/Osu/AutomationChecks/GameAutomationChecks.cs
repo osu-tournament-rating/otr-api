@@ -9,7 +9,7 @@ public static class GameAutomationChecks
 	
 	public static bool PassesAutomationChecks(Game game)
 	{
-		return PassesScoringTypeCheck(game) && PassesModeCheck(game) && PassesTeamTypeCheck(game) && PassesTeamSizeCheck(game) && PassesModsCheck(game);
+		return PassesScoringTypeCheck(game) && PassesModeCheck(game) && PassesTeamTypeCheck(game) && PassesTeamSizeCheck(game) && PassesModsCheck(game) && PassesScoreSanityCheck(game);
 	}
 
 	public static bool PassesTeamSizeCheck(Game game)
@@ -127,6 +127,23 @@ public static class GameAutomationChecks
 		}
 		
 		// TeamVs can be used for any team size
+		return true;
+	}
+
+	public static bool PassesScoreSanityCheck(Game game)
+	{
+		if (!game.MatchScores.Any())
+		{
+			_logger.Warning("Game {GameId} has no scores, can't verify", game.GameId);
+			return false;
+		}
+
+		if (game.MatchScores.Any(x => x.IsValid == false))
+		{
+			_logger.Warning("Game {GameId} has at least one invalid score, can't verify", game.GameId);
+			return false;
+		}
+
 		return true;
 	}
 }

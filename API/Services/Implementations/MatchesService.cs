@@ -77,7 +77,7 @@ public class MatchesService : IMatchesService
 	}
 
 	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _matchesRepository.GetIdMappingAsync();
-	public async Task RefreshAutomationChecks(bool invalidOnly = true) => await _matchesRepository.SetRequireAutoCheckAsync();
+	public async Task RefreshAutomationChecks(bool invalidOnly = true) => await _matchesRepository.SetRequireAutoCheckAsync(invalidOnly);
 
 	public async Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered)
 	{

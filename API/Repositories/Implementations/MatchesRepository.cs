@@ -41,7 +41,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 	public async Task RefreshAutomationChecks(bool invalidOnly = true)
 	{
 		var query = _context.Matches
-		                      .Where(x => x.NeedsAutoCheck == false && x.IsApiProcessed == true);
+		                    .Where(x => x.NeedsAutoCheck == false && x.IsApiProcessed == true);
 
 		if (invalidOnly)
 		{

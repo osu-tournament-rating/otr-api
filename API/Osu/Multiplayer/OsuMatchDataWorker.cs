@@ -99,6 +99,36 @@ public class OsuMatchDataWorker : BackgroundService
 		// Game verification checks
 		foreach (var game in match.Games)
 		{
+			// NOTE: MUST be done in this order: Scores -> Game
+			// The game checker has a sanity check to ensure the game scores are valid.
+			// If a game has any invalid scores, it will fail.
+			
+			// Score verification checks
+			foreach (var score in game.MatchScores)
+			{
+				if (!ScoreAutomationChecks.PassesAutomationChecks(score))
+				{
+					if (score.IsValid != false)
+					{
+						// Avoid unnecessary db calls
+						score.IsValid = false;
+						await matchScoresRepository.UpdateAsync(score);
+					}
+					
+					_logger.LogDebug("Score [Player: {Player} | Game: {Game}] failed automation checks", score.PlayerId, game.GameId);
+				}
+				else
+				{
+					if (score.IsValid != true)
+					{
+						score.IsValid = true;
+						await matchScoresRepository.UpdateAsync(score);
+					}
+					
+					_logger.LogTrace("Score [Player: {Player} | Game: {Game}] passed automation checks", score.PlayerId, game.GameId);
+				}
+			}
+			
 			if (!GameAutomationChecks.PassesAutomationChecks(game))
 			{
 				game.VerificationStatus = (int)GameVerificationStatus.Rejected;
@@ -117,32 +147,6 @@ public class OsuMatchDataWorker : BackgroundService
 				}
 				
 				_logger.LogDebug("Game {Game} passed automation checks and is marked as {Status}", game.GameId, (GameVerificationStatus)game.VerificationStatus);
-			}
-			
-			// Score verification checks
-			foreach (var score in game.MatchScores)
-			{
-				if (!ScoreAutomationChecks.PassesAutomationChecks(score))
-				{
-					if (score.IsValid == true)
-					{
-						// Avoid unnecessary db calls
-						score.IsValid = false;
-						await matchScoresRepository.UpdateAsync(score);
-					}
-					
-					_logger.LogDebug("Score [Player: {Player} | Game: {Game}] failed automation checks", score.PlayerId, game.GameId);
-				}
-				else
-				{
-					if (score.IsValid == false)
-					{
-						score.IsValid = true;
-						await matchScoresRepository.UpdateAsync(score);
-					}
-					
-					_logger.LogTrace("Score [Player: {Player} | Game: {Game}] passed automation checks", score.PlayerId, game.GameId);
-				}
 			}
 		}
 		
