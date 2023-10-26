@@ -54,7 +54,9 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
 	public async Task<IEnumerable<Match>> GetAllAsync(bool onlyIncludeFiltered)
 	{
-		var query = _context.Matches
+		IQueryable<Match>? query;
+		
+		query = _context.Matches
 		                    .Include(m => m.Games)
 		                    .ThenInclude(g => g.MatchScores)
 		                    .Include(m => m.Games)
@@ -64,8 +66,15 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
 		if (onlyIncludeFiltered)
 		{
-			query = query.Where(m => m.VerificationStatus == (int)MatchVerificationStatus.Verified &&
-			                         m.Games.Any(g => g.ScoringType == (int)OsuEnums.ScoringType.ScoreV2)); // Score v2 only
+			query = _context.Matches
+			                .Include(m => m.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
+			                .ThenInclude(g => g.MatchScores.Where(x => x.IsValid == true))
+			                // Unsure if repeating the filter is necessary for subsequent .ThenInclude
+			                .Include(m => m.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified)) 
+			                .ThenInclude(g => g.Beatmap)
+			                .OrderBy(m => m.StartTime)
+			                .WhereVerified()
+			                .AsQueryable();
 		}
 
 		var matches = await query
@@ -73,46 +82,46 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		                    .ToListAsync();
 
 		// TODO: Remove - we have game verification for this reason
-		if (onlyIncludeFiltered)
-		{
-			var matchesToRemove = new List<Match>();
-			foreach (var match in matches)
-			{
-				var gamesToRemove = new List<Game>();
-				foreach (var game in match.Games)
-				{
-					if ((game.MatchScores.Count % 2) != 0 || game.MatchScores.Count == 0 || !IsValidModCombination(game.ModsEnum))
-					{
-						gamesToRemove.Add(game);
-						continue;
-					}
-
-					foreach (var score in game.MatchScores)
-					{
-						if (!IsValidModCombination(score.EnabledModsEnum ?? OsuEnums.Mods.None))
-						{
-							gamesToRemove.Add(game);
-							break;
-						}
-					}
-				}
-
-				foreach (var game in gamesToRemove)
-				{
-					match.Games.Remove(game);
-				}
-
-				if (!match.Games.Any())
-				{
-					matchesToRemove.Add(match);
-				}
-			}
-
-			foreach (var match in matchesToRemove)
-			{
-				matches.Remove(match);
-			}
-		}
+		// if (onlyIncludeFiltered)
+		// {
+		// 	var matchesToRemove = new List<Match>();
+		// 	foreach (var match in matches)
+		// 	{
+		// 		var gamesToRemove = new List<Game>();
+		// 		foreach (var game in match.Games)
+		// 		{
+		// 			if ((game.MatchScores.Count % 2) != 0 || game.MatchScores.Count == 0 || !IsValidModCombination(game.ModsEnum))
+		// 			{
+		// 				gamesToRemove.Add(game);
+		// 				continue;
+		// 			}
+		//
+		// 			foreach (var score in game.MatchScores)
+		// 			{
+		// 				if (!IsValidModCombination(score.EnabledModsEnum ?? OsuEnums.Mods.None))
+		// 				{
+		// 					gamesToRemove.Add(game);
+		// 					break;
+		// 				}
+		// 			}
+		// 		}
+		//
+		// 		foreach (var game in gamesToRemove)
+		// 		{
+		// 			match.Games.Remove(game);
+		// 		}
+		//
+		// 		if (!match.Games.Any())
+		// 		{
+		// 			matchesToRemove.Add(match);
+		// 		}
+		// 	}
+		//
+		// 	foreach (var match in matchesToRemove)
+		// 	{
+		// 		matches.Remove(match);
+		// 	}
+		// }
 
 		return matches;
 	}
