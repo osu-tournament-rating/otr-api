@@ -43,6 +43,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 	public async Task TruncateAsync()
 	{
 		await _matchStatsRepository.TruncateAsync();
+		await _ratingStatsRepository.TruncateAsync();
 	}
 
 	private async Task<PlayerMatchStatisticsDTO?> GetMatchStatsAsync(int id, long osuId, int mode, DateTime dateMin, DateTime dateMax)

@@ -31,14 +31,14 @@ public class StatsController : Controller
 		return Ok(result);
 	}
 
-	[HttpPost("/matchstats")]
+	[HttpPost("matchstats")]
 	public async Task<IActionResult> PostAsync(PlayerMatchStatistics postBody)
 	{
 		await _playerStatsService.InsertAsync(postBody);
 		return Ok();
 	}
 	
-	[HttpPost("/ratingstats")]
+	[HttpPost("ratingstats")]
 	public async Task<IActionResult> PostAsync(MatchRatingStatistics postBody)
 	{
 		await _playerStatsService.InsertAsync(postBody);

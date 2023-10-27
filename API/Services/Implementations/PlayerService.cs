@@ -57,4 +57,5 @@ public class PlayerService : IPlayerService
 	}
 
 	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _playerRepository.GetIdMappingAsync();
+	public async Task<Dictionary<int, string?>> GetCountryMappingAsync() => await _playerRepository.GetCountryMappingAsync(); 
 }

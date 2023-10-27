@@ -109,9 +109,16 @@ public class PlayersController : Controller
 	}
 	
 	[HttpGet("id-mapping")]
-	public async Task<ActionResult<IEnumerable<Dictionary<long, int>>>> GetIdMappingAsync([FromQuery] IEnumerable<long> osuIds)
+	public async Task<ActionResult<IEnumerable<Dictionary<long, int>>>> GetIdMappingAsync()
 	{
 		var mapping = await _playerService.GetIdMappingAsync();
+		return Ok(mapping);
+	}
+	
+	[HttpGet("country-mapping")]
+	public async Task<ActionResult<Dictionary<int, string>>> GetCountryMappingAsync()
+	{
+		var mapping = await _playerService.GetCountryMappingAsync();
 		return Ok(mapping);
 	}
 }

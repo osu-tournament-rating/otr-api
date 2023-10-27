@@ -18,4 +18,6 @@ public interface IPlayerService
 	/// </summary>
 	/// <returns></returns>
 	Task<Dictionary<long, int>> GetIdMappingAsync();
+
+	Task<Dictionary<int, string?>> GetCountryMappingAsync();
 }
