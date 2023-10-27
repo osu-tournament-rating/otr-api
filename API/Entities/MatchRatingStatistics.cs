@@ -36,9 +36,9 @@ public class MatchRatingStatistics
 	[Column("percentile_after")]
 	public double PercentileAfter { get; set; }
 	[Column("average_teammate_rating")]
-	public double AverageTeammateRating { get; set; }
+	public double? AverageTeammateRating { get; set; }
 	[Column("average_opponent_rating")]
-	public double AverageOpponentRating { get; set; }
+	public double? AverageOpponentRating { get; set; }
 	
 	[InverseProperty("MatchRatingStatistics")]
 	public virtual Player Player { get; set; } = null!;

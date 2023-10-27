@@ -58,11 +58,11 @@ public class PlayerMatchStatisticsDTO
 	/// <summary>
 	/// The average rating of the player's teammates during the period. This average does not include the player's own rating.
 	/// </summary>
-	public double AverageTeammateRating { get; set; }
+	public double? AverageTeammateRating { get; set; }
 	/// <summary>
 	/// The average rating of the player's opponents during the period.
 	/// </summary>
-	public double AverageOpponentRating { get; set; }
+	public double? AverageOpponentRating { get; set; }
 	/// <summary>
 	/// The most amount of matches won in a row during the period.
 	/// </summary>
