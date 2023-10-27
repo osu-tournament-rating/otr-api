@@ -29,7 +29,7 @@ public static class GameAutomationChecks
 
 		if (teamSize == 1)
 		{
-			int countPlayers = game.MatchScores.Count();
+			int countPlayers = game.MatchScores.Count;
 			bool satisfiesOneVersusOne = countPlayers == 2;
 			if (!satisfiesOneVersusOne)
 			{
