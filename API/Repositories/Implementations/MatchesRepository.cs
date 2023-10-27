@@ -81,6 +81,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		                    .AsNoTracking()
 		                    .ToListAsync();
 
+		matches.RemoveAll(x => x.Games.Count == 0);
+
 		// TODO: Remove - we have game verification for this reason
 		// if (onlyIncludeFiltered)
 		// {
