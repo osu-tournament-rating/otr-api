@@ -23,7 +23,7 @@ public class PlayerMatchStatistics
 	[Column("average_score")]
 	public int AverageScore { get; set; }
 	[Column("average_misses")]
-	public int AverageMisses { get; set; }
+	public double AverageMisses { get; set; }
 	[Column("average_accuracy")]
 	public double AverageAccuracy { get; set; }
 	[Column("games_played")]

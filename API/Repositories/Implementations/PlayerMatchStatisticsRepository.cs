@@ -23,11 +23,16 @@ public class PlayerMatchStatisticsRepository : IPlayerMatchStatisticsRepository
 		                     .ToListAsync();
 	}
 
-	public async Task InsertAsync(PlayerMatchStatistics postBody)
+	public async Task InsertAsync(PlayerMatchStatistics item)
 	{
-		await _context.PlayerMatchStatistics.AddAsync(postBody);
+		await _context.PlayerMatchStatistics.AddAsync(item);
 		await _context.SaveChangesAsync();
 	}
 
+	public async Task InsertAsync(IEnumerable<PlayerMatchStatistics> items)
+	{
+		await _context.PlayerMatchStatistics.AddRangeAsync(items);
+		await _context.SaveChangesAsync();
+	} 
 	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE player_match_statistics RESTART IDENTITY;"); 
 }

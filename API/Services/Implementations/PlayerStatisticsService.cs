@@ -30,14 +30,63 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		return new PlayerStatisticsDTO(matchStats, scoreStats);
 	}
 
-	public async Task InsertAsync(PlayerMatchStatistics postBody)
+	public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatisticsDTO> postBody)
 	{
-		await _matchStatsRepository.InsertAsync(postBody);
+		var items = new List<PlayerMatchStatistics>();
+
+		foreach (var item in postBody)
+		{
+			var stats = new PlayerMatchStatistics
+			{
+				PlayerId = item.PlayerId,
+				MatchId = item.MatchId,
+				Won = item.Won,
+				PointsEarned = item.PointsEarned,
+				AverageScore = item.AverageScore,
+				AverageMisses = item.AverageMisses,
+				AverageAccuracy = item.AverageAccuracy,
+				GamesPlayed = item.GamesPlayed,
+				AveragePlacement = item.AveragePlacement,
+				GamesWon = item.GamesWon,
+				GamesLost = item.GamesLost,
+				TeammateIds = item.TeammateIds,
+				OpponentIds = item.OpponentIds
+			};
+			
+			items.Add(stats);
+		}
+		
+		await _matchStatsRepository.InsertAsync(items);
 	}
 
-	public async Task InsertAsync(MatchRatingStatistics postBody)
+	public async Task BatchInsertAsync(IEnumerable<MatchRatingStatisticsDTO> postBody)
 	{
-		await _ratingStatsRepository.InsertAsync(postBody);
+		var items = new List<MatchRatingStatistics>();
+		foreach (var item in postBody)
+		{
+			var stats = new MatchRatingStatistics
+			{
+				PlayerId = item.PlayerId,
+				MatchId = item.MatchId,
+				RatingBefore = item.RatingBefore,
+				RatingAfter = item.RatingAfter,
+				RatingChange = item.RatingChange,
+				VolatilityBefore = item.VolatilityBefore,
+				VolatilityAfter = item.VolatilityAfter,
+				GlobalRankBefore = item.GlobalRankBefore,
+				GlobalRankAfter = item.GlobalRankAfter,
+				CountryRankBefore = item.CountryRankBefore,
+				CountryRankAfter = item.CountryRankAfter,
+				PercentileBefore = item.PercentileBefore,
+				PercentileAfter = item.PercentileAfter,
+				AverageTeammateRating = item.AverageTeammateRating,
+				AverageOpponentRating = item.AverageOpponentRating
+			};
+			
+			items.Add(stats);
+		}
+
+		await _ratingStatsRepository.InsertAsync(items);
 	}
 
 	public async Task TruncateAsync()
@@ -46,7 +95,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		await _ratingStatsRepository.TruncateAsync();
 	}
 
-	private async Task<PlayerMatchStatisticsDTO?> GetMatchStatsAsync(int id, long osuId, int mode, DateTime dateMin, DateTime dateMax)
+	private async Task<AggregatePlayerMatchStatisticsDTO?> GetMatchStatsAsync(int id, long osuId, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
 		var ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
@@ -56,7 +105,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 			return null;
 		}
 		
-		return new PlayerMatchStatisticsDTO
+		return new AggregatePlayerMatchStatisticsDTO
 		{
 			HighestRating = (int) ratingStats.Max(x => x.RatingAfter),
 			HighestGlobalRank = ratingStats.Min(x => x.GlobalRankAfter),

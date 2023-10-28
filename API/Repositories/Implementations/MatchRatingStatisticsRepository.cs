@@ -17,11 +17,16 @@ public class MatchRatingStatisticsRepository : IMatchRatingStatisticsRepository
 		                     .ToListAsync();
 	}
 
-	public async Task InsertAsync(MatchRatingStatistics postBody)
+	public async Task InsertAsync(MatchRatingStatistics item)
 	{
-		await _context.MatchRatingStatistics.AddAsync(postBody);
+		await _context.MatchRatingStatistics.AddAsync(item);
 		await _context.SaveChangesAsync();
 	}
 
+	public async Task InsertAsync(IEnumerable<MatchRatingStatistics> items)
+	{
+		await _context.MatchRatingStatistics.AddRangeAsync(items);
+		await _context.SaveChangesAsync();
+	}
 	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE match_rating_statistics RESTART IDENTITY"); 
 }

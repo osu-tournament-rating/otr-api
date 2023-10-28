@@ -32,16 +32,16 @@ public class StatsController : Controller
 	}
 
 	[HttpPost("matchstats")]
-	public async Task<IActionResult> PostAsync(PlayerMatchStatistics postBody)
+	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerMatchStatisticsDTO> postBody)
 	{
-		await _playerStatsService.InsertAsync(postBody);
+		await _playerStatsService.BatchInsertAsync(postBody);
 		return Ok();
 	}
 	
 	[HttpPost("ratingstats")]
-	public async Task<IActionResult> PostAsync(MatchRatingStatistics postBody)
+	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchRatingStatisticsDTO> postBody)
 	{
-		await _playerStatsService.InsertAsync(postBody);
+		await _playerStatsService.BatchInsertAsync(postBody);
 		return Ok();
 	}
 
