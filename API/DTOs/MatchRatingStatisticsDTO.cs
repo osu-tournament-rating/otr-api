@@ -1,5 +1,8 @@
 namespace API.DTOs;
 
+/// <summary>
+/// Used by the API to POST match rating statistics
+/// </summary>
 public class MatchRatingStatisticsDTO
 {
 	public int PlayerId { get; set; }

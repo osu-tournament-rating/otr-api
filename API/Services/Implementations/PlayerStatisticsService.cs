@@ -131,6 +131,8 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 			AveragePlacingAggregate = matchStats.Average(x => x.AveragePlacement),
 			MostPlayedTeammateName = await _playerRepository.GetUsernameAsync(MostPlayedTeammateId(matchStats)),
 			MostPlayedOpponentName = await _playerRepository.GetUsernameAsync(MostPlayedOpponentId(matchStats)),
+			PeriodStart = dateMin,
+			PeriodEnd = dateMax
 		};
 	}
 	

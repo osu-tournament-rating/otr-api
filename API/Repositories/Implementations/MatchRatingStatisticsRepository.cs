@@ -13,7 +13,10 @@ public class MatchRatingStatisticsRepository : IMatchRatingStatisticsRepository
 	public async Task<IEnumerable<MatchRatingStatistics>> GetForPlayerAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		return await _context.MatchRatingStatistics
-		                     .Where(x => x.PlayerId == playerId && x.Match.Mode == mode && x.Match.StartTime >= dateMin && x.Match.StartTime <= dateMax)
+		                     .Where(x => x.PlayerId == playerId && 
+		                                 x.Match.Mode == mode && 
+		                                 x.Match.StartTime >= dateMin && 
+		                                 x.Match.StartTime <= dateMax)
 		                     .ToListAsync();
 	}
 

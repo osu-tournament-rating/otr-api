@@ -1,5 +1,4 @@
 using API.DTOs;
-using API.Entities;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,11 +22,11 @@ public class StatsController : Controller
 		_playerStatsService = playerStatsService;
 	}
 	
+	// [Authorize]
 	[HttpGet("{osuId:long}")]
-	[AllowAnonymous]
 	public async Task<ActionResult<PlayerStatisticsDTO>> GetAsync(long osuId, [FromQuery]int mode = 0, [FromQuery] DateTime? dateMin = null, [FromQuery] DateTime? dateMax = null)
 	{
-		var result = await _playerStatsService.GetAsync(osuId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.MaxValue);
+		var result = await _playerStatsService.GetAsync(osuId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 		return Ok(result);
 	}
 

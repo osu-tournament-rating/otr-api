@@ -45,7 +45,7 @@ public class MatchesControllerTests
 	{
 		// arrange
 		using var context = _fixture.CreateContext();
-		var controller = OsuMatchesController(context);
+		var controller = MatchesController(context);
 
 		/**
 		 * Flow:
@@ -107,7 +107,7 @@ public class MatchesControllerTests
 		Assert.Equal(dummyUserId, matches[0].SubmitterUserId);
 	}
 
-	private MatchesController OsuMatchesController(OtrContext context)
+	private MatchesController MatchesController(OtrContext context)
 	{
 		var matchesRepository = new MatchesRepository(_matchesRepositoryLoggerMock.Object, _mapperMock.Object, context);
 		var tournamentsRepository = new TournamentsRepository(_tournamentsRepositoryLoggerMock.Object, context, matchesRepository);

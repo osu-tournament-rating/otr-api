@@ -13,10 +13,8 @@ public class PlayerMatchStatisticsRepository : IPlayerMatchStatisticsRepository
 	public async Task<IEnumerable<PlayerMatchStatistics>> GetForPlayerAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		return await _context.PlayerMatchStatistics
-		                     .Include(stats => stats.Player)
-		                     .Include(stats => stats.Match)
-		                     .Where(stats => stats.PlayerId == playerId &&
-		                                     stats.Match.Tournament != null && stats.Match.Tournament.Mode == mode &&
+		                     .Where(stats => stats.PlayerId == playerId && 
+		                                     stats.Match.Mode == mode &&
 		                                     stats.Match.StartTime >= dateMin &&
 		                                     stats.Match.StartTime <= dateMax)
 		                     .OrderBy(x => x.Match.StartTime)
