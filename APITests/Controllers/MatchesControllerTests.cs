@@ -15,7 +15,7 @@ namespace APITests.Controllers;
 public class MatchesControllerTests
 {
 	private readonly TestDatabaseFixture _fixture;
-	private readonly Mock<ILogger<OsuMatchesController>> _loggerMock;
+	private readonly Mock<ILogger<MatchesController>> _loggerMock;
 	
 	private readonly Mock<ILogger<MatchesService>> _matchesServiceLoggerMock;
 	private readonly Mock<ILogger<TournamentsService>> _tournamentsServiceLoggerMock;
@@ -27,7 +27,7 @@ public class MatchesControllerTests
 
 	public MatchesControllerTests(TestDatabaseFixture fixture)
 	{
-		_loggerMock = new Mock<ILogger<OsuMatchesController>>();
+		_loggerMock = new Mock<ILogger<MatchesController>>();
 		
 		_matchesServiceLoggerMock = new Mock<ILogger<MatchesService>>();
 		_tournamentsServiceLoggerMock = new Mock<ILogger<TournamentsService>>();
@@ -107,7 +107,7 @@ public class MatchesControllerTests
 		Assert.Equal(dummyUserId, matches[0].SubmitterUserId);
 	}
 
-	private OsuMatchesController OsuMatchesController(OtrContext context)
+	private MatchesController OsuMatchesController(OtrContext context)
 	{
 		var matchesRepository = new MatchesRepository(_matchesRepositoryLoggerMock.Object, _mapperMock.Object, context);
 		var tournamentsRepository = new TournamentsRepository(_tournamentsRepositoryLoggerMock.Object, context, matchesRepository);
@@ -115,7 +115,7 @@ public class MatchesControllerTests
 		var matchesService = new MatchesService(_matchesServiceLoggerMock.Object, matchesRepository, tournamentsRepository, _mapperMock.Object);
 		var tournamentsService = new TournamentsService(tournamentsRepository);
 
-		var controller = new OsuMatchesController(_loggerMock.Object, matchesService, tournamentsService);
+		var controller = new MatchesController(_loggerMock.Object, matchesService, tournamentsService);
 		return controller;
 	}
 }

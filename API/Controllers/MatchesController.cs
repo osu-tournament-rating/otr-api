@@ -24,13 +24,13 @@ public class BatchWrapper
 [ApiController]
 [Authorize]
 [Route("api/[controller]")]
-public class OsuMatchesController : Controller
+public class MatchesController : Controller
 {
-	private readonly ILogger<OsuMatchesController> _logger;
+	private readonly ILogger<MatchesController> _logger;
 	private readonly IMatchesService _matchesService;
 	private readonly ITournamentsService _tournamentsService;
 
-	public OsuMatchesController(ILogger<OsuMatchesController> logger, IMatchesService matchesService, ITournamentsService tournamentsService)
+	public MatchesController(ILogger<MatchesController> logger, IMatchesService matchesService, ITournamentsService tournamentsService)
 	{
 		_logger = logger;
 		_matchesService = matchesService;
