@@ -67,6 +67,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 			{
 				PlayerId = item.PlayerId,
 				MatchId = item.MatchId,
+				MatchCost = item.MatchCost,
 				RatingBefore = item.RatingBefore,
 				RatingAfter = item.RatingAfter,
 				RatingChange = item.RatingChange,
