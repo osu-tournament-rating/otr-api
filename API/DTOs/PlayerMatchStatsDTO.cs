@@ -3,7 +3,7 @@ namespace API.DTOs;
 /// <summary>
 /// Used for POSTing match statistics to the API
 /// </summary>
-public class PlayerMatchStatisticsDTO
+public class PlayerMatchStatsDTO
 {
 	public int PlayerId { get; set; }
 	public int MatchId { get; set; }

@@ -9,19 +9,19 @@ public class LeaderboardService : ILeaderboardService
 {
 	private readonly IPlayerRepository _playerRepository;
 	private readonly IMatchesRepository _matchesRepository;
-	private readonly IRatingsRepository _ratingsRepository;
+	private readonly IBaseStatsRepository _baseStatsRepository;
 
-	public LeaderboardService(IPlayerRepository playerRepository, IMatchesRepository matchesRepository, IRatingsRepository ratingsRepository)
+	public LeaderboardService(IPlayerRepository playerRepository, IMatchesRepository matchesRepository, IBaseStatsRepository baseStatsRepository)
 	{
 		_playerRepository = playerRepository;
 		_matchesRepository = matchesRepository;
-		_ratingsRepository = ratingsRepository;
+		_baseStatsRepository = baseStatsRepository;
 	}
 	
 	public async Task<IEnumerable<LeaderboardDTO>> GetLeaderboardAsync(int mode, int page, int pageSize)
 	{
 		var fromTime = DateTime.MinValue; // Beginning of time
-		var ratings = await _ratingsRepository.GetTopRatingsAsync(page, pageSize, mode);
+		var ratings = await _baseStatsRepository.GetTopRatingsAsync(page, pageSize, mode);
 		var leaderboard = new List<LeaderboardDTO>();
 		foreach (var rating in ratings)
 		{
@@ -31,10 +31,10 @@ public class LeaderboardService : ILeaderboardService
 			var winRate = await _matchesRepository.GetWinRateAsync(osuId, mode, fromTime);
 			leaderboard.Add(new LeaderboardDTO
 			{
-				GlobalRank = await _ratingsRepository.GetGlobalRankAsync(osuId, mode),
+				GlobalRank = await _baseStatsRepository.GetGlobalRankAsync(osuId, mode),
 				Name = player.Username,
-				Tier = RatingUtils.GetTier((int)rating.Mu),
-				Rating = (int)rating.Mu,
+				Tier = RatingUtils.GetTier((int)rating.Rating),
+				Rating = (int)rating.Rating,
 				MatchesPlayed = matchesPlayed,
 				WinRate = winRate,
 				OsuId = osuId

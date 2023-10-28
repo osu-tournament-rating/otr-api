@@ -3,7 +3,7 @@ namespace API.DTOs;
 /// <summary>
 /// An aggregate of match statistics for a player during a period of time.
 /// </summary>
-public class AggregatePlayerMatchStatisticsDTO
+public class AggregatePlayerMatchStatsDTO
 {
 	/// <summary>
 	/// The peak rating achieved by the player during the period.

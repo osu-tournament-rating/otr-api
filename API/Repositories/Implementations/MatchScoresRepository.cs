@@ -61,9 +61,9 @@ public class MatchScoresRepository : RepositoryBase<MatchScore>, IMatchScoresRep
 			                          .Select(x => x.Score)
 			                          .AverageAsync();
 		}
-		catch (InvalidOperationException e)
+		catch (InvalidOperationException)
 		{
-			// Typically thrown when no scores are found
+			// Thrown when no scores are found
 			return default;
 		}
 	}

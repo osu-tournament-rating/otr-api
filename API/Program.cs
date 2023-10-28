@@ -66,15 +66,8 @@ var configuration = new MapperConfiguration(cfg =>
 	cfg.CreateMap<MatchScore, MatchScoreDTO>()
 	   .ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
 
-	cfg.CreateMap<MatchRatingStatistics, MatchRatingStatisticsDTO>();
+	cfg.CreateMap<MatchRatingStats, MatchRatingStatsDTO>();
 	cfg.CreateMap<Player, PlayerRanksDTO>();
-	cfg.CreateMap<Rating, RatingDTO>();
-	cfg.CreateMap<RatingHistory, RatingHistoryDTO>()
-	   .ForMember(x => x.MatchName, opt => opt.MapFrom(y => y.Match.Name))
-	   .ForMember(x => x.OsuMatchId, opt => opt.MapFrom(y => y.Match.MatchId))
-	   .ForMember(x => x.TournamentName, opt => opt.MapFrom(y => y.Match.TournamentName))
-	   .ForMember(x => x.Abbreviation, opt => opt.MapFrom(y => y.Match.Abbreviation));
-
 	cfg.CreateMap<Tournament, TournamentDTO>();
 	cfg.CreateMap<User, UserDTO>();
 });
@@ -103,30 +96,28 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddScoped<IGameSrCalculator, GameSrCalculator>();
 
 // Repositories
-builder.Services.AddScoped<IRatingsRepository, RatingsRepository>();
+builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
 builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
-builder.Services.AddScoped<IRatingHistoryRepository, RatingHistoryRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
 builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
 builder.Services.AddScoped<IApiMatchRepository, ApiMatchRepository>();
 builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
-builder.Services.AddScoped<IPlayerMatchStatisticsRepository, PlayerMatchStatisticsRepository>();
-builder.Services.AddScoped<IMatchRatingStatisticsRepository, MatchRatingStatisticsRepository>();
+builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
+builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
 
 // Services
-builder.Services.AddScoped<IRatingsService, RatingsService>();
+builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
-builder.Services.AddScoped<IRatingHistoryService, RatingHistoryService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
-builder.Services.AddScoped<IPlayerStatisticsService, PlayerStatisticsService>();
-builder.Services.AddScoped<IPlayerScoreStatsService, PlayerScoreStatisticsService>();
+builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
+builder.Services.AddScoped<IPlayerScoreStatsService, PlayerScoreStatsService>();
 
 builder.Services.AddOsuSharp(options =>
 {

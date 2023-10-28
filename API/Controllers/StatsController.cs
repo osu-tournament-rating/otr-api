@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Entities;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,9 +14,9 @@ public class StatsController : Controller
 {
 	private readonly ILogger<StatsController> _logger;
 	private readonly IDistributedCache _cache;
-	private readonly IPlayerStatisticsService _playerStatsService;
+	private readonly IPlayerStatsService _playerStatsService;
 
-	public StatsController(ILogger<StatsController> logger, IDistributedCache cache, IPlayerStatisticsService playerStatsService)
+	public StatsController(ILogger<StatsController> logger, IDistributedCache cache, IPlayerStatsService playerStatsService)
 	{
 		_logger = logger;
 		_cache = cache;
@@ -24,21 +25,28 @@ public class StatsController : Controller
 	
 	// [Authorize]
 	[HttpGet("{osuId:long}")]
-	public async Task<ActionResult<PlayerStatisticsDTO>> GetAsync(long osuId, [FromQuery]int mode = 0, [FromQuery] DateTime? dateMin = null, [FromQuery] DateTime? dateMax = null)
+	public async Task<ActionResult<PlayerStatsDTO>> GetAsync(long osuId, [FromQuery]int mode = 0, [FromQuery] DateTime? dateMin = null, [FromQuery] DateTime? dateMax = null)
 	{
 		var result = await _playerStatsService.GetAsync(osuId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 		return Ok(result);
 	}
 
 	[HttpPost("matchstats")]
-	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerMatchStatisticsDTO> postBody)
+	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerMatchStatsDTO> postBody)
 	{
 		await _playerStatsService.BatchInsertAsync(postBody);
 		return Ok();
 	}
 	
 	[HttpPost("ratingstats")]
-	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchRatingStatisticsDTO> postBody)
+	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchRatingStatsDTO> postBody)
+	{
+		await _playerStatsService.BatchInsertAsync(postBody);
+		return Ok();
+	}
+	
+	[HttpPost("basestats")]
+	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<BaseStatsPostDTO> postBody)
 	{
 		await _playerStatsService.BatchInsertAsync(postBody);
 		return Ok();

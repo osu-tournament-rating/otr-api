@@ -18,13 +18,13 @@ public class PlayersController : Controller
 {
 	private readonly IDistributedCache _cache;
 	private readonly IPlayerService _playerService;
-	private readonly IRatingsRepository _ratingsRepository;
+	private readonly IBaseStatsRepository _baseStatsRepository;
 
-	public PlayersController(IDistributedCache cache, IPlayerService playerService, IRatingsRepository ratingsRepository)
+	public PlayersController(IDistributedCache cache, IPlayerService playerService, IBaseStatsRepository baseStatsRepository)
 	{
 		_cache = cache;
 		_playerService = playerService;
-		_ratingsRepository = ratingsRepository;
+		_baseStatsRepository = baseStatsRepository;
 	}
 
 	[HttpGet("all")]
@@ -34,41 +34,41 @@ public class PlayersController : Controller
 		return Ok(players);
 	}
 
-	[HttpGet("{osuId:long}")]
-	public async Task<ActionResult<PlayerDTO?>> Get(long osuId, [FromQuery]int mode = 0, [FromQuery]int offsetDays = -1)
-	{
-		string key = $"{osuId}_{offsetDays}_{mode}";
-		byte[]? cachedPlayer = await _cache.GetAsync(key);
-		var modeEnum = (OsuEnums.Mode)mode;
-		if (cachedPlayer != null)
-		{
-			// Serialize into collection of objects, then filter by offset days.
-			var recentCreatedDate = await _ratingsRepository.GetRecentCreatedDate(osuId);
-			var cachedObj = JsonConvert.DeserializeObject<PlayerDTO>(Encoding.UTF8.GetString(cachedPlayer));
-			if (cachedObj!.Ratings.MaxBy(x => x.Created)?.Created < recentCreatedDate)
-			{
-				// Invalidate cache if the player's ratings have been updated since the cache was created.
-				await _cache.RemoveAsync(key);
-
-				var newDto = await _playerService.GetByOsuIdAsync(osuId, false, modeEnum, offsetDays);
-				if (newDto == null)
-				{
-					return NotFound($"User with id {osuId} does not exist");
-				}
-
-				return Ok(newDto);
-			}
-
-			return Ok(cachedObj);
-		}
-		var data = await _playerService.GetByOsuIdAsync(osuId, false, modeEnum, offsetDays);
-		if (data != null)
-		{
-			return Ok(data);
-		}
-
-		return NotFound($"User with id {osuId} does not exist");
-	}
+	// [HttpGet("{osuId:long}")]
+	// public async Task<ActionResult<PlayerDTO?>> Get(long osuId, [FromQuery]int mode = 0, [FromQuery]int offsetDays = -1)
+	// {
+	// 	string key = $"{osuId}_{offsetDays}_{mode}";
+	// 	byte[]? cachedPlayer = await _cache.GetAsync(key);
+	// 	var modeEnum = (OsuEnums.Mode)mode;
+	// 	if (cachedPlayer != null)
+	// 	{
+	// 		// Serialize into collection of objects, then filter by offset days.
+	// 		var recentCreatedDate = await _ratingsRepository.GetRecentCreatedDate(osuId);
+	// 		var cachedObj = JsonConvert.DeserializeObject<PlayerDTO>(Encoding.UTF8.GetString(cachedPlayer));
+	// 		if (cachedObj!.BaseStats.MaxBy(x => x.Created)?.Created < recentCreatedDate)
+	// 		{
+	// 			// Invalidate cache if the player's ratings have been updated since the cache was created.
+	// 			await _cache.RemoveAsync(key);
+	//
+	// 			var newDto = await _playerService.GetByOsuIdAsync(osuId, false, modeEnum, offsetDays);
+	// 			if (newDto == null)
+	// 			{
+	// 				return NotFound($"User with id {osuId} does not exist");
+	// 			}
+	//
+	// 			return Ok(newDto);
+	// 		}
+	//
+	// 		return Ok(cachedObj);
+	// 	}
+	// 	var data = await _playerService.GetByOsuIdAsync(osuId, false, modeEnum, offsetDays);
+	// 	if (data != null)
+	// 	{
+	// 		return Ok(data);
+	// 	}
+	//
+	// 	return NotFound($"User with id {osuId} does not exist");
+	// }
 
 	[HttpGet("{osuId:int}/id")]
 	public async Task<ActionResult<int>> GetIdByOsuIdAsync(long osuId)

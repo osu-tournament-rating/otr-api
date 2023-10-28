@@ -20,8 +20,6 @@ public class PlayerDTO
 	public DateTime? EarliestCatchGlobalRankDate { get; set; }
 	
 	public ICollection<MatchScoreDTO> MatchScores { get; set; } = new List<MatchScoreDTO>();
-	public ICollection<RatingHistoryDTO> RatingHistories { get; set; } = new List<RatingHistoryDTO>();
-	public ICollection<RatingDTO> Ratings { get; set; } = new List<RatingDTO>();
-	// Possibly add stats here
+	public ICollection<BaseStatsDTO> BaseStats { get; set; } = new List<BaseStatsDTO>();
 	public UserDTO? User { get; set; }
 }

@@ -14,16 +14,16 @@ public partial class OtrContext : DbContext
 		_configuration = configuration;
 	}
 
+	public virtual DbSet<BaseStats> BaseStats { get; set; }
 	public virtual DbSet<Beatmap> Beatmaps { get; set; }
 	public virtual DbSet<BeatmapModSr> BeatmapModSrs { get; set; }
 	public virtual DbSet<Config> Configs { get; set; }
 	public virtual DbSet<Game> Games { get; set; }
 	public virtual DbSet<Match> Matches { get; set; }
-	public virtual DbSet<MatchRatingStatistics> MatchRatingStatistics { get; set; }
+	public virtual DbSet<MatchRatingStats> MatchRatingStats { get; set; }
 	public virtual DbSet<MatchScore> MatchScores { get; set; }
 	public virtual DbSet<Player> Players { get; set; }
-	public virtual DbSet<PlayerMatchStatistics> PlayerMatchStatistics { get; set; }
-	public virtual DbSet<Rating> Ratings { get; set; }
+	public virtual DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
 	public virtual DbSet<RatingHistory> RatingHistories { get; set; }
 	public virtual DbSet<Tournament> Tournaments { get; set; }
 	public virtual DbSet<User> Users { get; set; }
@@ -102,18 +102,18 @@ public partial class OtrContext : DbContext
 			entity.HasMany(e => e.Games).WithOne(g => g.Match);
 			entity.HasMany(e => e.RatingHistories).WithOne(h => h.Match);
 			entity.HasOne(e => e.Tournament).WithMany(t => t.Matches).IsRequired(false);
-			entity.HasMany(e => e.Statistics).WithOne(s => s.Match).HasForeignKey(e => e.MatchId).IsRequired();
+			entity.HasMany(e => e.Stats).WithOne(s => s.Match).HasForeignKey(e => e.MatchId).IsRequired();
 
 			entity.HasIndex(x => x.MatchId);
 		});
 
-		modelBuilder.Entity<MatchRatingStatistics>(entity =>
+		modelBuilder.Entity<MatchRatingStats>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("match_rating_statistics_pk");
 			entity.Property(e => e.Id).UseIdentityColumn();
 			
-			entity.HasOne(e => e.Player).WithMany(e => e.MatchRatingStatistics).HasForeignKey(e => e.PlayerId);
-			entity.HasOne(e => e.Match).WithMany(e => e.RatingStatistics).HasForeignKey(e => e.MatchId);
+			entity.HasOne(e => e.Player).WithMany(e => e.MatchRatingStats).HasForeignKey(e => e.PlayerId);
+			entity.HasOne(e => e.Match).WithMany(e => e.RatingStats).HasForeignKey(e => e.MatchId);
 		});
 
 		modelBuilder.Entity<MatchScore>(entity =>
@@ -151,22 +151,22 @@ public partial class OtrContext : DbContext
 			entity.HasIndex(x => x.OsuId);
 		});
 
-		modelBuilder.Entity<PlayerMatchStatistics>(entity =>
+		modelBuilder.Entity<PlayerMatchStats>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("PlayerMatchStatistics_pk");
 			entity.Property(e => e.Id).UseIdentityColumn();
 			
-			entity.HasOne(e => e.Player).WithMany(e => e.MatchStatistics).HasForeignKey(e => e.PlayerId);
-			entity.HasOne(e => e.Match).WithMany(e => e.Statistics).HasForeignKey(e => e.MatchId);
+			entity.HasOne(e => e.Player).WithMany(e => e.MatchStats).HasForeignKey(e => e.PlayerId);
+			entity.HasOne(e => e.Match).WithMany(e => e.Stats).HasForeignKey(e => e.MatchId);
 
 			entity.HasIndex(e => e.PlayerId);
 			entity.HasIndex(e => e.MatchId);
 			entity.HasIndex(e => new { e.PlayerId, e.MatchId }).IsUnique();
 		});
 
-		modelBuilder.Entity<Rating>(entity =>
+		modelBuilder.Entity<BaseStats>(entity =>
 		{
-			entity.HasKey(e => e.Id).HasName("Ratings_pk");
+			entity.HasKey(e => e.Id).HasName("BaseStatistics_pk");
 			entity.Property(e => e.Id).UseIdentityAlwaysColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -174,7 +174,7 @@ public partial class OtrContext : DbContext
 			entity.HasOne(d => d.Player)
 			      .WithMany(p => p.Ratings)
 			      .OnDelete(DeleteBehavior.ClientSetNull)
-			      .HasConstraintName("Ratings___fkplayerid");
+			      .HasConstraintName("BaseStatistics___fkplayerid");
 
 			entity.HasIndex(x => x.PlayerId);
 		});

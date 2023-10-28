@@ -129,9 +129,9 @@ public static class QueryExtensions
 	public static IQueryable<MatchScore> After(this IQueryable<MatchScore> query, DateTime after) => query.AsQueryable().Where(x => x.Game.StartTime > after);
 
 	// Rating
-	public static IQueryable<Rating> WhereMode(this IQueryable<Rating> query, int playMode) => query.AsQueryable().Where(x => x.Mode == playMode);
-	public static IQueryable<Rating> WhereOsuPlayerId(this IQueryable<Rating> query, long osuPlayerId) => query.AsQueryable().Where(x => x.Player.OsuId == osuPlayerId);
-	public static IQueryable<Rating> OrderByMuDescending(this IQueryable<Rating> query) => query.AsQueryable().OrderByDescending(x => x.Mu);
+	public static IQueryable<BaseStats> WhereMode(this IQueryable<BaseStats> query, int playMode) => query.AsQueryable().Where(x => x.Mode == playMode);
+	public static IQueryable<BaseStats> WhereOsuPlayerId(this IQueryable<BaseStats> query, long osuPlayerId) => query.AsQueryable().Where(x => x.Player.OsuId == osuPlayerId);
+	public static IQueryable<BaseStats> OrderByMuDescending(this IQueryable<BaseStats> query) => query.AsQueryable().OrderByDescending(x => x.Rating);
 
 	// Rating Histories
 	public static IQueryable<RatingHistory> WhereOsuPlayerId(this IQueryable<RatingHistory> query, long osuPlayerId) => query.AsQueryable().Where(x => x.Player.OsuId == osuPlayerId);

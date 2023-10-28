@@ -7,8 +7,8 @@ namespace API.Entities;
 /// This set of stats is for a single match. This is here to avoid duplicate data
 /// in <see cref="PlayerGameStatistics"/>, as that data gets set on a per-game basis.
 /// </summary>
-[Table("player_match_statistics")]
-public class PlayerMatchStatistics
+[Table("player_match_stats")]
+public class PlayerMatchStats
 {
 	[Column("id")]
 	public int Id { get; set; }
@@ -36,8 +36,8 @@ public class PlayerMatchStatistics
 	public int[] TeammateIds { get; set; } = Array.Empty<int>();
 	[Column("opponent_ids")]
 	public int[] OpponentIds { get; set; } = Array.Empty<int>();
-	[InverseProperty("MatchStatistics")]
+	[InverseProperty("MatchStats")]
 	public virtual Player Player { get; set; } = null!;
-	[InverseProperty("Statistics")]
+	[InverseProperty("Stats")]
 	public virtual Match Match { get; set; } = null!;
 }

@@ -97,15 +97,15 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	public async Task<long> GetOsuIdByIdAsync(int id) => await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
 
 	public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode) => await (from p in _context.Players
-	                                                                                                                 join r in _context.Ratings on p.Id equals r.PlayerId
+	                                                                                                                 join r in _context.BaseStats on p.Id equals r.PlayerId
 	                                                                                                                 where r.Mode == (int)mode
-	                                                                                                                 orderby r.Mu descending
+	                                                                                                                 orderby r.Rating descending
 	                                                                                                                 select new PlayerRatingDTO
 	                                                                                                                 {
 		                                                                                                                 OsuId = p.OsuId,
 		                                                                                                                 Username = p.Username,
-		                                                                                                                 Mu = r.Mu,
-		                                                                                                                 Sigma = r.Sigma
+		                                                                                                                 Mu = r.Rating,
+		                                                                                                                 Sigma = r.Volatility
 	                                                                                                                 })
 	                                                                                                                .Take(n)
 	                                                                                                                .ToListAsync();

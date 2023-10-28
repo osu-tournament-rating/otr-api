@@ -70,12 +70,12 @@ public partial class Player
     public virtual ICollection<RatingHistory> RatingHistories { get; set; } = new List<RatingHistory>();
 
     [InverseProperty("Player")]
-    public virtual ICollection<Rating> Ratings { get; set; } = new List<Rating>();
+    public virtual ICollection<BaseStats> Ratings { get; set; } = new List<BaseStats>();
 
     [InverseProperty("Player")]
     public virtual User? User { get; set; }
     [InverseProperty("Player")]
-    public IEnumerable<PlayerMatchStatistics> MatchStatistics { get; set; } = null!;
+    public IEnumerable<PlayerMatchStats> MatchStats { get; set; } = null!;
     [InverseProperty("Player")]
-    public IEnumerable<MatchRatingStatistics> MatchRatingStatistics { get; set; } = null!;
+    public IEnumerable<MatchRatingStats> MatchRatingStats { get; set; } = null!;
 }

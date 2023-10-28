@@ -22,6 +22,64 @@ namespace API.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("API.Entities.BaseStats", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CountryRank")
+                        .HasColumnType("integer")
+                        .HasColumnName("country_rank");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("GlobalRank")
+                        .HasColumnType("integer")
+                        .HasColumnName("global_rank");
+
+                    b.Property<int>("Mode")
+                        .HasColumnType("integer")
+                        .HasColumnName("mode");
+
+                    b.Property<double>("Percentile")
+                        .HasColumnType("double precision")
+                        .HasColumnName("percentile");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer")
+                        .HasColumnName("player_id");
+
+                    b.Property<double>("Rating")
+                        .HasColumnType("double precision")
+                        .HasColumnName("rating");
+
+                    b.Property<DateTime?>("Updated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated");
+
+                    b.Property<double>("Volatility")
+                        .HasColumnType("double precision")
+                        .HasColumnName("volatility");
+
+                    b.HasKey("Id")
+                        .HasName("BaseStatistics_pk");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex(new[] { "PlayerId", "Mode" }, "ratings_playerid_mode")
+                        .IsUnique();
+
+                    b.ToTable("base_stats");
+                });
+
             modelBuilder.Entity("API.Entities.Beatmap", b =>
                 {
                     b.Property<int>("Id")
@@ -373,7 +431,7 @@ namespace API.Migrations
                     b.ToTable("matches");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchRatingStatistics", b =>
+            modelBuilder.Entity("API.Entities.MatchRatingStats", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -469,7 +527,7 @@ namespace API.Migrations
 
                     b.HasIndex("PlayerId");
 
-                    b.ToTable("match_rating_statistics");
+                    b.ToTable("match_rating_stats");
                 });
 
             modelBuilder.Entity("API.Entities.MatchScore", b =>
@@ -644,7 +702,7 @@ namespace API.Migrations
                     b.ToTable("players");
                 });
 
-            modelBuilder.Entity("API.Entities.PlayerMatchStatistics", b =>
+            modelBuilder.Entity("API.Entities.PlayerMatchStats", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -713,61 +771,7 @@ namespace API.Migrations
                     b.HasIndex("PlayerId", "MatchId")
                         .IsUnique();
 
-                    b.ToTable("player_match_statistics");
-                });
-
-            modelBuilder.Entity("API.Entities.Rating", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int>("Mode")
-                        .HasColumnType("integer")
-                        .HasColumnName("mode");
-
-                    b.Property<double>("Mu")
-                        .HasColumnType("double precision")
-                        .HasColumnName("mu");
-
-                    b.Property<double>("MuInitial")
-                        .HasColumnType("double precision")
-                        .HasColumnName("mu_initial");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
-
-                    b.Property<double>("Sigma")
-                        .HasColumnType("double precision")
-                        .HasColumnName("sigma");
-
-                    b.Property<double>("SigmaInitial")
-                        .HasColumnType("double precision")
-                        .HasColumnName("sigma_initial");
-
-                    b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
-
-                    b.HasKey("Id")
-                        .HasName("Ratings_pk");
-
-                    b.HasIndex("PlayerId");
-
-                    b.HasIndex(new[] { "PlayerId", "Mode" }, "ratings_playerid_mode")
-                        .IsUnique();
-
-                    b.ToTable("ratings");
+                    b.ToTable("player_match_stats");
                 });
 
             modelBuilder.Entity("API.Entities.RatingHistory", b =>
@@ -918,6 +922,17 @@ namespace API.Migrations
                     b.ToTable("users");
                 });
 
+            modelBuilder.Entity("API.Entities.BaseStats", b =>
+                {
+                    b.HasOne("API.Entities.Player", "Player")
+                        .WithMany("Ratings")
+                        .HasForeignKey("PlayerId")
+                        .IsRequired()
+                        .HasConstraintName("BaseStatistics___fkplayerid");
+
+                    b.Navigation("Player");
+                });
+
             modelBuilder.Entity("API.Entities.BeatmapModSr", b =>
                 {
                     b.HasOne("API.Entities.Beatmap", null)
@@ -967,16 +982,16 @@ namespace API.Migrations
                     b.Navigation("VerifiedBy");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchRatingStatistics", b =>
+            modelBuilder.Entity("API.Entities.MatchRatingStats", b =>
                 {
                     b.HasOne("API.Entities.Match", "Match")
-                        .WithMany("RatingStatistics")
+                        .WithMany("RatingStats")
                         .HasForeignKey("MatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("API.Entities.Player", "Player")
-                        .WithMany("MatchRatingStatistics")
+                        .WithMany("MatchRatingStats")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1005,32 +1020,21 @@ namespace API.Migrations
                     b.Navigation("Player");
                 });
 
-            modelBuilder.Entity("API.Entities.PlayerMatchStatistics", b =>
+            modelBuilder.Entity("API.Entities.PlayerMatchStats", b =>
                 {
                     b.HasOne("API.Entities.Match", "Match")
-                        .WithMany("Statistics")
+                        .WithMany("Stats")
                         .HasForeignKey("MatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("API.Entities.Player", "Player")
-                        .WithMany("MatchStatistics")
+                        .WithMany("MatchStats")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Match");
-
-                    b.Navigation("Player");
-                });
-
-            modelBuilder.Entity("API.Entities.Rating", b =>
-                {
-                    b.HasOne("API.Entities.Player", "Player")
-                        .WithMany("Ratings")
-                        .HasForeignKey("PlayerId")
-                        .IsRequired()
-                        .HasConstraintName("Ratings___fkplayerid");
 
                     b.Navigation("Player");
                 });
@@ -1082,18 +1086,18 @@ namespace API.Migrations
 
                     b.Navigation("RatingHistories");
 
-                    b.Navigation("RatingStatistics");
+                    b.Navigation("RatingStats");
 
-                    b.Navigation("Statistics");
+                    b.Navigation("Stats");
                 });
 
             modelBuilder.Entity("API.Entities.Player", b =>
                 {
-                    b.Navigation("MatchRatingStatistics");
+                    b.Navigation("MatchRatingStats");
 
                     b.Navigation("MatchScores");
 
-                    b.Navigation("MatchStatistics");
+                    b.Navigation("MatchStats");
 
                     b.Navigation("RatingHistories");
 

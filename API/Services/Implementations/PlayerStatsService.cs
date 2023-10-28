@@ -6,45 +6,70 @@ using AutoMapper;
 
 namespace API.Services.Implementations;
 
-public class PlayerStatisticsService : IPlayerStatisticsService
+public class PlayerStatsService : IPlayerStatsService
 {
 	private readonly IMapper _mapper;
-	private readonly IPlayerMatchStatisticsRepository _matchStatsRepository;
+	private readonly IPlayerMatchStatsRepository _matchStatsRepository;
 	private readonly IPlayerRepository _playerRepository;
 	private readonly IPlayerScoreStatsService _playerScoreStatsService;
-	private readonly IMatchRatingStatisticsRepository _ratingStatsRepository;
+	private readonly IMatchRatingStatsRepository _ratingStatsRepository;
 	private readonly ITournamentsRepository _tournamentsRepository;
+	private readonly IBaseStatsService _baseStatsService;
 
-	public PlayerStatisticsService(IPlayerRepository playerRepository, IPlayerMatchStatisticsRepository matchStatsRepository,
-		IMatchRatingStatisticsRepository ratingStatsRepository, IPlayerScoreStatsService playerScoreStatsService, ITournamentsRepository tournamentsRepository,
-		IMapper mapper)
+	public PlayerStatsService(IPlayerRepository playerRepository, IPlayerMatchStatsRepository matchStatsRepository,
+		IMatchRatingStatsRepository ratingStatsRepository, IPlayerScoreStatsService playerScoreStatsService, ITournamentsRepository tournamentsRepository,
+		IBaseStatsService baseStatsService, IMapper mapper)
 	{
 		_playerRepository = playerRepository;
 		_matchStatsRepository = matchStatsRepository;
 		_ratingStatsRepository = ratingStatsRepository;
 		_playerScoreStatsService = playerScoreStatsService;
 		_tournamentsRepository = tournamentsRepository;
+		_baseStatsService = baseStatsService;
 		_mapper = mapper;
 	}
 
-	public async Task<PlayerStatisticsDTO> GetAsync(long osuPlayerId, int mode, DateTime dateMin, DateTime dateMax)
+	public async Task<PlayerStatsDTO> GetAsync(long osuPlayerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		int playerId = await _playerRepository.GetIdByOsuIdAsync(osuPlayerId);
+		
+		var baseStats = await GetBaseStatsAsync(playerId, mode);
 		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin, dateMax);
 		var scoreStats = await GetScoreStatsAsync(playerId, mode, dateMin, dateMax);
 		var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin, dateMax);
 		var ratingStats = await GetRatingStatsAsync(playerId, mode, dateMin, dateMax);
 
-		return new PlayerStatisticsDTO(matchStats, scoreStats, tournamentStats, ratingStats);
+		return new PlayerStatsDTO(baseStats, matchStats, scoreStats, tournamentStats, ratingStats);
 	}
 
-	public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatisticsDTO> postBody)
+	// Returns overall stats for the player, no need to filter by date.
+	private async Task<BaseStatsDTO?> GetBaseStatsAsync(int playerId, int mode)
 	{
-		var items = new List<PlayerMatchStatistics>();
+		var dto = await _baseStatsService.GetForPlayerAsync(playerId, mode);
+
+		if (dto == null)
+		{
+			return null;
+		}
+		
+		int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(playerId, mode);
+		double winRate = await _matchStatsRepository.WinRateAsync(playerId, mode);
+		int highestRank = await _ratingStatsRepository.HighestGlobalRankAsync(playerId, mode);
+		
+		dto.MatchesPlayed = matchesPlayed;
+		dto.WinRate = winRate;
+		dto.HighestGlobalRank = highestRank;
+
+		return dto;
+	}
+
+	public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody)
+	{
+		var items = new List<PlayerMatchStats>();
 
 		foreach (var item in postBody)
 		{
-			var stats = new PlayerMatchStatistics
+			var stats = new PlayerMatchStats
 			{
 				PlayerId = item.PlayerId,
 				MatchId = item.MatchId,
@@ -66,12 +91,12 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		await _matchStatsRepository.InsertAsync(items);
 	}
 
-	public async Task BatchInsertAsync(IEnumerable<MatchRatingStatisticsDTO> postBody)
+	public async Task BatchInsertAsync(IEnumerable<MatchRatingStatsDTO> postBody)
 	{
-		var items = new List<MatchRatingStatistics>();
+		var items = new List<MatchRatingStats>();
 		foreach (var item in postBody)
 		{
-			var stats = new MatchRatingStatistics
+			var stats = new MatchRatingStats
 			{
 				PlayerId = item.PlayerId,
 				MatchId = item.MatchId,
@@ -101,16 +126,18 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		await _ratingStatsRepository.InsertAsync(items);
 	}
 
+	public async Task BatchInsertAsync(IEnumerable<BaseStatsPostDTO> postBody) => await _baseStatsService.BatchInsertAsync(postBody);
+
 	public async Task TruncateAsync()
 	{
 		await _matchStatsRepository.TruncateAsync();
 		await _ratingStatsRepository.TruncateAsync();
 	}
 	
-	private async Task<IEnumerable<MatchRatingStatisticsDTO>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
+	private async Task<IEnumerable<MatchRatingStatsDTO>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		var ratingStats = await _ratingStatsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax);
-		return _mapper.Map<IEnumerable<MatchRatingStatisticsDTO>>(ratingStats);
+		return _mapper.Map<IEnumerable<MatchRatingStatsDTO>>(ratingStats);
 	}
 
 	private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
@@ -143,7 +170,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		};
 	}
 
-	private async Task<AggregatePlayerMatchStatisticsDTO?> GetMatchStatsAsync(int id, int mode, DateTime dateMin, DateTime dateMax)
+	private async Task<AggregatePlayerMatchStatsDTO?> GetMatchStatsAsync(int id, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
 		var ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
@@ -153,7 +180,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 			return null;
 		}
 		
-		return new AggregatePlayerMatchStatisticsDTO
+		return new AggregatePlayerMatchStatsDTO
 		{
 			HighestRating = (int)ratingStats.Max(x => x.RatingAfter),
 			HighestGlobalRank = ratingStats.Min(x => x.GlobalRankAfter),
@@ -180,7 +207,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		};
 	}
 
-	private int GetHighestWinStreak(IEnumerable<PlayerMatchStatistics> stats)
+	private int GetHighestWinStreak(IEnumerable<PlayerMatchStats> stats)
 	{
 		int highest = 0;
 		int current = 0;
@@ -205,13 +232,13 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		return highest;
 	}
 
-	private int? MostPlayedTeammateId(IEnumerable<PlayerMatchStatistics> stats)
+	private int? MostPlayedTeammateId(IEnumerable<PlayerMatchStats> stats)
 	{
 		var teammates = stats.SelectMany(x => x.TeammateIds).GroupBy(x => x).Select(x => new { Id = x.Key, Count = x.Count() }).ToList();
 		return teammates.Any() ? teammates.OrderByDescending(x => x.Count).First().Id : null;
 	}
 
-	private int? MostPlayedOpponentId(IEnumerable<PlayerMatchStatistics> stats)
+	private int? MostPlayedOpponentId(IEnumerable<PlayerMatchStats> stats)
 	{
 		var opponents = stats.SelectMany(x => x.OpponentIds).GroupBy(x => x).Select(x => new { Id = x.Key, Count = x.Count() }).ToList();
 		return opponents.Any() ? opponents.OrderByDescending(x => x.Count).First().Id : null;

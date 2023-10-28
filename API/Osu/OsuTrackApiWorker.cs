@@ -44,8 +44,8 @@ public class OsuTrackApiWorker : BackgroundService
 				using (var scope = _serviceProvider.CreateScope())
 				{
 					var playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
-					var ratingHistoryService = scope.ServiceProvider.GetRequiredService<IRatingHistoryRepository>();
-
+					var ratingStatsRepository = scope.ServiceProvider.GetRequiredService<IMatchRatingStatsRepository>();
+					
 					var playersToUpdate = (await playerService.GetPlayersWhereMissingGlobalRankAsync()).ToList();
 
 					if (!playersToUpdate.Any())
@@ -86,9 +86,9 @@ public class OsuTrackApiWorker : BackgroundService
 
 						foreach (var mode in modes)
 						{
-							var oldestHistory = await ratingHistoryService.GetOldestForPlayerAsync(player.OsuId, (int)mode);
+							DateTime? oldestStatDate = await ratingStatsRepository.GetOldestForPlayerAsync(player.Id, (int)mode);
 
-							if (oldestHistory == null)
+							if (oldestStatDate == null)
 							{
 								continue;
 							}
@@ -99,7 +99,7 @@ public class OsuTrackApiWorker : BackgroundService
 								await Task.Delay(_ratelimitReset - DateTime.UtcNow, stoppingToken);
 							}
 
-							string url = FormedUrl(player.OsuId, mode, oldestHistory.Created, oldestHistory.Created.AddYears(1));
+							string url = FormedUrl(player.OsuId, mode, oldestStatDate.Value, oldestStatDate.Value.AddYears(1));
 							var response = await client.GetAsync(url, stoppingToken);
 							_tracker++;
 							

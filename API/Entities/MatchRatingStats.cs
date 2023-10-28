@@ -2,8 +2,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Entities;
 
-[Table("match_rating_statistics")]
-public class MatchRatingStatistics
+[Table("match_rating_stats")]
+public class MatchRatingStats
 {
 	[Column("id")]
 	public int Id { get; set; }
@@ -48,8 +48,8 @@ public class MatchRatingStatistics
 	[Column("average_opponent_rating")]
 	public double? AverageOpponentRating { get; set; }
 	
-	[InverseProperty("MatchRatingStatistics")]
+	[InverseProperty("MatchRatingStats")]
 	public virtual Player Player { get; set; } = null!;
-	[InverseProperty("RatingStatistics")]
+	[InverseProperty("RatingStats")]
 	public virtual Match Match { get; set; } = null!;
 }

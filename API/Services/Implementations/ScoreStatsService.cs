@@ -5,11 +5,13 @@ using API.Services.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class PlayerScoreStatisticsService : IPlayerScoreStatsService
+public class PlayerScoreStatsService : IPlayerScoreStatsService
 {
 	private readonly IMatchScoresRepository _scoresRepository;
-
-	public PlayerScoreStatisticsService(IMatchScoresRepository scoresRepository) { _scoresRepository = scoresRepository; }
+	public PlayerScoreStatsService(IMatchScoresRepository scoresRepository)
+	{
+		_scoresRepository = scoresRepository;
+	}
 	
 	public async Task<PlayerScoreStatsDTO> GetScoreStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
@@ -51,5 +53,5 @@ public class PlayerScoreStatisticsService : IPlayerScoreStatsService
 	private async Task<int> GetCountModAsync(int playerId, int mode, int mods, DateTime dateMin, DateTime dateMax)
 	{
 		return await _scoresRepository.CountModScoresAsync(playerId, mode, mods, dateMin, dateMax);
-	} 
+	}
 }
