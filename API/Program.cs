@@ -74,6 +74,7 @@ var configuration = new MapperConfiguration(cfg =>
 	   .ForMember(x => x.Abbreviation, opt => opt.MapFrom(y => y.Match.Abbreviation));
 
 	cfg.CreateMap<User, UserDTO>();
+	cfg.CreateMap<Tournament, TournamentDTO>();
 });
 
 // only during development, validate your mappings; remove it before release

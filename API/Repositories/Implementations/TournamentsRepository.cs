@@ -53,7 +53,37 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 	{
 		return await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
 	}
-	
+
+	public async Task<IEnumerable<Tournament>> GetForPlayerAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
+	{
+		return await _context.Tournaments
+		                     .FromSqlRaw("SELECT DISTINCT t.* FROM tournaments t " +
+		                                 "INNER JOIN matches m ON m.tournament_id = t.id " +
+		                                 "INNER JOIN player_match_statistics pms ON pms.match_id = m.match_id " +
+		                                 "WHERE pms.player_id = {0} AND t.mode = {1} AND m.start_time >= {2} AND m.start_time <= {3}", playerId, mode, dateMin, dateMax)
+		                     .ToListAsync();
+	}
+
+	public async Task<IEnumerable<Tournament>> GetTopPerformancesAsync(int count, int playerId, 
+		int mode, DateTime dateMin, DateTime dateMax)
+	{
+		/**
+		 * 1. Get all tournaments the player has participated in
+		 * 2. Get all matches the player has participated in from those tournaments
+		 * 3. Get the player's average match cost for each tournament
+		 * 4. Order by average match cost descending, returning the top <count> tournaments
+		 */
+		return await _context.Tournaments
+		                     .FromSqlRaw("SELECT t.* FROM tournaments t " +
+		                                 "INNER JOIN matches m ON m.tournament_id = t.id " +
+		                                 "INNER JOIN match_rating_statistics rms ON rms.match_id = m.match_id " +
+		                                 "WHERE rms.player_id = {0} AND t.mode = {1} AND m.start_time >= {2} AND m.start_time <= {3} " +
+		                                 "GROUP BY t.id " +
+		                                 "ORDER BY AVG(rms.match_cost) DESC " +
+		                                 "LIMIT {4}", playerId, mode, dateMin, dateMax, count)
+		                     .ToListAsync();
+	}
+
 	public async Task<Tournament> CreateOrUpdateAsync(BatchWrapper wrapper, bool updateExisting = false)
 	{
 		if (updateExisting && await ExistsAsync(wrapper.TournamentName, wrapper.Mode))
