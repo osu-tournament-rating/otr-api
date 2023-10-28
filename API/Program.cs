@@ -65,6 +65,8 @@ var configuration = new MapperConfiguration(cfg =>
 	cfg.CreateMap<Match, MatchDTO>();
 	cfg.CreateMap<MatchScore, MatchScoreDTO>()
 	   .ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
+
+	cfg.CreateMap<MatchRatingStatistics, MatchRatingStatisticsDTO>();
 	cfg.CreateMap<Player, PlayerRanksDTO>();
 	cfg.CreateMap<Rating, RatingDTO>();
 	cfg.CreateMap<RatingHistory, RatingHistoryDTO>()
@@ -73,8 +75,8 @@ var configuration = new MapperConfiguration(cfg =>
 	   .ForMember(x => x.TournamentName, opt => opt.MapFrom(y => y.Match.TournamentName))
 	   .ForMember(x => x.Abbreviation, opt => opt.MapFrom(y => y.Match.Abbreviation));
 
-	cfg.CreateMap<User, UserDTO>();
 	cfg.CreateMap<Tournament, TournamentDTO>();
+	cfg.CreateMap<User, UserDTO>();
 });
 
 // only during development, validate your mappings; remove it before release

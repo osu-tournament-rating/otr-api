@@ -1,7 +1,8 @@
 namespace API.DTOs;
 
 /// <summary>
-/// Used by the API to POST match rating statistics
+/// Used by the API to POST match rating statistics.
+/// Also used for GET match rating statistics.
 /// </summary>
 public class MatchRatingStatisticsDTO
 {

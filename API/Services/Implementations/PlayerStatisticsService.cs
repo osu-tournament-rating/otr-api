@@ -33,8 +33,9 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin, dateMax);
 		var scoreStats = await GetScoreStatsAsync(playerId, mode, dateMin, dateMax);
 		var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin, dateMax);
+		var ratingStats = await GetRatingStatsAsync(playerId, mode, dateMin, dateMax);
 
-		return new PlayerStatisticsDTO(matchStats, scoreStats, tournamentStats);
+		return new PlayerStatisticsDTO(matchStats, scoreStats, tournamentStats, ratingStats);
 	}
 
 	public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatisticsDTO> postBody)
@@ -105,6 +106,12 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		await _matchStatsRepository.TruncateAsync();
 		await _ratingStatsRepository.TruncateAsync();
 	}
+	
+	private async Task<IEnumerable<MatchRatingStatisticsDTO>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
+	{
+		var ratingStats = await _ratingStatsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax);
+		return _mapper.Map<IEnumerable<MatchRatingStatisticsDTO>>(ratingStats);
+	}
 
 	private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
@@ -145,7 +152,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		{
 			return null;
 		}
-
+		
 		return new AggregatePlayerMatchStatisticsDTO
 		{
 			HighestRating = (int)ratingStats.Max(x => x.RatingAfter),
