@@ -24,7 +24,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 	public async Task<PlayerStatisticsDTO> GetAsync(long osuPlayerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		int playerId = await _playerRepository.GetIdByOsuIdAsync(osuPlayerId);
-		var matchStats = await GetMatchStatsAsync(playerId, osuPlayerId, mode, dateMin, dateMax);
+		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin, dateMax);
 		var scoreStats = await GetScoreStatsAsync(playerId, mode, dateMin, dateMax);
 		
 		return new PlayerStatisticsDTO(matchStats, scoreStats);
@@ -41,7 +41,6 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 				PlayerId = item.PlayerId,
 				MatchId = item.MatchId,
 				Won = item.Won,
-				PointsEarned = item.PointsEarned,
 				AverageScore = item.AverageScore,
 				AverageMisses = item.AverageMisses,
 				AverageAccuracy = item.AverageAccuracy,
@@ -73,12 +72,16 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 				RatingChange = item.RatingChange,
 				VolatilityBefore = item.VolatilityBefore,
 				VolatilityAfter = item.VolatilityAfter,
+				VolatilityChange = item.VolatilityChange,
 				GlobalRankBefore = item.GlobalRankBefore,
 				GlobalRankAfter = item.GlobalRankAfter,
+				GlobalRankChange =  item.GlobalRankChange,
 				CountryRankBefore = item.CountryRankBefore,
 				CountryRankAfter = item.CountryRankAfter,
+				CountryRankChange = item.CountryRankChange,
 				PercentileBefore = item.PercentileBefore,
 				PercentileAfter = item.PercentileAfter,
+				PercentileChange = item.PercentileChange,
 				AverageTeammateRating = item.AverageTeammateRating,
 				AverageOpponentRating = item.AverageOpponentRating
 			};
@@ -95,7 +98,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		await _ratingStatsRepository.TruncateAsync();
 	}
 
-	private async Task<AggregatePlayerMatchStatisticsDTO?> GetMatchStatsAsync(int id, long osuId, int mode, DateTime dateMin, DateTime dateMax)
+	private async Task<AggregatePlayerMatchStatisticsDTO?> GetMatchStatsAsync(int id, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
 		var ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
@@ -114,6 +117,7 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 			RatingGained = ratingStats.First().RatingAfter - ratingStats.Last().RatingAfter,
 			GamesWon = matchStats.Sum(x => x.GamesWon),
 			GamesLost = matchStats.Sum(x => x.GamesLost),
+			GamesPlayed = matchStats.Sum(x => x.GamesPlayed),
 			MatchesWon = matchStats.Count(x => x.Won),
 			MatchesLost = matchStats.Count(x => !x.Won),
 			AverageTeammateRating = ratingStats.Average(x => x.AverageTeammateRating),
@@ -154,16 +158,16 @@ public class PlayerStatisticsService : IPlayerStatisticsService
 		return highest;
 	}
 	
-	private int MostPlayedTeammateId(IEnumerable<PlayerMatchStatistics> stats)
+	private int? MostPlayedTeammateId(IEnumerable<PlayerMatchStatistics> stats)
 	{
 		var teammates = stats.SelectMany(x => x.TeammateIds).GroupBy(x => x).Select(x => new { Id = x.Key, Count = x.Count() }).ToList();
-		return teammates.Any() ? teammates.OrderByDescending(x => x.Count).First().Id : 0;
+		return teammates.Any() ? teammates.OrderByDescending(x => x.Count).First().Id : null;
 	}
 	
-	private int MostPlayedOpponentId(IEnumerable<PlayerMatchStatistics> stats)
+	private int? MostPlayedOpponentId(IEnumerable<PlayerMatchStatistics> stats)
 	{
 		var opponents = stats.SelectMany(x => x.OpponentIds).GroupBy(x => x).Select(x => new { Id = x.Key, Count = x.Count() }).ToList();
-		return opponents.Any() ? opponents.OrderByDescending(x => x.Count).First().Id : 0;
+		return opponents.Any() ? opponents.OrderByDescending(x => x.Count).First().Id : null;
 	}
 	
 	private async Task<PlayerScoreStatsDTO?> GetScoreStatsAsync(int id, int mode, DateTime dateMin, DateTime dateMax)

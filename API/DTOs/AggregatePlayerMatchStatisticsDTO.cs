@@ -41,6 +41,7 @@ public class AggregatePlayerMatchStatisticsDTO
 	/// The amount of matches lost during the period.
 	/// </summary>
 	public int MatchesLost { get; set; }
+	public int GamesPlayed { get; set; }
 	/// <summary>
 	/// The amount of games played during the period.
 	/// </summary>
@@ -84,7 +85,7 @@ public class AggregatePlayerMatchStatisticsDTO
 	public double AverageGamesPlayedAggregate { get; set; }
 	/// <summary>
 	/// The average lobby ranking the player has on maps they participate in.
-	/// A top-score would be 1, bottom score would be team size * 2.
+	/// A top-score is 1, bottom score would be team size * 2.
 	/// </summary>
 	public double AveragePlacingAggregate { get; set; }
 	/// <summary>
@@ -112,5 +113,4 @@ public class AggregatePlayerMatchStatisticsDTO
 	/// <summary>
 	/// The total number of games played in the period
 	/// </summary>
-	public int GamesPlayed => GamesWon + GamesLost;
 }

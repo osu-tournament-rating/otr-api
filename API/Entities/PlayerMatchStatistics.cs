@@ -18,8 +18,6 @@ public class PlayerMatchStatistics
 	public int MatchId { get; set; }
 	[Column("won")]
 	public bool Won { get; set; }
-	[Column("points_earned")]
-	public int PointsEarned { get; set; }
 	[Column("average_score")]
 	public int AverageScore { get; set; }
 	[Column("average_misses")]

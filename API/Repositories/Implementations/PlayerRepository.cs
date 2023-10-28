@@ -110,7 +110,8 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	                                                                                                                .Take(n)
 	                                                                                                                .ToListAsync();
 
-	public async Task<string?> GetUsernameAsync(long osuId) => await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
+	public async Task<string?> GetUsernameAsync(long? osuId) => await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
+	public async Task<string?> GetUsernameAsync(int? id) => await _context.Players.Where(p => p.Id == id).Select(p => p.Username).FirstOrDefaultAsync(); 
 	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.OsuId, p => p.Id);
 	public async Task<Dictionary<int, string?>> GetCountryMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.Id, p => p.Country); 
 

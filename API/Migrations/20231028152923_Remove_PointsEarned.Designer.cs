@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20231028152923_Remove_PointsEarned")]
+    partial class Remove_PointsEarned
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -398,10 +401,6 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("country_rank_before");
 
-                    b.Property<int>("CountryRankChange")
-                        .HasColumnType("integer")
-                        .HasColumnName("country_rank_change");
-
                     b.Property<int>("GlobalRankAfter")
                         .HasColumnType("integer")
                         .HasColumnName("global_rank_after");
@@ -409,10 +408,6 @@ namespace API.Migrations
                     b.Property<int>("GlobalRankBefore")
                         .HasColumnType("integer")
                         .HasColumnName("global_rank_before");
-
-                    b.Property<int>("GlobalRankChange")
-                        .HasColumnType("integer")
-                        .HasColumnName("global_rank_change");
 
                     b.Property<double>("MatchCost")
                         .HasColumnType("double precision")
@@ -429,10 +424,6 @@ namespace API.Migrations
                     b.Property<double>("PercentileBefore")
                         .HasColumnType("double precision")
                         .HasColumnName("percentile_before");
-
-                    b.Property<double>("PercentileChange")
-                        .HasColumnType("double precision")
-                        .HasColumnName("percentile_change");
 
                     b.Property<int>("PlayerId")
                         .HasColumnType("integer")
@@ -457,10 +448,6 @@ namespace API.Migrations
                     b.Property<double>("VolatilityBefore")
                         .HasColumnType("double precision")
                         .HasColumnName("volatility_before");
-
-                    b.Property<double>("VolatilityChange")
-                        .HasColumnType("double precision")
-                        .HasColumnName("volatility_change");
 
                     b.HasKey("Id")
                         .HasName("match_rating_statistics_pk");

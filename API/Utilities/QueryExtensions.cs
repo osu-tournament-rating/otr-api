@@ -8,7 +8,7 @@ namespace API.Utilities;
 public static class QueryExtensions
 {
 	// Player
-	public static IQueryable<Player> WhereOsuId(this IQueryable<Player> query, long osuId) => query.AsQueryable().Where(x => x.OsuId == osuId);
+	public static IQueryable<Player> WhereOsuId(this IQueryable<Player> query, long? osuId) => query.AsQueryable().Where(x => x.OsuId == osuId);
 
 	// Match
 	public static IQueryable<Match> WhereVerified(this IQueryable<Match> query) => query.AsQueryable().Where(x => 

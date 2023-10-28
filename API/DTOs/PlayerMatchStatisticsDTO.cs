@@ -8,7 +8,6 @@ public class PlayerMatchStatisticsDTO
 	public int PlayerId { get; set; }
 	public int MatchId { get; set; }
 	public bool Won { get; set; }
-	public int PointsEarned { get; set; }
 	public int AverageScore { get; set; }
 	public double AverageMisses { get; set; }
 	public double AverageAccuracy { get; set; }
