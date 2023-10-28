@@ -23,5 +23,5 @@ public class MatchRatingStatisticsRepository : IMatchRatingStatisticsRepository
 		await _context.SaveChangesAsync();
 	}
 
-	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE match_rating_statistics"); 
+	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE match_rating_statistics RESTART IDENTITY"); 
 }
