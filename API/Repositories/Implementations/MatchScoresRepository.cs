@@ -50,30 +50,26 @@ public class MatchScoresRepository : RepositoryBase<MatchScore>, IMatchScoresRep
 	public async Task<int> AverageModScoreAsync(int playerId, int mode, int mods, DateTime dateMin,
 		DateTime dateMax)
 	{
-		try
-		{
-			return (int) await _context.MatchScores
-			                          .WhereVerified()
-			                          .WhereMode(mode)
-			                          .WhereMods((OsuEnums.Mods)mods)
-			                          .WherePlayerId(playerId)
-			                          .WhereDateRange(dateMin, dateMax)
-			                          .Select(x => x.Score)
-			                          .AverageAsync();
-		}
-		catch (InvalidOperationException)
-		{
-			// Thrown when no scores are found
-			return default;
-		}
+		return (int) await _context.MatchScores
+		                          .WhereVerified()
+		                          .WhereMode(mode)
+		                          .WhereMods((OsuEnums.Mods)mods)
+		                          .WherePlayerId(playerId)
+		                          .WhereDateRange(dateMin, dateMax)
+		                          .Select(x => x.Score)
+		                          .DefaultIfEmpty()
+		                          .AverageAsync();
 	}
 
 	public async Task<int> CountModScoresAsync(int playerId, int mode, int mods, DateTime dateMin,
-		DateTime dateMax) => await _context.MatchScores
-		                                   .WhereVerified()
-		                                   .WhereMode(mode)
-		                                   .WhereMods((OsuEnums.Mods)mods)
-		                                   .WherePlayerId(playerId)
-		                                   .WhereDateRange(dateMin, dateMax)
-		                                   .CountAsync();
+		DateTime dateMax)
+	{
+		return await _context.MatchScores
+		                     .WhereVerified()
+		                     .WhereMode(mode)
+		                     .WhereMods((OsuEnums.Mods)mods)
+		                     .WherePlayerId(playerId)
+		                     .WhereDateRange(dateMin, dateMax)
+		                     .CountAsync();
+	}
 }
