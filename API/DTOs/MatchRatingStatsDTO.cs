@@ -35,5 +35,5 @@ public class MatchRatingStatsDTO
 	public double PercentileChange { get; set; }
 	public double? AverageTeammateRating { get; set; }
 	public double? AverageOpponentRating { get; set; }
-	public MatchTooltipInfoDTO TooltipInfo { get; set; } = null!;
+	public MatchTooltipInfoDTO? TooltipInfo { get; set; }
 }
