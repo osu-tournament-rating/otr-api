@@ -1,5 +1,14 @@
 namespace API.DTOs;
 
+public class MatchTooltipInfoDTO
+{
+	public string? TournamentName { get; set; }
+	public string? TournamentAbbreviation { get; set; }
+	public string? MatchName { get; set; }
+	public string MpLink { get; set; } = null!;
+	public DateTime? MatchDate { get; set; }
+}
+
 /// <summary>
 /// Used by the API to POST match rating statistics.
 /// Also used for GET match rating statistics.
@@ -26,4 +35,5 @@ public class MatchRatingStatsDTO
 	public double PercentileChange { get; set; }
 	public double? AverageTeammateRating { get; set; }
 	public double? AverageOpponentRating { get; set; }
+	public MatchTooltipInfoDTO TooltipInfo { get; set; } = null!;
 }

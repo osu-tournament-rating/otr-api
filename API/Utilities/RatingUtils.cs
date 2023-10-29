@@ -48,6 +48,12 @@ public static class RatingUtils
 	};
 	
 	// Useful for the front-end rating progress bar
+	/// <summary>
+	/// Returns the difference between the ratings required for the next tier and the current tier.
+	/// This is used by the front-end's progress bar to determine how much progress has been made towards the next tier.
+	/// </summary>
+	/// <param name="rating"></param>
+	/// <returns></returns>
 	public static int GetRatingDelta(int rating) => rating switch
 	{
 		< RatingSilver => RatingSilver - RatingBronze,

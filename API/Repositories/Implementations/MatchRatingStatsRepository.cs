@@ -17,6 +17,8 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 		                                 x.Match.Mode == mode && 
 		                                 x.Match.StartTime >= dateMin && 
 		                                 x.Match.StartTime <= dateMax)
+		                     .Include(x => x.Match)
+		                     .ThenInclude(x => x.Tournament)
 		                     .ToListAsync();
 	}
 

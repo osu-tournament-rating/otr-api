@@ -29,7 +29,7 @@ public class StatsController : Controller
 	{
 		return await _playerStatsService.GetAsync(osuId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 	}
-
+	
 	[HttpPost("matchstats")]
 	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerMatchStatsDTO> postBody)
 	{

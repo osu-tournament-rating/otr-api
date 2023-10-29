@@ -8,7 +8,7 @@ public class AggregatePlayerMatchStatsDTO
 	/// <summary>
 	/// The peak rating achieved by the player during the period.
 	/// </summary>
-	public int HighestRating { get; set; }
+	public double HighestRating { get; set; }
 	/// <summary>
 	/// The peak global rank achieved by the player during the period.
 	/// </summary>
@@ -33,6 +33,7 @@ public class AggregatePlayerMatchStatsDTO
 	/// The amount of games lost during the period.
 	/// </summary>
 	public int GamesLost { get; set; }
+	public int GamesPlayed { get; set; }
 	/// <summary>
 	/// The amount of matches won during the period.
 	/// </summary>
@@ -41,7 +42,6 @@ public class AggregatePlayerMatchStatsDTO
 	/// The amount of matches lost during the period.
 	/// </summary>
 	public int MatchesLost { get; set; }
-	public int GamesPlayed { get; set; }
 	/// <summary>
 	/// The amount of games played during the period.
 	/// </summary>

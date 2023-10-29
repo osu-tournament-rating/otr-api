@@ -178,12 +178,12 @@ public class PlayerStatsService : IPlayerStatsService
 
 		if (!matchStats.Any())
 		{
-			return null;
+			return new AggregatePlayerMatchStatsDTO();
 		}
 		
 		return new AggregatePlayerMatchStatsDTO
 		{
-			HighestRating = (int)ratingStats.Max(x => x.RatingAfter),
+			HighestRating = ratingStats.Max(x => x.RatingAfter),
 			HighestGlobalRank = ratingStats.Min(x => x.GlobalRankAfter),
 			HighestCountryRank = ratingStats.Min(x => x.CountryRankAfter),
 			HighestPercentile = ratingStats.Max(x => x.PercentileAfter),

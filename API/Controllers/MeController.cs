@@ -15,16 +15,13 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class MeController : Controller
 {
-	private readonly IPlayerService _playerService;
-	private readonly IBaseStatsService _baseStatsService;
 	private readonly IUserService _userService;
-	private readonly IDistributedCache _cache;
-	public MeController(IPlayerService playerService, IBaseStatsService baseStatsService, IUserService userService, IDistributedCache cache)
+	private readonly IPlayerStatsService _playerStatsService;
+
+	public MeController(IPlayerService playerService, IUserService userService, IPlayerStatsService playerStatsService)
 	{
-		_playerService = playerService;
-		_baseStatsService = baseStatsService;
 		_userService = userService;
-		_cache = cache;
+		_playerStatsService = playerStatsService;
 	}
 	
 	private long? GetOsuId()
@@ -55,6 +52,19 @@ public class MeController : Controller
 
 		var user = await _userService.GetForPlayerAsync(osuId.Value);
 		return Ok(user);
+	}
+	
+	[HttpGet("stats")]
+	public async Task<ActionResult<PlayerStatsDTO>> GetStatsAsync([FromQuery]int mode = 0, [FromQuery] DateTime? dateMin = null, [FromQuery] DateTime? dateMax = null)
+	{
+		long? osuId = GetOsuId();
+		
+		if (!osuId.HasValue)
+		{
+			return BadRequest("User's login seems corrupted, couldn't identify osuId.");
+		}
+
+		return await _playerStatsService.GetAsync(osuId.Value, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 	}
 
 	// [HttpGet("statistics")]
