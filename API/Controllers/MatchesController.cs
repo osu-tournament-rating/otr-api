@@ -4,6 +4,7 @@ using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 // ReSharper disable PossibleMultipleEnumeration
@@ -22,6 +23,7 @@ public class BatchWrapper
 }
 
 [ApiController]
+[EnableCors]
 [Authorize]
 [Route("api/[controller]")]
 public class MatchesController : Controller

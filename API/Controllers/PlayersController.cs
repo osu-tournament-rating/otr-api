@@ -4,6 +4,7 @@ using API.Osu;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -12,6 +13,7 @@ using System.Text;
 namespace API.Controllers;
 
 [ApiController]
+[EnableCors]
 [Authorize(Roles = "Admin, System")]
 [Route("api/[controller]")]
 public class PlayersController : Controller

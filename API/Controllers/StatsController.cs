@@ -1,12 +1,14 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace API.Controllers;
 
 [ApiController]
+[EnableCors]
 [Route("api/[controller]")]
 [Authorize(Roles = "Admin, System")]
 public class StatsController : Controller

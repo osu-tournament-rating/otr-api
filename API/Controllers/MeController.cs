@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Entities;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using Newtonsoft.Json;
@@ -11,6 +12,7 @@ using System.Text;
 namespace API.Controllers;
 
 [ApiController]
+[EnableCors]
 [Authorize]
 [Route("api/[controller]")]
 public class MeController : Controller

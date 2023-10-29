@@ -1,6 +1,7 @@
 using API.Entities;
 using API.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using OsuSharp.Exceptions;
@@ -17,6 +18,7 @@ public class LoginWrapper
 }
 
 [ApiController]
+[EnableCors]
 [Route("api/[controller]")]
 public class LoginController : Controller
 {

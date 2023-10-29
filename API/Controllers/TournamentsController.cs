@@ -1,10 +1,12 @@
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
+[EnableCors]
 [Route("api/[controller]")]
 [Authorize]
 public class TournamentsController : Controller

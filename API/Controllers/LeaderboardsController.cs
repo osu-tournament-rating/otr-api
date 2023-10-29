@@ -1,12 +1,14 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[AllowAnonymous]
 [ApiController]
+[AllowAnonymous]
+[EnableCors]
 [Route("api/[controller]")]
 public class LeaderboardsController : Controller
 {

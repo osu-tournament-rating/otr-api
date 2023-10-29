@@ -152,10 +152,10 @@ builder.Services.AddSingleton<ICredentials, Credentials>(serviceProvider =>
 
 builder.Services.AddCors(options =>
 {
-	options.AddPolicy("AllowSpecificOrigin", corsPolicyBuilder =>
+	options.AddDefaultPolicy(corsPolicyBuilder =>
 	{
 		corsPolicyBuilder
-			.WithOrigins("https://staging.otr.stagec.xyz/", "https://otr.stagec.xyz/")
+			.WithOrigins("https://staging.otr.stagec.xyz", "https://otr.stagec.xyz")
 			.AllowAnyHeader()
 			.AllowAnyMethod()
 			.AllowCredentials();
@@ -207,9 +207,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseRouting(); // UseRouting should come first before UseCors
+app.UseRouting(); // UseRouting must come first before UseCors
 
-app.UseCors("AllowSpecificOrigin"); // Placed after UseRouting and before UseAuthentication and UseAuthorization
+app.UseCors(); // Placed after UseRouting and before UseAuthentication and UseAuthorization
 
 app.UseMiddleware<RequestLoggingMiddleware>();
 
