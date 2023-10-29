@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace API.DTOs;
 
 public class MatchTooltipInfoDTO
@@ -35,5 +37,6 @@ public class MatchRatingStatsDTO
 	public double PercentileChange { get; set; }
 	public double? AverageTeammateRating { get; set; }
 	public double? AverageOpponentRating { get; set; }
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public MatchTooltipInfoDTO? TooltipInfo { get; set; }
 }
