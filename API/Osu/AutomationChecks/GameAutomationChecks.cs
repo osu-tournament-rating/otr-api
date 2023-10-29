@@ -9,21 +9,27 @@ public static class GameAutomationChecks
 	
 	public static bool PassesAutomationChecks(Game game)
 	{
-		return PassesScoringTypeCheck(game) && PassesModeCheck(game) && PassesTeamTypeCheck(game) && PassesTeamSizeCheck(game) && PassesModsCheck(game) && PassesScoreSanityCheck(game);
+		return PassesTournamentCheck(game) && PassesScoringTypeCheck(game) && PassesModeCheck(game) && PassesTeamTypeCheck(game) && PassesTeamSizeCheck(game) && PassesModsCheck(game) && PassesScoreSanityCheck(game);
+	}
+
+	public static bool PassesTournamentCheck(Game game)
+	{
+		if (game.Match.Tournament == null)
+		{
+			_logger.Information("{Prefix} Match {MatchId} has no tournament, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.GameId);
+			return false;
+		}
+
+		return true;
 	}
 
 	public static bool PassesTeamSizeCheck(Game game)
 	{
-		int? teamSize = game.Match.TeamSize;
-		if (teamSize == null)
-		{
-			_logger.Information("{Prefix} Match {MatchId} has no team size, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.GameId);
-			return false;
-		}
-
+		var tournament = game.Match.Tournament;
+		int? teamSize = tournament!.TeamSize;
 		if (teamSize is < 1 or > 8)
 		{
-			_logger.Information("{Prefix} Match {MatchId} has an invalid team size: {Size}, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.Match.TeamSize, game.GameId);
+			_logger.Information("{Prefix} Tournament {TournamentId} has an invalid team size: {Size}, can't verify game {GameId}", _logPrefix, tournament.Id, tournament.TeamSize, game.GameId);
 			return false;
 		}
 
@@ -67,22 +73,19 @@ public static class GameAutomationChecks
 	
 	public static bool PassesModeCheck(Game game)
 	{
-		int? gameMode = game.Match.Mode;
-		if (gameMode == null)
-		{
-			_logger.Information("{Prefix} Match {MatchId} has no game mode, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.GameId);
-			return false;
-		}
-		
+		var tournament = game.Match.Tournament!;
+		int gameMode = tournament.Mode;
+
 		if (gameMode is < 0 or > 3)
 		{
-			_logger.Information("{Prefix} Match {MatchId} has an invalid game mode: {Mode}, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.Match.Mode, game.GameId);
+			_logger.Information("{Prefix} Tournament {TournamentId} has an invalid game mode: {Mode}, can't verify game {GameId}", _logPrefix, tournament.Id, tournament.Mode, game.GameId);
 			return false;
 		}
 		
 		if (gameMode != game.PlayMode)
 		{
-			_logger.Information("{Prefix} Match {MatchId} has a mismatched game mode: {Mode}, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.Match.Mode, game.GameId);
+			_logger.Information("{Prefix} Tournament {TournamentId} has a game mode that differs from game, can't verify game {GameId} [Tournament: Mode={TMode} | Game: Mode={GMode}", 
+				_logPrefix, tournament.Id, game.GameId, tournament.Mode, game.PlayMode);
 			return false;
 		}
 

@@ -157,6 +157,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 	                                                                                    .FirstOrDefaultAsync();
 
 	public async Task<Match?> GetFirstMatchNeedingAutoCheckAsync() => await _context.Matches
+	                                                                                .Include(x => x.Tournament)
 	                                                                                .Include(x => x.Games)
 	                                                                                .ThenInclude(x => x.MatchScores)
 	                                                                                .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)

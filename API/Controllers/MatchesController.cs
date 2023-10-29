@@ -63,7 +63,7 @@ public class MatchesController : Controller
 		}
 
 		// Gather tournament information
-		if(!verified && await _tournamentsService.ExistsAsync(wrapper.TournamentName, wrapper.Mode))
+		if (!verified && await _tournamentsService.ExistsAsync(wrapper.TournamentName, wrapper.Mode))
 		{
 			return BadRequest($"Tournament {wrapper.TournamentName} already exists for this mode");
 		}
