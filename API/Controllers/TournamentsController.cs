@@ -21,4 +21,12 @@ public class TournamentsController : Controller
 		await _service.PopulateAndLinkAsync();
 		return NoContent();
 	}
+
+	[HttpGet]
+	[AllowAnonymous]
+	public async Task<IActionResult> GetAsync()
+	{
+		var res = await _service.GetAllAsync();
+		return Ok(res);
+	}
 }

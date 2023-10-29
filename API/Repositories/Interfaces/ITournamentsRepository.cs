@@ -31,4 +31,6 @@ public interface ITournamentsRepository : IRepository<Tournament>
 	/// <returns>A list of <see cref="count"/> tournaments ordered by the player's average match cost, descending</returns>
 	Task<IEnumerable<Tournament>> GetTopPerformancesAsync(int count, int playerId, int mode, DateTime dateMin,
 		DateTime dateMax);
+
+	Task<IEnumerable<Tournament>> GetAllAsync();
 }

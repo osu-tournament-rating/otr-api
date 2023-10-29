@@ -24,8 +24,7 @@ public class StatsController : Controller
 		_playerStatsService = playerStatsService;
 	}
 	
-	// [Authorize]
-	[AllowAnonymous]
+	[Authorize]
 	[HttpGet("{osuId:long}")]
 	public async Task<ActionResult<PlayerStatsDTO>> GetAsync(long osuId, [FromQuery]int mode = 0, [FromQuery] DateTime? dateMin = null, [FromQuery] DateTime? dateMax = null)
 	{

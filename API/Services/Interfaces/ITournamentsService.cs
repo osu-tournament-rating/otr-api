@@ -1,4 +1,5 @@
 using API.Controllers;
+using API.DTOs;
 using API.Entities;
 
 namespace API.Services.Interfaces;
@@ -18,4 +19,5 @@ public interface ITournamentsService
 	/// <returns></returns>
 	public Task<Tournament> CreateOrUpdateAsync(BatchWrapper wrapper, bool updateExisting = false);
 	public Task<bool> ExistsAsync(string name, int mode);
+	Task<IEnumerable<TournamentDTO>> GetAllAsync();
 }
