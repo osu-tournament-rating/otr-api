@@ -24,7 +24,7 @@ jobs:
       run: dotnet build --no-restore
 
     - name: Test
-      run: dotnet test ./APITests/APITests.csproj --no-build --verbosity normal
+      run: dotnet test ./APITests/APITests.csproj --no-build --verbosity normal -e ConnectionStrings__DefaultConnection="${{ secrets.DEV_TEST_CONNECTION_STRING }}"
 
   publish:
     needs: build_test
