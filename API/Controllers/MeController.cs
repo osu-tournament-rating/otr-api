@@ -4,10 +4,7 @@ using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 
 namespace API.Controllers;
 
