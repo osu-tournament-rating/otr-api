@@ -97,7 +97,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 	{
 		int globalIndex = (await _context.BaseStats
 		                          .WhereMode(mode)
-		                          .OrderByMuDescending()
+		                          .OrderByRatingDescending()
 		                          .Select(x => x.Player.OsuId)
 		                          .ToListAsync())
 		                          .TakeWhile(x => x != osuPlayerId)
@@ -123,11 +123,11 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 	public async Task<DateTime> GetRecentCreatedDate(long osuPlayerId) =>
 		await _context.BaseStats.WhereOsuPlayerId(osuPlayerId).OrderByDescending(x => x.Created).Select(x => x.Created).FirstAsync();
 
-	public async Task<IEnumerable<BaseStats>> GetTopRatingsAsync(int page, int pageSize, int mode)
+	public async Task<IEnumerable<BaseStats>> GetLeaderboardAsync(int page, int pageSize, int mode)
 	{
 		return await _context.BaseStats
 		                   .WhereMode(mode)
-		                   .OrderByMuDescending()
+		                   .OrderByRatingDescending()
 		                   .Skip(page * pageSize)
 		                   .Take(pageSize)
 		                   .ToListAsync();

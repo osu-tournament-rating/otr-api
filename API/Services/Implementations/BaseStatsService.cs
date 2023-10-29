@@ -48,7 +48,7 @@ public class BaseStatsService : IBaseStatsService
 			return null;
 		}
 		
-		return new BaseStatsDTO(baseStats.Rating, baseStats.Volatility, baseStats.Mode,
+		return new BaseStatsDTO(id, baseStats.Rating, baseStats.Volatility, baseStats.Mode,
 			baseStats.Percentile, matchesPlayed, winRate, highestGlobalRank, baseStats.GlobalRank,
 			baseStats.CountryRank);
 	}
@@ -72,5 +72,17 @@ public class BaseStatsService : IBaseStatsService
 		return await _baseStatsRepository.BatchInsertAsync(toInsert);
 	}
 
+	public async Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(int mode, int page, int pageSize)
+	{
+		var baseStats = await _baseStatsRepository.GetLeaderboardAsync(page, pageSize, mode);
+		var leaderboard = new List<BaseStatsDTO?>();
+		
+		foreach (var baseStat in baseStats)
+		{
+			leaderboard.Add(await GetForPlayerAsync(baseStat.PlayerId, mode));
+		}
+
+		return leaderboard;
+	}
 	public async Task TruncateAsync() => await _baseStatsRepository.TruncateAsync();
 }

@@ -24,5 +24,5 @@ public interface IBaseStatsRepository : IRepository<BaseStats>
 	/// </summary>
 	/// <returns></returns>
 	Task<DateTime> GetRecentCreatedDate(long osuPlayerId);
-	Task<IEnumerable<BaseStats>> GetTopRatingsAsync(int page, int pageSize, int mode);
+	Task<IEnumerable<BaseStats>> GetLeaderboardAsync(int page, int pageSize, int mode);
 }

@@ -7,9 +7,10 @@ namespace API.DTOs;
 /// </summary>
 public class BaseStatsDTO
 {
-	public BaseStatsDTO(double rating, double volatility, int mode, double percentile,
+	public BaseStatsDTO(int playerId, double rating, double volatility, int mode, double percentile,
 		int matchesPlayed, double winRate, int highestGlobalRank, int globalRank, int countryRank)
 	{
+		PlayerId = playerId;
 		Rating = rating;
 		Volatility = volatility;
 		Mode = mode;
@@ -21,6 +22,7 @@ public class BaseStatsDTO
 		CountryRank = countryRank;
 	}
 	
+	public int PlayerId { get; set; }
 	public double Rating { get; set; }
 	public double Volatility { get; set; }
 	public int Mode { get; set; }

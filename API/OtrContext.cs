@@ -33,6 +33,23 @@ public partial class OtrContext : DbContext
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
+		modelBuilder.Entity<BaseStats>(entity =>
+		{
+			entity.HasKey(e => e.Id).HasName("BaseStats_pk");
+			entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+
+			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+			entity.HasOne(d => d.Player)
+			      .WithMany(p => p.Ratings)
+			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .HasConstraintName("BaseStats___fkplayerid");
+
+			entity.HasIndex(x => x.PlayerId);
+			entity.HasIndex(x => x.Rating).IsDescending();
+			entity.HasIndex(x => x.Mode);
+		});
+		
 		modelBuilder.Entity<Beatmap>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("beatmaps_pk");
@@ -162,21 +179,6 @@ public partial class OtrContext : DbContext
 			entity.HasIndex(e => e.PlayerId);
 			entity.HasIndex(e => e.MatchId);
 			entity.HasIndex(e => new { e.PlayerId, e.MatchId }).IsUnique();
-		});
-
-		modelBuilder.Entity<BaseStats>(entity =>
-		{
-			entity.HasKey(e => e.Id).HasName("BaseStats_pk");
-			entity.Property(e => e.Id).UseIdentityAlwaysColumn();
-
-			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-			entity.HasOne(d => d.Player)
-			      .WithMany(p => p.Ratings)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
-			      .HasConstraintName("BaseStats___fkplayerid");
-
-			entity.HasIndex(x => x.PlayerId);
 		});
 
 		modelBuilder.Entity<RatingHistory>(entity =>

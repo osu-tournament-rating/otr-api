@@ -12,5 +12,6 @@ public interface IBaseStatsService
 	Task<IEnumerable<BaseStatsDTO?>> GetForPlayerAsync(long osuPlayerId);
 	Task<BaseStatsDTO?> GetForPlayerAsync(int id, int mode);
 	Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats);
+	Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(int mode, int page, int pageSize);
 	Task TruncateAsync();
 }
