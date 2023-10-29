@@ -20,5 +20,12 @@ public class TournamentsService : ITournamentsService
 	public async Task PopulateAndLinkAsync() => await _repository.PopulateAndLinkAsync();
 	public async Task<Tournament> CreateOrUpdateAsync(BatchWrapper wrapper, bool updateExisting = false) => await _repository.CreateOrUpdateAsync(wrapper, updateExisting);
 	public async Task<bool> ExistsAsync(string name, int mode) => await _repository.ExistsAsync(name, mode);
-	public async Task<IEnumerable<TournamentDTO>> GetAllAsync() => _mapper.Map<IEnumerable<TournamentDTO>>(await _repository.GetAllAsync()); 
+
+	public async Task<IEnumerable<TournamentDTO>> GetAllAsync()
+	{
+		var items = await _repository.GetAllAsync();
+		items = items.OrderBy(x => x.Name);
+		
+		return _mapper.Map<IEnumerable<TournamentDTO>>(items);
+	}
 }
