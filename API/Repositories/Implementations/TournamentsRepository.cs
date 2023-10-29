@@ -59,7 +59,7 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		return await _context.Tournaments
 		                     .FromSqlRaw("SELECT DISTINCT t.* FROM tournaments t " +
 		                                 "INNER JOIN matches m ON m.tournament_id = t.id " +
-		                                 "INNER JOIN player_match_statistics pms ON pms.match_id = m.match_id " +
+		                                 "INNER JOIN player_match_stats pms ON pms.match_id = m.match_id " +
 		                                 "WHERE pms.player_id = {0} AND t.mode = {1} AND m.start_time >= {2} AND m.start_time <= {3}", playerId, mode, dateMin, dateMax)
 		                     .ToListAsync();
 	}
@@ -76,7 +76,7 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		return await _context.Tournaments
 		                     .FromSqlRaw("SELECT t.* FROM tournaments t " +
 		                                 "INNER JOIN matches m ON m.tournament_id = t.id " +
-		                                 "INNER JOIN match_rating_statistics rms ON rms.match_id = m.match_id " +
+		                                 "INNER JOIN match_rating_stats rms ON rms.match_id = m.match_id " +
 		                                 "WHERE rms.player_id = {0} AND t.mode = {1} AND m.start_time >= {2} AND m.start_time <= {3} " +
 		                                 "GROUP BY t.id " +
 		                                 "ORDER BY AVG(rms.match_cost) DESC " +

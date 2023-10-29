@@ -2,22 +2,56 @@ using API.DTOs;
 using API.Entities;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
-using AutoMapper;
 
 namespace API.Services.Implementations;
 
 public class BaseStatsService : IBaseStatsService
 {
-	private readonly IBaseStatsRepository _repository;
-	private readonly IMapper _mapper;
-	public BaseStatsService(IBaseStatsRepository repository, IMapper mapper)
+	private readonly IBaseStatsRepository _baseStatsRepository;
+	private readonly IPlayerMatchStatsRepository _matchStatsRepository;
+	private readonly IMatchRatingStatsRepository _ratingStatsRepository;
+	private readonly IPlayerRepository _playerRepository;
+
+	public BaseStatsService(IBaseStatsRepository baseStatsRepository, IPlayerMatchStatsRepository matchStatsRepository, IMatchRatingStatsRepository ratingStatsRepository,
+		IPlayerRepository playerRepository)
 	{
-		_repository = repository;
-		_mapper = mapper;
+		_baseStatsRepository = baseStatsRepository;
+		_matchStatsRepository = matchStatsRepository;
+		_ratingStatsRepository = ratingStatsRepository;
+		_playerRepository = playerRepository;
 	}
-	
-	public async Task<IEnumerable<BaseStatsDTO>> GetForPlayerAsync(long osuPlayerId) => _mapper.Map<IEnumerable<BaseStatsDTO>>(await _repository.GetForPlayerAsync(osuPlayerId));
-	public async Task<BaseStatsDTO?> GetForPlayerAsync(int id, int mode) => _mapper.Map<BaseStatsDTO?>(await _repository.GetForPlayerAsync(id, mode));
+
+	public async Task<IEnumerable<BaseStatsDTO?>> GetForPlayerAsync(long osuPlayerId)
+	{
+		int id = await _playerRepository.GetIdByOsuIdAsync(osuPlayerId);
+		var baseStats = await _baseStatsRepository.GetForPlayerAsync(osuPlayerId);
+		var ret = new List<BaseStatsDTO?>();
+
+		foreach (var stat in baseStats)
+		{
+			// One per mode
+			ret.Add(await GetForPlayerAsync(id, stat.Mode));
+		}
+
+		return ret;
+	}
+
+	public async Task<BaseStatsDTO?> GetForPlayerAsync(int id, int mode)
+	{
+		var baseStats = await _baseStatsRepository.GetForPlayerAsync(id, mode);
+		int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(id, mode);
+		double winRate = await _matchStatsRepository.WinRateAsync(id, mode);
+		int highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(id, mode);
+
+		if (baseStats == null)
+		{
+			return null;
+		}
+		
+		return new BaseStatsDTO(baseStats.Rating, baseStats.Volatility, baseStats.Mode,
+			baseStats.Percentile, matchesPlayed, winRate, highestGlobalRank, baseStats.GlobalRank,
+			baseStats.CountryRank);
+	}
 
 	public async Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats)
 	{
@@ -35,10 +69,8 @@ public class BaseStatsService : IBaseStatsService
 				CountryRank = item.CountryRank,
 			});
 		}
-		return await _repository.BatchInsertAsync(toInsert);
+		return await _baseStatsRepository.BatchInsertAsync(toInsert);
 	}
-	public async Task<IEnumerable<BaseStatsDTO>> GetAllAsync() => _mapper.Map<IEnumerable<BaseStatsDTO>>(await _repository.GetAllAsync());
-	public async Task TruncateAsync() => await _repository.TruncateAsync();
-	public async Task<DateTime> GetRecentCreatedDate(long osuPlayerId) => await _repository.GetRecentCreatedDate(osuPlayerId);
-	public async Task<int?> InsertOrUpdateAsync(int playerId, BaseStats baseStats) => await _repository.InsertOrUpdateForPlayerAsync(playerId, baseStats); 
+
+	public async Task TruncateAsync() => await _baseStatsRepository.TruncateAsync();
 }
