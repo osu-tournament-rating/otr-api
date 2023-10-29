@@ -113,7 +113,7 @@ public class MatchesControllerTests
 		var tournamentsRepository = new TournamentsRepository(_tournamentsRepositoryLoggerMock.Object, context, matchesRepository);
 		
 		var matchesService = new MatchesService(_matchesServiceLoggerMock.Object, matchesRepository, tournamentsRepository, _mapperMock.Object);
-		var tournamentsService = new TournamentsService(tournamentsRepository);
+		var tournamentsService = new TournamentsService(tournamentsRepository, Mock.Of<IMapper>());
 
 		var controller = new MatchesController(_loggerMock.Object, matchesService, tournamentsService);
 		return controller;
