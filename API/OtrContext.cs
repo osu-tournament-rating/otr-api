@@ -166,7 +166,7 @@ public partial class OtrContext : DbContext
 			entity.HasMany(e => e.Ratings).WithOne(r => r.Player);
 			entity.HasOne(e => e.User).WithOne(u => u.Player);
 
-			entity.HasIndex(x => x.OsuId);
+			entity.HasIndex(x => x.OsuId).IsUnique();
 		});
 
 		modelBuilder.Entity<PlayerMatchStats>(entity =>
@@ -178,8 +178,8 @@ public partial class OtrContext : DbContext
 			entity.HasOne(e => e.Match).WithMany(e => e.Stats).HasForeignKey(e => e.MatchId);
 
 			entity.HasIndex(e => e.PlayerId);
-			entity.HasIndex(e => e.MatchId);
 			entity.HasIndex(e => new { e.PlayerId, e.MatchId }).IsUnique();
+			entity.HasIndex(e => new { e.PlayerId, e.Won });
 		});
 
 		modelBuilder.Entity<RatingHistory>(entity =>

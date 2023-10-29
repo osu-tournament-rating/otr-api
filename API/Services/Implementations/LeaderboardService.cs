@@ -18,7 +18,7 @@ public class LeaderboardService : ILeaderboardService
 	
 	public async Task<IEnumerable<LeaderboardDTO>> GetLeaderboardAsync(int mode, int page, int pageSize)
 	{
-		var baseStats = await _baseStatsService.GetLeaderboardAsync(page, pageSize, mode);
+		var baseStats = await _baseStatsService.GetLeaderboardAsync(mode, page, pageSize);
 		var leaderboard = new List<LeaderboardDTO>();
 		foreach (var baseStat in baseStats)
 		{

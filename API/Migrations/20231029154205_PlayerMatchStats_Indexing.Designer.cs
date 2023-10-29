@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20231029154205_PlayerMatchStats_Indexing")]
+    partial class PlayerMatchStats_Indexing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -699,8 +702,7 @@ namespace API.Migrations
                     b.HasKey("Id")
                         .HasName("Player_pk");
 
-                    b.HasIndex("OsuId")
-                        .IsUnique();
+                    b.HasIndex("OsuId");
 
                     b.HasIndex(new[] { "OsuId" }, "Players_osuid")
                         .IsUnique();
