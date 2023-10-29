@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace API.Entities;
 
 [Table("base_stats")]
-[Index("PlayerId", "Mode", Name = "ratings_playerid_mode", IsUnique = true)]
 public class BaseStats
 {
 	[Key]

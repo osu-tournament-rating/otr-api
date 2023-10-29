@@ -45,6 +45,7 @@ public partial class OtrContext : DbContext
 			      .OnDelete(DeleteBehavior.ClientSetNull)
 			      .HasConstraintName("BaseStats___fkplayerid");
 
+			entity.HasIndex(x => new { x.PlayerId, x.Mode }).IsUnique();
 			entity.HasIndex(x => x.PlayerId);
 			entity.HasIndex(x => x.Rating).IsDescending();
 			entity.HasIndex(x => x.Mode);
