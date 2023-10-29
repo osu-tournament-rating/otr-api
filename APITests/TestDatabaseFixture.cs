@@ -12,7 +12,11 @@ public class TestDatabaseFixture : IDisposable
 	public TestDatabaseFixture()
 	{
 		// Set up configuration to provide the connection string to DbContext
+		#if DEBUG
 		var configBuilder = new ConfigurationBuilder().AddJsonFile("appsettings.json");
+		#else
+		var configBuilder = new ConfigurationBuilder().AddEnvironmentVariables();
+		#endif
 		Configuration = configBuilder.Build();
 	}
 	
