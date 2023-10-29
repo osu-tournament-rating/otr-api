@@ -91,7 +91,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		return await _context.SaveChangesAsync();
 	}
 
-	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE ratings RESTART IDENTITY;");
+	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE base_stats RESTART IDENTITY;");
 
 	public async Task<int> GetGlobalRankAsync(long osuPlayerId, int mode)
 	{

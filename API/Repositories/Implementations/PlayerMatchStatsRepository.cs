@@ -41,7 +41,7 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 		await _context.SaveChangesAsync();
 	}
 
-	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE player_match_statistics RESTART IDENTITY;");
+	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE player_match_stats RESTART IDENTITY;");
 
 	public async Task<int> CountMatchesPlayedAsync(int playerId, int mode) =>
 		await _context.PlayerMatchStats.Where(x => x.PlayerId == playerId && x.Match.Mode == mode).CountAsync();

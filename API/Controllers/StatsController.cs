@@ -1,5 +1,4 @@
 using API.DTOs;
-using API.Entities;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -51,7 +50,7 @@ public class StatsController : Controller
 		await _playerStatsService.BatchInsertAsync(postBody);
 		return Ok();
 	}
-
+	
 	[HttpDelete]
 	public async Task<IActionResult> TruncateAsync()
 	{

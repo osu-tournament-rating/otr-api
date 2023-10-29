@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20231028223420_Major__RemoveRatings_RemoveRatingHistory__RenameStats")]
+    partial class Major__RemoveRatings_RemoveRatingHistory__RenameStats
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,7 +73,7 @@ namespace API.Migrations
                         .HasColumnName("volatility");
 
                     b.HasKey("Id")
-                        .HasName("BaseStats_pk");
+                        .HasName("BaseStatistics_pk");
 
                     b.HasIndex("PlayerId");
 
@@ -521,7 +524,7 @@ namespace API.Migrations
                         .HasColumnName("volatility_change");
 
                     b.HasKey("Id")
-                        .HasName("match_rating_stats_pk");
+                        .HasName("match_rating_statistics_pk");
 
                     b.HasIndex("MatchId");
 
@@ -762,7 +765,7 @@ namespace API.Migrations
                         .HasColumnName("won");
 
                     b.HasKey("Id")
-                        .HasName("PlayerMatchStats_pk");
+                        .HasName("PlayerMatchStatistics_pk");
 
                     b.HasIndex("MatchId");
 
@@ -928,7 +931,7 @@ namespace API.Migrations
                         .WithMany("Ratings")
                         .HasForeignKey("PlayerId")
                         .IsRequired()
-                        .HasConstraintName("BaseStats___fkplayerid");
+                        .HasConstraintName("BaseStatistics___fkplayerid");
 
                     b.Navigation("Player");
                 });

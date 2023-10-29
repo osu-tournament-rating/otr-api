@@ -31,7 +31,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 		await _context.MatchRatingStats.AddRangeAsync(items);
 		await _context.SaveChangesAsync();
 	}
-	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE match_rating_statistics RESTART IDENTITY");
+	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE match_rating_stats RESTART IDENTITY");
 	public async Task<int> HighestGlobalRankAsync(int playerId, int mode) => await _context.MatchRatingStats
 	                                                                                       .Where(x => x.PlayerId == playerId && x.Match.Mode == mode)
 	                                                                                       .MaxAsync(x => x.GlobalRankAfter);

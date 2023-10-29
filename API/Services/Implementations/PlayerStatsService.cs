@@ -130,6 +130,7 @@ public class PlayerStatsService : IPlayerStatsService
 
 	public async Task TruncateAsync()
 	{
+		await _baseStatsService.TruncateAsync();
 		await _matchStatsRepository.TruncateAsync();
 		await _ratingStatsRepository.TruncateAsync();
 	}

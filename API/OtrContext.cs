@@ -109,7 +109,7 @@ public partial class OtrContext : DbContext
 
 		modelBuilder.Entity<MatchRatingStats>(entity =>
 		{
-			entity.HasKey(e => e.Id).HasName("match_rating_statistics_pk");
+			entity.HasKey(e => e.Id).HasName("match_rating_stats_pk");
 			entity.Property(e => e.Id).UseIdentityColumn();
 			
 			entity.HasOne(e => e.Player).WithMany(e => e.MatchRatingStats).HasForeignKey(e => e.PlayerId);
@@ -153,7 +153,7 @@ public partial class OtrContext : DbContext
 
 		modelBuilder.Entity<PlayerMatchStats>(entity =>
 		{
-			entity.HasKey(e => e.Id).HasName("PlayerMatchStatistics_pk");
+			entity.HasKey(e => e.Id).HasName("PlayerMatchStats_pk");
 			entity.Property(e => e.Id).UseIdentityColumn();
 			
 			entity.HasOne(e => e.Player).WithMany(e => e.MatchStats).HasForeignKey(e => e.PlayerId);
@@ -166,7 +166,7 @@ public partial class OtrContext : DbContext
 
 		modelBuilder.Entity<BaseStats>(entity =>
 		{
-			entity.HasKey(e => e.Id).HasName("BaseStatistics_pk");
+			entity.HasKey(e => e.Id).HasName("BaseStats_pk");
 			entity.Property(e => e.Id).UseIdentityAlwaysColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -174,7 +174,7 @@ public partial class OtrContext : DbContext
 			entity.HasOne(d => d.Player)
 			      .WithMany(p => p.Ratings)
 			      .OnDelete(DeleteBehavior.ClientSetNull)
-			      .HasConstraintName("BaseStatistics___fkplayerid");
+			      .HasConstraintName("BaseStats___fkplayerid");
 
 			entity.HasIndex(x => x.PlayerId);
 		});
