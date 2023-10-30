@@ -44,7 +44,7 @@ public class OsuMatchDataWorker : BackgroundService
 				
 				if(apiMatch == null && autoCheckMatch == null)
 				{
-					_logger.LogDebug("No matches need processing, sleeping for {Interval} seconds", INTERVAL_SECONDS);
+					_logger.LogTrace("No matches need processing, sleeping for {Interval} seconds", INTERVAL_SECONDS);
 					await Task.Delay(TimeSpan.FromSeconds(INTERVAL_SECONDS), cancellationToken);
 					continue;
 				}

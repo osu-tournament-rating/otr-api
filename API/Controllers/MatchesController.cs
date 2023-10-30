@@ -100,7 +100,7 @@ public class MatchesController : Controller
 	[Authorize(Roles = "Admin, System")]
 	public async Task<IActionResult> RefreshAutomationChecksAsync()
 	{
-		// Marks invalid matches as needing automation checks
+		// Marks all matches as needing automation checks
 		await _matchesService.RefreshAutomationChecks(false);
 		return Ok();
 	}
