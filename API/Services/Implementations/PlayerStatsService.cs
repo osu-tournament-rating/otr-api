@@ -187,7 +187,7 @@ public class PlayerStatsService : IPlayerStatsService
 			HighestGlobalRank = ratingStats.Min(x => x.GlobalRankAfter),
 			HighestCountryRank = ratingStats.Min(x => x.CountryRankAfter),
 			HighestPercentile = ratingStats.Max(x => x.PercentileAfter),
-			RatingGained = ratingStats.First().RatingAfter - ratingStats.Last().RatingAfter,
+			RatingGained = ratingStats.Last().RatingAfter - ratingStats.First().RatingAfter,
 			GamesWon = matchStats.Sum(x => x.GamesWon),
 			GamesLost = matchStats.Sum(x => x.GamesLost),
 			GamesPlayed = matchStats.Sum(x => x.GamesPlayed),
