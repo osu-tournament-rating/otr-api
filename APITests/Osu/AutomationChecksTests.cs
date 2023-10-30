@@ -9,11 +9,11 @@ using System.Diagnostics.CodeAnalysis;
 namespace APITests.Osu;
 
 [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method")]
-public class MatchAutomationChecksTests
+public class AutomationChecksTests
 {
 	private readonly Mock<IMatchesRepository> _matchesServiceMock = new();
 
-	public MatchAutomationChecksTests()
+	public AutomationChecksTests()
 	{
 		var tournament = new Tournament
 		{
@@ -143,6 +143,104 @@ public class MatchAutomationChecksTests
 		Assert.True(MatchAutomationChecks.HasTournament(match));
 	}
 
+	[Fact]
+	public void Match_FailsTournamentCheck_WithNullTournament()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament = null;
+		Assert.False(MatchAutomationChecks.HasTournament(match));
+	}
+
+	[Fact]
+	public void Match_FailsNameCheck()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Name = "STT4: (the voices are back) vs (la planta)";
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+
+	[Fact]
+	public void Match_FailsNameCheck_WithNullAbbreviation()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament!.Abbreviation = null;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+
+	[Fact]
+	public void Match_FailsNameCheck_WithEmptyAbbreviation()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament!.Abbreviation = string.Empty;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+
+	[Fact]
+	public void Match_FailsNameCheck_WithNullName()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Name = null;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+
+	[Fact]
+	public void Match_FailsNameCheck_WithEmptyName()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Name = string.Empty;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+
+	[Fact]
+	public void Match_NameCheck_ReturnsFalse_WhenNullAbbreviation()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament!.Abbreviation = null;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+	
+	[Fact]
+	public void Match_NameCheck_ReturnsFalse_WhenEmptyAbbreviation()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament!.Abbreviation = string.Empty;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+	
+	[Fact]
+	public void Match_NameCheck_ReturnsFalse_WhenNullName()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Name = null;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+	
+	[Fact]
+	public void Match_NameCheck_ReturnsFalse_WhenEmptyName()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Name = string.Empty;
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+	
+	[Fact]
+	public void Match_NameCheck_ReturnsFalse_WhenNameDoesNotStartWithAbbreviation()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Name = "STT4: (the voices are back) vs (la planta)";
+		match.Abbreviation = "STT3";
+		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
+	}
+
+	[Fact]
+	public void Match_NameCheck_ReturnsTrue_WhenValid()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		Assert.True(MatchAutomationChecks.PassesNameCheck(match));
+	}
+	
+	// Games
+	
 	[Fact]
 	public void Match_GameModeInvalid()
 	{
@@ -415,96 +513,6 @@ public class MatchAutomationChecksTests
 	}
 
 	[Fact]
-	public void Match_FailsNameCheck()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Name = "STT4: (the voices are back) vs (la planta)";
-		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
-	}
-
-	[Fact]
-	public void Match_FailsNameCheck_WithNullAbbreviation()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Tournament!.Abbreviation = null;
-		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
-	}
-
-	[Fact]
-	public void Match_FailsNameCheck_WithEmptyAbbreviation()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Tournament!.Abbreviation = string.Empty;
-		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
-	}
-
-	[Fact]
-	public void Match_FailsNameCheck_WithNullName()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Name = null;
-		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
-	}
-
-	[Fact]
-	public void Match_FailsNameCheck_WithEmptyName()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Name = string.Empty;
-		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
-	}
-
-	[Fact]
-	public void Match_NameCheck_ReturnsFalse_WhenNullAbbreviation()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Tournament!.Abbreviation = null;
-		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
-	}
-	
-	[Fact]
-	public void Match_NameCheck_ReturnsFalse_WhenEmptyAbbreviation()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Tournament!.Abbreviation = string.Empty;
-		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
-	}
-	
-	[Fact]
-	public void Match_NameCheck_ReturnsFalse_WhenNullName()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Name = null;
-		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
-	}
-	
-	[Fact]
-	public void Match_NameCheck_ReturnsFalse_WhenEmptyName()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Name = string.Empty;
-		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
-	}
-	
-	[Fact]
-	public void Match_NameCheck_ReturnsFalse_WhenNameDoesNotStartWithAbbreviation()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Name = "STT4: (the voices are back) vs (la planta)";
-		match.Abbreviation = "STT3";
-		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
-	}
-
-	[Fact]
-	public void Match_NameCheck_ReturnsTrue_WhenValid()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		Assert.True(MatchAutomationChecks.PassesNameCheck(match));
-	}
-	
-	// Games
-
-	[Fact]
 	public void Game_FailsTeamSizeCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -641,6 +649,29 @@ public class MatchAutomationChecksTests
 			foreach (var score in match.Games.SelectMany(x => x.MatchScores))
 			{
 				Assert.True(ScoreAutomationChecks.PassesModsCheck(score));
+			}
+		});
+	}
+	
+	[Fact]
+	public void Scores_FailScoreRequirementCheck()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		var forbiddenMods = new List<OsuEnums.Mods>
+		{
+			OsuEnums.Mods.Relax,
+			OsuEnums.Mods.Relax2,
+			OsuEnums.Mods.SpunOut,
+			OsuEnums.Mods.SuddenDeath,
+			OsuEnums.Mods.Perfect
+		};
+		
+		Assert.Multiple(() =>
+		{
+			foreach (var mod in forbiddenMods)
+			{
+				match.Games.First().MatchScores.First().EnabledMods = (int)mod;
+				Assert.False(ScoreAutomationChecks.PassesModsCheck(match.Games.First().MatchScores.First()));
 			}
 		});
 	}
