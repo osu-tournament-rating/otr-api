@@ -120,7 +120,7 @@ public static class GameAutomationChecks
 		// Ensure team size is valid
 		if (teamType == OsuEnums.TeamType.HeadToHead)
 		{
-			if (game.Match.TeamSize != 1)
+			if (game.Match.Tournament!.TeamSize != 1)
 			{
 				_logger.Information("{Prefix} Match {MatchId} has a HeadToHead team type, but team size is not 1, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.GameId);
 				return false;

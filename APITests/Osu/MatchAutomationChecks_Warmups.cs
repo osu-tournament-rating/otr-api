@@ -23,7 +23,19 @@ public class MatchAutomationChecks_Warmups
 
 	private static API.Entities.Match GetMatchForOsuMatch(OsuApiMatchData matchData)
 	{
+		var tournament = new Tournament()
+		{
+			Id = 28,
+			Name = "Stage's Tranquility Tournament 3",
+			Abbreviation = "STT3",
+			ForumUrl = "https://osu.ppy.sh/community/forums/topics/1567938?n=1",
+			RankRangeLowerBound = 10000,
+			Mode = 0,
+			TeamSize = 3
+		};
+		
 		var match = new API.Entities.Match();
+		match.Tournament = tournament;
 		match.MatchId = matchData.OsuApiMatch.MatchId;
 		match.Name = matchData.OsuApiMatch.Name;
 		match.StartTime = matchData.OsuApiMatch.StartTime;
