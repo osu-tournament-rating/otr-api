@@ -89,7 +89,9 @@ builder.Services.AddSingleton(configuration.CreateMapper());
 
 builder.Services.AddLogging();
 
+#if !DEBUG
 builder.Services.AddHostedService<OsuPlayerDataWorker>();
+#endif
 builder.Services.AddHostedService<OsuMatchDataWorker>();
 builder.Services.AddHostedService<OsuTrackApiWorker>();
 
