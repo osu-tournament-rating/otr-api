@@ -184,6 +184,50 @@ public class MatchAutomationChecksTests
 	}
 
 	[Fact]
+	public void Game_FailsTeamSizeCheck_WhenImbalancedRed()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Games.First().MatchScores.Add(new MatchScore()
+		{
+			PlayerId = -1,
+			Score = 500,
+			Team = (int) OsuEnums.Team.Red
+		});
+		
+		Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_FailsTeamSizeCheck_WhenImbalancedBlue()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Games.First().MatchScores.Add(new MatchScore
+		{
+			PlayerId = -1,
+			Score = 500,
+			Team = (int) OsuEnums.Team.Blue
+		});
+		
+		Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_FailsTeamSizeCheck_WhenDiffersFromTournamentSize()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament!.TeamSize = 4;
+		
+		Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_PassesTournamentCheck_WhenTournamentExists()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		Assert.True(GameAutomationChecks.PassesTournamentCheck(match.Games.First()));
+	}
+
+	[Fact]
 	public void Match_Games_PassModeCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -195,6 +239,137 @@ public class MatchAutomationChecksTests
 				Assert.True(GameAutomationChecks.PassesModeCheck(game));
 			}
 		});
+	}
+
+	[Fact]
+	public void Game_FailsModeCheck_WhenInvalidMode()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament!.Mode = 5;
+		
+		Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_FailsModeCheck_WhenDiffersFromTournamentMode()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament!.Mode = 1;
+		
+		Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_FailsScoringCheck_WhenComboScoring()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Games.First().ScoringType = (int)OsuEnums.ScoringType.Combo;
+		
+		Assert.False(GameAutomationChecks.PassesScoringTypeCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_FailsTeamTypeCheck_WhenTagTeamMode()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Games.First().TeamType = (int)OsuEnums.TeamType.TagTeamVs;
+		
+		Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
+		
+		match.Games.First().TeamType = (int)OsuEnums.TeamType.TagCoop;
+		Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_FailsTeamTypeCheck_WhenHeadToHead_And_TournamentSizeNotOne()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Games.First().TeamType = (int)OsuEnums.TeamType.HeadToHead;
+		match.Tournament!.TeamSize = 4;
+		
+		Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
+	}
+	
+	[Fact]
+	public void Game_PassesTeamTypeCheck_WhenHeadToHead_And_TournamentSizeIsOne()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Games.First().TeamType = (int)OsuEnums.TeamType.HeadToHead;
+		match.Tournament!.TeamSize = 1;
+		
+		Assert.True(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_FailsTeamSizeCheck_WhenInvalidTeamSizing()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament!.TeamSize = 0;
+		Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
+
+		match.Tournament!.TeamSize = 9;
+		Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_FailsTeamSizeCheck_WithAnyNoTeam()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Games.First().MatchScores.Add(new MatchScore()
+		{
+			PlayerId = -1,
+			Score = 500,
+			Team = (int) OsuEnums.Team.NoTeam
+		});
+		
+		Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_FailsTeamSizeCheck_WhenFourNoTeam_AndTeamSizeTwo()
+	{
+		// Set the game's scores to: 4 players with NoTeam and team size 2
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament!.TeamSize = 2;
+		
+		match.Games.First().MatchScores = new List<MatchScore>
+		{
+			new()
+			{
+				PlayerId = -1,
+				Score = 500,
+				Team = (int) OsuEnums.Team.NoTeam
+			},
+			new()
+			{
+				PlayerId = -1,
+				Score = 500,
+				Team = (int) OsuEnums.Team.NoTeam
+			},
+			new()
+			{
+				PlayerId = -1,
+				Score = 500,
+				Team = (int) OsuEnums.Team.NoTeam
+			},
+			new()
+			{
+				PlayerId = -1,
+				Score = 500,
+				Team = (int) OsuEnums.Team.NoTeam
+			}
+		};
+		 
+		Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
+	}
+	
+	[Fact]
+	public void Game_FailsTournamentCheck_WhenTournamentDoesNotExist()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament = null;
+		
+		Assert.False(GameAutomationChecks.PassesTournamentCheck(match.Games.First()));
 	}
 
 	[Fact]
@@ -413,6 +588,32 @@ public class MatchAutomationChecksTests
 		match.Tournament!.TeamSize = 2;
 
 		Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_FailsScoreSanity_WhenNoScores()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Games.First().MatchScores = new List<MatchScore>();
+
+		Assert.False(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_FailsScoreSanity_WhenAnyScoreIsInvalid()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Games.First().MatchScores.First().IsValid = false;
+
+		Assert.False(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
+	}
+	
+	[Fact]
+	public void Game_PassesScoreSanity_WhenAllScoresAreValid()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+
+		Assert.True(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
 	}
 	
 	// Scores
