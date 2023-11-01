@@ -485,6 +485,27 @@ public class AutomationChecksTests
 	}
 
 	[Fact]
+	public void Game_FailsScoringTypeCheck_WhenNotScoreV2()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		var badScoringTypes = new List<OsuEnums.ScoringType>
+		{
+			OsuEnums.ScoringType.Score,
+			OsuEnums.ScoringType.Combo,
+			OsuEnums.ScoringType.Accuracy
+		};
+		
+		Assert.Multiple(() =>
+		{
+			foreach (var scoringType in badScoringTypes)
+			{
+				match.Games.First().ScoringType = (int)scoringType;
+				Assert.False(GameAutomationChecks.PassesScoringTypeCheck(match.Games.First()));
+			}
+		});
+	}
+
+	[Fact]
 	public void Match_Games_PassModsCheck()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
