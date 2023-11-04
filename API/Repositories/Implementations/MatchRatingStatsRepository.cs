@@ -36,9 +36,12 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE match_rating_stats RESTART IDENTITY");
 	public async Task<int> HighestGlobalRankAsync(int playerId, int mode) => await _context.MatchRatingStats
 	                                                                                       .Where(x => x.PlayerId == playerId && x.Match.Mode == mode)
-	                                                                                       .MaxAsync(x => x.GlobalRankAfter);
+	                                                                                       .Select(x => x.GlobalRankAfter)
+	                                                                                       .DefaultIfEmpty()
+	                                                                                       .MaxAsync();
 
 	public async Task<DateTime?> GetOldestForPlayerAsync(int playerId, int mode) => await _context.MatchRatingStats
-	                                                                                       .Where(x => x.PlayerId == playerId && x.Match.Mode == mode)
-	                                                                                       .MinAsync(x => x.Match.StartTime); 
+	                                                                                       .Where(x => x.PlayerId == playerId && x.Match.Mode == mode && x.Match.StartTime != null)
+	                                                                                       .Select(x => x.Match.StartTime)
+	                                                                                       .MinAsync(); 
 }
