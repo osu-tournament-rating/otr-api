@@ -6,6 +6,7 @@ namespace API.DTOs;
 public class BaseStatsPostDTO
 {
 	public int PlayerId { get; set; }
+	public double MatchCostAverage { get; set; }
 	public double Rating { get; set; }
 	public double Volatility { get; set; }
 	public int Mode { get; set; }

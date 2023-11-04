@@ -6,6 +6,10 @@ namespace API.DTOs;
 public class AggregatePlayerMatchStatsDTO
 {
 	/// <summary>
+	///  The player's average match cost during the period.
+	/// </summary>
+	public double AverageMatchCostAggregate { get; set; }
+	/// <summary>
 	/// The peak rating achieved by the player during the period.
 	/// </summary>
 	public double HighestRating { get; set; }

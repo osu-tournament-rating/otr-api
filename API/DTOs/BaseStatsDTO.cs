@@ -8,7 +8,7 @@ namespace API.DTOs;
 public class BaseStatsDTO
 {
 	public BaseStatsDTO(int playerId, double rating, double volatility, int mode, double percentile,
-		int matchesPlayed, double winRate, int highestGlobalRank, int globalRank, int countryRank)
+		int matchesPlayed, double winRate, int highestGlobalRank, int globalRank, int countryRank, double averageMatchCost)
 	{
 		PlayerId = playerId;
 		Rating = rating;
@@ -20,6 +20,7 @@ public class BaseStatsDTO
 		HighestGlobalRank = highestGlobalRank;
 		GlobalRank = globalRank;
 		CountryRank = countryRank;
+		AverageMatchCost = averageMatchCost;
 	}
 	
 	public int PlayerId { get; set; }
@@ -32,6 +33,7 @@ public class BaseStatsDTO
 	public int HighestGlobalRank { get; set; }
 	public int GlobalRank { get; set; }
 	public int CountryRank { get; set; }
+	public double AverageMatchCost { get; set; }
 
 	public string Tier => RatingUtils.GetTier((int) Rating);
 	public string NextTier => RatingUtils.GetNextTier((int) Rating);

@@ -24,6 +24,8 @@ public class BaseStats
 	public int GlobalRank { get; set; }
 	[Column("country_rank")]
 	public int CountryRank { get; set; }
+	[Column("match_cost_average")]
+	public double MatchCostAverage { get; set; }
 	[Column("created", TypeName = "timestamp with time zone")]
 	public DateTime Created { get; set; }
 	[Column("updated", TypeName = "timestamp with time zone")]

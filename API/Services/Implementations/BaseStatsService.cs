@@ -50,7 +50,7 @@ public class BaseStatsService : IBaseStatsService
 		
 		return new BaseStatsDTO(id, baseStats.Rating, baseStats.Volatility, baseStats.Mode,
 			baseStats.Percentile, matchesPlayed, winRate, highestGlobalRank, baseStats.GlobalRank,
-			baseStats.CountryRank);
+			baseStats.CountryRank, baseStats.MatchCostAverage);
 	}
 
 	public async Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats)
@@ -61,6 +61,7 @@ public class BaseStatsService : IBaseStatsService
 			toInsert.Add(new BaseStats
 			{
 				PlayerId = item.PlayerId,
+				MatchCostAverage = item.MatchCostAverage,
 				Rating = item.Rating,
 				Volatility = item.Volatility,
 				Mode = item.Mode,

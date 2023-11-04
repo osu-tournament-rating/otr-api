@@ -183,6 +183,7 @@ public class PlayerStatsService : IPlayerStatsService
 		
 		return new AggregatePlayerMatchStatsDTO
 		{
+			AverageMatchCostAggregate = ratingStats.Average(x => x.MatchCost),
 			HighestRating = ratingStats.Max(x => x.RatingAfter),
 			HighestGlobalRank = ratingStats.Min(x => x.GlobalRankAfter),
 			HighestCountryRank = ratingStats.Min(x => x.CountryRankAfter),
