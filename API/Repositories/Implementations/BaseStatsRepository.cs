@@ -77,6 +77,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 			ls.Add(new BaseStats
 			{
 				PlayerId = stat.PlayerId,
+				MatchCostAverage = stat.MatchCostAverage,
 				Mode = stat.Mode,
 				Rating = stat.Rating,
 				Volatility = stat.Volatility,
