@@ -94,9 +94,9 @@ public static class GameAutomationChecks
 	
 	public static bool PassesScoringTypeCheck(Game game)
 	{
-		if (game.ScoringType == (int)OsuEnums.ScoringType.Combo)
+		if (game.ScoringType != (int)OsuEnums.ScoringType.ScoreV2)
 		{
-			_logger.Information("{Prefix} Match {MatchId} has a combo scoring type, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.GameId);
+			_logger.Information("{Prefix} Match {MatchId} does not have a ScoreV2 scoring type, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.GameId);
 			return false;
 		}
 		
