@@ -25,10 +25,10 @@ public class StatsController : Controller
 	}
 	
 	[Authorize]
-	[HttpGet("{osuId:long}")]
-	public async Task<ActionResult<PlayerStatsDTO>> GetAsync(long osuId, [FromQuery]int mode = 0, [FromQuery] DateTime? dateMin = null, [FromQuery] DateTime? dateMax = null)
+	[HttpGet("{playerId:long}")]
+	public async Task<ActionResult<PlayerStatsDTO>> GetAsync(int playerId, [FromQuery]int? comparerId, [FromQuery]int mode = 0, [FromQuery] DateTime? dateMin = null, [FromQuery] DateTime? dateMax = null)
 	{
-		return await _playerStatsService.GetAsync(osuId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
+		return await _playerStatsService.GetAsync(playerId, comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 	}
 	
 	[HttpPost("matchstats")]

@@ -13,6 +13,8 @@ public interface IPlayerMatchStatsRepository
 	/// <param name="dateMax"></param>
 	/// <returns></returns>
 	Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax);
+	Task<IEnumerable<PlayerMatchStats>> TeammateStatsAsync(int playerId, int teammateId, int mode, DateTime dateMin, DateTime dateMax);
+	Task<IEnumerable<PlayerMatchStats>> OpponentStatsAsync(int playerId, int opponentId, int mode, DateTime dateMin, DateTime dateMax);
 
 	/// <summary>
 	/// Returns whether the player won the match

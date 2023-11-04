@@ -10,4 +10,6 @@ public interface IMatchRatingStatsRepository
 	Task TruncateAsync();
 	Task<int> HighestGlobalRankAsync(int playerId, int mode);
 	Task<DateTime?> GetOldestForPlayerAsync(int playerId, int mode);
+	Task<IEnumerable<MatchRatingStats>> TeammateRatingStatsAsync(int playerId, int teammateId, int mode, DateTime dateMin, DateTime dateMax);
+	Task<IEnumerable<MatchRatingStats>> OpponentRatingStatsAsync(int playerId, int opponentId, int mode, DateTime dateMin, DateTime dateMax);
 }

@@ -21,6 +21,26 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 		                     .ToListAsync();
 	}
 
+	public async Task<IEnumerable<PlayerMatchStats>> TeammateStatsAsync(int playerId, int teammateId, int mode, DateTime dateMin,
+		DateTime dateMax)
+	{
+		return await _context.PlayerMatchStats
+		                     .Where(stats => stats.PlayerId == playerId && stats.TeammateIds.Contains(teammateId) && stats.Match.Mode == mode &&
+		                                     stats.Match.StartTime >= dateMin && stats.Match.StartTime <= dateMax)
+		                     .OrderBy(x => x.Match.StartTime)
+		                     .ToListAsync();
+	}
+
+	public async Task<IEnumerable<PlayerMatchStats>> OpponentStatsAsync(int playerId, int opponentId, int mode, DateTime dateMin,
+		DateTime dateMax)
+	{ 
+		return await _context.PlayerMatchStats
+		                     .Where(stats => stats.PlayerId == playerId && stats.OpponentIds.Contains(opponentId) && stats.Match.Mode == mode &&
+		                                     stats.Match.StartTime >= dateMin && stats.Match.StartTime <= dateMax)
+		                     .OrderBy(x => x.Match.StartTime)
+		                     .ToListAsync();
+	}
+
 	public async Task<bool> WonAsync(int playerId, int matchId)
 	{
 		return await _context.PlayerMatchStats

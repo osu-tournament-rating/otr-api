@@ -56,14 +56,14 @@ public class MeController : Controller
 	[HttpGet("stats")]
 	public async Task<ActionResult<PlayerStatsDTO>> GetStatsAsync([FromQuery]int mode = 0, [FromQuery] DateTime? dateMin = null, [FromQuery] DateTime? dateMax = null)
 	{
-		long? osuId = GetOsuId();
+		int? id = (await GetLoggedInUserAsync()).Value?.Id;
 		
-		if (!osuId.HasValue)
+		if (!id.HasValue)
 		{
-			return BadRequest("User's login seems corrupted, couldn't identify osuId.");
+			return BadRequest("User is not logged in or id coult not be retreived from logged in user.");
 		}
 
-		return await _playerStatsService.GetAsync(osuId.Value, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
+		return await _playerStatsService.GetAsync(id.Value, null, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 	}
 	
 	private DateTime FromTime(int offsetDays)

@@ -4,7 +4,9 @@ namespace API.Services.Interfaces;
 
 public interface IPlayerStatsService
 {
-	Task<PlayerStatsDTO> GetAsync(long osuPlayerId, int mode, DateTime dateMin, DateTime dateMax);
+	Task<PlayerStatsDTO> GetAsync(int playerId, int? comparerId, int mode, DateTime dateMin, DateTime dateMax);
+	Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(int playerId, int teammateId, int mode, DateTime dateMin, DateTime dateMax);
+	Task<PlayerOpponentComparisonDTO> GetOpponentComparisonAsync(int playerId, int opponentId, int mode, DateTime dateMin, DateTime dateMax);
 	Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody);
 	Task BatchInsertAsync(IEnumerable<MatchRatingStatsDTO> postBody);
 	Task BatchInsertAsync(IEnumerable<BaseStatsPostDTO> postBody);

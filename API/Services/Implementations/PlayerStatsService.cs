@@ -29,17 +29,71 @@ public class PlayerStatsService : IPlayerStatsService
 		_mapper = mapper;
 	}
 
-	public async Task<PlayerStatsDTO> GetAsync(long osuPlayerId, int mode, DateTime dateMin, DateTime dateMax)
+	public async Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(int playerId, int teammateId, int mode, DateTime dateMin,
+		DateTime dateMax)
 	{
-		int playerId = await _playerRepository.GetIdByOsuIdAsync(osuPlayerId);
+		var teammateRatingStats = (await _ratingStatsRepository.TeammateRatingStatsAsync(playerId, teammateId, mode, dateMin, dateMax)).ToList();
+		var teammateMatchStats = (await _matchStatsRepository.TeammateStatsAsync(playerId, teammateId, mode, dateMin, dateMax)).ToList();
+
+		int matchesPlayed = teammateMatchStats.Count;
+		int matchesWon = teammateMatchStats.Sum(x => x.Won ? 1 : 0);
+		int matchesLost = teammateMatchStats.Sum(x => x.Won ? 0 : 1);
+		double winRate = matchesWon / (double) matchesPlayed;
+
+		return new PlayerTeammateComparisonDTO
+		{
+			PlayerId = playerId,
+			TeammateId = teammateId,
+			GamesPlayed = teammateMatchStats.Sum(x => x.GamesPlayed),
+			MatchesPlayed = matchesPlayed,
+			MatchesWon = matchesWon,
+			MatchesLost = matchesLost,
+			RatingDelta = teammateRatingStats.Sum(x => x.RatingChange),
+			WinRate = winRate
+		};
+	}
+
+	public async Task<PlayerOpponentComparisonDTO> GetOpponentComparisonAsync(int playerId, int opponentId, int mode, DateTime dateMin,
+		DateTime dateMax)
+	{
+		var opponentRatingStats = (await _ratingStatsRepository.OpponentRatingStatsAsync(playerId, opponentId, mode, dateMin, dateMax)).ToList();
+		var opponentMatchStats = (await _matchStatsRepository.OpponentStatsAsync(playerId, opponentId, mode, dateMin, dateMax)).ToList();
+
+		int matchesWon = opponentMatchStats.Sum(x => x.Won ? 1 : 0);
+		int matchesPlayed = opponentMatchStats.Count;
+		double winRate = matchesWon / (double) matchesPlayed;
 		
+		return new PlayerOpponentComparisonDTO
+		{
+			PlayerId = playerId,
+			OpponentId = opponentId,
+			GamesPlayed = opponentMatchStats.Sum(x => x.GamesPlayed),
+			MatchesPlayed = matchesPlayed,
+			MatchesWon = matchesWon,
+			MatchesLost = opponentMatchStats.Sum(x => x.Won ? 0 : 1),
+			RatingDelta = opponentRatingStats.Sum(x => x.RatingChange),
+			WinRate = winRate
+		};
+	}
+
+	public async Task<PlayerStatsDTO> GetAsync(int playerId, int? comparerId, int mode, DateTime dateMin, DateTime dateMax)
+	{
 		var baseStats = await GetBaseStatsAsync(playerId, mode);
 		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin, dateMax);
 		var scoreStats = await GetScoreStatsAsync(playerId, mode, dateMin, dateMax);
 		var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin, dateMax);
 		var ratingStats = await GetRatingStatsAsync(playerId, mode, dateMin, dateMax);
+		
+		PlayerTeammateComparisonDTO? teammateComparison = null;
+		PlayerOpponentComparisonDTO? opponentComparison = null;
 
-		return new PlayerStatsDTO(baseStats, matchStats, scoreStats, tournamentStats, ratingStats);
+		if (comparerId != null)
+		{
+			teammateComparison = await GetTeammateComparisonAsync(playerId, comparerId.Value, mode, dateMin, dateMax);
+			opponentComparison = await GetOpponentComparisonAsync(playerId, comparerId.Value, mode, dateMin, dateMax);
+		}
+
+		return new PlayerStatsDTO(baseStats, matchStats, scoreStats, tournamentStats, ratingStats, teammateComparison, opponentComparison);
 	}
 
 	// Returns overall stats for the player, no need to filter by date.

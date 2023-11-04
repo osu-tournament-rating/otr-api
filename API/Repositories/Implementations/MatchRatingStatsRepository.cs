@@ -43,5 +43,27 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 	public async Task<DateTime?> GetOldestForPlayerAsync(int playerId, int mode) => await _context.MatchRatingStats
 	                                                                                       .Where(x => x.PlayerId == playerId && x.Match.Mode == mode && x.Match.StartTime != null)
 	                                                                                       .Select(x => x.Match.StartTime)
-	                                                                                       .MinAsync(); 
+	                                                                                       .MinAsync();
+
+	public async Task<IEnumerable<MatchRatingStats>> TeammateRatingStatsAsync(int playerId, int teammateId, int mode, DateTime dateMin, DateTime dateMax)
+	{
+		return await _context.MatchRatingStats
+		                     .Where(mrs => mrs.PlayerId == playerId)
+		                     .Where(mrs => _context.PlayerMatchStats
+		                                           .Any(pms => pms.PlayerId == mrs.PlayerId && pms.TeammateIds.Contains(teammateId) && pms.Match.Mode == mode && 
+		                                                       pms.Match.StartTime >= dateMin && pms.Match.StartTime <= dateMax))
+		                     .Distinct()
+		                     .ToListAsync();
+	}
+
+	public async Task<IEnumerable<MatchRatingStats>> OpponentRatingStatsAsync(int playerId, int opponentId, int mode, DateTime dateMin, DateTime dateMax)
+	{
+		return await _context.MatchRatingStats
+		                     .Where(mrs => mrs.PlayerId == playerId)
+		                     .Where(mrs => _context.PlayerMatchStats
+		                                           .Any(pms => pms.PlayerId == mrs.PlayerId && pms.OpponentIds.Contains(opponentId) && pms.Match.Mode == mode && 
+		                                                       pms.Match.StartTime >= dateMin && pms.Match.StartTime <= dateMax))
+		                     .Distinct()
+		                     .ToListAsync();
+	}
 }
