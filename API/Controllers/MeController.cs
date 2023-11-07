@@ -23,33 +23,33 @@ public class MeController : Controller
 		_playerStatsService = playerStatsService;
 	}
 	
-	private long? GetOsuId()
+	private int? GetId()
 	{
-		string? osuId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Name)?.Value;
-		if (osuId == null)
+		string? id = HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Name)?.Value;
+		if (id == null)
 		{
 			return null;
 		}
 		
-		if(!long.TryParse(osuId, out long osuPlayerId))
+		if(!int.TryParse(id, out int idInt))
 		{
 			return null;
 		}
 
-		return osuPlayerId;
+		return idInt;
 	}
 
 	[HttpGet]
 	public async Task<ActionResult<User>> GetLoggedInUserAsync()
 	{
-		long? osuId = GetOsuId();
+		int? id = GetId();
 		
-		if(!osuId.HasValue)
+		if(!id.HasValue)
 		{
 			return BadRequest("User's login seems corrupted, couldn't identify osuId.");
 		}
 
-		var user = await _userService.GetForPlayerAsync(osuId.Value);
+		var user = await _userService.GetForPlayerAsync(id.Value);
 		return Ok(user);
 	}
 	
@@ -64,10 +64,5 @@ public class MeController : Controller
 		}
 
 		return await _playerStatsService.GetAsync(id.Value, null, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
-	}
-	
-	private DateTime FromTime(int offsetDays)
-	{
-		return offsetDays < 0 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
 	}
 }

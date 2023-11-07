@@ -65,7 +65,12 @@ public class LoginController : Controller
 
 			var user = await AuthenticateUserAsync(player);
 
-			string tokenString = GenerateJSONWebToken(user, osuUserId.ToString());
+			if (user == null)
+			{
+				throw new Exception("Critical error, failed to fetch user from database");
+			}
+
+			string tokenString = GenerateJSONWebToken(user, user.Id.ToString());
 
 			bool secure = false;
 #if !DEBUG
@@ -112,7 +117,7 @@ public class LoginController : Controller
 		return Ok(new { token = tokenString });
 	}
 
-	private string GenerateJSONWebToken(User user, string name)
+	private string GenerateJSONWebToken(User? user, string name)
 	{
 		var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
 		var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -135,13 +140,13 @@ public class LoginController : Controller
 		var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
 			_configuration["Jwt:Issuer"],
 			claims,
-			expires: DateTime.Now.AddDays(1),
+			expires: DateTime.Now.AddDays(7),
 			signingCredentials: credentials);
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
 
-	private async Task<User> AuthenticateUserAsync(Player associatedPlayer)
+	private async Task<User?> AuthenticateUserAsync(Player associatedPlayer)
 	{
 		var user = await _userRepository.GetForPlayerAsync(associatedPlayer.Id);
 		if (user == null)
