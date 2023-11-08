@@ -40,7 +40,7 @@ public class MeController : Controller
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<User>> GetLoggedInUserAsync()
+	public async Task<ActionResult<MeDataDTO>> GetLoggedInUserAsync()
 	{
 		int? id = GetId();
 		
