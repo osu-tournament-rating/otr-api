@@ -56,11 +56,11 @@ public class MeController : Controller
 	[HttpGet("stats")]
 	public async Task<ActionResult<PlayerStatsDTO>> GetStatsAsync([FromQuery]int mode = 0, [FromQuery] DateTime? dateMin = null, [FromQuery] DateTime? dateMax = null)
 	{
-		int? id = (await GetLoggedInUserAsync()).Value?.Id;
+		int? id = GetId();
 		
 		if (!id.HasValue)
 		{
-			return BadRequest("User is not logged in or id coult not be retreived from logged in user.");
+			return BadRequest("User is not logged in or id could not be retreived from logged in user.");
 		}
 
 		return await _playerStatsService.GetAsync(id.Value, null, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);

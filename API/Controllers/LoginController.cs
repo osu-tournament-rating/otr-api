@@ -63,6 +63,11 @@ public class LoginController : Controller
 				});
 			}
 
+			if (player == null)
+			{
+				throw new Exception("Critical error, failed to fetch player from database when logging in");
+			}
+
 			var user = await AuthenticateUserAsync(player);
 
 			if (user == null)
@@ -70,7 +75,8 @@ public class LoginController : Controller
 				throw new Exception("Critical error, failed to fetch user from database");
 			}
 
-			string tokenString = GenerateJSONWebToken(user, user.Id.ToString());
+			// Safe to force not-null on PlayerId as we are not attempting a system login
+			string tokenString = GenerateJSONWebToken(user, user.PlayerId.ToString()!);
 
 			bool secure = false;
 #if !DEBUG

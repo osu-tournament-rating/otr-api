@@ -15,7 +15,12 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
 		_context = context;
 	}
 
-	public async Task<User?> GetForPlayerAsync(int playerId) => await _context.Users.FirstOrDefaultAsync(u => u.PlayerId == playerId);
+	public async Task<User?> GetForPlayerAsync(int playerId)
+	{
+		return await _context.Users
+		                     .Include(x => x.Player)
+		                     .FirstOrDefaultAsync(u => u.PlayerId == playerId);
+	}
 
 	public async Task<User?> GetForPlayerAsync(long osuId) => await _context.Users
 	                                                                        .AsNoTracking()
