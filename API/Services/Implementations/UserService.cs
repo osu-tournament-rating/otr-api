@@ -14,12 +14,19 @@ public class UserService : IUserService
 	public async Task<MeDataDTO?> GetForPlayerAsync(int playerId)
 	{
 		var user = await _repository.GetForPlayerAsync(playerId);
+
+		if (user == null)
+		{
+			return null;
+		}
+		
 		return new MeDataDTO
 		{
 			Id = user.PlayerId,
 			OsuCountry = user.Player.Country,
 			OsuId = user.Player.OsuId,
-			OsuPlayMode = 0 // TODO: Set to user's preferred mode
+			OsuPlayMode = 0, // TODO: Set to user's preferred mode
+			Username = user.Player.Username
 		};
 	}
 	public async Task<User?> GetForPlayerAsync(long osuId) => await _repository.GetForPlayerAsync(osuId);

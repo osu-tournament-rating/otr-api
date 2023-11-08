@@ -50,6 +50,12 @@ public class MeController : Controller
 		}
 
 		var user = await _userService.GetForPlayerAsync(id.Value);
+
+		if (user == null)
+		{
+			return NotFound("User not found");
+		}
+		
 		return Ok(user);
 	}
 	
