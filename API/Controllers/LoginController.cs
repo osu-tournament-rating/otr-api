@@ -37,7 +37,7 @@ public class LoginController : Controller
 		_userRepository = userRepository;
 		_osuClient = osuClient;
 	}
-
+	
 	[AllowAnonymous]
 	[HttpPost]
 	public async Task<IActionResult> Login([FromQuery] string code)
@@ -85,12 +85,16 @@ public class LoginController : Controller
 			Response.Cookies.Append("OTR-Access-Token", tokenString, new CookieOptions
 				{ HttpOnly = true, SameSite = SameSiteMode.Strict, Secure = secure, IsEssential = true});
 
+			if (HttpContext.Request.Headers.Authorization.Equals(_configuration["Auth:WebLoginAuthSecret"]))
+			{
+				return Ok(new { token = tokenString });
+			}
+			
 			return Ok();
 		}
-		catch (ApiException e)
+		catch (ApiException)
 		{
-			_logger.LogWarning(e, "Too many requests, aborting processing of login request");
-			return StatusCode(429, "Too many requests! This endpoint may be under stress.");
+			return StatusCode(429, "This code has already been consumed.");
 		}
 	}
 
@@ -151,7 +155,7 @@ public class LoginController : Controller
 
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
-
+	
 	private async Task<User?> AuthenticateUserAsync(Player associatedPlayer)
 	{
 		var user = await _userRepository.GetForPlayerAsync(associatedPlayer.Id);
