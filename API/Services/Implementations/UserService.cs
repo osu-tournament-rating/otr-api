@@ -26,7 +26,8 @@ public class UserService : IUserService
 			OsuCountry = user.Player.Country,
 			OsuId = user.Player.OsuId,
 			OsuPlayMode = 0, // TODO: Set to user's preferred mode
-			Username = user.Player.Username
+			Username = user.Player.Username,
+			Roles = user.Roles
 		};
 	}
 	public async Task<User?> GetForPlayerAsync(long osuId) => await _repository.GetForPlayerAsync(osuId);

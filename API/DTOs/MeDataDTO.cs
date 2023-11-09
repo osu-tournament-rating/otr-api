@@ -7,4 +7,5 @@ public class MeDataDTO
 	public string? OsuCountry { get; set; }
 	public int OsuPlayMode { get; set; }
 	public string? Username { get; set; }
+	public string[]? Roles { get; set; }
 }
