@@ -22,7 +22,7 @@ public class UserService : IUserService
 		
 		return new MeDataDTO
 		{
-			PlayerId = user.PlayerId,
+			Id = user.PlayerId,
 			UserId = user.Id,
 			OsuCountry = user.Player.Country,
 			OsuId = user.Player.OsuId,

@@ -2,7 +2,7 @@ namespace API.DTOs;
 
 public class MeDataDTO
 {
-	public int? PlayerId { get; set; }
+	public int? Id { get; set; }
 	public int? UserId { get; set; }
 	public long? OsuId { get; set; }
 	public string? OsuCountry { get; set; }
