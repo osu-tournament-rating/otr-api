@@ -22,7 +22,8 @@ public class UserService : IUserService
 		
 		return new MeDataDTO
 		{
-			Id = user.PlayerId,
+			PlayerId = user.PlayerId,
+			UserId = user.Id,
 			OsuCountry = user.Player.Country,
 			OsuId = user.Player.OsuId,
 			OsuPlayMode = 0, // TODO: Set to user's preferred mode
