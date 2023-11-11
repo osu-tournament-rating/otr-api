@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Entities;
+using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 
@@ -40,7 +41,7 @@ public class BaseStatsService : IBaseStatsService
 	{
 		var baseStats = await _baseStatsRepository.GetForPlayerAsync(id, mode);
 		int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(id, mode);
-		double winRate = await _matchStatsRepository.WinRateAsync(id, mode);
+		double winRate = await _matchStatsRepository.GlobalWinrateAsync(id, mode);
 		int highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(id, mode);
 
 		if (baseStats == null)
@@ -73,9 +74,9 @@ public class BaseStatsService : IBaseStatsService
 		return await _baseStatsRepository.BatchInsertAsync(toInsert);
 	}
 
-	public async Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(int mode, int page, int pageSize)
+	public async Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(int mode, int page, int pageSize, LeaderboardChartType chartType, LeaderboardFilterDTO filter)
 	{
-		var baseStats = await _baseStatsRepository.GetLeaderboardAsync(page, pageSize, mode);
+		var baseStats = await _baseStatsRepository.GetLeaderboardAsync(page, pageSize, mode, chartType, filter);
 		var leaderboard = new List<BaseStatsDTO?>();
 		
 		foreach (var baseStat in baseStats)

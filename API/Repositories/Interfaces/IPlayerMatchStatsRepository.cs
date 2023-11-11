@@ -15,14 +15,9 @@ public interface IPlayerMatchStatsRepository
 	Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax);
 	Task<IEnumerable<PlayerMatchStats>> TeammateStatsAsync(int playerId, int teammateId, int mode, DateTime dateMin, DateTime dateMax);
 	Task<IEnumerable<PlayerMatchStats>> OpponentStatsAsync(int playerId, int opponentId, int mode, DateTime dateMin, DateTime dateMax);
-
-	/// <summary>
-	/// Returns whether the player won the match
-	/// </summary>
-	Task<bool> WonAsync(int playerId, int matchId);
-	Task InsertAsync(PlayerMatchStats item);
 	Task InsertAsync(IEnumerable<PlayerMatchStats> items);
 	Task TruncateAsync();
-	Task<int> CountMatchesPlayedAsync(int playerId, int mode);
-	Task<double> WinRateAsync(int playerId, int mode);
+	Task<int> CountMatchesPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
+	Task<int> CountMatchesWonAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
+	Task<double> GlobalWinrateAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
 }

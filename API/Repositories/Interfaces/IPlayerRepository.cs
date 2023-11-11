@@ -23,4 +23,5 @@ public interface IPlayerRepository : IRepository<Player>
 	Task<string?> GetUsernameAsync(int? id);
 	Task<Dictionary<long,int>> GetIdMappingAsync();
 	Task<Dictionary<int, string?>> GetCountryMappingAsync();
+	Task<int> GetIdByUserIdAsync(int userId);
 }

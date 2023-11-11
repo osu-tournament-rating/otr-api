@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Entities;
+using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -76,21 +77,27 @@ public class PlayerStatsService : IPlayerStatsService
 		};
 	}
 
-	public async Task<PlayerStatsDTO> GetAsync(int playerId, int? comparerId, int mode, DateTime dateMin, DateTime dateMax)
+	public async Task<PlayerRankChartDTO> GetRankChartAsync(int playerId, int mode, LeaderboardChartType chartType, DateTime? dateMin = null,
+		DateTime? dateMax = null) => await _ratingStatsRepository.GetRankChartAsync(playerId, mode, chartType, dateMin, dateMax);
+
+	public async Task<PlayerStatsDTO> GetAsync(int playerId, int? comparerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null)
 	{
+		dateMin ??= DateTime.MinValue;
+		dateMax ??= DateTime.MaxValue;
+		
 		var baseStats = await GetBaseStatsAsync(playerId, mode);
-		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin, dateMax);
-		var scoreStats = await GetScoreStatsAsync(playerId, mode, dateMin, dateMax);
-		var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin, dateMax);
-		var ratingStats = await GetRatingStatsAsync(playerId, mode, dateMin, dateMax);
+		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+		var scoreStats = await GetScoreStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+		var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+		var ratingStats = await GetRatingStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		
 		PlayerTeammateComparisonDTO? teammateComparison = null;
 		PlayerOpponentComparisonDTO? opponentComparison = null;
 
 		if (comparerId != null)
 		{
-			teammateComparison = await GetTeammateComparisonAsync(playerId, comparerId.Value, mode, dateMin, dateMax);
-			opponentComparison = await GetOpponentComparisonAsync(playerId, comparerId.Value, mode, dateMin, dateMax);
+			teammateComparison = await GetTeammateComparisonAsync(playerId, comparerId.Value, mode, dateMin.Value, dateMax.Value);
+			opponentComparison = await GetOpponentComparisonAsync(playerId, comparerId.Value, mode, dateMin.Value, dateMax.Value);
 		}
 
 		return new PlayerStatsDTO(baseStats, matchStats, scoreStats, tournamentStats, ratingStats, teammateComparison, opponentComparison);
@@ -107,11 +114,11 @@ public class PlayerStatsService : IPlayerStatsService
 		}
 		
 		int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(playerId, mode);
-		double winRate = await _matchStatsRepository.WinRateAsync(playerId, mode);
+		double winRate = await _matchStatsRepository.GlobalWinrateAsync(playerId, mode);
 		int highestRank = await _ratingStatsRepository.HighestGlobalRankAsync(playerId, mode);
 		
 		dto.MatchesPlayed = matchesPlayed;
-		dto.WinRate = winRate;
+		dto.Winrate = winRate;
 		dto.HighestGlobalRank = highestRank;
 
 		return dto;

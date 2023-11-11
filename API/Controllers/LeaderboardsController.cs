@@ -20,8 +20,8 @@ public class LeaderboardsController : Controller
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<LeaderboardDTO>>> GetAsync([FromQuery]int mode, [FromQuery]int page = 0, [FromQuery]int pageSize = 25)
+	public async Task<ActionResult<IEnumerable<LeaderboardPlayerInfoDTO>>> GetAsync([FromQuery]LeaderboardRequestQueryDTO requestQuery)
 	{
-		return Ok(await _leaderboardService.GetLeaderboardAsync(mode, page, pageSize));
+		return Ok(await _leaderboardService.GetLeaderboardAsync(requestQuery));
 	}
 }

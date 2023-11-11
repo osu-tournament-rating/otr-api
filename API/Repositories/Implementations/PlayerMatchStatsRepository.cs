@@ -41,20 +41,6 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 		                     .ToListAsync();
 	}
 
-	public async Task<bool> WonAsync(int playerId, int matchId)
-	{
-		return await _context.PlayerMatchStats
-		                     .Where(stats => stats.PlayerId == playerId && stats.MatchId == matchId)
-		                     .Select(stats => stats.Won)
-		                     .FirstOrDefaultAsync();
-	}
-
-	public async Task InsertAsync(PlayerMatchStats item)
-	{
-		await _context.PlayerMatchStats.AddAsync(item);
-		await _context.SaveChangesAsync();
-	}
-
 	public async Task InsertAsync(IEnumerable<PlayerMatchStats> items)
 	{
 		await _context.PlayerMatchStats.AddRangeAsync(items);
@@ -63,13 +49,31 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 
 	public async Task TruncateAsync() => await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE player_match_stats RESTART IDENTITY;");
 
-	public async Task<int> CountMatchesPlayedAsync(int playerId, int mode) =>
-		await _context.PlayerMatchStats.Where(x => x.PlayerId == playerId && x.Match.Mode == mode).CountAsync();
-
-	public async Task<double> WinRateAsync(int playerId, int mode)
+	public async Task<int> CountMatchesPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null)
 	{
-		int matchesPlayed = await CountMatchesPlayedAsync(playerId, mode);
-		int matchesWon = await _context.PlayerMatchStats.Where(x => x.PlayerId == playerId && x.Match.Mode == mode && x.Won).CountAsync();
+		dateMin ??= DateTime.MinValue;
+		dateMax ??= DateTime.MaxValue;
+		
+		return await _context.PlayerMatchStats.Where(x => x.PlayerId == playerId && x.Match.Mode == mode && 
+		                                                  x.Match.StartTime >= dateMin && x.Match.StartTime <= dateMax).CountAsync();
+	}
+	
+	public async Task<int> CountMatchesWonAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null)
+	{
+		dateMin ??= DateTime.MinValue;
+		dateMax ??= DateTime.MaxValue;
+		
+		return await _context.PlayerMatchStats.Where(x => x.PlayerId == playerId && x.Match.Mode == mode && x.Won && 
+		                                                  x.Match.StartTime >= dateMin && x.Match.StartTime <= dateMax).CountAsync();
+	}
+
+	public async Task<double> GlobalWinrateAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null)
+	{
+		dateMin ??= DateTime.MinValue;
+		dateMax ??= DateTime.MaxValue;
+		
+		int matchesPlayed = await CountMatchesPlayedAsync(playerId, mode, dateMin, dateMax);
+		int matchesWon = await CountMatchesWonAsync(playerId, mode, dateMin, dateMax);
 		
 		if (matchesPlayed == 0)
 		{

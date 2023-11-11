@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Enums;
 
 namespace API.Services.Interfaces;
 
@@ -12,6 +13,6 @@ public interface IBaseStatsService
 	Task<IEnumerable<BaseStatsDTO?>> GetForPlayerAsync(long osuPlayerId);
 	Task<BaseStatsDTO?> GetForPlayerAsync(int id, int mode);
 	Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats);
-	Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(int mode, int page, int pageSize);
+	Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(int mode, int page, int pageSize, LeaderboardChartType chartType, LeaderboardFilterDTO filter);
 	Task TruncateAsync();
 }

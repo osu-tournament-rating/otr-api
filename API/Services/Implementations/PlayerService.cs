@@ -45,6 +45,11 @@ public class PlayerService : IPlayerService
 		return result;
 	}
 
+	public async Task<int?> GetIdAsync(int userId)
+	{
+		return await _playerRepository.GetIdByUserIdAsync(userId);
+	}
+
 	public async Task<long?> GetOsuIdAsync(int id)
 	{
 		long result = await _playerRepository.GetOsuIdByIdAsync(id);

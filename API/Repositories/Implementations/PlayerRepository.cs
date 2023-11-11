@@ -113,7 +113,12 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	public async Task<string?> GetUsernameAsync(long? osuId) => await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
 	public async Task<string?> GetUsernameAsync(int? id) => await _context.Players.Where(p => p.Id == id).Select(p => p.Username).FirstOrDefaultAsync(); 
 	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.OsuId, p => p.Id);
-	public async Task<Dictionary<int, string?>> GetCountryMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.Id, p => p.Country); 
+	public async Task<Dictionary<int, string?>> GetCountryMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.Id, p => p.Country);
+
+	public async Task<int> GetIdByUserIdAsync(int userId) => await _context.Players.AsNoTracking()
+	                                                                       .Where(x => x.User != null && x.User.Id == userId)
+	                                                                       .Select(x => x.Id)
+	                                                                       .FirstOrDefaultAsync();
 
 	// This is used by a scheduled task to automatically populate user info, such as username, country, etc.
 	public async Task<IEnumerable<Player>> GetOutdatedAsync() => await _context.Players.Where(p => p.Updated == null).ToListAsync();

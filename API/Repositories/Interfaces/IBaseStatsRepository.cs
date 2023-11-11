@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Entities;
+using API.Enums;
 
 namespace API.Repositories.Interfaces;
 
@@ -24,5 +25,5 @@ public interface IBaseStatsRepository : IRepository<BaseStats>
 	/// </summary>
 	/// <returns></returns>
 	Task<DateTime> GetRecentCreatedDate(long osuPlayerId);
-	Task<IEnumerable<BaseStats>> GetLeaderboardAsync(int page, int pageSize, int mode);
+	Task<IEnumerable<BaseStats>> GetLeaderboardAsync(int page, int pageSize, int mode, LeaderboardChartType chartType, LeaderboardFilterDTO? filter);
 }

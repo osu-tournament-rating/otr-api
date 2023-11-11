@@ -12,6 +12,7 @@ public interface IPlayerService
 	Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode);
 	Task<string?> GetUsernameAsync(long osuId);
 	Task<int?> GetIdAsync(long osuId);
+	Task<int?> GetIdAsync(int userId);
 	Task<long?> GetOsuIdAsync(int id);
 	/// <summary>
 	/// A unique mapping of osu! user ids to our internal ids.
