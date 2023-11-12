@@ -2,14 +2,16 @@ namespace API.Utilities;
 
 public static class RatingUtils
 {
-	public const int RatingBronze = 499;
-	public const int RatingSilver = 899;
-	public const int RatingGold = 1299;
-	public const int RatingPlatinum = 1599;
-	public const int RatingDiamond = 1899;
-	public const int RatingMaster = 2199;
-	public const int RatingGrandmaster = 2499;
-	public const int RatingEliteGrandmaster = 2799;
+	// Players at or below the threshold are considered to be in the previous tier
+	
+	// public const int RatingBronze = 500;
+	public const int RatingSilver = 900;
+	public const int RatingGold = 1300;
+	public const int RatingPlatinum = 1600;
+	public const int RatingDiamond = 1900;
+	public const int RatingMaster = 2200;
+	public const int RatingGrandmaster = 2500;
+	public const int RatingEliteGrandmaster = 2800;
 	
 	public static string GetTier(double rating) => rating switch
 	{
@@ -56,7 +58,7 @@ public static class RatingUtils
 	/// <returns></returns>
 	public static double GetRatingDelta(double rating) => rating switch
 	{
-		< RatingSilver => RatingSilver - RatingBronze,
+		< RatingSilver => RatingSilver/* - RatingBronze*/,
 		< RatingGold => RatingGold - RatingSilver,
 		< RatingPlatinum => RatingPlatinum - RatingGold,
 		< RatingDiamond => RatingDiamond - RatingPlatinum,

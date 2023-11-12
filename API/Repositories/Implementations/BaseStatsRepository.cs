@@ -141,6 +141,11 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 			baseQuery = FilterByRank(baseQuery, filter.MinRank, filter.MaxRank, chartType);
 			baseQuery = FilterByRating(baseQuery, filter.MinRating, filter.MaxRating);
 			baseQuery = FilterByMatchesPlayed(baseQuery, filter.MinMatches, filter.MaxMatches);
+
+			if (filter.TierFilters != null)
+			{
+				baseQuery = FilterByTier(baseQuery, filter.TierFilters);
+			}
 			// baseQuery = FilterByWinrate(baseQuery, filter.MinWinrate, filter.MaxWinrate);
 		}
 		
@@ -239,4 +244,91 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 	//
 	// 	return query;
 	// }
+
+	private IQueryable<BaseStats> FilterByTier(IQueryable<BaseStats> query, LeaderboardTierFilterDTO tierFilter)
+	{
+		// Filter for Bronze tier
+		if (tierFilter.FilterBronze == true)
+		{
+			query = query.Where(x => x.Rating < RatingUtils.RatingSilver);
+		}
+		else if (tierFilter.FilterBronze == false)
+		{
+			query = query.Where(x => x.Rating >= RatingUtils.RatingSilver);
+		}
+
+		// Filter for Silver tier
+		if (tierFilter.FilterSilver == true)
+		{
+			query = query.Where(x => x.Rating >= RatingUtils.RatingSilver && x.Rating < RatingUtils.RatingGold);
+		}
+		else if (tierFilter.FilterSilver == false)
+		{
+			query = query.Where(x => x.Rating < RatingUtils.RatingSilver || x.Rating >= RatingUtils.RatingGold);
+		}
+
+		// Filter for Gold tier
+		if (tierFilter.FilterGold == true)
+		{
+			query = query.Where(x => x.Rating >= RatingUtils.RatingGold && x.Rating < RatingUtils.RatingPlatinum);
+		}
+		else if (tierFilter.FilterGold == false)
+		{
+			query = query.Where(x => x.Rating < RatingUtils.RatingGold || x.Rating >= RatingUtils.RatingPlatinum);
+		}
+
+		// Filter for Platinum tier
+		if (tierFilter.FilterPlatinum == true)
+		{
+			query = query.Where(x => x.Rating >= RatingUtils.RatingPlatinum && x.Rating < RatingUtils.RatingDiamond);
+		}
+		else if (tierFilter.FilterPlatinum == false)
+		{
+			query = query.Where(x => x.Rating < RatingUtils.RatingPlatinum || x.Rating >= RatingUtils.RatingDiamond);
+		}
+
+		// Filter for Diamond tier
+		if (tierFilter.FilterDiamond == true)
+		{
+			query = query.Where(x => x.Rating >= RatingUtils.RatingDiamond && x.Rating < RatingUtils.RatingMaster);
+		}
+		else if (tierFilter.FilterDiamond == false)
+		{
+			query = query.Where(x => x.Rating < RatingUtils.RatingDiamond || x.Rating >= RatingUtils.RatingMaster);
+		}
+
+		// Filter for Master tier
+		if (tierFilter.FilterMaster == true)
+		{
+			query = query.Where(x => x.Rating >= RatingUtils.RatingMaster && x.Rating < RatingUtils.RatingGrandmaster);
+		}
+		else if (tierFilter.FilterMaster == false)
+		{
+			query = query.Where(x => x.Rating < RatingUtils.RatingMaster || x.Rating >= RatingUtils.RatingGrandmaster);
+		}
+
+		// Filter for Grandmaster tier
+		if (tierFilter.FilterGrandmaster == true)
+		{
+			query = query.Where(x => x.Rating >= RatingUtils.RatingGrandmaster && x.Rating < RatingUtils.RatingEliteGrandmaster);
+		}
+		else if (tierFilter.FilterGrandmaster == false)
+		{
+			query = query.Where(x => x.Rating < RatingUtils.RatingGrandmaster || x.Rating >= RatingUtils.RatingEliteGrandmaster);
+		}
+
+		// Filter for Elite Grandmaster tier
+		if (tierFilter.FilterEliteGrandmaster == true)
+		{
+			query = query.Where(x => x.Rating >= RatingUtils.RatingEliteGrandmaster);
+		}
+		else if (tierFilter.FilterEliteGrandmaster == false)
+		{
+			query = query.Where(x => x.Rating < RatingUtils.RatingEliteGrandmaster);
+		}
+
+		return query;
+	}
+
+
 }

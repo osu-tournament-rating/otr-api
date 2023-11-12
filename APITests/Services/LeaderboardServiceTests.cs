@@ -135,27 +135,6 @@ public class LeaderboardServiceTests
 		Assert.All(result.PlayerInfo, pInfo => Assert.True(pInfo.GlobalRank >= minRank && pInfo.GlobalRank <= maxRank));
 	}
 
-	[Fact]
-	public async Task Leaderboard_ThrowsException_WhenInvalidRankFilter()
-	{
-		const int minRank = 100;
-		const int maxRank = 1;
-
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
-		{
-			Filter = new LeaderboardFilterDTO
-			{
-				MinRank = minRank,
-				MaxRank = maxRank
-			}
-		};
-
-		await Assert.ThrowsAsync<ArgumentException>(() => service.GetLeaderboardAsync(query));
-	}
-
 	[Theory] [MemberData(nameof(InvalidQueryFilter))]
 	public async Task Leaderboard_ThrowsException_WhenInvalidFilter(LeaderboardFilterDTO filter)
 	{
@@ -170,6 +149,46 @@ public class LeaderboardServiceTests
 		await Assert.ThrowsAsync<ArgumentException>(() => service.GetLeaderboardAsync(query));
 	}
 
+	[Theory] [MemberData(nameof(ForceIncludeTieredQueryFilters))]
+	public async Task Leaderboard_ContainsOnlyExplicitPlayers_WhenFilterForced(LeaderboardTierFilterDTO filter, string tier)
+	{
+		using var context = _fixture.CreateContext();
+		var service = ServiceInstances.LeaderboardService(context);
+
+		var query = new LeaderboardRequestQueryDTO
+		{
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = filter
+			}
+		};
+
+		var result = await service.GetLeaderboardAsync(query);
+
+		Assert.All(result.PlayerInfo, pInfo => Assert.Equal(tier, pInfo.Tier));
+	}
+
+	[Theory] [MemberData(nameof(ForceExcludeQueryFilters))]
+	public async Task Leaderboard_DoesNotContainPlayers_WhenTierExcluded(LeaderboardTierFilterDTO filter, string tier)
+	{
+		// This test is kinda crappy, but it's the best we can do for now.
+		using var context = _fixture.CreateContext();
+		var service = ServiceInstances.LeaderboardService(context);
+
+		var query = new LeaderboardRequestQueryDTO
+		{
+			PageSize = 10,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = filter
+			}
+		};
+
+		var result = await service.GetLeaderboardAsync(query);
+
+		Assert.All(result.PlayerInfo, pInfo => Assert.NotEqual(tier, pInfo.Tier));
+	}
+	
 	public static IEnumerable<object[]> InvalidQueryFilter => new List<object[]>
 	{
 		new object[] { new LeaderboardFilterDTO { MinRank = 0 } },
@@ -186,5 +205,91 @@ public class LeaderboardServiceTests
 		new object[] { new LeaderboardFilterDTO { MinWinrate = 1.1 } },
 		new object[] { new LeaderboardFilterDTO { MaxWinrate = 1.1 } },
 		new object[] { new LeaderboardFilterDTO { MinWinrate = 0.5, MaxWinrate = 0.4 } }
+	};
+	public static IEnumerable<object[]> ForceIncludeTieredQueryFilters => new List<object[]>
+	{
+		new object[]
+		{
+			new LeaderboardTierFilterDTO
+			{
+				FilterBronze = true, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterEliteGrandmaster = false
+			},
+			"Bronze"
+		},
+		new object[]
+		{
+			new LeaderboardTierFilterDTO
+			{
+				FilterBronze = false, FilterSilver = true, FilterGold = false, FilterPlatinum = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterEliteGrandmaster = false
+			},
+			"Silver"
+		},
+		new object[]
+		{
+			new LeaderboardTierFilterDTO
+			{
+				FilterBronze = false, FilterSilver = false, FilterGold = true, FilterPlatinum = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterEliteGrandmaster = false
+			},
+			"Gold"
+		},
+		new object[]
+		{
+			new LeaderboardTierFilterDTO
+			{
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = true, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterEliteGrandmaster = false
+			},
+			"Platinum"
+		},
+		new object[]
+		{
+			new LeaderboardTierFilterDTO
+			{
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterDiamond = true, FilterMaster = false, FilterGrandmaster = false,
+				FilterEliteGrandmaster = false
+			},
+			"Diamond"
+		},
+		new object[]
+		{
+			new LeaderboardTierFilterDTO
+			{
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterDiamond = false, FilterMaster = true, FilterGrandmaster = false,
+				FilterEliteGrandmaster = false
+			},
+			"Master"
+		},
+		new object[]
+		{
+			new LeaderboardTierFilterDTO
+			{
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = true,
+				FilterEliteGrandmaster = false
+			},
+			"Grandmaster"
+		},
+		new object[]
+		{
+			new LeaderboardTierFilterDTO
+			{
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterEliteGrandmaster = true
+			},
+			"Elite Grandmaster"
+		}
+	};
+	public static IEnumerable<object[]> ForceExcludeQueryFilters => new List<object[]>
+	{
+		new object[] { new LeaderboardTierFilterDTO { FilterBronze = false }, "Bronze" },
+		new object[] { new LeaderboardTierFilterDTO { FilterSilver = false }, "Silver" },
+		new object[] { new LeaderboardTierFilterDTO { FilterGold = false }, "Gold" },
+		new object[] { new LeaderboardTierFilterDTO { FilterPlatinum = false }, "Platinum" },
+		new object[] { new LeaderboardTierFilterDTO { FilterDiamond = false }, "Diamond" },
+		new object[] { new LeaderboardTierFilterDTO { FilterMaster = false }, "Master" },
+		new object[] { new LeaderboardTierFilterDTO { FilterGrandmaster = false }, "Grandmaster" },
+		new object[] { new LeaderboardTierFilterDTO { FilterEliteGrandmaster = false }, "Elite Grandmaster" }
 	};
 }
