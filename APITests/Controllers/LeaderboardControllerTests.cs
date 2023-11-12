@@ -1,10 +1,6 @@
-using API;
-using API.Controllers;
-using API.Repositories.Implementations;
-using API.Services.Implementations;
+using API.DTOs;
 using APITests.Instances;
-using AutoMapper;
-using Moq;
+using Microsoft.AspNetCore.Mvc;
 
 namespace APITests.Controllers;
 
@@ -20,5 +16,21 @@ public class LeaderboardControllerTests
 	{
 		using var context = _fixture.CreateContext();
 		var controller = ControllerInstances.LeaderboardsController(context);
+
+		var query = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0
+		};
+
+		var actionResult = await controller.GetAsync(query);
+
+		Assert.IsType<OkObjectResult>(actionResult.Result);
+
+		var okResult = actionResult.Result as OkObjectResult;
+		Assert.IsType<LeaderboardDTO>(okResult!.Value);
+
+		var leaderboard = okResult.Value as LeaderboardDTO;
+		
+		Assert.All(leaderboard!.PlayerInfo, pInfo => Assert.Equal(0, pInfo.Mode));
 	}
 }

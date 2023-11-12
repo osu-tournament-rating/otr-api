@@ -62,7 +62,8 @@ public class LeaderboardService : ILeaderboardService
 				Name = name ?? "<Unknown>",
 				Rating = baseStat.Rating,
 				Tier = baseStat.Tier,
-				WinRate = baseStat.Winrate
+				WinRate = baseStat.Winrate,
+				Mode = baseStat.Mode
 			});
 		}
 
