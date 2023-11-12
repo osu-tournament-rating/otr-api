@@ -27,7 +27,7 @@ public class LeaderboardService : ILeaderboardService
 	{
 		var leaderboard = new LeaderboardDTO
 		{
-			Mode = requestQuery.Mode,
+			Mode = requestQuery.Mode
 		};
 		
 		if (requestQuery.UserId.HasValue)
