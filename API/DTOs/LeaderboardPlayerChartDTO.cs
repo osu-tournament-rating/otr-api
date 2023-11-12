@@ -13,6 +13,6 @@ public class LeaderboardPlayerChartDTO
 	public int Matches { get; set; }
 	public double Winrate { get; set; }
 	public int HighestRank { get; set; }
-	public PlayerRankChartDTO RankChart { get; set; } = new();
 	public string Tier => RatingUtils.GetTier(Rating);
+	public PlayerRankChartDTO RankChart { get; set; } = new();
 }
