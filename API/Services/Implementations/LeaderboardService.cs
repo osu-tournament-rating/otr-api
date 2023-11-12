@@ -25,6 +25,8 @@ public class LeaderboardService : ILeaderboardService
 	
 	public async Task<LeaderboardDTO> GetLeaderboardAsync(LeaderboardRequestQueryDTO requestQuery)
 	{
+		ValidateRequest(requestQuery);
+		
 		var leaderboard = new LeaderboardDTO
 		{
 			Mode = requestQuery.Mode
@@ -69,6 +71,54 @@ public class LeaderboardService : ILeaderboardService
 
 		leaderboard.PlayerInfo = leaderboardPlayerInfo;
 		return leaderboard;
+	}
+
+	private void ValidateRequest(LeaderboardRequestQueryDTO query)
+	{
+		if (query.Filter.MinRank < 1 || query.Filter.MinRank > query.Filter.MaxRank)
+		{
+			throw new ArgumentException("MinRank must be greater than 0 and less than MaxRank", nameof(query.Filter.MinRank));
+		}
+
+		if (query.Filter.MaxRank < 1 || query.Filter.MaxRank < query.Filter.MinRank)
+		{
+			throw new ArgumentException("MaxRank must be greater than 0 and greater than MinRank", nameof(query.Filter.MaxRank));
+		}
+
+		if (query.Filter.MinRating < 0 || query.Filter.MinRating > query.Filter.MaxRating)
+		{
+			throw new ArgumentException("MinRating must be greater than 0 and less than MaxRating", nameof(query.Filter.MinRating));
+		}
+
+		if (query.Filter.MaxRating < 0 || query.Filter.MaxRating < query.Filter.MinRating)
+		{
+			throw new ArgumentException("MaxRating must be greater than 0 and greater than MinRating", nameof(query.Filter.MaxRating));
+		}
+
+		if (query.Filter.MinMatches < 0 || query.Filter.MinMatches > query.Filter.MaxMatches)
+		{
+			throw new ArgumentException("MinMatches must be greater than 0 and less than MaxMatches", nameof(query.Filter.MinMatches));
+		}
+
+		if (query.Filter.MaxMatches < 0 || query.Filter.MaxMatches < query.Filter.MinMatches)
+		{
+			throw new ArgumentException("MaxMatches must be greater than 0 and greater than MinMatches", nameof(query.Filter.MaxMatches));
+		}
+
+		if (query.Filter.MinWinrate < 0 || query.Filter.MinWinrate > query.Filter.MaxWinrate)
+		{
+			throw new ArgumentException("MinWinrate must be greater than 0 and less than MaxWinrate", nameof(query.Filter.MinWinrate));
+		}
+
+		if (query.Filter.MaxWinrate < 0 || query.Filter.MaxWinrate < query.Filter.MinWinrate)
+		{
+			throw new ArgumentException("MaxWinrate must be greater than 0 and greater than MinWinrate", nameof(query.Filter.MaxWinrate));
+		}
+
+		if (query.Filter.MinWinrate > 1 || query.Filter.MaxWinrate > 1)
+		{
+			throw new ArgumentException("Winrate must be between 0 and 1", nameof(query.Filter.MinWinrate));
+		}
 	}
 	
 	private async Task<LeaderboardPlayerChartDTO?> GetPlayerChartAsync(int playerId, int mode, LeaderboardChartType chartType)

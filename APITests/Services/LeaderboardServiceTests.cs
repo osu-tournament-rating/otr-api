@@ -1,6 +1,5 @@
 using API.DTOs;
 using APITests.Instances;
-using Microsoft.AspNetCore.Mvc;
 
 namespace APITests.Services;
 
@@ -135,4 +134,57 @@ public class LeaderboardServiceTests
 
 		Assert.All(result.PlayerInfo, pInfo => Assert.True(pInfo.GlobalRank >= minRank && pInfo.GlobalRank <= maxRank));
 	}
+
+	[Fact]
+	public async Task Leaderboard_ThrowsException_WhenInvalidRankFilter()
+	{
+		const int minRank = 100;
+		const int maxRank = 1;
+
+		using var context = _fixture.CreateContext();
+		var service = ServiceInstances.LeaderboardService(context);
+
+		var query = new LeaderboardRequestQueryDTO
+		{
+			Filter = new LeaderboardFilterDTO
+			{
+				MinRank = minRank,
+				MaxRank = maxRank
+			}
+		};
+
+		await Assert.ThrowsAsync<ArgumentException>(() => service.GetLeaderboardAsync(query));
+	}
+
+	[Theory] [MemberData(nameof(InvalidQueryFilter))]
+	public async Task Leaderboard_ThrowsException_WhenInvalidFilter(LeaderboardFilterDTO filter)
+	{
+		using var context = _fixture.CreateContext();
+		var service = ServiceInstances.LeaderboardService(context);
+
+		var query = new LeaderboardRequestQueryDTO
+		{
+			Filter = filter
+		};
+
+		await Assert.ThrowsAsync<ArgumentException>(() => service.GetLeaderboardAsync(query));
+	}
+
+	public static IEnumerable<object[]> InvalidQueryFilter => new List<object[]>
+	{
+		new object[] { new LeaderboardFilterDTO { MinRank = 0 } },
+		new object[] { new LeaderboardFilterDTO { MaxRank = 0 } },
+		new object[] { new LeaderboardFilterDTO { MinRank = 5, MaxRank = 4 } },
+		new object[] { new LeaderboardFilterDTO { MinRating = 0 } },
+		new object[] { new LeaderboardFilterDTO { MaxRating = 0 } },
+		new object[] { new LeaderboardFilterDTO { MinRating = 5, MaxRating = 4 } },
+		new object[] { new LeaderboardFilterDTO { MinMatches = 0 } },
+		new object[] { new LeaderboardFilterDTO { MaxMatches = 0 } },
+		new object[] { new LeaderboardFilterDTO { MinMatches = 5, MaxMatches = 4 } },
+		new object[] { new LeaderboardFilterDTO { MinWinrate = 0 } },
+		new object[] { new LeaderboardFilterDTO { MaxWinrate = 0 } },
+		new object[] { new LeaderboardFilterDTO { MinWinrate = 1.1 } },
+		new object[] { new LeaderboardFilterDTO { MaxWinrate = 1.1 } },
+		new object[] { new LeaderboardFilterDTO { MinWinrate = 0.5, MaxWinrate = 0.4 } }
+	};
 }
