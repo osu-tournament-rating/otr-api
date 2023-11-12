@@ -95,4 +95,11 @@ public class BaseStatsService : IBaseStatsService
 
 	public async Task<int> LeaderboardCountAsync(int requestQueryMode, LeaderboardChartType requestQueryChartType, LeaderboardFilterDTO requestQueryFilter, int? playerId) =>
 		await _baseStatsRepository.LeaderboardCountAsync(requestQueryMode, requestQueryChartType, requestQueryFilter, playerId);
+
+	public async Task<LeaderboardFilterDefaultsDTO> LeaderboardFilterDefaultsAsync(int requestQueryMode, LeaderboardChartType requestQueryChartType) => new()
+	{
+		MaxRating = await _baseStatsRepository.HighestRatingAsync(requestQueryMode),
+		MaxMatches = await _baseStatsRepository.HighestMatchesAsync(requestQueryMode),
+		MaxRank = await _baseStatsRepository.HighestRankAsync(requestQueryMode)
+	};
 }

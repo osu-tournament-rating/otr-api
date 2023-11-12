@@ -30,4 +30,14 @@ public interface IBaseStatsRepository : IRepository<BaseStats>
 		LeaderboardFilterDTO? filter, int? playerId);
 
 	Task<int> LeaderboardCountAsync(int requestQueryMode, LeaderboardChartType requestQueryChartType, LeaderboardFilterDTO requestQueryFilter, int? playerId);
+
+	/// <summary>
+	///  The highest numeric (aka the worst) rank of a player in our system
+	/// </summary>
+	/// <param name="country"></param>
+	/// <returns></returns>
+	Task<int> HighestRankAsync(int mode, string? country = null);
+
+	Task<double> HighestRatingAsync(int mode, string? country = null);
+	Task<int> HighestMatchesAsync(int mode, string? country = null);
 }

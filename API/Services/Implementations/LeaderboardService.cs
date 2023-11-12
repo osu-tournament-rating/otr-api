@@ -30,7 +30,8 @@ public class LeaderboardService : ILeaderboardService
 		var leaderboard = new LeaderboardDTO
 		{
 			Mode = requestQuery.Mode,
-			TotalPlayerCount = await _baseStatsService.LeaderboardCountAsync(requestQuery.Mode, requestQuery.ChartType, requestQuery.Filter, requestQuery.PlayerId)
+			TotalPlayerCount = await _baseStatsService.LeaderboardCountAsync(requestQuery.Mode, requestQuery.ChartType, requestQuery.Filter, requestQuery.PlayerId),
+			FilterDefaults = await _baseStatsService.LeaderboardFilterDefaultsAsync(requestQuery.Mode, requestQuery.ChartType)
 		};
 
 		if (requestQuery.PlayerId.HasValue)

@@ -117,6 +117,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		return await query.OrderByRatingDescending()
 		                  .Skip(page * pageSize)
 		                  .Take(pageSize)
+		                  .AsNoTracking()
 		                  .ToListAsync();
 	}
 
@@ -127,9 +128,72 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		return await query.CountAsync();
 	}
 
+	public async Task<int> HighestRankAsync(int mode, string? country = null)
+	{
+		if (country != null)
+		{
+			return await _context.BaseStats
+			                     .AsNoTracking()
+			                     .Where(x => x.Player.Country == country && x.Mode == mode)
+			                     .Select(x => x.CountryRank)
+			                     .DefaultIfEmpty()
+			                     .MaxAsync();
+		}
+
+		return await _context.BaseStats
+		                     .AsNoTracking()
+		                     .WhereMode(mode)
+		                     .Select(x => x.GlobalRank)
+		                     .DefaultIfEmpty()
+		                     .MaxAsync();
+	}
+
+	public async Task<double> HighestRatingAsync(int mode, string? country = null)
+	{
+		if (country != null)
+		{
+			return await _context.BaseStats
+			                     .AsNoTracking()
+			                     .Where(x => x.Player.Country == country && x.Mode == mode)
+			                     .Select(x => x.Rating)
+			                     .DefaultIfEmpty()
+			                     .MaxAsync();
+		}
+
+		return await _context.BaseStats
+		                     .AsNoTracking()
+		                     .Where(x => x.Mode == mode)
+		                     .Select(x => x.Rating)
+		                     .DefaultIfEmpty()
+		                     .MaxAsync();
+	}
+
+	public async Task<int> HighestMatchesAsync(int mode, string? country = null)
+	{
+		if (country != null)
+		{
+			return await _context.Players
+			                     .SelectMany(p => p.MatchStats)
+			                     .Where(ms => ms.Match.Mode == mode && ms.Player.Country == country)
+			                     .GroupBy(ms => ms.PlayerId)
+			                     .OrderByDescending(g => g.Count())
+			                     .Select(g => g.Count())
+			                     .FirstOrDefaultAsync();
+		}
+
+		return await _context.Players
+		                     .SelectMany(p => p.MatchStats)
+		                     .Where(ms => ms.Match.Mode == mode)
+		                     .GroupBy(ms => ms.PlayerId)
+		                     .OrderByDescending(g => g.Count())
+		                     .Select(g => g.Count())
+		                     .FirstOrDefaultAsync();
+	}
+
 	public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
 	{
 		double averageRating = await _context.MatchScores
+		                                     .AsNoTracking()
 		                                     .WhereVerified()
 		                                     .WhereNotHeadToHead()
 		                                     .WhereTeammate(osuPlayerId)
