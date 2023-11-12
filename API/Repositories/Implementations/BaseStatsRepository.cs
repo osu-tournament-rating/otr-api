@@ -11,15 +11,11 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 {
 	private readonly OtrContext _context;
 	private readonly IPlayerRepository _playerRepository;
-	
-	
-	private readonly IPlayerMatchStatsRepository _matchStatsRepository;
 
-	public BaseStatsRepository(OtrContext context, IPlayerRepository playerRepository, IPlayerMatchStatsRepository matchStatsRepository) : base(context)
+	public BaseStatsRepository(OtrContext context, IPlayerRepository playerRepository) : base(context)
 	{
 		_context = context;
 		_playerRepository = playerRepository;
-		_matchStatsRepository = matchStatsRepository;
 	}
 
 	public async Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId)
@@ -34,10 +30,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		return await _context.BaseStats.Where(x => x.PlayerId == dbId).ToListAsync();
 	}
 
-	public async Task<BaseStats?> GetForPlayerAsync(int playerId, int mode)
-	{
-		return await _context.BaseStats.Where(x => x.PlayerId == playerId && x.Mode == mode).FirstOrDefaultAsync();
-	} 
+	public async Task<BaseStats?> GetForPlayerAsync(int playerId, int mode) => await _context.BaseStats.Where(x => x.PlayerId == playerId && x.Mode == mode).FirstOrDefaultAsync();
 
 	public override async Task<int> UpdateAsync(BaseStats entity)
 	{
@@ -90,7 +83,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 				Percentile = stat.Percentile,
 				GlobalRank = stat.GlobalRank,
 				CountryRank = stat.CountryRank,
-				Created = DateTime.UtcNow,
+				Created = DateTime.UtcNow
 			});
 		}
 
@@ -103,14 +96,35 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 	public async Task<int> GetGlobalRankAsync(long osuPlayerId, int mode)
 	{
 		int globalIndex = (await _context.BaseStats
-		                          .WhereMode(mode)
-		                          .OrderByRatingDescending()
-		                          .Select(x => x.Player.OsuId)
-		                          .ToListAsync())
-		                          .TakeWhile(x => x != osuPlayerId)
-		                          .Count();
+		                                 .WhereMode(mode)
+		                                 .OrderByRatingDescending()
+		                                 .Select(x => x.Player.OsuId)
+		                                 .ToListAsync())
+		                  .TakeWhile(x => x != osuPlayerId)
+		                  .Count();
 
 		return globalIndex + 1;
+	}
+
+	public async Task<DateTime> GetRecentCreatedDate(long osuPlayerId) =>
+		await _context.BaseStats.WhereOsuPlayerId(osuPlayerId).OrderByDescending(x => x.Created).Select(x => x.Created).FirstAsync();
+
+	public async Task<IEnumerable<BaseStats>> GetLeaderboardAsync(int page, int pageSize, int mode, LeaderboardChartType chartType,
+		LeaderboardFilterDTO? filter, int? playerId)
+	{
+		var query = await LeaderboardQuery(mode, chartType, filter, playerId);
+
+		return await query.OrderByRatingDescending()
+		                  .Skip(page * pageSize)
+		                  .Take(pageSize)
+		                  .ToListAsync();
+	}
+
+	public async Task<int> LeaderboardCountAsync(int mode, LeaderboardChartType chartType, LeaderboardFilterDTO filter, int? playerId)
+	{
+		var query = await LeaderboardQuery(mode, chartType, filter, playerId);
+
+		return await query.CountAsync();
 	}
 
 	public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
@@ -121,20 +135,22 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		                                     .WhereTeammate(osuPlayerId)
 		                                     .SelectMany(x => x.Player.Ratings)
 		                                     .Where(rating => rating.Mode == mode)
-		                                     .AverageAsync(rating => (double?)rating.Rating) ?? 0.0;
+		                                     .AverageAsync(rating => (double?)rating.Rating) ??
+		                       0.0;
 
 		return (int)averageRating;
 	}
 
-	public async Task<DateTime> GetRecentCreatedDate(long osuPlayerId) =>
-		await _context.BaseStats.WhereOsuPlayerId(osuPlayerId).OrderByDescending(x => x.Created).Select(x => x.Created).FirstAsync();
-
-
-	public async Task<IEnumerable<BaseStats>> GetLeaderboardAsync(int page, int pageSize, int mode, LeaderboardChartType chartType, LeaderboardFilterDTO? filter)
+	private async Task<IQueryable<BaseStats>> LeaderboardQuery(int mode, LeaderboardChartType chartType, LeaderboardFilterDTO? filter, int? playerId)
 	{
 		var baseQuery = _context.BaseStats
 		                        .WhereMode(mode);
 
+		if (chartType == LeaderboardChartType.Country && playerId.HasValue)
+		{
+			string? playerCountry = await _context.Players.Where(x => x.Id == playerId).Select(x => x.Country).FirstOrDefaultAsync();
+			baseQuery = baseQuery.Where(x => x.Player.Country == playerCountry);
+		}
 
 		if (filter != null)
 		{
@@ -148,14 +164,10 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 			}
 			// baseQuery = FilterByWinrate(baseQuery, filter.MinWinrate, filter.MaxWinrate);
 		}
-		
-		return await baseQuery.OrderByRatingDescending()
-		                .Skip(page * pageSize)
-		                .Take(pageSize)
-		                .ToListAsync();
 
+		return baseQuery;
 	}
-	
+
 	private IQueryable<BaseStats> FilterByRank(IQueryable<BaseStats> query, int? minRank, int? maxRank, LeaderboardChartType chartType)
 	{
 		if (minRank.HasValue)
@@ -184,7 +196,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 		return query;
 	}
-	
+
 	private IQueryable<BaseStats> FilterByRating(IQueryable<BaseStats> query, int? minRating, int? maxRating)
 	{
 		if (minRating.HasValue)
@@ -199,20 +211,19 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 		return query;
 	}
-	
+
 	private IQueryable<BaseStats> FilterByMatchesPlayed(IQueryable<BaseStats> query, int? minMatches, int? maxMatches)
 	{
 		// This is required to count the number of matches played.
 		// In the future this should be a stat tied to BaseStats, not calculated.
-		
+
 		if (minMatches.HasValue || maxMatches.HasValue)
 		{
 			query = query.Include(x => x.Player).ThenInclude(x => x.MatchStats);
 		}
-		
+
 		if (minMatches.HasValue)
 		{
-			
 			query = query.Where(x => x.Player.MatchStats.Count() >= minMatches.Value);
 		}
 
@@ -223,7 +234,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 		return query;
 	}
-	
+
 	// TODO: Insert winrate as a base stats before implementing
 	// private IQueryable<BaseStats> FilterByWinrate(IQueryable<BaseStats> query, double? minWinrate, double? maxWinrate)
 	// {
@@ -329,6 +340,4 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 		return query;
 	}
-
-
 }

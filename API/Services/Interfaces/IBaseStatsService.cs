@@ -11,8 +11,13 @@ public interface IBaseStatsService
 	/// <param name="playerId"></param>
 	/// <returns></returns>
 	Task<IEnumerable<BaseStatsDTO?>> GetForPlayerAsync(long osuPlayerId);
+
 	Task<BaseStatsDTO?> GetForPlayerAsync(int id, int mode);
 	Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats);
-	Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(int mode, int page, int pageSize, LeaderboardChartType chartType, LeaderboardFilterDTO filter);
+
+	Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(int mode, int page, int pageSize, LeaderboardChartType chartType,
+		LeaderboardFilterDTO filter, int? playerId);
+
 	Task TruncateAsync();
+	Task<int> LeaderboardCountAsync(int requestQueryMode, LeaderboardChartType requestQueryChartType, LeaderboardFilterDTO requestQueryFilter, int? playerId);
 }

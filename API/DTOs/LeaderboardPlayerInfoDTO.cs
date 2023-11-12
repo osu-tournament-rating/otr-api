@@ -1,7 +1,7 @@
 namespace API.DTOs;
 
 /// <summary>
-/// Individual line items in the leaderboard
+///  Individual line items in the leaderboard
 /// </summary>
 public class LeaderboardPlayerInfoDTO
 {
@@ -14,4 +14,5 @@ public class LeaderboardPlayerInfoDTO
 	public int MatchesPlayed { get; set; }
 	public double WinRate { get; set; }
 	public int Mode { get; set; }
+	public string Country { get; set; }
 }

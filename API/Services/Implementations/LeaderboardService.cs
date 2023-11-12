@@ -7,13 +7,13 @@ namespace API.Services.Implementations;
 
 public class LeaderboardService : ILeaderboardService
 {
-	private readonly IPlayerRepository _playerRepository;
 	private readonly IBaseStatsService _baseStatsService;
-	private readonly IMatchRatingStatsRepository _ratingStatsRepository;
+	private readonly IPlayerRepository _playerRepository;
 	private readonly IPlayerService _playerService;
 	private readonly IPlayerStatsService _playerStatsService;
+	private readonly IMatchRatingStatsRepository _ratingStatsRepository;
 
-	public LeaderboardService(IPlayerRepository playerRepository, IBaseStatsService baseStatsService, 
+	public LeaderboardService(IPlayerRepository playerRepository, IBaseStatsService baseStatsService,
 		IMatchRatingStatsRepository ratingStatsRepository, IPlayerService playerService, IPlayerStatsService playerStatsService)
 	{
 		_playerRepository = playerRepository;
@@ -22,39 +22,43 @@ public class LeaderboardService : ILeaderboardService
 		_playerService = playerService;
 		_playerStatsService = playerStatsService;
 	}
-	
+
 	public async Task<LeaderboardDTO> GetLeaderboardAsync(LeaderboardRequestQueryDTO requestQuery)
 	{
 		ValidateRequest(requestQuery);
-		
+
 		var leaderboard = new LeaderboardDTO
 		{
-			Mode = requestQuery.Mode
+			Mode = requestQuery.Mode,
+			TotalPlayerCount = await _baseStatsService.LeaderboardCountAsync(requestQuery.Mode, requestQuery.ChartType, requestQuery.Filter, requestQuery.PlayerId)
 		};
-		
-		if (requestQuery.UserId.HasValue)
+
+		if (requestQuery.PlayerId.HasValue)
 		{
-			int? playerId = await _playerService.GetIdAsync(requestQuery.UserId.Value);
+			int? playerId = await _playerService.GetIdAsync(requestQuery.PlayerId.Value);
 
 			if (playerId.HasValue)
 			{
-				leaderboard.PlayerChart = await GetPlayerChartAsync(requestQuery.UserId.Value, requestQuery.Mode, requestQuery.ChartType);
+				leaderboard.PlayerChart = await GetPlayerChartAsync(requestQuery.PlayerId.Value, requestQuery.Mode, requestQuery.ChartType);
 			}
 		}
-		
-		var baseStats = await _baseStatsService.GetLeaderboardAsync(requestQuery.Mode, requestQuery.Page, requestQuery.PageSize, requestQuery.ChartType, requestQuery.Filter);
+
+		var baseStats = await _baseStatsService.GetLeaderboardAsync(requestQuery.Mode, requestQuery.Page, requestQuery.PageSize, requestQuery.ChartType, requestQuery.Filter,
+			requestQuery.PlayerId);
+
 		var leaderboardPlayerInfo = new List<LeaderboardPlayerInfoDTO>();
-		
+
 		foreach (var baseStat in baseStats)
 		{
 			if (baseStat == null)
 			{
 				continue;
 			}
-			
+
 			long osuId = await _playerRepository.GetOsuIdByIdAsync(baseStat.PlayerId);
 			string? name = await _playerRepository.GetUsernameAsync(baseStat.PlayerId);
-			
+			string? country = await _playerRepository.GetCountryAsync(baseStat.PlayerId);
+
 			leaderboardPlayerInfo.Add(new LeaderboardPlayerInfoDTO
 			{
 				PlayerId = baseStat.PlayerId,
@@ -65,7 +69,8 @@ public class LeaderboardService : ILeaderboardService
 				Rating = baseStat.Rating,
 				Tier = baseStat.Tier,
 				WinRate = baseStat.Winrate,
-				Mode = baseStat.Mode
+				Mode = baseStat.Mode,
+				Country = country
 			});
 		}
 
@@ -120,7 +125,7 @@ public class LeaderboardService : ILeaderboardService
 			throw new ArgumentException("Winrate must be between 0 and 1", nameof(query.Filter.MinWinrate));
 		}
 	}
-	
+
 	private async Task<LeaderboardPlayerChartDTO?> GetPlayerChartAsync(int playerId, int mode, LeaderboardChartType chartType)
 	{
 		var baseStats = await _baseStatsService.GetForPlayerAsync(playerId, mode);
@@ -129,21 +134,21 @@ public class LeaderboardService : ILeaderboardService
 		{
 			return null;
 		}
-		
-		int rank = chartType switch 
+
+		int rank = chartType switch
 		{
 			LeaderboardChartType.Global => baseStats.GlobalRank,
 			LeaderboardChartType.Country => baseStats.CountryRank,
 			_ => throw new ArgumentOutOfRangeException(nameof(chartType), chartType, null)
 		};
-		
-		int highestRank = chartType switch 
+
+		int highestRank = chartType switch
 		{
 			LeaderboardChartType.Global => await _ratingStatsRepository.HighestGlobalRankAsync(playerId, mode),
 			LeaderboardChartType.Country => await _ratingStatsRepository.HighestCountryRankAsync(playerId, mode),
 			_ => throw new ArgumentOutOfRangeException(nameof(chartType), chartType, null)
 		};
-		
+
 		var rankChart = await _playerStatsService.GetRankChartAsync(playerId, mode, chartType);
 
 		return new LeaderboardPlayerChartDTO
