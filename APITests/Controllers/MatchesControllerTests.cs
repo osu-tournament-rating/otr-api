@@ -3,6 +3,7 @@ using API.Controllers;
 using API.Enums;
 using API.Repositories.Implementations;
 using API.Services.Implementations;
+using APITests.Instances;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,28 +16,9 @@ namespace APITests.Controllers;
 public class MatchesControllerTests
 {
 	private readonly TestDatabaseFixture _fixture;
-	private readonly Mock<ILogger<MatchesController>> _loggerMock;
-	
-	private readonly Mock<ILogger<MatchesService>> _matchesServiceLoggerMock;
-	private readonly Mock<ILogger<TournamentsService>> _tournamentsServiceLoggerMock;
-	
-	private readonly Mock<ILogger<MatchesRepository>> _matchesRepositoryLoggerMock;
-	private readonly Mock<ILogger<TournamentsRepository>> _tournamentsRepositoryLoggerMock;
-	
-	private readonly Mock<IMapper> _mapperMock;
 
 	public MatchesControllerTests(TestDatabaseFixture fixture)
 	{
-		_loggerMock = new Mock<ILogger<MatchesController>>();
-		
-		_matchesServiceLoggerMock = new Mock<ILogger<MatchesService>>();
-		_tournamentsServiceLoggerMock = new Mock<ILogger<TournamentsService>>();
-
-		_matchesRepositoryLoggerMock = new Mock<ILogger<MatchesRepository>>();
-		_tournamentsRepositoryLoggerMock = new Mock<ILogger<TournamentsRepository>>();
-		
-		_mapperMock = new Mock<IMapper>();
-		
 		_fixture = fixture;
 	}
 	
@@ -45,7 +27,7 @@ public class MatchesControllerTests
 	{
 		// arrange
 		using var context = _fixture.CreateContext();
-		var controller = MatchesController(context);
+		var controller = ControllerInstances.MatchesController(context);
 
 		/**
 		 * Flow:
@@ -105,17 +87,5 @@ public class MatchesControllerTests
 		Assert.Equal(13242343242, matches[0].MatchId);
 		Assert.Equal(tournament.Id, matches[0].TournamentId);
 		Assert.Equal(dummyUserId, matches[0].SubmitterUserId);
-	}
-
-	private MatchesController MatchesController(OtrContext context)
-	{
-		var matchesRepository = new MatchesRepository(_matchesRepositoryLoggerMock.Object, _mapperMock.Object, context);
-		var tournamentsRepository = new TournamentsRepository(_tournamentsRepositoryLoggerMock.Object, context, matchesRepository);
-		
-		var matchesService = new MatchesService(_matchesServiceLoggerMock.Object, matchesRepository, tournamentsRepository, _mapperMock.Object);
-		var tournamentsService = new TournamentsService(tournamentsRepository, Mock.Of<IMapper>());
-
-		var controller = new MatchesController(_loggerMock.Object, matchesService, tournamentsService);
-		return controller;
 	}
 }
