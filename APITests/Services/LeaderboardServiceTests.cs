@@ -132,7 +132,7 @@ public class LeaderboardServiceTests
 		var result = await service.GetLeaderboardAsync(query);
 
 		Assert.NotNull(result);
-		Assert.All(result.PlayerInfo, pInfo => Assert.Equal(mode, pInfo.Mode));
+		Assert.All(result.Leaderboard, pInfo => Assert.Equal(mode, pInfo.Mode));
 	}
 
 	[Theory]
@@ -151,7 +151,7 @@ public class LeaderboardServiceTests
 
 		var result = await service.GetLeaderboardAsync(query);
 
-		Assert.Equal(pageSize, result.PlayerInfo.Count());
+		Assert.Equal(pageSize, result.Leaderboard.Count());
 	}
 
 	[Fact]
@@ -164,7 +164,7 @@ public class LeaderboardServiceTests
 
 		var result = await service.GetLeaderboardAsync(query);
 
-		Assert.Equal(50, result.PlayerInfo.Count());
+		Assert.Equal(50, result.Leaderboard.Count());
 	}
 
 	[Fact]
@@ -235,7 +235,7 @@ public class LeaderboardServiceTests
 
 		var result = await service.GetLeaderboardAsync(query);
 
-		Assert.All(result.PlayerInfo, pInfo => Assert.True(pInfo.GlobalRank >= minRank && pInfo.GlobalRank <= maxRank));
+		Assert.All(result.Leaderboard, pInfo => Assert.True(pInfo.GlobalRank >= minRank && pInfo.GlobalRank <= maxRank));
 	}
 
 	[Fact]
@@ -254,7 +254,7 @@ public class LeaderboardServiceTests
 
 		var result = await service.GetLeaderboardAsync(query);
 
-		Assert.All(result.PlayerInfo, pInfo => Assert.Equal(country, pInfo.Country));
+		Assert.All(result.Leaderboard, pInfo => Assert.Equal(country, pInfo.Country));
 	}
 
 	[Theory] [MemberData(nameof(InvalidQueryFilter))]
@@ -287,7 +287,7 @@ public class LeaderboardServiceTests
 
 		var result = await service.GetLeaderboardAsync(query);
 
-		Assert.All(result.PlayerInfo, pInfo => Assert.Equal(tier, pInfo.Tier));
+		Assert.All(result.Leaderboard, pInfo => Assert.Equal(tier, pInfo.Tier));
 	}
 
 	[Theory] [MemberData(nameof(ForceExcludeQueryFilters))]
@@ -308,7 +308,7 @@ public class LeaderboardServiceTests
 
 		var result = await service.GetLeaderboardAsync(query);
 
-		Assert.All(result.PlayerInfo, pInfo => Assert.NotEqual(tier, pInfo.Tier));
+		Assert.All(result.Leaderboard, pInfo => Assert.NotEqual(tier, pInfo.Tier));
 	}
 
 	[Fact]

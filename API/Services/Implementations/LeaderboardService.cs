@@ -75,7 +75,7 @@ public class LeaderboardService : ILeaderboardService
 			});
 		}
 
-		leaderboard.PlayerInfo = leaderboardPlayerInfo;
+		leaderboard.Leaderboard = leaderboardPlayerInfo;
 		return leaderboard;
 	}
 

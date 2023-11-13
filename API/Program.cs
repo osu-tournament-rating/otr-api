@@ -2,6 +2,8 @@ using API;
 using API.Configurations;
 using API.DTOs;
 using API.Entities;
+using API.ModelBinders;
+using API.ModelBinders.Providers;
 using API.Osu;
 using API.Osu.Multiplayer;
 using API.Repositories.Implementations;
@@ -24,7 +26,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(options =>
+       {
+	       options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
+       })
        .AddJsonOptions(o =>
        {
 	       o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
