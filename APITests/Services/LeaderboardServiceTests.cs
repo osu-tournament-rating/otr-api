@@ -175,12 +175,9 @@ public class LeaderboardServiceTests
 
 		const int userId = 440;
 
-		var query = new LeaderboardRequestQueryDTO
-		{
-			PlayerId = userId
-		};
+		var query = new LeaderboardRequestQueryDTO();
 
-		var result = await service.GetLeaderboardAsync(query);
+		var result = await service.GetLeaderboardAsync(query, userId);
 		var chart = result.PlayerChart;
 
 		Assert.NotNull(chart);
@@ -248,11 +245,10 @@ public class LeaderboardServiceTests
 
 		var query = new LeaderboardRequestQueryDTO
 		{
-			PlayerId = 440,
 			ChartType = LeaderboardChartType.Country
 		};
 
-		var result = await service.GetLeaderboardAsync(query);
+		var result = await service.GetLeaderboardAsync(query, 440);
 
 		Assert.All(result.Leaderboard, pInfo => Assert.Equal(country, pInfo.Country));
 	}

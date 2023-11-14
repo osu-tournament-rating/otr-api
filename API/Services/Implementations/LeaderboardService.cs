@@ -23,29 +23,29 @@ public class LeaderboardService : ILeaderboardService
 		_playerStatsService = playerStatsService;
 	}
 
-	public async Task<LeaderboardDTO> GetLeaderboardAsync(LeaderboardRequestQueryDTO requestQuery)
+	public async Task<LeaderboardDTO> GetLeaderboardAsync(LeaderboardRequestQueryDTO requestQuery, int? authorizedPlayerId = null)
 	{
 		ValidateRequest(requestQuery);
 
 		var leaderboard = new LeaderboardDTO
 		{
 			Mode = requestQuery.Mode,
-			TotalPlayerCount = await _baseStatsService.LeaderboardCountAsync(requestQuery.Mode, requestQuery.ChartType, requestQuery.Filter, requestQuery.PlayerId),
+			TotalPlayerCount = await _baseStatsService.LeaderboardCountAsync(requestQuery.Mode, requestQuery.ChartType, requestQuery.Filter, authorizedPlayerId),
 			FilterDefaults = await _baseStatsService.LeaderboardFilterDefaultsAsync(requestQuery.Mode, requestQuery.ChartType)
 		};
 
-		if (requestQuery.PlayerId.HasValue)
+		if (authorizedPlayerId.HasValue)
 		{
-			int? playerId = await _playerService.GetIdAsync(requestQuery.PlayerId.Value);
+			int? playerId = await _playerService.GetIdAsync(authorizedPlayerId.Value);
 
 			if (playerId.HasValue)
 			{
-				leaderboard.PlayerChart = await GetPlayerChartAsync(requestQuery.PlayerId.Value, requestQuery.Mode, requestQuery.ChartType);
+				leaderboard.PlayerChart = await GetPlayerChartAsync(authorizedPlayerId.Value, requestQuery.Mode, requestQuery.ChartType);
 			}
 		}
 
 		var baseStats = await _baseStatsService.GetLeaderboardAsync(requestQuery.Mode, requestQuery.Page, requestQuery.PageSize, requestQuery.ChartType, requestQuery.Filter,
-			requestQuery.PlayerId);
+			authorizedPlayerId);
 
 		var leaderboardPlayerInfo = new List<LeaderboardPlayerInfoDTO>();
 

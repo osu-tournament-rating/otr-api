@@ -66,8 +66,8 @@ public class RequestLoggingMiddleware
 				bodyAsText = bodyAsText[..500] + "...";
 			}
 
-			_logger.LogInformation("User with claims {@Claims} on scheme {Scheme} requests {Method} {Host}{Path}{QueryString} with body '{Body}'",
-				request.HttpContext.User.Claims, request.Scheme, request.Method, request.Host, request.Path,
+			_logger.LogInformation("User with identity {Identity} on scheme {Scheme} requests {Method} {Host}{Path}{QueryString} with body '{Body}'",
+				request.HttpContext.User.Identity?.Name, request.Scheme, request.Method, request.Host, request.Path,
 				request.QueryString, bodyAsText);
 
 			// Reset the memory stream position again before assigning it back to the request body to be read by subsequent middlewares.
