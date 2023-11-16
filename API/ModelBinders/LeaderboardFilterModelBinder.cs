@@ -1,5 +1,6 @@
 using API.DTOs;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace API.ModelBinders;
 
@@ -53,7 +54,7 @@ public class LeaderboardFilterModelBinder : IModelBinder
                 var converter = TypeDescriptor.GetConverter(typeof(T));
                 if (converter.CanConvertFrom(valueProviderResult.FirstValue.GetType()))
                 {
-                    return (T?)converter.ConvertFromString(valueProviderResult.FirstValue);
+                    return (T?)converter.ConvertFromString(null, CultureInfo.InvariantCulture, valueProviderResult.FirstValue);
                 }
             }
             return default;
