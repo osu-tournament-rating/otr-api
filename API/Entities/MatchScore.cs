@@ -64,12 +64,38 @@ public class MatchScore
 	///  Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
 	/// </summary>
 	[NotMapped]
-	public double AccuracyStandard => (100 * ((300d * Count300) + (100d * Count100) + (50d * Count50))) / (300d * (Count300 + Count100 + Count50 + CountMiss));
+	public double AccuracyStandard
+	{
+		get
+		{
+			double divisor = 300d * (Count300 + Count100 + Count50 + CountMiss);
+
+			if (divisor == 0)
+			{
+				return 0;
+			}
+			
+			return (100 * ((300d * Count300) + (100d * Count100) + (50d * Count50))) / divisor;
+		}
+	}
 	/// <summary>
 	///  Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
 	/// </summary>
 	[NotMapped]
-	public double AccuracyTaiko => (100 * (Count300 + (0.5 * Count100))) / (Count300 + Count100 + CountMiss);
+	public double AccuracyTaiko
+	{
+		get
+		{
+			double divisor = Count300 + Count100 + CountMiss;
+
+			if (divisor == 0)
+			{
+				return 0;
+			}
+			
+			return (100 * (Count300 + (0.5 * Count100))) / divisor;
+		}
+	}
 	/// <summary>
 	///  Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985).
 	/// </summary>
@@ -84,6 +110,11 @@ public class MatchScore
 
 			double divisor = nFruitsCaught + nDropsCaught + nDropletsCaught + CountMiss + CountKatu;
 
+			if (divisor == 0)
+			{
+				return 0;
+			}
+			
 			return (100 * (Count300 + Count100 + Count50)) / divisor;
 		}
 	}
@@ -92,6 +123,18 @@ public class MatchScore
 	///  https://osu.ppy.sh/wiki/en/Gameplay/Accuracy
 	/// </summary>
 	[NotMapped]
-	public double AccuracyMania => (100 * ((305d * CountGeki) + (300 * Count300) + (200 * CountKatu) + (100 * Count100) + (50 * Count50))) /
-	                               (305d * (CountGeki + Count300 + CountKatu + Count100 + Count50 + CountMiss));
+	public double AccuracyMania
+	{
+		get
+		{
+			double divisor = 305d * (CountGeki + Count300 + CountKatu + Count100 + Count50 + CountMiss);
+
+			if (divisor == 0)
+			{
+				return 0;
+			}
+			
+			return (100 * ((305d * CountGeki) + (300 * Count300) + (200 * CountKatu) + (100 * Count100) + (50 * Count50))) / divisor;
+		}
+	}
 }

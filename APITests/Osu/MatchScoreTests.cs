@@ -83,4 +83,21 @@ public class MatchScoreTests
 		Assert.Contains("Accuracy", json);
 		Assert.Contains("100.0", json);
 	}
+
+	[Fact]
+	public void Accuracy_NeverReturnsNaN()
+	{
+		var matchScore = new MatchScore
+		{
+			Count300 = 0,
+			Count100 = 0,
+			Count50 = 0,
+			CountMiss = 0
+		};
+		
+		Assert.Equal(0, matchScore.AccuracyStandard);
+		Assert.Equal(0, matchScore.AccuracyTaiko);
+		Assert.Equal(0, matchScore.AccuracyCatch);
+		Assert.Equal(0, matchScore.AccuracyMania);
+	}
 }
