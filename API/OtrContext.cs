@@ -127,7 +127,7 @@ public partial class OtrContext : DbContext
 
 			entity.HasOne(d => d.Game)
 			      .WithMany(p => p.MatchScores)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .OnDelete(DeleteBehavior.Cascade)
 			      .HasConstraintName("match_scores_games_id_fk");
 
 			entity.HasOne(d => d.Player)
