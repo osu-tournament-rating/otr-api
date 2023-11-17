@@ -132,10 +132,4 @@ public static class QueryExtensions
 	public static IQueryable<BaseStats> WhereMode(this IQueryable<BaseStats> query, int mode) => query.AsQueryable().Where(x => x.Mode == mode);
 	public static IQueryable<BaseStats> WhereOsuPlayerId(this IQueryable<BaseStats> query, long osuPlayerId) => query.AsQueryable().Where(x => x.Player.OsuId == osuPlayerId);
 	public static IQueryable<BaseStats> OrderByRatingDescending(this IQueryable<BaseStats> query) => query.AsQueryable().OrderByDescending(x => x.Rating);
-
-	// Rating Histories
-	public static IQueryable<RatingHistory> WhereOsuPlayerId(this IQueryable<RatingHistory> query, long osuPlayerId) => query.AsQueryable().Where(x => x.Player.OsuId == osuPlayerId);
-	public static IQueryable<RatingHistory> WhereMode(this IQueryable<RatingHistory> query, int mode) => query.AsQueryable().Where(x => x.Mode == mode);
-	public static IQueryable<RatingHistory> OrderByRatingDescending(this IQueryable<RatingHistory> query) => query.AsQueryable().OrderByDescending(x => x.Mu);
-	public static IQueryable<RatingHistory> After(this IQueryable<RatingHistory> query, DateTime after) => query.AsQueryable().Where(x => x.Created > after);
 }

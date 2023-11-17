@@ -36,7 +36,7 @@ public class OsuMatchDataWorker : BackgroundService
 			{
 				var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
 				var apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchRepository>();
-				var gamesService = scope.ServiceProvider.GetRequiredService<IGamesRepository>();
+				var gamesRepository = scope.ServiceProvider.GetRequiredService<IGamesRepository>();
 				var matchScoresService = scope.ServiceProvider.GetRequiredService<IMatchScoresRepository>();
 						
 				var apiMatch = await matchesService.GetFirstMatchNeedingApiProcessingAsync();
@@ -51,12 +51,12 @@ public class OsuMatchDataWorker : BackgroundService
 				
 				if (apiMatch != null)
 				{
-					await ProcessMatchesOsuApiAsync(apiMatch, matchesService, apiMatchService, gamesService);
+					await ProcessMatchesOsuApiAsync(apiMatch, matchesService, apiMatchService, gamesRepository);
 				}
 
 				if (autoCheckMatch != null)
 				{
-					await ProcessMatchesNeedingAutomatedChecksAsync(autoCheckMatch, matchesService, gamesService, matchScoresService);
+					await ProcessMatchesNeedingAutomatedChecksAsync(autoCheckMatch, matchesService, gamesRepository, matchScoresService);
 				}
 			}
 		}

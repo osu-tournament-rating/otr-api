@@ -103,7 +103,6 @@ public partial class OtrContext : DbContext
 			entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedMatches).HasForeignKey(e => e.SubmitterUserId).IsRequired(false);
 			entity.HasOne(e => e.VerifiedBy).WithMany(u => u.VerifiedMatches).HasForeignKey(e => e.VerifierUserId).IsRequired(false);
 			entity.HasMany(e => e.Games).WithOne(g => g.Match).OnDelete(DeleteBehavior.Cascade);
-			entity.HasMany(e => e.RatingHistories).WithOne(h => h.Match).OnDelete(DeleteBehavior.Cascade);
 			entity.HasOne(e => e.Tournament).WithMany(t => t.Matches).IsRequired(false);
 			entity.HasMany(e => e.Stats).WithOne(s => s.Match).HasForeignKey(e => e.MatchId).IsRequired().OnDelete(DeleteBehavior.Cascade);
 
@@ -147,7 +146,6 @@ public partial class OtrContext : DbContext
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
 			entity.HasMany(e => e.MatchScores).WithOne(m => m.Player).OnDelete(DeleteBehavior.Cascade);
-			entity.HasMany(e => e.RatingHistories).WithOne(r => r.Player).OnDelete(DeleteBehavior.Cascade);
 			entity.HasMany(e => e.Ratings).WithOne(r => r.Player).OnDelete(DeleteBehavior.Cascade);
 			entity.HasOne(e => e.User).WithOne(u => u.Player).IsRequired(false).OnDelete(DeleteBehavior.Cascade);
 
@@ -165,26 +163,6 @@ public partial class OtrContext : DbContext
 			entity.HasIndex(e => e.PlayerId);
 			entity.HasIndex(e => new { e.PlayerId, e.MatchId }).IsUnique();
 			entity.HasIndex(e => new { e.PlayerId, e.Won });
-		});
-
-		modelBuilder.Entity<RatingHistory>(entity =>
-		{
-			entity.HasKey(e => e.Id).HasName("RatingHistories_pk");
-			entity.Property(e => e.Id).UseIdentityAlwaysColumn();
-
-			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-			entity.HasOne(d => d.Match)
-			      .WithMany(p => p.RatingHistories)
-			      .OnDelete(DeleteBehavior.NoAction)
-			      .HasConstraintName("ratinghistories_matches_id_fk");
-
-			entity.HasOne(d => d.Player)
-			      .WithMany(p => p.RatingHistories)
-			      .OnDelete(DeleteBehavior.NoAction)
-			      .HasConstraintName("RatingHistories___fkplayerid");
-
-			entity.HasIndex(x => x.PlayerId);
 		});
 
 		modelBuilder.Entity<Tournament>(entity =>
