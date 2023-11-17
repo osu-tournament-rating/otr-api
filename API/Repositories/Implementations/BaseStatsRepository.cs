@@ -34,17 +34,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 	public override async Task<int> UpdateAsync(BaseStats entity)
 	{
-		// First, copy the current state of the entity to the history table.
-		var history = new RatingHistory
-		{
-			PlayerId = entity.PlayerId,
-			Mu = entity.Rating,
-			Sigma = entity.Volatility,
-			Created = DateTime.UtcNow,
-			Mode = entity.Mode
-		};
-
-		await _context.RatingHistories.AddAsync(history);
+		entity.Updated = DateTime.UtcNow;
 		return await base.UpdateAsync(entity);
 	}
 

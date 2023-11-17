@@ -72,8 +72,6 @@ public class Match
 	public User? VerifiedBy { get; set; }
 	[InverseProperty("Match")]
 	public virtual ICollection<Game> Games { get; set; } = new List<Game>();
-	[InverseProperty("Match")]
-	public virtual ICollection<RatingHistory> RatingHistories { get; set; } = new List<RatingHistory>();
 	[InverseProperty("Matches")]
 	public virtual Tournament? Tournament { get; set; }
 	[InverseProperty("Match")]

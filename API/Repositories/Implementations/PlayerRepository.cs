@@ -45,7 +45,6 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 		{
 			return await _context.Players
 			                     .Include(x => x.MatchScores)
-			                     .Include(x => x.RatingHistories)
 			                     .Include(x => x.Ratings)
 			                     .AsNoTracking()
 			                     .ToListAsync();
@@ -66,7 +65,6 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 		var p = await _context.Players
 		                      .Include(x => x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == mode))
 		                      .ThenInclude(x => x.Game)
-		                      .Include(x => x.RatingHistories.Where(y => y.Created > time && y.Mode == mode))
 		                      .ThenInclude(x => x.Match)
 		                      .Include(x => x.Ratings.Where(y => y.Mode == mode))
 		                      .Include(x => x.User)

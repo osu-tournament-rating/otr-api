@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20231117004006_RemoveUnusedTables")]
+    partial class RemoveUnusedTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -765,6 +768,58 @@ namespace API.Migrations
                     b.ToTable("player_match_stats");
                 });
 
+            modelBuilder.Entity("API.Entities.RatingHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("MatchId")
+                        .HasColumnType("integer")
+                        .HasColumnName("match_id");
+
+                    b.Property<int>("Mode")
+                        .HasColumnType("integer")
+                        .HasColumnName("mode");
+
+                    b.Property<double>("Mu")
+                        .HasColumnType("double precision")
+                        .HasColumnName("mu");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer")
+                        .HasColumnName("player_id");
+
+                    b.Property<double>("Sigma")
+                        .HasColumnType("double precision")
+                        .HasColumnName("sigma");
+
+                    b.Property<DateTime?>("Updated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated");
+
+                    b.HasKey("Id")
+                        .HasName("RatingHistories_pk");
+
+                    b.HasIndex("MatchId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.HasIndex(new[] { "PlayerId", "MatchId" }, "ratinghistories_pk")
+                        .IsUnique();
+
+                    b.ToTable("ratinghistories");
+                });
+
             modelBuilder.Entity("API.Entities.Tournament", b =>
                 {
                     b.Property<int>("Id")
@@ -974,6 +1029,27 @@ namespace API.Migrations
                     b.Navigation("Player");
                 });
 
+            modelBuilder.Entity("API.Entities.RatingHistory", b =>
+                {
+                    b.HasOne("API.Entities.Match", "Match")
+                        .WithMany("RatingHistories")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("ratinghistories_matches_id_fk");
+
+                    b.HasOne("API.Entities.Player", "Player")
+                        .WithMany("RatingHistories")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("RatingHistories___fkplayerid");
+
+                    b.Navigation("Match");
+
+                    b.Navigation("Player");
+                });
+
             modelBuilder.Entity("API.Entities.User", b =>
                 {
                     b.HasOne("API.Entities.Player", "Player")
@@ -999,6 +1075,8 @@ namespace API.Migrations
                 {
                     b.Navigation("Games");
 
+                    b.Navigation("RatingHistories");
+
                     b.Navigation("RatingStats");
 
                     b.Navigation("Stats");
@@ -1011,6 +1089,8 @@ namespace API.Migrations
                     b.Navigation("MatchScores");
 
                     b.Navigation("MatchStats");
+
+                    b.Navigation("RatingHistories");
 
                     b.Navigation("Ratings");
 

@@ -16,7 +16,6 @@ public partial class OtrContext : DbContext
 
 	public virtual DbSet<BaseStats> BaseStats { get; set; }
 	public virtual DbSet<Beatmap> Beatmaps { get; set; }
-	public virtual DbSet<BeatmapModSr> BeatmapModSrs { get; set; }
 	public virtual DbSet<Config> Configs { get; set; }
 	public virtual DbSet<Game> Games { get; set; }
 	public virtual DbSet<Match> Matches { get; set; }
@@ -24,7 +23,6 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<MatchScore> MatchScores { get; set; }
 	public virtual DbSet<Player> Players { get; set; }
 	public virtual DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
-	public virtual DbSet<RatingHistory> RatingHistories { get; set; }
 	public virtual DbSet<Tournament> Tournaments { get; set; }
 	public virtual DbSet<User> Users { get; set; }
 
@@ -42,7 +40,7 @@ public partial class OtrContext : DbContext
 
 			entity.HasOne(d => d.Player)
 			      .WithMany(p => p.Ratings)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .OnDelete(DeleteBehavior.NoAction)
 			      .HasConstraintName("BaseStats___fkplayerid");
 
 			entity.HasIndex(x => new { x.PlayerId, x.Mode }).IsUnique();
@@ -60,21 +58,8 @@ public partial class OtrContext : DbContext
 			entity.HasMany(b => b.Games)
 			      .WithOne(g => g.Beatmap)
 			      .HasForeignKey(g => g.BeatmapId)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .OnDelete(DeleteBehavior.NoAction)
 			      .HasConstraintName("games_beatmaps_id_fk");
-
-			entity.HasMany(e => e.BeatmapModSrs);
-			entity.Navigation(e => e.BeatmapModSrs).AutoInclude();
-		});
-
-		modelBuilder.Entity<BeatmapModSr>(entity =>
-		{
-			entity
-				.HasKey(b => new { b.BeatmapId, b.Mods });
-
-			entity
-				.HasIndex(b => b.BeatmapId)
-				.IsUnique(false);
 		});
 
 		modelBuilder.Entity<Config>(entity => { entity.Property(e => e.Id).ValueGeneratedOnAdd(); });
@@ -88,18 +73,18 @@ public partial class OtrContext : DbContext
 
 			entity.HasOne(d => d.Match)
 			      .WithMany(p => p.Games)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .OnDelete(DeleteBehavior.NoAction)
 			      .HasConstraintName("games_matches_id_fk");
 
 			entity.HasOne(g => g.Beatmap)
 			      .WithMany(b => b.Games)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .OnDelete(DeleteBehavior.NoAction)
 			      .HasConstraintName("games_beatmaps_id_fk")
 			      .IsRequired(false);
 
 			entity.HasMany(g => g.MatchScores)
 			      .WithOne(s => s.Game)
-			      .OnDelete(DeleteBehavior.ClientSetNull);
+			      .OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasIndex(x => x.GameId);
 			entity.HasIndex(x => x.MatchId);
@@ -117,10 +102,9 @@ public partial class OtrContext : DbContext
 			entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
 			entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedMatches).HasForeignKey(e => e.SubmitterUserId).IsRequired(false);
 			entity.HasOne(e => e.VerifiedBy).WithMany(u => u.VerifiedMatches).HasForeignKey(e => e.VerifierUserId).IsRequired(false);
-			entity.HasMany(e => e.Games).WithOne(g => g.Match);
-			entity.HasMany(e => e.RatingHistories).WithOne(h => h.Match);
+			entity.HasMany(e => e.Games).WithOne(g => g.Match).OnDelete(DeleteBehavior.Cascade);
 			entity.HasOne(e => e.Tournament).WithMany(t => t.Matches).IsRequired(false);
-			entity.HasMany(e => e.Stats).WithOne(s => s.Match).HasForeignKey(e => e.MatchId).IsRequired();
+			entity.HasMany(e => e.Stats).WithOne(s => s.Match).HasForeignKey(e => e.MatchId).IsRequired().OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasIndex(x => x.MatchId);
 		});
@@ -161,10 +145,9 @@ public partial class OtrContext : DbContext
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-			entity.HasMany(e => e.MatchScores).WithOne(m => m.Player);
-			entity.HasMany(e => e.RatingHistories).WithOne(r => r.Player);
-			entity.HasMany(e => e.Ratings).WithOne(r => r.Player);
-			entity.HasOne(e => e.User).WithOne(u => u.Player);
+			entity.HasMany(e => e.MatchScores).WithOne(m => m.Player).OnDelete(DeleteBehavior.Cascade);
+			entity.HasMany(e => e.Ratings).WithOne(r => r.Player).OnDelete(DeleteBehavior.Cascade);
+			entity.HasOne(e => e.User).WithOne(u => u.Player).IsRequired(false).OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasIndex(x => x.OsuId).IsUnique();
 		});
@@ -182,26 +165,6 @@ public partial class OtrContext : DbContext
 			entity.HasIndex(e => new { e.PlayerId, e.Won });
 		});
 
-		modelBuilder.Entity<RatingHistory>(entity =>
-		{
-			entity.HasKey(e => e.Id).HasName("RatingHistories_pk");
-			entity.Property(e => e.Id).UseIdentityAlwaysColumn();
-
-			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-			entity.HasOne(d => d.Match)
-			      .WithMany(p => p.RatingHistories)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
-			      .HasConstraintName("ratinghistories_matches_id_fk");
-
-			entity.HasOne(d => d.Player)
-			      .WithMany(p => p.RatingHistories)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
-			      .HasConstraintName("RatingHistories___fkplayerid");
-
-			entity.HasIndex(x => x.PlayerId);
-		});
-
 		modelBuilder.Entity<Tournament>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("Tournaments_pk");
@@ -212,7 +175,7 @@ public partial class OtrContext : DbContext
 
 			entity.HasMany(e => e.Matches)
 			      .WithOne(m => m.Tournament)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .OnDelete(DeleteBehavior.Cascade)
 			      .HasConstraintName("Tournaments___fkmatchid")
 			      .IsRequired(false);
 			
@@ -229,7 +192,7 @@ public partial class OtrContext : DbContext
 
 			entity.HasOne(d => d.Player)
 			      .WithOne(p => p.User)
-			      .OnDelete(DeleteBehavior.ClientSetNull)
+			      .OnDelete(DeleteBehavior.NoAction)
 			      .HasConstraintName("Users___fkplayerid")
 			      .IsRequired(false);
 		});

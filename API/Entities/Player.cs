@@ -67,9 +67,6 @@ public partial class Player
     public virtual ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
 
     [InverseProperty("Player")]
-    public virtual ICollection<RatingHistory> RatingHistories { get; set; } = new List<RatingHistory>();
-
-    [InverseProperty("Player")]
     public virtual ICollection<BaseStats> Ratings { get; set; } = new List<BaseStats>();
 
     [InverseProperty("Player")]
