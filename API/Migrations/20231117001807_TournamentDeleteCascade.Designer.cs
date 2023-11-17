@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20231117001807_TournamentDeleteCascade")]
+    partial class TournamentDeleteCascade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -198,6 +201,27 @@ namespace API.Migrations
                         .IsUnique();
 
                     b.ToTable("beatmaps");
+                });
+
+            modelBuilder.Entity("API.Entities.BeatmapModSr", b =>
+                {
+                    b.Property<int>("BeatmapId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beatmap_id");
+
+                    b.Property<int>("Mods")
+                        .HasColumnType("integer")
+                        .HasColumnName("mods");
+
+                    b.Property<double>("PostModSr")
+                        .HasColumnType("double precision")
+                        .HasColumnName("post_mod_sr");
+
+                    b.HasKey("BeatmapId", "Mods");
+
+                    b.HasIndex("BeatmapId");
+
+                    b.ToTable("beatmap_mod_sr");
                 });
 
             modelBuilder.Entity("API.Entities.Config", b =>
@@ -918,11 +942,19 @@ namespace API.Migrations
                     b.HasOne("API.Entities.Player", "Player")
                         .WithMany("Ratings")
                         .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("BaseStats___fkplayerid");
 
                     b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("API.Entities.BeatmapModSr", b =>
+                {
+                    b.HasOne("API.Entities.Beatmap", null)
+                        .WithMany("BeatmapModSrs")
+                        .HasForeignKey("BeatmapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("API.Entities.Game", b =>
@@ -930,13 +962,11 @@ namespace API.Migrations
                     b.HasOne("API.Entities.Beatmap", "Beatmap")
                         .WithMany("Games")
                         .HasForeignKey("BeatmapId")
-                        .OnDelete(DeleteBehavior.NoAction)
                         .HasConstraintName("games_beatmaps_id_fk");
 
                     b.HasOne("API.Entities.Match", "Match")
                         .WithMany("Games")
                         .HasForeignKey("MatchId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("games_matches_id_fk");
 
@@ -998,7 +1028,6 @@ namespace API.Migrations
                     b.HasOne("API.Entities.Player", "Player")
                         .WithMany("MatchScores")
                         .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("match_scores_players_id_fk");
 
@@ -1031,14 +1060,12 @@ namespace API.Migrations
                     b.HasOne("API.Entities.Match", "Match")
                         .WithMany("RatingHistories")
                         .HasForeignKey("MatchId")
-                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("ratinghistories_matches_id_fk");
 
                     b.HasOne("API.Entities.Player", "Player")
                         .WithMany("RatingHistories")
                         .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired()
                         .HasConstraintName("RatingHistories___fkplayerid");
 
@@ -1052,7 +1079,6 @@ namespace API.Migrations
                     b.HasOne("API.Entities.Player", "Player")
                         .WithOne("User")
                         .HasForeignKey("API.Entities.User", "PlayerId")
-                        .OnDelete(DeleteBehavior.NoAction)
                         .HasConstraintName("Users___fkplayerid");
 
                     b.Navigation("Player");
@@ -1060,6 +1086,8 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.Beatmap", b =>
                 {
+                    b.Navigation("BeatmapModSrs");
+
                     b.Navigation("Games");
                 });
 

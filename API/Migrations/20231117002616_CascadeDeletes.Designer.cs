@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20231117002616_CascadeDeletes")]
+    partial class CascadeDeletes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -198,6 +201,27 @@ namespace API.Migrations
                         .IsUnique();
 
                     b.ToTable("beatmaps");
+                });
+
+            modelBuilder.Entity("API.Entities.BeatmapModSr", b =>
+                {
+                    b.Property<int>("BeatmapId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beatmap_id");
+
+                    b.Property<int>("Mods")
+                        .HasColumnType("integer")
+                        .HasColumnName("mods");
+
+                    b.Property<double>("PostModSr")
+                        .HasColumnType("double precision")
+                        .HasColumnName("post_mod_sr");
+
+                    b.HasKey("BeatmapId", "Mods");
+
+                    b.HasIndex("BeatmapId");
+
+                    b.ToTable("beatmap_mod_sr");
                 });
 
             modelBuilder.Entity("API.Entities.Config", b =>
@@ -925,6 +949,15 @@ namespace API.Migrations
                     b.Navigation("Player");
                 });
 
+            modelBuilder.Entity("API.Entities.BeatmapModSr", b =>
+                {
+                    b.HasOne("API.Entities.Beatmap", null)
+                        .WithMany("BeatmapModSrs")
+                        .HasForeignKey("BeatmapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("API.Entities.Game", b =>
                 {
                     b.HasOne("API.Entities.Beatmap", "Beatmap")
@@ -1060,6 +1093,8 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.Beatmap", b =>
                 {
+                    b.Navigation("BeatmapModSrs");
+
                     b.Navigation("Games");
                 });
 

@@ -101,6 +101,5 @@ public class Beatmap
     [JsonProperty("submit_date")] // Mapping to submit_date as the closest match
     public DateTime Created { get; set; }
 
-    public virtual ICollection<BeatmapModSr> BeatmapModSrs { get; set; } = null!;
     public virtual ICollection<Game> Games { get; set; } = new List<Game>();
 }

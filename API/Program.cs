@@ -103,8 +103,6 @@ builder.Services.AddDbContext<OtrContext>(o =>
 
 builder.Services.AddDistributedMemoryCache();
 
-builder.Services.AddScoped<IGameSrCalculator, GameSrCalculator>();
-
 // Repositories
 builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
 builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
