@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [ApiController]
-[Authorize]
 [EnableCors]
 [Route("api/[controller]")]
 public class LeaderboardsController : Controller
@@ -24,7 +23,6 @@ public class LeaderboardsController : Controller
 	}
 
 	[HttpGet]
-	[AllowAnonymous]
 	public async Task<ActionResult<IEnumerable<LeaderboardPlayerInfoDTO>>> GetAsync([FromQuery]LeaderboardRequestQueryDTO requestQuery)
 	{
 		/**
@@ -39,16 +37,16 @@ public class LeaderboardsController : Controller
 		 * This avoids annoying calls to ".Filter" in the query string (and .Filter.TierFilters for the tier filters)
 		 */
 
-		if (string.IsNullOrEmpty(HttpContext.Request.Headers.Authorization))
-		{
-			return Unauthorized("Missing authorization header");
-		}
-		
-		if (_configuration["Auth:WebLoginAuthSecret"] != HttpContext.Request.Headers.WebAuthorization())
-		{
-			return Unauthorized("Invalid authorization header");
-		}
-		
+		// if (string.IsNullOrEmpty(HttpContext.Request.Headers.Authorization))
+		// {
+		// 	return Unauthorized("Missing authorization header");
+		// }
+		//
+		// if (_configuration["Auth:WebLoginAuthSecret"] != HttpContext.Request.Headers.WebAuthorization())
+		// {
+		// 	return Unauthorized("Invalid authorization header");
+		// }
+		//
 		int? authorizedUserId = HttpContext.AuthorizedUserIdentity();
 
 		if (!authorizedUserId.HasValue && requestQuery.ChartType == LeaderboardChartType.Country)
