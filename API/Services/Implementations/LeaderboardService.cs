@@ -2,9 +2,11 @@ using API.DTOs;
 using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using System.Diagnostics.CodeAnalysis;
 
 namespace API.Services.Implementations;
 
+[SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly")]
 public class LeaderboardService : ILeaderboardService
 {
 	private readonly IBaseStatsService _baseStatsService;

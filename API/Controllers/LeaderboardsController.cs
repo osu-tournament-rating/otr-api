@@ -44,7 +44,7 @@ public class LeaderboardsController : Controller
 			return Unauthorized("Missing authorization header");
 		}
 		
-		if (_configuration["Auth:WebLoginAuthSecret"] != HttpContext.Request.Headers.Authorization)
+		if (_configuration["Auth:WebLoginAuthSecret"] != HttpContext.Request.Headers.WebAuthorization())
 		{
 			return Unauthorized("Invalid authorization header");
 		}
