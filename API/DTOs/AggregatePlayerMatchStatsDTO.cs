@@ -104,8 +104,7 @@ public class AggregatePlayerMatchStatsDTO
 	/// The name of the teammate who has the highest rating during the period.
 	/// If the period is looking to the present, this will be the teammate with the highest current rating.
 	/// </summary>
-	// public string? BestTeammateName { get; set; }
-	
+	public string? BestTeammateName { get; set; }
 	/// <summary>
 	/// The beginning of the period for which the statistics are calculated.
 	/// </summary>
