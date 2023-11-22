@@ -8,7 +8,7 @@ public static class RatingUtils
 	public const int RatingSilver = 500;
 	public const int RatingGold = 800;
 	public const int RatingPlatinum = 1100;
-	public const int RatingRuby = 1400;
+	public const int RatingEmerald = 1400;
 	public const int RatingDiamond = 1700;
 	public const int RatingMaster = 2000;
 	public const int RatingGrandmaster = 2300;
@@ -19,8 +19,8 @@ public static class RatingUtils
 		< RatingSilver => "Bronze",
 		< RatingGold => "Silver",
 		< RatingPlatinum => "Gold",
-		< RatingRuby => "Platinum",
-		< RatingDiamond => "Ruby",
+		< RatingEmerald => "Platinum",
+		< RatingDiamond => "Emerald",
 		< RatingMaster => "Diamond",
 		< RatingGrandmaster => "Master",
 		< RatingEliteGrandmaster => "Grandmaster",
@@ -32,7 +32,7 @@ public static class RatingUtils
 		< RatingSilver => GetTier(RatingSilver),
 		< RatingGold => GetTier(RatingGold),
 		< RatingPlatinum => GetTier(RatingPlatinum),
-		< RatingRuby => GetTier(RatingRuby),
+		< RatingEmerald => GetTier(RatingEmerald),
 		< RatingDiamond => GetTier(RatingDiamond),
 		< RatingMaster => GetTier(RatingMaster),
 		< RatingGrandmaster => GetTier(RatingGrandmaster),
@@ -45,7 +45,7 @@ public static class RatingUtils
 		< RatingSilver => RatingSilver - rating,
 		< RatingGold => RatingGold - rating,
 		< RatingPlatinum => RatingPlatinum - rating,
-		< RatingRuby => RatingRuby - rating,
+		< RatingEmerald => RatingEmerald - rating,
 		< RatingDiamond => RatingDiamond - rating,
 		< RatingMaster => RatingMaster - rating,
 		< RatingGrandmaster => RatingGrandmaster - rating,
@@ -65,8 +65,8 @@ public static class RatingUtils
 		< RatingSilver => RatingSilver/* - RatingBronze*/,
 		< RatingGold => RatingGold - RatingSilver,
 		< RatingPlatinum => RatingPlatinum - RatingGold,
-		< RatingRuby => RatingRuby - RatingPlatinum,
-		< RatingDiamond => RatingDiamond - RatingRuby,
+		< RatingEmerald => RatingEmerald - RatingPlatinum,
+		< RatingDiamond => RatingDiamond - RatingEmerald,
 		< RatingMaster => RatingMaster - RatingDiamond,
 		< RatingGrandmaster => RatingGrandmaster - RatingMaster,
 		< RatingEliteGrandmaster => RatingEliteGrandmaster - RatingGrandmaster,
