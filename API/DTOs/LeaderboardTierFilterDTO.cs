@@ -13,6 +13,7 @@ public class LeaderboardTierFilterDTO
 	public bool? FilterSilver { get; set; }
 	public bool? FilterGold { get; set; }
 	public bool? FilterPlatinum { get; set; }
+	public bool? FilterEmerald { get; set; }
 	public bool? FilterDiamond { get; set; }
 	public bool? FilterMaster { get; set; }
 	public bool? FilterGrandmaster { get; set; }

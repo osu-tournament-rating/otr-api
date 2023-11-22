@@ -32,7 +32,7 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = true, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = true, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Bronze"
@@ -41,7 +41,7 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = true, FilterGold = false, FilterPlatinum = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = true, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Silver"
@@ -50,7 +50,7 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = true, FilterPlatinum = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = false, FilterGold = true, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Gold"
@@ -59,7 +59,7 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = true, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = true, FilterEmerald = false,  FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Platinum"
@@ -68,7 +68,16 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterDiamond = true, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = true,  FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterEliteGrandmaster = false
+			},
+			"Emerald"
+		},
+		new object[]
+		{
+			new LeaderboardTierFilterDTO
+			{
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = true, FilterMaster = false, FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Diamond"
@@ -77,7 +86,7 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterDiamond = false, FilterMaster = true, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = true, FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Master"
@@ -86,7 +95,7 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = true,
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = true,
 				FilterEliteGrandmaster = false
 			},
 			"Grandmaster"
@@ -95,7 +104,7 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
 				FilterEliteGrandmaster = true
 			},
 			"Elite Grandmaster"
@@ -107,6 +116,7 @@ public class LeaderboardServiceTests
 		new object[] { new LeaderboardTierFilterDTO { FilterSilver = false }, "Silver" },
 		new object[] { new LeaderboardTierFilterDTO { FilterGold = false }, "Gold" },
 		new object[] { new LeaderboardTierFilterDTO { FilterPlatinum = false }, "Platinum" },
+		new object[] { new LeaderboardTierFilterDTO { FilterEmerald = false }, "Emerald" },
 		new object[] { new LeaderboardTierFilterDTO { FilterDiamond = false }, "Diamond" },
 		new object[] { new LeaderboardTierFilterDTO { FilterMaster = false }, "Master" },
 		new object[] { new LeaderboardTierFilterDTO { FilterGrandmaster = false }, "Grandmaster" },

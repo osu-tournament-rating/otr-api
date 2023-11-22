@@ -352,6 +352,15 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 			query = query.Where(x => x.Rating < RatingUtils.RatingPlatinum || x.Rating >= RatingUtils.RatingDiamond);
 		}
 
+		if (tierFilter.FilterEmerald == true)
+		{
+			query = query.Where(x => x.Rating >= RatingUtils.RatingEmerald && x.Rating < RatingUtils.RatingMaster);
+		}
+		else if (tierFilter.FilterEmerald == false)
+		{
+			query = query.Where(x => x.Rating < RatingUtils.RatingEmerald || x.Rating >= RatingUtils.RatingDiamond);
+		}
+
 		// Filter for Diamond tier
 		if (tierFilter.FilterDiamond == true)
 		{

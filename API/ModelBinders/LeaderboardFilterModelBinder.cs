@@ -34,6 +34,7 @@ public class LeaderboardFilterModelBinder : IModelBinder
                 FilterSilver = GetValue<bool?>("Silver"),
                 FilterGold = GetValue<bool?>("Gold"),
                 FilterPlatinum = GetValue<bool?>("Platinum"),
+                FilterEmerald = GetValue<bool?>("Emerald"),
                 FilterDiamond = GetValue<bool?>("Diamond"),
                 FilterMaster = GetValue<bool?>("Master"),
                 FilterGrandmaster = GetValue<bool?>("Grandmaster"),
