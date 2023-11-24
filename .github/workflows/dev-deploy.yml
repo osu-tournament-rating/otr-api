@@ -1,0 +1,62 @@
+name: .NET CI/CD
+
+on:
+  push:
+    branches: [ dev-deploy-test ]
+
+jobs:
+  build_test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '7.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build -c Release --no-restore
+
+    - name: Test
+      run: dotnet test ./APITests/APITests.csproj -c Release --verbosity normal -e ConnectionStrings__DefaultConnection="${{ secrets.DEV_TEST_CONNECTION_STRING }}"
+
+  publish:
+    needs: build_test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: stagecodes
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t stagecodes/otr-api-dev:latest .
+          docker push stagecodes/otr-api-dev:latest
+
+  deploy:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Download .env files
+        run: |
+          echo "${{ secrets.DEV_APP_ENV }}" > app.env
+          echo "${{ secrets.DEV_DB_ENV }}" > db.env
+      - name: Deploy to Development Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEV_SSH_HOST }}
+          username: ${{ secrets.DEV_SSH_USER }}
+          key: ${{ secrets.DEV_SSH_KEY }}
+          script: |
+            docker-compose -f docker-compose.yml up -d --force-recreate

@@ -8,3 +8,7 @@ logs/
 **/appsettings.*.json
 scripts/inserts
 **/apptests.json
+
+app.env
+db.env
+redis.env
