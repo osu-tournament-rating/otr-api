@@ -48,7 +48,7 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-      - name: Download .env files
+      - name: Create .env files
         run: |
           echo "${{ secrets.DEV_APP_ENV }}" > app.env
           echo "${{ secrets.DEV_DB_ENV }}" > db.env
@@ -59,4 +59,4 @@ jobs:
           username: ${{ secrets.DEV_SSH_USER }}
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
-            docker-compose -f docker-compose.yml up -d --force-recreate
+            docker compose -f docker-compose.yml up -d --force-recreate
