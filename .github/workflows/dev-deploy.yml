@@ -52,7 +52,15 @@ jobs:
         run: |
           echo "${{ secrets.DEV_APP_ENV }}" > app.env
           echo "${{ secrets.DEV_DB_ENV }}" > db.env
-      - name: Deploy to Development Server
+      - name: Copy files to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.DEV_SSH_HOST }}
+          username: ${{ secrets.DEV_SSH_USER }}
+          key: ${{ secrets.DEV_SSH_KEY }}
+          source: "app.env,db.env,docker-compose.yml"
+          target: "~/"
+      - name: Deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DEV_SSH_HOST }}
@@ -60,3 +68,4 @@ jobs:
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
             docker compose -f docker-compose.yml up -d --force-recreate
+            rm ~/app.env ~/db.env ~/docker-compose.yml
