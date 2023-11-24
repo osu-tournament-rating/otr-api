@@ -68,4 +68,3 @@ jobs:
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
             docker compose -f docker-compose.yml up -d --force-recreate
-            rm ~/app.env ~/db.env ~/docker-compose.yml
