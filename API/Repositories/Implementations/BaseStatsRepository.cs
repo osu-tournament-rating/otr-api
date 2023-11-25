@@ -315,80 +315,80 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		// Filter for Bronze tier
 		if (tierFilter.FilterBronze == true)
 		{
-			query = query.Where(x => x.Rating < RatingUtils.RatingSilver);
+			query = query.Where(x => x.Rating < RatingUtils.RatingSilverIII);
 		}
 		else if (tierFilter.FilterBronze == false)
 		{
-			query = query.Where(x => x.Rating >= RatingUtils.RatingSilver);
+			query = query.Where(x => x.Rating >= RatingUtils.RatingSilverIII);
 		}
 
 		// Filter for Silver tier
 		if (tierFilter.FilterSilver == true)
 		{
-			query = query.Where(x => x.Rating >= RatingUtils.RatingSilver && x.Rating < RatingUtils.RatingGold);
+			query = query.Where(x => x.Rating >= RatingUtils.RatingSilverIII && x.Rating < RatingUtils.RatingGoldIII);
 		}
 		else if (tierFilter.FilterSilver == false)
 		{
-			query = query.Where(x => x.Rating < RatingUtils.RatingSilver || x.Rating >= RatingUtils.RatingGold);
+			query = query.Where(x => x.Rating < RatingUtils.RatingSilverIII || x.Rating >= RatingUtils.RatingGoldIII);
 		}
 
 		// Filter for Gold tier
 		if (tierFilter.FilterGold == true)
 		{
-			query = query.Where(x => x.Rating >= RatingUtils.RatingGold && x.Rating < RatingUtils.RatingPlatinum);
+			query = query.Where(x => x.Rating >= RatingUtils.RatingGoldIII && x.Rating < RatingUtils.RatingPlatinumIII);
 		}
 		else if (tierFilter.FilterGold == false)
 		{
-			query = query.Where(x => x.Rating < RatingUtils.RatingGold || x.Rating >= RatingUtils.RatingPlatinum);
+			query = query.Where(x => x.Rating < RatingUtils.RatingGoldIII || x.Rating >= RatingUtils.RatingPlatinumIII);
 		}
 
 		// Filter for Platinum tier
 		if (tierFilter.FilterPlatinum == true)
 		{
-			query = query.Where(x => x.Rating >= RatingUtils.RatingPlatinum && x.Rating < RatingUtils.RatingDiamond);
+			query = query.Where(x => x.Rating >= RatingUtils.RatingPlatinumIII && x.Rating < RatingUtils.RatingDiamondIII);
 		}
 		else if (tierFilter.FilterPlatinum == false)
 		{
-			query = query.Where(x => x.Rating < RatingUtils.RatingPlatinum || x.Rating >= RatingUtils.RatingDiamond);
+			query = query.Where(x => x.Rating < RatingUtils.RatingPlatinumIII || x.Rating >= RatingUtils.RatingDiamondIII);
 		}
 
 		if (tierFilter.FilterEmerald == true)
 		{
-			query = query.Where(x => x.Rating >= RatingUtils.RatingEmerald && x.Rating < RatingUtils.RatingMaster);
+			query = query.Where(x => x.Rating >= RatingUtils.RatingEmeraldIII && x.Rating < RatingUtils.RatingMasterIII);
 		}
 		else if (tierFilter.FilterEmerald == false)
 		{
-			query = query.Where(x => x.Rating < RatingUtils.RatingEmerald || x.Rating >= RatingUtils.RatingDiamond);
+			query = query.Where(x => x.Rating < RatingUtils.RatingEmeraldIII || x.Rating >= RatingUtils.RatingDiamondIII);
 		}
 
 		// Filter for Diamond tier
 		if (tierFilter.FilterDiamond == true)
 		{
-			query = query.Where(x => x.Rating >= RatingUtils.RatingDiamond && x.Rating < RatingUtils.RatingMaster);
+			query = query.Where(x => x.Rating >= RatingUtils.RatingDiamondIII && x.Rating < RatingUtils.RatingMasterIII);
 		}
 		else if (tierFilter.FilterDiamond == false)
 		{
-			query = query.Where(x => x.Rating < RatingUtils.RatingDiamond || x.Rating >= RatingUtils.RatingMaster);
+			query = query.Where(x => x.Rating < RatingUtils.RatingDiamondIII || x.Rating >= RatingUtils.RatingMasterIII);
 		}
 
 		// Filter for Master tier
 		if (tierFilter.FilterMaster == true)
 		{
-			query = query.Where(x => x.Rating >= RatingUtils.RatingMaster && x.Rating < RatingUtils.RatingGrandmaster);
+			query = query.Where(x => x.Rating >= RatingUtils.RatingMasterIII && x.Rating < RatingUtils.RatingGrandmasterIII);
 		}
 		else if (tierFilter.FilterMaster == false)
 		{
-			query = query.Where(x => x.Rating < RatingUtils.RatingMaster || x.Rating >= RatingUtils.RatingGrandmaster);
+			query = query.Where(x => x.Rating < RatingUtils.RatingMasterIII || x.Rating >= RatingUtils.RatingGrandmasterIII);
 		}
 
 		// Filter for Grandmaster tier
 		if (tierFilter.FilterGrandmaster == true)
 		{
-			query = query.Where(x => x.Rating >= RatingUtils.RatingGrandmaster && x.Rating < RatingUtils.RatingEliteGrandmaster);
+			query = query.Where(x => x.Rating >= RatingUtils.RatingGrandmasterIII && x.Rating < RatingUtils.RatingEliteGrandmaster);
 		}
 		else if (tierFilter.FilterGrandmaster == false)
 		{
-			query = query.Where(x => x.Rating < RatingUtils.RatingGrandmaster || x.Rating >= RatingUtils.RatingEliteGrandmaster);
+			query = query.Where(x => x.Rating < RatingUtils.RatingGrandmasterIII || x.Rating >= RatingUtils.RatingEliteGrandmaster);
 		}
 
 		// Filter for Elite Grandmaster tier

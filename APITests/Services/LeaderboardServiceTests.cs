@@ -293,7 +293,7 @@ public class LeaderboardServiceTests
 
 		var result = await service.GetLeaderboardAsync(query);
 
-		Assert.All(result.Leaderboard, pInfo => Assert.Equal(tier, pInfo.Tier));
+		Assert.All(result.Leaderboard, pInfo => Assert.Contains(tier, pInfo.Tier));
 	}
 
 	[Theory] [MemberData(nameof(ForceExcludeQueryFilters))]
