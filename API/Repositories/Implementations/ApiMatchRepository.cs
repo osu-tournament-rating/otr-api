@@ -37,7 +37,7 @@ public class ApiMatchRepository : IApiMatchRepository
 
 	public async Task<Match?> CreateFromApiMatchAsync(OsuApiMatchData apiMatch)
 	{
-		_logger.LogInformation("Processing match {MatchId}", apiMatch.OsuApiMatch.MatchId);
+		_logger.LogInformation("Processing match {MatchId}", apiMatch.OsuApiMatch?.MatchId);
 
 		await CreatePlayersAsync(apiMatch);
 		await CreateBeatmapsAsync(apiMatch);
@@ -64,7 +64,7 @@ public class ApiMatchRepository : IApiMatchRepository
 			var newPlayer = new Player { OsuId = osuId };
 			var player = await _playerRepository.CreateAsync(newPlayer);
 
-			_logger.LogInformation("Saved new player: {PlayerId} (osuId: {OsuId}) from match {MatchId}", player?.Id, osuId, apiMatch.OsuApiMatch.MatchId);
+			_logger.LogInformation("Saved new player: {PlayerId} (osuId: {OsuId}) from match {MatchId}", player?.Id, osuId, apiMatch.OsuApiMatch?.MatchId);
 		}
 	}
 
@@ -80,20 +80,20 @@ public class ApiMatchRepository : IApiMatchRepository
 
 		if (!osuPlayerIds?.Any() ?? true)
 		{
-			_logger.LogError("No players found in match {MatchId}", apiMatch.OsuApiMatch.MatchId);
+			_logger.LogError("No players found in match {MatchId}", apiMatch.OsuApiMatch?.MatchId);
 			return null;
 		}
 
 		// Select all players from the database that are in the match
 		var existingPlayers = await _context.Players.Where(p => osuPlayerIds.Contains(p.OsuId)).ToListAsync();
 
-		_logger.LogTrace("Identified {Count} existing players to add for match {MatchId}", existingPlayers.Count, apiMatch.OsuApiMatch.MatchId);
+		_logger.LogTrace("Identified {Count} existing players to add for match {MatchId}", existingPlayers.Count, apiMatch.OsuApiMatch?.MatchId);
 
 		// Map these osu! ids to their database ids
 		return existingPlayers.ToDictionary(player => player.OsuId, player => player.Id);
 	}
 
-	private List<long>? GetUserIdsFromMatch(OsuApiMatchData apiMatch) => apiMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
+	private List<long>? GetUserIdsFromMatch(OsuApiMatchData apiMatch) => apiMatch.Games?.SelectMany(x => x.Scores!).Select(x => x.UserId).Distinct().ToList();
 
 	// Beatmaps
 
@@ -102,9 +102,9 @@ public class ApiMatchRepository : IApiMatchRepository
 	/// </summary>
 	private async Task CreateBeatmapsAsync(OsuApiMatchData apiMatch)
 	{
-		var beatmapIds = GetBeatmapIds(apiMatch).Distinct().ToList();
+		var beatmapIds = GetBeatmapIds(apiMatch)?.Distinct().ToList();
 
-		if (beatmapIds.Count == 0)
+		if (beatmapIds?.Count == 0)
 		{
 			return;
 		}
@@ -112,12 +112,12 @@ public class ApiMatchRepository : IApiMatchRepository
 		var beatmapsToSave = new List<Beatmap>();
 		int countSaved = 0;
 		
-		foreach(long beatmapId in beatmapIds)
+		foreach(long beatmapId in beatmapIds!)
 		{
 			var existingBeatmap = await _beatmapRepository.GetByOsuIdAsync(beatmapId);
 			if (existingBeatmap == null)
 			{
-				var beatmap = await _osuApiService.GetBeatmapAsync(beatmapId, $"Beatmap {beatmapId} from match {apiMatch.OsuApiMatch.MatchId} does not exist in database");
+				var beatmap = await _osuApiService.GetBeatmapAsync(beatmapId, $"Beatmap {beatmapId} from match {apiMatch.OsuApiMatch?.MatchId} does not exist in database");
 
 				if (beatmap != null)
 				{
@@ -131,11 +131,11 @@ public class ApiMatchRepository : IApiMatchRepository
 
 		if (countSaved > 0)
 		{
-			_logger.LogInformation("Saved {Count} beatmaps from match {MatchId}", countSaved, apiMatch.OsuApiMatch.MatchId);
+			_logger.LogInformation("Saved {Count} beatmaps from match {MatchId}", countSaved, apiMatch.OsuApiMatch?.MatchId);
 		}
 	}
 
-	private IEnumerable<long> GetBeatmapIds(OsuApiMatchData apiMatch) => apiMatch.Games.Select(x => x.BeatmapId);
+	private IEnumerable<long>? GetBeatmapIds(OsuApiMatchData apiMatch) => apiMatch.Games?.Select(x => x.BeatmapId);
 
 	// Match
 	/// <summary>
@@ -151,44 +151,44 @@ public class ApiMatchRepository : IApiMatchRepository
 
 		if (existingMatch == null)
 		{
-			throw new NullReferenceException($"Match {apiMatch.OsuApiMatch.MatchId} does not exist in database. This should not be possible as it should have been created by POST /api/matches/batch");
+			throw new NullReferenceException($"Match {apiMatch.OsuApiMatch?.MatchId} does not exist in database. This should not be possible as it should have been created by POST /api/matches/batch");
 		}
 
 		if (existingMatch.IsApiProcessed == null)
 		{
-			throw new InvalidOperationException($"Match {apiMatch.OsuApiMatch.MatchId} has no IsApiProcessed value! This should not be possible as it should have been set by POST /api/matches/batch");
+			throw new InvalidOperationException($"Match {apiMatch.OsuApiMatch?.MatchId} has no IsApiProcessed value! This should not be possible as it should have been set by POST /api/matches/batch");
 		}
 
 		if (existingMatch.IsApiProcessed.Value)
 		{
 			// The match has already been marked as api processed. This shouldn't be possible.
-			throw new InvalidOperationException($"Match {apiMatch.OsuApiMatch.MatchId} has already been marked as api processed! This should not be possible as it should have been set by POST /api/matches/batch");
+			throw new InvalidOperationException($"Match {apiMatch.OsuApiMatch?.MatchId} has already been marked as api processed! This should not be possible as it should have been set by POST /api/matches/batch");
 		}
 
 		existingMatch = await UpdateMatchAsync(apiMatch, existingMatch);
 
-		var persistedGames = await CreateGamesAsync(apiMatch.Games, existingMatch);
-		foreach (var game in apiMatch.Games)
+		var persistedGames = await CreateGamesAsync(apiMatch.Games!, existingMatch);
+		foreach (var game in apiMatch.Games!)
 		{
 			await CreateScoresAsync(game);
 		}
 
 		if (persistedGames.Count > 0)
 		{
-			_logger.LogInformation("Saved scores for {Count} games from match {MatchId}", persistedGames.Count, apiMatch.OsuApiMatch.MatchId);
+			_logger.LogInformation("Saved scores for {Count} games from match {MatchId}", persistedGames.Count, apiMatch.OsuApiMatch?.MatchId);
 		}
 		
 		// Fetch the full entity from the database once again to ensure we have the latest populated data
 		return await _matchesRepository.GetAsync(existingMatch.Id);
 	}
 
-	private async Task<Match?> ExistingMatch(OsuApiMatchData apiMatch) => await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == apiMatch.OsuApiMatch.MatchId);
+	private async Task<Match?> ExistingMatch(OsuApiMatchData apiMatch) => await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == apiMatch.OsuApiMatch!.MatchId);
 
 	private async Task<Match> UpdateMatchAsync(OsuApiMatchData apiMatch, Match existingMatch)
 	{
-		existingMatch.Name = apiMatch.OsuApiMatch.Name;
-		existingMatch.StartTime = apiMatch.OsuApiMatch.StartTime;
-		existingMatch.EndTime = apiMatch.OsuApiMatch.EndTime;
+		existingMatch.Name = apiMatch.OsuApiMatch?.Name;
+		existingMatch.StartTime = apiMatch.OsuApiMatch?.StartTime;
+		existingMatch.EndTime = apiMatch.OsuApiMatch?.EndTime;
 		existingMatch.IsApiProcessed = true;
 		existingMatch.VerificationInfo = null;
 
@@ -275,12 +275,12 @@ public class ApiMatchRepository : IApiMatchRepository
 		var dbGame = await GetGameFromDatabase(osuApiGame.GameId);
 		if (dbGame == null)
 		{
-			_logger.LogError("Failed to fetch game {GameId} from database while processing scores! This means {Count} scores will be missing for this game!", osuApiGame.GameId, osuApiGame.Scores.Count);
+			_logger.LogError("Failed to fetch game {GameId} from database while processing scores! This means {Count} scores will be missing for this game!", osuApiGame.GameId, osuApiGame.Scores?.Count);
 			return;
 		}
 
 		int countSaved = 0;
-		foreach (var score in osuApiGame.Scores)
+		foreach (var score in osuApiGame.Scores!)
 		{
 			int playerId = await _playerRepository.GetIdByOsuIdAsync(score.UserId);
 			if (playerId == default)

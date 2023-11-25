@@ -36,13 +36,13 @@ public class MatchAutomationChecks_Warmups
 		
 		var match = new API.Entities.Match();
 		match.Tournament = tournament;
-		match.MatchId = matchData.OsuApiMatch.MatchId;
+		match.MatchId = matchData.OsuApiMatch!.MatchId;
 		match.Name = matchData.OsuApiMatch.Name;
 		match.StartTime = matchData.OsuApiMatch.StartTime;
 		match.EndTime = matchData.OsuApiMatch.EndTime;
 		match.Games = new List<Game>();
 
-		foreach (var game in matchData.Games)
+		foreach (var game in matchData.Games!)
 		{
 			var toAdd = new Game
 			{
@@ -51,7 +51,7 @@ public class MatchAutomationChecks_Warmups
 				MatchScores = new List<MatchScore>()
 			};
 
-			foreach (var score in matchData.Games.SelectMany(x => x.Scores))
+			foreach (var score in matchData.Games.SelectMany(x => x.Scores!))
 			{
 				toAdd.MatchScores.Add(new MatchScore
 				{

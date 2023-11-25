@@ -7,9 +7,9 @@ namespace API.Osu.Multiplayer;
 public class OsuApiMatchData
 {
 	[JsonProperty("match")]
-	public OsuApiMatch OsuApiMatch { get; set; }
+	public OsuApiMatch? OsuApiMatch { get; set; }
 	[JsonProperty("games")]
-	public List<OsuApiGame> Games { get; set; }
+	public List<OsuApiGame>? Games { get; set; }
 }
 
 public class OsuApiMatch
@@ -78,7 +78,7 @@ public class OsuApiGame
     [JsonProperty("mods")]
 	public Mods Mods { get; set; }
 	[JsonProperty("scores")]
-	public List<OsuApiScore> Scores { get; set; }
+	public List<OsuApiScore>? Scores { get; set; }
 }
 
 public class OsuApiScore

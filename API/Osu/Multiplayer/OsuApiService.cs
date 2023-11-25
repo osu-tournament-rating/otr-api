@@ -96,12 +96,12 @@ public class OsuApiService : IOsuApiService
         }
         catch (JsonSerializationException e)
         {
-            _logger.LogWarning("The osu! API returned an invalid body for id {Id} of type {T}, likely due to deletion", id, typeof(T));
+            _logger.LogWarning(e, "The osu! API returned an invalid body for id {Id} of type {T}, likely due to deletion", id, typeof(T));
             return null;
         }
         catch (IndexOutOfRangeException e)
         {
-            _logger.LogWarning("The osu! API returned null for id {Id} of type {T}", id, typeof(T));
+            _logger.LogWarning(e, "The osu! API returned null for id {Id} of type {T}", id, typeof(T));
             return null;
         }
         catch (Exception e)

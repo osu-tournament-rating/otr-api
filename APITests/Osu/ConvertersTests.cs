@@ -14,6 +14,6 @@ public class ConvertersTests
 		OsuApiMatchData? data = JsonConvert.DeserializeObject<OsuApiMatchData>(json);
 		
 		Assert.NotNull(data);
-		Assert.Equal(101194028, data.OsuApiMatch.MatchId);
+		Assert.Equal(101194028, data.OsuApiMatch?.MatchId);
 	});
 }

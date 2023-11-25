@@ -14,5 +14,5 @@ public class LeaderboardPlayerInfoDTO
 	public int MatchesPlayed { get; set; }
 	public double WinRate { get; set; }
 	public int Mode { get; set; }
-	public string Country { get; set; }
+	public string? Country { get; set; }
 }
