@@ -43,8 +43,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and Push Docker Image
         run: |
-          docker build -t stagecodes/otr-api-dev:latest .
-          docker push stagecodes/otr-api-dev:latest
+          docker build -t stagecodes/otr-api-dev .
+          docker push stagecodes/otr-api-dev
 
   deploy:
     needs: publish
@@ -73,4 +73,5 @@ jobs:
           username: ${{ secrets.DEV_SSH_USER }}
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
+            cd ~/otr-api
             docker compose -f ~/otr-api/docker-compose.yml up -d --force-recreate
