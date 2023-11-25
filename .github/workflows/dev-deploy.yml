@@ -74,4 +74,5 @@ jobs:
           key: ${{ secrets.DEV_SSH_KEY }}
           script: |
             cd ~/otr-api
-            docker compose -f ~/otr-api/docker-compose.yml up -d --force-recreate
+            docker compose pull
+            docker compose up -d
