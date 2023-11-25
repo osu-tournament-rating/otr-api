@@ -2,7 +2,7 @@ name: .NET CI/CD
 
 on:
   push:
-    branches: [ dev-deploy-test ]
+    branches: [ develop ]
 
 jobs:
   build_test:
