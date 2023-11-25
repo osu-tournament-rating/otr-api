@@ -59,7 +59,7 @@ jobs:
           username: ${{ secrets.DEV_SSH_USER }}
           key: ${{ secrets.DEV_SSH_KEY }}
           source: "app.env,db.env,docker-compose.yml"
-          target: "~/"
+          target: "~/otr-api/"
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:
