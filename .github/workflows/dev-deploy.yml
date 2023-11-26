@@ -64,7 +64,7 @@ jobs:
           host: ${{ secrets.DEV_SSH_HOST }}
           username: ${{ secrets.DEV_SSH_USER }}
           key: ${{ secrets.DEV_SSH_KEY }}
-          source: "app.env,db.env,docker-compose.yml"
+          source: "app.env,db.env,docker-compose-dev.yml"
           target: "~/otr-api/"
       - name: Deploy
         uses: appleboy/ssh-action@master
@@ -75,4 +75,4 @@ jobs:
           script: |
             cd ~/otr-api
             docker compose pull
-            docker compose up -d --build
+            docker compose -f docker-compose-dev.yml up -d --build
