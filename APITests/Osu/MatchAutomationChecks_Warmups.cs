@@ -42,7 +42,7 @@ public class MatchAutomationChecks_Warmups
 		match.EndTime = matchData.OsuApiMatch.EndTime;
 		match.Games = new List<Game>();
 
-		foreach (var game in matchData.Games!)
+		foreach (var game in matchData.Games)
 		{
 			var toAdd = new Game
 			{

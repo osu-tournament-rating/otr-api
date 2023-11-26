@@ -93,7 +93,7 @@ public class ApiMatchRepository : IApiMatchRepository
 		return existingPlayers.ToDictionary(player => player.OsuId, player => player.Id);
 	}
 
-	private List<long>? GetUserIdsFromMatch(OsuApiMatchData apiMatch) => apiMatch.Games?.SelectMany(x => x.Scores!).Select(x => x.UserId).Distinct().ToList();
+	private List<long>? GetUserIdsFromMatch(OsuApiMatchData apiMatch) => apiMatch.Games.SelectMany(x => x.Scores!).Select(x => x.UserId).Distinct().ToList();
 
 	// Beatmaps
 
@@ -135,7 +135,7 @@ public class ApiMatchRepository : IApiMatchRepository
 		}
 	}
 
-	private IEnumerable<long>? GetBeatmapIds(OsuApiMatchData apiMatch) => apiMatch.Games?.Select(x => x.BeatmapId);
+	private IEnumerable<long>? GetBeatmapIds(OsuApiMatchData apiMatch) => apiMatch.Games.Select(x => x.BeatmapId);
 
 	// Match
 	/// <summary>
@@ -167,8 +167,8 @@ public class ApiMatchRepository : IApiMatchRepository
 
 		existingMatch = await UpdateMatchAsync(apiMatch, existingMatch);
 
-		var persistedGames = await CreateGamesAsync(apiMatch.Games!, existingMatch);
-		foreach (var game in apiMatch.Games!)
+		var persistedGames = await CreateGamesAsync(apiMatch.Games, existingMatch);
+		foreach (var game in apiMatch.Games)
 		{
 			await CreateScoresAsync(game);
 		}
