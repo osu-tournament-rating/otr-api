@@ -75,4 +75,4 @@ jobs:
           script: |
             cd ~/otr-api
             docker compose pull
-            docker compose up -d
+            docker compose up -d --build
