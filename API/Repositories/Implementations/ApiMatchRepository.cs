@@ -93,7 +93,7 @@ public class ApiMatchRepository : IApiMatchRepository
 		return existingPlayers.ToDictionary(player => player.OsuId, player => player.Id);
 	}
 
-	private List<long>? GetUserIdsFromMatch(OsuApiMatchData apiMatch) => apiMatch.Games.SelectMany(x => x.Scores!).Select(x => x.UserId).Distinct().ToList();
+	private List<long>? GetUserIdsFromMatch(OsuApiMatchData apiMatch) => apiMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
 
 	// Beatmaps
 
@@ -275,12 +275,12 @@ public class ApiMatchRepository : IApiMatchRepository
 		var dbGame = await GetGameFromDatabase(osuApiGame.GameId);
 		if (dbGame == null)
 		{
-			_logger.LogError("Failed to fetch game {GameId} from database while processing scores! This means {Count} scores will be missing for this game!", osuApiGame.GameId, osuApiGame.Scores?.Count);
+			_logger.LogError("Failed to fetch game {GameId} from database while processing scores! This means {Count} scores will be missing for this game!", osuApiGame.GameId, osuApiGame.Scores.Count);
 			return;
 		}
 
 		int countSaved = 0;
-		foreach (var score in osuApiGame.Scores!)
+		foreach (var score in osuApiGame.Scores)
 		{
 			int playerId = await _playerRepository.GetIdByOsuIdAsync(score.UserId);
 			if (playerId == default)

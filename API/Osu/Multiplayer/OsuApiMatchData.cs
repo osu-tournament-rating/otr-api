@@ -76,7 +76,7 @@ public class OsuApiGame
     [JsonProperty("mods")]
 	public Mods Mods { get; set; }
 
-    [JsonProperty("scores")] public List<OsuApiScore> Scores { get; set; } = null!;
+    [JsonProperty("scores")] public List<OsuApiScore> Scores { get; set; }
 }
 
 public class OsuApiScore
