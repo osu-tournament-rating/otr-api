@@ -104,15 +104,16 @@ public class ApiMatchRepository : IApiMatchRepository
 	{
 		var beatmapIds = GetBeatmapIds(apiMatch)?.Distinct().ToList();
 
-		if (beatmapIds?.Count == 0)
+		if (beatmapIds == null || beatmapIds.Count == 0)
 		{
+			_logger.LogError("No beatmap IDs found in match {MatchId}", apiMatch.OsuApiMatch.MatchId);
 			return;
 		}
 		
 		var beatmapsToSave = new List<Beatmap>();
 		int countSaved = 0;
 		
-		foreach(long beatmapId in beatmapIds!)
+		foreach(long beatmapId in beatmapIds)
 		{
 			var existingBeatmap = await _beatmapRepository.GetByOsuIdAsync(beatmapId);
 			if (existingBeatmap == null)
