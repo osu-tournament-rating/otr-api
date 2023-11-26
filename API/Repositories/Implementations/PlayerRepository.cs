@@ -89,7 +89,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	                                                                                                        select new PlayerRatingDTO
 	                                                                                                        {
 		                                                                                                        OsuId = p.OsuId,
-		                                                                                                        Username = p.Username!,
+		                                                                                                        Username = p.Username ?? "Unknown User",
 		                                                                                                        Mu = r.Rating,
 		                                                                                                        Sigma = r.Volatility
 	                                                                                                        })

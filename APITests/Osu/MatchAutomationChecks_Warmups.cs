@@ -51,7 +51,7 @@ public class MatchAutomationChecks_Warmups
 				MatchScores = new List<MatchScore>()
 			};
 
-			foreach (var score in matchData.Games.SelectMany(x => x.Scores!))
+			foreach (var score in matchData.Games.SelectMany(x => x.Scores))
 			{
 				toAdd.MatchScores.Add(new MatchScore
 				{
