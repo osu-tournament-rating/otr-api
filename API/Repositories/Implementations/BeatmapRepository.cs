@@ -51,6 +51,6 @@ public class BeatmapRepository : RepositoryBase<Beatmap>, IBeatmapRepository
 		return await _context.Beatmaps.Where(x => x.BeatmapId == gameBeatmapId).Select(x => x.Id).FirstOrDefaultAsync();
 	}
 
-	public override async Task<IEnumerable<Beatmap>>  GetAllAsync() => await _context.Beatmaps.ToListAsync();
+	public override async Task<IEnumerable<Beatmap>> GetAllAsync() => await _context.Beatmaps.ToListAsync();
 	public async Task<IEnumerable<Beatmap>> GetAsync(IEnumerable<long> beatmapIds) => await _context.Beatmaps.Where(b => beatmapIds.Contains(b.BeatmapId)).ToListAsync();
 }
