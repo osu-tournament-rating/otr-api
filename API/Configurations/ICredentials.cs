@@ -9,5 +9,5 @@ public interface ICredentials
 	/// <summary>
 	///  osu! API v1 key
 	/// </summary>
-	string? OsuApiKey { get; }
+	string OsuApiKey { get; }
 }

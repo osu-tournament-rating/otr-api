@@ -134,6 +134,10 @@ builder.Services.AddSingleton<ICredentials, Credentials>(serviceProvider =>
 	{
 		throw new InvalidOperationException("Missing connection string!");
 	}
+	if (osuApiKey == null)
+	{
+		throw new InvalidOperationException("Missing osu! API Key!");
+	}
 
 	return new Credentials(connString, osuApiKey);
 });
