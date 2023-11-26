@@ -163,7 +163,7 @@ public class AutomationChecksTests
 	public void Match_FailsNameCheck_WithNullAbbreviation()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Tournament!.Abbreviation = null;
+		match.Tournament!.Abbreviation = string.Empty;
 		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
 	}
 
@@ -195,7 +195,7 @@ public class AutomationChecksTests
 	public void Match_NameCheck_ReturnsFalse_WhenNullAbbreviation()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Tournament!.Abbreviation = null;
+		match.Tournament!.Abbreviation = string.Empty;
 		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
 	}
 	
@@ -546,7 +546,7 @@ public class AutomationChecksTests
 	public void Game_FailsTeamSizeCheck_Unbalanced_Teams()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Games.First()!.MatchScores.Add(new MatchScore()
+		match.Games.First().MatchScores.Add(new MatchScore()
 		{
 			PlayerId = -1,
 			Score = 500,
