@@ -36,7 +36,7 @@ public class MatchAutomationChecks_Warmups
 		
 		var match = new API.Entities.Match();
 		match.Tournament = tournament;
-		match.MatchId = matchData.OsuApiMatch!.MatchId;
+		match.MatchId = matchData.OsuApiMatch.MatchId;
 		match.Name = matchData.OsuApiMatch.Name;
 		match.StartTime = matchData.OsuApiMatch.StartTime;
 		match.EndTime = matchData.OsuApiMatch.EndTime;
