@@ -6,4 +6,5 @@ public static class SeedData
 {
 	public static BaseStats GetBaseStats() => SeededBaseStats.Get();
 	public static Beatmap GetBeatmap() => SeededBeatmap.Get();
+	public static Config GetConfig() => SeededConfig.Get();
 }
