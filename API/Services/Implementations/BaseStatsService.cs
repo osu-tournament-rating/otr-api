@@ -3,6 +3,7 @@ using API.Entities;
 using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Services.Implementations;
 
@@ -102,4 +103,6 @@ public class BaseStatsService : IBaseStatsService
 		MaxMatches = await _baseStatsRepository.HighestMatchesAsync(requestQueryMode),
 		MaxRank = await _baseStatsRepository.HighestRankAsync(requestQueryMode)
 	};
+
+	public async Task<ActionResult<IEnumerable<double>>> GetHistogramAsync(int mode) => await _baseStatsRepository.GetHistogramAsync(mode);
 }

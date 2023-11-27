@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Enums;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Repositories.Interfaces;
 
@@ -40,4 +41,5 @@ public interface IBaseStatsRepository : IRepository<BaseStats>
 
 	Task<double> HighestRatingAsync(int mode, string? country = null);
 	Task<int> HighestMatchesAsync(int mode, string? country = null);
+	Task<ActionResult<IEnumerable<double>>> GetHistogramAsync(int mode);
 }

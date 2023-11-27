@@ -3,6 +3,7 @@ using API.Entities;
 using API.Enums;
 using API.Repositories.Interfaces;
 using API.Utilities;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
@@ -179,6 +180,14 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		                     .Select(g => g.Count())
 		                     .FirstOrDefaultAsync();
 	}
+
+	public async Task<ActionResult<IEnumerable<double>>> GetHistogramAsync(int mode) =>
+		await _context.BaseStats
+		               .AsNoTracking()
+		               .Where(x => x.Mode == mode)
+		               .Select(x => x.Rating)
+		               .OrderByDescending(x => x)
+		               .ToListAsync();
 
 	public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
 	{

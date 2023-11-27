@@ -16,12 +16,14 @@ public class StatsController : Controller
 	private readonly ILogger<StatsController> _logger;
 	private readonly IDistributedCache _cache;
 	private readonly IPlayerStatsService _playerStatsService;
+	private readonly IBaseStatsService _baseStatsService;
 
-	public StatsController(ILogger<StatsController> logger, IDistributedCache cache, IPlayerStatsService playerStatsService)
+	public StatsController(ILogger<StatsController> logger, IDistributedCache cache, IPlayerStatsService playerStatsService, IBaseStatsService baseStatsService)
 	{
 		_logger = logger;
 		_cache = cache;
 		_playerStatsService = playerStatsService;
+		_baseStatsService = baseStatsService;
 	}
 	
 	[Authorize]
@@ -30,6 +32,14 @@ public class StatsController : Controller
 	{
 		return await _playerStatsService.GetAsync(playerId, comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 	}
+
+	[AllowAnonymous]
+	[HttpGet("histogram")]
+	public async Task<ActionResult<IEnumerable<double>>> GetRatingHistogramAsync([FromQuery] int mode = 0)
+	{
+		return await _baseStatsService.GetHistogramAsync(mode);
+	}
+	
 	
 	[HttpPost("matchstats")]
 	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerMatchStatsDTO> postBody)

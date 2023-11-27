@@ -15,5 +15,5 @@ public static class ControllerInstances
 		ServiceInstances.TournamentsService(context));
 
 	public static StatsController StatsController(OtrContext context) =>
-		new(Mock.Of<ILogger<StatsController>>(), Mock.Of<IDistributedCache>(), ServiceInstances.PlayerStatsService(context));
+		new(Mock.Of<ILogger<StatsController>>(), Mock.Of<IDistributedCache>(), ServiceInstances.PlayerStatsService(context), ServiceInstances.BaseStatsService(context));
 }
