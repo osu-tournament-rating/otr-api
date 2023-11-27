@@ -8,4 +8,5 @@ public static class SeedData
 	public static Beatmap GetBeatmap() => SeededBeatmap.Get();
 	public static Config GetConfig() => SeededConfig.Get();
 	public static Game GetGame() => SeededGame.Get();
+	public static Match GetMatch() => SeededMatch.Get();
 }
