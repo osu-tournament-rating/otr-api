@@ -9,4 +9,5 @@ public static class SeedData
 	public static Config GetConfig() => SeededConfig.Get();
 	public static Game GetGame() => SeededGame.Get();
 	public static Match GetMatch() => SeededMatch.Get();
+	public static MatchRatingStats GetMatchRatingStats() => SeededMatchRatingStats.Get();
 }
