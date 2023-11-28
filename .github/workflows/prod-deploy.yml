@@ -9,65 +9,70 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-  
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '7.0.x'
-  
-      - name: Restore Dependencies
-        run: dotnet restore
-  
-      - name: Build
-        run: dotnet build --no-restore
-  
-      - name: Test
-        run: dotnet test ./APITests/APITests.csproj --no-build --verbosity normal
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        ref: master
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '7.0.x'
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build -c Release --no-restore
+
+    - name: Test
+      run: dotnet test ./APITests/APITests.csproj -c Release --verbosity normal -e ConnectionStrings__DefaultConnection="${{ secrets.DEV_TEST_CONNECTION_STRING }}"
 
   publish:
     needs: build_test
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
-
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Build and Push Docker Image
-      run: |
-        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest .
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: master
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: stagecodes
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t stagecodes/otr-api-prod .
+          docker push stagecodes/otr-api-prod
 
   deploy:
     needs: publish
     runs-on: ubuntu-latest
-
     steps:
-    - name: Deploy to Production Server
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        script: |
-          docker pull '${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest'
-          docker stop '${{ secrets.DOCKER_IMAGE_NAME }}' || true
-          docker rm '${{ secrets.DOCKER_IMAGE_NAME }}' || true
-          docker run -d --name '${{ secrets.DOCKER_IMAGE_NAME }}' -p 3002:80 --restart always \
-          -e 'ConnectionStrings__DefaultConnection=${{ secrets.PROD_CONNECTION_STRINGS_DEFAULT_CONNECTION }}' \
-          -e 'Osu__ApiKey=${{ secrets.OSU_API_KEY_V1 }}' \
-          -e 'Osu__ClientId=${{ secrets.OSU_CLIENT_ID }}' \
-          -e 'Osu__ClientSecret=${{ secrets.OSU_CLIENT_SECRET }}' \
-          -e 'Jwt__Key=${{ secrets.PROD_JWT_KEY }}' \
-          -e 'Jwt__Issuer=${{ secrets.PROD_JWT_ISSUER }}' \
-          -e 'Auth__WebLoginAuthSecret=${{ secrets.PROD_AUTH_WEB_LOGIN_AUTH_SECRET }}' \
-          -e 'Auth__PrivilegedClientSecret=${{ secrets.PROD_AUTH_PRIVILEGED_CLIENT_SECRET }}' \
-          -e 'Auth__ClientCallbackUrl=${{ secrets.PROD_AUTH_CLIENT_CALLBACK_URL }}' \
-          '${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKER_IMAGE_NAME }}:latest'
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: master
+      - name: Create .env files
+        run: |
+          echo "${{ secrets.PROD_APP_ENV }}" > app.env
+          echo "${{ secrets.PROD_DB_ENV }}" > db.env
+      - name: Copy files to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          source: "app.env,db.env,docker-compose-prod.yml"
+          target: "~/otr-api/"
+      - name: Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd ~/otr-api
+            docker compose pull
+            docker compose -f docker-compose-prod.yml up -d --build
