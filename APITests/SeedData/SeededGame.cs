@@ -6,20 +6,20 @@ public static class SeededGame
 {
 	public static Game Get() => new()
 	{
-		Id = 12345789,
-		MatchId = 123456,
-		BeatmapId = 35353,
+		Id = 198743,
+		MatchId = 35214,
+		BeatmapId = 24245,
 		PlayMode = 0,
 		ScoringType = 3,
-		TeamType = 2,
-		Mods = 1025,
-		PostModSr = 6.385,
-		GameId = 554591768,
+		TeamType = 0,
+		Mods = 0,
+		PostModSr = 6.36389,
+		GameId = 502333236,
 		VerificationStatus = 2,
 		RejectionReason = 0,
-		Created = new DateTime(2023,11,12),
-		StartTime = new DateTime(2023,10,12),
-		EndTime = new DateTime(2023,10,12),
-		Updated = new DateTime(2023,11,12),
+		Created = new DateTime(2023,09,14),
+		StartTime = new DateTime(2023,03,10),
+		EndTime = new DateTime(2023,03,10),
+		Updated = new DateTime(2023,11,04),
 	};
 }
