@@ -12,4 +12,7 @@ public static class SeedData
 	public static MatchRatingStats GetMatchRatingStats() => SeededMatchRatingStats.Get();
 	public static MatchScore GetMatchScore() => SeededMatchScore.Get();
 	public static Player GetPlayer() => SeededPlayer.Get();
+	public static PlayerMatchStats GetPlayerMatchStats() => SeededPlayerMatchStats.Get();
+	public static Tournament GetTournament() => SeededTournament.Get();
+	public static User GetUser() => SeededUser.Get();
 }
