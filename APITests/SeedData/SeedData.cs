@@ -10,4 +10,5 @@ public static class SeedData
 	public static Game GetGame() => SeededGame.Get();
 	public static Match GetMatch() => SeededMatch.Get();
 	public static MatchRatingStats GetMatchRatingStats() => SeededMatchRatingStats.Get();
+	public static MatchScore GetMatchScore() => SeededMatchScore.Get();
 }
