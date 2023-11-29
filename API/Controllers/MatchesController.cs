@@ -105,9 +105,8 @@ public class MatchesController : Controller
 		return Ok();
 	}
 	
-	[HttpGet("all")]
-	// [Authorize(Roles = "Admin, System")]
-	[AllowAnonymous]
+	[HttpGet]
+	[Authorize(Roles = "Admin, System")]
 	[EndpointSummary("Returns all verified match ids")]
 	public async Task<ActionResult<IEnumerable<int>>> GetAllAsync()
 	{
