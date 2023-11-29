@@ -11,8 +11,9 @@ public interface IMatchesService
 	/// <param name="invalidOnly">If true, this method only applies to matches that are not Verified or PreVerified</param>
 	/// <returns></returns>
 	Task RefreshAutomationChecks(bool invalidOnly = true);
-	Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered);
-	Task<MatchDTO?> GetAsync(long osuMatchId);
+	Task<IEnumerable<int>> GetAllAsync(bool onlyIncludeFiltered);
+	Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId);
+	Task<MatchDTO?> GetAsync(int id);
 	Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(long osuPlayerId, int mode, DateTime start, DateTime end);
 	/// <summary>
 	/// Inserts or updates based on user input. Only updates if verified is true.

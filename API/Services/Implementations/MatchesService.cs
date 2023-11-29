@@ -21,7 +21,9 @@ public class MatchesService : IMatchesService
 		_tournamentsRepository = tournamentsRepository;
 		_mapper = mapper;
 	}
-	
+
+	public async Task<MatchDTO?> GetAsync(int id) => _mapper.Map<MatchDTO?>(await _matchesRepository.GetAsync(id));
+
 	public async Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(long osuPlayerId, int mode, DateTime start, DateTime end)
 	{
 		var matches = await _matchesRepository.GetPlayerMatchesAsync(osuPlayerId, mode, start, end);
@@ -79,13 +81,12 @@ public class MatchesService : IMatchesService
 	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _matchesRepository.GetIdMappingAsync();
 	public async Task RefreshAutomationChecks(bool invalidOnly = true) => await _matchesRepository.SetRequireAutoCheckAsync(invalidOnly);
 
-	public async Task<IEnumerable<MatchDTO>> GetAllAsync(bool onlyIncludeFiltered)
+	public async Task<IEnumerable<int>> GetAllAsync(bool onlyIncludeFiltered)
 	{
-		var matches = await _matchesRepository.GetAllAsync(onlyIncludeFiltered);
-		return _mapper.Map<IEnumerable<MatchDTO>>(matches);
+		return await _matchesRepository.GetAllAsync(onlyIncludeFiltered);
 	}
 
-	public async Task<MatchDTO?> GetAsync(long osuMatchId)
+	public async Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId)
 	{
 		var match = await _matchesRepository.GetByMatchIdAsync(osuMatchId);
 		return _mapper.Map<MatchDTO?>(match);

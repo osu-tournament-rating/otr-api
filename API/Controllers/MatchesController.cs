@@ -106,26 +106,42 @@ public class MatchesController : Controller
 	}
 	
 	[HttpGet("all")]
-	[Authorize(Roles = "Admin, System")]
-	public async Task<ActionResult<IEnumerable<MatchDTO>>> GetAllAsync()
+	// [Authorize(Roles = "Admin, System")]
+	[AllowAnonymous]
+	[EndpointSummary("Returns all verified match ids")]
+	public async Task<ActionResult<IEnumerable<int>>> GetAllAsync()
 	{
 		var matches = await _matchesService.GetAllAsync(true);
 		return Ok(matches);
 	}
-
-	[HttpGet("{osuMatchId:long}")]
+	
+	[HttpGet("{id:int}")]
 	[Authorize(Roles = "Admin, System")]
-	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
+	public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
 	{
-		var match = await _matchesService.GetAsync(osuMatchId);
+		var match = await _matchesService.GetAsync(id);
 
 		if (match == null)
 		{
-			return NotFound($"Failed to locate match {osuMatchId}");
+			return NotFound($"Failed to locate match {id}");
 		}
 
 		return Ok(match);
 	}
+
+	// [HttpGet("{osuMatchId:long}")]
+	// [Authorize(Roles = "Admin, System")]
+	// public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
+	// {
+	// 	var match = await _matchesService.GetAsync(osuMatchId);
+	//
+	// 	if (match == null)
+	// 	{
+	// 		return NotFound($"Failed to locate match {osuMatchId}");
+	// 	}
+	//
+	// 	return Ok(match);
+	// }
 
 	[HttpGet("player/{osuId:long}")]
 	[Authorize(Roles = "Admin, System")]
@@ -135,7 +151,7 @@ public class MatchesController : Controller
 	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
 	{
-		var match = await _matchesService.GetAsync(id);
+		var match = await _matchesService.GetByOsuIdAsync(id);
 		if (match == null)
 		{
 			return NotFound($"Match with id {id} does not exist");
