@@ -57,8 +57,8 @@ builder.Services.AddSerilog(configuration =>
 		.MinimumLevel.Override("OsuSharp", LogEventLevel.Fatal)
 		.Enrich.FromLogContext()
 		.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-		.WriteTo.File(Path.Join("logs", "log.log"), rollingInterval: RollingInterval.Day)
-		.WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true);
+		.WriteTo.File(Path.Join("logs", "log.log"), rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: LogEventLevel.Information)
+		.WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true, restrictedToMinimumLevel: LogEventLevel.Warning);
 });
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
