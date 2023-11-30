@@ -105,7 +105,7 @@ public class MatchesController : Controller
 		return Ok();
 	}
 	
-	[HttpGet]
+	[HttpGet("ids")]
 	[Authorize(Roles = "Admin, System")]
 	[EndpointSummary("Returns all verified match ids")]
 	public async Task<ActionResult<IEnumerable<int>>> GetAllAsync()
@@ -127,7 +127,15 @@ public class MatchesController : Controller
 
 		return Ok(match);
 	}
-
+	
+	[HttpPost("convert")]
+	[EndpointSummary("Converts a list of match ids to match id objects")]
+	public async Task<ActionResult<IEnumerable<MatchDTO>>> ConvertAsync([FromBody] IEnumerable<int> ids)
+	{
+		var matches = await _matchesService.ConvertAsync(ids);
+		return Ok(matches);
+	}
+	
 	// [HttpGet("{osuMatchId:long}")]
 	// [Authorize(Roles = "Admin, System")]
 	// public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)

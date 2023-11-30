@@ -52,7 +52,15 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		_logger.LogInformation("Refreshed automation checks for {Count} matches", await query.CountAsync());
 	}
 
-	public async Task<IEnumerable<int>> GetAllAsync(bool onlyIncludeFiltered)
+	public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids) => 
+		await _context.Matches.Where(x => ids.Contains(x.Id))
+		              .Include(x => x.Games)
+		              .ThenInclude(x => x.MatchScores)
+		              .Include(x => x.Games)
+		              .ThenInclude(x => x.Beatmap)
+		              .ToListAsync();
+
+	public async Task<IEnumerable<int>> GetAllAsync(bool onlyIncludeFiltered)	
 	{
 		IQueryable<Match>? query;
 		

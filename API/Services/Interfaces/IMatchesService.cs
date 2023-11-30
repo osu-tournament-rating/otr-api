@@ -29,4 +29,10 @@ public interface IMatchesService
 	/// </summary>
 	/// <returns></returns>
 	Task<Dictionary<long, int>> GetIdMappingAsync();
+	/// <summary>
+	/// Converts a list of match ids to match id objects
+	/// </summary>
+	/// <param name="ids"></param>
+	/// <returns></returns>
+	Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids);
 }
