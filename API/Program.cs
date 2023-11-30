@@ -208,7 +208,14 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+if (app.Environment.IsDevelopment())
+{
+	app.MapControllers().AllowAnonymous();
+}
+else
+{
+	app.MapControllers();
+}
 
 app.Logger.LogInformation("Running!");
 
