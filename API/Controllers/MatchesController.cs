@@ -110,7 +110,7 @@ public class MatchesController : Controller
 	[EndpointSummary("Returns all verified match ids")]
 	public async Task<ActionResult<IEnumerable<int>>> GetAllAsync()
 	{
-		var matches = await _matchesService.GetAllAsync(true);
+		var matches = await _matchesService.GetAllIdsAsync(true);
 		return Ok(matches);
 	}
 	

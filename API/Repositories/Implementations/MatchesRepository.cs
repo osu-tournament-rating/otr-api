@@ -52,19 +52,50 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		_logger.LogInformation("Refreshed automation checks for {Count} matches", await query.CountAsync());
 	}
 
-	public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids) => 
-		await _context.Matches.Where(x => ids.Contains(x.Id))
-		              .Include(x => x.Games)
-		              .ThenInclude(x => x.MatchScores)
-		              .Include(x => x.Games)
+	public async Task<Match> GetAsync(int id, bool filterInvalid = true)
+	{
+		if (!filterInvalid)
+		{
+			return await _context.Matches
+			                   .Include(x => x.Games)
+			                   .ThenInclude(x => x.MatchScores)
+			                   .Include(x => x.Games)
+			                   .ThenInclude(x => x.Beatmap)
+			                   .FirstAsync(x => x.Id == id);
+		}
+		
+		return await _context.Matches
+		              .Include(x => x.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
+		              .ThenInclude(x => x.MatchScores.Where(x => x.IsValid == true))
+		              .Include(x => x.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
 		              .ThenInclude(x => x.Beatmap)
-		              .ToListAsync();
+		              .FirstAsync(x => x.Id == id && x.VerificationStatus == (int)MatchVerificationStatus.Verified);
+	}
+		
+
+	public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered)
+	{
+		if (!onlyIncludeFiltered)
+		{
+			return await _context.Matches.Where(x => ids.Contains(x.Id))
+			                     .Include(x => x.Games)
+			                     .ThenInclude(x => x.MatchScores)
+			                     .Include(x => x.Games)
+			                     .ThenInclude(x => x.Beatmap)
+			                     .ToListAsync();
+		}
+		
+		return await _context.Matches.Where(x => ids.Contains(x.Id) && x.VerificationStatus == (int)MatchVerificationStatus.Verified)
+		                     .Include(x => x.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
+		                     .ThenInclude(x => x.MatchScores.Where(x => x.IsValid == true))
+		                     .Include(x => x.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
+		                     .ThenInclude(x => x.Beatmap)
+		                     .ToListAsync();
+	}
 
 	public async Task<IEnumerable<int>> GetAllAsync(bool onlyIncludeFiltered)	
 	{
-		IQueryable<Match>? query;
-		
-		query = _context.Matches
+		var query = _context.Matches
 		                    .Include(m => m.Games)
 		                    .ThenInclude(g => g.MatchScores)
 		                    .Include(m => m.Games)
@@ -75,6 +106,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		if (onlyIncludeFiltered)
 		{
 			query = _context.Matches
+			                .WhereVerified()
 			                .Include(m => m.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
 			                .ThenInclude(g => g.MatchScores.Where(x => x.IsValid == true))
 			                // Unsure if repeating the filter is necessary for subsequent .ThenInclude
@@ -82,7 +114,6 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 			                .ThenInclude(g => g.Beatmap)
 			                .Where(x => x.Games.Any())
 			                .OrderBy(m => m.StartTime)
-			                .WhereVerified()
 			                .AsQueryable();
 		}
 

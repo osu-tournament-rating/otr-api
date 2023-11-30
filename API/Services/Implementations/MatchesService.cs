@@ -22,7 +22,7 @@ public class MatchesService : IMatchesService
 		_mapper = mapper;
 	}
 
-	public async Task<MatchDTO?> GetAsync(int id) => _mapper.Map<MatchDTO?>(await _matchesRepository.GetAsync(id));
+	public async Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true) => _mapper.Map<MatchDTO?>(await _matchesRepository.GetAsync(id, filterInvalid));
 
 	public async Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(long osuPlayerId, int mode, DateTime start, DateTime end)
 	{
@@ -79,10 +79,10 @@ public class MatchesService : IMatchesService
 	}
 
 	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _matchesRepository.GetIdMappingAsync();
-	public async Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids) => _mapper.Map<IEnumerable<MatchDTO>>(await _matchesRepository.GetAsync(ids)); 
+	public async Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids) => _mapper.Map<IEnumerable<MatchDTO>>(await _matchesRepository.GetAsync(ids, true)); 
 	public async Task RefreshAutomationChecks(bool invalidOnly = true) => await _matchesRepository.SetRequireAutoCheckAsync(invalidOnly);
 
-	public async Task<IEnumerable<int>> GetAllAsync(bool onlyIncludeFiltered)
+	public async Task<IEnumerable<int>> GetAllIdsAsync(bool onlyIncludeFiltered)
 	{
 		return await _matchesRepository.GetAllAsync(onlyIncludeFiltered);
 	}
