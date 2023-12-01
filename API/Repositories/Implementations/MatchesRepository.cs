@@ -85,11 +85,14 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 			                     .ToListAsync();
 		}
 		
-		return await _context.Matches.Where(x => ids.Contains(x.Id) && x.VerificationStatus == (int)MatchVerificationStatus.Verified)
+		return await _context.Matches.Where(x => ids.Contains(x.Id))
+		                     .WhereVerified()
 		                     .Include(x => x.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
 		                     .ThenInclude(x => x.MatchScores.Where(x => x.IsValid == true))
 		                     .Include(x => x.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
 		                     .ThenInclude(x => x.Beatmap)
+		                     .Where(x => x.Games.Any())
+		                     .OrderBy(x => x.StartTime)
 		                     .ToListAsync();
 	}
 
