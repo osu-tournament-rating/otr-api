@@ -12,6 +12,7 @@ public class MapperProfile : Profile
 		CreateMap<Game, GameDTO>();
 		CreateMap<Match, MatchDTO>();
 		CreateMap<MatchScore, MatchScoreDTO>().ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
+		CreateMap<RatingAdjustment, RatingAdjustmentDTO>();
 		CreateMap<MatchRatingStats, MatchRatingStatsDTO>()
 		   .ForMember(x => x.TooltipInfo, opt => opt.MapFrom(x => new MatchTooltipInfoDTO
 		   {
