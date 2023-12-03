@@ -23,6 +23,7 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<MatchScore> MatchScores { get; set; }
 	public virtual DbSet<Player> Players { get; set; }
 	public virtual DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
+	public virtual DbSet<RatingAdjustment> RatingAdjustments { get; set; }
 	public virtual DbSet<Tournament> Tournaments { get; set; }
 	public virtual DbSet<User> Users { get; set; }
 
@@ -146,6 +147,7 @@ public partial class OtrContext : DbContext
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
 			entity.HasMany(e => e.MatchScores).WithOne(m => m.Player).OnDelete(DeleteBehavior.Cascade);
+			entity.HasMany(e => e.RatingAdjustments).WithOne(ra => ra.Player).OnDelete(DeleteBehavior.Cascade);
 			entity.HasMany(e => e.Ratings).WithOne(r => r.Player).OnDelete(DeleteBehavior.Cascade);
 			entity.HasOne(e => e.User).WithOne(u => u.Player).IsRequired(false).OnDelete(DeleteBehavior.Cascade);
 
@@ -163,6 +165,16 @@ public partial class OtrContext : DbContext
 			entity.HasIndex(e => e.PlayerId);
 			entity.HasIndex(e => new { e.PlayerId, e.MatchId }).IsUnique();
 			entity.HasIndex(e => new { e.PlayerId, e.Won });
+		});
+		
+		modelBuilder.Entity<RatingAdjustment>(entity =>
+		{
+			entity.HasKey(e => e.Id).HasName("RatingAdjustment_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
+			
+			entity.HasOne(e => e.Player).WithMany(e => e.RatingAdjustments).HasForeignKey(e => e.PlayerId);
+
+			entity.HasIndex(e => new { e.PlayerId, e.Mode });
 		});
 
 		modelBuilder.Entity<Tournament>(entity =>

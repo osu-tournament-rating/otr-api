@@ -62,17 +62,16 @@ public partial class Player
     
     [Column("earliest_catch_global_rank_date")]
     public DateTime? EarliestCatchGlobalRankDate { get; set; }
-
+    [InverseProperty("Player")]
+    public virtual IEnumerable<MatchRatingStats> MatchRatingStats { get; set; } = null!;
     [InverseProperty("Player")]
     public virtual ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
-
+    [InverseProperty("Player")]
+    public virtual IEnumerable<PlayerMatchStats> MatchStats { get; set; } = null!;
+    [InverseProperty("Player")]
+    public virtual ICollection<RatingAdjustment> RatingAdjustments { get; set; } = new List<RatingAdjustment>();
     [InverseProperty("Player")]
     public virtual ICollection<BaseStats> Ratings { get; set; } = new List<BaseStats>();
-
     [InverseProperty("Player")]
     public virtual User? User { get; set; }
-    [InverseProperty("Player")]
-    public IEnumerable<PlayerMatchStats> MatchStats { get; set; } = null!;
-    [InverseProperty("Player")]
-    public IEnumerable<MatchRatingStats> MatchRatingStats { get; set; } = null!;
 }
