@@ -26,4 +26,5 @@ public static class RepositoryInstances
 	public static IMatchRatingStatsRepository MatchRatingStatsRepository(OtrContext context) => new MatchRatingStatsRepository(context);
 	public static IPlayerMatchStatsRepository PlayerMatchStatsRepository(OtrContext context) => new PlayerMatchStatsRepository(context);
 	public static IUserRepository UserRepository(OtrContext context) => new UserRepository(Mock.Of<ILogger<UserRepository>>(), context);
+	public static IRatingAdjustmentsRepository RatingAdjustmentsRepository(OtrContext context) => new RatingAdjustmentsRepository(context);
 }

@@ -1,8 +1,5 @@
 using API;
 using API.Configurations;
-using API.DTOs;
-using API.Entities;
-using API.ModelBinders;
 using API.ModelBinders.Providers;
 using API.Osu;
 using API.Osu.Multiplayer;
@@ -26,10 +23,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers(options =>
-       {
-	       options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
-       })
+builder.Services.AddControllers(options => { options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider()); })
        .AddJsonOptions(o =>
        {
 	       o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
@@ -50,7 +44,7 @@ builder.Services.AddSerilog(configuration =>
 #else
 	configuration.MinimumLevel.Information();
 #endif
-	
+
 	configuration
 		.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
 		.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
@@ -63,10 +57,7 @@ builder.Services.AddSerilog(configuration =>
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-var configuration = new MapperConfiguration(cfg =>
-{
-	cfg.AddProfile<MapperProfile>();
-});
+var configuration = new MapperConfiguration(cfg => { cfg.AddProfile<MapperProfile>(); });
 
 // only during development, validate your mappings; remove it before release
 #if DEBUG
@@ -92,28 +83,29 @@ builder.Services.AddDbContext<OtrContext>(o =>
 builder.Services.AddDistributedMemoryCache();
 
 // Repositories
-builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
-builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
-builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IGamesRepository, GamesRepository>();
-builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
-builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
 builder.Services.AddScoped<IApiMatchRepository, ApiMatchRepository>();
-builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
-builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
+builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
+builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
+builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
+builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
+builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
+builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
+builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
+builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Services
 builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
-builder.Services.AddScoped<IPlayerService, PlayerService>();
-builder.Services.AddScoped<IMatchesService, MatchesService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
-builder.Services.AddScoped<ITournamentsService, TournamentsService>();
-builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
+builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IPlayerScoreStatsService, PlayerScoreStatsService>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
+builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
+builder.Services.AddScoped<ITournamentsService, TournamentsService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddOsuSharp(options =>
 {
@@ -134,6 +126,7 @@ builder.Services.AddSingleton<ICredentials, Credentials>(serviceProvider =>
 	{
 		throw new InvalidOperationException("Missing connection string!");
 	}
+
 	if (string.IsNullOrWhiteSpace(osuApiKey))
 	{
 		throw new InvalidOperationException("Missing osu! API Key!");
