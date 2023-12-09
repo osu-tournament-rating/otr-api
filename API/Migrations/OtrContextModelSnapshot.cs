@@ -310,6 +310,48 @@ namespace API.Migrations
                     b.ToTable("games");
                 });
 
+            modelBuilder.Entity("API.Entities.GameWinRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("integer")
+                        .HasColumnName("game_id");
+
+                    b.Property<int>("LoserTeam")
+                        .HasColumnType("integer")
+                        .HasColumnName("loser_team");
+
+                    b.Property<int[]>("Losers")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("losers");
+
+                    b.Property<int>("WinnerTeam")
+                        .HasColumnType("integer")
+                        .HasColumnName("winner_team");
+
+                    b.Property<int[]>("Winners")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("winners");
+
+                    b.HasKey("Id")
+                        .HasName("game_win_records_pk");
+
+                    b.HasIndex("GameId")
+                        .IsUnique();
+
+                    b.HasIndex("Winners");
+
+                    b.ToTable("game_win_records");
+                });
+
             modelBuilder.Entity("API.Entities.Match", b =>
                 {
                     b.Property<int>("Id")
@@ -950,6 +992,18 @@ namespace API.Migrations
                     b.Navigation("Match");
                 });
 
+            modelBuilder.Entity("API.Entities.GameWinRecord", b =>
+                {
+                    b.HasOne("API.Entities.Game", "Game")
+                        .WithOne("WinRecord")
+                        .HasForeignKey("API.Entities.GameWinRecord", "GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("game_win_records_games_id_fk");
+
+                    b.Navigation("Game");
+                });
+
             modelBuilder.Entity("API.Entities.Match", b =>
                 {
                     b.HasOne("API.Entities.User", "SubmittedBy")
@@ -1062,6 +1116,9 @@ namespace API.Migrations
             modelBuilder.Entity("API.Entities.Game", b =>
                 {
                     b.Navigation("MatchScores");
+
+                    b.Navigation("WinRecord")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("API.Entities.Match", b =>
