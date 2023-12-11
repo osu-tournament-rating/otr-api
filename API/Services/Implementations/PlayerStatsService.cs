@@ -10,6 +10,7 @@ namespace API.Services.Implementations;
 public class PlayerStatsService : IPlayerStatsService
 {
 	private readonly IBaseStatsService _baseStatsService;
+	private readonly IGameWinRecordsRepository _gameWinRecordsRepository;
 	private readonly IMapper _mapper;
 	private readonly IPlayerMatchStatsRepository _matchStatsRepository;
 	private readonly IPlayerRepository _playerRepository;
@@ -20,7 +21,7 @@ public class PlayerStatsService : IPlayerStatsService
 
 	public PlayerStatsService(IPlayerRepository playerRepository, IPlayerMatchStatsRepository matchStatsRepository,
 		IMatchRatingStatsRepository ratingStatsRepository, IPlayerScoreStatsService playerScoreStatsService, ITournamentsRepository tournamentsRepository,
-		IBaseStatsService baseStatsService, IRatingAdjustmentsRepository ratingAdjustmentsRepository, IMapper mapper)
+		IBaseStatsService baseStatsService, IRatingAdjustmentsRepository ratingAdjustmentsRepository, IGameWinRecordsRepository gameWinRecordsRepository, IMapper mapper)
 	{
 		_playerRepository = playerRepository;
 		_matchStatsRepository = matchStatsRepository;
@@ -29,6 +30,7 @@ public class PlayerStatsService : IPlayerStatsService
 		_tournamentsRepository = tournamentsRepository;
 		_baseStatsService = baseStatsService;
 		_ratingAdjustmentsRepository = ratingAdjustmentsRepository;
+		_gameWinRecordsRepository = gameWinRecordsRepository;
 		_mapper = mapper;
 	}
 
@@ -90,6 +92,7 @@ public class PlayerStatsService : IPlayerStatsService
 
 		var baseStats = await GetBaseStatsAsync(playerId, mode);
 		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+		var modStats = await GetModStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var scoreStats = await GetScoreStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var ratingStats = await GetRatingStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
@@ -103,7 +106,8 @@ public class PlayerStatsService : IPlayerStatsService
 			opponentComparison = await GetOpponentComparisonAsync(playerId, comparerId.Value, mode, dateMin.Value, dateMax.Value);
 		}
 
-		return new PlayerStatsDTO(baseStats, matchStats, scoreStats, tournamentStats, ratingStats,
+		return new PlayerStatsDTO(baseStats, matchStats, modStats, scoreStats, tournamentStats,
+			ratingStats,
 			teammateComparison, opponentComparison);
 	}
 
@@ -172,15 +176,17 @@ public class PlayerStatsService : IPlayerStatsService
 
 	public async Task BatchInsertAsync(IEnumerable<BaseStatsPostDTO> postBody) => await _baseStatsService.BatchInsertAsync(postBody);
 	public async Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody) => await _ratingAdjustmentsRepository.BatchInsertAsync(postBody);
+	public async Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody) => await _gameWinRecordsRepository.BatchInsertAsync(postBody);
 
 	public async Task TruncateAsync()
 	{
 		await _baseStatsService.TruncateAsync();
+		await _gameWinRecordsRepository.TruncateAsync();
 		await _matchStatsRepository.TruncateAsync();
 		await _ratingStatsRepository.TruncateAsync();
 	}
 
-	public async Task TruncateRatingAdjustmentsAsync() => await _ratingAdjustmentsRepository.TruncateAsync(); 
+	public async Task TruncateRatingAdjustmentsAsync() => await _ratingAdjustmentsRepository.TruncateAsync();
 
 	// Returns overall stats for the player, no need to filter by date.
 	private async Task<BaseStatsDTO?> GetBaseStatsAsync(int playerId, int mode)
@@ -208,6 +214,8 @@ public class PlayerStatsService : IPlayerStatsService
 		var ratingStats = await _ratingStatsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax);
 		return _mapper.Map<IEnumerable<MatchRatingStatsDTO>>(ratingStats);
 	}
+
+	public async Task<PlayerModStatsDTO> GetModStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax) => await _matchStatsRepository.GetModStatsAsync(playerId, mode, dateMin, dateMax);
 
 	private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
 	{

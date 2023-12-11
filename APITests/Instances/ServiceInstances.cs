@@ -35,6 +35,7 @@ public static class ServiceInstances
 		RepositoryInstances.TournamentsRepository(context),
 		BaseStatsService(context),
 		RatingAdjustmentsRepository(context),
+		null,
 		ConfigurationInstances.Mapper
 	);
 

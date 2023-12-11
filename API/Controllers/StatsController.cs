@@ -29,7 +29,8 @@ public class StatsController : Controller
 	[Authorize]
 	[HttpGet("{playerId:long}")]
 	public async Task<ActionResult<PlayerStatsDTO>> GetAsync(int playerId, [FromQuery] int? comparerId, [FromQuery] int mode = 0, [FromQuery] DateTime? dateMin = null,
-		[FromQuery] DateTime? dateMax = null) => await _playerStatsService.GetAsync(playerId, comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
+		[FromQuery]
+		DateTime? dateMax = null) => await _playerStatsService.GetAsync(playerId, comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 
 	[AllowAnonymous]
 	[HttpGet("histogram")]
@@ -41,7 +42,7 @@ public class StatsController : Controller
 		await _playerStatsService.BatchInsertAsync(postBody);
 		return Ok();
 	}
-	
+
 	[HttpDelete("ratingadjustments")]
 	public async Task<IActionResult> TruncateAdjustmentsAsync()
 	{
@@ -65,6 +66,13 @@ public class StatsController : Controller
 
 	[HttpPost("basestats")]
 	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<BaseStatsPostDTO> postBody)
+	{
+		await _playerStatsService.BatchInsertAsync(postBody);
+		return Ok();
+	}
+
+	[HttpPost("winrecords")]
+	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<GameWinRecordDTO> postBody)
 	{
 		await _playerStatsService.BatchInsertAsync(postBody);
 		return Ok();

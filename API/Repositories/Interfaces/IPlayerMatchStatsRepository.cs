@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Entities;
 
 namespace API.Repositories.Interfaces;
@@ -5,7 +6,7 @@ namespace API.Repositories.Interfaces;
 public interface IPlayerMatchStatsRepository
 {
 	/// <summary>
-	/// A list of all matches played by a player in a given mode between two dates. Ordered by match start time.
+	///  A list of all matches played by a player in a given mode between two dates. Ordered by match start time.
 	/// </summary>
 	/// <param name="playerId"></param>
 	/// <param name="mode"></param>
@@ -13,8 +14,14 @@ public interface IPlayerMatchStatsRepository
 	/// <param name="dateMax"></param>
 	/// <returns></returns>
 	Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax);
-	Task<IEnumerable<PlayerMatchStats>> TeammateStatsAsync(int playerId, int teammateId, int mode, DateTime dateMin, DateTime dateMax);
-	Task<IEnumerable<PlayerMatchStats>> OpponentStatsAsync(int playerId, int opponentId, int mode, DateTime dateMin, DateTime dateMax);
+
+	Task<IEnumerable<PlayerMatchStats>> TeammateStatsAsync(int playerId, int teammateId, int mode, DateTime dateMin,
+		DateTime dateMax);
+
+	Task<IEnumerable<PlayerMatchStats>> OpponentStatsAsync(int playerId, int opponentId, int mode, DateTime dateMin,
+		DateTime dateMax);
+
+	Task<PlayerModStatsDTO> GetModStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax);
 	Task InsertAsync(IEnumerable<PlayerMatchStats> items);
 	Task TruncateAsync();
 	Task<int> CountMatchesPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);

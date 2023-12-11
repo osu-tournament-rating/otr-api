@@ -1,11 +1,10 @@
-using API.Osu;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.Entities;
 
 /// <summary>
-/// A record of who won a game
+///  A record of who won a game
 /// </summary>
 [Table("game_win_records")]
 public sealed class GameWinRecord
@@ -20,9 +19,9 @@ public sealed class GameWinRecord
 	[Column("losers")]
 	public int[] Losers { get; set; } = Array.Empty<int>();
 	[Column("winner_team")]
-	public OsuEnums.Team WinnerTeam { get; set; }
+	public int WinnerTeam { get; set; }
 	[Column("loser_team")]
-	public OsuEnums.Team LoserTeam { get; set; }
+	public int LoserTeam { get; set; }
 	[InverseProperty("WinRecord")]
 	public Game Game { get; set; } = null!;
 }
