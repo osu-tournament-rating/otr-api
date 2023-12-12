@@ -94,7 +94,7 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 			                       ModType,
 			                       GamesWon,
 			                       GamesPlayed,
-			                       CASE WHEN GamesPlayed > 0 THEN ROUND(GamesWon::NUMERIC / GamesPlayed, 2) ELSE 0 END AS WinRate
+			                       CASE WHEN GamesPlayed > 0 THEN ROUND(GamesWon::NUMERIC / GamesPlayed, 5) ELSE 0 END AS WinRate
 			                   FROM ModStats;
 			                   """;
 		
