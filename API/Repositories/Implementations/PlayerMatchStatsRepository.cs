@@ -51,48 +51,51 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 		using (var command = _context.Database.GetDbConnection().CreateCommand())
 		{
 			const string sql = """
+			                   -- Potential results:
+			                   -- NM, EZ, HD, HR, HDHR, DT, HDDT, FL, HDEZ
 			                   WITH ModCombinations AS (
-			                   			    SELECT
-			                   			        CASE
-			                   			            WHEN (COALESCE(ms.enabled_mods, 0) & 1024) > 0 OR (g.mods & 1024) > 0 THEN 'FL'
-			                   			            WHEN (COALESCE(ms.enabled_mods, 0) & 72) = 72 OR (g.mods & 72) = 72 THEN 'HDDT'
-			                   			            WHEN (COALESCE(ms.enabled_mods, 0) & 64) > 0 OR (g.mods & 64) > 0 THEN 'DT'
-			                   			            WHEN (COALESCE(ms.enabled_mods, 0) & 24) = 24 OR (g.mods & 24) = 24 THEN 'HDHR'
-			                   			            WHEN (COALESCE(ms.enabled_mods, 0) & 16) > 0 OR (g.mods & 16) > 0 THEN 'HR'
-			                   			            WHEN (COALESCE(ms.enabled_mods, 0) & 10) = 10 OR (g.mods & 10) = 10 THEN 'HDEZ'
-			                   			            WHEN (COALESCE(ms.enabled_mods, 0) & 8) > 0 OR (g.mods & 8) > 0 THEN 'HD'
-			                   			            WHEN (COALESCE(ms.enabled_mods, 0) & 2) > 0 OR (g.mods & 2) > 0 THEN 'EZ'
-			                   			            WHEN COALESCE(ms.enabled_mods, g.mods) = 1 THEN 'NM'
-			                   			            ELSE 'NM'
-			                   			            END AS ModType,
-			                   			        p.id as pid,
-			                   			        p.username as puser,
-			                   			        g.id AS gameid,
-			                   			        (SELECT ARRAY[p.id] <@ gwr.winners AS player_won)
-			                   			    FROM match_scores ms
-			                   			             JOIN public.games g ON ms.game_id = g.id
-			                   			             JOIN players p ON ms.player_id = p.id
-			                   			             JOIN game_win_records gwr ON gwr.game_id = g.id
-			                   			             JOIN matches m ON g.match_id = m.id
-			                   			    WHERE p.id = @playerId AND g.verification_status = 0 AND m.mode = @mode AND m.start_time >= @dateMin AND m.start_time <= @dateMax
-			                   			), ModStats AS (
-			                   			    SELECT
-			                   			        pid,
-			                   			        puser,
-			                   			        ModType,
-			                   			        COUNT(*) AS GamesPlayed,
-			                   			        COUNT(CASE WHEN player_won THEN 1 END) AS GamesWon
-			                   			    FROM ModCombinations
-			                   			    GROUP BY pid, puser, ModType
-			                   			)
-			                   			SELECT
-			                   			    pid,
-			                   			    puser,
-			                   			    ModType,
-			                   			    GamesWon,
-			                   			    GamesPlayed,
-			                   			    CASE WHEN GamesPlayed > 0 THEN ROUND(GamesWon::NUMERIC / GamesPlayed, 2) ELSE 0 END AS WinRate
-			                   			FROM ModStats;
+			                       SELECT
+			                           CASE
+			                               WHEN (COALESCE(ms.enabled_mods, 0) & 1024) > 0 OR (g.mods & 1024) > 0 THEN 'FL'
+			                               WHEN (COALESCE(ms.enabled_mods, 0) & 256) > 0 OR (g.mods & 256) > 0 THEN 'HT'
+			                               WHEN (COALESCE(ms.enabled_mods, 0) & 72) = 72 OR (g.mods & 72) = 72 THEN 'HDDT'
+			                               WHEN (COALESCE(ms.enabled_mods, 0) & 64) > 0 OR (g.mods & 64) > 0 THEN 'DT'
+			                               WHEN (COALESCE(ms.enabled_mods, 0) & 24) = 24 OR (g.mods & 24) = 24 THEN 'HDHR'
+			                               WHEN (COALESCE(ms.enabled_mods, 0) & 16) > 0 OR (g.mods & 16) > 0 THEN 'HR'
+			                               WHEN (COALESCE(ms.enabled_mods, 0) & 10) = 10 OR (g.mods & 10) = 10 THEN 'EZHD'
+			                               WHEN (COALESCE(ms.enabled_mods, 0) & 8) > 0 OR (g.mods & 8) > 0 THEN 'HD'
+			                               WHEN (COALESCE(ms.enabled_mods, 0) & 2) > 0 OR (g.mods & 2) > 0 THEN 'EZ'
+			                               WHEN COALESCE(ms.enabled_mods, g.mods) = 1 THEN 'NM'
+			                               ELSE 'NM'
+			                               END AS ModType,
+			                           p.id as pid,
+			                           p.username as puser,
+			                           (SELECT ARRAY[p.id] <@ gwr.winners AS player_won)
+			                       FROM match_scores ms
+			                                JOIN public.games g ON ms.game_id = g.id
+			                                JOIN players p ON ms.player_id = p.id
+			                                JOIN game_win_records gwr ON gwr.game_id = g.id
+			                                JOIN matches m ON g.match_id = m.id
+			                                JOIN tournaments t ON t.id = m.tournament_id
+			                       WHERE p.id = @playerId AND g.verification_status = 0 AND m.verification_status = 0 AND t.mode = @mode AND m.start_time >= @dateMin AND m.start_time <= @dateMax
+			                   ), ModStats AS (
+			                       SELECT
+			                           pid,
+			                           puser,
+			                           ModType,
+			                           COUNT(*) AS GamesPlayed,
+			                           COUNT(CASE WHEN player_won THEN 1 END) AS GamesWon
+			                       FROM ModCombinations
+			                       GROUP BY pid, puser, ModType
+			                   )
+			                   SELECT
+			                       pid,
+			                       puser,
+			                       ModType,
+			                       GamesWon,
+			                       GamesPlayed,
+			                       CASE WHEN GamesPlayed > 0 THEN ROUND(GamesWon::NUMERIC / GamesPlayed, 2) ELSE 0 END AS WinRate
+			                   FROM ModStats;
 			                   """;
 		
 			command.CommandType = CommandType.Text;
@@ -129,6 +132,9 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 							break;
 						case "EZ":
 							pms.PlayedEZ = dto;
+							break;
+						case "HT":
+							pms.PlayedHT = dto;
 							break;
 						case "HD":
 							pms.PlayedHD = dto;

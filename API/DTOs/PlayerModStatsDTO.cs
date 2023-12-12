@@ -4,6 +4,7 @@ public class PlayerModStatsDTO
 {
 	public ModStatsDTO? PlayedNM { get; set; }
 	public ModStatsDTO? PlayedEZ { get; set; }
+	public ModStatsDTO? PlayedHT { get; set; }
 	public ModStatsDTO? PlayedHD { get; set; }
 	public ModStatsDTO? PlayedHR { get; set; }
 	public ModStatsDTO? PlayedDT { get; set; }
