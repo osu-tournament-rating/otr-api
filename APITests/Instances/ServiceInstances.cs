@@ -31,7 +31,6 @@ public static class ServiceInstances
 		RepositoryInstances.PlayerRepository(context),
 		RepositoryInstances.PlayerMatchStatsRepository(context),
 		RepositoryInstances.MatchRatingStatsRepository(context),
-		PlayerScoreStatsService(context),
 		RepositoryInstances.TournamentsRepository(context),
 		BaseStatsService(context),
 		RatingAdjustmentsRepository(context),
@@ -52,10 +51,6 @@ public static class ServiceInstances
 		RepositoryInstances.MatchesRepository(context),
 		RepositoryInstances.TournamentsRepository(context),
 		ConfigurationInstances.Mapper
-	);
-
-	public static IPlayerScoreStatsService PlayerScoreStatsService(OtrContext context) => new PlayerScoreStatsService(
-		RepositoryInstances.MatchScoresRepository(context)
 	);
 
 	public static ITournamentsService TournamentsService(OtrContext context) => new TournamentsService(

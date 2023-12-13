@@ -14,19 +14,17 @@ public class PlayerStatsService : IPlayerStatsService
 	private readonly IMapper _mapper;
 	private readonly IPlayerMatchStatsRepository _matchStatsRepository;
 	private readonly IPlayerRepository _playerRepository;
-	private readonly IPlayerScoreStatsService _playerScoreStatsService;
 	private readonly IRatingAdjustmentsRepository _ratingAdjustmentsRepository;
 	private readonly IMatchRatingStatsRepository _ratingStatsRepository;
 	private readonly ITournamentsRepository _tournamentsRepository;
 
 	public PlayerStatsService(IPlayerRepository playerRepository, IPlayerMatchStatsRepository matchStatsRepository,
-		IMatchRatingStatsRepository ratingStatsRepository, IPlayerScoreStatsService playerScoreStatsService, ITournamentsRepository tournamentsRepository,
+		IMatchRatingStatsRepository ratingStatsRepository, ITournamentsRepository tournamentsRepository,
 		IBaseStatsService baseStatsService, IRatingAdjustmentsRepository ratingAdjustmentsRepository, IGameWinRecordsRepository gameWinRecordsRepository, IMapper mapper)
 	{
 		_playerRepository = playerRepository;
 		_matchStatsRepository = matchStatsRepository;
 		_ratingStatsRepository = ratingStatsRepository;
-		_playerScoreStatsService = playerScoreStatsService;
 		_tournamentsRepository = tournamentsRepository;
 		_baseStatsService = baseStatsService;
 		_ratingAdjustmentsRepository = ratingAdjustmentsRepository;
@@ -93,7 +91,6 @@ public class PlayerStatsService : IPlayerStatsService
 		var baseStats = await GetBaseStatsAsync(playerId, mode);
 		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var modStats = await GetModStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
-		var scoreStats = await GetScoreStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var ratingStats = await GetRatingStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 
@@ -106,7 +103,7 @@ public class PlayerStatsService : IPlayerStatsService
 			opponentComparison = await GetOpponentComparisonAsync(playerId, comparerId.Value, mode, dateMin.Value, dateMax.Value);
 		}
 
-		return new PlayerStatsDTO(baseStats, matchStats, modStats, scoreStats, tournamentStats,
+		return new PlayerStatsDTO(baseStats, matchStats, modStats, tournamentStats,
 			ratingStats,
 			teammateComparison, opponentComparison);
 	}
@@ -322,7 +319,4 @@ public class PlayerStatsService : IPlayerStatsService
 		var opponents = stats.SelectMany(x => x.OpponentIds).GroupBy(x => x).Select(x => new { Id = x.Key, Count = x.Count() }).ToList();
 		return opponents.Any() ? opponents.OrderByDescending(x => x.Count).First().Id : null;
 	}
-
-	private async Task<PlayerScoreStatsDTO?> GetScoreStatsAsync(int id, int mode, DateTime dateMin, DateTime dateMax) =>
-		await _playerScoreStatsService.GetScoreStatsAsync(id, mode, dateMin, dateMax);
 }

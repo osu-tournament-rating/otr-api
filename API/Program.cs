@@ -102,7 +102,6 @@ builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
-builder.Services.AddScoped<IPlayerScoreStatsService, PlayerScoreStatsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();

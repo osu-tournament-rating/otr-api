@@ -55,6 +55,8 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 			                   -- NM, EZ, HD, HR, HDHR, DT, HDDT, FL, HDEZ
 			                   WITH ModCombinations AS (
 			                       SELECT
+			                           p.id as pid,
+			                           p.username as puser,
 			                           CASE
 			                               WHEN (COALESCE(ms.enabled_mods, 0) & 1024) > 0 OR (g.mods & 1024) > 0 THEN 'FL'
 			                               WHEN (COALESCE(ms.enabled_mods, 0) & 256) > 0 OR (g.mods & 256) > 0 THEN 'HT'
@@ -65,11 +67,9 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 			                               WHEN (COALESCE(ms.enabled_mods, 0) & 10) = 10 OR (g.mods & 10) = 10 THEN 'EZHD'
 			                               WHEN (COALESCE(ms.enabled_mods, 0) & 8) > 0 OR (g.mods & 8) > 0 THEN 'HD'
 			                               WHEN (COALESCE(ms.enabled_mods, 0) & 2) > 0 OR (g.mods & 2) > 0 THEN 'EZ'
-			                               WHEN COALESCE(ms.enabled_mods, g.mods) = 1 THEN 'NM'
 			                               ELSE 'NM'
 			                               END AS ModType,
-			                           p.id as pid,
-			                           p.username as puser,
+			                           ms.score AS Score,
 			                           (SELECT ARRAY[p.id] <@ gwr.winners AS player_won)
 			                       FROM match_scores ms
 			                                JOIN public.games g ON ms.game_id = g.id
@@ -78,24 +78,47 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 			                                JOIN matches m ON g.match_id = m.id
 			                                JOIN tournaments t ON t.id = m.tournament_id
 			                       WHERE p.id = @playerId AND g.verification_status = 0 AND m.verification_status = 0 AND t.mode = @mode AND m.start_time >= @dateMin AND m.start_time <= @dateMax
-			                   ), ModStats AS (
-			                       SELECT
-			                           pid,
-			                           puser,
-			                           ModType,
-			                           COUNT(*) AS GamesPlayed,
-			                           COUNT(CASE WHEN player_won THEN 1 END) AS GamesWon
-			                       FROM ModCombinations
-			                       GROUP BY pid, puser, ModType
-			                   )
+			                   ),
+			                        NormalizedScores AS (
+			                            SELECT
+			                                pid,
+			                                puser,
+			                                ModType,
+			                                AVG(Score / CASE
+			                                                WHEN ModType = 'FL' THEN 1.12
+			                                                WHEN ModType = 'HT' THEN 0.3
+			                                                WHEN ModType = 'HDDT' THEN 1.1872
+			                                                WHEN ModType = 'DT' THEN 1.12
+			                                                WHEN ModType = 'HDHR' THEN 1.166
+			                                                WHEN ModType = 'HR' THEN 1.1
+			                                                WHEN ModType = 'EZHD' THEN 0.53
+			                                                WHEN ModType = 'HD' THEN 1.06
+			                                                WHEN ModType = 'EZ' THEN 0.5
+			                                                ELSE 1
+			                                    END) AS NormalizedAverageScore
+			                            FROM ModCombinations
+			                            GROUP BY pid, puser, ModType
+			                        ),
+			                        ModStats AS (
+			                            SELECT
+			                                pid,
+			                                puser,
+			                                ModType,
+			                                COUNT(*) AS GamesPlayed,
+			                                COUNT(CASE WHEN player_won THEN 1 END) AS GamesWon
+			                            FROM ModCombinations
+			                            GROUP BY pid, puser, ModType
+			                        )
 			                   SELECT
-			                       pid,
-			                       puser,
-			                       ModType,
-			                       GamesWon,
-			                       GamesPlayed,
-			                       CASE WHEN GamesPlayed > 0 THEN ROUND(GamesWon::NUMERIC / GamesPlayed, 5) ELSE 0 END AS WinRate
-			                   FROM ModStats;
+			                       ns.pid,
+			                       ns.puser,
+			                       ns.ModType,
+			                       ns.NormalizedAverageScore,
+			                       ms.GamesPlayed,
+			                       ms.GamesWon,
+			                       CASE WHEN ms.GamesPlayed > 0 THEN ROUND(ms.GamesWon::NUMERIC / ms.GamesPlayed, 5) ELSE 0 END AS WinRate
+			                   FROM NormalizedScores ns
+			                            JOIN ModStats ms ON ns.pid = ms.pid AND ns.puser = ms.puser AND ns.ModType = ms.ModType;
 			                   """;
 		
 			command.CommandType = CommandType.Text;
@@ -113,16 +136,18 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 				var pms = new PlayerModStatsDTO();
 				while (await result.ReadAsync())
 				{
-					string modType = await result.GetFieldValueAsync<string>("ModType");
-					int gamesPlayed = await result.GetFieldValueAsync<int>("GamesPlayed");
-					int gamesWon = await result.GetFieldValueAsync<int>("GamesWon");
-					double winrate = await result.GetFieldValueAsync<double>("WinRate");
+					string modType = await result.GetFieldValueAsync<string>("modtype");
+					int gamesPlayed = await result.GetFieldValueAsync<int>("gamesplayed");
+					int gamesWon = await result.GetFieldValueAsync<int>("gameswon");
+					double winrate = await result.GetFieldValueAsync<double>("winrate");
+					double normalizedAverageScore = await result.GetFieldValueAsync<double>("normalizedaveragescore");
 					
 					var dto = new ModStatsDTO
 					{
 						GamesPlayed = gamesPlayed,
 						GamesWon = gamesWon,
-						Winrate = winrate
+						Winrate = winrate,
+						NormalizedAverageScore = normalizedAverageScore
 					};
 					
 					switch (modType)
