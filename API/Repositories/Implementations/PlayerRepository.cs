@@ -107,6 +107,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	                                                                       .FirstOrDefaultAsync();
 
 	public async Task<string?> GetCountryAsync(int playerId) => await _context.Players.Where(p => p.Id == playerId).Select(p => p.Country).FirstOrDefaultAsync();
+	public async Task<int> GetIdAsync(string username) => await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).Select(p => p.Id).FirstOrDefaultAsync(); 
 
 	// This is used by a scheduled task to automatically populate user info, such as username, country, etc.
 	public async Task<IEnumerable<Player>> GetOutdatedAsync() => await _context.Players.Where(p => p.Updated == null).ToListAsync();

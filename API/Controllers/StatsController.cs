@@ -32,6 +32,12 @@ public class StatsController : Controller
 		[FromQuery]
 		DateTime? dateMax = null) => await _playerStatsService.GetAsync(playerId, comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 
+	[Authorize]
+	[HttpGet("{username}")]
+	public async Task<ActionResult<PlayerStatsDTO>> GetAsync(string username, [FromQuery] int? comparerId, [FromQuery] int mode = 0, [FromQuery] DateTime? dateMin = null,
+		[FromQuery]
+		DateTime? dateMax = null) => await _playerStatsService.GetAsync(username, comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
+	
 	[AllowAnonymous]
 	[HttpGet("histogram")]
 	public async Task<ActionResult<IEnumerable<double>>> GetRatingHistogramAsync([FromQuery] int mode = 0) => await _baseStatsService.GetHistogramAsync(mode);

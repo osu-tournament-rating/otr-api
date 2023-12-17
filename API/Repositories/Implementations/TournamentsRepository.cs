@@ -58,23 +58,30 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 
 	public async Task<PlayerTournamentTeamSizeCountDTO> GetPlayerTeamSizeStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
-		var counts = await _context.Tournaments
-		                           .Where(x => x.Mode == mode)
-		                           .Include(x => x.Matches.Where(y => y.StartTime >= dateMin && y.StartTime <= dateMax))
-		                           .ThenInclude(x => x.Games)
-		                           .ThenInclude(x => x.MatchScores.Where(y => y.PlayerId == playerId))
-		                           .Select(x => x.TeamSize)
-		                           .ToListAsync();
+		var participatedTournaments = await _context.Tournaments
+		                                            .Where(tournament => tournament.Mode == mode)
+		                                            .Include(tournament => tournament.Matches)
+		                                            .ThenInclude(match => match.Games)
+		                                            .ThenInclude(game => game.MatchScores)
+		                                            .Where(tournament => tournament.Matches.Any(match => 
+			                                            match.StartTime >= dateMin && 
+			                                            match.StartTime <= dateMax && 
+			                                            match.Games.Any(game => 
+				                                            game.MatchScores.Any(score => score.PlayerId == playerId))))
+		                                            .Select(tournament => new { TournamentId = tournament.Id, TeamSize = tournament.TeamSize })
+		                                            .Distinct() // Ensures each tournament is counted once
+		                                            .ToListAsync();
 
 		return new PlayerTournamentTeamSizeCountDTO
 		{
-			Count1v1 = counts.Count(x => x == 1),
-			Count2v2 = counts.Count(x => x == 2),
-			Count3v3 = counts.Count(x => x == 3),
-			Count4v4 = counts.Count(x => x == 4),
-			CountOther = counts.Count(x => x > 4)
+			Count1v1 = participatedTournaments.Count(x => x.TeamSize == 1),
+			Count2v2 = participatedTournaments.Count(x => x.TeamSize == 2),
+			Count3v3 = participatedTournaments.Count(x => x.TeamSize == 3),
+			Count4v4 = participatedTournaments.Count(x => x.TeamSize == 4),
+			CountOther = participatedTournaments.Count(x => x.TeamSize > 4)
 		};
 	}
+
 
 	public async Task<Tournament> CreateOrUpdateAsync(BatchWrapper wrapper, bool updateExisting = false)
 	{

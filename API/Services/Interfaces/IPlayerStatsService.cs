@@ -7,6 +7,9 @@ public interface IPlayerStatsService
 {
 	Task<PlayerStatsDTO> GetAsync(int playerId, int? comparerId, int mode, DateTime? dateMin = null,
 		DateTime? dateMax = null);
+	
+	Task<PlayerStatsDTO> GetAsync(string username, int? comparerId, int mode, DateTime? dateMin = null,
+		DateTime? dateMax = null);
 
 	Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(int playerId, int teammateId, int mode, DateTime dateMin,
 		DateTime dateMax);

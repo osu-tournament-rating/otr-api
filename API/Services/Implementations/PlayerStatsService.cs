@@ -32,6 +32,13 @@ public class PlayerStatsService : IPlayerStatsService
 		_mapper = mapper;
 	}
 
+	public async Task<PlayerStatsDTO> GetAsync(string username, int? comparerId, int mode, DateTime? dateMin = null,
+		DateTime? dateMax = null)
+	{
+		int id = await _playerRepository.GetIdAsync(username);
+		return await GetAsync(id, comparerId, mode, dateMin, dateMax);
+	}
+
 	public async Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(int playerId, int teammateId, int mode, DateTime dateMin,
 		DateTime dateMax)
 	{
