@@ -16,28 +16,6 @@ public class Match
 	public long MatchId { get; set; }
 	[Column("name")]
 	public string? Name { get; set; }
-	[Column("abbreviation")]
-	public string? Abbreviation { get; set; }
-	[Column("forum")]
-	public string? Forum { get; set; }
-	[Column("tournament_name")]
-	public string? TournamentName { get; set; }
-	/// <summary>
-	/// The "best skill" rank allowed in a tournament. Open is 1.
-	/// If a tournament is #7500-35000, this would be 7500.
-	/// </summary>
-	[Column("rank_range_lower_bound")]
-	public int? RankRangeLowerBound { get; set; }
-	/// <summary>
-	/// The amount of players that are supposed to be playing in this match, per team.
-	/// </summary>
-	[Column("team_size")]
-	public int? TeamSize { get; set; }
-	/// <summary>
-	/// The play mode: mania, osu!, taiko, catch
-	/// </summary>
-	[Column("mode")]
-	public int? Mode { get; set; }
 	[Column("start_time", TypeName = "timestamp with time zone")]
 	public DateTime? StartTime { get; set; }
 	[Column("created", TypeName = "timestamp with time zone")]
