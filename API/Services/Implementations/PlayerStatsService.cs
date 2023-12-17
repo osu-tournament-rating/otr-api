@@ -212,35 +212,29 @@ public class PlayerStatsService : IPlayerStatsService
 		return _mapper.Map<IEnumerable<MatchRatingStatsDTO>>(ratingStats);
 	}
 
-	public async Task<PlayerModStatsDTO> GetModStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax) => await _matchStatsRepository.GetModStatsAsync(playerId, mode, dateMin, dateMax);
+	public async Task<PlayerModStatsDTO> GetModStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax) =>
+		await _matchStatsRepository.GetModStatsAsync(playerId, mode, dateMin, dateMax);
 
 	private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		const int maxTournaments = 5;
 
-		var tournaments = (await _tournamentsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax)).ToList();
+		var bestPerformances = await _tournamentsRepository.GetPerformancesAsync(maxTournaments, playerId, mode, dateMin, dateMax, true);
+		var worstPerformances = await _tournamentsRepository.GetPerformancesAsync(maxTournaments, playerId, mode, dateMin, dateMax, false);
 
-		if (!tournaments.Any())
+		// Remove any best performances from worst performances
+		// ReSharper disable PossibleMultipleEnumeration
+		foreach (var performance in bestPerformances)
 		{
-			return new PlayerTournamentStatsDTO();
+			worstPerformances = worstPerformances.Where(x => x.TournamentId != performance.TournamentId);
 		}
-
-		var topPerformancesList = await _tournamentsRepository.GetTopPerformancesAsync(maxTournaments, playerId, mode, dateMin, dateMax);
-
-		ICollection<TournamentDTO>? performances = null;
-		if (topPerformancesList.Any())
-		{
-			performances = _mapper.Map<ICollection<TournamentDTO>>(topPerformancesList);
-		}
-
+		
+		var counts = await _tournamentsRepository.GetPlayerTeamSizeStatsAsync(playerId, mode, dateMin, dateMax);
 		return new PlayerTournamentStatsDTO
 		{
-			Count1v1 = tournaments.Count(x => x.TeamSize == 1),
-			Count2v2 = tournaments.Count(x => x.TeamSize == 2),
-			Count3v3 = tournaments.Count(x => x.TeamSize == 3),
-			Count4v4 = tournaments.Count(x => x.TeamSize == 4),
-			CountOther = tournaments.Count(x => x.TeamSize > 4),
-			TopPerformances = performances
+			TeamSizeCounts = counts,
+			BestPerformances = bestPerformances,
+			WorstPerformances = worstPerformances
 		};
 	}
 
