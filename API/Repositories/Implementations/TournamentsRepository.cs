@@ -66,8 +66,9 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		                                            .Where(tournament => tournament.Matches.Any(match => 
 			                                            match.StartTime >= dateMin && 
 			                                            match.StartTime <= dateMax && 
-			                                            match.Games.Any(game => 
-				                                            game.MatchScores.Any(score => score.PlayerId == playerId))))
+			                                            match.VerificationStatus == 0 &&
+			                                            match.Games.Any(game => game.VerificationStatus == 0 &&
+				                                            game.MatchScores.Any(score => score.PlayerId == playerId && score.IsValid == true))))
 		                                            .Select(tournament => new { TournamentId = tournament.Id, TeamSize = tournament.TeamSize })
 		                                            .Distinct() // Ensures each tournament is counted once
 		                                            .ToListAsync();
@@ -105,7 +106,7 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 			              								FROM tournaments t
 			              								INNER JOIN matches m ON m.tournament_id = t.id
 			              								INNER JOIN match_rating_stats mrs ON mrs.match_id = m.id
-			              								WHERE mrs.player_id = @playerId AND t.mode = @mode AND m.start_time >= @dateMin AND m.start_time <= @dateMax
+			              								WHERE mrs.player_id = @playerId AND t.mode = @mode AND m.start_time >= @dateMin AND m.start_time <= @dateMax AND m.verification_status = 0
 			              								GROUP BY t.id
 			              								ORDER BY AVG(mrs.match_cost) {order}
 			              								LIMIT @count
