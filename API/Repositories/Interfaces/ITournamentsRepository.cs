@@ -14,7 +14,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
 	/// <param name="wrapper">The user input required for this tournament</param>
 	/// <param name="updateExisting">Whether to overwrite values for an existing occurrence of this tournament</param>
 	/// <returns></returns>
-	public Task<Tournament> CreateOrUpdateAsync(BatchWrapper wrapper, bool updateExisting = false);
+	public Task<Tournament> CreateOrUpdateAsync(MatchWebSubmissionDTO wrapper, bool updateExisting = false);
 
 	public Task<bool> ExistsAsync(string name, int mode);
 	public Task<PlayerTournamentTeamSizeCountDTO> GetPlayerTeamSizeStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax);

@@ -1,5 +1,6 @@
 using API;
 using API.Controllers;
+using API.DTOs;
 using API.Enums;
 using API.Repositories.Implementations;
 using API.Services.Implementations;
@@ -38,7 +39,7 @@ public class MatchesControllerTests
 		 */
 
 		var dummyUserId = (await context.Users.FirstAsync()).Id;
-		var batch = new BatchWrapper
+		var batch = new MatchWebSubmissionDTO
 		{
 			TournamentName = "My Special Tournament",
 			Abbreviation = "MST",

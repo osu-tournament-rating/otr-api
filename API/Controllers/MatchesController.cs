@@ -10,19 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 // ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;
 
-// TODO: Rename, move to own DTO file
-public class BatchWrapper
-{
-	public string TournamentName { get; set; } = null!;
-	public string Abbreviation { get; set; } = null!;
-	public string ForumPost { get; set; } = null!;
-	public int RankRangeLowerBound { get; set; }
-	public int TeamSize { get; set; }
-	public int Mode { get; set; }
-	public int SubmitterId { get; set; }
-	public IEnumerable<long> Ids { get; set; } = new List<long>();
-}
-
 [ApiController]
 [EnableCors]
 [Authorize]
@@ -41,7 +28,7 @@ public class MatchesController : Controller
 	}
 
 	[HttpPost("batch")]
-	public async Task<IActionResult> PostAsync([FromBody] BatchWrapper wrapper, [FromQuery] bool verified = false)
+	public async Task<IActionResult> PostAsync([FromBody] MatchWebSubmissionDTO wrapper, [FromQuery] bool verified = false)
 	{
 		/**
 		 * FLOW:

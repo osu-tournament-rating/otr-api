@@ -30,10 +30,10 @@ public class MatchesService : IMatchesService
 		return _mapper.Map<IEnumerable<MatchDTO>>(matches);
 	}
 
-	public async Task BatchInsertOrUpdateAsync(BatchWrapper batchWrapper, bool verified, int? verifier)
+	public async Task BatchInsertOrUpdateAsync(MatchWebSubmissionDTO matchWebSubmissionDto, bool verified, int? verifier)
 	{
-		var existingMatches = (await _matchesRepository.GetByMatchIdsAsync(batchWrapper.Ids)).ToList();
-		var tournament = await _tournamentsRepository.CreateOrUpdateAsync(batchWrapper, verified);
+		var existingMatches = (await _matchesRepository.GetByMatchIdsAsync(matchWebSubmissionDto.Ids)).ToList();
+		var tournament = await _tournamentsRepository.CreateOrUpdateAsync(matchWebSubmissionDto, verified);
 		
 		// Update the matches that already exist, if we are verified
 		if (verified)
@@ -44,27 +44,27 @@ public class MatchesService : IMatchesService
 				match.IsApiProcessed = false;
 				match.VerificationStatus = (int) MatchVerificationStatus.Verified;
 				match.VerificationSource = verifier;
-				match.VerifierUserId = batchWrapper.SubmitterId;
+				match.VerifierUserId = matchWebSubmissionDto.SubmitterId;
 				match.TournamentId = tournament.Id;
-				match.SubmitterUserId = batchWrapper.SubmitterId;
+				match.SubmitterUserId = matchWebSubmissionDto.SubmitterId;
 
 				await _matchesRepository.UpdateAsync(match);
 			}
 		}
 		
 		// Matches that don't exist yet
-		var newMatchIds = batchWrapper.Ids.Except(existingMatches.Select(x => x.MatchId)).ToList();
+		var newMatchIds = matchWebSubmissionDto.Ids.Except(existingMatches.Select(x => x.MatchId)).ToList();
 		var verificationStatus = verified ? MatchVerificationStatus.Verified : MatchVerificationStatus.PendingVerification;
 		
 		var newMatches = newMatchIds.Select(id => new Match
 		{
 			MatchId = id,
 			VerificationStatus = (int)verificationStatus,
-			SubmitterUserId = batchWrapper.SubmitterId,
+			SubmitterUserId = matchWebSubmissionDto.SubmitterId,
 			NeedsAutoCheck = true,
 			IsApiProcessed = false,
 			VerificationSource = verifier,
-			VerifierUserId = verified ? batchWrapper.SubmitterId : null,
+			VerifierUserId = verified ? matchWebSubmissionDto.SubmitterId : null,
 			TournamentId = tournament.Id
 		});
 		

@@ -18,11 +18,11 @@ public interface IMatchesService
 	/// <summary>
 	/// Inserts or updates based on user input. Only updates if verified is true.
 	/// </summary>
-	/// <param name="batchWrapper"></param>
+	/// <param name="matchWebSubmissionDto"></param>
 	/// <param name="verified">Whether to mark the matches inserted as verified. Also allows overwriting of existing values.</param>
 	/// <param name="verifier">The entity who verified the matches (int representation of <see cref="MatchVerificationSource")/></param>
 	/// <returns></returns>
-	Task BatchInsertOrUpdateAsync(BatchWrapper batchWrapper, bool verified, int? verifier);
+	Task BatchInsertOrUpdateAsync(MatchWebSubmissionDTO matchWebSubmissionDto, bool verified, int? verifier);
 
 	/// <summary>
 	/// A unique mapping of osu! match ids to our internal ids.
