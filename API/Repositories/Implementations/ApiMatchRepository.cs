@@ -52,7 +52,7 @@ public class ApiMatchRepository : IApiMatchRepository
 		{
 			return;
 		}
-
+		
 		foreach (long osuId in GetUserIdsFromMatch(apiMatch)!)
 		{
 			if (existingPlayersMapping.ContainsKey(osuId))
@@ -93,7 +93,10 @@ public class ApiMatchRepository : IApiMatchRepository
 		return existingPlayers.ToDictionary(player => player.OsuId, player => player.Id);
 	}
 
-	private List<long>? GetUserIdsFromMatch(OsuApiMatchData apiMatch) => apiMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
+	private List<long>? GetUserIdsFromMatch(OsuApiMatchData apiMatch)
+	{
+		return apiMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
+	}
 
 	// Beatmaps
 

@@ -18,7 +18,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 
 		return await _context.MatchRatingStats
 		                     .Where(x => x.PlayerId == playerId &&
-		                                 x.Match.Mode == mode &&
+		                                 x.Match.Tournament.Mode == mode &&
 		                                 x.Match.StartTime >= dateMin &&
 		                                 x.Match.StartTime <= dateMax)
 		                     .Include(x => x.Match)
@@ -47,7 +47,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 		
 		return await _context.MatchRatingStats
 		                     .Where(x => x.PlayerId == playerId &&
-		                                 x.Match.Mode == mode &&
+		                                 x.Match.Tournament.Mode == mode &&
 		                                 x.Match.StartTime != null &&
 		                                 x.Match.StartTime >= dateMin &&
 		                                 x.Match.StartTime <= dateMax)
@@ -64,7 +64,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 		return await _context.MatchRatingStats
 		                     .Where(x =>
 			                     x.PlayerId == playerId &&
-			                     x.Match.Mode == mode &&
+			                     x.Match.Tournament.Mode == mode &&
 			                     x.Match.StartTime != null &&
 			                     x.Match.StartTime >= dateMin &&
 			                     x.Match.StartTime <= dateMax)
@@ -75,7 +75,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 
 	public async Task<DateTime?> GetOldestForPlayerAsync(int playerId, int mode) => await _context.MatchRatingStats
 	                                                                                              .Where(x => x.PlayerId == playerId &&
-	                                                                                                          x.Match.Mode == mode &&
+	                                                                                                          x.Match.Tournament.Mode == mode &&
 	                                                                                                          x.Match.StartTime != null)
 	                                                                                              .Select(x => x.Match.StartTime)
 	                                                                                              .MinAsync();
@@ -86,7 +86,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 		                                   .Where(mrs => _context.PlayerMatchStats
 		                                                         .Any(pms => pms.PlayerId == mrs.PlayerId &&
 		                                                                     pms.TeammateIds.Contains(teammateId) &&
-		                                                                     pms.Match.Mode == mode &&
+		                                                                     pms.Match.Tournament.Mode == mode &&
 		                                                                     pms.Match.StartTime >= dateMin &&
 		                                                                     pms.Match.StartTime <= dateMax))
 		                                   .Distinct()
@@ -98,7 +98,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 		                                   .Where(mrs => _context.PlayerMatchStats
 		                                                         .Any(pms => pms.PlayerId == mrs.PlayerId &&
 		                                                                     pms.OpponentIds.Contains(opponentId) &&
-		                                                                     pms.Match.Mode == mode &&
+		                                                                     pms.Match.Tournament.Mode == mode &&
 		                                                                     pms.Match.StartTime >= dateMin &&
 		                                                                     pms.Match.StartTime <= dateMax))
 		                                   .Distinct()
@@ -113,8 +113,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 		                              .Include(x => x.Match)
 		                              .ThenInclude(x => x.Tournament)
 		                              .Where(x => x.PlayerId == playerId &&
-		                                          x.Match.Tournament != null &&
-		                                          x.Match.Mode == mode &&
+		                                          x.Match.Tournament.Mode == mode &&
 		                                          x.Match.StartTime != null &&
 		                                          x.Match.StartTime >= dateMin &&
 		                                          x.Match.StartTime <= dateMax)

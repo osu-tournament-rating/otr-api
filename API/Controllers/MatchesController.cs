@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 // ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;
 
+// TODO: Rename, move to own DTO file
 public class BatchWrapper
 {
 	public string TournamentName { get; set; } = null!;

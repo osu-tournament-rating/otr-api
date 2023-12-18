@@ -165,7 +165,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		{
 			return await _context.Players
 			                     .SelectMany(p => p.MatchStats)
-			                     .Where(ms => ms.Match.Mode == mode && ms.Player.Country == country)
+			                     .Where(ms => ms.Match.Tournament.Mode == mode && ms.Player.Country == country)
 			                     .GroupBy(ms => ms.PlayerId)
 			                     .OrderByDescending(g => g.Count())
 			                     .Select(g => g.Count())
@@ -174,7 +174,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 		return await _context.Players
 		                     .SelectMany(p => p.MatchStats)
-		                     .Where(ms => ms.Match.Mode == mode)
+		                     .Where(ms => ms.Match.Tournament.Mode == mode)
 		                     .GroupBy(ms => ms.PlayerId)
 		                     .OrderByDescending(g => g.Count())
 		                     .Select(g => g.Count())

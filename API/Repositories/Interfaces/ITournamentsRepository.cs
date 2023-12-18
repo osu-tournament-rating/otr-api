@@ -9,13 +9,6 @@ public interface ITournamentsRepository : IRepository<Tournament>
 	public Task<Tournament?> GetAsync(string name);
 
 	/// <summary>
-	///  A one-time-use operation: takes existing data from known matches, inserts them into the tournaments table, and links
-	///  tournaments to matches.
-	/// </summary>
-	/// <returns></returns>
-	public Task PopulateAndLinkAsync();
-
-	/// <summary>
 	///  Creates or udpates a tournament from a web submission.
 	/// </summary>
 	/// <param name="wrapper">The user input required for this tournament</param>

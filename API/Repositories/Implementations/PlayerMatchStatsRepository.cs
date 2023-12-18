@@ -1,8 +1,6 @@
 using API.DTOs;
 using API.Entities;
 using API.Repositories.Interfaces;
-using Azure.Core;
-using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.Data;
@@ -14,23 +12,26 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 	private readonly OtrContext _context;
 	public PlayerMatchStatsRepository(OtrContext context) { _context = context; }
 
-	public async Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax) => await _context.PlayerMatchStats
-	                                                                                                                                                .Where(stats =>
-		                                                                                                                                                stats.PlayerId ==
-		                                                                                                                                                playerId &&
-		                                                                                                                                                stats.Match.Mode == mode &&
-		                                                                                                                                                stats.Match.StartTime >=
-		                                                                                                                                                dateMin &&
-		                                                                                                                                                stats.Match.StartTime <=
-		                                                                                                                                                dateMax)
-	                                                                                                                                                .OrderBy(x => x.Match.StartTime)
-	                                                                                                                                                .ToListAsync();
+	public async Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
+	{
+		return await _context.PlayerMatchStats
+		                     .Where(stats =>
+			                     stats.PlayerId ==
+			                     playerId &&
+			                     stats.Match.Tournament.Mode == mode &&
+			                     stats.Match.StartTime >=
+			                     dateMin &&
+			                     stats.Match.StartTime <=
+			                     dateMax)
+		                     .OrderBy(x => x.Match.StartTime)
+		                     .ToListAsync();
+	}
 
 	public async Task<IEnumerable<PlayerMatchStats>> TeammateStatsAsync(int playerId, int teammateId, int mode, DateTime dateMin,
 		DateTime dateMax) => await _context.PlayerMatchStats
 		                                   .Where(stats => stats.PlayerId == playerId &&
 		                                                   stats.TeammateIds.Contains(teammateId) &&
-		                                                   stats.Match.Mode == mode &&
+		                                                   stats.Match.Tournament.Mode == mode &&
 		                                                   stats.Match.StartTime >= dateMin &&
 		                                                   stats.Match.StartTime <= dateMax)
 		                                   .OrderBy(x => x.Match.StartTime)
@@ -40,7 +41,7 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 		DateTime dateMax) => await _context.PlayerMatchStats
 		                                   .Where(stats => stats.PlayerId == playerId &&
 		                                                   stats.OpponentIds.Contains(opponentId) &&
-		                                                   stats.Match.Mode == mode &&
+		                                                   stats.Match.Tournament.Mode == mode &&
 		                                                   stats.Match.StartTime >= dateMin &&
 		                                                   stats.Match.StartTime <= dateMax)
 		                                   .OrderBy(x => x.Match.StartTime)
@@ -204,7 +205,7 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 		dateMax ??= DateTime.MaxValue;
 
 		return await _context.PlayerMatchStats.Where(x => x.PlayerId == playerId &&
-		                                                  x.Match.Mode == mode &&
+		                                                  x.Match.Tournament.Mode == mode &&
 		                                                  x.Match.StartTime >= dateMin &&
 		                                                  x.Match.StartTime <= dateMax)
 		                     .CountAsync();
@@ -216,7 +217,7 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 		dateMax ??= DateTime.MaxValue;
 
 		return await _context.PlayerMatchStats.Where(x => x.PlayerId == playerId &&
-		                                                  x.Match.Mode == mode &&
+		                                                  x.Match.Tournament.Mode == mode &&
 		                                                  x.Won &&
 		                                                  x.Match.StartTime >= dateMin &&
 		                                                  x.Match.StartTime <= dateMax)

@@ -35,7 +35,7 @@ public class Match
 	[Column("verified_by_user")]
 	public int? VerifierUserId { get; set; }
 	[Column("tournament_id")]
-	public int? TournamentId { get; set; }
+	public int TournamentId { get; set; }
 	/// <summary>
 	/// Checked by a background worker to see if the match needs to be processed.
 	/// </summary>
@@ -51,7 +51,7 @@ public class Match
 	[InverseProperty("Match")]
 	public virtual ICollection<Game> Games { get; set; } = new List<Game>();
 	[InverseProperty("Matches")]
-	public virtual Tournament? Tournament { get; set; }
+	public virtual Tournament Tournament { get; set; } = null!;
 	[InverseProperty("Match")]
 	public virtual ICollection<PlayerMatchStats> Stats { get; set; } = new List<PlayerMatchStats>();
 	[InverseProperty("Match")]

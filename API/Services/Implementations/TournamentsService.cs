@@ -17,7 +17,6 @@ public class TournamentsService : ITournamentsService
 		_mapper = mapper;
 	}
 	
-	public async Task PopulateAndLinkAsync() => await _repository.PopulateAndLinkAsync();
 	public async Task<Tournament> CreateOrUpdateAsync(BatchWrapper wrapper, bool updateExisting = false) => await _repository.CreateOrUpdateAsync(wrapper, updateExisting);
 	public async Task<bool> ExistsAsync(string name, int mode) => await _repository.ExistsAsync(name, mode);
 

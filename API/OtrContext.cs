@@ -126,7 +126,7 @@ public partial class OtrContext : DbContext
 			entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedMatches).HasForeignKey(e => e.SubmitterUserId).IsRequired(false);
 			entity.HasOne(e => e.VerifiedBy).WithMany(u => u.VerifiedMatches).HasForeignKey(e => e.VerifierUserId).IsRequired(false);
 			entity.HasMany(e => e.Games).WithOne(g => g.Match).OnDelete(DeleteBehavior.Cascade);
-			entity.HasOne(e => e.Tournament).WithMany(t => t.Matches).IsRequired(false);
+			entity.HasOne(e => e.Tournament).WithMany(t => t.Matches).IsRequired().OnDelete(DeleteBehavior.Cascade);
 			entity.HasMany(e => e.Stats).WithOne(s => s.Match).HasForeignKey(e => e.MatchId).IsRequired().OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasIndex(x => x.MatchId);
@@ -211,7 +211,7 @@ public partial class OtrContext : DbContext
 			      .WithOne(m => m.Tournament)
 			      .OnDelete(DeleteBehavior.Cascade)
 			      .HasConstraintName("Tournaments___fkmatchid")
-			      .IsRequired(false);
+			      .IsRequired();
 			
 			entity.HasIndex(e => new { e.Name, e.Abbreviation }).IsUnique();
 		});

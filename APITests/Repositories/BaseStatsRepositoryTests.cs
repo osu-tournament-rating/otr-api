@@ -116,7 +116,7 @@ public class BaseStatsRepositoryTests
 		int expectedHighestMatches = await repository.HighestMatchesAsync(mode);
 		int actualHighestMatches = await context.Players
 		                                        .SelectMany(p => p.MatchStats)
-		                                        .Where(ms => ms.Match.Mode == mode)
+		                                        .Where(ms => ms.Match.Tournament.Mode == mode)
 		                                        .GroupBy(ms => ms.PlayerId)
 		                                        .OrderByDescending(g => g.Count())
 		                                        .Select(g => g.Count())
@@ -142,7 +142,7 @@ public class BaseStatsRepositoryTests
 		int expectedHighestMatches = await repository.HighestMatchesAsync(mode, country);
 		int actualHighestMatches = await context.Players
 		                                        .SelectMany(p => p.MatchStats)
-		                                        .Where(ms => ms.Match.Mode == mode && ms.Player.Country == country)
+		                                        .Where(ms => ms.Match.Tournament.Mode == mode && ms.Player.Country == country)
 		                                        .GroupBy(ms => ms.PlayerId)
 		                                        .OrderByDescending(g => g.Count())
 		                                        .Select(g => g.Count())

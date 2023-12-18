@@ -361,10 +361,6 @@ namespace API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Abbreviation")
-                        .HasColumnType("text")
-                        .HasColumnName("abbreviation");
-
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -375,10 +371,6 @@ namespace API.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_time");
 
-                    b.Property<string>("Forum")
-                        .HasColumnType("text")
-                        .HasColumnName("forum");
-
                     b.Property<bool?>("IsApiProcessed")
                         .HasColumnType("boolean")
                         .HasColumnName("is_api_processed");
@@ -386,10 +378,6 @@ namespace API.Migrations
                     b.Property<long>("MatchId")
                         .HasColumnType("bigint")
                         .HasColumnName("match_id");
-
-                    b.Property<int?>("Mode")
-                        .HasColumnType("integer")
-                        .HasColumnName("mode");
 
                     b.Property<string>("Name")
                         .HasColumnType("text")
@@ -399,10 +387,6 @@ namespace API.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("needs_auto_check");
 
-                    b.Property<int?>("RankRangeLowerBound")
-                        .HasColumnType("integer")
-                        .HasColumnName("rank_range_lower_bound");
-
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_time");
@@ -411,17 +395,9 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("submitted_by_user");
 
-                    b.Property<int?>("TeamSize")
-                        .HasColumnType("integer")
-                        .HasColumnName("team_size");
-
-                    b.Property<int?>("TournamentId")
+                    b.Property<int>("TournamentId")
                         .HasColumnType("integer")
                         .HasColumnName("tournament_id");
-
-                    b.Property<string>("TournamentName")
-                        .HasColumnType("text")
-                        .HasColumnName("tournament_name");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
@@ -1014,6 +990,7 @@ namespace API.Migrations
                         .WithMany("Matches")
                         .HasForeignKey("TournamentId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("Tournaments___fkmatchid");
 
                     b.HasOne("API.Entities.User", "VerifiedBy")

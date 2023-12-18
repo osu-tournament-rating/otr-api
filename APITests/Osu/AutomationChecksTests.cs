@@ -228,7 +228,7 @@ public class AutomationChecksTests
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Name = "STT4: (the voices are back) vs (la planta)";
-		match.Abbreviation = "STT3";
+		match.Tournament.Abbreviation = "STT3";
 		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
 	}
 
