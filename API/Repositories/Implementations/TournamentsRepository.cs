@@ -72,7 +72,7 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		using (var command = _context.Database.GetDbConnection().CreateCommand())
 		{
 			string sql = $"""
-			              SELECT t.id as TournamentId, t.name as TournamentName, AVG(mrs.match_cost) as MatchCost
+			              SELECT t.id as TournamentId, t.name as TournamentName, AVG(mrs.match_cost) as MatchCost, t.abbreviation AS TournamentAcronym
 			              								FROM tournaments t
 			              								INNER JOIN matches m ON m.tournament_id = t.id
 			              								INNER JOIN match_rating_stats mrs ON mrs.match_id = m.id
@@ -105,6 +105,7 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 						TournamentId = result.GetInt32(0),
 						TournamentName = result.GetString(1),
 						MatchCost = result.GetDouble(2),
+						TournamentAcronym = result.GetString(3),
 						Mode = mode
 					});
 				}
