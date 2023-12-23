@@ -117,7 +117,9 @@ public class MatchesController : Controller
 	}
 	
 	[HttpPost("convert")]
-	[EndpointSummary("Converts a list of match ids to match id objects")]
+	[EndpointSummary("Converts a list of match ids to MatchDTO objects")]
+	[EndpointDescription("This is a useful way to fetch a list of matches without starving the " +
+	                     "program of memory. This is used by the rating processor to fetch matches")]
 	public async Task<ActionResult<IEnumerable<MatchDTO>>> ConvertAsync([FromBody] IEnumerable<int> ids)
 	{
 		var matches = await _matchesService.ConvertAsync(ids);

@@ -398,6 +398,19 @@ public class AutomationChecksTests
 		Assert.True(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
 	}
 
+	// [Fact]
+	// public void Game_FailsAutomationChecks_WhenAllPlayersSameTeam_AndTeamVs()
+	// {
+	// 	var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+	// 	match.Games.First().TeamType = (int)OsuEnums.TeamType.TeamVs;
+	// 	foreach(var score in match.Games.First().MatchScores)
+	// 	{
+	// 		score.Team = (int)OsuEnums.Team.Red;
+	// 	}
+	//
+	// 	Assert.False(GameAutomationChecks.PassesAutomationChecks(match.Games.First()));
+	// }
+
 	[Fact]
 	public void Game_FailsTeamSizeCheck_WhenInvalidTeamSizing()
 	{

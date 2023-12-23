@@ -22,6 +22,7 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<Match> Matches { get; set; }
 	public virtual DbSet<MatchRatingStats> MatchRatingStats { get; set; }
 	public virtual DbSet<MatchScore> MatchScores { get; set; }
+	public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
 	public virtual DbSet<Player> Players { get; set; }
 	public virtual DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
 	public virtual DbSet<RatingAdjustment> RatingAdjustments { get; set; }
@@ -159,6 +160,21 @@ public partial class OtrContext : DbContext
 			      .HasConstraintName("match_scores_players_id_fk");
 
 			entity.HasIndex(x => x.PlayerId);
+		});
+
+		modelBuilder.Entity<MatchWinRecord>(entity =>
+		{
+			entity.HasKey(e => e.Id).HasName("match_win_records_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
+			
+			entity.HasOne(e => e.Match)
+			      .WithOne(e => e.WinRecord)
+			      .HasForeignKey<MatchWinRecord>(e => e.MatchId)
+			      .OnDelete(DeleteBehavior.Cascade)
+			      .HasConstraintName("match_win_records_matches_id_fk");
+
+			entity.HasIndex(e => e.Team1);
+			entity.HasIndex(e => e.Team2);
 		});
 
 		modelBuilder.Entity<Player>(entity =>

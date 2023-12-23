@@ -77,8 +77,15 @@ public class StatsController : Controller
 		return Ok();
 	}
 
-	[HttpPost("winrecords")]
+	[HttpPost("gamewinrecords")]
 	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<GameWinRecordDTO> postBody)
+	{
+		await _playerStatsService.BatchInsertAsync(postBody);
+		return Ok();
+	}
+	
+	[HttpPost("matchwinrecords")]
+	public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchWinRecordDTO> postBody)
 	{
 		await _playerStatsService.BatchInsertAsync(postBody);
 		return Ok();

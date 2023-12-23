@@ -11,6 +11,7 @@ public class PlayerStatsService : IPlayerStatsService
 {
 	private readonly IBaseStatsService _baseStatsService;
 	private readonly IGameWinRecordsRepository _gameWinRecordsRepository;
+	private readonly IMatchWinRecordRepository _matchWinRecordRepository;
 	private readonly IMapper _mapper;
 	private readonly IPlayerMatchStatsRepository _matchStatsRepository;
 	private readonly IPlayerRepository _playerRepository;
@@ -20,7 +21,8 @@ public class PlayerStatsService : IPlayerStatsService
 
 	public PlayerStatsService(IPlayerRepository playerRepository, IPlayerMatchStatsRepository matchStatsRepository,
 		IMatchRatingStatsRepository ratingStatsRepository, ITournamentsRepository tournamentsRepository,
-		IBaseStatsService baseStatsService, IRatingAdjustmentsRepository ratingAdjustmentsRepository, IGameWinRecordsRepository gameWinRecordsRepository, IMapper mapper)
+		IBaseStatsService baseStatsService, IRatingAdjustmentsRepository ratingAdjustmentsRepository, 
+		IGameWinRecordsRepository gameWinRecordsRepository, IMatchWinRecordRepository matchWinRecordRepository, IMapper mapper)
 	{
 		_playerRepository = playerRepository;
 		_matchStatsRepository = matchStatsRepository;
@@ -29,6 +31,7 @@ public class PlayerStatsService : IPlayerStatsService
 		_baseStatsService = baseStatsService;
 		_ratingAdjustmentsRepository = ratingAdjustmentsRepository;
 		_gameWinRecordsRepository = gameWinRecordsRepository;
+		_matchWinRecordRepository = matchWinRecordRepository;
 		_mapper = mapper;
 	}
 
@@ -181,6 +184,7 @@ public class PlayerStatsService : IPlayerStatsService
 	public async Task BatchInsertAsync(IEnumerable<BaseStatsPostDTO> postBody) => await _baseStatsService.BatchInsertAsync(postBody);
 	public async Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody) => await _ratingAdjustmentsRepository.BatchInsertAsync(postBody);
 	public async Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody) => await _gameWinRecordsRepository.BatchInsertAsync(postBody);
+	public async Task BatchInsertAsync(IEnumerable<MatchWinRecordDTO> postBody) => await _matchWinRecordRepository.BatchInsertAsync(postBody);
 
 	public async Task TruncateAsync()
 	{
@@ -188,6 +192,7 @@ public class PlayerStatsService : IPlayerStatsService
 		await _gameWinRecordsRepository.TruncateAsync();
 		await _matchStatsRepository.TruncateAsync();
 		await _ratingStatsRepository.TruncateAsync();
+		await _matchWinRecordRepository.TruncateAsync();
 	}
 
 	public async Task TruncateRatingAdjustmentsAsync() => await _ratingAdjustmentsRepository.TruncateAsync();
