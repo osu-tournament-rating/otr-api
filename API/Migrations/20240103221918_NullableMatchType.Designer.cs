@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240103221918_NullableMatchType")]
+    partial class NullableMatchType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -627,10 +630,6 @@ namespace API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BluePoints")
-                        .HasColumnType("integer")
-                        .HasColumnName("blue_points");
-
                     b.Property<int?>("LoserTeam")
                         .HasColumnType("integer")
                         .HasColumnName("loser_team");
@@ -643,19 +642,23 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("match_type");
 
-                    b.Property<int>("RedPoints")
+                    b.Property<int[]>("Team1")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("team1");
+
+                    b.Property<int>("Team1Points")
                         .HasColumnType("integer")
-                        .HasColumnName("red_points");
+                        .HasColumnName("team1_points");
 
-                    b.Property<int[]>("TeamBlue")
+                    b.Property<int[]>("Team2")
                         .IsRequired()
                         .HasColumnType("integer[]")
-                        .HasColumnName("team_blue");
+                        .HasColumnName("team2");
 
-                    b.Property<int[]>("TeamRed")
-                        .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("team_red");
+                    b.Property<int>("Team2Points")
+                        .HasColumnType("integer")
+                        .HasColumnName("team2_points");
 
                     b.Property<int?>("WinnerTeam")
                         .HasColumnType("integer")
@@ -667,9 +670,9 @@ namespace API.Migrations
                     b.HasIndex("MatchId")
                         .IsUnique();
 
-                    b.HasIndex("TeamBlue");
+                    b.HasIndex("Team1");
 
-                    b.HasIndex("TeamRed");
+                    b.HasIndex("Team2");
 
                     b.ToTable("match_win_records");
                 });

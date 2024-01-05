@@ -17,12 +17,13 @@ public class MatchWinRecordRepository : RepositoryBase<MatchWinRecord>, IMatchWi
 			var record = new MatchWinRecord
 			{
 				MatchId = item.MatchId,
-				Team1 = item.Team1,
-				Team2 = item.Team2,
-				Team1Points = item.Team1Points,
-				Team2Points = item.Team2Points,
+				TeamBlue = item.TeamBlue,
+				TeamRed = item.TeamRed,
+				BluePoints = item.BluePoints,
+				RedPoints = item.RedPoints,
 				WinnerTeam = item.WinnerTeam,
-				LoserTeam = item.LoserTeam
+				LoserTeam = item.LoserTeam,
+				MatchType = (Entities.MatchType?)item.MatchType
 			};
 
 			await _context.MatchWinRecords.AddAsync(record);

@@ -15,17 +15,16 @@ public class MatchWinRecord
 	public int MatchId { get; set; }
 
 	// Team arrays can represent individual players in individual matches (head to head)
-	[Column("team1")]
-	public int[] Team1 { get; set; } = Array.Empty<int>();
+	[Column("team_blue")]
+	public int[] TeamBlue { get; set; } = Array.Empty<int>();
 
-	[Column("team2")]
-	public int[] Team2 { get; set; } = Array.Empty<int>();
+	[Column("team_red")]
+	public int[] TeamRed { get; set; } = Array.Empty<int>();
 
-	[Column("team1_points")]
-	public int Team1Points { get; set; }
-
-	[Column("team2_points")]
-	public int Team2Points { get; set; }
+	[Column("blue_points")]
+	public int BluePoints { get; set; }
+	[Column("red_points")]
+	public int RedPoints { get; set; }
 
 	[Column("winner_team")]
 	public int? WinnerTeam { get; set; }
@@ -33,7 +32,7 @@ public class MatchWinRecord
 	[Column("loser_team")]
 	public int? LoserTeam { get; set; }
 	[Column("match_type")]
-	public MatchType MatchType { get; set; }
+	public MatchType? MatchType { get; set; }
 
 	[InverseProperty("WinRecord")]
 	public virtual Match Match { get; set; }
@@ -42,5 +41,5 @@ public class MatchWinRecord
 public enum MatchType
 {
 	Team = 1,
-	Individual = 2
+	HeadToHead = 2
 }

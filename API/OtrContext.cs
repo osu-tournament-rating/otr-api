@@ -173,8 +173,8 @@ public partial class OtrContext : DbContext
 			      .OnDelete(DeleteBehavior.Cascade)
 			      .HasConstraintName("match_win_records_matches_id_fk");
 
-			entity.HasIndex(e => e.Team1);
-			entity.HasIndex(e => e.Team2);
+			entity.HasIndex(e => e.TeamBlue);
+			entity.HasIndex(e => e.TeamRed);
 		});
 
 		modelBuilder.Entity<Player>(entity =>
