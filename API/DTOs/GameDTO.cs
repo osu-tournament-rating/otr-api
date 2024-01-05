@@ -8,7 +8,6 @@ public class GameDTO
 	public int TeamType { get; set; }
 	public int Mods { get; set; }
 	public long GameId { get; set; }
-	public double PostModSr { get; set; }
 	public DateTime StartTime { get; set; }
 	public DateTime? EndTime { get; set; }
 	public BeatmapDTO? Beatmap { get; set; }
