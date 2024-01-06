@@ -58,7 +58,7 @@ public class LeaderboardService : ILeaderboardService
 				continue;
 			}
 
-			long osuId = await _playerRepository.GetOsuIdByIdAsync(baseStat.PlayerId);
+			long osuId = await _playerRepository.GetOsuIdAsync(baseStat.PlayerId);
 			string? name = await _playerRepository.GetUsernameAsync(baseStat.PlayerId);
 			string? country = await _playerRepository.GetCountryAsync(baseStat.PlayerId);
 

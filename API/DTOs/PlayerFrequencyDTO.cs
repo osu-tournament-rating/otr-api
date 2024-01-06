@@ -12,6 +12,6 @@ public class PlayerFrequencyDTO
 	/// </summary>
 	public int PlayerId { get; set; }
 	public long OsuId { get; set; }
-	public string Username { get; set; } = null!;
+	public string? Username { get; set; }
 	public int Frequency { get; set; }
 }

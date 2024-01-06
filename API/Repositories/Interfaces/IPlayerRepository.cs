@@ -8,7 +8,7 @@ public interface IPlayerRepository : IRepository<Player>
 {
 	Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1);
 	Task<int> GetIdByOsuIdAsync(long osuId);
-	Task<long> GetOsuIdByIdAsync(int id);
+	Task<long> GetOsuIdAsync(int id);
 
 	/// <summary>
 	///  Returns players that haven't been updated in the last 14 days,

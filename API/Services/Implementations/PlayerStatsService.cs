@@ -21,7 +21,7 @@ public class PlayerStatsService : IPlayerStatsService
 
 	public PlayerStatsService(IPlayerRepository playerRepository, IPlayerMatchStatsRepository matchStatsRepository,
 		IMatchRatingStatsRepository ratingStatsRepository, ITournamentsRepository tournamentsRepository,
-		IBaseStatsService baseStatsService, IRatingAdjustmentsRepository ratingAdjustmentsRepository, 
+		IBaseStatsService baseStatsService, IRatingAdjustmentsRepository ratingAdjustmentsRepository,
 		IGameWinRecordsRepository gameWinRecordsRepository, IMatchWinRecordRepository matchWinRecordRepository, IMapper mapper)
 	{
 		_playerRepository = playerRepository;
@@ -104,18 +104,11 @@ public class PlayerStatsService : IPlayerStatsService
 		var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var ratingStats = await GetRatingStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 
-		PlayerTeammateComparisonDTO? teammateComparison = null;
-		PlayerOpponentComparisonDTO? opponentComparison = null;
-
-		if (comparerId != null)
-		{
-			teammateComparison = await GetTeammateComparisonAsync(playerId, comparerId.Value, mode, dateMin.Value, dateMax.Value);
-			opponentComparison = await GetOpponentComparisonAsync(playerId, comparerId.Value, mode, dateMin.Value, dateMax.Value);
-		}
+		var frequentTeammates = await _matchWinRecordRepository.GetFrequentTeammatesAsync(playerId, mode, dateMin.Value, dateMax.Value);
+		var frequentOpponents = await _matchWinRecordRepository.GetFrequentOpponentsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 
 		return new PlayerStatsDTO(baseStats, matchStats, modStats, tournamentStats,
-			ratingStats,
-			teammateComparison, opponentComparison);
+			ratingStats, frequentTeammates, frequentOpponents);
 	}
 
 	public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody)
@@ -231,8 +224,11 @@ public class PlayerStatsService : IPlayerStatsService
 	{
 		const int maxTournaments = 5;
 
-		var bestPerformances = await _tournamentsRepository.GetPerformancesAsync(maxTournaments, playerId, mode, dateMin, dateMax, true);
-		var worstPerformances = await _tournamentsRepository.GetPerformancesAsync(maxTournaments, playerId, mode, dateMin, dateMax, false);
+		var bestPerformances = await _tournamentsRepository.GetPerformancesAsync(maxTournaments, playerId, mode, dateMin, dateMax,
+			true);
+
+		var worstPerformances = await _tournamentsRepository.GetPerformancesAsync(maxTournaments, playerId, mode, dateMin, dateMax,
+			false);
 
 		// Remove any best performances from worst performances
 		// ReSharper disable PossibleMultipleEnumeration
@@ -240,7 +236,7 @@ public class PlayerStatsService : IPlayerStatsService
 		{
 			worstPerformances = worstPerformances.Where(x => x.TournamentId != performance.TournamentId);
 		}
-		
+
 		var counts = await _tournamentsRepository.GetPlayerTeamSizeStatsAsync(playerId, mode, dateMin, dateMax);
 		return new PlayerTournamentStatsDTO
 		{

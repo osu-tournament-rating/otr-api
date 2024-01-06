@@ -80,7 +80,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	}
 
 	public async Task<int> GetIdByOsuIdAsync(long osuId) => await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
-	public async Task<long> GetOsuIdByIdAsync(int id) => await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
+	public async Task<long> GetOsuIdAsync(int id) => await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
 
 	public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode) => await (from p in _context.Players
 	                                                                                                        join r in _context.BaseStats on p.Id equals r.PlayerId
@@ -107,7 +107,9 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	                                                                       .FirstOrDefaultAsync();
 
 	public async Task<string?> GetCountryAsync(int playerId) => await _context.Players.Where(p => p.Id == playerId).Select(p => p.Country).FirstOrDefaultAsync();
-	public async Task<int> GetIdAsync(string username) => await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).Select(p => p.Id).FirstOrDefaultAsync(); 
+
+	public async Task<int> GetIdAsync(string username) =>
+		await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).Select(p => p.Id).FirstOrDefaultAsync();
 
 	// This is used by a scheduled task to automatically populate user info, such as username, country, etc.
 	public async Task<IEnumerable<Player>> GetOutdatedAsync() => await _context.Players.Where(p => p.Updated == null).ToListAsync();
