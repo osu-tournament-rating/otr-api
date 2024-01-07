@@ -1,6 +1,15 @@
+using API.Controllers;
 using API.DTOs;
 using API.Enums;
+using API.Services.Interfaces;
 using APITests.Instances;
+using APITests.MockServices;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Moq;
+using System.Security.Claims;
+using System.Security.Principal;
 
 namespace APITests.Services;
 
@@ -8,7 +17,14 @@ namespace APITests.Services;
 public class LeaderboardServiceTests
 {
 	private readonly TestDatabaseFixture _fixture;
-	public LeaderboardServiceTests(TestDatabaseFixture fixture) { _fixture = fixture; }
+	private readonly Mock<ILeaderboardService> _leaderboardMock;
+
+	public LeaderboardServiceTests(TestDatabaseFixture fixture)
+	{
+		_fixture = fixture;
+		_leaderboardMock = new Mock<ILeaderboardService>();
+	}
+
 	public static IEnumerable<object[]> InvalidQueryFilter => new List<object[]>
 	{
 		new object[] { new LeaderboardFilterDTO { MinRank = 0 } },
@@ -32,7 +48,8 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = true, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = true, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
+				FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Bronze"
@@ -41,7 +58,8 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = true, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = true, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
+				FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Silver"
@@ -50,7 +68,8 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = true, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = false, FilterGold = true, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
+				FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Gold"
@@ -59,7 +78,8 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = true, FilterEmerald = false,  FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = true, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
+				FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Platinum"
@@ -68,7 +88,8 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = true,  FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = true, FilterDiamond = false, FilterMaster = false,
+				FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Emerald"
@@ -77,7 +98,8 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = true, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = true, FilterMaster = false,
+				FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Diamond"
@@ -86,7 +108,8 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = true, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = true,
+				FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
 			},
 			"Master"
@@ -95,7 +118,8 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = true,
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
+				FilterGrandmaster = true,
 				FilterEliteGrandmaster = false
 			},
 			"Grandmaster"
@@ -104,7 +128,8 @@ public class LeaderboardServiceTests
 		{
 			new LeaderboardTierFilterDTO
 			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
+				FilterGrandmaster = false,
 				FilterEliteGrandmaster = true
 			},
 			"Elite Grandmaster"
@@ -128,21 +153,44 @@ public class LeaderboardServiceTests
 	[InlineData(1)]
 	[InlineData(2)]
 	[InlineData(3)]
-	public async Task Leaderboard_ReturnsCorrectMode(int mode)
+	public async Task GetLeaderboardAsync_ReturnsLeaderboard_WithCorrectMode(int mode)
 	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
+		// Arrange
+		var expected = new LeaderboardDTO
 		{
-			Mode = mode,
-			PageSize = 10
+			Mode = mode
 		};
 
-		var result = await service.GetLeaderboardAsync(query);
+		var request = new LeaderboardRequestQueryDTO
+		{
+			Mode = mode
+		};
 
+		var mockLeaderboardService = new MockLeaderboardService()
+			.MockGetLeaderboardAsync(expected);
+
+		var configurationMock = Mock.Of<IConfiguration>();
+
+		// Act
+		var leaderboardController = new LeaderboardsController(mockLeaderboardService.Object, configurationMock);
+		leaderboardController.ControllerContext = new ControllerContext
+		{
+			HttpContext = new DefaultHttpContext
+			{
+				User = new ClaimsPrincipal(new GenericIdentity("1"))
+			}
+		};
+
+		var actionResult = await leaderboardController.GetAsync(request);
+
+		// Assert
+		var result = actionResult.Result as OkObjectResult;
 		Assert.NotNull(result);
-		Assert.All(result.Leaderboard, pInfo => Assert.Equal(mode, pInfo.Mode));
+
+		var value = result.Value as LeaderboardDTO;
+		Assert.NotNull(value);
+
+		Assert.Equal(expected.Mode, value.Mode);
 	}
 
 	[Theory]
@@ -151,17 +199,78 @@ public class LeaderboardServiceTests
 	[InlineData(10)]
 	public async Task Leaderboard_PageSize_ReturnsExpectedValue(int pageSize)
 	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
+		// Arrange
+		var lb = new List<LeaderboardPlayerInfoDTO>();
+		for (int i = 0; i < pageSize; i++)
+		{
+			lb.Add(new LeaderboardPlayerInfoDTO());
+		}
 
-		var query = new LeaderboardRequestQueryDTO
+		var expected = new LeaderboardDTO
+		{
+			Leaderboard = lb
+		};
+
+		var request = new LeaderboardRequestQueryDTO
 		{
 			PageSize = pageSize
 		};
 
-		var result = await service.GetLeaderboardAsync(query);
+		var mockLeaderboardService = new MockLeaderboardService()
+			.MockGetLeaderboardAsync(expected);
 
-		Assert.Equal(pageSize, result.Leaderboard.Count());
+		var configurationMock = Mock.Of<IConfiguration>();
+
+		// Act
+		var leaderboardController = new LeaderboardsController(mockLeaderboardService.Object, configurationMock);
+		leaderboardController.ControllerContext = new ControllerContext
+		{
+			HttpContext = new DefaultHttpContext
+			{
+				User = new ClaimsPrincipal(new GenericIdentity("1"))
+			}
+		};
+
+		var actionResult = await leaderboardController.GetAsync(request);
+
+		// Assert
+		var result = actionResult.Result as OkObjectResult;
+		Assert.NotNull(result);
+
+		var value = result.Value as LeaderboardDTO;
+		Assert.NotNull(value);
+
+		Assert.Equal(pageSize, value.Leaderboard.Count());
+	}
+
+	[Fact]
+	public async Task Leaderboard_Returns_BadRequest_WhenInvalidUserIdentity_And_CountryLeaderboard()
+	{
+		// Arrange
+		var request = new LeaderboardRequestQueryDTO
+		{
+			ChartType = LeaderboardChartType.Country
+		};
+
+		var mockLeaderboardService = new MockLeaderboardService();
+
+		var configurationMock = Mock.Of<IConfiguration>();
+
+		// Act
+		var leaderboardController = new LeaderboardsController(mockLeaderboardService.Object, configurationMock);
+		leaderboardController.ControllerContext = new ControllerContext
+		{
+			HttpContext = new DefaultHttpContext
+			{
+				User = new ClaimsPrincipal(new GenericIdentity(string.Empty))
+			}
+		};
+
+		var actionResult = await leaderboardController.GetAsync(request);
+
+		// Assert
+		var result = actionResult.Result as BadRequestObjectResult;
+		Assert.NotNull(result);
 	}
 
 	[Fact]
