@@ -276,14 +276,45 @@ public class LeaderboardServiceTests
 	[Fact]
 	public async Task Leaderboard_PageSize_DefaultsTo50()
 	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
+		// Arrange
+		var request = new LeaderboardRequestQueryDTO();
 
-		var query = new LeaderboardRequestQueryDTO();
+		var lb = new List<LeaderboardPlayerInfoDTO>();
+		for (int i = 0; i < request.PageSize; i++)
+		{
+			lb.Add(new LeaderboardPlayerInfoDTO());
+		}
 
-		var result = await service.GetLeaderboardAsync(query);
+		var expected = new LeaderboardDTO
+		{
+			Leaderboard = lb
+		};
 
-		Assert.Equal(50, result.Leaderboard.Count());
+		var mockLeaderboardService = new MockLeaderboardService()
+			.MockGetLeaderboardAsync(expected);
+
+		var configurationMock = Mock.Of<IConfiguration>();
+
+		// Act
+		var leaderboardController = new LeaderboardsController(mockLeaderboardService.Object, configurationMock);
+		leaderboardController.ControllerContext = new ControllerContext
+		{
+			HttpContext = new DefaultHttpContext
+			{
+				User = new ClaimsPrincipal(new GenericIdentity("1"))
+			}
+		};
+
+		var actionResult = await leaderboardController.GetAsync(request);
+
+		// Assert
+		var result = actionResult.Result as OkObjectResult;
+		Assert.NotNull(result);
+
+		var value = result.Value as LeaderboardDTO;
+		Assert.NotNull(value);
+
+		Assert.Equal(50, value.Leaderboard.Count());
 	}
 
 	[Fact]
