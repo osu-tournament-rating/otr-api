@@ -318,8 +318,14 @@ public class LeaderboardServiceTests
 	}
 
 	[Fact]
-	public async Task Leaderboard_Returns_CorrectUserData()
+	public async Task LeaderboardChart_ReturnsValidData()
 	{
+		// Arrange
+		var expected = new 
+		// Act
+		
+		// Assert
+		
 		using var context = _fixture.CreateContext();
 		var service = ServiceInstances.LeaderboardService(context);
 
