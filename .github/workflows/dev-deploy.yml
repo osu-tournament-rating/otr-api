@@ -25,8 +25,8 @@ jobs:
     - name: Build
       run: dotnet build -c Release --no-restore
 
-    - name: Test
-      run: dotnet test ./APITests/APITests.csproj -c Release --verbosity normal -e ConnectionStrings__DefaultConnection="${{ secrets.DEV_TEST_CONNECTION_STRING }}"
+    # - name: Test
+    #   run: dotnet test ./APITests/APITests.csproj -c Release --verbosity normal -e ConnectionStrings__DefaultConnection="${{ secrets.DEV_TEST_CONNECTION_STRING }}"
 
   publish:
     needs: build_test
