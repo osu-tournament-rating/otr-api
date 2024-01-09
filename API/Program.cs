@@ -216,7 +216,12 @@ app.Logger.LogInformation("Running!");
 // Migrations
 using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<OtrContext>();
-await context.Database.MigrateAsync();
-app.Logger.LogInformation("Applied pending migrations (if any)");
+
+int count = context.Database.GetPendingMigrations().Count();
+if (count > 0)
+{
+	await context.Database.MigrateAsync();
+	app.Logger.LogInformation($"Applied {count} pending migrations.");
+}
 
 app.Run();
