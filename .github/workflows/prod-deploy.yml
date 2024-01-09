@@ -75,5 +75,5 @@ jobs:
           key: ${{ secrets.PROD_SSH_KEY }}
           script: |
             cd ~/otr-api
-            docker compose pull
+            docker compose pull -f docker-compose-staging.yml
             docker compose -f docker-compose-prod.yml up -d --build
