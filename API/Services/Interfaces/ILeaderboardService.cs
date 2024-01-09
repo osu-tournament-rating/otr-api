@@ -1,8 +1,9 @@
 using API.DTOs;
+using API.Enums;
 
 namespace API.Services.Interfaces;
 
 public interface ILeaderboardService
 {
-	public Task<IEnumerable<LeaderboardDTO>> GetLeaderboardAsync(int mode, int page, int pageSize);
+	public Task<LeaderboardDTO> GetLeaderboardAsync(LeaderboardRequestQueryDTO requestQuery, int? authorizedPlayerId = null);
 }

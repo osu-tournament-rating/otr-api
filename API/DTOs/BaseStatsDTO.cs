@@ -8,7 +8,7 @@ namespace API.DTOs;
 public class BaseStatsDTO
 {
 	public BaseStatsDTO(int playerId, double rating, double volatility, int mode, double percentile,
-		int matchesPlayed, double winRate, int highestGlobalRank, int globalRank, int countryRank, double averageMatchCost)
+		int matchesPlayed, double winrate, int highestGlobalRank, int globalRank, int countryRank, double averageMatchCost)
 	{
 		PlayerId = playerId;
 		Rating = rating;
@@ -16,7 +16,7 @@ public class BaseStatsDTO
 		Mode = mode;
 		Percentile = percentile;
 		MatchesPlayed = matchesPlayed;
-		WinRate = winRate;
+		Winrate = winrate;
 		HighestGlobalRank = highestGlobalRank;
 		GlobalRank = globalRank;
 		CountryRank = countryRank;
@@ -29,7 +29,7 @@ public class BaseStatsDTO
 	public int Mode { get; set; }
 	public double Percentile { get; set; }
 	public int MatchesPlayed { get; set; }
-	public double WinRate { get; set; }
+	public double Winrate { get; set; }
 	public int HighestGlobalRank { get; set; }
 	public int GlobalRank { get; set; }
 	public int CountryRank { get; set; }

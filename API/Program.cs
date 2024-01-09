@@ -1,7 +1,6 @@
 using API;
 using API.Configurations;
-using API.DTOs;
-using API.Entities;
+using API.ModelBinders.Providers;
 using API.Osu;
 using API.Osu.Multiplayer;
 using API.Repositories.Implementations;
@@ -24,7 +23,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers()
+builder.Services.AddControllers(options => { options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider()); })
        .AddJsonOptions(o =>
        {
 	       o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
@@ -45,40 +44,20 @@ builder.Services.AddSerilog(configuration =>
 #else
 	configuration.MinimumLevel.Information();
 #endif
-	
+
 	configuration
 		.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
 		.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
 		.MinimumLevel.Override("OsuSharp", LogEventLevel.Fatal)
 		.Enrich.FromLogContext()
-		.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-		.WriteTo.File(Path.Join("logs", "log.log"), rollingInterval: RollingInterval.Day)
-		.WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true);
+		.WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+		.WriteTo.File(Path.Join("logs", "log.log"), rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: LogEventLevel.Information)
+		.WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true, restrictedToMinimumLevel: LogEventLevel.Warning);
 });
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-var configuration = new MapperConfiguration(cfg =>
-{
-	cfg.CreateMap<Beatmap, BeatmapDTO>();
-	cfg.CreateMap<Game, GameDTO>();
-	cfg.CreateMap<Match, MatchDTO>();
-	cfg.CreateMap<MatchScore, MatchScoreDTO>()
-	   .ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
-
-	cfg.CreateMap<MatchRatingStats, MatchRatingStatsDTO>()
-	   .ForMember(x => x.TooltipInfo, opt => opt.MapFrom(x => new MatchTooltipInfoDTO
-	   {
-		   MatchName = x.Match.Name,
-		   MatchDate = x.Match.StartTime,
-		   MpLink = $"https://osu.ppy.sh/mp/{x.Match.MatchId}",
-		   TournamentAbbreviation = x.Match.Tournament != null ? x.Match.Tournament.Abbreviation : null,
-		   TournamentName = x.Match.Tournament != null ? x.Match.Tournament.Name : null
-	   }));
-	cfg.CreateMap<Player, PlayerRanksDTO>();
-	cfg.CreateMap<Tournament, TournamentDTO>();
-	cfg.CreateMap<User, UserDTO>();
-});
+var configuration = new MapperConfiguration(cfg => { cfg.AddProfile<MapperProfile>(); });
 
 // only during development, validate your mappings; remove it before release
 #if DEBUG
@@ -104,28 +83,30 @@ builder.Services.AddDbContext<OtrContext>(o =>
 builder.Services.AddDistributedMemoryCache();
 
 // Repositories
-builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
-builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
-builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IGamesRepository, GamesRepository>();
-builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
-builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
 builder.Services.AddScoped<IApiMatchRepository, ApiMatchRepository>();
-builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
-builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
+builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
+builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
+builder.Services.AddScoped<IGamesRepository, GamesRepository>();
+builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
 builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
+builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
+builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
+builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
+builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
+builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
+builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Services
 builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
-builder.Services.AddScoped<IPlayerService, PlayerService>();
-builder.Services.AddScoped<IMatchesService, MatchesService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
-builder.Services.AddScoped<ITournamentsService, TournamentsService>();
+builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+builder.Services.AddScoped<IMatchesService, MatchesService>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
-builder.Services.AddScoped<IPlayerScoreStatsService, PlayerScoreStatsService>();
+builder.Services.AddScoped<ITournamentsService, TournamentsService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddOsuSharp(options =>
 {
@@ -142,9 +123,14 @@ builder.Services.AddSingleton<ICredentials, Credentials>(serviceProvider =>
 	string? connString = serviceProvider.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
 	string? osuApiKey = serviceProvider.GetRequiredService<IConfiguration>().GetSection("Osu").GetValue<string>("ApiKey");
 
-	if (connString == null)
+	if (string.IsNullOrWhiteSpace(connString))
 	{
 		throw new InvalidOperationException("Missing connection string!");
+	}
+
+	if (string.IsNullOrWhiteSpace(osuApiKey))
+	{
+		throw new InvalidOperationException("Missing osu! API Key!");
 	}
 
 	return new Credentials(connString, osuApiKey);
@@ -216,14 +202,26 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+if (app.Environment.IsDevelopment())
+{
+	app.MapControllers().AllowAnonymous();
+}
+else
+{
+	app.MapControllers();
+}
 
 app.Logger.LogInformation("Running!");
 
 // Migrations
 using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<OtrContext>();
-await context.Database.MigrateAsync();
-Serilog.Log.Information("Applied pending migrations (if any)");
+
+int count = context.Database.GetPendingMigrations().Count();
+if (count > 0)
+{
+	await context.Database.MigrateAsync();
+	app.Logger.LogInformation($"Applied {count} pending migrations.");
+}
 
 app.Run();

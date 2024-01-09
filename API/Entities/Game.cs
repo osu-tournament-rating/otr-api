@@ -49,6 +49,8 @@ public class Game
 	public virtual Beatmap? Beatmap { get; set; }
 	[InverseProperty("Game")]
 	public virtual ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
+	[InverseProperty("Game")]
+	public virtual GameWinRecord WinRecord { get; set; } = null!;
 	[NotMapped]
 	public OsuEnums.Mods ModsEnum => (OsuEnums.Mods)Mods;
 	[NotMapped]

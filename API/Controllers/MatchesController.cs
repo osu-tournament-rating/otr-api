@@ -10,18 +10,6 @@ using Microsoft.AspNetCore.Mvc;
 // ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;
 
-public class BatchWrapper
-{
-	public string TournamentName { get; set; } = null!;
-	public string Abbreviation { get; set; } = null!;
-	public string ForumPost { get; set; } = null!;
-	public int RankRangeLowerBound { get; set; }
-	public int TeamSize { get; set; }
-	public int Mode { get; set; }
-	public int SubmitterId { get; set; }
-	public IEnumerable<long> Ids { get; set; } = new List<long>();
-}
-
 [ApiController]
 [EnableCors]
 [Authorize]
@@ -40,7 +28,7 @@ public class MatchesController : Controller
 	}
 
 	[HttpPost("batch")]
-	public async Task<IActionResult> PostAsync([FromBody] BatchWrapper wrapper, [FromQuery] bool verified = false)
+	public async Task<IActionResult> PostAsync([FromBody] MatchWebSubmissionDTO wrapper, [FromQuery] bool verified = false)
 	{
 		/**
 		 * FLOW:
@@ -105,27 +93,52 @@ public class MatchesController : Controller
 		return Ok();
 	}
 	
-	[HttpGet("all")]
+	[HttpGet("ids")]
 	[Authorize(Roles = "Admin, System")]
-	public async Task<ActionResult<IEnumerable<MatchDTO>>> GetAllAsync()
+	[EndpointSummary("Returns all verified match ids")]
+	public async Task<ActionResult<IEnumerable<int>>> GetAllAsync()
 	{
-		var matches = await _matchesService.GetAllAsync(true);
+		var matches = await _matchesService.GetAllIdsAsync(true);
 		return Ok(matches);
 	}
-
-	[HttpGet("{osuMatchId:long}")]
+	
+	[HttpGet("{id:int}")]
 	[Authorize(Roles = "Admin, System")]
-	public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
+	public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
 	{
-		var match = await _matchesService.GetAsync(osuMatchId);
+		var match = await _matchesService.GetAsync(id);
 
 		if (match == null)
 		{
-			return NotFound($"Failed to locate match {osuMatchId}");
+			return NotFound($"Failed to locate match {id}");
 		}
 
 		return Ok(match);
 	}
+	
+	[HttpPost("convert")]
+	[EndpointSummary("Converts a list of match ids to MatchDTO objects")]
+	[EndpointDescription("This is a useful way to fetch a list of matches without starving the " +
+	                     "program of memory. This is used by the rating processor to fetch matches")]
+	public async Task<ActionResult<IEnumerable<MatchDTO>>> ConvertAsync([FromBody] IEnumerable<int> ids)
+	{
+		var matches = await _matchesService.ConvertAsync(ids);
+		return Ok(matches);
+	}
+	
+	// [HttpGet("{osuMatchId:long}")]
+	// [Authorize(Roles = "Admin, System")]
+	// public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
+	// {
+	// 	var match = await _matchesService.GetAsync(osuMatchId);
+	//
+	// 	if (match == null)
+	// 	{
+	// 		return NotFound($"Failed to locate match {osuMatchId}");
+	// 	}
+	//
+	// 	return Ok(match);
+	// }
 
 	[HttpGet("player/{osuId:long}")]
 	[Authorize(Roles = "Admin, System")]
@@ -135,7 +148,7 @@ public class MatchesController : Controller
 	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
 	{
-		var match = await _matchesService.GetAsync(id);
+		var match = await _matchesService.GetByOsuIdAsync(id);
 		if (match == null)
 		{
 			return NotFound($"Match with id {id} does not exist");

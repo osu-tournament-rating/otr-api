@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Services.Interfaces;
+using API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +43,7 @@ public class MeController : Controller
 	[HttpGet]
 	public async Task<ActionResult<MeDataDTO>> GetLoggedInUserAsync()
 	{
-		int? id = GetId();
+		int? id = HttpContext.AuthorizedUserIdentity();
 		
 		if(!id.HasValue)
 		{

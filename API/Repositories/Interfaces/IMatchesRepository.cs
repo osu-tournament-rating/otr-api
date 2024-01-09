@@ -5,7 +5,9 @@ namespace API.Repositories.Interfaces;
 
 public interface IMatchesRepository : IRepository<Match>
 {
-	Task<IEnumerable<Match>> GetAllAsync(bool onlyIncludeFiltered);
+	Task<Match> GetAsync(int id, bool filterInvalid = true);
+	Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered);
+	Task<IEnumerable<int>> GetAllAsync(bool onlyIncludeFiltered);
 	Task<Match?> GetByMatchIdAsync(long matchId);
 	Task<IList<Match>> GetMatchesNeedingAutoCheckAsync();
 	Task<Match?> GetFirstMatchNeedingApiProcessingAsync();

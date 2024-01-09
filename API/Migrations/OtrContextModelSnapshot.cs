@@ -310,7 +310,7 @@ namespace API.Migrations
                     b.ToTable("games");
                 });
 
-            modelBuilder.Entity("API.Entities.Match", b =>
+            modelBuilder.Entity("API.Entities.GameWinRecord", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -319,9 +319,47 @@ namespace API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Abbreviation")
-                        .HasColumnType("text")
-                        .HasColumnName("abbreviation");
+                    b.Property<int>("GameId")
+                        .HasColumnType("integer")
+                        .HasColumnName("game_id");
+
+                    b.Property<int>("LoserTeam")
+                        .HasColumnType("integer")
+                        .HasColumnName("loser_team");
+
+                    b.Property<int[]>("Losers")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("losers");
+
+                    b.Property<int>("WinnerTeam")
+                        .HasColumnType("integer")
+                        .HasColumnName("winner_team");
+
+                    b.Property<int[]>("Winners")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("winners");
+
+                    b.HasKey("Id")
+                        .HasName("game_win_records_pk");
+
+                    b.HasIndex("GameId")
+                        .IsUnique();
+
+                    b.HasIndex("Winners");
+
+                    b.ToTable("game_win_records");
+                });
+
+            modelBuilder.Entity("API.Entities.Match", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -333,10 +371,6 @@ namespace API.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_time");
 
-                    b.Property<string>("Forum")
-                        .HasColumnType("text")
-                        .HasColumnName("forum");
-
                     b.Property<bool?>("IsApiProcessed")
                         .HasColumnType("boolean")
                         .HasColumnName("is_api_processed");
@@ -344,10 +378,6 @@ namespace API.Migrations
                     b.Property<long>("MatchId")
                         .HasColumnType("bigint")
                         .HasColumnName("match_id");
-
-                    b.Property<int?>("Mode")
-                        .HasColumnType("integer")
-                        .HasColumnName("mode");
 
                     b.Property<string>("Name")
                         .HasColumnType("text")
@@ -357,10 +387,6 @@ namespace API.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("needs_auto_check");
 
-                    b.Property<int?>("RankRangeLowerBound")
-                        .HasColumnType("integer")
-                        .HasColumnName("rank_range_lower_bound");
-
                     b.Property<DateTime?>("StartTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_time");
@@ -369,17 +395,9 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("submitted_by_user");
 
-                    b.Property<int?>("TeamSize")
-                        .HasColumnType("integer")
-                        .HasColumnName("team_size");
-
-                    b.Property<int?>("TournamentId")
+                    b.Property<int>("TournamentId")
                         .HasColumnType("integer")
                         .HasColumnName("tournament_id");
-
-                    b.Property<string>("TournamentName")
-                        .HasColumnType("text")
-                        .HasColumnName("tournament_name");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
@@ -600,6 +618,62 @@ namespace API.Migrations
                     b.ToTable("match_scores");
                 });
 
+            modelBuilder.Entity("API.Entities.MatchWinRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BluePoints")
+                        .HasColumnType("integer")
+                        .HasColumnName("blue_points");
+
+                    b.Property<int?>("LoserTeam")
+                        .HasColumnType("integer")
+                        .HasColumnName("loser_team");
+
+                    b.Property<int>("MatchId")
+                        .HasColumnType("integer")
+                        .HasColumnName("match_id");
+
+                    b.Property<int?>("MatchType")
+                        .HasColumnType("integer")
+                        .HasColumnName("match_type");
+
+                    b.Property<int>("RedPoints")
+                        .HasColumnType("integer")
+                        .HasColumnName("red_points");
+
+                    b.Property<int[]>("TeamBlue")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("team_blue");
+
+                    b.Property<int[]>("TeamRed")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("team_red");
+
+                    b.Property<int?>("WinnerTeam")
+                        .HasColumnType("integer")
+                        .HasColumnName("winner_team");
+
+                    b.HasKey("Id")
+                        .HasName("match_win_records_pk");
+
+                    b.HasIndex("MatchId")
+                        .IsUnique();
+
+                    b.HasIndex("TeamBlue");
+
+                    b.HasIndex("TeamRed");
+
+                    b.ToTable("match_win_records");
+                });
+
             modelBuilder.Entity("API.Entities.Player", b =>
                 {
                     b.Property<int>("Id")
@@ -765,6 +839,63 @@ namespace API.Migrations
                     b.ToTable("player_match_stats");
                 });
 
+            modelBuilder.Entity("API.Entities.RatingAdjustment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Mode")
+                        .HasColumnType("integer")
+                        .HasColumnName("mode");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer")
+                        .HasColumnName("player_id");
+
+                    b.Property<double>("RatingAdjustmentAmount")
+                        .HasColumnType("double precision")
+                        .HasColumnName("rating_adjustment_amount");
+
+                    b.Property<int>("RatingAdjustmentType")
+                        .HasColumnType("integer")
+                        .HasColumnName("rating_adjustment_type");
+
+                    b.Property<double>("RatingAfter")
+                        .HasColumnType("double precision")
+                        .HasColumnName("rating_after");
+
+                    b.Property<double>("RatingBefore")
+                        .HasColumnType("double precision")
+                        .HasColumnName("rating_before");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("timestamp");
+
+                    b.Property<double>("VolatilityAdjustmentAmount")
+                        .HasColumnType("double precision")
+                        .HasColumnName("volatility_adjustment_amount");
+
+                    b.Property<double>("VolatilityAfter")
+                        .HasColumnType("double precision")
+                        .HasColumnName("volatility_after");
+
+                    b.Property<double>("VolatilityBefore")
+                        .HasColumnType("double precision")
+                        .HasColumnName("volatility_before");
+
+                    b.HasKey("Id")
+                        .HasName("RatingAdjustment_pk");
+
+                    b.HasIndex("PlayerId", "Mode");
+
+                    b.ToTable("rating_adjustments");
+                });
+
             modelBuilder.Entity("API.Entities.Tournament", b =>
                 {
                     b.Property<int>("Id")
@@ -893,6 +1024,18 @@ namespace API.Migrations
                     b.Navigation("Match");
                 });
 
+            modelBuilder.Entity("API.Entities.GameWinRecord", b =>
+                {
+                    b.HasOne("API.Entities.Game", "Game")
+                        .WithOne("WinRecord")
+                        .HasForeignKey("API.Entities.GameWinRecord", "GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("game_win_records_games_id_fk");
+
+                    b.Navigation("Game");
+                });
+
             modelBuilder.Entity("API.Entities.Match", b =>
                 {
                     b.HasOne("API.Entities.User", "SubmittedBy")
@@ -903,6 +1046,7 @@ namespace API.Migrations
                         .WithMany("Matches")
                         .HasForeignKey("TournamentId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("Tournaments___fkmatchid");
 
                     b.HasOne("API.Entities.User", "VerifiedBy")
@@ -940,6 +1084,7 @@ namespace API.Migrations
                     b.HasOne("API.Entities.Game", "Game")
                         .WithMany("MatchScores")
                         .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("match_scores_games_id_fk");
 
@@ -953,6 +1098,18 @@ namespace API.Migrations
                     b.Navigation("Game");
 
                     b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("API.Entities.MatchWinRecord", b =>
+                {
+                    b.HasOne("API.Entities.Match", "Match")
+                        .WithOne("WinRecord")
+                        .HasForeignKey("API.Entities.MatchWinRecord", "MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("match_win_records_matches_id_fk");
+
+                    b.Navigation("Match");
                 });
 
             modelBuilder.Entity("API.Entities.PlayerMatchStats", b =>
@@ -970,6 +1127,17 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.Navigation("Match");
+
+                    b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("API.Entities.RatingAdjustment", b =>
+                {
+                    b.HasOne("API.Entities.Player", "Player")
+                        .WithMany("RatingAdjustments")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Player");
                 });
@@ -993,6 +1161,9 @@ namespace API.Migrations
             modelBuilder.Entity("API.Entities.Game", b =>
                 {
                     b.Navigation("MatchScores");
+
+                    b.Navigation("WinRecord")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("API.Entities.Match", b =>
@@ -1002,6 +1173,9 @@ namespace API.Migrations
                     b.Navigation("RatingStats");
 
                     b.Navigation("Stats");
+
+                    b.Navigation("WinRecord")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("API.Entities.Player", b =>
@@ -1011,6 +1185,8 @@ namespace API.Migrations
                     b.Navigation("MatchScores");
 
                     b.Navigation("MatchStats");
+
+                    b.Navigation("RatingAdjustments");
 
                     b.Navigation("Ratings");
 

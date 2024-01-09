@@ -16,28 +16,6 @@ public class Match
 	public long MatchId { get; set; }
 	[Column("name")]
 	public string? Name { get; set; }
-	[Column("abbreviation")]
-	public string? Abbreviation { get; set; }
-	[Column("forum")]
-	public string? Forum { get; set; }
-	[Column("tournament_name")]
-	public string? TournamentName { get; set; }
-	/// <summary>
-	/// The "best skill" rank allowed in a tournament. Open is 1.
-	/// If a tournament is #7500-35000, this would be 7500.
-	/// </summary>
-	[Column("rank_range_lower_bound")]
-	public int? RankRangeLowerBound { get; set; }
-	/// <summary>
-	/// The amount of players that are supposed to be playing in this match, per team.
-	/// </summary>
-	[Column("team_size")]
-	public int? TeamSize { get; set; }
-	/// <summary>
-	/// The play mode: mania, osu!, taiko, catch
-	/// </summary>
-	[Column("mode")]
-	public int? Mode { get; set; }
 	[Column("start_time", TypeName = "timestamp with time zone")]
 	public DateTime? StartTime { get; set; }
 	[Column("created", TypeName = "timestamp with time zone")]
@@ -57,7 +35,7 @@ public class Match
 	[Column("verified_by_user")]
 	public int? VerifierUserId { get; set; }
 	[Column("tournament_id")]
-	public int? TournamentId { get; set; }
+	public int TournamentId { get; set; }
 	/// <summary>
 	/// Checked by a background worker to see if the match needs to be processed.
 	/// </summary>
@@ -73,11 +51,13 @@ public class Match
 	[InverseProperty("Match")]
 	public virtual ICollection<Game> Games { get; set; } = new List<Game>();
 	[InverseProperty("Matches")]
-	public virtual Tournament? Tournament { get; set; }
+	public virtual Tournament Tournament { get; set; } = null!;
 	[InverseProperty("Match")]
 	public virtual ICollection<PlayerMatchStats> Stats { get; set; } = new List<PlayerMatchStats>();
 	[InverseProperty("Match")]
 	public virtual ICollection<MatchRatingStats> RatingStats { get; set; } = new List<MatchRatingStats>();
+	[InverseProperty("Match")]
+	public virtual MatchWinRecord WinRecord { get; set; } = new();
 	
 	[NotMapped]
 	public MatchVerificationSource? VerificationSourceEnum

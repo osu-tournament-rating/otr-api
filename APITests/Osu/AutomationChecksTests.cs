@@ -163,7 +163,7 @@ public class AutomationChecksTests
 	public void Match_FailsNameCheck_WithNullAbbreviation()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Tournament!.Abbreviation = null;
+		match.Tournament!.Abbreviation = string.Empty;
 		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
 	}
 
@@ -195,7 +195,7 @@ public class AutomationChecksTests
 	public void Match_NameCheck_ReturnsFalse_WhenNullAbbreviation()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Tournament!.Abbreviation = null;
+		match.Tournament!.Abbreviation = string.Empty;
 		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
 	}
 	
@@ -228,7 +228,7 @@ public class AutomationChecksTests
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Name = "STT4: (the voices are back) vs (la planta)";
-		match.Abbreviation = "STT3";
+		match.Tournament.Abbreviation = "STT3";
 		Assert.False(MatchAutomationChecks.PassesNameCheck(match));
 	}
 
@@ -398,6 +398,19 @@ public class AutomationChecksTests
 		Assert.True(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
 	}
 
+	// [Fact]
+	// public void Game_FailsAutomationChecks_WhenAllPlayersSameTeam_AndTeamVs()
+	// {
+	// 	var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+	// 	match.Games.First().TeamType = (int)OsuEnums.TeamType.TeamVs;
+	// 	foreach(var score in match.Games.First().MatchScores)
+	// 	{
+	// 		score.Team = (int)OsuEnums.Team.Red;
+	// 	}
+	//
+	// 	Assert.False(GameAutomationChecks.PassesAutomationChecks(match.Games.First()));
+	// }
+
 	[Fact]
 	public void Game_FailsTeamSizeCheck_WhenInvalidTeamSizing()
 	{
@@ -546,7 +559,7 @@ public class AutomationChecksTests
 	public void Game_FailsTeamSizeCheck_Unbalanced_Teams()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Games.First()!.MatchScores.Add(new MatchScore()
+		match.Games.First().MatchScores.Add(new MatchScore()
 		{
 			PlayerId = -1,
 			Score = 500,

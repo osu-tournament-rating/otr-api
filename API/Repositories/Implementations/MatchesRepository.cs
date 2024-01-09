@@ -52,11 +52,53 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		_logger.LogInformation("Refreshed automation checks for {Count} matches", await query.CountAsync());
 	}
 
-	public async Task<IEnumerable<Match>> GetAllAsync(bool onlyIncludeFiltered)
+	public async Task<Match> GetAsync(int id, bool filterInvalid = true)
 	{
-		IQueryable<Match>? query;
+		if (!filterInvalid)
+		{
+			return await _context.Matches
+			                   .Include(x => x.Games)
+			                   .ThenInclude(x => x.MatchScores)
+			                   .Include(x => x.Games)
+			                   .ThenInclude(x => x.Beatmap)
+			                   .FirstAsync(x => x.Id == id);
+		}
 		
-		query = _context.Matches
+		return await _context.Matches
+		              .Include(x => x.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
+		              .ThenInclude(x => x.MatchScores.Where(x => x.IsValid == true))
+		              .Include(x => x.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
+		              .ThenInclude(x => x.Beatmap)
+		              .FirstAsync(x => x.Id == id && x.VerificationStatus == (int)MatchVerificationStatus.Verified);
+	}
+		
+
+	public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered)
+	{
+		if (!onlyIncludeFiltered)
+		{
+			return await _context.Matches.Where(x => ids.Contains(x.Id))
+			                     .Include(x => x.Games)
+			                     .ThenInclude(x => x.MatchScores)
+			                     .Include(x => x.Games)
+			                     .ThenInclude(x => x.Beatmap)
+			                     .ToListAsync();
+		}
+		
+		return await _context.Matches.Where(x => ids.Contains(x.Id))
+		                     .WhereVerified()
+		                     .Include(x => x.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
+		                     .ThenInclude(x => x.MatchScores.Where(x => x.IsValid == true))
+		                     .Include(x => x.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
+		                     .ThenInclude(x => x.Beatmap)
+		                     .Where(x => x.Games.Any())
+		                     .OrderBy(x => x.StartTime)
+		                     .ToListAsync();
+	}
+
+	public async Task<IEnumerable<int>> GetAllAsync(bool onlyIncludeFiltered)	
+	{
+		var query = _context.Matches
 		                    .Include(m => m.Games)
 		                    .ThenInclude(g => g.MatchScores)
 		                    .Include(m => m.Games)
@@ -67,63 +109,20 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		if (onlyIncludeFiltered)
 		{
 			query = _context.Matches
+			                .WhereVerified()
 			                .Include(m => m.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified))
 			                .ThenInclude(g => g.MatchScores.Where(x => x.IsValid == true))
 			                // Unsure if repeating the filter is necessary for subsequent .ThenInclude
 			                .Include(m => m.Games.Where(x => x.VerificationStatus == (int)GameVerificationStatus.Verified)) 
 			                .ThenInclude(g => g.Beatmap)
+			                .Where(x => x.Games.Any())
 			                .OrderBy(m => m.StartTime)
-			                .WhereVerified()
 			                .AsQueryable();
 		}
 
 		var matches = await query
-		                    .AsNoTracking()
+		                    .Select(x => x.Id)
 		                    .ToListAsync();
-
-		matches.RemoveAll(x => x.Games.Count == 0);
-
-		// TODO: Remove - we have game verification for this reason
-		// if (onlyIncludeFiltered)
-		// {
-		// 	var matchesToRemove = new List<Match>();
-		// 	foreach (var match in matches)
-		// 	{
-		// 		var gamesToRemove = new List<Game>();
-		// 		foreach (var game in match.Games)
-		// 		{
-		// 			if ((game.MatchScores.Count % 2) != 0 || game.MatchScores.Count == 0 || !IsValidModCombination(game.ModsEnum))
-		// 			{
-		// 				gamesToRemove.Add(game);
-		// 				continue;
-		// 			}
-		//
-		// 			foreach (var score in game.MatchScores)
-		// 			{
-		// 				if (!IsValidModCombination(score.EnabledModsEnum ?? OsuEnums.Mods.None))
-		// 				{
-		// 					gamesToRemove.Add(game);
-		// 					break;
-		// 				}
-		// 			}
-		// 		}
-		//
-		// 		foreach (var game in gamesToRemove)
-		// 		{
-		// 			match.Games.Remove(game);
-		// 		}
-		//
-		// 		if (!match.Games.Any())
-		// 		{
-		// 			matchesToRemove.Add(match);
-		// 		}
-		// 	}
-		//
-		// 	foreach (var match in matchesToRemove)
-		// 	{
-		// 		matches.Remove(match);
-		// 	}
-		// }
 
 		return matches;
 	}

@@ -52,7 +52,7 @@ public class ApiMatchRepository : IApiMatchRepository
 		{
 			return;
 		}
-
+		
 		foreach (long osuId in GetUserIdsFromMatch(apiMatch)!)
 		{
 			if (existingPlayersMapping.ContainsKey(osuId))
@@ -93,7 +93,10 @@ public class ApiMatchRepository : IApiMatchRepository
 		return existingPlayers.ToDictionary(player => player.OsuId, player => player.Id);
 	}
 
-	private List<long>? GetUserIdsFromMatch(OsuApiMatchData apiMatch) => apiMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
+	private List<long>? GetUserIdsFromMatch(OsuApiMatchData apiMatch)
+	{
+		return apiMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
+	}
 
 	// Beatmaps
 
@@ -102,10 +105,11 @@ public class ApiMatchRepository : IApiMatchRepository
 	/// </summary>
 	private async Task CreateBeatmapsAsync(OsuApiMatchData apiMatch)
 	{
-		var beatmapIds = GetBeatmapIds(apiMatch).Distinct().ToList();
+		var beatmapIds = GetBeatmapIds(apiMatch)?.Distinct().ToList();
 
-		if (beatmapIds.Count == 0)
+		if (beatmapIds == null || beatmapIds.Count == 0)
 		{
+			_logger.LogError("No beatmap IDs found in match {MatchId}", apiMatch.OsuApiMatch.MatchId);
 			return;
 		}
 		
@@ -135,7 +139,7 @@ public class ApiMatchRepository : IApiMatchRepository
 		}
 	}
 
-	private IEnumerable<long> GetBeatmapIds(OsuApiMatchData apiMatch) => apiMatch.Games.Select(x => x.BeatmapId);
+	private IEnumerable<long>? GetBeatmapIds(OsuApiMatchData apiMatch) => apiMatch.Games.Select(x => x.BeatmapId);
 
 	// Match
 	/// <summary>

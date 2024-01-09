@@ -2,12 +2,12 @@ namespace API.DTOs;
 
 public class LeaderboardDTO
 {
-	public int PlayerId { get; set; }
-	public long OsuId { get; set; }
-	public int GlobalRank { get; set; }
-	public string Name { get; set; } = null!;
-	public string Tier { get; set; } = null!;
-	public double Rating { get; set; }
-	public int MatchesPlayed { get; set; }
-	public double WinRate { get; set; }
+	public int Mode { get; set; }
+	public int TotalPlayerCount { get; set; }
+	public LeaderboardFilterDefaultsDTO FilterDefaults { get; set; } = new();
+	public IEnumerable<LeaderboardPlayerInfoDTO> Leaderboard { get; set; } = new List<LeaderboardPlayerInfoDTO>();
+	/// <summary>
+	///  Data displayed if the user is logged in
+	/// </summary>
+	public LeaderboardPlayerChartDTO? PlayerChart { get; set; }
 }

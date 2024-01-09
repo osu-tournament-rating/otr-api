@@ -1,15 +1,20 @@
 using API.Controllers;
+using API.DTOs;
 using API.Entities;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using NpgsqlTypes;
+using System.Data;
 
 namespace API.Repositories.Implementations;
 
 public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRepository
 {
-	private readonly ILogger<TournamentsRepository> _logger;
 	private readonly OtrContext _context;
+	private readonly ILogger<TournamentsRepository> _logger;
 	private readonly IMatchesRepository _matchesRepository;
+
 	public TournamentsRepository(ILogger<TournamentsRepository> logger, OtrContext context, IMatchesRepository matchesRepository) : base(context)
 	{
 		_logger = logger;
@@ -19,82 +24,99 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 
 	public async Task<Tournament?> GetAsync(string name) => await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
 
-	public async Task PopulateAndLinkAsync()
+	public async Task<bool> ExistsAsync(string name, int mode) => await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
+
+	public async Task<PlayerTournamentTeamSizeCountDTO> GetPlayerTeamSizeStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
-		var matches = await MatchesWithoutTournamentAsync();
-		foreach (var match in matches)
+		var participatedTournaments = await _context.Tournaments
+		                                            .Where(tournament => tournament.Mode == mode)
+		                                            .Include(tournament => tournament.Matches)
+		                                            .ThenInclude(match => match.Games)
+		                                            .ThenInclude(game => game.MatchScores)
+		                                            .Where(tournament => tournament.Matches.Any(match => 
+			                                            match.StartTime >= dateMin && 
+			                                            match.StartTime <= dateMax && 
+			                                            match.VerificationStatus == 0 &&
+			                                            match.Games.Any(game => game.VerificationStatus == 0 &&
+				                                            game.MatchScores.Any(score => score.PlayerId == playerId && score.IsValid == true))))
+		                                            .Select(tournament => new { TournamentId = tournament.Id, TeamSize = tournament.TeamSize })
+		                                            .Distinct() // Ensures each tournament is counted once
+		                                            .ToListAsync();
+
+		return new PlayerTournamentTeamSizeCountDTO
 		{
-			var associatedTournament = await AssociatedTournament(match);
-
-			if (associatedTournament == null)
-			{
-				associatedTournament = await CreateFromMatchDataAsync(match);
-
-				if (associatedTournament != null)
-				{
-					_logger.LogInformation("Created tournament {TournamentName} ({TournamentId})", associatedTournament?.Name, associatedTournament?.Id);
-				}
-			}
-			
-			if (associatedTournament == null)
-			{
-				_logger.LogError("Could not create tournament from match {MatchId}", match.MatchId);
-				continue;
-			}
-			
-			var updated = LinkTournamentToMatch(associatedTournament, match);
-
-			await _matchesRepository.UpdateAsync(updated);
-			_logger.LogInformation("Linked tournament {TournamentName} ({TournamentId}) to match {MatchId}", associatedTournament.Name, associatedTournament.Id, match.MatchId);
-		}
+			Count1v1 = participatedTournaments.Count(x => x.TeamSize == 1),
+			Count2v2 = participatedTournaments.Count(x => x.TeamSize == 2),
+			Count3v3 = participatedTournaments.Count(x => x.TeamSize == 3),
+			Count4v4 = participatedTournaments.Count(x => x.TeamSize == 4),
+			CountOther = participatedTournaments.Count(x => x.TeamSize > 4)
+		};
 	}
 
-	public async Task<bool> ExistsAsync(string name, int mode)
-	{
-		return await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
-	}
 
-	public async Task<IEnumerable<Tournament>> GetForPlayerAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
-	{
-		return await _context.Tournaments
-		                     .FromSqlRaw("SELECT DISTINCT t.* FROM tournaments t " +
-		                                 "INNER JOIN matches m ON m.tournament_id = t.id " +
-		                                 "INNER JOIN player_match_stats pms ON pms.match_id = m.match_id " +
-		                                 "WHERE pms.player_id = {0} AND t.mode = {1} AND m.start_time >= {2} AND m.start_time <= {3}", playerId, mode, dateMin, dateMax)
-		                     .ToListAsync();
-	}
-
-	public async Task<IEnumerable<Tournament>> GetTopPerformancesAsync(int count, int playerId, 
-		int mode, DateTime dateMin, DateTime dateMax)
-	{
-		/**
-		 * 1. Get all tournaments the player has participated in
-		 * 2. Get all matches the player has participated in from those tournaments
-		 * 3. Get the player's average match cost for each tournament
-		 * 4. Order by average match cost descending, returning the top <count> tournaments
-		 */
-		return await _context.Tournaments
-		                     .FromSqlRaw("SELECT t.* FROM tournaments t " +
-		                                 "INNER JOIN matches m ON m.tournament_id = t.id " +
-		                                 "INNER JOIN match_rating_stats rms ON rms.match_id = m.match_id " +
-		                                 "WHERE rms.player_id = {0} AND t.mode = {1} AND m.start_time >= {2} AND m.start_time <= {3} " +
-		                                 "GROUP BY t.id " +
-		                                 "ORDER BY AVG(rms.match_cost) DESC " +
-		                                 "LIMIT {4}", playerId, mode, dateMin, dateMax, count)
-		                     .ToListAsync();
-	}
-
-	public async Task<Tournament> CreateOrUpdateAsync(BatchWrapper wrapper, bool updateExisting = false)
+	public async Task<Tournament> CreateOrUpdateAsync(MatchWebSubmissionDTO wrapper, bool updateExisting = false)
 	{
 		if (updateExisting && await ExistsAsync(wrapper.TournamentName, wrapper.Mode))
 		{
 			return await UpdateExisting(wrapper);
 		}
-		
+
 		return await CreateFromWrapperAsync(wrapper);
 	}
 
-	private async Task<Tournament> UpdateExisting(BatchWrapper wrapper)
+	public async Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(int count, int playerId,
+		int mode, DateTime dateMin, DateTime dateMax, bool bestPerformances)
+	{
+		string order = bestPerformances ? "DESC" : "ASC";
+
+		using (var command = _context.Database.GetDbConnection().CreateCommand())
+		{
+			string sql = $"""
+			              SELECT t.id as TournamentId, t.name as TournamentName, AVG(mrs.match_cost) as MatchCost, t.abbreviation AS TournamentAcronym
+			              								FROM tournaments t
+			              								INNER JOIN matches m ON m.tournament_id = t.id
+			              								INNER JOIN match_rating_stats mrs ON mrs.match_id = m.id
+			              								WHERE mrs.player_id = @playerId AND t.mode = @mode AND m.start_time >= @dateMin AND m.start_time <= @dateMax AND m.verification_status = 0
+			              								GROUP BY t.id
+			              								ORDER BY AVG(mrs.match_cost) {order}
+			              								LIMIT @count
+			              """;
+
+			
+			command.CommandType = CommandType.Text;
+			command.CommandText = sql;
+			
+			command.Parameters.Add(new NpgsqlParameter<int>("playerId", playerId));
+			command.Parameters.Add(new NpgsqlParameter<int>("mode", mode));
+			command.Parameters.Add(new NpgsqlParameter<DateTime>("dateMin", NpgsqlDbType.TimestampTz) { Value = dateMin });
+			command.Parameters.Add(new NpgsqlParameter<DateTime>("dateMax", NpgsqlDbType.TimestampTz) { Value = dateMax });
+			command.Parameters.Add(new NpgsqlParameter<int>("count", count));
+			
+			await _context.Database.OpenConnectionAsync();
+
+			using (var result = await command.ExecuteReaderAsync())
+			{
+				var results = new List<PlayerTournamentMatchCostDTO>();
+				while (await result.ReadAsync())
+				{
+					results.Add(new PlayerTournamentMatchCostDTO
+					{
+						PlayerId = playerId,
+						TournamentId = result.GetInt32(0),
+						TournamentName = result.GetString(1),
+						MatchCost = result.GetDouble(2),
+						TournamentAcronym = result.GetString(3),
+						Mode = mode
+					});
+				}
+
+				return results;
+			}
+		}
+	}
+
+
+	private async Task<Tournament> UpdateExisting(MatchWebSubmissionDTO wrapper)
 	{
 		var existing = await GetAsync(wrapper.TournamentName);
 
@@ -108,12 +130,12 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		existing.Mode = wrapper.Mode;
 		existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
 		existing.TeamSize = wrapper.TeamSize;
-		
+
 		await UpdateAsync(existing);
 		return existing;
 	}
-	
-	private async Task<Tournament> CreateFromWrapperAsync(BatchWrapper wrapper)
+
+	private async Task<Tournament> CreateFromWrapperAsync(MatchWebSubmissionDTO wrapper)
 	{
 		var tournament = new Tournament
 		{
@@ -134,56 +156,14 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		return result;
 	}
 
-	private async Task<IList<Match>> MatchesWithoutTournamentAsync()
-	{
-		return await _context.Matches.Where(x => x.TournamentId == null && x.TournamentName != null && x.Abbreviation != null && x.Mode != null && x.RankRangeLowerBound != null && x.TeamSize != null)
-		                     .ToListAsync();
-	}
-
-	private async Task<Tournament?> AssociatedTournament(Match match)
-	{
-		if (match.Abbreviation == null || match.TournamentName == null)
-		{
-			return null;
-		}
-		
-		return await _context.Tournaments
-		                     .FirstOrDefaultAsync(x =>
-			x.Name.ToLower() == match.TournamentName.ToLower() && x.Abbreviation.ToLower() == match.Abbreviation.ToLower());
-	}
-
 	private Match LinkTournamentToMatch(Tournament t, Match m)
 	{
 		if (t.Id == 0)
 		{
 			throw new ArgumentException("Tournament must be saved to the database before it can be linked to a match.");
 		}
-		
+
 		m.TournamentId = t.Id;
 		return m;
-	}
-
-	private async Task<Tournament?> CreateFromMatchDataAsync(Match m)
-	{
-		if (m.TournamentName == null || m.Abbreviation == null || m.Mode == null || m.RankRangeLowerBound == null || m.TeamSize == null)
-		{
-			return null;
-		}
-		
-		var existing = await GetAsync(m.TournamentName);
-		if (existing != null)
-		{
-			return existing;
-		}
-
-		return await CreateAsync(new Tournament
-		{
-			Name = m.TournamentName,
-			Abbreviation = m.Abbreviation,
-			ForumUrl = m.Forum ?? string.Empty,
-			Mode = m.Mode.Value,
-			RankRangeLowerBound = m.RankRangeLowerBound.Value,
-			TeamSize = m.TeamSize.Value
-		});
 	}
 }

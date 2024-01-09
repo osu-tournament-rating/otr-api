@@ -79,6 +79,41 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 		return p;
 	}
 
+	public async Task<int> GetIdByOsuIdAsync(long osuId) => await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
+	public async Task<long> GetOsuIdAsync(int id) => await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
+
+	public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode) => await (from p in _context.Players
+	                                                                                                        join r in _context.BaseStats on p.Id equals r.PlayerId
+	                                                                                                        where r.Mode == (int)mode
+	                                                                                                        orderby r.Rating descending
+	                                                                                                        select new PlayerRatingDTO
+	                                                                                                        {
+		                                                                                                        OsuId = p.OsuId,
+		                                                                                                        Username = p.Username ?? "Unknown User",
+		                                                                                                        Mu = r.Rating,
+		                                                                                                        Sigma = r.Volatility
+	                                                                                                        })
+	                                                                                                       .Take(n)
+	                                                                                                       .ToListAsync();
+
+	public async Task<string?> GetUsernameAsync(long? osuId) => await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
+	public async Task<string?> GetUsernameAsync(int? id) => await _context.Players.Where(p => p.Id == id).Select(p => p.Username).FirstOrDefaultAsync();
+	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.OsuId, p => p.Id);
+	public async Task<Dictionary<int, string?>> GetCountryMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.Id, p => p.Country);
+
+	public async Task<int> GetIdByUserIdAsync(int userId) => await _context.Players.AsNoTracking()
+	                                                                       .Where(x => x.User != null && x.User.Id == userId)
+	                                                                       .Select(x => x.Id)
+	                                                                       .FirstOrDefaultAsync();
+
+	public async Task<string?> GetCountryAsync(int playerId) => await _context.Players.Where(p => p.Id == playerId).Select(p => p.Country).FirstOrDefaultAsync();
+
+	public async Task<int> GetIdAsync(string username) =>
+		await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).Select(p => p.Id).FirstOrDefaultAsync();
+
+	// This is used by a scheduled task to automatically populate user info, such as username, country, etc.
+	public async Task<IEnumerable<Player>> GetOutdatedAsync() => await _context.Players.Where(p => p.Updated == null).ToListAsync();
+
 	public async Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false, OsuEnums.Mode mode = OsuEnums.Mode.Standard, int offsetDays = -1)
 	{
 		var obj = _mapper.Map<PlayerDTO?>(await GetPlayerByOsuIdAsync(osuId, eagerLoad, (int)mode, offsetDays));
@@ -90,29 +125,4 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 		return obj;
 	}
-
-	public async Task<int> GetIdByOsuIdAsync(long osuId) => await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
-	public async Task<long> GetOsuIdByIdAsync(int id) => await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
-
-	public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode) => await (from p in _context.Players
-	                                                                                                                 join r in _context.BaseStats on p.Id equals r.PlayerId
-	                                                                                                                 where r.Mode == (int)mode
-	                                                                                                                 orderby r.Rating descending
-	                                                                                                                 select new PlayerRatingDTO
-	                                                                                                                 {
-		                                                                                                                 OsuId = p.OsuId,
-		                                                                                                                 Username = p.Username,
-		                                                                                                                 Mu = r.Rating,
-		                                                                                                                 Sigma = r.Volatility
-	                                                                                                                 })
-	                                                                                                                .Take(n)
-	                                                                                                                .ToListAsync();
-
-	public async Task<string?> GetUsernameAsync(long? osuId) => await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
-	public async Task<string?> GetUsernameAsync(int? id) => await _context.Players.Where(p => p.Id == id).Select(p => p.Username).FirstOrDefaultAsync(); 
-	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.OsuId, p => p.Id);
-	public async Task<Dictionary<int, string?>> GetCountryMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.Id, p => p.Country); 
-
-	// This is used by a scheduled task to automatically populate user info, such as username, country, etc.
-	public async Task<IEnumerable<Player>> GetOutdatedAsync() => await _context.Players.Where(p => p.Updated == null).ToListAsync();
 }

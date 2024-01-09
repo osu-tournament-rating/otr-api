@@ -14,7 +14,7 @@ namespace API.Controllers;
 
 public class LoginWrapper
 {
-	public string Code { get; set; }
+	public string Code { get; set; } = string.Empty;
 }
 
 [ApiController]

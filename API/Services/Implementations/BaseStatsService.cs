@@ -1,7 +1,9 @@
 using API.DTOs;
 using API.Entities;
+using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Services.Implementations;
 
@@ -9,8 +11,8 @@ public class BaseStatsService : IBaseStatsService
 {
 	private readonly IBaseStatsRepository _baseStatsRepository;
 	private readonly IPlayerMatchStatsRepository _matchStatsRepository;
-	private readonly IMatchRatingStatsRepository _ratingStatsRepository;
 	private readonly IPlayerRepository _playerRepository;
+	private readonly IMatchRatingStatsRepository _ratingStatsRepository;
 
 	public BaseStatsService(IBaseStatsRepository baseStatsRepository, IPlayerMatchStatsRepository matchStatsRepository, IMatchRatingStatsRepository ratingStatsRepository,
 		IPlayerRepository playerRepository)
@@ -40,14 +42,14 @@ public class BaseStatsService : IBaseStatsService
 	{
 		var baseStats = await _baseStatsRepository.GetForPlayerAsync(id, mode);
 		int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(id, mode);
-		double winRate = await _matchStatsRepository.WinRateAsync(id, mode);
+		double winRate = await _matchStatsRepository.GlobalWinrateAsync(id, mode);
 		int highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(id, mode);
 
 		if (baseStats == null)
 		{
 			return null;
 		}
-		
+
 		return new BaseStatsDTO(id, baseStats.Rating, baseStats.Volatility, baseStats.Mode,
 			baseStats.Percentile, matchesPlayed, winRate, highestGlobalRank, baseStats.GlobalRank,
 			baseStats.CountryRank, baseStats.MatchCostAverage);
@@ -67,17 +69,21 @@ public class BaseStatsService : IBaseStatsService
 				Mode = item.Mode,
 				Percentile = item.Percentile,
 				GlobalRank = item.GlobalRank,
-				CountryRank = item.CountryRank,
+				CountryRank = item.CountryRank
 			});
 		}
+
 		return await _baseStatsRepository.BatchInsertAsync(toInsert);
 	}
 
-	public async Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(int mode, int page, int pageSize)
+	public async Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(int mode, int page, int pageSize, LeaderboardChartType chartType,
+		LeaderboardFilterDTO filter, int? playerId)
 	{
-		var baseStats = await _baseStatsRepository.GetLeaderboardAsync(page, pageSize, mode);
+		var baseStats = await _baseStatsRepository.GetLeaderboardAsync(page, pageSize, mode, chartType, filter,
+			playerId);
+
 		var leaderboard = new List<BaseStatsDTO?>();
-		
+
 		foreach (var baseStat in baseStats)
 		{
 			leaderboard.Add(await GetForPlayerAsync(baseStat.PlayerId, mode));
@@ -85,5 +91,18 @@ public class BaseStatsService : IBaseStatsService
 
 		return leaderboard;
 	}
+
 	public async Task TruncateAsync() => await _baseStatsRepository.TruncateAsync();
+
+	public async Task<int> LeaderboardCountAsync(int requestQueryMode, LeaderboardChartType requestQueryChartType, LeaderboardFilterDTO requestQueryFilter, int? playerId) =>
+		await _baseStatsRepository.LeaderboardCountAsync(requestQueryMode, requestQueryChartType, requestQueryFilter, playerId);
+
+	public async Task<LeaderboardFilterDefaultsDTO> LeaderboardFilterDefaultsAsync(int requestQueryMode, LeaderboardChartType requestQueryChartType) => new()
+	{
+		MaxRating = await _baseStatsRepository.HighestRatingAsync(requestQueryMode),
+		MaxMatches = await _baseStatsRepository.HighestMatchesAsync(requestQueryMode),
+		MaxRank = await _baseStatsRepository.HighestRankAsync(requestQueryMode)
+	};
+
+	public async Task<ActionResult<IEnumerable<double>>> GetHistogramAsync(int mode) => await _baseStatsRepository.GetHistogramAsync(mode);
 }
