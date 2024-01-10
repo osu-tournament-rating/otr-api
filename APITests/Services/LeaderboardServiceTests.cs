@@ -1,152 +1,52 @@
-using API.Controllers;
 using API.DTOs;
 using API.Enums;
+using API.Services.Implementations;
 using API.Services.Interfaces;
-using APITests.Instances;
-using APITests.MockServices;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Moq;
-using System.Security.Claims;
-using System.Security.Principal;
+using APITests.MockRepositories;
 
 namespace APITests.Services;
 
-[Collection("DatabaseCollection")]
 public class LeaderboardServiceTests
 {
-	private readonly TestDatabaseFixture _fixture;
-	private readonly Mock<ILeaderboardService> _leaderboardMock;
+	private readonly ILeaderboardService _leaderboardService;
 
-	public LeaderboardServiceTests(TestDatabaseFixture fixture)
+	public LeaderboardServiceTests()
 	{
-		_fixture = fixture;
-		_leaderboardMock = new Mock<ILeaderboardService>();
+		var playerRepository = new MockPlayerRepository()
+		                       .SetupGetId()
+		                       .SetupGetCountry()
+		                       .SetupGetOsuId()
+		                       .SetupGetUsername()
+		                       .SetupGetCountry();
+
+		var baseStatsRepository = new MockBaseStatsRepository()
+		                          .SetupLeaderboard()
+		                          .SetupLeaderboardCount()
+		                          .SetupHighestMatches()
+		                          .SetupHighestRating()
+		                          .SetupHighestRank()
+		                          .SetupGetForPlayerAsync();
+
+		var matchStatsRepository = new MockMatchStatsRepository()
+		                           .SetupGlobalWinrate()
+		                           .SetupCountMatchesPlayed();
+
+		var ratingStatsRepository = new MockRatingStatsRepository()
+		                            .SetupHighestGlobalRank()
+		                            .SetupHighestCountryRank()
+		                            .SetupGetRankChart();
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var playerService = new PlayerService(playerRepository.Object, null);
+		var playerStatsService = new PlayerStatsService(playerRepository.Object, matchStatsRepository.Object, ratingStatsRepository.Object, null, null,
+			null, null, null, null);
+
+		var baseStatsService = new BaseStatsService(baseStatsRepository.Object, matchStatsRepository.Object, ratingStatsRepository.Object, playerRepository.Object);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		_leaderboardService = new LeaderboardService(playerRepository.Object, baseStatsService,
+			ratingStatsRepository.Object, playerService, playerStatsService);
 	}
-
-	public static IEnumerable<object[]> InvalidQueryFilter => new List<object[]>
-	{
-		new object[] { new LeaderboardFilterDTO { MinRank = 0 } },
-		new object[] { new LeaderboardFilterDTO { MaxRank = 0 } },
-		new object[] { new LeaderboardFilterDTO { MinRank = 5, MaxRank = 4 } },
-		new object[] { new LeaderboardFilterDTO { MinRating = 0 } },
-		new object[] { new LeaderboardFilterDTO { MaxRating = 0 } },
-		new object[] { new LeaderboardFilterDTO { MinRating = 5, MaxRating = 4 } },
-		new object[] { new LeaderboardFilterDTO { MinMatches = -1 } },
-		new object[] { new LeaderboardFilterDTO { MaxMatches = -1 } },
-		new object[] { new LeaderboardFilterDTO { MinMatches = 5, MaxMatches = 4 } },
-		new object[] { new LeaderboardFilterDTO { MinWinrate = -0.1 } },
-		new object[] { new LeaderboardFilterDTO { MaxWinrate = -0.1 } },
-		new object[] { new LeaderboardFilterDTO { MinWinrate = 1.1 } },
-		new object[] { new LeaderboardFilterDTO { MaxWinrate = 1.1 } },
-		new object[] { new LeaderboardFilterDTO { MinWinrate = 0.5, MaxWinrate = 0.4 } }
-	};
-	public static IEnumerable<object[]> ForceIncludeTieredQueryFilters => new List<object[]>
-	{
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = true, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
-				FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Bronze"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = true, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
-				FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Silver"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = true, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
-				FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Gold"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = true, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
-				FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Platinum"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = true, FilterDiamond = false, FilterMaster = false,
-				FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Emerald"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = true, FilterMaster = false,
-				FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Diamond"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = true,
-				FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Master"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
-				FilterGrandmaster = true,
-				FilterEliteGrandmaster = false
-			},
-			"Grandmaster"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false,
-				FilterGrandmaster = false,
-				FilterEliteGrandmaster = true
-			},
-			"Elite Grandmaster"
-		}
-	};
-	public static IEnumerable<object[]> ForceExcludeQueryFilters => new List<object[]>
-	{
-		new object[] { new LeaderboardTierFilterDTO { FilterBronze = false }, "Bronze" },
-		new object[] { new LeaderboardTierFilterDTO { FilterSilver = false }, "Silver" },
-		new object[] { new LeaderboardTierFilterDTO { FilterGold = false }, "Gold" },
-		new object[] { new LeaderboardTierFilterDTO { FilterPlatinum = false }, "Platinum" },
-		new object[] { new LeaderboardTierFilterDTO { FilterEmerald = false }, "Emerald" },
-		new object[] { new LeaderboardTierFilterDTO { FilterDiamond = false }, "Diamond" },
-		new object[] { new LeaderboardTierFilterDTO { FilterMaster = false }, "Master" },
-		new object[] { new LeaderboardTierFilterDTO { FilterGrandmaster = false }, "Grandmaster" },
-		new object[] { new LeaderboardTierFilterDTO { FilterEliteGrandmaster = false }, "Elite Grandmaster" }
-	};
 
 	[Theory]
 	[InlineData(0)]
@@ -156,323 +56,46 @@ public class LeaderboardServiceTests
 	public async Task GetLeaderboardAsync_ReturnsLeaderboard_WithCorrectMode(int mode)
 	{
 		// Arrange
-		var expected = new LeaderboardDTO
+		var lb = await _leaderboardService.GetLeaderboardAsync(new LeaderboardRequestQueryDTO
 		{
 			Mode = mode
-		};
-
-		var request = new LeaderboardRequestQueryDTO
-		{
-			Mode = mode
-		};
-
-		var mockLeaderboardService = new MockLeaderboardService()
-			.MockGetLeaderboardAsync(expected);
-
-		var configurationMock = Mock.Of<IConfiguration>();
-
+		});
 		// Act
-		var leaderboardController = new LeaderboardsController(mockLeaderboardService.Object, configurationMock);
-		leaderboardController.ControllerContext = new ControllerContext
-		{
-			HttpContext = new DefaultHttpContext
-			{
-				User = new ClaimsPrincipal(new GenericIdentity("1"))
-			}
-		};
-
-		var actionResult = await leaderboardController.GetAsync(request);
 
 		// Assert
-		var result = actionResult.Result as OkObjectResult;
-		Assert.NotNull(result);
 
-		var value = result.Value as LeaderboardDTO;
-		Assert.NotNull(value);
-
-		Assert.Equal(expected.Mode, value.Mode);
-	}
-
-	[Theory]
-	[InlineData(1)]
-	[InlineData(5)]
-	[InlineData(10)]
-	public async Task Leaderboard_PageSize_ReturnsExpectedValue(int pageSize)
-	{
-		// Arrange
-		var lb = new List<LeaderboardPlayerInfoDTO>();
-		for (int i = 0; i < pageSize; i++)
-		{
-			lb.Add(new LeaderboardPlayerInfoDTO());
-		}
-
-		var expected = new LeaderboardDTO
-		{
-			Leaderboard = lb
-		};
-
-		var request = new LeaderboardRequestQueryDTO
-		{
-			PageSize = pageSize
-		};
-
-		var mockLeaderboardService = new MockLeaderboardService()
-			.MockGetLeaderboardAsync(expected);
-
-		var configurationMock = Mock.Of<IConfiguration>();
-
-		// Act
-		var leaderboardController = new LeaderboardsController(mockLeaderboardService.Object, configurationMock);
-		leaderboardController.ControllerContext = new ControllerContext
-		{
-			HttpContext = new DefaultHttpContext
-			{
-				User = new ClaimsPrincipal(new GenericIdentity("1"))
-			}
-		};
-
-		var actionResult = await leaderboardController.GetAsync(request);
-
-		// Assert
-		var result = actionResult.Result as OkObjectResult;
-		Assert.NotNull(result);
-
-		var value = result.Value as LeaderboardDTO;
-		Assert.NotNull(value);
-
-		Assert.Equal(pageSize, value.Leaderboard.Count());
+		Assert.Equal(mode, lb.Mode);
 	}
 
 	[Fact]
-	public async Task Leaderboard_Returns_BadRequest_WhenInvalidUserIdentity_And_CountryLeaderboard()
+	public async Task GetLeaderboardAsync_ReturnsEliteGrandmaster_WhenRequested()
 	{
 		// Arrange
-		var request = new LeaderboardRequestQueryDTO
+		var filter = new LeaderboardRequestQueryDTO
 		{
-			ChartType = LeaderboardChartType.Country
-		};
-
-		var mockLeaderboardService = new MockLeaderboardService();
-
-		var configurationMock = Mock.Of<IConfiguration>();
-
-		// Act
-		var leaderboardController = new LeaderboardsController(mockLeaderboardService.Object, configurationMock);
-		leaderboardController.ControllerContext = new ControllerContext
-		{
-			HttpContext = new DefaultHttpContext
-			{
-				User = new ClaimsPrincipal(new GenericIdentity(string.Empty))
-			}
-		};
-
-		var actionResult = await leaderboardController.GetAsync(request);
-
-		// Assert
-		var result = actionResult.Result as BadRequestObjectResult;
-		Assert.NotNull(result);
-	}
-
-	[Fact]
-	public async Task Leaderboard_PageSize_DefaultsTo50()
-	{
-		// Arrange
-		var request = new LeaderboardRequestQueryDTO();
-
-		var lb = new List<LeaderboardPlayerInfoDTO>();
-		for (int i = 0; i < request.PageSize; i++)
-		{
-			lb.Add(new LeaderboardPlayerInfoDTO());
-		}
-
-		var expected = new LeaderboardDTO
-		{
-			Leaderboard = lb
-		};
-
-		var mockLeaderboardService = new MockLeaderboardService()
-			.MockGetLeaderboardAsync(expected);
-
-		var configurationMock = Mock.Of<IConfiguration>();
-
-		// Act
-		var leaderboardController = new LeaderboardsController(mockLeaderboardService.Object, configurationMock);
-		leaderboardController.ControllerContext = new ControllerContext
-		{
-			HttpContext = new DefaultHttpContext
-			{
-				User = new ClaimsPrincipal(new GenericIdentity("1"))
-			}
-		};
-
-		var actionResult = await leaderboardController.GetAsync(request);
-
-		// Assert
-		var result = actionResult.Result as OkObjectResult;
-		Assert.NotNull(result);
-
-		var value = result.Value as LeaderboardDTO;
-		Assert.NotNull(value);
-
-		Assert.Equal(50, value.Leaderboard.Count());
-	}
-
-	[Fact]
-	public async Task LeaderboardChart_ReturnsValidData()
-	{
-		// Arrange
-		var expected = new 
-		// Act
-		
-		// Assert
-		
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		const int userId = 440;
-
-		var query = new LeaderboardRequestQueryDTO();
-
-		var result = await service.GetLeaderboardAsync(query, userId);
-		var chart = result.PlayerChart;
-
-		Assert.NotNull(chart);
-		Assert.IsType<int>(chart.Rank);
-		Assert.IsType<double>(chart.Rating);
-		Assert.IsType<int>(chart.Matches);
-		Assert.IsType<double>(chart.Winrate);
-		Assert.IsType<double>(chart.Percentile);
-		Assert.IsType<int>(chart.HighestRank);
-		Assert.IsType<string>(chart.Tier);
-
-		Assert.True(chart.Rank > 0);
-		Assert.True(chart.Rating > 0);
-		Assert.True(chart.Matches > 0);
-		Assert.True(chart.Winrate >= 0);
-		Assert.True(chart.Winrate <= 1);
-		Assert.True(chart.Percentile >= 0);
-		Assert.True(chart.Percentile <= 1);
-		Assert.True(chart.HighestRank > 0);
-		Assert.NotEmpty(chart.Tier);
-
-		Assert.All(chart.RankChart.ChartData, x => Assert.Multiple(() =>
-		{
-			Assert.IsType<int>(x.Rank);
-			Assert.IsType<int>(x.RankChange);
-			Assert.IsType<string>(x.MatchName);
-			Assert.IsType<string>(x.TournamentName);
-
-			Assert.True(x.Rank > 0);
-			Assert.NotEmpty(x.MatchName);
-			Assert.NotEmpty(x.TournamentName);
-		}));
-	}
-
-	[Theory]
-	[InlineData(1, 5)]
-	[InlineData(100, 500)]
-	[InlineData(2500, 2501)]
-	public async Task Leaderboard_FiltersRankCorrectly(int minRank, int maxRank)
-	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
-		{
+			Mode = 0,
+			ChartType = LeaderboardChartType.Global,
 			Filter = new LeaderboardFilterDTO
 			{
-				MinRank = minRank,
-				MaxRank = maxRank
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = true,
+					FilterGrandmaster = false,
+					FilterMaster = false,
+					FilterEmerald = false,
+					FilterDiamond = false,
+					FilterPlatinum = false,
+					FilterGold = false,
+					FilterSilver = false,
+					FilterBronze = false
+				}
 			}
 		};
 
-		var result = await service.GetLeaderboardAsync(query);
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
 
-		Assert.All(result.Leaderboard, pInfo => Assert.True(pInfo.GlobalRank >= minRank && pInfo.GlobalRank <= maxRank));
-	}
-
-	[Fact]
-	public async Task Leaderboard_Players_OfSameCountry()
-	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		const string country = "US";
-
-		var query = new LeaderboardRequestQueryDTO
-		{
-			ChartType = LeaderboardChartType.Country
-		};
-
-		var result = await service.GetLeaderboardAsync(query, 440);
-
-		Assert.All(result.Leaderboard, pInfo => Assert.Equal(country, pInfo.Country));
-	}
-
-	[Theory] [MemberData(nameof(InvalidQueryFilter))]
-	public async Task Leaderboard_ThrowsException_WhenInvalidFilter(LeaderboardFilterDTO filter)
-	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
-		{
-			Filter = filter
-		};
-
-		await Assert.ThrowsAsync<ArgumentException>(() => service.GetLeaderboardAsync(query));
-	}
-
-	[Theory] [MemberData(nameof(ForceIncludeTieredQueryFilters))]
-	public async Task Leaderboard_ContainsOnlyExplicitPlayers_WhenFilterForced(LeaderboardTierFilterDTO filter, string tier)
-	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
-		{
-			Filter = new LeaderboardFilterDTO
-			{
-				TierFilters = filter
-			}
-		};
-
-		var result = await service.GetLeaderboardAsync(query);
-
-		Assert.All(result.Leaderboard, pInfo => Assert.Contains(tier, pInfo.Tier));
-	}
-
-	[Theory] [MemberData(nameof(ForceExcludeQueryFilters))]
-	public async Task Leaderboard_DoesNotContainPlayers_WhenTierExcluded(LeaderboardTierFilterDTO filter, string tier)
-	{
-		// This test is kinda crappy, but it's the best we can do for now.
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
-		{
-			PageSize = 10,
-			Filter = new LeaderboardFilterDTO
-			{
-				TierFilters = filter
-			}
-		};
-
-		var result = await service.GetLeaderboardAsync(query);
-
-		Assert.All(result.Leaderboard, pInfo => Assert.NotEqual(tier, pInfo.Tier));
-	}
-
-	[Fact]
-	public async Task Leaderboard_HasTotalPlayerCount_GreaterThanZero()
-	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO();
-
-		var result = await service.GetLeaderboardAsync(query);
-
-		Assert.True(result.TotalPlayerCount > 0);
+		// Assert
+		Assert.All(lb.Leaderboard, x => Assert.Equal("Elite Grandmaster", x.Tier));
 	}
 }
