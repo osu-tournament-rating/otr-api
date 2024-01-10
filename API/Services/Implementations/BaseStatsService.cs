@@ -32,27 +32,28 @@ public class BaseStatsService : IBaseStatsService
 		foreach (var stat in baseStats)
 		{
 			// One per mode
-			ret.Add(await GetForPlayerAsync(id, stat.Mode));
+			ret.Add(await GetForPlayerAsync(stat, id, stat.Mode));
 		}
 
 		return ret;
 	}
 
-	public async Task<BaseStatsDTO?> GetForPlayerAsync(int id, int mode)
+	public async Task<BaseStatsDTO?> GetForPlayerAsync(BaseStats? currentStats, int id, int mode)
 	{
-		var baseStats = await _baseStatsRepository.GetForPlayerAsync(id, mode);
-		int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(id, mode);
-		double winRate = await _matchStatsRepository.GlobalWinrateAsync(id, mode);
-		int highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(id, mode);
+		currentStats ??= await _baseStatsRepository.GetForPlayerAsync(id, mode);
 
-		if (baseStats == null)
+		if (currentStats == null)
 		{
 			return null;
 		}
 
-		return new BaseStatsDTO(id, baseStats.Rating, baseStats.Volatility, baseStats.Mode,
-			baseStats.Percentile, matchesPlayed, winRate, highestGlobalRank, baseStats.GlobalRank,
-			baseStats.CountryRank, baseStats.MatchCostAverage);
+		int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(id, mode);
+		double winRate = await _matchStatsRepository.GlobalWinrateAsync(id, mode);
+		int highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(id, mode);
+
+		return new BaseStatsDTO(id, currentStats.Rating, currentStats.Volatility, currentStats.Mode,
+			currentStats.Percentile, matchesPlayed, winRate, highestGlobalRank, currentStats.GlobalRank,
+			currentStats.CountryRank, currentStats.MatchCostAverage);
 	}
 
 	public async Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats)
@@ -86,7 +87,7 @@ public class BaseStatsService : IBaseStatsService
 
 		foreach (var baseStat in baseStats)
 		{
-			leaderboard.Add(await GetForPlayerAsync(baseStat.PlayerId, mode));
+			leaderboard.Add(await GetForPlayerAsync(baseStat, baseStat.PlayerId, mode));
 		}
 
 		return leaderboard;

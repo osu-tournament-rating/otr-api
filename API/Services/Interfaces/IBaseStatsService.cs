@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Entities;
 using API.Enums;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +14,7 @@ public interface IBaseStatsService
 	/// <returns></returns>
 	Task<IEnumerable<BaseStatsDTO?>> GetForPlayerAsync(long osuPlayerId);
 
-	Task<BaseStatsDTO?> GetForPlayerAsync(int id, int mode);
+	Task<BaseStatsDTO?> GetForPlayerAsync(BaseStats? currentStats, int id, int mode);
 	Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats);
 
 	Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(int mode, int page, int pageSize, LeaderboardChartType chartType,
@@ -22,6 +23,7 @@ public interface IBaseStatsService
 	Task TruncateAsync();
 	Task<int> LeaderboardCountAsync(int requestQueryMode, LeaderboardChartType requestQueryChartType, LeaderboardFilterDTO requestQueryFilter, int? playerId);
 	Task<LeaderboardFilterDefaultsDTO> LeaderboardFilterDefaultsAsync(int requestQueryMode, LeaderboardChartType requestQueryChartType);
+
 	/// <summary>
 	/// Returns a list of ratings, ordered from highest to lowest, forming a histogram of the ratings of all players.
 	/// </summary>

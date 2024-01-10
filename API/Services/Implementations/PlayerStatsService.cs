@@ -193,7 +193,7 @@ public class PlayerStatsService : IPlayerStatsService
 	// Returns overall stats for the player, no need to filter by date.
 	private async Task<BaseStatsDTO?> GetBaseStatsAsync(int playerId, int mode)
 	{
-		var dto = await _baseStatsService.GetForPlayerAsync(playerId, mode);
+		var dto = await _baseStatsService.GetForPlayerAsync(null, playerId, mode);
 
 		if (dto == null)
 		{

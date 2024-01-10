@@ -20,7 +20,9 @@ public class MockBaseStatsRepository : Mock<IBaseStatsRepository>
 	{
 		Setup(x => x.GetLeaderboardAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<LeaderboardChartType>(), It.IsAny<LeaderboardFilterDTO>(),
 				It.IsAny<int?>()))
-			.ReturnsAsync(SeededBaseStats.GetLeaderboard());
+			.ReturnsAsync((int page, int pageSize, int mode, LeaderboardChartType chartType,
+					LeaderboardFilterDTO filter, int? playerId) =>
+				SeededBaseStats.GetLeaderboardFiltered(filter, pageSize));
 
 		return this;
 	}

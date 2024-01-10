@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Enums;
 using API.Services.Implementations;
 using API.Services.Interfaces;
+using API.Utilities;
 using APITests.MockRepositories;
 
 namespace APITests.Services;
@@ -46,6 +47,46 @@ public class LeaderboardServiceTests
 
 		_leaderboardService = new LeaderboardService(playerRepository.Object, baseStatsService,
 			ratingStatsRepository.Object, playerService, playerStatsService);
+	}
+
+	[Fact]
+	public void LeaderboardFilters_Invalid_WhenAllFiltersFalse()
+	{
+		// Arrange
+		var filter = new LeaderboardFilterDTO
+		{
+			TierFilters = new LeaderboardTierFilterDTO
+			{
+				FilterBronze = false,
+				FilterSilver = false,
+				FilterGold = false,
+				FilterPlatinum = false,
+				FilterEmerald = false,
+				FilterDiamond = false,
+				FilterMaster = false,
+				FilterGrandmaster = false,
+				FilterEliteGrandmaster = false
+			}
+		};
+		// Act
+
+		// Assert
+		Assert.True(filter.TierFilters.IsInvalid());
+	}
+
+	[Fact]
+	public void LeaderboardFilters_Valid_WhenNull()
+	{
+		// Arrange
+		var filter = new LeaderboardFilterDTO
+		{
+			TierFilters = null
+		};
+
+		// Act
+
+		// Assert
+		Assert.False(filter.TierFilters.IsInvalid());
 	}
 
 	[Theory]
