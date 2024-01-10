@@ -101,7 +101,7 @@ public class BaseStatsService : IBaseStatsService
 	{
 		MaxRating = await _baseStatsRepository.HighestRatingAsync(requestQueryMode),
 		MaxMatches = await _baseStatsRepository.HighestMatchesAsync(requestQueryMode),
-		MaxRank = await _baseStatsRepository.HighestRankAsync(requestQueryMode)
+		MaxRank = 100_000
 	};
 
 	public async Task<ActionResult<IEnumerable<double>>> GetHistogramAsync(int mode) => await _baseStatsRepository.GetHistogramAsync(mode);

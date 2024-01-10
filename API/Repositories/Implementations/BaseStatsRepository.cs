@@ -181,13 +181,12 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		                     .FirstOrDefaultAsync();
 	}
 
-	public async Task<ActionResult<IEnumerable<double>>> GetHistogramAsync(int mode) =>
-		await _context.BaseStats
-		               .AsNoTracking()
-		               .Where(x => x.Mode == mode)
-		               .Select(x => x.Rating)
-		               .OrderByDescending(x => x)
-		               .ToListAsync();
+	public async Task<ActionResult<IEnumerable<double>>> GetHistogramAsync(int mode) => await _context.BaseStats
+	                                                                                                  .AsNoTracking()
+	                                                                                                  .Where(x => x.Mode == mode)
+	                                                                                                  .Select(x => x.Rating)
+	                                                                                                  .OrderByDescending(x => x)
+	                                                                                                  .ToListAsync();
 
 	public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
 	{
@@ -217,7 +216,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 		if (filter != null)
 		{
-			baseQuery = FilterByRank(baseQuery, filter.MinRank, filter.MaxRank, chartType);
+			baseQuery = FilterByRank(mode, baseQuery, filter.MinRank, filter.MaxRank, chartType);
 			baseQuery = FilterByRating(baseQuery, filter.MinRating, filter.MaxRating);
 			baseQuery = FilterByMatchesPlayed(baseQuery, filter.MinMatches, filter.MaxMatches);
 
@@ -231,30 +230,25 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		return baseQuery;
 	}
 
-	private IQueryable<BaseStats> FilterByRank(IQueryable<BaseStats> query, int? minRank, int? maxRank, LeaderboardChartType chartType)
+	private IQueryable<BaseStats> FilterByRank(int mode, IQueryable<BaseStats> query, int? minRank, int? maxRank,
+		LeaderboardChartType chartType)
 	{
 		if (minRank.HasValue)
 		{
-			if (chartType == LeaderboardChartType.Country)
-			{
-				query = query.Where(x => x.CountryRank >= minRank.Value);
-			}
-			else
-			{
-				query = query.Where(x => x.GlobalRank >= minRank.Value);
-			}
+			query = query.Where(x =>
+				mode == 0 ? x.Player.RankStandard >= minRank.Value :
+				mode == 1 ? x.Player.RankTaiko >= minRank.Value :
+				mode == 2 ? x.Player.RankCatch >= minRank.Value :
+				x.Player.RankMania >= minRank.Value);
 		}
 
 		if (maxRank.HasValue)
 		{
-			if (chartType == LeaderboardChartType.Country)
-			{
-				query = query.Where(x => x.CountryRank <= maxRank.Value);
-			}
-			else
-			{
-				query = query.Where(x => x.GlobalRank <= maxRank.Value);
-			}
+			query = query.Where(x =>
+				mode == 0 ? x.Player.RankStandard <= maxRank.Value :
+				mode == 1 ? x.Player.RankTaiko <= maxRank.Value :
+				mode == 2 ? x.Player.RankCatch <= maxRank.Value :
+				x.Player.RankMania <= maxRank.Value);
 		}
 
 		return query;
