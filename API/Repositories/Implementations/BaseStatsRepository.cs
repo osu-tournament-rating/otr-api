@@ -216,7 +216,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 		if (filter != null)
 		{
-			baseQuery = FilterByRank(mode, baseQuery, filter.MinRank, filter.MaxRank, chartType);
+			baseQuery = FilterByRank(mode, baseQuery, filter.MinRank, filter.MaxRank);
 			baseQuery = FilterByRating(baseQuery, filter.MinRating, filter.MaxRating);
 			baseQuery = FilterByMatchesPlayed(baseQuery, filter.MinMatches, filter.MaxMatches);
 
@@ -230,8 +230,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		return baseQuery;
 	}
 
-	private IQueryable<BaseStats> FilterByRank(int mode, IQueryable<BaseStats> query, int? minRank, int? maxRank,
-		LeaderboardChartType chartType)
+	private IQueryable<BaseStats> FilterByRank(int mode, IQueryable<BaseStats> query, int? minRank, int? maxRank)
 	{
 		if (minRank.HasValue)
 		{
