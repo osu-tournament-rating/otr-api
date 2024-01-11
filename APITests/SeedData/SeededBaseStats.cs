@@ -108,47 +108,47 @@ public static class SeededBaseStats
 		// Remove the tiers that are false
 		if (tiers.FilterEliteGrandmaster == false)
 		{
-			lb.RemoveAll(x => x.Rating < RatingUtils.RatingEliteGrandmaster);
+			lb.RemoveAll(x => x.Rating >= RatingUtils.RatingEliteGrandmaster);
 		}
 
 		if (tiers.FilterGrandmaster == false)
 		{
-			lb.RemoveAll(x => x.Rating < RatingUtils.RatingGrandmasterIII && x.Rating >= RatingUtils.RatingEliteGrandmaster);
+			lb.RemoveAll(x => x.Rating >= RatingUtils.RatingGrandmasterIII && x.Rating < RatingUtils.RatingEliteGrandmaster);
 		}
 
 		if (tiers.FilterMaster == false)
 		{
-			lb.RemoveAll(x => x.Rating < RatingUtils.RatingMasterIII && x.Rating >= RatingUtils.RatingGrandmasterIII);
+			lb.RemoveAll(x => x.Rating >= RatingUtils.RatingMasterIII && x.Rating < RatingUtils.RatingGrandmasterIII);
 		}
 
 		if (tiers.FilterDiamond == false)
 		{
-			lb.RemoveAll(x => x.Rating < RatingUtils.RatingDiamondIII && x.Rating >= RatingUtils.RatingMasterIII);
+			lb.RemoveAll(x => x.Rating >= RatingUtils.RatingDiamondIII && x.Rating < RatingUtils.RatingMasterIII);
 		}
 
 		if (tiers.FilterEmerald == false)
 		{
-			lb.RemoveAll(x => x.Rating < RatingUtils.RatingEmeraldIII && x.Rating >= RatingUtils.RatingDiamondIII);
+			lb.RemoveAll(x => x.Rating >= RatingUtils.RatingEmeraldIII && x.Rating < RatingUtils.RatingDiamondIII);
 		}
 
 		if (tiers.FilterPlatinum == false)
 		{
-			lb.RemoveAll(x => x.Rating < RatingUtils.RatingPlatinumIII && x.Rating >= RatingUtils.RatingEmeraldIII);
+			lb.RemoveAll(x => x.Rating >= RatingUtils.RatingPlatinumIII && x.Rating < RatingUtils.RatingEmeraldIII);
 		}
 
 		if (tiers.FilterGold == false)
 		{
-			lb.RemoveAll(x => x.Rating < RatingUtils.RatingGoldIII && x.Rating >= RatingUtils.RatingPlatinumIII);
+			lb.RemoveAll(x => x.Rating >= RatingUtils.RatingGoldIII && x.Rating < RatingUtils.RatingPlatinumIII);
 		}
 
 		if (tiers.FilterSilver == false)
 		{
-			lb.RemoveAll(x => x.Rating < RatingUtils.RatingSilverIII && x.Rating >= RatingUtils.RatingGoldIII);
+			lb.RemoveAll(x => x.Rating >= RatingUtils.RatingSilverIII && x.Rating < RatingUtils.RatingGoldIII);
 		}
 
 		if (tiers.FilterBronze == false)
 		{
-			lb.RemoveAll(x => x.Rating < RatingUtils.RatingBronzeIII && x.Rating >= RatingUtils.RatingSilverIII);
+			lb.RemoveAll(x => x.Rating >= RatingUtils.RatingBronzeIII && x.Rating < RatingUtils.RatingSilverIII);
 		}
 
 		return lb;
