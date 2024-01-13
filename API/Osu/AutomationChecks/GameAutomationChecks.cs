@@ -7,36 +7,18 @@ public static class GameAutomationChecks
 	private const string _logPrefix = "[Automations: Game Check]";
 	private static readonly Serilog.ILogger _logger = Serilog.Log.ForContext(typeof(GameAutomationChecks));
 
-	public static bool PassesAutomationChecks(Game game) => PassesTournamentCheck(game) &&
-	                                                        PassesScoringTypeCheck(game) &&
+	public static bool PassesAutomationChecks(Game game) => PassesScoringTypeCheck(game) &&
 	                                                        PassesModeCheck(game) &&
 	                                                        PassesTeamTypeCheck(game) &&
 	                                                        PassesTeamSizeCheck(game) &&
 	                                                        PassesModsCheck(game) &&
 	                                                        PassesScoreSanityCheck(game);
 
-	public static bool PassesTournamentCheck(Game game)
-	{
-		if (game.Match.Tournament == null)
-		{
-			_logger.Information("{Prefix} Match {MatchId} has no tournament, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.GameId);
-			return false;
-		}
-
-		return true;
-	}
-
 	public static bool PassesTeamSizeCheck(Game game)
 	{
 		var tournament = game.Match.Tournament;
 
-		if (tournament == null)
-		{
-			_logger.Information("{Prefix} Match {MatchId} has no tournament, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.GameId);
-			return false;
-		}
-
-		int? teamSize = tournament!.TeamSize;
+		int? teamSize = tournament.TeamSize;
 		if (teamSize is < 1 or > 8)
 		{
 			_logger.Information("{Prefix} Tournament {TournamentId} has an invalid team size: {Size}, can't verify game {GameId}", _logPrefix, tournament.Id, tournament.TeamSize,
@@ -93,7 +75,7 @@ public static class GameAutomationChecks
 
 	public static bool PassesModeCheck(Game game)
 	{
-		var tournament = game.Match.Tournament!;
+		var tournament = game.Match.Tournament;
 		int gameMode = tournament.Mode;
 
 		if (gameMode is < 0 or > 3)
@@ -161,12 +143,6 @@ public static class GameAutomationChecks
 		if (!game.MatchScores.Any())
 		{
 			_logger.Warning("Game {GameId} has no scores, can't verify", game.GameId);
-			return false;
-		}
-
-		if (game.MatchScores.Any(x => x.IsValid == false))
-		{
-			_logger.Warning("Game {GameId} has at least one invalid score, can't verify", game.GameId);
 			return false;
 		}
 

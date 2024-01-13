@@ -6,15 +6,11 @@ public static class MatchAutomationChecks
 {
 	private const string _logPrefix = "[Automations: Match Check]";
 	private static readonly Serilog.ILogger _logger = Serilog.Log.ForContext(typeof(MatchAutomationChecks));
-	
-	public static bool PassesAllChecks(Match match)
-	{
-		return HasTournament(match) && ValidGameMode(match) && PassesNameCheck(match);
-	}
+	public static bool PassesAllChecks(Match match) { return HasTournament(match) && ValidGameMode(match) && PassesNameCheck(match); }
 
 	public static bool HasTournament(Match match)
 	{
-		bool passes = match.Tournament != null;
+		bool passes = match.TournamentId == match.Tournament.Id;
 		if (!passes)
 		{
 			_logger.Warning("{Prefix} Match {MatchID} has no tournament, failing automation checks", _logPrefix, match.MatchId);
