@@ -4,10 +4,7 @@ namespace API.Osu.AutomationChecks;
 
 public static class ScoreAutomationChecks
 {
-	public static bool PassesAutomationChecks(MatchScore score)
-	{
-		return PassesModsCheck(score);
-	}
+	public static bool PassesAutomationChecks(MatchScore score) => PassesValueCheck(score) && PassesModsCheck(score);
 
 	public static bool PassesModsCheck(MatchScore score)
 	{
@@ -15,7 +12,9 @@ public static class ScoreAutomationChecks
 		{
 			return true;
 		}
-		
+
 		return !AutomationConstants.UnallowedMods.Any(unallowedMod => score.EnabledModsEnum!.Value.HasFlag(unallowedMod));
 	}
+
+	public static bool PassesValueCheck(MatchScore score) => score.Score > 0;
 }

@@ -289,7 +289,7 @@ public class AutomationChecksTests
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Games.First()
-		     .MatchScores.Add(new MatchScore()
+		     .MatchScores.Add(new MatchScore
 		     {
 			     PlayerId = -1,
 			     Score = 500,
@@ -425,7 +425,7 @@ public class AutomationChecksTests
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Games.First()
-		     .MatchScores.Add(new MatchScore()
+		     .MatchScores.Add(new MatchScore
 		     {
 			     PlayerId = -1,
 			     Score = 500,
@@ -550,7 +550,7 @@ public class AutomationChecksTests
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Games.First()
-		     .MatchScores.Add(new MatchScore()
+		     .MatchScores.Add(new MatchScore
 		     {
 			     PlayerId = -1,
 			     Score = 500,
@@ -624,6 +624,15 @@ public class AutomationChecksTests
 	}
 
 	[Fact]
+	public void Game_PassesScoreSanity_WhenAnyScoresPresent()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		var game = match.Games.First();
+
+		Assert.True(GameAutomationChecks.PassesScoreSanityCheck(game));
+	}
+
+	[Fact]
 	public void Game_FailsScoreSanity_WhenNoScores()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
@@ -633,24 +642,7 @@ public class AutomationChecksTests
 	}
 
 	[Fact]
-	public void Game_FailsScoreSanity_WhenAnyScoreIsInvalid()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-		match.Games.First().MatchScores.First().IsValid = false;
-
-		Assert.False(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
-	}
-
-	[Fact]
-	public void Game_PassesScoreSanity_WhenAllScoresAreValid()
-	{
-		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-
-		Assert.True(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
-	}
-
-	[Fact]
-	public void Game_PassesSanity_WhenRefereeInLobby_TeamRed()
+	public void Game_PassesSanity_WhenRefereeInLobby_TeamRed_1v1()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Games.First()
@@ -667,7 +659,7 @@ public class AutomationChecksTests
 	}
 
 	[Fact]
-	public void Game_PassesSanity_WhenRefereeInLobby_TeamBlue()
+	public void Game_PassesSanity_WhenRefereeInLobby_TeamBlue_1v1()
 	{
 		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 		match.Games.First()
@@ -675,6 +667,76 @@ public class AutomationChecksTests
 		     {
 			     PlayerId = 0,
 			     Score = 0,
+			     Team = (int)OsuEnums.Team.Blue
+		     });
+
+		Assert.True(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
+		Assert.True(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
+		Assert.True(GameAutomationChecks.PassesAutomationChecks(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_PassesSanity_WhenRefereeInLobby_TeamRed_2v2()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament.TeamSize = 2;
+
+		match.Games.First()
+		     .MatchScores.Add(new MatchScore
+		     {
+			     PlayerId = 0,
+			     Score = 0,
+			     Team = (int)OsuEnums.Team.Red
+		     });
+
+		match.Games.First()
+		     .MatchScores.Add(new MatchScore
+		     {
+			     PlayerId = 0,
+			     Score = 500_000,
+			     Team = (int)OsuEnums.Team.Red
+		     });
+
+		match.Games.First()
+		     .MatchScores.Add(new MatchScore
+		     {
+			     PlayerId = 0,
+			     Score = 500_000,
+			     Team = (int)OsuEnums.Team.Blue
+		     });
+
+		Assert.True(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
+		Assert.True(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
+		Assert.True(GameAutomationChecks.PassesAutomationChecks(match.Games.First()));
+	}
+
+	[Fact]
+	public void Game_PassesSanity_WhenRefereeInLobby_TeamBlue_2v2()
+	{
+		var match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+		match.Tournament.TeamSize = 2;
+
+		match.Games.First()
+		     .MatchScores.Add(new MatchScore
+		     {
+			     PlayerId = 0,
+			     Score = 0,
+			     Team = (int)OsuEnums.Team.Blue
+		     });
+
+		match.Games.First()
+		     .MatchScores.Add(new MatchScore
+		     {
+			     PlayerId = 0,
+			     Score = 500_000,
+			     Team = (int)OsuEnums.Team.Red
+		     });
+
+		match.Games.First()
+		     .MatchScores.Add(new MatchScore
+		     {
+			     PlayerId = 0,
+			     Score = 500_000,
 			     Team = (int)OsuEnums.Team.Blue
 		     });
 
