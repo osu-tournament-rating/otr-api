@@ -20,7 +20,6 @@ public class OsuTrackApiWorker : BackgroundService
 	private readonly ILogger<OsuTrackApiWorker> _logger;
 	private readonly IServiceProvider _serviceProvider;
 	private readonly SemaphoreSlim _semaphore = new(1);
-
 	private DateTime _ratelimitReset = DateTime.UtcNow;
 	private int _tracker;
 
@@ -35,7 +34,7 @@ public class OsuTrackApiWorker : BackgroundService
 	private async Task BackgroundTask(CancellationToken stoppingToken)
 	{
 		var client = new HttpClient();
-		_logger.LogInformation("Initializes osu!track API worker");
+		_logger.LogInformation("Initialized osu!track API worker");
 		while (!stoppingToken.IsCancellationRequested)
 		{
 			try
@@ -45,7 +44,7 @@ public class OsuTrackApiWorker : BackgroundService
 				{
 					var playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
 					var ratingStatsRepository = scope.ServiceProvider.GetRequiredService<IMatchRatingStatsRepository>();
-					
+
 					var playersToUpdate = (await playerService.GetPlayersWhereMissingGlobalRankAsync()).ToList();
 
 					if (!playersToUpdate.Any())
@@ -65,19 +64,19 @@ public class OsuTrackApiWorker : BackgroundService
 							player.EarliestOsuGlobalRank = player.RankStandard;
 							player.EarliestOsuGlobalRankDate = DateTime.UtcNow;
 						}
-						
+
 						if (player.EarliestTaikoGlobalRank == null)
 						{
 							player.EarliestTaikoGlobalRank = player.RankTaiko;
 							player.EarliestTaikoGlobalRankDate = DateTime.UtcNow;
 						}
-						
+
 						if (player.EarliestCatchGlobalRank == null)
 						{
 							player.EarliestCatchGlobalRank = player.RankCatch;
 							player.EarliestCatchGlobalRankDate = DateTime.UtcNow;
 						}
-						
+
 						if (player.EarliestManiaGlobalRank == null)
 						{
 							player.EarliestManiaGlobalRank = player.RankMania;
@@ -93,7 +92,7 @@ public class OsuTrackApiWorker : BackgroundService
 								continue;
 							}
 
-							if(IsRatelimited())
+							if (IsRatelimited())
 							{
 								_logger.LogDebug("osu!track API ratelimited, waiting...");
 								await Task.Delay(_ratelimitReset - DateTime.UtcNow, stoppingToken);
@@ -102,15 +101,17 @@ public class OsuTrackApiWorker : BackgroundService
 							string url = FormedUrl(player.OsuId, mode, oldestStatDate.Value, oldestStatDate.Value.AddYears(1));
 							var response = await client.GetAsync(url, stoppingToken);
 							_tracker++;
-							
+
 							if (!response.IsSuccessStatusCode)
 							{
-								_logger.LogError("Failed to fetch osu!Track history for player {PlayerId} in mode {GameMode}, ratelimit = {Ratelimit}", player.OsuId, mode, _tracker);
+								_logger.LogError("Failed to fetch osu!Track history for player {PlayerId} in mode {GameMode}, ratelimit = {Ratelimit}", player.OsuId, mode,
+									_tracker);
+
 								continue;
 							}
 
 							string responseText = await response.Content.ReadAsStringAsync(stoppingToken);
-							
+
 							if (string.IsNullOrEmpty(responseText) || responseText == "[]")
 							{
 								// Nothing found for this player in this mode.
@@ -146,8 +147,9 @@ public class OsuTrackApiWorker : BackgroundService
 										player.EarliestManiaGlobalRankDate = relevant.Timestamp;
 										break;
 								}
-								
-								_logger.LogInformation("Updated osu!track data for player {PlayerId} in mode {GameMode}, ratelimit = {Ratelimit}: {@Data}", player.OsuId, mode, _tracker, relevant);
+
+								_logger.LogInformation("Updated osu!track data for player {PlayerId} in mode {GameMode}, ratelimit = {Ratelimit}: {@Data}", player.OsuId, mode,
+									_tracker, relevant);
 							}
 							catch (JsonSerializationException e)
 							{
