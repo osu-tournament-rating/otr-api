@@ -3,7 +3,6 @@ using API.Entities;
 using API.Enums;
 using API.Repositories.Interfaces;
 using API.Utilities;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
@@ -181,12 +180,39 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		                     .FirstOrDefaultAsync();
 	}
 
-	public async Task<ActionResult<IEnumerable<double>>> GetHistogramAsync(int mode) => await _context.BaseStats
-	                                                                                                  .AsNoTracking()
-	                                                                                                  .Where(x => x.Mode == mode)
-	                                                                                                  .Select(x => x.Rating)
-	                                                                                                  .OrderByDescending(x => x)
-	                                                                                                  .ToListAsync();
+	public async Task<IDictionary<int, int>> GetHistogramAsync(int mode)
+	{
+		// Determine the maximum rating as a double
+		double maxRating = await _context.BaseStats
+		                                 .Where(x => x.Mode == mode)
+		                                 .MaxAsync(x => x.Rating);
+
+		// Round up maxRating to the nearest multiple of 25
+		int maxBucket = (int)(Math.Ceiling(maxRating / 25) * 25);
+
+		// Initialize all buckets from 100 to maxBucket with 0
+		var histogram = Enumerable.Range(4, (maxBucket / 25) - 3)
+		                          .ToDictionary(bucket => bucket * 25, bucket => 0);
+
+		// Adjust the GroupBy to correctly bucket the rating of 100
+		var dbHistogram = await _context.BaseStats
+		                                .AsNoTracking()
+		                                .Where(x => x.Mode == mode && x.Rating >= 100)
+		                                .GroupBy(x => (int)(x.Rating / 25) * 25)
+		                                .Select(g => new { Bucket = g.Key == 0 ? 100 : g.Key, Count = g.Count() })
+		                                .ToDictionaryAsync(g => g.Bucket, g => g.Count);
+
+		// Update the histogram with actual counts
+		foreach (var item in dbHistogram)
+		{
+			if (histogram.ContainsKey(item.Key))
+			{
+				histogram[item.Key] = item.Value;
+			}
+		}
+
+		return histogram;
+	}
 
 	public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
 	{

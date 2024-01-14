@@ -1,7 +1,6 @@
 using API.DTOs;
 using API.Entities;
 using API.Enums;
-using Microsoft.AspNetCore.Mvc;
 
 namespace API.Services.Interfaces;
 
@@ -25,8 +24,9 @@ public interface IBaseStatsService
 	Task<LeaderboardFilterDefaultsDTO> LeaderboardFilterDefaultsAsync(int requestQueryMode, LeaderboardChartType requestQueryChartType);
 
 	/// <summary>
-	/// Returns a list of ratings, ordered from highest to lowest, forming a histogram of the ratings of all players.
+	/// See <see cref="IBaseStatsRepository.GetHistogramAsync"/>
 	/// </summary>
+	/// <param name="mode"></param>
 	/// <returns></returns>
-	Task<ActionResult<IEnumerable<double>>> GetHistogramAsync(int mode);
+	Task<IDictionary<int, int>> GetHistogramAsync(int mode);
 }
