@@ -3,7 +3,7 @@ services:
   app:
     image: "stagecodes/otr-api-prod:latest"
     ports:
-      - "3700:80"
+      - "3700:3700"
     env_file:
       - app.env
     depends_on:
