@@ -131,7 +131,7 @@ public class LeaderboardService : ILeaderboardService
 
 	private async Task<LeaderboardPlayerChartDTO?> GetPlayerChartAsync(int playerId, int mode, LeaderboardChartType chartType)
 	{
-		var baseStats = await _baseStatsService.GetForPlayerAsync(playerId, mode);
+		var baseStats = await _baseStatsService.GetForPlayerAsync(null, playerId, mode);
 
 		if (baseStats == null)
 		{

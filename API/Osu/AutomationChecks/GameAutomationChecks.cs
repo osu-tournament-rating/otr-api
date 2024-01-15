@@ -7,36 +7,18 @@ public static class GameAutomationChecks
 	private const string _logPrefix = "[Automations: Game Check]";
 	private static readonly Serilog.ILogger _logger = Serilog.Log.ForContext(typeof(GameAutomationChecks));
 
-	public static bool PassesAutomationChecks(Game game) => PassesTournamentCheck(game) &&
-	                                                        PassesScoringTypeCheck(game) &&
+	public static bool PassesAutomationChecks(Game game) => PassesScoringTypeCheck(game) &&
 	                                                        PassesModeCheck(game) &&
 	                                                        PassesTeamTypeCheck(game) &&
 	                                                        PassesTeamSizeCheck(game) &&
 	                                                        PassesModsCheck(game) &&
 	                                                        PassesScoreSanityCheck(game);
 
-	public static bool PassesTournamentCheck(Game game)
-	{
-		if (game.Match.Tournament == null)
-		{
-			_logger.Information("{Prefix} Match {MatchId} has no tournament, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.GameId);
-			return false;
-		}
-
-		return true;
-	}
-
 	public static bool PassesTeamSizeCheck(Game game)
 	{
 		var tournament = game.Match.Tournament;
 
-		if (tournament == null)
-		{
-			_logger.Information("{Prefix} Match {MatchId} has no tournament, can't verify game {GameId}", _logPrefix, game.Match.MatchId, game.GameId);
-			return false;
-		}
-
-		int? teamSize = tournament!.TeamSize;
+		int? teamSize = tournament.TeamSize;
 		if (teamSize is < 1 or > 8)
 		{
 			_logger.Information("{Prefix} Tournament {TournamentId} has an invalid team size: {Size}, can't verify game {GameId}", _logPrefix, tournament.Id, tournament.TeamSize,
@@ -48,11 +30,13 @@ public static class GameAutomationChecks
 		if (teamSize == 1)
 		{
 			int countPlayers = game.MatchScores.Count;
-			bool satisfiesOneVersusOne = countPlayers == 2;
+			bool refereePresent = game.MatchScores.Any(score => score.Score == 0);
+			bool satisfiesOneVersusOne = refereePresent ? countPlayers == 3 : countPlayers == 2;
 			if (!satisfiesOneVersusOne)
 			{
-				_logger.Information("{Prefix} Match {MatchId} has a team size of 1, but does not have 2 players, can't verify game {GameId} [had {CountPlayers} players]",
-					_logPrefix, game.Match.MatchId, game.GameId, countPlayers);
+				_logger.Information(
+					"{Prefix} Match {MatchId} has a team size of 1, but does not satisfy the 1v1 checks, can't verify game {GameId} [had {CountPlayers} players | Referee: {Ref}]",
+					_logPrefix, game.Match.MatchId, game.GameId, countPlayers, refereePresent);
 			}
 
 			return satisfiesOneVersusOne;
@@ -71,19 +55,28 @@ public static class GameAutomationChecks
 			return false;
 		}
 
+		bool hasReferee = false;
 		if (countRed != countBlue)
 		{
-			_logger.Information("{Prefix} Match {MatchId} has a mismatched team size: [Red: {Red} | Blue: {Blue}], can't verify game {GameId}", _logPrefix, game.Match.MatchId,
-				countRed, countBlue, game.GameId);
+			// Check for any scores that equal 0. Likely a referee in the lobby.
+			// It's pretty unlikely that an actual player's score is 0, we
+			// simply have to assume it's a referee.
+			hasReferee = game.MatchScores.Any(score => score.Score == 0);
+			if (!hasReferee)
+			{
+				_logger.Information("{Prefix} Match {MatchId} has a mismatched team size: [Red: {Red} | Blue: {Blue}], can't verify game {GameId}", _logPrefix, game.Match.MatchId,
+					countRed, countBlue, game.GameId);
 
-			return false;
+				return false;
+			}
 		}
 
-		if (countRed != teamSize || countBlue != teamSize)
+		if (IsMismatchedTeamSize(countRed, countBlue, tournament.TeamSize, hasReferee))
 		{
-			_logger.Information("{Prefix} Match {MatchId} has an unexpected team configuration: [Expected: {Expected}] [Red: {Red} | Blue: {Blue}], can't verify game {GameId}",
+			_logger.Information(
+				"{Prefix} Match {MatchId} has an unexpected team configuration: [Expected: {Expected}] [Red: {Red} | Blue: {Blue}], can't verify game {GameId} (Referee present: {HasReferee})",
 				_logPrefix, game.Match.MatchId, tournament.TeamSize, countRed, countBlue,
-				game.GameId);
+				game.GameId, hasReferee);
 
 			return false;
 		}
@@ -91,9 +84,25 @@ public static class GameAutomationChecks
 		return true;
 	}
 
+	private static bool IsMismatchedTeamSize(int red, int blue, int expectedSize, bool hasReferee)
+	{
+		// If the ref is present, the team sizes can be off by exactly one.
+		if (hasReferee)
+		{
+			// Should always equal 1 if the ref is present.
+			// If not, the team sizes are definitely mismatched.
+			return Math.Abs(red - blue) != 1;
+		}
+
+		bool redUnexpected = red != expectedSize;
+		bool blueUnexpected = blue != expectedSize;
+
+		return redUnexpected || blueUnexpected;
+	}
+
 	public static bool PassesModeCheck(Game game)
 	{
-		var tournament = game.Match.Tournament!;
+		var tournament = game.Match.Tournament;
 		int gameMode = tournament.Mode;
 
 		if (gameMode is < 0 or > 3)
@@ -161,12 +170,6 @@ public static class GameAutomationChecks
 		if (!game.MatchScores.Any())
 		{
 			_logger.Warning("Game {GameId} has no scores, can't verify", game.GameId);
-			return false;
-		}
-
-		if (game.MatchScores.Any(x => x.IsValid == false))
-		{
-			_logger.Warning("Game {GameId} has at least one invalid score, can't verify", game.GameId);
 			return false;
 		}
 

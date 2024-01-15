@@ -1,6 +1,7 @@
 using API.Configurations;
-using API.Entities;
 using Newtonsoft.Json;
+using OsuSharp.Domain;
+using OsuSharp.Interfaces;
 
 namespace API.Osu.Multiplayer;
 
@@ -12,122 +13,160 @@ public class OsuApiUser
 	public string? Username { get; set; }
 	[JsonProperty("pp_rank")]
 	public int? Rank { get; set; }
-    [JsonProperty("country")]
-    public string Country { get; set; } = null!;
+	[JsonProperty("country")]
+	public string Country { get; set; } = null!;
 }
 
 public class OsuApiService : IOsuApiService
 {
-    private const int RATE_LIMIT_CAPACITY = 1000;
-    private const int RATE_LIMIT_INTERVAL_SECONDS = 60;
-    private const int MAX_CONCURRENT_THREADS = 5;
-    private const string BaseUrl = "https://osu.ppy.sh/api/";
-    private readonly HttpClient _client;
-    private readonly ICredentials _credentials;
-    private readonly ILogger<OsuApiService> _logger;
-    private readonly SemaphoreSlim _semaphore = new(MAX_CONCURRENT_THREADS, MAX_CONCURRENT_THREADS);
+	private const int RATE_LIMIT_CAPACITY = 1000;
+	private const int RATE_LIMIT_INTERVAL_SECONDS = 60;
+	private const int MAX_CONCURRENT_THREADS = 5;
+	private const string BaseUrl = "https://osu.ppy.sh/api/";
+	private readonly HttpClient _client;
+	private readonly ICredentials _credentials;
+	private readonly IOsuClient _v2Client;
+	private readonly ILogger<OsuApiService> _logger;
+	private readonly SemaphoreSlim _semaphore = new(MAX_CONCURRENT_THREADS, MAX_CONCURRENT_THREADS);
+	private int _rateLimitCounter;
+	private DateTime _rateLimitResetTime = DateTime.Now.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
 
-    private int _rateLimitCounter;
-    private DateTime _rateLimitResetTime = DateTime.Now.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
+	public OsuApiService(ILogger<OsuApiService> logger, ICredentials credentials, IOsuClient v2Client)
+	{
+		_logger = logger;
+		_credentials = credentials;
+		_v2Client = v2Client;
+		_client = new HttpClient
+		{
+			BaseAddress = new Uri(BaseUrl)
+		};
+	}
 
-    public OsuApiService(ILogger<OsuApiService> logger, ICredentials credentials)
-    {
-        _logger = logger;
-        _credentials = credentials;
-        _client = new HttpClient
-        {
-            BaseAddress = new Uri(BaseUrl)
-        };
-    }
+	public async Task<OsuApiMatchData?> GetMatchAsync(long matchId, string reason) => await ExecuteApiCallAsync(async () =>
+	{
+		string response = await _client.GetStringAsync($"get_match?k={_credentials.OsuApiKey}&mp={matchId}");
+		_logger.LogDebug("Successfully received response from osu! API for match {MatchId} [{Reason}]", matchId, reason);
 
-    public async Task<OsuApiMatchData?> GetMatchAsync(long matchId, string reason)
-    {
-        return await ExecuteApiCall(async () =>
-        {
-            string response = await _client.GetStringAsync($"get_match?k={_credentials.OsuApiKey}&mp={matchId}");
-            _logger.LogDebug("Successfully received response from osu! API for match {MatchId} [{Reason}]", matchId, reason);
+		return JsonConvert.DeserializeObject<OsuApiMatchData>(response);
+	}, matchId);
 
-            return JsonConvert.DeserializeObject<OsuApiMatchData>(response);
-        }, matchId);
-    }
+	public async Task<IBeatmapDifficulty?> GetDifficultyAttributesAsync(long beatmapId) => await ExecuteApiCallAsync(async () =>
+	{
+		var response = await _v2Client.GetBeatmapAttributesAsync(beatmapId);
+		_logger.LogDebug("Successfully received response from osu! API for beatmap attributes {BeatmapId}", beatmapId);
 
-    public async Task<Beatmap?> GetBeatmapAsync(long beatmapId, string reason, OsuEnums.Mods mods = OsuEnums.Mods.None)
-    {
-        return await ExecuteApiCall(async () =>
-        {
-            string response = await _client.GetStringAsync($"get_beatmaps?k={_credentials.OsuApiKey}&b={beatmapId}&mods={(int)mods}");
-            _logger.LogDebug("Successfully received response from osu! API for beatmap {BeatmapId} [{Reason}]", beatmapId, reason);
-            
-            return JsonConvert.DeserializeObject<Beatmap[]>(response)?[0];
-        }, beatmapId);
-    }
+		return response;
+	}, beatmapId);
 
-    public async Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Mode mode, string reason)
-    {
-        return await ExecuteApiCall(async () =>
-        {
-            string response = await _client.GetStringAsync($"get_user?k={_credentials.OsuApiKey}&u={userId}&m={(int)mode}&type=id");
-            _logger.LogDebug("Successfully received response from osu! API for user {UserId} [{Reason}]", userId, reason);
-         
-            return JsonConvert.DeserializeObject<OsuApiUser[]>(response)?[0];
-        }, userId);
-    }
+	public async Task<Entities.Beatmap?> GetBeatmapAsync(long beatmapId, string reason) => await ExecuteApiCallAsync(async () =>
+	{
+		var response = await _v2Client.GetBeatmapAsync(beatmapId);
+		_logger.LogDebug("Successfully received response from osu! API for beatmap {BeatmapId} [{Reason}]", beatmapId, reason);
 
-    private async Task EnsureRateLimit()
-    {
-        CheckRatelimitReset();
+		var attributes = await GetDifficultyAttributesAsync(beatmapId);
 
-        if (_rateLimitCounter >= RATE_LIMIT_CAPACITY)
-        {
-            await Task.Delay(_rateLimitResetTime - DateTime.Now); // Wait for the rate limit interval to pass
-            CheckRatelimitReset();
-        }
-        
-        _rateLimitCounter++;
-    }
+		var beatmap = new Entities.Beatmap
+		{
+			Artist = response.Beatmapset.Artist,
+			BeatmapId = beatmapId,
+			Bpm = response.Bpm,
+			MapperId = response.Beatmapset.UserId,
+			Cs = response.CircleSize,
+			Ar = response.ApproachRate,
+			Hp = response.Drain,
+			Od = response.DifficultyRating,
+			DrainTime = response.Drain,
+			Length = response.Length.TotalSeconds,
+			Title = response.Beatmapset.Title,
+			GameMode = (int)response.Mode,
+			CircleCount = response.CircleCount,
+			SliderCount = response.SliderCount,
+			SpinnerCount = response.SpinnerCount,
+			MaxCombo = response.MaxCombo,
+			MapperName = response.Beatmapset.Creator
+		};
 
-    private async Task<T?> ExecuteApiCall<T>(Func<Task<T?>> apiCall, long id) where T : class
-    {
-        try
-        {
-            await _semaphore.WaitAsync();
-            await EnsureRateLimit();
-            return await apiCall();
-        }
-        catch (JsonSerializationException e)
-        {
-            _logger.LogWarning(e, "The osu! API returned an invalid body for id {Id} of type {T}, likely due to deletion", id, typeof(T));
-            return null;
-        }
-        catch (IndexOutOfRangeException e)
-        {
-            _logger.LogWarning(e, "The osu! API returned null for id {Id} of type {T}", id, typeof(T));
-            return null;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Failure while fetching data for id {Id} (api call was made expecting type {T})", id, typeof(T));
-            return null;
-        }
-        finally
-        {
-            _logger.LogDebug("osu! API ratelimit is currently at {Requests} (freq: {Capacity}req/{Seconds}s)", _rateLimitCounter, RATE_LIMIT_CAPACITY, RATE_LIMIT_INTERVAL_SECONDS);
-            _semaphore.Release();
-        }
-    }
+		if (attributes != null)
+		{
+			var attr = attributes.Attributes;
+			beatmap.Sr = attr.StarRating;
+			beatmap.AimDiff = attr.AimDifficulty;
+			beatmap.SpeedDiff = attr.SpeedDifficulty;
+		}
 
-    private void CheckRatelimitReset()
-    {
-        if (DateTime.Now > _rateLimitResetTime)
-        {
-            ResetRateLimit();
-        }
-    }
+		return beatmap;
+	}, beatmapId);
 
-    private void ResetRateLimit()
-    {
-        _rateLimitCounter = 0;
-        _rateLimitResetTime = DateTime.Now.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
-        _logger.LogDebug("Ratelimiter reset!");
-    }
+	public async Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Mode mode, string reason) => await ExecuteApiCallAsync(async () =>
+	{
+		var response = await _v2Client.GetUserAsync(userId, (GameMode)(int)mode);
+
+		_logger.LogDebug("Successfully received response from osu! API for user {UserId} [{Reason}]", userId, reason);
+
+		return new OsuApiUser
+		{
+			Id = userId,
+			Username = response.Username,
+			Rank = (int?)response.Statistics.GlobalRank,
+			Country = response.Country.Code
+		};
+	}, userId);
+
+	private async Task EnsureRateLimit()
+	{
+		CheckRatelimitReset();
+
+		if (_rateLimitCounter >= RATE_LIMIT_CAPACITY)
+		{
+			await Task.Delay(_rateLimitResetTime - DateTime.Now); // Wait for the rate limit interval to pass
+			CheckRatelimitReset();
+		}
+
+		_rateLimitCounter++;
+	}
+
+	private async Task<T?> ExecuteApiCallAsync<T>(Func<Task<T?>> apiCall, long id) where T : class
+	{
+		try
+		{
+			await _semaphore.WaitAsync();
+			await EnsureRateLimit();
+			return await apiCall();
+		}
+		catch (JsonSerializationException e)
+		{
+			_logger.LogWarning(e, "The osu! API returned an invalid body for id {Id} of type {T}, likely due to deletion", id, typeof(T));
+			return null;
+		}
+		catch (IndexOutOfRangeException e)
+		{
+			_logger.LogWarning(e, "The osu! API returned null for id {Id} of type {T}", id, typeof(T));
+			return null;
+		}
+		catch (Exception e)
+		{
+			_logger.LogError(e, "Failure while fetching data for id {Id} (api call was made expecting type {T})", id, typeof(T));
+			return null;
+		}
+		finally
+		{
+			_logger.LogDebug("osu! API ratelimit is currently at {Requests} (freq: {Capacity}req/{Seconds}s)", _rateLimitCounter, RATE_LIMIT_CAPACITY, RATE_LIMIT_INTERVAL_SECONDS);
+			_semaphore.Release();
+		}
+	}
+
+	private void CheckRatelimitReset()
+	{
+		if (DateTime.Now > _rateLimitResetTime)
+		{
+			ResetRateLimit();
+		}
+	}
+
+	private void ResetRateLimit()
+	{
+		_rateLimitCounter = 0;
+		_rateLimitResetTime = DateTime.Now.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
+		_logger.LogDebug("Ratelimiter reset!");
+	}
 }

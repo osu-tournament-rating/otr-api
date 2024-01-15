@@ -2,7 +2,6 @@ using API.DTOs;
 using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +22,7 @@ public class LeaderboardsController : Controller
 	}
 
 	[HttpGet]
-	public async Task<ActionResult<IEnumerable<LeaderboardPlayerInfoDTO>>> GetAsync([FromQuery]LeaderboardRequestQueryDTO requestQuery)
+	public async Task<ActionResult<LeaderboardDTO>> GetAsync([FromQuery] LeaderboardRequestQueryDTO requestQuery)
 	{
 		/**
 		 * Note:
@@ -53,7 +52,8 @@ public class LeaderboardsController : Controller
 		{
 			return BadRequest("Country leaderboards are only available to logged in users");
 		}
-		
-		return Ok(await _leaderboardService.GetLeaderboardAsync(requestQuery, authorizedUserId));
+
+		var leaderboard = await _leaderboardService.GetLeaderboardAsync(requestQuery, authorizedUserId);
+		return Ok(leaderboard);
 	}
 }

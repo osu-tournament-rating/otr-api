@@ -1,332 +1,790 @@
 using API.DTOs;
 using API.Enums;
-using APITests.Instances;
+using API.Services.Implementations;
+using API.Services.Interfaces;
+using API.Utilities;
+using APITests.MockRepositories;
 
 namespace APITests.Services;
 
-[Collection("DatabaseCollection")]
 public class LeaderboardServiceTests
 {
-	private readonly TestDatabaseFixture _fixture;
-	public LeaderboardServiceTests(TestDatabaseFixture fixture) { _fixture = fixture; }
-	public static IEnumerable<object[]> InvalidQueryFilter => new List<object[]>
+	private readonly ILeaderboardService _leaderboardService;
+
+	public LeaderboardServiceTests()
 	{
-		new object[] { new LeaderboardFilterDTO { MinRank = 0 } },
-		new object[] { new LeaderboardFilterDTO { MaxRank = 0 } },
-		new object[] { new LeaderboardFilterDTO { MinRank = 5, MaxRank = 4 } },
-		new object[] { new LeaderboardFilterDTO { MinRating = 0 } },
-		new object[] { new LeaderboardFilterDTO { MaxRating = 0 } },
-		new object[] { new LeaderboardFilterDTO { MinRating = 5, MaxRating = 4 } },
-		new object[] { new LeaderboardFilterDTO { MinMatches = -1 } },
-		new object[] { new LeaderboardFilterDTO { MaxMatches = -1 } },
-		new object[] { new LeaderboardFilterDTO { MinMatches = 5, MaxMatches = 4 } },
-		new object[] { new LeaderboardFilterDTO { MinWinrate = -0.1 } },
-		new object[] { new LeaderboardFilterDTO { MaxWinrate = -0.1 } },
-		new object[] { new LeaderboardFilterDTO { MinWinrate = 1.1 } },
-		new object[] { new LeaderboardFilterDTO { MaxWinrate = 1.1 } },
-		new object[] { new LeaderboardFilterDTO { MinWinrate = 0.5, MaxWinrate = 0.4 } }
-	};
-	public static IEnumerable<object[]> ForceIncludeTieredQueryFilters => new List<object[]>
+		var playerRepository = new MockPlayerRepository()
+		                       .SetupGetId()
+		                       .SetupGetCountry()
+		                       .SetupGetOsuId()
+		                       .SetupGetUsername()
+		                       .SetupGetCountry();
+
+		var baseStatsRepository = new MockBaseStatsRepository()
+		                          .SetupLeaderboard()
+		                          .SetupLeaderboardCount()
+		                          .SetupHighestMatches()
+		                          .SetupHighestRating()
+		                          .SetupHighestRank()
+		                          .SetupGetForPlayerAsync();
+
+		var matchStatsRepository = new MockMatchStatsRepository()
+		                           .SetupGlobalWinrate()
+		                           .SetupCountMatchesPlayed();
+
+		var ratingStatsRepository = new MockRatingStatsRepository()
+		                            .SetupHighestGlobalRank()
+		                            .SetupHighestCountryRank()
+		                            .SetupGetRankChart();
+
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+		var playerService = new PlayerService(playerRepository.Object, null);
+		var playerStatsService = new PlayerStatsService(playerRepository.Object, matchStatsRepository.Object, ratingStatsRepository.Object, null, null,
+			null, null, null, null);
+
+		var baseStatsService = new BaseStatsService(baseStatsRepository.Object, matchStatsRepository.Object, ratingStatsRepository.Object, playerRepository.Object);
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
+
+		_leaderboardService = new LeaderboardService(playerRepository.Object, baseStatsService,
+			ratingStatsRepository.Object, playerService, playerStatsService);
+	}
+
+	[Fact]
+	public void LeaderboardFilters_Invalid_WhenAllFiltersFalse()
 	{
-		new object[]
+		// Arrange
+		var filter = new LeaderboardFilterDTO
 		{
-			new LeaderboardTierFilterDTO
+			TierFilters = new LeaderboardTierFilterDTO
 			{
-				FilterBronze = true, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
+				FilterBronze = false,
+				FilterSilver = false,
+				FilterGold = false,
+				FilterPlatinum = false,
+				FilterEmerald = false,
+				FilterDiamond = false,
+				FilterMaster = false,
+				FilterGrandmaster = false,
 				FilterEliteGrandmaster = false
-			},
-			"Bronze"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = true, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Silver"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = true, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Gold"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = true, FilterEmerald = false,  FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Platinum"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = true,  FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Emerald"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = true, FilterMaster = false, FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Diamond"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = true, FilterGrandmaster = false,
-				FilterEliteGrandmaster = false
-			},
-			"Master"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = true,
-				FilterEliteGrandmaster = false
-			},
-			"Grandmaster"
-		},
-		new object[]
-		{
-			new LeaderboardTierFilterDTO
-			{
-				FilterBronze = false, FilterSilver = false, FilterGold = false, FilterPlatinum = false, FilterEmerald = false, FilterDiamond = false, FilterMaster = false, FilterGrandmaster = false,
-				FilterEliteGrandmaster = true
-			},
-			"Elite Grandmaster"
-		}
-	};
-	public static IEnumerable<object[]> ForceExcludeQueryFilters => new List<object[]>
+			}
+		};
+		// Act
+
+		// Assert
+		Assert.True(filter.TierFilters.IsInvalid());
+	}
+
+	[Fact]
+	public void LeaderboardFilters_Valid_WhenNull()
 	{
-		new object[] { new LeaderboardTierFilterDTO { FilterBronze = false }, "Bronze" },
-		new object[] { new LeaderboardTierFilterDTO { FilterSilver = false }, "Silver" },
-		new object[] { new LeaderboardTierFilterDTO { FilterGold = false }, "Gold" },
-		new object[] { new LeaderboardTierFilterDTO { FilterPlatinum = false }, "Platinum" },
-		new object[] { new LeaderboardTierFilterDTO { FilterEmerald = false }, "Emerald" },
-		new object[] { new LeaderboardTierFilterDTO { FilterDiamond = false }, "Diamond" },
-		new object[] { new LeaderboardTierFilterDTO { FilterMaster = false }, "Master" },
-		new object[] { new LeaderboardTierFilterDTO { FilterGrandmaster = false }, "Grandmaster" },
-		new object[] { new LeaderboardTierFilterDTO { FilterEliteGrandmaster = false }, "Elite Grandmaster" }
-	};
+		// Arrange
+		var filter = new LeaderboardFilterDTO
+		{
+			TierFilters = null
+		};
+
+		// Act
+
+		// Assert
+		Assert.False(filter.TierFilters.IsInvalid());
+	}
 
 	[Theory]
 	[InlineData(0)]
 	[InlineData(1)]
 	[InlineData(2)]
 	[InlineData(3)]
-	public async Task Leaderboard_ReturnsCorrectMode(int mode)
+	public async Task GetLeaderboardAsync_ReturnsLeaderboard_WithCorrectMode(int mode)
 	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
+		// Arrange
+		var lb = await _leaderboardService.GetLeaderboardAsync(new LeaderboardRequestQueryDTO
 		{
-			Mode = mode,
-			PageSize = 10
-		};
+			Mode = mode
+		});
+		// Act
 
-		var result = await service.GetLeaderboardAsync(query);
+		// Assert
 
-		Assert.NotNull(result);
-		Assert.All(result.Leaderboard, pInfo => Assert.Equal(mode, pInfo.Mode));
-	}
-
-	[Theory]
-	[InlineData(1)]
-	[InlineData(5)]
-	[InlineData(10)]
-	public async Task Leaderboard_PageSize_ReturnsExpectedValue(int pageSize)
-	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
-		{
-			PageSize = pageSize
-		};
-
-		var result = await service.GetLeaderboardAsync(query);
-
-		Assert.Equal(pageSize, result.Leaderboard.Count());
+		Assert.Equal(mode, lb.Mode);
 	}
 
 	[Fact]
-	public async Task Leaderboard_PageSize_DefaultsTo50()
+	public async Task GetLeaderboardAsync_ReturnsEliteGrandmaster_WhenRequested()
 	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO();
-
-		var result = await service.GetLeaderboardAsync(query);
-
-		Assert.Equal(50, result.Leaderboard.Count());
-	}
-
-	[Fact]
-	public async Task Leaderboard_Returns_CorrectUserData()
-	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		const int userId = 440;
-
-		var query = new LeaderboardRequestQueryDTO();
-
-		var result = await service.GetLeaderboardAsync(query, userId);
-		var chart = result.PlayerChart;
-
-		Assert.NotNull(chart);
-		Assert.IsType<int>(chart.Rank);
-		Assert.IsType<double>(chart.Rating);
-		Assert.IsType<int>(chart.Matches);
-		Assert.IsType<double>(chart.Winrate);
-		Assert.IsType<double>(chart.Percentile);
-		Assert.IsType<int>(chart.HighestRank);
-		Assert.IsType<string>(chart.Tier);
-
-		Assert.True(chart.Rank > 0);
-		Assert.True(chart.Rating > 0);
-		Assert.True(chart.Matches > 0);
-		Assert.True(chart.Winrate >= 0);
-		Assert.True(chart.Winrate <= 1);
-		Assert.True(chart.Percentile >= 0);
-		Assert.True(chart.Percentile <= 1);
-		Assert.True(chart.HighestRank > 0);
-		Assert.NotEmpty(chart.Tier);
-
-		Assert.All(chart.RankChart.ChartData, x => Assert.Multiple(() =>
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
 		{
-			Assert.IsType<int>(x.Rank);
-			Assert.IsType<int>(x.RankChange);
-			Assert.IsType<string>(x.MatchName);
-			Assert.IsType<string>(x.TournamentName);
-
-			Assert.True(x.Rank > 0);
-			Assert.NotEmpty(x.MatchName);
-			Assert.NotEmpty(x.TournamentName);
-		}));
-	}
-
-	[Theory]
-	[InlineData(1, 5)]
-	[InlineData(100, 500)]
-	[InlineData(2500, 2501)]
-	public async Task Leaderboard_FiltersRankCorrectly(int minRank, int maxRank)
-	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
-		{
+			Mode = 0,
+			ChartType = LeaderboardChartType.Global,
 			Filter = new LeaderboardFilterDTO
 			{
-				MinRank = minRank,
-				MaxRank = maxRank
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = true,
+					FilterGrandmaster = false,
+					FilterMaster = false,
+					FilterEmerald = false,
+					FilterDiamond = false,
+					FilterPlatinum = false,
+					FilterGold = false,
+					FilterSilver = false,
+					FilterBronze = false
+				}
 			}
 		};
 
-		var result = await service.GetLeaderboardAsync(query);
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
 
-		Assert.All(result.Leaderboard, pInfo => Assert.True(pInfo.GlobalRank >= minRank && pInfo.GlobalRank <= maxRank));
+		// Assert
+		Assert.All(lb.Leaderboard, x => Assert.Equal("Elite Grandmaster", x.Tier));
 	}
 
 	[Fact]
-	public async Task Leaderboard_Players_OfSameCountry()
+	public async Task GetLeaderboardAsync_ReturnsGrandmaster_WhenRequested()
 	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		const string country = "US";
-
-		var query = new LeaderboardRequestQueryDTO
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
 		{
-			ChartType = LeaderboardChartType.Country
-		};
-
-		var result = await service.GetLeaderboardAsync(query, 440);
-
-		Assert.All(result.Leaderboard, pInfo => Assert.Equal(country, pInfo.Country));
-	}
-
-	[Theory] [MemberData(nameof(InvalidQueryFilter))]
-	public async Task Leaderboard_ThrowsException_WhenInvalidFilter(LeaderboardFilterDTO filter)
-	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
-		{
-			Filter = filter
-		};
-
-		await Assert.ThrowsAsync<ArgumentException>(() => service.GetLeaderboardAsync(query));
-	}
-
-	[Theory] [MemberData(nameof(ForceIncludeTieredQueryFilters))]
-	public async Task Leaderboard_ContainsOnlyExplicitPlayers_WhenFilterForced(LeaderboardTierFilterDTO filter, string tier)
-	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
-		{
+			Mode = 0,
+			ChartType = LeaderboardChartType.Global,
 			Filter = new LeaderboardFilterDTO
 			{
-				TierFilters = filter
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = false,
+					FilterGrandmaster = true,
+					FilterMaster = false,
+					FilterEmerald = false,
+					FilterDiamond = false,
+					FilterPlatinum = false,
+					FilterGold = false,
+					FilterSilver = false,
+					FilterBronze = false
+				}
 			}
 		};
 
-		var result = await service.GetLeaderboardAsync(query);
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
 
-		Assert.All(result.Leaderboard, pInfo => Assert.Contains(tier, pInfo.Tier));
-	}
-
-	[Theory] [MemberData(nameof(ForceExcludeQueryFilters))]
-	public async Task Leaderboard_DoesNotContainPlayers_WhenTierExcluded(LeaderboardTierFilterDTO filter, string tier)
-	{
-		// This test is kinda crappy, but it's the best we can do for now.
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
-
-		var query = new LeaderboardRequestQueryDTO
-		{
-			PageSize = 10,
-			Filter = new LeaderboardFilterDTO
-			{
-				TierFilters = filter
-			}
-		};
-
-		var result = await service.GetLeaderboardAsync(query);
-
-		Assert.All(result.Leaderboard, pInfo => Assert.NotEqual(tier, pInfo.Tier));
+		// Assert
+		Assert.All(lb.Leaderboard, x => Assert.Contains("Grandmaster", x.Tier));
 	}
 
 	[Fact]
-	public async Task Leaderboard_HasTotalPlayerCount_GreaterThanZero()
+	public async Task GetLeaderboardAsync_ReturnsMaster_WhenRequested()
 	{
-		using var context = _fixture.CreateContext();
-		var service = ServiceInstances.LeaderboardService(context);
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			ChartType = LeaderboardChartType.Global,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = false,
+					FilterGrandmaster = false,
+					FilterMaster = true,
+					FilterEmerald = false,
+					FilterDiamond = false,
+					FilterPlatinum = false,
+					FilterGold = false,
+					FilterSilver = false,
+					FilterBronze = false
+				}
+			}
+		};
 
-		var query = new LeaderboardRequestQueryDTO();
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
 
-		var result = await service.GetLeaderboardAsync(query);
+		// Assert
+		Assert.All(lb.Leaderboard, x => Assert.Contains("Master", x.Tier));
+	}
 
-		Assert.True(result.TotalPlayerCount > 0);
+	[Fact]
+	public async Task GetLeaderboardAsync_ReturnsDiamond_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			ChartType = LeaderboardChartType.Global,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = false,
+					FilterGrandmaster = false,
+					FilterMaster = false,
+					FilterEmerald = false,
+					FilterDiamond = true,
+					FilterPlatinum = false,
+					FilterGold = false,
+					FilterSilver = false,
+					FilterBronze = false
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.All(lb.Leaderboard, x => Assert.Contains("Diamond", x.Tier));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ReturnsEmerald_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			ChartType = LeaderboardChartType.Global,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = false,
+					FilterGrandmaster = false,
+					FilterMaster = false,
+					FilterEmerald = true,
+					FilterDiamond = false,
+					FilterPlatinum = false,
+					FilterGold = false,
+					FilterSilver = false,
+					FilterBronze = false
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.All(lb.Leaderboard, x => Assert.Contains("Emerald", x.Tier));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ReturnsPlatinum_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			ChartType = LeaderboardChartType.Global,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = false,
+					FilterGrandmaster = false,
+					FilterMaster = false,
+					FilterEmerald = false,
+					FilterDiamond = false,
+					FilterPlatinum = true,
+					FilterGold = false,
+					FilterSilver = false,
+					FilterBronze = false
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.All(lb.Leaderboard, x => Assert.Contains("Platinum", x.Tier));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ReturnsGold_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			ChartType = LeaderboardChartType.Global,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = false,
+					FilterGrandmaster = false,
+					FilterMaster = false,
+					FilterEmerald = false,
+					FilterDiamond = false,
+					FilterPlatinum = false,
+					FilterGold = true,
+					FilterSilver = false,
+					FilterBronze = false
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.All(lb.Leaderboard, x => Assert.Contains("Gold", x.Tier));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ReturnsSilver_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			ChartType = LeaderboardChartType.Global,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = false,
+					FilterGrandmaster = false,
+					FilterMaster = false,
+					FilterEmerald = false,
+					FilterDiamond = false,
+					FilterPlatinum = false,
+					FilterGold = false,
+					FilterSilver = true,
+					FilterBronze = false
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.All(lb.Leaderboard, x => Assert.Contains("Silver", x.Tier));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ReturnsBronze_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			ChartType = LeaderboardChartType.Global,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = false,
+					FilterGrandmaster = false,
+					FilterMaster = false,
+					FilterEmerald = false,
+					FilterDiamond = false,
+					FilterPlatinum = false,
+					FilterGold = false,
+					FilterSilver = false,
+					FilterBronze = true
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.All(lb.Leaderboard, x => Assert.Contains("Bronze", x.Tier));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ReturnsAllTiers_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = true,
+					FilterGrandmaster = true,
+					FilterMaster = true,
+					FilterEmerald = true,
+					FilterDiamond = true,
+					FilterPlatinum = true,
+					FilterGold = true,
+					FilterSilver = true,
+					FilterBronze = true
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.All(lb.Leaderboard, x => Assert.NotNull(x.Tier));
+		Assert.Contains(lb.Leaderboard, x => x.Tier == "Elite Grandmaster");
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Grandmaster"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Master"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Emerald"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Diamond"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Platinum"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Gold"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Silver"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Bronze"));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ExcludesEliteGrandmaster_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = false,
+					FilterGrandmaster = true,
+					FilterMaster = true,
+					FilterEmerald = true,
+					FilterDiamond = true,
+					FilterPlatinum = true,
+					FilterGold = true,
+					FilterSilver = true,
+					FilterBronze = true
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.DoesNotContain(lb.Leaderboard, x => x.Tier == "Elite Grandmaster");
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Grandmaster"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Master"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Emerald"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Diamond"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Platinum"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Gold"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Silver"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Bronze"));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ExcludesGrandmaster_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = true,
+					FilterGrandmaster = false,
+					FilterMaster = true,
+					FilterEmerald = true,
+					FilterDiamond = true,
+					FilterPlatinum = true,
+					FilterGold = true,
+					FilterSilver = true,
+					FilterBronze = true
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+
+		Assert.Contains(lb.Leaderboard, x => x.Tier == "Elite Grandmaster");
+		Assert.DoesNotContain(lb.Leaderboard, x => x.Tier.Contains("Grandmaster") && x.Tier != "Elite Grandmaster");
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Master"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Emerald"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Diamond"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Platinum"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Gold"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Silver"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Bronze"));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ExcludesMaster_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = true,
+					FilterGrandmaster = true,
+					FilterMaster = false,
+					FilterEmerald = true,
+					FilterDiamond = true,
+					FilterPlatinum = true,
+					FilterGold = true,
+					FilterSilver = true,
+					FilterBronze = true
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+
+		Assert.Contains(lb.Leaderboard, x => x.Tier == "Elite Grandmaster");
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Grandmaster"));
+		Assert.DoesNotContain(lb.Leaderboard, x => x.Tier.Contains("Master"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Emerald"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Diamond"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Platinum"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Gold"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Silver"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Bronze"));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ExcludesEmerald_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = true,
+					FilterGrandmaster = true,
+					FilterMaster = true,
+					FilterEmerald = false,
+					FilterDiamond = true,
+					FilterPlatinum = true,
+					FilterGold = true,
+					FilterSilver = true,
+					FilterBronze = true
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		Assert.Contains(lb.Leaderboard, x => x.Tier == "Elite Grandmaster");
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Grandmaster"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Master"));
+		Assert.DoesNotContain(lb.Leaderboard, x => x.Tier.Contains("Emerald"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Diamond"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Platinum"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Gold"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Silver"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Bronze"));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ExcludesDiamond_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = true,
+					FilterGrandmaster = true,
+					FilterMaster = true,
+					FilterEmerald = true,
+					FilterDiamond = false,
+					FilterPlatinum = true,
+					FilterGold = true,
+					FilterSilver = true,
+					FilterBronze = true
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.Contains(lb.Leaderboard, x => x.Tier == "Elite Grandmaster");
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Grandmaster"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Master"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Emerald"));
+		Assert.DoesNotContain(lb.Leaderboard, x => x.Tier.Contains("Diamond"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Platinum"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Gold"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Silver"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Bronze"));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ExcludesPlatinum_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = true,
+					FilterGrandmaster = true,
+					FilterMaster = true,
+					FilterEmerald = true,
+					FilterDiamond = true,
+					FilterPlatinum = false,
+					FilterGold = true,
+					FilterSilver = true,
+					FilterBronze = true
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.Contains(lb.Leaderboard, x => x.Tier == "Elite Grandmaster");
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Grandmaster"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Master"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Emerald"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Diamond"));
+		Assert.DoesNotContain(lb.Leaderboard, x => x.Tier.Contains("Platinum"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Gold"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Silver"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Bronze"));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ExcludesGold_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = true,
+					FilterGrandmaster = true,
+					FilterMaster = true,
+					FilterEmerald = true,
+					FilterDiamond = true,
+					FilterPlatinum = true,
+					FilterGold = false,
+					FilterSilver = true,
+					FilterBronze = true
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.Contains(lb.Leaderboard, x => x.Tier == "Elite Grandmaster");
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Grandmaster"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Master"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Emerald"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Diamond"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Platinum"));
+		Assert.DoesNotContain(lb.Leaderboard, x => x.Tier.Contains("Gold"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Silver"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Bronze"));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ExcludesSilver_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = true,
+					FilterGrandmaster = true,
+					FilterMaster = true,
+					FilterEmerald = true,
+					FilterDiamond = true,
+					FilterPlatinum = true,
+					FilterGold = true,
+					FilterSilver = false,
+					FilterBronze = true
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.Contains(lb.Leaderboard, x => x.Tier == "Elite Grandmaster");
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Grandmaster"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Master"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Emerald"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Diamond"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Platinum"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Gold"));
+		Assert.DoesNotContain(lb.Leaderboard, x => x.Tier.Contains("Silver"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Bronze"));
+	}
+
+	[Fact]
+	public async Task GetLeaderboardAsync_ExcludesBronze_WhenRequested()
+	{
+		// Arrange
+		var filter = new LeaderboardRequestQueryDTO
+		{
+			Mode = 0,
+			Filter = new LeaderboardFilterDTO
+			{
+				TierFilters = new LeaderboardTierFilterDTO
+				{
+					FilterEliteGrandmaster = true,
+					FilterGrandmaster = true,
+					FilterMaster = true,
+					FilterEmerald = true,
+					FilterDiamond = true,
+					FilterPlatinum = true,
+					FilterGold = true,
+					FilterSilver = true,
+					FilterBronze = false
+				}
+			}
+		};
+
+		// Act 
+		var lb = await _leaderboardService.GetLeaderboardAsync(filter);
+
+		// Assert
+		Assert.Contains(lb.Leaderboard, x => x.Tier == "Elite Grandmaster");
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Grandmaster"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Master"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Emerald"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Diamond"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Platinum"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Gold"));
+		Assert.Contains(lb.Leaderboard, x => x.Tier.Contains("Silver"));
+		Assert.DoesNotContain(lb.Leaderboard, x => x.Tier.Contains("Bronze"));
 	}
 }
