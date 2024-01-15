@@ -179,6 +179,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	       };
        });
 
+builder.WebHost.UseUrls("http://localhost:3700/");
+
 var app = builder.Build();
 
 // Set switch for Npgsql
