@@ -68,9 +68,7 @@ builder.Services.AddSingleton(configuration.CreateMapper());
 
 builder.Services.AddLogging();
 
-#if !DEBUG
 builder.Services.AddHostedService<OsuPlayerDataWorker>();
-#endif
 builder.Services.AddHostedService<OsuMatchDataWorker>();
 builder.Services.AddHostedService<OsuTrackApiWorker>();
 
@@ -146,6 +144,15 @@ builder.Services.AddCors(options =>
 			.AllowAnyMethod()
 			.AllowCredentials();
 	});
+});
+
+builder.Host.ConfigureOsuSharp((ctx, options) =>
+{
+	options.Configuration = new OsuClientConfiguration
+	{
+		ClientId = int.Parse(ctx.Configuration["Osu:ClientId"]!),
+		ClientSecret = ctx.Configuration["Osu:ClientSecret"]!
+	};
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

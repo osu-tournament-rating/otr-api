@@ -19,6 +19,12 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 		_mapper = mapper;
 	}
 
+	public override async Task<int> UpdateAsync(Player player)
+	{
+		player.Updated = DateTime.UtcNow;
+		return await base.UpdateAsync(player);
+	}
+
 	public override async Task<Player?> CreateAsync(Player player)
 	{
 		player.Created = DateTime.UtcNow;
@@ -112,7 +118,8 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 		await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).Select(p => p.Id).FirstOrDefaultAsync();
 
 	// This is used by a scheduled task to automatically populate user info, such as username, country, etc.
-	public async Task<IEnumerable<Player>> GetOutdatedAsync() => await _context.Players.Where(p => p.Updated == null).ToListAsync();
+	public async Task<IEnumerable<Player>> GetOutdatedAsync() =>
+		await _context.Players.Where(p => p.Updated == null || (DateTime.UtcNow - p.Updated) > TimeSpan.FromDays(14)).ToListAsync();
 
 	public async Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false, OsuEnums.Mode mode = OsuEnums.Mode.Standard, int offsetDays = -1)
 	{
