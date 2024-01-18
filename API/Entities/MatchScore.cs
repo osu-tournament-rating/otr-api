@@ -40,6 +40,9 @@ public class MatchScore
 	public int CountGeki { get; set; }
 	[Column("player_id")]
 	public int PlayerId { get; set; }
+	/// <summary>
+	///  If not valid, the score is not sent to the rating processor.
+	/// </summary>
 	[Column("is_valid")]
 	public bool? IsValid { get; set; }
 	[InverseProperty("MatchScores")]
@@ -74,7 +77,7 @@ public class MatchScore
 			{
 				return 0;
 			}
-			
+
 			return (100 * ((300d * Count300) + (100d * Count100) + (50d * Count50))) / divisor;
 		}
 	}
@@ -92,7 +95,7 @@ public class MatchScore
 			{
 				return 0;
 			}
-			
+
 			return (100 * (Count300 + (0.5 * Count100))) / divisor;
 		}
 	}
@@ -114,7 +117,7 @@ public class MatchScore
 			{
 				return 0;
 			}
-			
+
 			return (100 * (Count300 + Count100 + Count50)) / divisor;
 		}
 	}
@@ -133,7 +136,7 @@ public class MatchScore
 			{
 				return 0;
 			}
-			
+
 			return (100 * ((305d * CountGeki) + (300 * Count300) + (200 * CountKatu) + (100 * Count100) + (50 * Count50))) / divisor;
 		}
 	}

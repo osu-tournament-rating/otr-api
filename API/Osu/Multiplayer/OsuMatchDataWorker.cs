@@ -11,12 +11,14 @@ public class OsuMatchDataWorker : BackgroundService
 	private readonly IOsuApiService _apiService;
 	private readonly ILogger<OsuMatchDataWorker> _logger;
 	private readonly IServiceProvider _serviceProvider;
+	private readonly bool _allowDataFetching;
 
-	public OsuMatchDataWorker(ILogger<OsuMatchDataWorker> logger, IServiceProvider serviceProvider, IOsuApiService apiService)
+	public OsuMatchDataWorker(ILogger<OsuMatchDataWorker> logger, IServiceProvider serviceProvider, IOsuApiService apiService, IConfiguration configuration)
 	{
 		_logger = logger;
 		_serviceProvider = serviceProvider;
 		_apiService = apiService;
+		_allowDataFetching = configuration.GetValue<bool>("Osu:AllowDataFetching");
 	}
 
 	/// <summary>
@@ -28,6 +30,12 @@ public class OsuMatchDataWorker : BackgroundService
 
 	private async Task BackgroundTask(CancellationToken cancellationToken = default)
 	{
+		if (!_allowDataFetching)
+		{
+			_logger.LogWarning("osu! match data worker is disabled");
+			return;
+		}
+
 		_logger.LogInformation("Initialized osu! match data worker");
 
 		while (!cancellationToken.IsCancellationRequested)
@@ -38,17 +46,17 @@ public class OsuMatchDataWorker : BackgroundService
 				var apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchRepository>();
 				var gamesRepository = scope.ServiceProvider.GetRequiredService<IGamesRepository>();
 				var matchScoresService = scope.ServiceProvider.GetRequiredService<IMatchScoresRepository>();
-						
+
 				var apiMatch = await matchesService.GetFirstMatchNeedingApiProcessingAsync();
 				var autoCheckMatch = await matchesService.GetFirstMatchNeedingAutoCheckAsync();
-				
-				if(apiMatch == null && autoCheckMatch == null)
+
+				if (apiMatch == null && autoCheckMatch == null)
 				{
 					_logger.LogTrace("No matches need processing, sleeping for {Interval} seconds", INTERVAL_SECONDS);
 					await Task.Delay(TimeSpan.FromSeconds(INTERVAL_SECONDS), cancellationToken);
 					continue;
 				}
-				
+
 				if (apiMatch != null)
 				{
 					await ProcessMatchesOsuApiAsync(apiMatch, matchesService, apiMatchService, gamesRepository);
@@ -61,7 +69,7 @@ public class OsuMatchDataWorker : BackgroundService
 			}
 		}
 	}
-	
+
 	private async Task ProcessMatchesNeedingAutomatedChecksAsync(Match match, IMatchesRepository matchesRepository, IGamesRepository gamesRepository,
 		IMatchScoresRepository matchScoresRepository)
 	{
@@ -90,7 +98,7 @@ public class OsuMatchDataWorker : BackgroundService
 				{
 					match.VerificationStatus = (int)MatchVerificationStatus.PreVerified;
 				}
-				
+
 				match.VerificationSource = (int)MatchVerificationSource.System;
 				match.VerificationInfo = null;
 			}
@@ -102,7 +110,7 @@ public class OsuMatchDataWorker : BackgroundService
 			// NOTE: MUST be done in this order: Scores -> Game
 			// The game checker has a sanity check to ensure the game scores are valid.
 			// If a game has any invalid scores, it will fail.
-			
+
 			// Score verification checks
 			foreach (var score in game.MatchScores)
 			{
@@ -114,7 +122,7 @@ public class OsuMatchDataWorker : BackgroundService
 						score.IsValid = false;
 						await matchScoresRepository.UpdateAsync(score);
 					}
-					
+
 					_logger.LogDebug("Score [Player: {Player} | Game: {Game}] failed automation checks", score.PlayerId, game.GameId);
 				}
 				else
@@ -124,11 +132,11 @@ public class OsuMatchDataWorker : BackgroundService
 						score.IsValid = true;
 						await matchScoresRepository.UpdateAsync(score);
 					}
-					
+
 					_logger.LogTrace("Score [Player: {Player} | Game: {Game}] passed automation checks", score.PlayerId, game.GameId);
 				}
 			}
-			
+
 			if (!GameAutomationChecks.PassesAutomationChecks(game))
 			{
 				game.VerificationStatus = (int)GameVerificationStatus.Rejected;
@@ -145,14 +153,14 @@ public class OsuMatchDataWorker : BackgroundService
 				{
 					game.VerificationStatus = (int)GameVerificationStatus.Verified;
 				}
-				
+
 				_logger.LogDebug("Game {Game} passed automation checks and is marked as {Status}", game.GameId, (GameVerificationStatus)game.VerificationStatus);
 			}
 		}
-		
+
 		match.NeedsAutoCheck = false;
 		await matchesRepository.UpdateAsync(match);
-		
+
 		_logger.LogInformation("Match {Match} has completed automated checks", match.MatchId);
 	}
 
@@ -174,7 +182,7 @@ public class OsuMatchDataWorker : BackgroundService
 			_logger.LogError("Failed to automatically process match {MatchId}: {Message}", match.MatchId, e.Message);
 		}
 	}
-	
+
 	private async Task<Match?> ProcessMatchAsync(long osuMatchId, IApiMatchRepository apiMatchRepository, IMatchesRepository matchesRepository)
 	{
 		var osuMatch = await _apiService.GetMatchAsync(osuMatchId, $"{osuMatchId} was identified as a match that needs to be processed");
@@ -188,10 +196,10 @@ public class OsuMatchDataWorker : BackgroundService
 
 				await matchesRepository.UpdateAsApiProcessed(existingEntity);
 			}
-			
+
 			return null;
 		}
-		
+
 		return await apiMatchRepository.CreateFromApiMatchAsync(osuMatch);
 	}
 }

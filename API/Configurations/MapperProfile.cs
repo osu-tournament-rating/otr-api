@@ -20,8 +20,8 @@ public class MapperProfile : Profile
 				MatchName = x.Match.Name,
 				MatchDate = x.Match.StartTime,
 				MpLink = $"https://osu.ppy.sh/mp/{x.Match.MatchId}",
-				TournamentAbbreviation = x.Match.Tournament != null ? x.Match.Tournament.Abbreviation : null,
-				TournamentName = x.Match.Tournament != null ? x.Match.Tournament.Name : null
+				TournamentAbbreviation = x.Match.Tournament.Abbreviation,
+				TournamentName = x.Match.Tournament.Name
 			}));
 
 		CreateMap<Player, PlayerRanksDTO>();
