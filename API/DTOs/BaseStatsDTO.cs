@@ -23,5 +23,5 @@ public class BaseStatsDTO
 	public string Tier => RatingUtils.GetTier((int)Rating);
 	public string NextTier => RatingUtils.GetNextTier((int)Rating);
 	public double RatingForNextTier => RatingUtils.GetRatingForNextTier((int)Rating);
-	public double RatingDelta => RatingUtils.GetRatingDelta((int)Rating);
+	public double MajorTierRatingDelta => RatingUtils.GetMajorTierRatingDelta((int)Rating);
 }

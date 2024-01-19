@@ -125,32 +125,17 @@ public static class RatingUtils
 	/// </summary>
 	/// <param name="rating"></param>
 	/// <returns></returns>
-	public static double GetRatingDelta(double rating) => rating switch
+	public static double GetMajorTierRatingDelta(double rating) => rating switch
 	{
-		< RatingBronzeII => RatingBronzeII - RatingBronzeIII,
-		< RatingBronzeI => RatingBronzeI - RatingBronzeII,
-		< RatingSilverIII => RatingSilverIII - RatingBronzeI,
-		< RatingSilverII => RatingSilverII - RatingSilverIII,
-		< RatingSilverI => RatingSilverI - RatingSilverII,
-		< RatingGoldIII => RatingGoldIII - RatingSilverI,
-		< RatingGoldII => RatingGoldII - RatingGoldIII,
-		< RatingGoldI => RatingGoldI - RatingGoldII,
-		< RatingPlatinumIII => RatingPlatinumIII - RatingGoldI,
-		< RatingPlatinumII => RatingPlatinumII - RatingPlatinumIII,
-		< RatingPlatinumI => RatingPlatinumI - RatingPlatinumII,
-		< RatingEmeraldIII => RatingEmeraldIII - RatingPlatinumI,
-		< RatingEmeraldII => RatingEmeraldII - RatingEmeraldIII,
-		< RatingEmeraldI => RatingEmeraldI - RatingEmeraldII,
-		< RatingDiamondIII => RatingDiamondIII - RatingEmeraldI,
-		< RatingDiamondII => RatingDiamondII - RatingDiamondIII,
-		< RatingDiamondI => RatingDiamondI - RatingDiamondII,
-		< RatingMasterIII => RatingMasterIII - RatingDiamondI,
-		< RatingMasterII => RatingMasterII - RatingMasterIII,
-		< RatingMasterI => RatingMasterI - RatingMasterII,
-		< RatingGrandmasterIII => RatingGrandmasterIII - RatingMasterI,
-		< RatingGrandmasterII => RatingGrandmasterII - RatingGrandmasterIII,
-		< RatingGrandmasterI => RatingGrandmasterI - RatingGrandmasterII,
-		< RatingEliteGrandmaster => RatingEliteGrandmaster - RatingGrandmasterIII,
+		< RatingBronzeI => RatingBronzeI - rating,
+		< RatingSilverI => RatingSilverI - rating,
+		< RatingGoldI => RatingGoldI - rating,
+		< RatingPlatinumI => RatingPlatinumI - rating,
+		< RatingEmeraldI => RatingEmeraldI - rating,
+		< RatingDiamondI => RatingDiamondI - rating,
+		< RatingMasterI => RatingMasterI - rating,
+		< RatingGrandmasterI => RatingGrandmasterI - rating,
+		< RatingEliteGrandmaster => RatingEliteGrandmaster - rating,
 		_ => 0
 	};
 
