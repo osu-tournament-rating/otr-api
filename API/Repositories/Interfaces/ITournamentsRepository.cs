@@ -1,4 +1,3 @@
-using API.Controllers;
 using API.DTOs;
 using API.Entities;
 
@@ -28,4 +27,5 @@ public interface ITournamentsRepository : IRepository<Tournament>
 		DateTime dateMax, bool bestPerformances);
 
 	Task<IEnumerable<Tournament>> GetAllAsync();
+	Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
 }

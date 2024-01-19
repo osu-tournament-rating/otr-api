@@ -1,4 +1,3 @@
-using API.Controllers;
 using API.DTOs;
 using API.Entities;
 
@@ -13,6 +12,14 @@ public interface ITournamentsService
 	/// <param name="updateExisting">Whether to overwrite values for an existing occurrence of this tournament</param>
 	/// <returns></returns>
 	public Task<Tournament> CreateOrUpdateAsync(MatchWebSubmissionDTO wrapper, bool updateExisting = false);
+
 	public Task<bool> ExistsAsync(string name, int mode);
 	Task<IEnumerable<TournamentDTO>> GetAllAsync();
+
+	/// <summary>
+	///  Counts the number of tournaments played by the given player.
+	/// </summary>
+	/// <param name="playerId"></param>
+	/// <returns></returns>
+	Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
 }

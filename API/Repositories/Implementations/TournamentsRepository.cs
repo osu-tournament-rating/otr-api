@@ -1,6 +1,6 @@
-using API.Controllers;
 using API.DTOs;
 using API.Entities;
+using API.Enums;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -23,7 +23,6 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 	}
 
 	public async Task<Tournament?> GetAsync(string name) => await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
-
 	public async Task<bool> ExistsAsync(string name, int mode) => await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
 
 	public async Task<PlayerTournamentTeamSizeCountDTO> GetPlayerTeamSizeStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
@@ -33,12 +32,12 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		                                            .Include(tournament => tournament.Matches)
 		                                            .ThenInclude(match => match.Games)
 		                                            .ThenInclude(game => game.MatchScores)
-		                                            .Where(tournament => tournament.Matches.Any(match => 
-			                                            match.StartTime >= dateMin && 
-			                                            match.StartTime <= dateMax && 
+		                                            .Where(tournament => tournament.Matches.Any(match =>
+			                                            match.StartTime >= dateMin &&
+			                                            match.StartTime <= dateMax &&
 			                                            match.VerificationStatus == 0 &&
 			                                            match.Games.Any(game => game.VerificationStatus == 0 &&
-				                                            game.MatchScores.Any(score => score.PlayerId == playerId && score.IsValid == true))))
+			                                                                    game.MatchScores.Any(score => score.PlayerId == playerId && score.IsValid == true))))
 		                                            .Select(tournament => new { TournamentId = tournament.Id, TeamSize = tournament.TeamSize })
 		                                            .Distinct() // Ensures each tournament is counted once
 		                                            .ToListAsync();
@@ -52,7 +51,6 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 			CountOther = participatedTournaments.Count(x => x.TeamSize > 4)
 		};
 	}
-
 
 	public async Task<Tournament> CreateOrUpdateAsync(MatchWebSubmissionDTO wrapper, bool updateExisting = false)
 	{
@@ -82,16 +80,15 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 			              								LIMIT @count
 			              """;
 
-			
 			command.CommandType = CommandType.Text;
 			command.CommandText = sql;
-			
+
 			command.Parameters.Add(new NpgsqlParameter<int>("playerId", playerId));
 			command.Parameters.Add(new NpgsqlParameter<int>("mode", mode));
 			command.Parameters.Add(new NpgsqlParameter<DateTime>("dateMin", NpgsqlDbType.TimestampTz) { Value = dateMin });
 			command.Parameters.Add(new NpgsqlParameter<DateTime>("dateMax", NpgsqlDbType.TimestampTz) { Value = dateMax });
 			command.Parameters.Add(new NpgsqlParameter<int>("count", count));
-			
+
 			await _context.Database.OpenConnectionAsync();
 
 			using (var result = await command.ExecuteReaderAsync())
@@ -115,6 +112,25 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		}
 	}
 
+	public async Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null)
+	{
+		dateMin ??= DateTime.MinValue;
+		dateMax ??= DateTime.MaxValue;
+
+		return await _context.Tournaments
+		                     .Include(tournament => tournament.Matches)
+		                     .ThenInclude(match => match.Games)
+		                     .ThenInclude(game => game.MatchScores)
+		                     .Where(tournament => tournament.Mode == mode &&
+		                                          tournament.Matches.Any(match =>
+			                                          match.StartTime >= dateMin &&
+			                                          match.StartTime <= dateMax &&
+			                                          match.VerificationStatus == (int)MatchVerificationStatus.Verified &&
+			                                          match.Games.Any(game => game.MatchScores.Any(score => score.PlayerId == playerId && score.IsValid == true))))
+		                     .Select(x => x.Id)
+		                     .Distinct()
+		                     .CountAsync();
+	}
 
 	private async Task<Tournament> UpdateExisting(MatchWebSubmissionDTO wrapper)
 	{

@@ -11,15 +11,17 @@ public class BaseStatsService : IBaseStatsService
 	private readonly IBaseStatsRepository _baseStatsRepository;
 	private readonly IPlayerMatchStatsRepository _matchStatsRepository;
 	private readonly IPlayerRepository _playerRepository;
+	private readonly ITournamentsService _tournamentsService;
 	private readonly IMatchRatingStatsRepository _ratingStatsRepository;
 
-	public BaseStatsService(IBaseStatsRepository baseStatsRepository, IPlayerMatchStatsRepository matchStatsRepository, IMatchRatingStatsRepository ratingStatsRepository,
-		IPlayerRepository playerRepository)
+	public BaseStatsService(IBaseStatsRepository baseStatsRepository, IPlayerMatchStatsRepository matchStatsRepository,
+		IMatchRatingStatsRepository ratingStatsRepository, IPlayerRepository playerRepository, ITournamentsService tournamentsService)
 	{
 		_baseStatsRepository = baseStatsRepository;
 		_matchStatsRepository = matchStatsRepository;
 		_ratingStatsRepository = ratingStatsRepository;
 		_playerRepository = playerRepository;
+		_tournamentsService = tournamentsService;
 	}
 
 	public async Task<IEnumerable<BaseStatsDTO?>> GetForPlayerAsync(long osuPlayerId)
@@ -49,10 +51,23 @@ public class BaseStatsService : IBaseStatsService
 		int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(id, mode);
 		double winRate = await _matchStatsRepository.GlobalWinrateAsync(id, mode);
 		int highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(id, mode);
+		int tournamentsPlayed = await _tournamentsService.CountPlayedAsync(id, mode);
 
-		return new BaseStatsDTO(id, currentStats.Rating, currentStats.Volatility, currentStats.Mode,
-			currentStats.Percentile, matchesPlayed, winRate, highestGlobalRank, currentStats.GlobalRank,
-			currentStats.CountryRank, currentStats.MatchCostAverage);
+		return new BaseStatsDTO
+		{
+			PlayerId = id,
+			AverageMatchCost = currentStats.MatchCostAverage,
+			CountryRank = currentStats.CountryRank,
+			GlobalRank = currentStats.GlobalRank,
+			MatchesPlayed = matchesPlayed,
+			Mode = mode,
+			Percentile = currentStats.Percentile,
+			Rating = currentStats.Rating,
+			Volatility = currentStats.Volatility,
+			Winrate = winRate,
+			HighestGlobalRank = highestGlobalRank,
+			TournamentsPlayed = tournamentsPlayed
+		};
 	}
 
 	public async Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats)

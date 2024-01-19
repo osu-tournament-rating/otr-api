@@ -3,42 +3,34 @@ namespace API.Utilities;
 public static class RatingUtils
 {
 	// Players at or below the threshold are considered to be in the previous tier
-	
+
 	// Bronze: 100-499
-	public const int RatingBronzeIII = 100;
-	public const int RatingBronzeII = 250;
-	public const int RatingBronzeI = 400;
-	
-	public const int RatingSilverIII = 500;
-	public const int RatingSilverII = 600;
-	public const int RatingSilverI = 700;
-	
-	public const int RatingGoldIII = 800;
-	public const int RatingGoldII = 900;
-	public const int RatingGoldI = 1000;
-	
-	public const int RatingPlatinumIII = 1100;
-	public const int RatingPlatinumII = 1200;
-	public const int RatingPlatinumI = 1300;
-	
-	public const int RatingEmeraldIII = 1400;
-	public const int RatingEmeraldII = 1500;
-	public const int RatingEmeraldI = 1600;
-	
-	public const int RatingDiamondIII = 1700;
-	public const int RatingDiamondII = 1800;
-	public const int RatingDiamondI = 1900;
-	
-	public const int RatingMasterIII = 2000;
-	public const int RatingMasterII = 2100;
-	public const int RatingMasterI = 2200;
-	
-	public const int RatingGrandmasterIII = 2300;
-	public const int RatingGrandmasterII = 2400;
-	public const int RatingGrandmasterI = 2500;
-	
-	public const int RatingEliteGrandmaster = 2600;
-	
+	public const double RatingBronzeIII = 100;
+	public const double RatingBronzeII = 250;
+	public const double RatingBronzeI = 400;
+	public const double RatingSilverIII = 500;
+	public const double RatingSilverII = 600;
+	public const double RatingSilverI = 700;
+	public const double RatingGoldIII = 800;
+	public const double RatingGoldII = 900;
+	public const double RatingGoldI = 1000;
+	public const double RatingPlatinumIII = 1100;
+	public const double RatingPlatinumII = 1200;
+	public const double RatingPlatinumI = 1300;
+	public const double RatingEmeraldIII = 1400;
+	public const double RatingEmeraldII = 1500;
+	public const double RatingEmeraldI = 1600;
+	public const double RatingDiamondIII = 1700;
+	public const double RatingDiamondII = 1800;
+	public const double RatingDiamondI = 1900;
+	public const double RatingMasterIII = 2000;
+	public const double RatingMasterII = 2100;
+	public const double RatingMasterI = 2200;
+	public const double RatingGrandmasterIII = 2300;
+	public const double RatingGrandmasterII = 2400;
+	public const double RatingGrandmasterI = 2500;
+	public const double RatingEliteGrandmaster = 2600;
+
 	public static string GetTier(double rating) => rating switch
 	{
 		< RatingBronzeII => "Bronze III",
@@ -67,7 +59,7 @@ public static class RatingUtils
 		< RatingEliteGrandmaster => "Grandmaster I",
 		_ => "Elite Grandmaster"
 	};
-	
+
 	public static string GetNextTier(double rating) => rating switch
 	{
 		< RatingBronzeII => GetTier(RatingBronzeII),
@@ -125,7 +117,7 @@ public static class RatingUtils
 		< RatingEliteGrandmaster => RatingEliteGrandmaster - rating,
 		_ => 0
 	};
-	
+
 	// Useful for the front-end rating progress bar
 	/// <summary>
 	/// Returns the difference between the ratings required for the next tier and the current tier.
@@ -161,4 +153,6 @@ public static class RatingUtils
 		< RatingEliteGrandmaster => RatingEliteGrandmaster - RatingGrandmasterIII,
 		_ => 0
 	};
+
+	public static bool IsProvisional(double volatility, int matchesPlayed, int tournamentsPlayed) => volatility >= 200.0 || matchesPlayed <= 8 || tournamentsPlayed <= 2;
 }
