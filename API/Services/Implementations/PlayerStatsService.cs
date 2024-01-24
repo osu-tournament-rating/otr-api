@@ -211,10 +211,10 @@ public class PlayerStatsService : IPlayerStatsService
 		return dto;
 	}
 
-	private async Task<IEnumerable<MatchRatingStatsDTO>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
+	private async Task<IEnumerable<IEnumerable<MatchRatingStatsDTO>>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		var ratingStats = await _ratingStatsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax);
-		return _mapper.Map<IEnumerable<MatchRatingStatsDTO>>(ratingStats);
+		return _mapper.Map<IEnumerable<IEnumerable<MatchRatingStatsDTO>>>(ratingStats);
 	}
 
 	public async Task<PlayerModStatsDTO> GetModStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax) =>
@@ -249,7 +249,7 @@ public class PlayerStatsService : IPlayerStatsService
 	private async Task<AggregatePlayerMatchStatsDTO?> GetMatchStatsAsync(int id, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
-		var ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
+		var ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList().SelectMany(x => x);
 
 		if (!matchStats.Any())
 		{

@@ -11,7 +11,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 	private readonly OtrContext _context;
 	public MatchRatingStatsRepository(OtrContext context) { _context = context; }
 
-	public async Task<IEnumerable<MatchRatingStats>> GetForPlayerAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null)
+	public async Task<IEnumerable<IEnumerable<MatchRatingStats>>> GetForPlayerAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null)
 	{
 		dateMin ??= DateTime.MinValue;
 		dateMax ??= DateTime.MaxValue;
@@ -23,6 +23,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 		                                 x.Match.StartTime <= dateMax)
 		                     .Include(x => x.Match)
 		                     .ThenInclude(x => x.Tournament)
+		                     .GroupBy(x => x.Match.StartTime.Value.Date)
 		                     .ToListAsync();
 	}
 
@@ -44,7 +45,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 	{
 		dateMin ??= DateTime.MinValue;
 		dateMax ??= DateTime.MaxValue;
-		
+
 		return await _context.MatchRatingStats
 		                     .Where(x => x.PlayerId == playerId &&
 		                                 x.Match.Tournament.Mode == mode &&
@@ -60,7 +61,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 	{
 		dateMin ??= DateTime.MinValue;
 		dateMax ??= DateTime.MaxValue;
-		
+
 		return await _context.MatchRatingStats
 		                     .Where(x =>
 			                     x.PlayerId == playerId &&
@@ -104,11 +105,12 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 		                                   .Distinct()
 		                                   .ToListAsync();
 
-	public async Task<PlayerRankChartDTO> GetRankChartAsync(int playerId, int mode, LeaderboardChartType chartType, DateTime? dateMin = null, DateTime? dateMax = null)
+	public async Task<PlayerRankChartDTO> GetRankChartAsync(int playerId, int mode, LeaderboardChartType chartType, DateTime? dateMin = null,
+		DateTime? dateMax = null)
 	{
 		dateMin ??= DateTime.MinValue;
 		dateMax ??= DateTime.MaxValue;
-		
+
 		var chartData = await _context.MatchRatingStats
 		                              .Include(x => x.Match)
 		                              .ThenInclude(x => x.Tournament)

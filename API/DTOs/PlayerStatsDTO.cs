@@ -3,7 +3,7 @@ namespace API.DTOs;
 public class PlayerStatsDTO
 {
 	public PlayerStatsDTO(BaseStatsDTO? generalStats, AggregatePlayerMatchStatsDTO? matchStats, PlayerModStatsDTO? modStats,
-		PlayerTournamentStatsDTO? tournamentStats, IEnumerable<MatchRatingStatsDTO> ratingStats, IEnumerable<PlayerFrequencyDTO> frequentTeammates,
+		PlayerTournamentStatsDTO? tournamentStats, IEnumerable<IEnumerable<MatchRatingStatsDTO>> ratingStats, IEnumerable<PlayerFrequencyDTO> frequentTeammates,
 		IEnumerable<PlayerFrequencyDTO> frequentOpponents)
 	{
 		GeneralStats = generalStats;
@@ -21,5 +21,5 @@ public class PlayerStatsDTO
 	public PlayerTournamentStatsDTO? TournamentStats { get; }
 	public IEnumerable<PlayerFrequencyDTO> FrequentTeammates { get; }
 	public IEnumerable<PlayerFrequencyDTO> FrequentOpponents { get; }
-	public IEnumerable<MatchRatingStatsDTO> RatingStats { get; }
+	public IEnumerable<IEnumerable<MatchRatingStatsDTO>> RatingStats { get; }
 }
