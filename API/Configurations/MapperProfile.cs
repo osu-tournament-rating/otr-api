@@ -25,6 +25,7 @@ public class MapperProfile : Profile
 			}));
 
 		CreateMap<Player, PlayerRanksDTO>();
+		CreateMap<Player, PlayerInfoDTO>();
 		CreateMap<Tournament, TournamentDTO>();
 		CreateMap<User, UserDTO>();
 	}

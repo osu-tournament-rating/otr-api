@@ -27,7 +27,7 @@ public class StatsController : Controller
 	}
 
 	[Authorize]
-	[HttpGet("{playerId:long}")]
+	[HttpGet("{playerId:int}")]
 	public async Task<ActionResult<PlayerStatsDTO>> GetAsync(int playerId, [FromQuery] int? comparerId, [FromQuery] int mode = 0, [FromQuery] DateTime? dateMin = null,
 		[FromQuery]
 		DateTime? dateMax = null) => await _playerStatsService.GetAsync(playerId, comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);

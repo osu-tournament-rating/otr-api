@@ -8,10 +8,9 @@ namespace API.Services.Implementations;
 public class UserService : IUserService
 {
 	private readonly IUserRepository _repository;
-
 	public UserService(IUserRepository repository) { _repository = repository; }
 
-	public async Task<MeDataDTO?> GetForPlayerAsync(int playerId)
+	public async Task<UserInfoDTO?> GetForPlayerAsync(int playerId)
 	{
 		var user = await _repository.GetForPlayerAsync(playerId);
 
@@ -19,8 +18,8 @@ public class UserService : IUserService
 		{
 			return null;
 		}
-		
-		return new MeDataDTO
+
+		return new UserInfoDTO
 		{
 			Id = user.PlayerId,
 			UserId = user.Id,
@@ -31,6 +30,7 @@ public class UserService : IUserService
 			Roles = user.Roles
 		};
 	}
+
 	public async Task<User?> GetForPlayerAsync(long osuId) => await _repository.GetForPlayerAsync(osuId);
 	public async Task<User?> GetOrCreateSystemUserAsync() => await _repository.GetOrCreateSystemUserAsync();
 	public async Task<bool> HasRoleAsync(long osuId, string role) => await _repository.HasRoleAsync(osuId, role);
