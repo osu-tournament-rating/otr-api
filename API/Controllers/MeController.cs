@@ -23,6 +23,30 @@ public class MeController : Controller
 		_playerStatsService = playerStatsService;
 	}
 
+	[HttpGet("validate")]
+	public IActionResult ValidateJwt()
+	{
+		if (!HttpContext.Request.Cookies.ContainsKey("OTR-Access-Token"))
+		{
+			return BadRequest("No access token cookie found.");
+		}
+
+		string? token = HttpContext.Request.Cookies["OTR-Access-Token"];
+		if (string.IsNullOrEmpty(token))
+		{
+			return BadRequest("Cookie found, but was null or empty.");
+		}
+
+		var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+		var expDate = jwtToken.ValidTo;
+		if (expDate < DateTime.UtcNow)
+		{
+			return NoContent();
+		}
+
+		return Ok();
+	}
+
 	private int? GetId()
 	{
 		string? id = HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Name)?.Value;
