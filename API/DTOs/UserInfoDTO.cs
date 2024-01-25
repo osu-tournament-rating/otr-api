@@ -1,6 +1,6 @@
 namespace API.DTOs;
 
-public class MeDataDTO
+public class UserInfoDTO
 {
 	public int? Id { get; set; }
 	public int? UserId { get; set; }

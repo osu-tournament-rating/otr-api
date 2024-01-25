@@ -59,6 +59,9 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 		return await _context.Players.AsNoTracking().ToListAsync();
 	}
 
+	public async Task<Player?> GetAsync(string username) =>
+		await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).FirstOrDefaultAsync();
+
 	public async Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1)
 	{
 		if (!eagerLoad)
@@ -121,9 +124,9 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	public async Task<IEnumerable<Player>> GetOutdatedAsync() =>
 		await _context.Players.Where(p => p.Updated == null || (DateTime.UtcNow - p.Updated) > TimeSpan.FromDays(14)).ToListAsync();
 
-	public async Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false, OsuEnums.Mode mode = OsuEnums.Mode.Standard, int offsetDays = -1)
+	public async Task<PlayerInfoDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false, OsuEnums.Mode mode = OsuEnums.Mode.Standard, int offsetDays = -1)
 	{
-		var obj = _mapper.Map<PlayerDTO?>(await GetPlayerByOsuIdAsync(osuId, eagerLoad, (int)mode, offsetDays));
+		var obj = _mapper.Map<PlayerInfoDTO?>(await GetPlayerByOsuIdAsync(osuId, eagerLoad, (int)mode, offsetDays));
 
 		if (obj == null)
 		{
