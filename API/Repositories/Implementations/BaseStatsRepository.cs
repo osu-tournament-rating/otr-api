@@ -237,6 +237,13 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		if (chartType == LeaderboardChartType.Country && playerId.HasValue)
 		{
 			string? playerCountry = await _context.Players.Where(x => x.Id == playerId).Select(x => x.Country).FirstOrDefaultAsync();
+
+			// Addresses players in dependent territories having a *very* small country leaderboard.
+			if (playerCountry != null && LeaderboardUtils.DependentTerritoriesMapping.TryGetValue(playerCountry, out string? mappedCountry))
+			{
+				playerCountry = mappedCountry;
+			}
+
 			baseQuery = baseQuery.Where(x => x.Player.Country == playerCountry);
 		}
 

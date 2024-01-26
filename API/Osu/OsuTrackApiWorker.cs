@@ -162,6 +162,10 @@ public class OsuTrackApiWorker : BackgroundService
 					}
 				}
 			}
+			catch (TaskCanceledException)
+			{
+				// Ignore, application is probably shutting down
+			}
 			catch (Exception e)
 			{
 				_logger.LogError(e, "Error occurred while fetching osu!track data");
