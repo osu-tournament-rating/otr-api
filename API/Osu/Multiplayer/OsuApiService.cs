@@ -101,6 +101,12 @@ public class OsuApiService : IOsuApiService
 	{
 		var response = await _v2Client.GetUserAsync(userId, (GameMode)(int)mode);
 
+		if (response.IsRestricted == true)
+		{
+			_logger.LogDebug("User {UserId} is restricted, skipping", userId);
+			return null;
+		}
+
 		_logger.LogDebug("Successfully received response from osu! API for user {UserId} [{Reason}]", userId, reason);
 
 		return new OsuApiUser
