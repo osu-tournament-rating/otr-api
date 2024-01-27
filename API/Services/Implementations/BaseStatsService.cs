@@ -3,6 +3,7 @@ using API.Entities;
 using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using API.Utilities;
 
 namespace API.Services.Implementations;
 
@@ -52,6 +53,16 @@ public class BaseStatsService : IBaseStatsService
 		double winRate = await _matchStatsRepository.GlobalWinrateAsync(id, mode);
 		int highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(id, mode);
 		int tournamentsPlayed = await _tournamentsService.CountPlayedAsync(id, mode);
+		var rankProgress = new RankProgressDTO
+		{
+			CurrentTier = RatingUtils.GetTier(currentStats.Rating),
+			CurrentSubTier = RatingUtils.GetCurrentSubTier(currentStats.Rating),
+			RatingForNextTier = RatingUtils.GetRatingDeltaForNextTier(currentStats.Rating),
+			RatingForNextMajorTier = RatingUtils.GetRatingDeltaForNextMajorTier(currentStats.Rating),
+			NextMajorTier = RatingUtils.GetNextMajorTier(currentStats.Rating),
+			SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(currentStats.Rating),
+			MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(currentStats.Rating)
+		};
 
 		return new BaseStatsDTO
 		{
@@ -66,7 +77,8 @@ public class BaseStatsService : IBaseStatsService
 			Volatility = currentStats.Volatility,
 			Winrate = winRate,
 			HighestGlobalRank = highestGlobalRank,
-			TournamentsPlayed = tournamentsPlayed
+			TournamentsPlayed = tournamentsPlayed,
+			RankProgress = rankProgress
 		};
 	}
 
