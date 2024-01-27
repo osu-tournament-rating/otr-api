@@ -5,9 +5,9 @@ namespace API.Repositories.Interfaces;
 
 public interface IMatchesRepository : IRepository<Match>
 {
-	Task<Match> GetAsync(int id, bool filterInvalid = true);
+	Task<Match> GetAsync(int id, bool filterInvalidMatches = true);
 	Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered);
-	Task<IEnumerable<int>> GetAllAsync(bool onlyIncludeFiltered);
+	Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches);
 	Task<Match?> GetByMatchIdAsync(long matchId);
 	Task<IList<Match>> GetMatchesNeedingAutoCheckAsync();
 	Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
@@ -20,6 +20,7 @@ public interface IMatchesRepository : IRepository<Match>
 	/// </summary>
 	/// <returns>Number of rows inserted</returns>
 	Task<int> BatchInsertAsync(IEnumerable<Match> matches);
+
 	Task<int> UpdateVerificationStatusAsync(long matchId, MatchVerificationStatus status, MatchVerificationSource source, string? info = null);
 	Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, int mode, DateTime before, DateTime after);
 	Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime);
