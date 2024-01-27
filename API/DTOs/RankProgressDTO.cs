@@ -7,8 +7,9 @@ public class RankProgressDTO
 	public double? RatingForNextTier { get; set; }
 	public double? RatingForNextMajorTier { get; set; }
 	public string? NextMajorTier { get; set; }
+	public double? SubTierFillPercentage { get; set; }
 	/// <summary>
 	///  How far the frontend dashboard bar, covering all 3 subtiers, should be filled.
 	/// </summary>
-	public double FillPercentage { get; set; }
+	public double? MajorTierFillPercentage { get; set; }
 }

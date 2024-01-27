@@ -216,7 +216,8 @@ public class PlayerStatsService : IPlayerStatsService
 			RatingForNextTier = RatingUtils.GetRatingDeltaForNextTier(dto.Rating),
 			RatingForNextMajorTier = RatingUtils.GetRatingDeltaForNextMajorTier(dto.Rating),
 			NextMajorTier = RatingUtils.GetNextMajorTier(dto.Rating),
-			FillPercentage = RatingUtils.GetFillPercentage(dto.Rating)
+			SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(dto.Rating),
+			MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(dto.Rating)
 		};
 
 		return dto;
