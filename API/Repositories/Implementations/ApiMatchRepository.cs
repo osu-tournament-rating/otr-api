@@ -54,7 +54,7 @@ public class ApiMatchRepository : IApiMatchRepository
 			return;
 		}
 
-		foreach (long osuId in GetUserIdsFromMatch(apiMatch)!)
+		foreach (long osuId in GetUserIdsFromMatch(apiMatch))
 		{
 			if (existingPlayersMapping.ContainsKey(osuId))
 			{
@@ -79,7 +79,7 @@ public class ApiMatchRepository : IApiMatchRepository
 		// Select all osu! user ids from the match's scores
 		var osuPlayerIds = GetUserIdsFromMatch(apiMatch);
 
-		if (osuPlayerIds == null || osuPlayerIds.Count == 0)
+		if (osuPlayerIds.Count == 0)
 		{
 			_logger.LogError("No players found in match {MatchId}", apiMatch.OsuApiMatch.MatchId);
 			return null;
@@ -94,7 +94,7 @@ public class ApiMatchRepository : IApiMatchRepository
 		return existingPlayers.ToDictionary(player => player.OsuId, player => player.Id);
 	}
 
-	private List<long>? GetUserIdsFromMatch(OsuApiMatchData apiMatch) { return apiMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList(); }
+	private List<long> GetUserIdsFromMatch(OsuApiMatchData apiMatch) => apiMatch.Games.SelectMany(x => x.Scores).Select(x => x.UserId).Distinct().ToList();
 
 	// Beatmaps
 
@@ -137,7 +137,7 @@ public class ApiMatchRepository : IApiMatchRepository
 		}
 	}
 
-	private IEnumerable<long>? GetBeatmapIds(OsuApiMatchData apiMatch) => apiMatch.Games.Select(x => x.BeatmapId);
+	private IEnumerable<long> GetBeatmapIds(OsuApiMatchData apiMatch) => apiMatch.Games.Select(x => x.BeatmapId);
 
 	// Match
 	/// <summary>

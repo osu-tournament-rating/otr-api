@@ -3,7 +3,6 @@ using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace API.Controllers;
 
@@ -14,14 +13,10 @@ namespace API.Controllers;
 public class StatsController : Controller
 {
 	private readonly IBaseStatsService _baseStatsService;
-	private readonly IDistributedCache _cache;
-	private readonly ILogger<StatsController> _logger;
 	private readonly IPlayerStatsService _playerStatsService;
 
-	public StatsController(ILogger<StatsController> logger, IDistributedCache cache, IPlayerStatsService playerStatsService, IBaseStatsService baseStatsService)
+	public StatsController(IPlayerStatsService playerStatsService, IBaseStatsService baseStatsService)
 	{
-		_logger = logger;
-		_cache = cache;
 		_playerStatsService = playerStatsService;
 		_baseStatsService = baseStatsService;
 	}

@@ -192,7 +192,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 		// Initialize all buckets from 100 to maxBucket with 0
 		var histogram = Enumerable.Range(4, (maxBucket / 25) - 3)
-		                          .ToDictionary(bucket => bucket * 25, bucket => 0);
+		                          .ToDictionary(bucket => bucket * 25, _ => 0);
 
 		// Adjust the GroupBy to correctly bucket the rating of 100
 		var dbHistogram = await _context.BaseStats

@@ -1,4 +1,3 @@
-using API.Controllers;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
@@ -14,6 +13,7 @@ public class MatchesService : IMatchesService
 	private readonly IMatchesRepository _matchesRepository;
 	private readonly ITournamentsRepository _tournamentsRepository;
 	private readonly IMapper _mapper;
+
 	public MatchesService(ILogger<MatchesService> logger, IMatchesRepository matchesRepository, ITournamentsRepository tournamentsRepository, IMapper mapper)
 	{
 		_logger = logger;
@@ -34,7 +34,7 @@ public class MatchesService : IMatchesService
 	{
 		var existingMatches = (await _matchesRepository.GetByMatchIdsAsync(matchWebSubmissionDto.Ids)).ToList();
 		var tournament = await _tournamentsRepository.CreateOrUpdateAsync(matchWebSubmissionDto, verified);
-		
+
 		// Update the matches that already exist, if we are verified
 		if (verified)
 		{
@@ -42,7 +42,7 @@ public class MatchesService : IMatchesService
 			{
 				match.NeedsAutoCheck = true;
 				match.IsApiProcessed = false;
-				match.VerificationStatus = (int) MatchVerificationStatus.Verified;
+				match.VerificationStatus = (int)MatchVerificationStatus.Verified;
 				match.VerificationSource = verifier;
 				match.VerifierUserId = matchWebSubmissionDto.SubmitterId;
 				match.TournamentId = tournament.Id;
@@ -51,11 +51,11 @@ public class MatchesService : IMatchesService
 				await _matchesRepository.UpdateAsync(match);
 			}
 		}
-		
+
 		// Matches that don't exist yet
 		var newMatchIds = matchWebSubmissionDto.Ids.Except(existingMatches.Select(x => x.MatchId)).ToList();
 		var verificationStatus = verified ? MatchVerificationStatus.Verified : MatchVerificationStatus.PendingVerification;
-		
+
 		var newMatches = newMatchIds.Select(id => new Match
 		{
 			MatchId = id,
@@ -67,7 +67,7 @@ public class MatchesService : IMatchesService
 			VerifierUserId = verified ? matchWebSubmissionDto.SubmitterId : null,
 			TournamentId = tournament.Id
 		});
-		
+
 		int? result = await _matchesRepository.BatchInsertAsync(newMatches);
 		if (result > 0)
 		{
@@ -76,13 +76,9 @@ public class MatchesService : IMatchesService
 	}
 
 	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _matchesRepository.GetIdMappingAsync();
-	public async Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids) => _mapper.Map<IEnumerable<MatchDTO>>(await _matchesRepository.GetAsync(ids, true)); 
+	public async Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids) => _mapper.Map<IEnumerable<MatchDTO>>(await _matchesRepository.GetAsync(ids, true));
 	public async Task RefreshAutomationChecks(bool invalidOnly = true) => await _matchesRepository.SetRequireAutoCheckAsync(invalidOnly);
-
-	public async Task<IEnumerable<int>> GetAllIdsAsync(bool onlyIncludeFiltered)
-	{
-		return await _matchesRepository.GetAllAsync(onlyIncludeFiltered);
-	}
+	public async Task<IEnumerable<int>> GetAllIdsAsync(bool onlyIncludeFiltered) { return await _matchesRepository.GetAllAsync(onlyIncludeFiltered); }
 
 	public async Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId)
 	{

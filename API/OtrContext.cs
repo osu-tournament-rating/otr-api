@@ -247,5 +247,6 @@ public partial class OtrContext : DbContext
 		OnModelCreatingPartial(modelBuilder);
 	}
 
+	// ReSharper disable once PartialMethodWithSinglePart
 	partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
