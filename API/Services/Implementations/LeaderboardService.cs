@@ -70,7 +70,7 @@ public class LeaderboardService : ILeaderboardService
 				MatchesPlayed = baseStat.MatchesPlayed,
 				Name = name ?? "<Unknown>",
 				Rating = baseStat.Rating,
-				Tier = baseStat.RankProgress?.CurrentTier,
+				Tier = baseStat.RankProgress.CurrentTier,
 				WinRate = baseStat.Winrate,
 				Mode = baseStat.Mode,
 				Country = country

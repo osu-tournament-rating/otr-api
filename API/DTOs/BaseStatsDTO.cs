@@ -19,6 +19,6 @@ public class BaseStatsDTO
 	public int CountryRank { get; set; }
 	public double AverageMatchCost { get; set; }
 	public int TournamentsPlayed { get; set; }
-	public RankProgressDTO? RankProgress { get; set; }
+	public RankProgressDTO RankProgress { get; set; } = new();
 	public bool IsProvisional => RatingUtils.IsProvisional(Volatility, MatchesPlayed, TournamentsPlayed);
 }

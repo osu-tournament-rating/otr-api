@@ -13,13 +13,7 @@ namespace API.Controllers;
 public class LeaderboardsController : Controller
 {
 	private readonly ILeaderboardService _leaderboardService;
-	private readonly IConfiguration _configuration;
-
-	public LeaderboardsController(ILeaderboardService leaderboardService, IConfiguration configuration)
-	{
-		_leaderboardService = leaderboardService;
-		_configuration = configuration;
-	}
+	public LeaderboardsController(ILeaderboardService leaderboardService) { _leaderboardService = leaderboardService; }
 
 	[HttpGet]
 	public async Task<ActionResult<LeaderboardDTO>> GetAsync([FromQuery] LeaderboardRequestQueryDTO requestQuery)

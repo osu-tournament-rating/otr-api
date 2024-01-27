@@ -1,8 +1,6 @@
 using API.Entities;
-using API.Osu;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Immutable;
 
 namespace API.Repositories.Implementations;
 
@@ -19,11 +17,7 @@ public class BeatmapRepository : RepositoryBase<Beatmap>, IBeatmapRepository
 
 	public async Task<long> GetBeatmapIdAsync(int id) => await _context.Beatmaps.Where(b => b.Id == id).Select(b => b.BeatmapId).FirstOrDefaultAsync();
 	public async Task<Beatmap?> GetByOsuIdAsync(long osuBeatmapId) => await _context.Beatmaps.FirstOrDefaultAsync(x => x.BeatmapId == osuBeatmapId);
-
-	public async Task<Beatmap?> GetBeatmapByBeatmapIdAsync(long osuBeatmapId)
-	{
-		return await _context.Beatmaps.Where(x => x.BeatmapId == osuBeatmapId).FirstOrDefaultAsync();
-	}
+	public async Task<Beatmap?> GetBeatmapByBeatmapIdAsync(long osuBeatmapId) { return await _context.Beatmaps.Where(x => x.BeatmapId == osuBeatmapId).FirstOrDefaultAsync(); }
 
 	public async Task CreateIfNotExistsAsync(IEnumerable<long> beatmapIds)
 	{
@@ -47,7 +41,7 @@ public class BeatmapRepository : RepositoryBase<Beatmap>, IBeatmapRepository
 		{
 			return null;
 		}
-		
+
 		return await _context.Beatmaps.Where(x => x.BeatmapId == gameBeatmapId).Select(x => x.Id).FirstOrDefaultAsync();
 	}
 

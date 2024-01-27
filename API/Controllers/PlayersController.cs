@@ -1,12 +1,10 @@
 using API.DTOs;
 using API.Entities;
 using API.Osu;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace API.Controllers;
 
@@ -16,16 +14,8 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class PlayersController : Controller
 {
-	private readonly IDistributedCache _cache;
 	private readonly IPlayerService _playerService;
-	private readonly IBaseStatsRepository _baseStatsRepository;
-
-	public PlayersController(IDistributedCache cache, IPlayerService playerService, IBaseStatsRepository baseStatsRepository)
-	{
-		_cache = cache;
-		_playerService = playerService;
-		_baseStatsRepository = baseStatsRepository;
-	}
+	public PlayersController(IPlayerService playerService) { _playerService = playerService; }
 
 	[HttpGet("all")]
 	public async Task<ActionResult<IEnumerable<Player>?>> GetAllAsync()
