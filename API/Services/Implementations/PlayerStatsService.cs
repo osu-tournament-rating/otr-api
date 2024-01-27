@@ -3,6 +3,7 @@ using API.Entities;
 using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using API.Utilities;
 using AutoMapper;
 
 namespace API.Services.Implementations;
@@ -207,6 +208,17 @@ public class PlayerStatsService : IPlayerStatsService
 		dto.MatchesPlayed = matchesPlayed;
 		dto.Winrate = winRate;
 		dto.HighestGlobalRank = highestRank;
+
+		dto.RankProgress = new RankProgressDTO
+		{
+			CurrentTier = RatingUtils.GetTier(dto.Rating),
+			CurrentSubTier = RatingUtils.GetCurrentSubTier(dto.Rating),
+			RatingForNextTier = RatingUtils.GetRatingDeltaForNextTier(dto.Rating),
+			RatingForNextMajorTier = RatingUtils.GetRatingDeltaForNextMajorTier(dto.Rating),
+			NextMajorTier = RatingUtils.GetNextMajorTier(dto.Rating),
+			SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(dto.Rating),
+			MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(dto.Rating)
+		};
 
 		return dto;
 	}

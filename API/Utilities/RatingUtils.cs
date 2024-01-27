@@ -60,6 +60,35 @@ public static class RatingUtils
 		_ => "Elite Grandmaster"
 	};
 
+	public static int? GetCurrentSubTier(double rating) => rating switch
+	{
+		< RatingBronzeII => 3,
+		< RatingBronzeI => 2,
+		< RatingSilverIII => 1,
+		< RatingSilverII => 3,
+		< RatingSilverI => 2,
+		< RatingGoldIII => 1,
+		< RatingGoldII => 3,
+		< RatingGoldI => 2,
+		< RatingPlatinumIII => 1,
+		< RatingPlatinumII => 3,
+		< RatingPlatinumI => 2,
+		< RatingEmeraldIII => 1,
+		< RatingEmeraldII => 3,
+		< RatingEmeraldI => 2,
+		< RatingDiamondIII => 1,
+		< RatingDiamondII => 3,
+		< RatingDiamondI => 2,
+		< RatingMasterIII => 1,
+		< RatingMasterII => 3,
+		< RatingMasterI => 2,
+		< RatingGrandmasterIII => 1,
+		< RatingGrandmasterII => 3,
+		< RatingGrandmasterI => 2,
+		< RatingEliteGrandmaster => 1,
+		_ => null
+	};
+
 	public static string GetNextTier(double rating) => rating switch
 	{
 		< RatingBronzeII => GetTier(RatingBronzeII),
@@ -89,7 +118,7 @@ public static class RatingUtils
 		_ => GetTier(RatingEliteGrandmaster)
 	};
 
-	public static double GetRatingForNextTier(double rating) => rating switch
+	public static double GetRatingDeltaForNextTier(double rating) => rating switch
 	{
 		< RatingBronzeII => RatingBronzeII - rating,
 		< RatingBronzeI => RatingBronzeI - rating,
@@ -118,26 +147,142 @@ public static class RatingUtils
 		_ => 0
 	};
 
-	// Useful for the front-end rating progress bar
-	/// <summary>
-	/// Returns the difference between the ratings required for the next tier and the current tier.
-	/// This is used by the front-end's progress bar to determine how much progress has been made towards the next tier.
-	/// </summary>
-	/// <param name="rating"></param>
-	/// <returns></returns>
-	public static double GetMajorTierRatingDelta(double rating) => rating switch
+	public static double? GetRatingForNextTier(double rating) => rating switch
 	{
-		< RatingBronzeI => RatingBronzeI - rating,
-		< RatingSilverI => RatingSilverI - rating,
-		< RatingGoldI => RatingGoldI - rating,
-		< RatingPlatinumI => RatingPlatinumI - rating,
-		< RatingEmeraldI => RatingEmeraldI - rating,
-		< RatingDiamondI => RatingDiamondI - rating,
-		< RatingMasterI => RatingMasterI - rating,
-		< RatingGrandmasterI => RatingGrandmasterI - rating,
+		< RatingBronzeII => RatingBronzeII,
+		< RatingBronzeI => RatingBronzeI,
+		< RatingSilverIII => RatingSilverIII,
+		< RatingSilverII => RatingSilverII,
+		< RatingSilverI => RatingSilverI,
+		< RatingGoldIII => RatingGoldIII,
+		< RatingGoldII => RatingGoldII,
+		< RatingGoldI => RatingGoldI,
+		< RatingPlatinumIII => RatingPlatinumIII,
+		< RatingPlatinumII => RatingPlatinumII,
+		< RatingPlatinumI => RatingPlatinumI,
+		< RatingEmeraldIII => RatingEmeraldIII,
+		< RatingEmeraldII => RatingEmeraldII,
+		< RatingEmeraldI => RatingEmeraldI,
+		< RatingDiamondIII => RatingDiamondIII,
+		< RatingDiamondII => RatingDiamondII,
+		< RatingDiamondI => RatingDiamondI,
+		< RatingMasterIII => RatingMasterIII,
+		< RatingMasterII => RatingMasterII,
+		< RatingMasterI => RatingMasterI,
+		< RatingGrandmasterIII => RatingGrandmasterIII,
+		< RatingGrandmasterII => RatingGrandmasterII,
+		< RatingGrandmasterI => RatingGrandmasterI,
+		< RatingEliteGrandmaster => RatingEliteGrandmaster,
+		_ => null
+	};
+
+	public static double? GetRatingForPreviousTier(double rating) => rating switch
+	{
+		< RatingBronzeIII => null,
+		< RatingBronzeII => RatingBronzeIII,
+		< RatingBronzeI => RatingBronzeII,
+		< RatingSilverIII => RatingBronzeI,
+		< RatingSilverII => RatingSilverIII,
+		< RatingSilverI => RatingSilverII,
+		< RatingGoldIII => RatingSilverI,
+		< RatingGoldII => RatingGoldIII,
+		< RatingGoldI => RatingGoldII,
+		< RatingPlatinumIII => RatingGoldI,
+		< RatingPlatinumII => RatingPlatinumIII,
+		< RatingPlatinumI => RatingPlatinumII,
+		< RatingEmeraldIII => RatingPlatinumI,
+		< RatingEmeraldII => RatingEmeraldIII,
+		< RatingEmeraldI => RatingEmeraldII,
+		< RatingDiamondIII => RatingEmeraldI,
+		< RatingDiamondII => RatingDiamondIII,
+		< RatingDiamondI => RatingDiamondII,
+		< RatingMasterIII => RatingDiamondI,
+		< RatingMasterII => RatingMasterIII,
+		< RatingMasterI => RatingMasterII,
+		< RatingGrandmasterIII => RatingMasterI,
+		< RatingGrandmasterII => RatingGrandmasterIII,
+		< RatingGrandmasterI => RatingGrandmasterII,
+		< RatingEliteGrandmaster => RatingGrandmasterI,
+		_ => RatingEliteGrandmaster
+	};
+
+	public static double GetRatingForNextMajorTier(double rating) => rating switch
+	{
+		< RatingSilverIII => RatingSilverIII,
+		< RatingGoldIII => RatingGoldIII,
+		< RatingPlatinumIII => RatingPlatinumIII,
+		< RatingEmeraldIII => RatingEmeraldIII,
+		< RatingDiamondIII => RatingDiamondIII,
+		< RatingMasterIII => RatingMasterIII,
+		< RatingGrandmasterIII => RatingGrandmasterIII,
+		< RatingEliteGrandmaster => RatingEliteGrandmaster,
+		_ => 0
+	};
+
+	public static double GetRatingDeltaForNextMajorTier(double rating) => rating switch
+	{
+		< RatingSilverIII => RatingSilverIII - rating,
+		< RatingGoldIII => RatingGoldIII - rating,
+		< RatingPlatinumIII => RatingPlatinumIII - rating,
+		< RatingEmeraldIII => RatingEmeraldIII - rating,
+		< RatingDiamondIII => RatingDiamondIII - rating,
+		< RatingMasterIII => RatingMasterIII - rating,
+		< RatingGrandmasterIII => RatingGrandmasterIII - rating,
 		< RatingEliteGrandmaster => RatingEliteGrandmaster - rating,
 		_ => 0
 	};
+
+	public static string? GetNextMajorTier(double rating) => rating switch
+	{
+		< RatingSilverIII => GetTier(RatingSilverIII),
+		< RatingGoldIII => GetTier(RatingGoldIII),
+		< RatingPlatinumIII => GetTier(RatingPlatinumIII),
+		< RatingEmeraldIII => GetTier(RatingEmeraldIII),
+		< RatingDiamondIII => GetTier(RatingDiamondIII),
+		< RatingMasterIII => GetTier(RatingMasterIII),
+		< RatingGrandmasterIII => GetTier(RatingGrandmasterIII),
+		< RatingEliteGrandmaster => GetTier(RatingEliteGrandmaster),
+		_ => null
+	};
+
+	public static double? GetMinimumRatingBeforeMajorTierFalloff(double rating) => rating switch
+	{
+		< RatingBronzeI => null,
+		< RatingGoldIII => RatingSilverIII,
+		< RatingPlatinumIII => RatingGoldIII,
+		< RatingEmeraldIII => RatingPlatinumIII,
+		< RatingDiamondIII => RatingEmeraldIII,
+		< RatingMasterIII => RatingDiamondIII,
+		< RatingGrandmasterIII => RatingMasterIII,
+		< RatingEliteGrandmaster => RatingGrandmasterIII,
+		>= RatingEliteGrandmaster => RatingEliteGrandmaster,
+		_ => null
+	};
+
+	public static double? GetSubTierFillPercentage(double rating)
+	{
+		double? minRating = GetRatingForPreviousTier(rating);
+		double? maxRating = GetRatingForNextTier(rating);
+
+		if (minRating == null || maxRating == null)
+		{
+			return null;
+		}
+
+		return (rating - minRating.Value) / (maxRating - minRating.Value);
+	}
+
+	public static double? GetMajorTierFillPercentage(double rating)
+	{
+		double? minRating = GetMinimumRatingBeforeMajorTierFalloff(rating);
+		double maxRating = GetRatingForNextMajorTier(rating);
+		if (minRating == null || maxRating == 0)
+		{
+			return null;
+		}
+
+		return (rating - minRating.Value) / (maxRating - minRating.Value);
+	}
 
 	public static bool IsProvisional(double volatility, int matchesPlayed, int tournamentsPlayed) => volatility >= 200.0 || matchesPlayed <= 8 || tournamentsPlayed <= 2;
 }

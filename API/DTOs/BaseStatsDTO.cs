@@ -19,9 +19,6 @@ public class BaseStatsDTO
 	public int CountryRank { get; set; }
 	public double AverageMatchCost { get; set; }
 	public int TournamentsPlayed { get; set; }
+	public RankProgressDTO? RankProgress { get; set; }
 	public bool IsProvisional => RatingUtils.IsProvisional(Volatility, MatchesPlayed, TournamentsPlayed);
-	public string Tier => RatingUtils.GetTier((int)Rating);
-	public string NextTier => RatingUtils.GetNextTier((int)Rating);
-	public double RatingForNextTier => RatingUtils.GetRatingForNextTier((int)Rating);
-	public double MajorTierRatingDelta => RatingUtils.GetMajorTierRatingDelta((int)Rating);
 }
