@@ -1,12 +1,14 @@
 ﻿using API.Entities;
 using Microsoft.EntityFrameworkCore;
 
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 namespace API;
 
 public partial class OtrContext : DbContext
 {
 	private readonly IConfiguration _configuration;
-	public OtrContext() {}
 
 	public OtrContext(DbContextOptions<OtrContext> options, IConfiguration configuration)
 		: base(options)
@@ -28,9 +30,7 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<RatingAdjustment> RatingAdjustments { get; set; }
 	public virtual DbSet<Tournament> Tournaments { get; set; }
 	public virtual DbSet<User> Users { get; set; }
-
-	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => 
-		optionsBuilder.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
+	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
@@ -51,7 +51,7 @@ public partial class OtrContext : DbContext
 			entity.HasIndex(x => x.Rating).IsDescending();
 			entity.HasIndex(x => x.Mode);
 		});
-		
+
 		modelBuilder.Entity<Beatmap>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("beatmaps_pk");
@@ -88,7 +88,7 @@ public partial class OtrContext : DbContext
 			entity.HasMany(g => g.MatchScores)
 			      .WithOne(s => s.Game)
 			      .OnDelete(DeleteBehavior.Cascade);
-			
+
 			entity.HasOne(g => g.WinRecord)
 			      .WithOne(wr => wr.Game)
 			      .OnDelete(DeleteBehavior.Cascade)
@@ -99,7 +99,7 @@ public partial class OtrContext : DbContext
 			entity.HasIndex(x => x.MatchId);
 			entity.HasIndex(x => x.StartTime);
 		});
-		
+
 		modelBuilder.Entity<GameWinRecord>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("game_win_records_pk");
@@ -122,7 +122,7 @@ public partial class OtrContext : DbContext
 			entity.Property(e => e.Id).UseIdentityColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
-			
+
 			entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
 			entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedMatches).HasForeignKey(e => e.SubmitterUserId).IsRequired(false);
 			entity.HasOne(e => e.VerifiedBy).WithMany(u => u.VerifiedMatches).HasForeignKey(e => e.VerifierUserId).IsRequired(false);
@@ -137,7 +137,7 @@ public partial class OtrContext : DbContext
 		{
 			entity.HasKey(e => e.Id).HasName("match_rating_stats_pk");
 			entity.Property(e => e.Id).UseIdentityColumn();
-			
+
 			entity.HasOne(e => e.Player).WithMany(e => e.MatchRatingStats).HasForeignKey(e => e.PlayerId);
 			entity.HasOne(e => e.Match).WithMany(e => e.RatingStats).HasForeignKey(e => e.MatchId);
 		});
@@ -166,7 +166,7 @@ public partial class OtrContext : DbContext
 		{
 			entity.HasKey(e => e.Id).HasName("match_win_records_pk");
 			entity.Property(e => e.Id).UseIdentityColumn();
-			
+
 			entity.HasOne(e => e.Match)
 			      .WithOne(e => e.WinRecord)
 			      .HasForeignKey<MatchWinRecord>(e => e.MatchId)
@@ -196,7 +196,7 @@ public partial class OtrContext : DbContext
 		{
 			entity.HasKey(e => e.Id).HasName("PlayerMatchStats_pk");
 			entity.Property(e => e.Id).UseIdentityColumn();
-			
+
 			entity.HasOne(e => e.Player).WithMany(e => e.MatchStats).HasForeignKey(e => e.PlayerId);
 			entity.HasOne(e => e.Match).WithMany(e => e.Stats).HasForeignKey(e => e.MatchId);
 
@@ -204,12 +204,12 @@ public partial class OtrContext : DbContext
 			entity.HasIndex(e => new { e.PlayerId, e.MatchId }).IsUnique();
 			entity.HasIndex(e => new { e.PlayerId, e.Won });
 		});
-		
+
 		modelBuilder.Entity<RatingAdjustment>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("RatingAdjustment_pk");
 			entity.Property(e => e.Id).UseIdentityColumn();
-			
+
 			entity.HasOne(e => e.Player).WithMany(e => e.RatingAdjustments).HasForeignKey(e => e.PlayerId);
 
 			entity.HasIndex(e => new { e.PlayerId, e.Mode });
@@ -218,9 +218,9 @@ public partial class OtrContext : DbContext
 		modelBuilder.Entity<Tournament>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("Tournaments_pk");
-			
+
 			entity.Property(e => e.Id).UseIdentityAlwaysColumn();
-			
+
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
 			entity.HasMany(e => e.Matches)
@@ -228,7 +228,7 @@ public partial class OtrContext : DbContext
 			      .OnDelete(DeleteBehavior.Cascade)
 			      .HasConstraintName("Tournaments___fkmatchid")
 			      .IsRequired();
-			
+
 			entity.HasIndex(e => new { e.Name, e.Abbreviation }).IsUnique();
 		});
 

@@ -79,7 +79,7 @@ public class ApiMatchRepository : IApiMatchRepository
 		// Select all osu! user ids from the match's scores
 		var osuPlayerIds = GetUserIdsFromMatch(apiMatch);
 
-		if (!osuPlayerIds?.Any() ?? true)
+		if (osuPlayerIds == null || osuPlayerIds.Count == 0)
 		{
 			_logger.LogError("No players found in match {MatchId}", apiMatch.OsuApiMatch.MatchId);
 			return null;
