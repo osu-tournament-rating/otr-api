@@ -18,7 +18,6 @@ public partial class OtrContext : DbContext
 
 	public virtual DbSet<BaseStats> BaseStats { get; set; }
 	public virtual DbSet<Beatmap> Beatmaps { get; set; }
-	public virtual DbSet<Config> Configs { get; set; }
 	public virtual DbSet<Game> Games { get; set; }
 	public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
 	public virtual DbSet<Match> Matches { get; set; }
@@ -64,8 +63,6 @@ public partial class OtrContext : DbContext
 			      .OnDelete(DeleteBehavior.NoAction)
 			      .HasConstraintName("games_beatmaps_id_fk");
 		});
-
-		modelBuilder.Entity<Config>(entity => { entity.Property(e => e.Id).ValueGeneratedOnAdd(); });
 
 		modelBuilder.Entity<Game>(entity =>
 		{
