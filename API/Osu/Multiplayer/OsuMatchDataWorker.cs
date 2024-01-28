@@ -59,7 +59,7 @@ public class OsuMatchDataWorker : BackgroundService
 
 				if (apiMatch != null)
 				{
-					await ProcessMatchesOsuApiAsync(apiMatch, matchesService, apiMatchService, gamesRepository);
+					await ProcessMatchesOsuApiAsync(apiMatch, matchesService, apiMatchService);
 				}
 
 				if (autoCheckMatch != null)
@@ -164,7 +164,7 @@ public class OsuMatchDataWorker : BackgroundService
 		_logger.LogInformation("Match {Match} has completed automated checks", match.MatchId);
 	}
 
-	private async Task ProcessMatchesOsuApiAsync(Match match, IMatchesRepository matchesRepository, IApiMatchRepository apiMatchRepository, IGamesRepository gamesRepository)
+	private async Task ProcessMatchesOsuApiAsync(Match match, IMatchesRepository matchesRepository, IApiMatchRepository apiMatchRepository)
 	{
 		try
 		{

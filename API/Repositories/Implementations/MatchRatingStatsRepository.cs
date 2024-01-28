@@ -23,7 +23,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 		                                 x.Match.StartTime <= dateMax)
 		                     .Include(x => x.Match)
 		                     .ThenInclude(x => x.Tournament)
-		                     .GroupBy(x => x.Match.StartTime.Value.Date)
+		                     .GroupBy(x => x.Match.StartTime!.Value.Date)
 		                     .ToListAsync();
 	}
 
