@@ -1,8 +1,9 @@
+using API.Osu;
 using API.Repositories.Interfaces;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace API.Osu;
+namespace API.BackgroundWorkers;
 
 public class OsuTrackHistoryStats
 {

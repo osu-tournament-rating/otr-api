@@ -9,5 +9,5 @@ public class Credentials : ICredentials
 	}
 
 	public string ConnectionString { get; }
-	public string OsuApiKey { get; } = string.Empty;
+	public string OsuApiKey { get; }
 }

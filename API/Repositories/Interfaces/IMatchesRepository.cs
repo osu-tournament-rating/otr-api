@@ -30,4 +30,49 @@ public interface IMatchesRepository : IRepository<Match>
 	Task UpdateAsAutoChecked(Match match);
 	Task SetRequireAutoCheckAsync(bool invalidOnly = true);
 	Task<Dictionary<long, int>> GetIdMappingAsync();
+
+	/// <summary>
+	///  Marks all duplicate matches of the <see cref="matchRootId" /> as duplicates. All game and score data from all of the
+	///  matches
+	///  will be moved to reference the <see cref="root" /> match. All duplicate osu match ids will then
+	///  be stored as a <see cref="MatchDuplicateXRef" /> and deleted.
+	///  The root and the duplicates both must all have either a matching title, matching osu! id, or both.
+	/// </summary>
+	/// <param name="matchRootId">The id of the match that all duplicate data will be moved to</param>
+	/// <exception cref="InvalidOperationException">
+	///  Thrown if the matches are not from the same tournament or if any of the
+	///  matches have not been fully processed.
+	/// </exception>
+	/// <exception cref="InvalidDataException">
+	///  Thrown if any of the matches in <see cref="duplicates" /> are missing game or score data, or if
+	///  the start time of the root is not the earliest start time of both the root and all <see cref="duplicates" />, or if
+	///  the
+	///  duplicates fail to match the root's title or osu id.
+	/// </exception>
+	/// <returns></returns>
+	Task MergeDuplicatesAsync(int matchRootId);
+
+	/// <summary>
+	///  Marks all of the matches in the duplicates list as duplicates of the root.
+	///  This does NOT merge the duplicates, it simply marks them for manual review.
+	/// </summary>
+	/// <param name="root"></param>
+	/// <param name="duplicates"></param>
+	/// <returns></returns>
+	Task MarkSuspectedDuplicatesAsync(Match root, IEnumerable<Match> duplicates);
+
+	Task VerifyDuplicatesAsync(int matchRoot, int userId, bool confirmed);
+
+	/// <summary>
+	///  Returns all collections of duplicate matches present in the table.
+	///  Each collection represents a group of matches that are duplicates.
+	///  Use the <see cref="MergeDuplicatesAsync" /> method after identifying the
+	///  root match from the collection to merge the data.
+	///  Duplicates are any matches that have identical tournament ids AND either or both
+	///  of the following:
+	///  1. The MatchId properties are identical
+	///  2. The Name properties are identical
+	/// </summary>
+	/// <returns>A list of duplicate collections</returns>
+	Task<IEnumerable<IList<Match>>> GetDuplicateGroupsAsync();
 }

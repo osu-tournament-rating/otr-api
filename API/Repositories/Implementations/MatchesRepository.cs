@@ -12,14 +12,16 @@ namespace API.Repositories.Implementations;
 public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 {
 	private readonly OtrContext _context;
+	private readonly IMatchDuplicateXRefRepository _matchDuplicateXRefRepository;
 	private readonly ILogger<MatchesRepository> _logger;
 	private readonly IMapper _mapper;
 
-	public MatchesRepository(ILogger<MatchesRepository> logger, IMapper mapper, OtrContext context) : base(context)
+	public MatchesRepository(ILogger<MatchesRepository> logger, IMapper mapper, OtrContext context, IMatchDuplicateXRefRepository matchDuplicateXRefRepository) : base(context)
 	{
 		_logger = logger;
 		_mapper = mapper;
 		_context = context;
+		_matchDuplicateXRefRepository = matchDuplicateXRefRepository;
 	}
 
 	public override async Task<Match?> GetAsync(int id) =>
@@ -305,6 +307,158 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 	}
 
 	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _context.Matches.AsNoTracking().ToDictionaryAsync(x => x.MatchId, x => x.Id);
+
+	public async Task MergeDuplicatesAsync(int matchRootId)
+	{
+		var root = await GetAsync(matchRootId);
+
+		if (root == null)
+		{
+			throw new InvalidOperationException($"Failed to find corresponding match: {matchRootId}");
+		}
+
+		// TODO: Don't use .NET exception classes
+		if (root.IsApiProcessed != true)
+		{
+			throw new InvalidOperationException("All matches must be API processed.");
+		}
+
+		if (root.Games.Count == 0)
+		{
+			throw new InvalidDataException("Root does not contain any games.");
+		}
+
+		int totalScores = root.Games.Select(x => x.MatchScores.Count).Sum();
+		if (totalScores == 0)
+		{
+			throw new InvalidDataException("Root has no scores.");
+		}
+
+		var duplicateReferences = (await _matchDuplicateXRefRepository.GetDuplicatesAsync(matchRootId)).ToList();
+		if (!duplicateReferences.Any())
+		{
+			throw new InvalidOperationException("Match does not have any detected duplicates.");
+		}
+
+		var duplicateMatches = (await GetMatchesFromDuplicatesAsync(duplicateReferences)).ToList();
+
+		foreach (var duplicate in duplicateMatches)
+		{
+			if (root.TournamentId != duplicate.TournamentId)
+			{
+				throw new InvalidOperationException("Tournament ids must match");
+			}
+
+			if (duplicate.IsApiProcessed != true)
+			{
+				throw new InvalidOperationException("All matches must be API processed.");
+			}
+
+			bool satisfiesNameCheck = root.Name == duplicate.Name;
+			bool satisfiesOsuIdCheck = root.MatchId == duplicate.MatchId;
+			if (!satisfiesNameCheck && !satisfiesOsuIdCheck)
+			{
+				throw new InvalidDataException("Failed to satisfy preconditions. Either the name is a mismatch or the match id is a mismatch from the root.");
+			}
+		}
+
+		// The rootId will be used when reassigning game / score data.
+		int rootId = root.Id;
+		foreach (var duplicate in duplicateMatches)
+		{
+			// Reassign all of the games' matchid fields.
+			foreach (var game in duplicate.Games)
+			{
+				game.MatchId = rootId;
+				_context.Games.Update(game);
+			}
+
+			await _context.SaveChangesAsync();
+
+			await UpdateAsync(duplicate);
+
+			await DeleteAsync(duplicate.Id);
+		}
+	}
+
+	private async Task<IEnumerable<Match>> GetMatchesFromDuplicatesAsync(IEnumerable<MatchDuplicateXRef> duplicates)
+	{
+		var ls = new List<Match>();
+		foreach (var dupe in duplicates)
+		{
+			var match = await GetByMatchIdAsync(dupe.OsuMatchId);
+			if (match == null)
+			{
+				continue;
+			}
+
+			ls.Add(match);
+		}
+
+		return ls;
+	}
+
+	public async Task MarkSuspectedDuplicatesAsync(Match root, IEnumerable<Match> duplicates)
+	{
+		int rootId = root.Id;
+		foreach (var dupe in duplicates)
+		{
+			var duplicateXref = new MatchDuplicateXRef
+			{
+				OsuMatchId = dupe.MatchId,
+				SuspectedDuplicateOf = rootId
+			};
+
+			await _matchDuplicateXRefRepository.CreateAsync(duplicateXref);
+		}
+	}
+
+	public async Task VerifyDuplicatesAsync(int matchRoot, int userId, bool confirmed)
+	{
+		var duplicates = await _matchDuplicateXRefRepository.GetDuplicatesAsync(matchRoot);
+		foreach (var dupe in duplicates)
+		{
+			dupe.VerifiedBy = userId;
+			dupe.VerifiedAsDuplicate = confirmed;
+
+			await _matchDuplicateXRefRepository.UpdateAsync(dupe);
+		}
+	}
+
+	public async Task<IEnumerable<IList<Match>>> GetDuplicateGroupsAsync()
+	{
+		// Fetch groups by MatchId, excluding matches present in MatchDuplicates
+		var duplicatesById = (await _context.Matches
+		                                    .Where(m => !_context.MatchDuplicates.Any(md => md.OsuMatchId == m.MatchId))
+		                                    .GroupBy(m => new { m.TournamentId, m.MatchId })
+		                                    .ToListAsync())
+		                     .Select(g => new { Group = g, Count = g.Count() })
+		                     .Where(g => g.Count > 1)
+		                     .Select(g => g.Group.ToList()) // Convert each group to List<Match>
+		                     .ToList();
+
+		// Fetch groups by Name and start date, excluding matches present in MatchDuplicates
+		var groupedByNameAndDate = await _context.Matches
+		                                         .Where(m => m.Name != null && m.StartTime.HasValue && !_context.MatchDuplicates.Any(md => md.OsuMatchId == m.MatchId))
+		                                         .GroupBy(m => new
+		                                         {
+			                                         m.TournamentId, m.Name,
+			                                         m.StartTime!.Value.Date
+		                                         })
+		                                         .ToListAsync();
+
+		var duplicatesByName = groupedByNameAndDate
+		                       .Select(g => new
+		                       {
+			                       Group = g.Where(m1 => g.Any(m2 => m1 != m2 && Math.Abs((m2.StartTime - m1.StartTime)!.Value.TotalHours) <= 2)).ToList(),
+			                       Count = g.Count()
+		                       })
+		                       .Where(g => g.Group.Count > 1)
+		                       .Select(x => x.Group)
+		                       .ToList();
+
+		return duplicatesById.Concat(duplicatesByName);
+	}
 
 	private bool IsValidModCombination(OsuEnums.Mods modCombination)
 	{

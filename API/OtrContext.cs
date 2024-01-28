@@ -21,6 +21,7 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<Game> Games { get; set; }
 	public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
 	public virtual DbSet<Match> Matches { get; set; }
+	public virtual DbSet<MatchDuplicateXRef> MatchDuplicates { get; set; }
 	public virtual DbSet<MatchRatingStats> MatchRatingStats { get; set; }
 	public virtual DbSet<MatchScore> MatchScores { get; set; }
 	public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
@@ -128,6 +129,17 @@ public partial class OtrContext : DbContext
 			entity.HasMany(e => e.Stats).WithOne(s => s.Match).HasForeignKey(e => e.MatchId).IsRequired().OnDelete(DeleteBehavior.Cascade);
 
 			entity.HasIndex(x => x.MatchId);
+		});
+
+		modelBuilder.Entity<MatchDuplicateXRef>(entity =>
+		{
+			entity.HasKey(e => e.Id).HasName("match_duplicate_xref_pk");
+			entity.Property(e => e.Id).UseIdentityColumn();
+
+			entity.HasIndex(e => e.SuspectedDuplicateOf);
+			entity.HasIndex(e => e.OsuMatchId);
+
+			entity.HasOne(e => e.Verifier).WithMany(e => e.VerifiedDuplicates).HasForeignKey(e => e.VerifiedBy).IsRequired(false);
 		});
 
 		modelBuilder.Entity<MatchRatingStats>(entity =>
@@ -242,6 +254,8 @@ public partial class OtrContext : DbContext
 			      .OnDelete(DeleteBehavior.NoAction)
 			      .HasConstraintName("Users___fkplayerid")
 			      .IsRequired(false);
+
+			entity.HasMany(e => e.VerifiedDuplicates).WithOne(e => e.Verifier).HasForeignKey(e => e.VerifiedBy).IsRequired(false);
 		});
 
 		OnModelCreatingPartial(modelBuilder);

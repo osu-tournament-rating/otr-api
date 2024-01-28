@@ -1,7 +1,8 @@
+using API.Osu;
 using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
 
-namespace API.Osu;
+namespace API.BackgroundWorkers;
 
 public class OsuPlayerDataWorker : BackgroundService
 {

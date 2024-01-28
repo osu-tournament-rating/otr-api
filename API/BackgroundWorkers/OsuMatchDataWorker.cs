@@ -1,9 +1,10 @@
 using API.Entities;
 using API.Enums;
 using API.Osu.AutomationChecks;
+using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
 
-namespace API.Osu.Multiplayer;
+namespace API.BackgroundWorkers;
 
 public class OsuMatchDataWorker : BackgroundService
 {

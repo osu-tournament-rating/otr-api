@@ -123,6 +123,29 @@ public class MatchesController : Controller
 		return Ok(matches);
 	}
 
+	[HttpGet("duplicates")]
+	[EndpointSummary("Retreives all known duplicate groups")]
+	public async Task<IActionResult> GetDuplicatesAsync() => Ok(await _matchesService.GetAllDuplicatesAsync());
+
+	[HttpPost("duplicate")]
+	[EndpointSummary("Mark a list of matches as duplicates of the root")]
+	public async Task<IActionResult> MarkDuplicatesAsync([FromQuery] int rootId, [FromQuery] bool confirmedDuplicate)
+	{
+		int? loggedInUser = HttpContext.AuthorizedUserIdentity();
+		if (!loggedInUser.HasValue)
+		{
+			return Unauthorized("You must be logged in to perform this action.");
+		}
+
+		if (!HttpContext.User.IsAdmin())
+		{
+			return Unauthorized("You lack permissions to perform this action.");
+		}
+
+		await _matchesService.VerifyDuplicatesAsync(loggedInUser.Value, rootId, confirmedDuplicate);
+		return Ok();
+	}
+
 	// [HttpGet("{osuMatchId:long}")]
 	// [Authorize(Roles = "Admin, System")]
 	// public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
