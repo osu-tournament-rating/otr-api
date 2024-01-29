@@ -86,7 +86,7 @@ namespace API.Migrations
                     b.HasIndex("PlayerId", "Mode")
                         .IsUnique();
 
-                    b.ToTable("base_stats", (string)null);
+                    b.ToTable("base_stats");
                 });
 
             modelBuilder.Entity("API.Entities.Beatmap", b =>
@@ -201,7 +201,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "BeatmapId" }, "beatmaps_beatmapid")
                         .IsUnique();
 
-                    b.ToTable("beatmaps", (string)null);
+                    b.ToTable("beatmaps");
                 });
 
             modelBuilder.Entity("API.Entities.Game", b =>
@@ -285,7 +285,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "GameId" }, "osugames_gameid")
                         .IsUnique();
 
-                    b.ToTable("games", (string)null);
+                    b.ToTable("games");
                 });
 
             modelBuilder.Entity("API.Entities.GameWinRecord", b =>
@@ -327,7 +327,7 @@ namespace API.Migrations
 
                     b.HasIndex("Winners");
 
-                    b.ToTable("game_win_records", (string)null);
+                    b.ToTable("game_win_records");
                 });
 
             modelBuilder.Entity("API.Entities.Match", b =>
@@ -414,7 +414,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "MatchId" }, "osumatches_matchid")
                         .IsUnique();
 
-                    b.ToTable("matches", (string)null);
+                    b.ToTable("matches");
                 });
 
             modelBuilder.Entity("API.Entities.MatchDuplicateXRef", b =>
@@ -425,6 +425,10 @@ namespace API.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("MatchId")
+                        .HasColumnType("integer")
+                        .HasColumnName("matchId");
 
                     b.Property<long>("OsuMatchId")
                         .HasColumnType("bigint")
@@ -451,7 +455,7 @@ namespace API.Migrations
 
                     b.HasIndex("VerifiedBy");
 
-                    b.ToTable("match_duplicates", (string)null);
+                    b.ToTable("match_duplicates");
                 });
 
             modelBuilder.Entity("API.Entities.MatchRatingStats", b =>
@@ -550,7 +554,7 @@ namespace API.Migrations
 
                     b.HasIndex("PlayerId");
 
-                    b.ToTable("match_rating_stats", (string)null);
+                    b.ToTable("match_rating_stats");
                 });
 
             modelBuilder.Entity("API.Entities.MatchScore", b =>
@@ -632,7 +636,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "GameId", "PlayerId" }, "match_scores_gameid_playerid")
                         .IsUnique();
 
-                    b.ToTable("match_scores", (string)null);
+                    b.ToTable("match_scores");
                 });
 
             modelBuilder.Entity("API.Entities.MatchWinRecord", b =>
@@ -688,7 +692,7 @@ namespace API.Migrations
 
                     b.HasIndex("TeamRed");
 
-                    b.ToTable("match_win_records", (string)null);
+                    b.ToTable("match_win_records");
                 });
 
             modelBuilder.Entity("API.Entities.Player", b =>
@@ -781,7 +785,7 @@ namespace API.Migrations
                     b.HasIndex(new[] { "OsuId" }, "Players_osuid")
                         .IsUnique();
 
-                    b.ToTable("players", (string)null);
+                    b.ToTable("players");
                 });
 
             modelBuilder.Entity("API.Entities.PlayerMatchStats", b =>
@@ -855,7 +859,7 @@ namespace API.Migrations
 
                     b.HasIndex("PlayerId", "Won");
 
-                    b.ToTable("player_match_stats", (string)null);
+                    b.ToTable("player_match_stats");
                 });
 
             modelBuilder.Entity("API.Entities.RatingAdjustment", b =>
@@ -912,7 +916,7 @@ namespace API.Migrations
 
                     b.HasIndex("PlayerId", "Mode");
 
-                    b.ToTable("rating_adjustments", (string)null);
+                    b.ToTable("rating_adjustments");
                 });
 
             modelBuilder.Entity("API.Entities.Tournament", b =>
@@ -970,7 +974,7 @@ namespace API.Migrations
                     b.HasIndex("Name", "Abbreviation")
                         .IsUnique();
 
-                    b.ToTable("tournaments", (string)null);
+                    b.ToTable("tournaments");
                 });
 
             modelBuilder.Entity("API.Entities.User", b =>
@@ -1011,7 +1015,7 @@ namespace API.Migrations
                     b.HasIndex("PlayerId")
                         .IsUnique();
 
-                    b.ToTable("users", (string)null);
+                    b.ToTable("users");
                 });
 
             modelBuilder.Entity("API.Entities.BaseStats", b =>

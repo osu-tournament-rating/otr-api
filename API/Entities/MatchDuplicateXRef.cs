@@ -20,6 +20,11 @@ public class MatchDuplicateXRef
 	[Column("id")]
 	public int Id { get; set; }
 	/// <summary>
+	///  The matchid of the duplicate
+	/// </summary>
+	[Column("matchId")]
+	public int? MatchId { get; set; }
+	/// <summary>
 	///  The matchid we may believe this match is a duplicate of
 	/// </summary>
 	[Column("suspected_duplicate_of")]

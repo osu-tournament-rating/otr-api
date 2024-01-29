@@ -99,18 +99,18 @@ public class MatchesService : IMatchesService
 		var duplicateGroups = (await _duplicateXRefRepository.GetAllAsync()).GroupBy(x => x.SuspectedDuplicateOf);
 		foreach (var dupeGroup in duplicateGroups)
 		{
-			var root = await GetAsync(dupeGroup.First().SuspectedDuplicateOf);
+			var root = await GetAsync(dupeGroup.First().SuspectedDuplicateOf, false);
 			var collection = new MatchDuplicateCollectionDTO
 			{
-				IdRoot = root.Id,
-				MatchTitleRoot = root.Name ?? string.Empty,
-				OsuMatchIdRoot = root.MatchId,
+				Id = root.Id,
+				Name = root.Name ?? string.Empty,
+				OsuMatchId = root.MatchId,
 				SuspectedDuplicates = new List<MatchDuplicateDTO>()
 			};
 
 			foreach (var item in dupeGroup)
 			{
-				if (root == null)
+				if (root == null || item.MatchId == root.Id)
 				{
 					continue;
 				}
@@ -123,7 +123,7 @@ public class MatchesService : IMatchesService
 
 				collection.SuspectedDuplicates.Add(new MatchDuplicateDTO
 				{
-					MatchTitle = duplicateMatchData.Name ?? string.Empty,
+					Name = duplicateMatchData.Name ?? string.Empty,
 					OsuMatchId = duplicateMatchData.MatchId,
 					VerifiedByUsername = item.Verifier?.Player.Username,
 					VerifiedAsDuplicate = item.VerifiedAsDuplicate,

@@ -39,10 +39,13 @@ public class MatchDuplicateDataWorker : BackgroundService
 				foreach (var duplicateGroup in duplicateGroups)
 				{
 					var root = duplicateGroup.OrderBy(x => x.StartTime).First();
+					duplicateGroup.Remove(root);
+
 					foreach (var remainingDuplicate in duplicateGroup)
 					{
 						var duplicate = new MatchDuplicateXRef
 						{
+							MatchId = remainingDuplicate.Id,
 							OsuMatchId = remainingDuplicate.MatchId,
 							SuspectedDuplicateOf = root.Id
 						};
