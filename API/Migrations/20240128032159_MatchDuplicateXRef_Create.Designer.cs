@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240128032159_MatchDuplicateXRef_Create")]
+    partial class MatchDuplicateXRef_Create
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -417,7 +420,7 @@ namespace API.Migrations
                     b.ToTable("matches");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchDuplicate", b =>
+            modelBuilder.Entity("API.Entities.MatchDuplicateXRef", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -426,36 +429,22 @@ namespace API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("MatchId")
+                    b.Property<int>("MatchId")
                         .HasColumnType("integer")
-                        .HasColumnName("matchId");
+                        .HasColumnName("match_id");
 
                     b.Property<long>("OsuMatchId")
                         .HasColumnType("bigint")
                         .HasColumnName("osu_match_id");
 
-                    b.Property<int>("SuspectedDuplicateOf")
-                        .HasColumnType("integer")
-                        .HasColumnName("suspected_duplicate_of");
-
-                    b.Property<bool?>("VerifiedAsDuplicate")
-                        .HasColumnType("boolean")
-                        .HasColumnName("verified_duplicate");
-
-                    b.Property<int?>("VerifiedBy")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_by");
-
                     b.HasKey("Id")
                         .HasName("match_duplicate_xref_pk");
 
+                    b.HasIndex("MatchId");
+
                     b.HasIndex("OsuMatchId");
 
-                    b.HasIndex("SuspectedDuplicateOf");
-
-                    b.HasIndex("VerifiedBy");
-
-                    b.ToTable("match_duplicates");
+                    b.ToTable("match_duplicate_xref");
                 });
 
             modelBuilder.Entity("API.Entities.MatchRatingStats", b =>
@@ -1086,13 +1075,14 @@ namespace API.Migrations
                     b.Navigation("VerifiedBy");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchDuplicate", b =>
+            modelBuilder.Entity("API.Entities.MatchDuplicateXRef", b =>
                 {
-                    b.HasOne("API.Entities.User", "Verifier")
-                        .WithMany("VerifiedDuplicates")
-                        .HasForeignKey("VerifiedBy");
+                    b.HasOne("API.Entities.Match", "Match")
+                        .WithMany("Duplicates")
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Verifier");
+                    b.Navigation("Match");
                 });
 
             modelBuilder.Entity("API.Entities.MatchRatingStats", b =>
@@ -1203,6 +1193,8 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.Match", b =>
                 {
+                    b.Navigation("Duplicates");
+
                     b.Navigation("Games");
 
                     b.Navigation("RatingStats");
@@ -1236,8 +1228,6 @@ namespace API.Migrations
             modelBuilder.Entity("API.Entities.User", b =>
                 {
                     b.Navigation("SubmittedMatches");
-
-                    b.Navigation("VerifiedDuplicates");
 
                     b.Navigation("VerifiedMatches");
                 });

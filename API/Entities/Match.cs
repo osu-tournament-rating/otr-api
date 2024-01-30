@@ -12,6 +12,9 @@ public class Match
 	[Key]
 	[Column("id")]
 	public int Id { get; set; }
+	/// <summary>
+	///  The osu! match id
+	/// </summary>
 	[Column("match_id")]
 	public long MatchId { get; set; }
 	[Column("name")]

@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240129001301_MatchDuplicatesId")]
+    partial class MatchDuplicatesId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -417,7 +420,7 @@ namespace API.Migrations
                     b.ToTable("matches");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchDuplicate", b =>
+            modelBuilder.Entity("API.Entities.MatchDuplicateXRef", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1086,7 +1089,7 @@ namespace API.Migrations
                     b.Navigation("VerifiedBy");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchDuplicate", b =>
+            modelBuilder.Entity("API.Entities.MatchDuplicateXRef", b =>
                 {
                     b.HasOne("API.Entities.User", "Verifier")
                         .WithMany("VerifiedDuplicates")

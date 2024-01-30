@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240128232545_DuplicateEdits")]
+    partial class DuplicateEdits
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -417,7 +420,7 @@ namespace API.Migrations
                     b.ToTable("matches");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchDuplicate", b =>
+            modelBuilder.Entity("API.Entities.MatchDuplicateXRef", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -425,10 +428,6 @@ namespace API.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("MatchId")
-                        .HasColumnType("integer")
-                        .HasColumnName("matchId");
 
                     b.Property<long>("OsuMatchId")
                         .HasColumnType("bigint")
@@ -446,6 +445,9 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("verified_by");
 
+                    b.Property<int?>("VerifierId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id")
                         .HasName("match_duplicate_xref_pk");
 
@@ -453,7 +455,7 @@ namespace API.Migrations
 
                     b.HasIndex("SuspectedDuplicateOf");
 
-                    b.HasIndex("VerifiedBy");
+                    b.HasIndex("VerifierId");
 
                     b.ToTable("match_duplicates");
                 });
@@ -1086,11 +1088,11 @@ namespace API.Migrations
                     b.Navigation("VerifiedBy");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchDuplicate", b =>
+            modelBuilder.Entity("API.Entities.MatchDuplicateXRef", b =>
                 {
                     b.HasOne("API.Entities.User", "Verifier")
-                        .WithMany("VerifiedDuplicates")
-                        .HasForeignKey("VerifiedBy");
+                        .WithMany()
+                        .HasForeignKey("VerifierId");
 
                     b.Navigation("Verifier");
                 });
@@ -1236,8 +1238,6 @@ namespace API.Migrations
             modelBuilder.Entity("API.Entities.User", b =>
                 {
                     b.Navigation("SubmittedMatches");
-
-                    b.Navigation("VerifiedDuplicates");
 
                     b.Navigation("VerifiedMatches");
                 });

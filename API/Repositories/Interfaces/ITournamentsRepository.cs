@@ -26,6 +26,5 @@ public interface ITournamentsRepository : IRepository<Tournament>
 	Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(int count, int playerId, int mode, DateTime dateMin,
 		DateTime dateMax, bool bestPerformances);
 
-	Task<IEnumerable<Tournament>> GetAllAsync();
 	Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
 }

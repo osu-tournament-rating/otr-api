@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240128233843_VerifiedDuplicatesRelationship")]
+    partial class VerifiedDuplicatesRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -417,18 +420,13 @@ namespace API.Migrations
                     b.ToTable("matches");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchDuplicate", b =>
+            modelBuilder.Entity("API.Entities.MatchDuplicateXRef", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("MatchId")
-                        .HasColumnType("integer")
-                        .HasColumnName("matchId");
 
                     b.Property<long>("OsuMatchId")
                         .HasColumnType("bigint")
@@ -452,8 +450,6 @@ namespace API.Migrations
                     b.HasIndex("OsuMatchId");
 
                     b.HasIndex("SuspectedDuplicateOf");
-
-                    b.HasIndex("VerifiedBy");
 
                     b.ToTable("match_duplicates");
                 });
@@ -1086,11 +1082,13 @@ namespace API.Migrations
                     b.Navigation("VerifiedBy");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchDuplicate", b =>
+            modelBuilder.Entity("API.Entities.MatchDuplicateXRef", b =>
                 {
                     b.HasOne("API.Entities.User", "Verifier")
                         .WithMany("VerifiedDuplicates")
-                        .HasForeignKey("VerifiedBy");
+                        .HasForeignKey("Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Verifier");
                 });
