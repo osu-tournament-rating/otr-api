@@ -12,16 +12,16 @@ namespace API.Repositories.Implementations;
 public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 {
 	private readonly OtrContext _context;
-	private readonly IMatchDuplicateXRefRepository _matchDuplicateXRefRepository;
+	private readonly IMatchDuplicateRepository _matchDuplicateRepository;
 	private readonly ILogger<MatchesRepository> _logger;
 	private readonly IMapper _mapper;
 
-	public MatchesRepository(ILogger<MatchesRepository> logger, IMapper mapper, OtrContext context, IMatchDuplicateXRefRepository matchDuplicateXRefRepository) : base(context)
+	public MatchesRepository(ILogger<MatchesRepository> logger, IMapper mapper, OtrContext context, IMatchDuplicateRepository matchDuplicateRepository) : base(context)
 	{
 		_logger = logger;
 		_mapper = mapper;
 		_context = context;
-		_matchDuplicateXRefRepository = matchDuplicateXRefRepository;
+		_matchDuplicateRepository = matchDuplicateRepository;
 	}
 
 	public override async Task<Match?> GetAsync(int id) =>
@@ -317,27 +317,26 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 			throw new InvalidOperationException($"Failed to find corresponding match: {matchRootId}");
 		}
 
-		// TODO: Don't use .NET exception classes
 		if (root.IsApiProcessed != true)
 		{
-			throw new InvalidOperationException("All matches must be API processed.");
+			throw new Exception("All matches must be API processed.");
 		}
 
 		if (root.Games.Count == 0)
 		{
-			throw new InvalidDataException("Root does not contain any games.");
+			throw new Exception("Root does not contain any games.");
 		}
 
 		int totalScores = root.Games.Select(x => x.MatchScores.Count).Sum();
 		if (totalScores == 0)
 		{
-			throw new InvalidDataException("Root has no scores.");
+			throw new Exception("Root has no scores.");
 		}
 
-		var duplicateReferences = (await _matchDuplicateXRefRepository.GetDuplicatesAsync(matchRootId)).ToList();
+		var duplicateReferences = (await _matchDuplicateRepository.GetDuplicatesAsync(matchRootId)).ToList();
 		if (!duplicateReferences.Any())
 		{
-			throw new InvalidOperationException("Match does not have any detected duplicates.");
+			throw new Exception("Match does not have any detected duplicates.");
 		}
 
 		var duplicateMatches = (await GetMatchesFromDuplicatesAsync(duplicateReferences)).ToList();
@@ -346,19 +345,19 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		{
 			if (root.TournamentId != duplicate.TournamentId)
 			{
-				throw new InvalidOperationException("Tournament ids must match");
+				throw new Exception("Tournament ids must match");
 			}
 
 			if (duplicate.IsApiProcessed != true)
 			{
-				throw new InvalidOperationException("All matches must be API processed.");
+				throw new Exception("All matches must be API processed.");
 			}
 
 			bool satisfiesNameCheck = root.Name == duplicate.Name;
 			bool satisfiesOsuIdCheck = root.MatchId == duplicate.MatchId;
 			if (!satisfiesNameCheck && !satisfiesOsuIdCheck)
 			{
-				throw new InvalidDataException("Failed to satisfy preconditions. Either the name is a mismatch or the match id is a mismatch from the root.");
+				throw new Exception("Failed to satisfy preconditions. Either the name is a mismatch or the match id is a mismatch from the root.");
 			}
 		}
 
@@ -375,6 +374,10 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
 			await _context.SaveChangesAsync();
 
+			// Delete the match.
+			// We don't delete the duplicate item entry because we
+			// want to preserve the merged match links. This gives us
+			// the ability to say "this match X was merged from Y, Z, etc."
 			await DeleteAsync(duplicate.Id);
 
 			_logger.LogInformation("Updated {GamesCount} games in duplicate match {DuplicateId} to point to new root parent match {RootId}",
@@ -410,27 +413,28 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 				SuspectedDuplicateOf = rootId
 			};
 
-			await _matchDuplicateXRefRepository.CreateAsync(duplicateXref);
+			await _matchDuplicateRepository.CreateAsync(duplicateXref);
 		}
 	}
 
 	public async Task VerifyDuplicatesAsync(int matchRoot, int userId, bool confirmed)
 	{
-		var duplicates = await _matchDuplicateXRefRepository.GetDuplicatesAsync(matchRoot);
+		var duplicates = await _matchDuplicateRepository.GetDuplicatesAsync(matchRoot);
 		foreach (var dupe in duplicates)
 		{
 			dupe.VerifiedBy = userId;
 			dupe.VerifiedAsDuplicate = confirmed;
 
-			await _matchDuplicateXRefRepository.UpdateAsync(dupe);
+			await _matchDuplicateRepository.UpdateAsync(dupe);
 		}
 	}
 
 	public async Task<IEnumerable<IList<Match>>> GetDuplicateGroupsAsync()
 	{
-		// Fetch groups by MatchId, excluding matches present in MatchDuplicates
+		// Fetch groups by MatchId, excluding matches present in MatchDuplicates and confirmed duplicates
 		var duplicatesById = (await _context.Matches
 		                                    .Where(m => !_context.MatchDuplicates.Any(md => md.OsuMatchId == m.MatchId))
+		                                    .Where(m => !_context.MatchDuplicates.Any(md => md.VerifiedAsDuplicate == true))
 		                                    .GroupBy(m => new { m.TournamentId, m.MatchId })
 		                                    .ToListAsync())
 		                     .Select(g => new { Group = g, Count = g.Count() })

@@ -131,17 +131,16 @@ public class MatchesController : Controller
 	[EndpointSummary("Mark a list of matches as duplicates of the root")]
 	public async Task<IActionResult> MarkDuplicatesAsync([FromQuery] int rootId, [FromQuery] bool confirmedDuplicate)
 	{
-		// int? loggedInUser = HttpContext.AuthorizedUserIdentity();
-		// if (!loggedInUser.HasValue)
-		// {
-		// 	return Unauthorized("You must be logged in to perform this action.");
-		// }
-		//
-		// if (!HttpContext.User.IsAdmin())
-		// {
-		// 	return Unauthorized("You lack permissions to perform this action.");
-		// }
-		int? loggedInUser = 21;
+		int? loggedInUser = HttpContext.AuthorizedUserIdentity();
+		if (!loggedInUser.HasValue)
+		{
+			return Unauthorized("You must be logged in to perform this action.");
+		}
+
+		if (!HttpContext.User.IsAdmin())
+		{
+			return Unauthorized("You lack permissions to perform this action.");
+		}
 
 		await _matchesService.VerifyDuplicatesAsync(loggedInUser.Value, rootId, confirmedDuplicate);
 		return Ok();

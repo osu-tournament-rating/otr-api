@@ -1,3 +1,5 @@
+// ReSharper disable CollectionNeverQueried.Global
+
 namespace API.DTOs;
 
 public class MatchDuplicateDTO

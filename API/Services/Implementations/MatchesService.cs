@@ -12,16 +12,16 @@ public class MatchesService : IMatchesService
 	private readonly ILogger<MatchesService> _logger;
 	private readonly IMatchesRepository _matchesRepository;
 	private readonly ITournamentsRepository _tournamentsRepository;
-	private readonly IMatchDuplicateXRefRepository _duplicateXRefRepository;
+	private readonly IMatchDuplicateRepository _duplicateRepository;
 	private readonly IMapper _mapper;
 
 	public MatchesService(ILogger<MatchesService> logger, IMatchesRepository matchesRepository,
-		ITournamentsRepository tournamentsRepository, IMatchDuplicateXRefRepository duplicateXRefRepository, IMapper mapper)
+		ITournamentsRepository tournamentsRepository, IMatchDuplicateRepository duplicateRepository, IMapper mapper)
 	{
 		_logger = logger;
 		_matchesRepository = matchesRepository;
 		_tournamentsRepository = tournamentsRepository;
-		_duplicateXRefRepository = duplicateXRefRepository;
+		_duplicateRepository = duplicateRepository;
 		_mapper = mapper;
 	}
 
@@ -96,10 +96,16 @@ public class MatchesService : IMatchesService
 	public async Task<IEnumerable<MatchDuplicateCollectionDTO>> GetAllDuplicatesAsync()
 	{
 		var collections = new List<MatchDuplicateCollectionDTO>();
-		var duplicateGroups = (await _duplicateXRefRepository.GetAllAsync()).GroupBy(x => x.SuspectedDuplicateOf);
+		var duplicateGroups = (await _duplicateRepository.GetAllUnknownStatusAsync()).GroupBy(x => x.SuspectedDuplicateOf);
 		foreach (var dupeGroup in duplicateGroups)
 		{
 			var root = await GetAsync(dupeGroup.First().SuspectedDuplicateOf, false);
+
+			if (root == null)
+			{
+				throw new Exception("Failed to find root from lookup.");
+			}
+
 			var collection = new MatchDuplicateCollectionDTO
 			{
 				Id = root.Id,

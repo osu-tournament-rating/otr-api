@@ -39,11 +39,9 @@ public interface IMatchesRepository : IRepository<Match>
 	///  The root and the duplicates both must all have either a matching title, matching osu! id, or both.
 	/// </summary>
 	/// <param name="matchRootId">The id of the match that all duplicate data will be moved to</param>
-	/// <exception cref="InvalidOperationException">
+	/// <exception cref="Exception">
 	///  Thrown if the matches are not from the same tournament or if any of the
 	///  matches have not been fully processed.
-	/// </exception>
-	/// <exception cref="InvalidDataException">
 	///  Thrown if any of the matches in <see cref="duplicates" /> are missing game or score data, or if
 	///  the start time of the root is not the earliest start time of both the root and all <see cref="duplicates" />, or if
 	///  the
