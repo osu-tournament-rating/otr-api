@@ -2,7 +2,7 @@ using API.Entities;
 
 namespace API.Repositories.Interfaces;
 
-public interface IMatchDuplicateXRefRepository : IRepository<MatchDuplicateXRef>
+public interface IMatchDuplicateXRefRepository : IRepository<MatchDuplicate>
 {
-	Task<IEnumerable<MatchDuplicateXRef>> GetDuplicatesAsync(int matchId);
+	Task<IEnumerable<MatchDuplicate>> GetDuplicatesAsync(int matchId);
 }

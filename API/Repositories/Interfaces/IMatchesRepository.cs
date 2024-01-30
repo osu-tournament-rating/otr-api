@@ -35,7 +35,7 @@ public interface IMatchesRepository : IRepository<Match>
 	///  Marks all duplicate matches of the <see cref="matchRootId" /> as duplicates. All game and score data from all of the
 	///  matches
 	///  will be moved to reference the <see cref="root" /> match. All duplicate osu match ids will then
-	///  be stored as a <see cref="MatchDuplicateXRef" /> and deleted.
+	///  be stored as a <see cref="MatchDuplicate" /> and deleted.
 	///  The root and the duplicates both must all have either a matching title, matching osu! id, or both.
 	/// </summary>
 	/// <param name="matchRootId">The id of the match that all duplicate data will be moved to</param>

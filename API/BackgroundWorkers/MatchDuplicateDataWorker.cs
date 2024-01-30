@@ -43,7 +43,7 @@ public class MatchDuplicateDataWorker : BackgroundService
 
 					foreach (var remainingDuplicate in duplicateGroup)
 					{
-						var duplicate = new MatchDuplicateXRef
+						var duplicate = new MatchDuplicate
 						{
 							MatchId = remainingDuplicate.Id,
 							OsuMatchId = remainingDuplicate.MatchId,

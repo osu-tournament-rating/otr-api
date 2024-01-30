@@ -15,7 +15,7 @@ namespace API.Entities;
 ///  will be tied to one match id (id => o!TR match id).
 /// </summary>
 [Table("match_duplicates")]
-public class MatchDuplicateXRef
+public class MatchDuplicate
 {
 	[Column("id")]
 	public int Id { get; set; }

@@ -29,5 +29,5 @@ public class User
 	// Assuming the user has permission to verify, the matches they do verify will be here
 	public virtual ICollection<Match>? VerifiedMatches { get; set; }
 	[InverseProperty("Verifier")]
-	public virtual ICollection<MatchDuplicateXRef>? VerifiedDuplicates { get; set; }
+	public virtual ICollection<MatchDuplicate>? VerifiedDuplicates { get; set; }
 }

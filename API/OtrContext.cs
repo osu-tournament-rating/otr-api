@@ -21,7 +21,7 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<Game> Games { get; set; }
 	public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
 	public virtual DbSet<Match> Matches { get; set; }
-	public virtual DbSet<MatchDuplicateXRef> MatchDuplicates { get; set; }
+	public virtual DbSet<MatchDuplicate> MatchDuplicates { get; set; }
 	public virtual DbSet<MatchRatingStats> MatchRatingStats { get; set; }
 	public virtual DbSet<MatchScore> MatchScores { get; set; }
 	public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
@@ -131,7 +131,7 @@ public partial class OtrContext : DbContext
 			entity.HasIndex(x => x.MatchId);
 		});
 
-		modelBuilder.Entity<MatchDuplicateXRef>(entity =>
+		modelBuilder.Entity<MatchDuplicate>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("match_duplicate_xref_pk");
 			entity.Property(e => e.Id).UseIdentityColumn();

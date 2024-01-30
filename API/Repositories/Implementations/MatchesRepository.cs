@@ -375,13 +375,14 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
 			await _context.SaveChangesAsync();
 
-			await UpdateAsync(duplicate);
-
 			await DeleteAsync(duplicate.Id);
+
+			_logger.LogInformation("Updated {GamesCount} games in duplicate match {DuplicateId} to point to new root parent match {RootId}",
+				duplicate.Games.Count, duplicate.Id, rootId);
 		}
 	}
 
-	private async Task<IEnumerable<Match>> GetMatchesFromDuplicatesAsync(IEnumerable<MatchDuplicateXRef> duplicates)
+	private async Task<IEnumerable<Match>> GetMatchesFromDuplicatesAsync(IEnumerable<MatchDuplicate> duplicates)
 	{
 		var ls = new List<Match>();
 		foreach (var dupe in duplicates)
@@ -403,7 +404,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		int rootId = root.Id;
 		foreach (var dupe in duplicates)
 		{
-			var duplicateXref = new MatchDuplicateXRef
+			var duplicateXref = new MatchDuplicate
 			{
 				OsuMatchId = dupe.MatchId,
 				SuspectedDuplicateOf = rootId
