@@ -16,7 +16,6 @@ public interface IBaseStatsRepository : IRepository<BaseStats>
 	Task<BaseStats?> GetForPlayerAsync(int playerId, int mode);
 	Task<int> InsertOrUpdateForPlayerAsync(int playerId, BaseStats baseStats);
 	Task<int> BatchInsertAsync(IEnumerable<BaseStats> baseStats);
-	Task<IEnumerable<BaseStats>> GetAllAsync();
 	Task TruncateAsync();
 	Task<int> GetGlobalRankAsync(long osuPlayerId, int mode);
 

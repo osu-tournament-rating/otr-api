@@ -12,16 +12,7 @@ namespace API.Repositories.Implementations;
 public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRepository
 {
 	private readonly OtrContext _context;
-	private readonly ILogger<TournamentsRepository> _logger;
-	private readonly IMatchesRepository _matchesRepository;
-
-	public TournamentsRepository(ILogger<TournamentsRepository> logger, OtrContext context, IMatchesRepository matchesRepository) : base(context)
-	{
-		_logger = logger;
-		_context = context;
-		_matchesRepository = matchesRepository;
-	}
-
+	public TournamentsRepository(OtrContext context) : base(context) { _context = context; }
 	public async Task<Tournament?> GetAsync(string name) => await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
 	public async Task<bool> ExistsAsync(string name, int mode) => await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
 
@@ -170,16 +161,5 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		}
 
 		return result;
-	}
-
-	private Match LinkTournamentToMatch(Tournament t, Match m)
-	{
-		if (t.Id == 0)
-		{
-			throw new ArgumentException("Tournament must be saved to the database before it can be linked to a match.");
-		}
-
-		m.TournamentId = t.Id;
-		return m;
 	}
 }
