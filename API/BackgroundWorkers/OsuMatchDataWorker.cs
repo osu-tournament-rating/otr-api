@@ -33,7 +33,7 @@ public class OsuMatchDataWorker : BackgroundService
 	{
 		if (!_allowDataFetching)
 		{
-			_logger.LogWarning("osu! match data worker is disabled");
+			_logger.LogInformation("Skipping osu! match data worker due to configuration");
 			return;
 		}
 

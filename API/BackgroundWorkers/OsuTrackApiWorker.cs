@@ -16,15 +16,27 @@ public class OsuTrackApiWorker : BackgroundService
 	private readonly IServiceProvider _serviceProvider;
 	private DateTime _ratelimitReset = DateTime.UtcNow;
 	private int _ratelimitTracker;
+	private readonly bool _allowDataFetching;
 	private readonly OsuEnums.Mode[] _modes = [OsuEnums.Mode.Standard, OsuEnums.Mode.Taiko, OsuEnums.Mode.Catch, OsuEnums.Mode.Mania];
 
-	public OsuTrackApiWorker(ILogger<OsuTrackApiWorker> logger, IServiceProvider serviceProvider)
+	public OsuTrackApiWorker(ILogger<OsuTrackApiWorker> logger, IServiceProvider serviceProvider, IConfiguration configuration)
 	{
 		_logger = logger;
 		_serviceProvider = serviceProvider;
+		_allowDataFetching = configuration.GetValue<bool>("Osu:AutoUpdateUsers");
 	}
 
-	protected override async Task ExecuteAsync(CancellationToken stoppingToken) => await BackgroundTask(stoppingToken);
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+	{
+		if (_allowDataFetching)
+		{
+			await BackgroundTask(stoppingToken);
+		}
+		else
+		{
+			_logger.LogInformation("Skipping osu!Track API worker due to configuration");
+		}
+	}
 
 	private async Task BackgroundTask(CancellationToken stoppingToken)
 	{
