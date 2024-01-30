@@ -123,12 +123,14 @@ public class MatchesController : Controller
 		return Ok(matches);
 	}
 
+	[Authorize(Roles = "Admin")]
 	[HttpGet("duplicates")]
 	[EndpointSummary("Retreives all known duplicate groups")]
 	public async Task<IActionResult> GetDuplicatesAsync() => Ok(await _matchesService.GetAllDuplicatesAsync());
 
+	[Authorize(Roles = "Admin")]
 	[HttpPost("duplicate")]
-	[EndpointSummary("Mark a list of matches as duplicates of the root")]
+	[EndpointSummary("Mark a match as a confirmed or denied duplicate of the root")]
 	public async Task<IActionResult> MarkDuplicatesAsync([FromQuery] int rootId, [FromQuery] bool confirmedDuplicate)
 	{
 		int? loggedInUser = HttpContext.AuthorizedUserIdentity();

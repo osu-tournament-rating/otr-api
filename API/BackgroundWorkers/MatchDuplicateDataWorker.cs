@@ -10,7 +10,7 @@ public class MatchDuplicateDataWorker : BackgroundService
 {
 	private readonly ILogger<MatchDuplicateDataWorker> _logger;
 	private readonly IServiceProvider _serviceProvider;
-	private readonly TimeSpan _interval = TimeSpan.FromSeconds(20); // TODO: Change to longer interval
+	private readonly TimeSpan _interval = TimeSpan.FromMinutes(10);
 
 	public MatchDuplicateDataWorker(ILogger<MatchDuplicateDataWorker> logger, IServiceProvider serviceProvider)
 	{
