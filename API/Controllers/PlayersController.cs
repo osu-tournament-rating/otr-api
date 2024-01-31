@@ -24,6 +24,7 @@ public class PlayersController : Controller
 		return Ok(players);
 	}
 
+	[AllowAnonymous]
 	[HttpGet("{userId:int}/info")]
 	public async Task<ActionResult<PlayerInfoDTO?>> GetByUserIdAsync(int userId)
 	{
@@ -36,6 +37,7 @@ public class PlayersController : Controller
 		return NotFound($"User with id {userId} does not exist");
 	}
 
+	[AllowAnonymous]
 	[HttpGet("{username}/info")]
 	public async Task<ActionResult<PlayerInfoDTO?>> GetByUserIdAsync(string username)
 	{
