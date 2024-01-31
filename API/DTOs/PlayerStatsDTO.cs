@@ -2,10 +2,11 @@ namespace API.DTOs;
 
 public class PlayerStatsDTO
 {
-	public PlayerStatsDTO(BaseStatsDTO? generalStats, AggregatePlayerMatchStatsDTO? matchStats, PlayerModStatsDTO? modStats,
+	public PlayerStatsDTO(PlayerInfoDTO? playerInfo, BaseStatsDTO? generalStats, AggregatePlayerMatchStatsDTO? matchStats, PlayerModStatsDTO? modStats,
 		PlayerTournamentStatsDTO? tournamentStats, IEnumerable<IEnumerable<MatchRatingStatsDTO>> ratingStats, IEnumerable<PlayerFrequencyDTO> frequentTeammates,
 		IEnumerable<PlayerFrequencyDTO> frequentOpponents)
 	{
+		PlayerInfo = playerInfo;
 		GeneralStats = generalStats;
 		MatchStats = matchStats;
 		ModStats = modStats;
@@ -15,6 +16,7 @@ public class PlayerStatsDTO
 		FrequentOpponents = frequentOpponents;
 	}
 
+	public PlayerInfoDTO? PlayerInfo { get; set; }
 	public BaseStatsDTO? GeneralStats { get; }
 	public AggregatePlayerMatchStatsDTO? MatchStats { get; }
 	public PlayerModStatsDTO? ModStats { get; }

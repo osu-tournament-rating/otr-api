@@ -58,9 +58,10 @@ public class RequestLoggingMiddleware
 			memStream.Position = 0;
 
 			// Read from the memory stream and convert to string for logging.
-			var buffer = new byte[memStream.Length];
+			byte[] buffer = new byte[memStream.Length];
+			// ReSharper disable once MustUseReturnValue
 			await memStream.ReadAsync(buffer, 0, buffer.Length);
-			var bodyAsText = Encoding.UTF8.GetString(buffer);
+			string bodyAsText = Encoding.UTF8.GetString(buffer);
 
 			if (bodyAsText.Length > 500)
 			{
@@ -72,7 +73,7 @@ public class RequestLoggingMiddleware
 			_logger.LogInformation("User with identity {Identity} on scheme {Scheme} requests {Method} {Host}{Path}{QueryString} with body '{Body}'",
 				ident, request.Scheme, request.Method, request.Host, request.Path,
 				request.QueryString, bodyAsText);
-			
+
 			// Reset the memory stream position again before assigning it back to the request body to be read by subsequent middlewares.
 			memStream.Position = 0;
 			request.Body = memStream;
@@ -93,29 +94,29 @@ public class RequestLoggingMiddleware
 		response.Body.Seek(0, SeekOrigin.Begin);
 
 		//...and copy it into a string
-		var buff = new char[1000];
+		char[] buff = new char[1000];
 		await new StreamReader(response.Body).ReadAsync(buff, 0, (int)Math.Min(1000, response.Body.Length));
 
 		//We need to reset the reader for the response so that the client can read it.
 		response.Body.Seek(0, SeekOrigin.Begin);
-		
+
 		string text = new(buff);
 		if (text.Length == 1000)
 		{
 			text += "...";
 		}
-		
+
 		string? ident = response.HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Name)?.Value;
 
-		if(response.StatusCode >= 400)
+		if (response.StatusCode >= 400)
 		{
 			_logger.LogError("User with identity {Identity} on scheme {Scheme} {Method} {Host}{Path}{QueryString} with body '{Body}' returned status {StatusCode}",
 				ident, response.HttpContext.Request.Scheme, response.HttpContext.Request.Method, response.HttpContext.Request.Host, response.HttpContext.Request.Path,
 				response.HttpContext.Request.QueryString, text, response.StatusCode);
-			
+
 			return;
 		}
-		
+
 		//Return the string for the response, including the status code (e.g. 200, 404, 401, etc.)
 		_logger.LogInformation("Returned status {StatusCode} to {Scheme} {Method} {Host}{Path}{QueryString} with body '{Body}'", response.StatusCode,
 			response.HttpContext.Request.Scheme, response.HttpContext.Request.Method, response.HttpContext.Request.Host, response.HttpContext.Request.Path,

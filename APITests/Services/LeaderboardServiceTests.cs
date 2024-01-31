@@ -42,7 +42,8 @@ public class LeaderboardServiceTests
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
 		var playerService = new PlayerService(playerRepository.Object, null);
-		var playerStatsService = new PlayerStatsService(playerRepository.Object, matchStatsRepository.Object, ratingStatsRepository.Object, null, null,
+		var playerStatsService = new PlayerStatsService(playerService, playerRepository.Object, matchStatsRepository.Object, ratingStatsRepository.Object, null,
+			null,
 			null, null, null, null);
 
 		var tournamentsService = new TournamentsService(tournamentsRepository.Object, null);

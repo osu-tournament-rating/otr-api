@@ -15,16 +15,18 @@ public class PlayerStatsService : IPlayerStatsService
 	private readonly IMatchWinRecordRepository _matchWinRecordRepository;
 	private readonly IMapper _mapper;
 	private readonly IPlayerMatchStatsRepository _matchStatsRepository;
+	private readonly IPlayerService _playerService;
 	private readonly IPlayerRepository _playerRepository;
 	private readonly IRatingAdjustmentsRepository _ratingAdjustmentsRepository;
 	private readonly IMatchRatingStatsRepository _ratingStatsRepository;
 	private readonly ITournamentsRepository _tournamentsRepository;
 
-	public PlayerStatsService(IPlayerRepository playerRepository, IPlayerMatchStatsRepository matchStatsRepository,
+	public PlayerStatsService(IPlayerService playerService, IPlayerRepository playerRepository, IPlayerMatchStatsRepository matchStatsRepository,
 		IMatchRatingStatsRepository ratingStatsRepository, ITournamentsRepository tournamentsRepository,
 		IBaseStatsService baseStatsService, IRatingAdjustmentsRepository ratingAdjustmentsRepository,
 		IGameWinRecordsRepository gameWinRecordsRepository, IMatchWinRecordRepository matchWinRecordRepository, IMapper mapper)
 	{
+		_playerService = playerService;
 		_playerRepository = playerRepository;
 		_matchStatsRepository = matchStatsRepository;
 		_ratingStatsRepository = ratingStatsRepository;
@@ -99,6 +101,7 @@ public class PlayerStatsService : IPlayerStatsService
 		dateMin ??= DateTime.MinValue;
 		dateMax ??= DateTime.MaxValue;
 
+		var playerInfo = await _playerService.GetAsync(playerId);
 		var baseStats = await GetBaseStatsAsync(playerId, mode);
 		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var modStats = await GetModStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
@@ -108,7 +111,7 @@ public class PlayerStatsService : IPlayerStatsService
 		var frequentTeammates = await _matchWinRecordRepository.GetFrequentTeammatesAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var frequentOpponents = await _matchWinRecordRepository.GetFrequentOpponentsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 
-		return new PlayerStatsDTO(baseStats, matchStats, modStats, tournamentStats,
+		return new PlayerStatsDTO(playerInfo, baseStats, matchStats, modStats, tournamentStats,
 			ratingStats, frequentTeammates, frequentOpponents);
 	}
 
