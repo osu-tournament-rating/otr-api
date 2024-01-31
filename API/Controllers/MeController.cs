@@ -23,6 +23,14 @@ public class MeController : Controller
 		_playerStatsService = playerStatsService;
 	}
 
+	/// <summary>
+	///  Validates the currently logged in user's OTR-Access-Token cookie
+	/// </summary>
+	/// <returns></returns>
+	[EndpointSummary("Validates the currently logged in user's OTR-Access-Token cookie")]
+	[ProducesResponseType(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status204NoContent)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	[HttpGet("validate")]
 	public IActionResult ValidateJwt()
 	{
