@@ -1,7 +1,7 @@
 using API;
+using API.BackgroundWorkers;
 using API.Configurations;
 using API.ModelBinders.Providers;
-using API.Osu;
 using API.Osu.Multiplayer;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
@@ -68,6 +68,7 @@ builder.Services.AddSingleton(configuration.CreateMapper());
 
 builder.Services.AddLogging();
 
+builder.Services.AddHostedService<MatchDuplicateDataWorker>();
 builder.Services.AddHostedService<OsuPlayerDataWorker>();
 builder.Services.AddHostedService<OsuMatchDataWorker>();
 builder.Services.AddHostedService<OsuTrackApiWorker>();
@@ -86,10 +87,11 @@ builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
 builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
+builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
+builder.Services.AddScoped<IMatchDuplicateRepository, MatchDuplicateRepository>();
 builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
 builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
 builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
-builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
 builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
 builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();

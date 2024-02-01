@@ -1,9 +1,9 @@
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace API.Controllers;
 
@@ -14,29 +14,25 @@ namespace API.Controllers;
 public class StatsController : Controller
 {
 	private readonly IBaseStatsService _baseStatsService;
-	private readonly IDistributedCache _cache;
-	private readonly ILogger<StatsController> _logger;
 	private readonly IPlayerStatsService _playerStatsService;
 
-	public StatsController(ILogger<StatsController> logger, IDistributedCache cache, IPlayerStatsService playerStatsService, IBaseStatsService baseStatsService)
+	public StatsController(IPlayerStatsService playerStatsService, IBaseStatsService baseStatsService)
 	{
-		_logger = logger;
-		_cache = cache;
 		_playerStatsService = playerStatsService;
 		_baseStatsService = baseStatsService;
 	}
 
-	[Authorize]
-	[HttpGet("{playerId:long}")]
+	[AllowAnonymous]
+	[HttpGet("{playerId:int}")]
 	public async Task<ActionResult<PlayerStatsDTO>> GetAsync(int playerId, [FromQuery] int? comparerId, [FromQuery] int mode = 0, [FromQuery] DateTime? dateMin = null,
 		[FromQuery]
 		DateTime? dateMax = null) => await _playerStatsService.GetAsync(playerId, comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 
-	[Authorize]
+	[AllowAnonymous]
 	[HttpGet("{username}")]
 	public async Task<ActionResult<PlayerStatsDTO>> GetAsync(string username, [FromQuery] int? comparerId, [FromQuery] int mode = 0, [FromQuery] DateTime? dateMin = null,
 		[FromQuery]
-		DateTime? dateMax = null) => await _playerStatsService.GetAsync(username, comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
+		DateTime? dateMax = null) => await _playerStatsService.GetAsync(username.ReplaceUnderscores(), comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 
 	[AllowAnonymous]
 	[HttpGet("histogram")]

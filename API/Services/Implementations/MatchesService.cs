@@ -1,4 +1,3 @@
-using API.Controllers;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
@@ -13,12 +12,16 @@ public class MatchesService : IMatchesService
 	private readonly ILogger<MatchesService> _logger;
 	private readonly IMatchesRepository _matchesRepository;
 	private readonly ITournamentsRepository _tournamentsRepository;
+	private readonly IMatchDuplicateRepository _duplicateRepository;
 	private readonly IMapper _mapper;
-	public MatchesService(ILogger<MatchesService> logger, IMatchesRepository matchesRepository, ITournamentsRepository tournamentsRepository, IMapper mapper)
+
+	public MatchesService(ILogger<MatchesService> logger, IMatchesRepository matchesRepository,
+		ITournamentsRepository tournamentsRepository, IMatchDuplicateRepository duplicateRepository, IMapper mapper)
 	{
 		_logger = logger;
 		_matchesRepository = matchesRepository;
 		_tournamentsRepository = tournamentsRepository;
+		_duplicateRepository = duplicateRepository;
 		_mapper = mapper;
 	}
 
@@ -34,7 +37,7 @@ public class MatchesService : IMatchesService
 	{
 		var existingMatches = (await _matchesRepository.GetByMatchIdsAsync(matchWebSubmissionDto.Ids)).ToList();
 		var tournament = await _tournamentsRepository.CreateOrUpdateAsync(matchWebSubmissionDto, verified);
-		
+
 		// Update the matches that already exist, if we are verified
 		if (verified)
 		{
@@ -42,7 +45,7 @@ public class MatchesService : IMatchesService
 			{
 				match.NeedsAutoCheck = true;
 				match.IsApiProcessed = false;
-				match.VerificationStatus = (int) MatchVerificationStatus.Verified;
+				match.VerificationStatus = (int)MatchVerificationStatus.Verified;
 				match.VerificationSource = verifier;
 				match.VerifierUserId = matchWebSubmissionDto.SubmitterId;
 				match.TournamentId = tournament.Id;
@@ -51,11 +54,11 @@ public class MatchesService : IMatchesService
 				await _matchesRepository.UpdateAsync(match);
 			}
 		}
-		
+
 		// Matches that don't exist yet
 		var newMatchIds = matchWebSubmissionDto.Ids.Except(existingMatches.Select(x => x.MatchId)).ToList();
 		var verificationStatus = verified ? MatchVerificationStatus.Verified : MatchVerificationStatus.PendingVerification;
-		
+
 		var newMatches = newMatchIds.Select(id => new Match
 		{
 			MatchId = id,
@@ -67,7 +70,7 @@ public class MatchesService : IMatchesService
 			VerifierUserId = verified ? matchWebSubmissionDto.SubmitterId : null,
 			TournamentId = tournament.Id
 		});
-		
+
 		int? result = await _matchesRepository.BatchInsertAsync(newMatches);
 		if (result > 0)
 		{
@@ -76,13 +79,72 @@ public class MatchesService : IMatchesService
 	}
 
 	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _matchesRepository.GetIdMappingAsync();
-	public async Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids) => _mapper.Map<IEnumerable<MatchDTO>>(await _matchesRepository.GetAsync(ids, true)); 
-	public async Task RefreshAutomationChecks(bool invalidOnly = true) => await _matchesRepository.SetRequireAutoCheckAsync(invalidOnly);
+	public async Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids) => _mapper.Map<IEnumerable<MatchDTO>>(await _matchesRepository.GetAsync(ids, true));
 
-	public async Task<IEnumerable<int>> GetAllIdsAsync(bool onlyIncludeFiltered)
+	public async Task VerifyDuplicatesAsync(int verifierUserId, int matchRootId, bool confirmedDuplicate)
 	{
-		return await _matchesRepository.GetAllAsync(onlyIncludeFiltered);
+		// Mark the items as confirmed / denied duplicates
+		await _matchesRepository.VerifyDuplicatesAsync(matchRootId, verifierUserId, confirmedDuplicate);
+
+		// If confirmedDuplicate, trigger the update process.
+		if (confirmedDuplicate)
+		{
+			await _matchesRepository.MergeDuplicatesAsync(matchRootId);
+		}
 	}
+
+	public async Task<IEnumerable<MatchDuplicateCollectionDTO>> GetAllDuplicatesAsync()
+	{
+		var collections = new List<MatchDuplicateCollectionDTO>();
+		var duplicateGroups = (await _duplicateRepository.GetAllUnknownStatusAsync()).GroupBy(x => x.SuspectedDuplicateOf);
+		foreach (var dupeGroup in duplicateGroups)
+		{
+			var root = await GetAsync(dupeGroup.First().SuspectedDuplicateOf, false);
+
+			if (root == null)
+			{
+				throw new Exception("Failed to find root from lookup.");
+			}
+
+			var collection = new MatchDuplicateCollectionDTO
+			{
+				Id = root.Id,
+				Name = root.Name ?? string.Empty,
+				OsuMatchId = root.MatchId,
+				SuspectedDuplicates = new List<MatchDuplicateDTO>()
+			};
+
+			foreach (var item in dupeGroup)
+			{
+				if (root == null || item.MatchId == root.Id)
+				{
+					continue;
+				}
+
+				var duplicateMatchData = await GetByOsuIdAsync(item.OsuMatchId);
+				if (duplicateMatchData == null)
+				{
+					continue;
+				}
+
+				collection.SuspectedDuplicates.Add(new MatchDuplicateDTO
+				{
+					Name = duplicateMatchData.Name ?? string.Empty,
+					OsuMatchId = duplicateMatchData.MatchId,
+					VerifiedByUsername = item.Verifier?.Player.Username,
+					VerifiedAsDuplicate = item.VerifiedAsDuplicate,
+					VerifiedByUserId = item.VerifiedBy
+				});
+			}
+
+			collections.Add(collection);
+		}
+
+		return collections;
+	}
+
+	public async Task RefreshAutomationChecks(bool invalidOnly = true) => await _matchesRepository.SetRequireAutoCheckAsync(invalidOnly);
+	public async Task<IEnumerable<int>> GetAllIdsAsync(bool onlyIncludeFiltered) { return await _matchesRepository.GetAllAsync(onlyIncludeFiltered); }
 
 	public async Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId)
 	{

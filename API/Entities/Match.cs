@@ -12,9 +12,13 @@ public class Match
 	[Key]
 	[Column("id")]
 	public int Id { get; set; }
+	/// <summary>
+	///  The osu! match id
+	/// </summary>
 	[Column("match_id")]
 	public long MatchId { get; set; }
 	[Column("name")]
+	[MaxLength(512)]
 	public string? Name { get; set; }
 	[Column("start_time", TypeName = "timestamp with time zone")]
 	public DateTime? StartTime { get; set; }
@@ -25,6 +29,7 @@ public class Match
 	[Column("end_time", TypeName = "timestamp with time zone")]
 	public DateTime? EndTime { get; set; }
 	[Column("verification_info")]
+	[MaxLength(512)]
 	public string? VerificationInfo { get; set; }
 	[Column("verification_source")]
 	public int? VerificationSource { get; set; }
@@ -46,7 +51,7 @@ public class Match
 	/// </summary>
 	[Column("is_api_processed")]
 	public bool? IsApiProcessed { get; set; }
-	public User? SubmittedBy { get; set; }	
+	public User? SubmittedBy { get; set; }
 	public User? VerifiedBy { get; set; }
 	[InverseProperty("Match")]
 	public virtual ICollection<Game> Games { get; set; } = new List<Game>();
@@ -58,7 +63,6 @@ public class Match
 	public virtual ICollection<MatchRatingStats> RatingStats { get; set; } = new List<MatchRatingStats>();
 	[InverseProperty("Match")]
 	public virtual MatchWinRecord WinRecord { get; set; } = new();
-	
 	[NotMapped]
 	public MatchVerificationSource? VerificationSourceEnum
 	{

@@ -17,12 +17,14 @@ public class PlayerService : IPlayerService
 		_mapper = mapper;
 	}
 
-	public async Task<IEnumerable<PlayerDTO>> GetAllAsync() => _mapper.Map<IEnumerable<PlayerDTO>>(await _playerRepository.GetAllAsync(true));
+	public async Task<IEnumerable<PlayerInfoDTO>> GetAllAsync() => _mapper.Map<IEnumerable<PlayerInfoDTO>>(await _playerRepository.GetAllAsync(true));
 
-	public async Task<PlayerDTO?> GetByOsuIdAsync(long osuId, bool eagerLoad = false, OsuEnums.Mode mode = OsuEnums.Mode.Standard, int offsetDays = -1) =>
-		_mapper.Map<PlayerDTO?>(await _playerRepository.GetPlayerByOsuIdAsync(osuId, eagerLoad, (int)mode, offsetDays));
+	public async Task<PlayerInfoDTO?> GetByOsuIdAsync(long osuId, bool eagerLoad = false, OsuEnums.Mode mode = OsuEnums.Mode.Standard, int offsetDays = -1) =>
+		_mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetPlayerByOsuIdAsync(osuId, eagerLoad, (int)mode, offsetDays));
 
-	public async Task<IEnumerable<PlayerDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds) => _mapper.Map<IEnumerable<PlayerDTO>>(await _playerRepository.GetByOsuIdsAsync(osuIds));
+	public async Task<IEnumerable<PlayerInfoDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds) =>
+		_mapper.Map<IEnumerable<PlayerInfoDTO>>(await _playerRepository.GetByOsuIdsAsync(osuIds));
+
 	public async Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync() { return _mapper.Map<IEnumerable<PlayerRanksDTO>>(await _playerRepository.GetAllAsync(false)); }
 
 	public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode) =>
@@ -56,4 +58,6 @@ public class PlayerService : IPlayerService
 
 	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _playerRepository.GetIdMappingAsync();
 	public async Task<Dictionary<int, string?>> GetCountryMappingAsync() => await _playerRepository.GetCountryMappingAsync();
+	public async Task<PlayerInfoDTO?> GetAsync(int userId) => _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(userId));
+	public async Task<PlayerInfoDTO?> GetAsync(string username) => _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(username));
 }

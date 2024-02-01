@@ -192,7 +192,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 		// Initialize all buckets from 100 to maxBucket with 0
 		var histogram = Enumerable.Range(4, (maxBucket / 25) - 3)
-		                          .ToDictionary(bucket => bucket * 25, bucket => 0);
+		                          .ToDictionary(bucket => bucket * 25, _ => 0);
 
 		// Adjust the GroupBy to correctly bucket the rating of 100
 		var dbHistogram = await _context.BaseStats
@@ -237,6 +237,13 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		if (chartType == LeaderboardChartType.Country && playerId.HasValue)
 		{
 			string? playerCountry = await _context.Players.Where(x => x.Id == playerId).Select(x => x.Country).FirstOrDefaultAsync();
+
+			// Addresses players in dependent territories having a *very* small country leaderboard.
+			if (playerCountry != null && LeaderboardUtils.DependentTerritoriesMapping.TryGetValue(playerCountry, out string? mappedCountry))
+			{
+				playerCountry = mappedCountry;
+			}
+
 			baseQuery = baseQuery.Where(x => x.Player.Country == playerCountry);
 		}
 

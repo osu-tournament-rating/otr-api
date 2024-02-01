@@ -1,0 +1,55 @@
+on: [pull_request]
+name: Continuous Integration
+
+permissions:
+    contents: read
+
+jobs:
+    inspect-code:
+        name: Code Quality
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            
+            - name: Setup .NET
+              uses: actions/setup-dotnet@v3
+              with:
+                  dotnet-version: '8.0.x'
+            
+            - name: Restore Dependencies
+              run: dotnet restore
+
+            - name: .NET Code Style
+              run: dotnet build -c Debug -warnaserror -p:EnforceCodeStyleInBuild=true
+    
+    test:
+      name: Test
+      runs-on: ubuntu-latest
+      strategy:
+        fail-fast: false
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Setup .NET
+          uses: actions/setup-dotnet@v3
+          with:
+            dotnet-version: '8.0.x'
+
+        - name: Restore Dependencies
+          run: dotnet restore
+
+        - name: Build
+          run: dotnet build -c Debug -warnaserror -p:EnforceCodeStyleInBuild=true
+
+        - name: Test
+          run: dotnet test -c Debug --no-build --verbosity normal
+
+        - name: Upload coverage reports to Codecov
+          uses: codecov/codecov-action@v3
+          env:
+            CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+            
+            

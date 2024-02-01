@@ -28,11 +28,13 @@ public interface IRepository<T> where T : class
 	///  Returns true if an entity with the given ID exists in the database.
 	/// </summary>
 	Task<bool> ExistsAsync(int id);
-	
+
 	/// <summary>
 	/// Bulk inserts a collection of entities into the database.
 	/// </summary>
 	/// <param name="entities"></param>
 	/// <returns>Number of rows affected</returns>
 	Task<int> BulkInsertAsync(IEnumerable<T> entities);
+
+	Task<IEnumerable<T>> GetAllAsync();
 }

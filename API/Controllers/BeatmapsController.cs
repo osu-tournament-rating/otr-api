@@ -13,13 +13,7 @@ namespace API.Controllers;
 public class BeatmapsController : Controller
 {
 	private readonly IBeatmapService _beatmapService;
-	private readonly ILogger<BeatmapsController> _logger;
-
-	public BeatmapsController(ILogger<BeatmapsController> logger, IBeatmapService beatmapService)
-	{
-		_logger = logger;
-		_beatmapService = beatmapService;
-	}
+	public BeatmapsController(IBeatmapService beatmapService) { _beatmapService = beatmapService; }
 
 	[HttpGet("all")]
 	public async Task<ActionResult<IEnumerable<Beatmap>>> GetAllAsync() => Ok(await _beatmapService.GetAllAsync());

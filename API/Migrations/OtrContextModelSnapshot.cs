@@ -17,7 +17,7 @@ namespace API.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.11")
+                .HasAnnotation("ProductVersion", "8.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -108,7 +108,8 @@ namespace API.Migrations
 
                     b.Property<string>("Artist")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
                         .HasColumnName("artist");
 
                     b.Property<long>("BeatmapId")
@@ -134,7 +135,8 @@ namespace API.Migrations
                         .HasColumnName("cs");
 
                     b.Property<string>("DiffName")
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("diff_name");
 
                     b.Property<double>("DrainTime")
@@ -159,7 +161,8 @@ namespace API.Migrations
 
                     b.Property<string>("MapperName")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
                         .HasColumnName("mapper_name");
 
                     b.Property<int?>("MaxCombo")
@@ -188,7 +191,8 @@ namespace API.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
                         .HasColumnName("title");
 
                     b.HasKey("Id")
@@ -198,32 +202,6 @@ namespace API.Migrations
                         .IsUnique();
 
                     b.ToTable("beatmaps");
-                });
-
-            modelBuilder.Entity("API.Entities.Config", b =>
-                {
-                    b.Property<DateTime?>("Created")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created");
-
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("key");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("value");
-
-                    b.ToTable("config");
                 });
 
             modelBuilder.Entity("API.Entities.Game", b =>
@@ -380,7 +358,8 @@ namespace API.Migrations
                         .HasColumnName("match_id");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
                         .HasColumnName("name");
 
                     b.Property<bool?>("NeedsAutoCheck")
@@ -404,7 +383,8 @@ namespace API.Migrations
                         .HasColumnName("updated");
 
                     b.Property<string>("VerificationInfo")
-                        .HasColumnType("text")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
                         .HasColumnName("verification_info");
 
                     b.Property<int?>("VerificationSource")
@@ -435,6 +415,47 @@ namespace API.Migrations
                         .IsUnique();
 
                     b.ToTable("matches");
+                });
+
+            modelBuilder.Entity("API.Entities.MatchDuplicate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("MatchId")
+                        .HasColumnType("integer")
+                        .HasColumnName("matchId");
+
+                    b.Property<long>("OsuMatchId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("osu_match_id");
+
+                    b.Property<int>("SuspectedDuplicateOf")
+                        .HasColumnType("integer")
+                        .HasColumnName("suspected_duplicate_of");
+
+                    b.Property<bool?>("VerifiedAsDuplicate")
+                        .HasColumnType("boolean")
+                        .HasColumnName("verified_duplicate");
+
+                    b.Property<int?>("VerifiedBy")
+                        .HasColumnType("integer")
+                        .HasColumnName("verified_by");
+
+                    b.HasKey("Id")
+                        .HasName("match_duplicate_xref_pk");
+
+                    b.HasIndex("OsuMatchId");
+
+                    b.HasIndex("SuspectedDuplicateOf");
+
+                    b.HasIndex("VerifiedBy");
+
+                    b.ToTable("match_duplicates");
                 });
 
             modelBuilder.Entity("API.Entities.MatchRatingStats", b =>
@@ -684,7 +705,8 @@ namespace API.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Country")
-                        .HasColumnType("text")
+                        .HasMaxLength(4)
+                        .HasColumnType("character varying(4)")
                         .HasColumnName("country");
 
                     b.Property<DateTime>("Created")
@@ -750,7 +772,8 @@ namespace API.Migrations
                         .HasColumnName("updated");
 
                     b.Property<string>("Username")
-                        .HasColumnType("text")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
                         .HasColumnName("username");
 
                     b.HasKey("Id")
@@ -907,7 +930,8 @@ namespace API.Migrations
 
                     b.Property<string>("Abbreviation")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
                         .HasColumnName("abbreviation");
 
                     b.Property<DateTime>("Created")
@@ -918,7 +942,8 @@ namespace API.Migrations
 
                     b.Property<string>("ForumUrl")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("forum_url");
 
                     b.Property<int>("Mode")
@@ -927,7 +952,8 @@ namespace API.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
                         .HasColumnName("name");
 
                     b.Property<int>("RankRangeLowerBound")
@@ -1058,6 +1084,15 @@ namespace API.Migrations
                     b.Navigation("Tournament");
 
                     b.Navigation("VerifiedBy");
+                });
+
+            modelBuilder.Entity("API.Entities.MatchDuplicate", b =>
+                {
+                    b.HasOne("API.Entities.User", "Verifier")
+                        .WithMany("VerifiedDuplicates")
+                        .HasForeignKey("VerifiedBy");
+
+                    b.Navigation("Verifier");
                 });
 
             modelBuilder.Entity("API.Entities.MatchRatingStats", b =>
@@ -1201,6 +1236,8 @@ namespace API.Migrations
             modelBuilder.Entity("API.Entities.User", b =>
                 {
                     b.Navigation("SubmittedMatches");
+
+                    b.Navigation("VerifiedDuplicates");
 
                     b.Navigation("VerifiedMatches");
                 });
