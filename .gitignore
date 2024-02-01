@@ -12,3 +12,7 @@ scripts/inserts
 app.env
 db.env
 redis.env
+
+.DS_Store
+*.DotSettings.user
+.vscode/

@@ -3,6 +3,7 @@ using API.Entities;
 using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using API.Utilities;
 using AutoMapper;
 
 namespace API.Services.Implementations;
@@ -14,16 +15,18 @@ public class PlayerStatsService : IPlayerStatsService
 	private readonly IMatchWinRecordRepository _matchWinRecordRepository;
 	private readonly IMapper _mapper;
 	private readonly IPlayerMatchStatsRepository _matchStatsRepository;
+	private readonly IPlayerService _playerService;
 	private readonly IPlayerRepository _playerRepository;
 	private readonly IRatingAdjustmentsRepository _ratingAdjustmentsRepository;
 	private readonly IMatchRatingStatsRepository _ratingStatsRepository;
 	private readonly ITournamentsRepository _tournamentsRepository;
 
-	public PlayerStatsService(IPlayerRepository playerRepository, IPlayerMatchStatsRepository matchStatsRepository,
+	public PlayerStatsService(IPlayerService playerService, IPlayerRepository playerRepository, IPlayerMatchStatsRepository matchStatsRepository,
 		IMatchRatingStatsRepository ratingStatsRepository, ITournamentsRepository tournamentsRepository,
 		IBaseStatsService baseStatsService, IRatingAdjustmentsRepository ratingAdjustmentsRepository,
 		IGameWinRecordsRepository gameWinRecordsRepository, IMatchWinRecordRepository matchWinRecordRepository, IMapper mapper)
 	{
+		_playerService = playerService;
 		_playerRepository = playerRepository;
 		_matchStatsRepository = matchStatsRepository;
 		_ratingStatsRepository = ratingStatsRepository;
@@ -98,6 +101,7 @@ public class PlayerStatsService : IPlayerStatsService
 		dateMin ??= DateTime.MinValue;
 		dateMax ??= DateTime.MaxValue;
 
+		var playerInfo = await _playerService.GetAsync(playerId);
 		var baseStats = await GetBaseStatsAsync(playerId, mode);
 		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var modStats = await GetModStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
@@ -107,7 +111,7 @@ public class PlayerStatsService : IPlayerStatsService
 		var frequentTeammates = await _matchWinRecordRepository.GetFrequentTeammatesAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var frequentOpponents = await _matchWinRecordRepository.GetFrequentOpponentsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 
-		return new PlayerStatsDTO(baseStats, matchStats, modStats, tournamentStats,
+		return new PlayerStatsDTO(playerInfo, baseStats, matchStats, modStats, tournamentStats,
 			ratingStats, frequentTeammates, frequentOpponents);
 	}
 
@@ -208,13 +212,24 @@ public class PlayerStatsService : IPlayerStatsService
 		dto.Winrate = winRate;
 		dto.HighestGlobalRank = highestRank;
 
+		dto.RankProgress = new RankProgressDTO
+		{
+			CurrentTier = RatingUtils.GetTier(dto.Rating),
+			CurrentSubTier = RatingUtils.GetCurrentSubTier(dto.Rating),
+			RatingForNextTier = RatingUtils.GetRatingDeltaForNextTier(dto.Rating),
+			RatingForNextMajorTier = RatingUtils.GetRatingDeltaForNextMajorTier(dto.Rating),
+			NextMajorTier = RatingUtils.GetNextMajorTier(dto.Rating),
+			SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(dto.Rating),
+			MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(dto.Rating)
+		};
+
 		return dto;
 	}
 
-	private async Task<IEnumerable<MatchRatingStatsDTO>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
+	private async Task<IEnumerable<IEnumerable<MatchRatingStatsDTO>>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		var ratingStats = await _ratingStatsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax);
-		return _mapper.Map<IEnumerable<MatchRatingStatsDTO>>(ratingStats);
+		return _mapper.Map<IEnumerable<IEnumerable<MatchRatingStatsDTO>>>(ratingStats);
 	}
 
 	public async Task<PlayerModStatsDTO> GetModStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax) =>
@@ -249,7 +264,7 @@ public class PlayerStatsService : IPlayerStatsService
 	private async Task<AggregatePlayerMatchStatsDTO?> GetMatchStatsAsync(int id, int mode, DateTime dateMin, DateTime dateMax)
 	{
 		var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
-		var ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
+		var ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList().SelectMany(x => x);
 
 		if (!matchStats.Any())
 		{

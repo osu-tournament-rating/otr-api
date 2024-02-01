@@ -1,5 +1,4 @@
 using API.Entities;
-using API.Osu;
 
 namespace API.Repositories.Interfaces;
 
@@ -9,7 +8,7 @@ public interface IBeatmapRepository : IRepository<Beatmap>
 	Task<Beatmap?> GetByOsuIdAsync(long osuBeatmapId);
 	Task CreateIfNotExistsAsync(IEnumerable<long> beatmapIds);
 	Task<int?> GetIdByBeatmapIdAsync(long gameBeatmapId);
-	Task<IEnumerable<Beatmap>> GetAllAsync();
+
 	/// <summary>
 	/// Returns a collection of beatmap objects for the given beatmap IDs.
 	/// </summary>

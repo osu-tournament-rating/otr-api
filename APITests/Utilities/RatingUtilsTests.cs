@@ -77,4 +77,37 @@ public class RatingUtilsTests
 		// Assert
 		Assert.Equal(expectedNextTier, actualNextTier);
 	}
+
+	[Theory]
+	[InlineData(200.0, 20, 1)]
+	[InlineData(200.0, 20, 3)]
+	[InlineData(201, 20, 4)]
+	[InlineData(50, 5, 2)]
+	[InlineData(82, 20, 2)]
+	[InlineData(82, 20, 1)]
+	public void ProvisionalFlag_IsTrue_WhenProvisional(double volatility, int matchesPlayed, int tournamentsPlayed)
+	{
+		// Arrange
+
+		// Act
+		bool isProvisional = RatingUtils.IsProvisional(volatility, matchesPlayed, tournamentsPlayed);
+
+		// Assert
+		Assert.True(isProvisional);
+	}
+
+	[Theory]
+	[InlineData(199.9, 10, 3)]
+	[InlineData(50, 20, 4)]
+	[InlineData(21, 40, 3)]
+	public void ProvisionalFlag_IsFalse_WhenNotProvisional(double volatility, int matchesPlayed, int tournamentsPlayed)
+	{
+		// Arrange
+
+		// Act
+		bool isProvisional = RatingUtils.IsProvisional(volatility, matchesPlayed, tournamentsPlayed);
+
+		// Assert
+		Assert.False(isProvisional);
+	}
 }

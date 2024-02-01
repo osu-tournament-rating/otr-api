@@ -1,14 +1,10 @@
 using API.DTOs;
 using API.Entities;
 using API.Osu;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
-using System.Text;
 
 namespace API.Controllers;
 
@@ -18,22 +14,40 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class PlayersController : Controller
 {
-	private readonly IDistributedCache _cache;
 	private readonly IPlayerService _playerService;
-	private readonly IBaseStatsRepository _baseStatsRepository;
-
-	public PlayersController(IDistributedCache cache, IPlayerService playerService, IBaseStatsRepository baseStatsRepository)
-	{
-		_cache = cache;
-		_playerService = playerService;
-		_baseStatsRepository = baseStatsRepository;
-	}
+	public PlayersController(IPlayerService playerService) { _playerService = playerService; }
 
 	[HttpGet("all")]
 	public async Task<ActionResult<IEnumerable<Player>?>> GetAllAsync()
 	{
 		var players = await _playerService.GetAllAsync();
 		return Ok(players);
+	}
+
+	[AllowAnonymous]
+	[HttpGet("{userId:int}/info")]
+	public async Task<ActionResult<PlayerInfoDTO?>> GetByUserIdAsync(int userId)
+	{
+		var player = await _playerService.GetAsync(userId);
+		if (player != null)
+		{
+			return Ok(player);
+		}
+
+		return NotFound($"User with id {userId} does not exist");
+	}
+
+	[AllowAnonymous]
+	[HttpGet("{username}/info")]
+	public async Task<ActionResult<PlayerInfoDTO?>> GetByUserIdAsync(string username)
+	{
+		var player = await _playerService.GetAsync(username);
+		if (player != null)
+		{
+			return Ok(player);
+		}
+
+		return NotFound($"User with username {username} does not exist");
 	}
 
 	// [HttpGet("{osuId:long}")]
@@ -95,28 +109,28 @@ public class PlayersController : Controller
 
 		return NotFound($"User with id {id} does not exist");
 	}
-	
+
 	[HttpGet("ranks/all")]
 	public async Task<ActionResult<IEnumerable<PlayerRanksDTO>>> GetAllRanksAsync()
 	{
 		var ranks = await _playerService.GetAllRanksAsync();
 		return Ok(ranks);
 	}
-	
+
 	[HttpGet("leaderboard/{mode:int}")]
 	public async Task<ActionResult<IEnumerable<PlayerRatingDTO>>> Leaderboard(int gamemode)
 	{
 		const int LEADERBOARD_LIMIT = 50;
-		return Ok(await _playerService.GetTopRatingsAsync(LEADERBOARD_LIMIT, (OsuEnums.Mode) gamemode));
+		return Ok(await _playerService.GetTopRatingsAsync(LEADERBOARD_LIMIT, (OsuEnums.Mode)gamemode));
 	}
-	
+
 	[HttpGet("id-mapping")]
 	public async Task<ActionResult<IEnumerable<Dictionary<long, int>>>> GetIdMappingAsync()
 	{
 		var mapping = await _playerService.GetIdMappingAsync();
 		return Ok(mapping);
 	}
-	
+
 	[HttpGet("country-mapping")]
 	public async Task<ActionResult<Dictionary<int, string>>> GetCountryMappingAsync()
 	{

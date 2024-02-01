@@ -11,15 +11,15 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.1"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.1"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
         <PackageReference Include="Moq" Version="4.20.70"/>
         <PackageReference Include="coverlet.collector" Version="6.0.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="xunit" Version="2.6.5"/>
-        <PackageReference Include="xunit.runner.console" Version="2.6.5">
+        <PackageReference Include="xunit" Version="2.6.6"/>
+        <PackageReference Include="xunit.runner.console" Version="2.6.6">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -31,12 +31,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\API\API.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-        <Content Include="appsettings.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
     </ItemGroup>
 
 </Project>

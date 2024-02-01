@@ -1,5 +1,4 @@
 using API.DTOs;
-using API.Entities;
 using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
@@ -16,13 +15,11 @@ namespace API.Controllers;
 [Route("api/[controller]")]
 public class MatchesController : Controller
 {
-	private readonly ILogger<MatchesController> _logger;
 	private readonly IMatchesService _matchesService;
 	private readonly ITournamentsService _tournamentsService;
 
-	public MatchesController(ILogger<MatchesController> logger, IMatchesService matchesService, ITournamentsService tournamentsService)
+	public MatchesController(IMatchesService matchesService, ITournamentsService tournamentsService)
 	{
-		_logger = logger;
 		_matchesService = matchesService;
 		_tournamentsService = tournamentsService;
 	}
@@ -67,18 +64,18 @@ public class MatchesController : Controller
 		{
 			return null;
 		}
-		
+
 		// We need to know what entity verified the match
-		int verifier = (int) MatchVerificationSource.MatchVerifier;
+		int verifier = (int)MatchVerificationSource.MatchVerifier;
 
 		if (User.IsAdmin())
 		{
-			verifier = (int) MatchVerificationSource.Admin;
+			verifier = (int)MatchVerificationSource.Admin;
 		}
 
 		if (User.IsSystem())
 		{
-			verifier = (int) MatchVerificationSource.System;
+			verifier = (int)MatchVerificationSource.System;
 		}
 
 		return verifier;
@@ -92,7 +89,7 @@ public class MatchesController : Controller
 		await _matchesService.RefreshAutomationChecks(false);
 		return Ok();
 	}
-	
+
 	[HttpGet("ids")]
 	[Authorize(Roles = "Admin, System")]
 	[EndpointSummary("Returns all verified match ids")]
@@ -101,7 +98,7 @@ public class MatchesController : Controller
 		var matches = await _matchesService.GetAllIdsAsync(true);
 		return Ok(matches);
 	}
-	
+
 	[HttpGet("{id:int}")]
 	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
@@ -115,7 +112,7 @@ public class MatchesController : Controller
 
 		return Ok(match);
 	}
-	
+
 	[HttpPost("convert")]
 	[EndpointSummary("Converts a list of match ids to MatchDTO objects")]
 	[EndpointDescription("This is a useful way to fetch a list of matches without starving the " +
@@ -125,7 +122,32 @@ public class MatchesController : Controller
 		var matches = await _matchesService.ConvertAsync(ids);
 		return Ok(matches);
 	}
-	
+
+	[Authorize(Roles = "Admin")]
+	[HttpGet("duplicates")]
+	[EndpointSummary("Retreives all known duplicate groups")]
+	public async Task<IActionResult> GetDuplicatesAsync() => Ok(await _matchesService.GetAllDuplicatesAsync());
+
+	[Authorize(Roles = "Admin")]
+	[HttpPost("duplicate")]
+	[EndpointSummary("Mark a match as a confirmed or denied duplicate of the root")]
+	public async Task<IActionResult> MarkDuplicatesAsync([FromQuery] int rootId, [FromQuery] bool confirmedDuplicate)
+	{
+		int? loggedInUser = HttpContext.AuthorizedUserIdentity();
+		if (!loggedInUser.HasValue)
+		{
+			return Unauthorized("You must be logged in to perform this action.");
+		}
+
+		if (!HttpContext.User.IsAdmin())
+		{
+			return Unauthorized("You lack permissions to perform this action.");
+		}
+
+		await _matchesService.VerifyDuplicatesAsync(loggedInUser.Value, rootId, confirmedDuplicate);
+		return Ok();
+	}
+
 	// [HttpGet("{osuMatchId:long}")]
 	// [Authorize(Roles = "Admin, System")]
 	// public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
@@ -142,7 +164,8 @@ public class MatchesController : Controller
 
 	[HttpGet("player/{osuId:long}")]
 	[Authorize(Roles = "Admin, System")]
-	public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatchesAsync(long osuId, int mode) => Ok(await _matchesService.GetAllForPlayerAsync(osuId, mode, DateTime.MinValue, DateTime.MaxValue));
+	public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatchesAsync(long osuId, int mode) =>
+		Ok(await _matchesService.GetAllForPlayerAsync(osuId, mode, DateTime.MinValue, DateTime.MaxValue));
 
 	[HttpGet("{id:int}/osuid")]
 	[Authorize(Roles = "Admin, System")]
@@ -162,7 +185,7 @@ public class MatchesController : Controller
 
 		return NotFound($"Match with id {id} does not exist");
 	}
-	
+
 	[HttpGet("id-mapping")]
 	public async Task<ActionResult<Dictionary<long, int>>> GetIdMappingAsync()
 	{

@@ -1,4 +1,3 @@
-using API.Controllers;
 using API.DTOs;
 
 namespace API.Services.Interfaces;
@@ -11,10 +10,12 @@ public interface IMatchesService
 	/// <param name="invalidOnly">If true, this method only applies to matches that are not Verified or PreVerified</param>
 	/// <returns></returns>
 	Task RefreshAutomationChecks(bool invalidOnly = true);
+
 	Task<IEnumerable<int>> GetAllIdsAsync(bool onlyIncludeFiltered);
 	Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId);
 	Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true);
 	Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(long osuPlayerId, int mode, DateTime start, DateTime end);
+
 	/// <summary>
 	/// Inserts or updates based on user input. Only updates if verified is true.
 	/// </summary>
@@ -29,10 +30,24 @@ public interface IMatchesService
 	/// </summary>
 	/// <returns></returns>
 	Task<Dictionary<long, int>> GetIdMappingAsync();
+
 	/// <summary>
 	/// Converts a list of match ids to match id objects
 	/// </summary>
 	/// <param name="ids"></param>
 	/// <returns></returns>
 	Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids);
+
+	/// <summary>
+	///  Full flow for one-way operation of marking a match as duplicate, reassinging the
+	///  appropriate game data, updating the match_duplicate_xref table,
+	///  and deleting the duplicate match items.
+	///  <param name="confirmedDuplicate">
+	///   If true, all <see cref="duplicateIds" /> are confirmed duplicates.
+	///   If false, all <see cref="duplicateIds" /> are confirmed to NOT be duplicates.
+	///  </param>
+	/// </summary>
+	Task VerifyDuplicatesAsync(int verifierUserId, int matchRootId, bool confirmedDuplicate);
+
+	Task<IEnumerable<MatchDuplicateCollectionDTO>> GetAllDuplicatesAsync();
 }

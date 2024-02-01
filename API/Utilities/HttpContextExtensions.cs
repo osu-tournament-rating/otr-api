@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Primitives;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Headers;
 
 namespace API.Utilities;
 
@@ -18,7 +17,7 @@ public static class HttpContextExtensions
 		{
 			return null;
 		}
-		
+
 		if (!int.TryParse(id, out int idInt))
 		{
 			return null;
