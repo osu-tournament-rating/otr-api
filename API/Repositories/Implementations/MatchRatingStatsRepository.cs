@@ -189,7 +189,7 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 		                                          x.Match.StartTime <= dateMax)
 		                              .Select(x => new RankChartDataPointDTO
 		                              {
-			                              TournamentName = x.Match.Tournament!.Name,
+			                              TournamentName = x.Match.Tournament.Name,
 			                              MatchName = x.Match.Name ?? "Undefined",
 			                              Rank = chartType == LeaderboardChartType.Global ? x.GlobalRankAfter : x.CountryRankAfter,
 			                              RankChange = chartType == LeaderboardChartType.Global ? x.GlobalRankChange : x.CountryRankChange

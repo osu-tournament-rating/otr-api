@@ -227,11 +227,11 @@ public class PlayerStatsService : IPlayerStatsService
 		return dto;
 	}
 
-	private async Task<IEnumerable<IEnumerable<MatchRatingStatsDTO>>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
-	{
-		var ratingStats = await _ratingStatsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax);
-		return _mapper.Map<IEnumerable<IEnumerable<MatchRatingStatsDTO>>>(ratingStats);
-	}
+	// private async Task<IEnumerable<IEnumerable<MatchRatingStatsDTO>>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
+	// {
+	// 	var ratingStats = await _ratingStatsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax);
+	// 	return _mapper.Map<IEnumerable<IEnumerable<MatchRatingStatsDTO>>>(ratingStats);
+	// }
 
 	public async Task<PlayerModStatsDTO> GetModStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax) =>
 		await _matchStatsRepository.GetModStatsAsync(playerId, mode, dateMin, dateMax);
@@ -321,17 +321,5 @@ public class PlayerStatsService : IPlayerStatsService
 		}
 
 		return highest;
-	}
-
-	private int? MostPlayedTeammateId(IEnumerable<PlayerMatchStats> stats)
-	{
-		var teammates = stats.SelectMany(x => x.TeammateIds).GroupBy(x => x).Select(x => new { Id = x.Key, Count = x.Count() }).ToList();
-		return teammates.Any() ? teammates.OrderByDescending(x => x.Count).First().Id : null;
-	}
-
-	private int? MostPlayedOpponentId(IEnumerable<PlayerMatchStats> stats)
-	{
-		var opponents = stats.SelectMany(x => x.OpponentIds).GroupBy(x => x).Select(x => new { Id = x.Key, Count = x.Count() }).ToList();
-		return opponents.Any() ? opponents.OrderByDescending(x => x.Count).First().Id : null;
 	}
 }

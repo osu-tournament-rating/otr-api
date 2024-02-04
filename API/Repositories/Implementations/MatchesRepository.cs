@@ -1,7 +1,6 @@
 using API.DTOs;
 using API.Entities;
 using API.Enums;
-using API.Osu;
 using API.Repositories.Interfaces;
 using API.Utilities;
 using AutoMapper;
@@ -463,40 +462,5 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		                       .ToList();
 
 		return duplicatesById.Concat(duplicatesByName);
-	}
-
-	private bool IsValidModCombination(OsuEnums.Mods modCombination)
-	{
-		List<OsuEnums.Mods> validMods = new()
-		{
-			OsuEnums.Mods.None,
-			OsuEnums.Mods.Hidden,
-			OsuEnums.Mods.HardRock,
-			OsuEnums.Mods.DoubleTime,
-			OsuEnums.Mods.Nightcore,
-			OsuEnums.Mods.Flashlight,
-			OsuEnums.Mods.Easy,
-			OsuEnums.Mods.NoFail,
-			OsuEnums.Mods.HalfTime,
-			OsuEnums.Mods.Mirror,
-			OsuEnums.Mods.Key1,
-			OsuEnums.Mods.Key2,
-			OsuEnums.Mods.Key3,
-			OsuEnums.Mods.Key4,
-			OsuEnums.Mods.Key5,
-			OsuEnums.Mods.Key6,
-			OsuEnums.Mods.Key7,
-			OsuEnums.Mods.Key8,
-			OsuEnums.Mods.Key9
-		};
-
-		foreach (var validMod in validMods)
-		{
-			// Remove the valid mod from the combination
-			modCombination &= ~validMod;
-		}
-
-		// If the result is not Mods.None, then there was an invalid mod in the combination
-		return modCombination == OsuEnums.Mods.None;
 	}
 }

@@ -7,14 +7,7 @@ namespace API.Repositories.Implementations;
 public class BeatmapRepository : RepositoryBase<Beatmap>, IBeatmapRepository
 {
 	private readonly OtrContext _context;
-	private readonly ILogger<BeatmapRepository> _logger;
-
-	public BeatmapRepository(ILogger<BeatmapRepository> logger, OtrContext context) : base(context)
-	{
-		_logger = logger;
-		_context = context;
-	}
-
+	public BeatmapRepository(OtrContext context) : base(context) { _context = context; }
 	public async Task<long> GetBeatmapIdAsync(int id) => await _context.Beatmaps.Where(b => b.Id == id).Select(b => b.BeatmapId).FirstOrDefaultAsync();
 	public async Task<Beatmap?> GetByOsuIdAsync(long osuBeatmapId) => await _context.Beatmaps.FirstOrDefaultAsync(x => x.BeatmapId == osuBeatmapId);
 	public async Task<Beatmap?> GetBeatmapByBeatmapIdAsync(long osuBeatmapId) { return await _context.Beatmaps.Where(x => x.BeatmapId == osuBeatmapId).FirstOrDefaultAsync(); }

@@ -29,7 +29,11 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 			                                            match.VerificationStatus == 0 &&
 			                                            match.Games.Any(game => game.VerificationStatus == 0 &&
 			                                                                    game.MatchScores.Any(score => score.PlayerId == playerId && score.IsValid == true))))
-		                                            .Select(tournament => new { TournamentId = tournament.Id, TeamSize = tournament.TeamSize })
+		                                            .Select(tournament => new
+		                                            {
+			                                            TournamentId = tournament.Id,
+			                                            tournament.TeamSize
+		                                            })
 		                                            .Distinct() // Ensures each tournament is counted once
 		                                            .ToListAsync();
 
