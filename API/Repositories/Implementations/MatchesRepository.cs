@@ -86,10 +86,11 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		if (filterInvalidMatches)
 		{
 			query = _context.Matches
-			                .WhereVerified()
-			                .Where(x => x.Games.Any())
-			                .OrderBy(m => m.StartTime)
-			                .AsQueryable();
+			                .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
+			                .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
+			                .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
+			                .ThenInclude(x => x.Beatmap)
+			                .Where(x => x.Games.Count > 0);
 		}
 
 		var matches = await query

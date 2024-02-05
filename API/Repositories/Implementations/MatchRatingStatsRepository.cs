@@ -45,6 +45,9 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 			                                     DataPoint = new PlayerRatingChartDataPointDTO
 			                                     {
 				                                     Name = mrs.Match.Name ?? "<Unknown>",
+				                                     MatchId = mrs.MatchId,
+				                                     MatchOsuId = mrs.Match.MatchId,
+				                                     MatchCost = mrs.MatchCost,
 				                                     RatingBefore = mrs.RatingBefore,
 				                                     RatingAfter = mrs.RatingAfter,
 				                                     VolatilityBefore = mrs.VolatilityBefore,
