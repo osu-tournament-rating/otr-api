@@ -42,6 +42,14 @@ public class PlayerStatsService : IPlayerStatsService
 		DateTime? dateMax = null)
 	{
 		int id = await _playerRepository.GetIdAsync(username);
+
+		if (id == default && username.Contains('_'))
+		{
+			// Search for spaces
+			string repl = username.Replace('_', ' ');
+			id = await _playerRepository.GetIdAsync(repl);
+		}
+
 		return await GetAsync(id, comparerId, mode, dateMin, dateMax);
 	}
 
