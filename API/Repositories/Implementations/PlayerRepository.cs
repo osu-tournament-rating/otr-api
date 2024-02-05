@@ -121,6 +121,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	{
 		if (username.Contains(' '))
 		{
+			// Look for users with either ' ' or '_' in the name - osu only uses one (i.e. "Red Pixel" cannot coexist with "Red_Pixel")
 			return await _context.Players.Where(p => p.Username != null && (p.Username.ToLower() == username.ToLower() || p.Username.ToLower() == username.Replace(' ', '_')))
 			                     .Select(p => p.Id)
 			                     .FirstOrDefaultAsync();
