@@ -117,8 +117,18 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 	public async Task<string?> GetCountryAsync(int playerId) => await _context.Players.Where(p => p.Id == playerId).Select(p => p.Country).FirstOrDefaultAsync();
 
-	public async Task<int> GetIdAsync(string username) =>
-		await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).Select(p => p.Id).FirstOrDefaultAsync();
+	public async Task<int> GetIdAsync(string username)
+	{
+		if (username.Contains(' '))
+		{
+			// Look for users with either ' ' or '_' in the name - osu only uses one (i.e. "Red Pixel" cannot coexist with "Red_Pixel")
+			return await _context.Players.Where(p => p.Username != null && (p.Username.ToLower() == username.ToLower() || p.Username.ToLower() == username.Replace(' ', '_')))
+			                     .Select(p => p.Id)
+			                     .FirstOrDefaultAsync();
+		}
+
+		return await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).Select(p => p.Id).FirstOrDefaultAsync();
+	}
 
 	// This is used by a scheduled task to automatically populate user info, such as username, country, etc.
 	public async Task<IEnumerable<Player>> GetOutdatedAsync() =>
