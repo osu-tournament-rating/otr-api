@@ -1,6 +1,5 @@
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -30,9 +29,9 @@ public class StatsController : Controller
 
 	[AllowAnonymous]
 	[HttpGet("{username}")]
-	public async Task<ActionResult<PlayerStatsDTO>> GetAsync(string username, [FromQuery] int? comparerId, [FromQuery] int mode = 0, [FromQuery] DateTime? dateMin = null,
+	public async Task<ActionResult<PlayerStatsDTO?>> GetAsync(string username, [FromQuery] int? comparerId, [FromQuery] int mode = 0, [FromQuery] DateTime? dateMin = null,
 		[FromQuery]
-		DateTime? dateMax = null) => await _playerStatsService.GetAsync(username.ReplaceUnderscores(), comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
+		DateTime? dateMax = null) => await _playerStatsService.GetAsync(username, comparerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 
 	[AllowAnonymous]
 	[HttpGet("histogram")]
