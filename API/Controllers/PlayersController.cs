@@ -18,7 +18,7 @@ public class PlayersController : Controller
 	public PlayersController(IPlayerService playerService) { _playerService = playerService; }
 
 	[HttpGet("all")]
-	public async Task<ActionResult<IEnumerable<Player>?>> GetAllAsync()
+	public async Task<IActionResult> GetAllAsync()
 	{
 		var players = await _playerService.GetAllAsync();
 		return Ok(players);

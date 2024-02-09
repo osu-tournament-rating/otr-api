@@ -23,7 +23,7 @@ public class MapperProfile : Profile
 				TournamentAbbreviation = x.Match.Tournament.Abbreviation,
 				TournamentName = x.Match.Tournament.Name
 			}));
-
+		CreateMap<Player, PlayerDTO>();
 		CreateMap<Player, PlayerRanksDTO>();
 		CreateMap<Player, PlayerInfoDTO>();
 		CreateMap<Tournament, TournamentDTO>();

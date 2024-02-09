@@ -115,7 +115,15 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 			Id = x.Value,
 			OsuId = x.Key
 		});
-	public async Task<Dictionary<int, string?>> GetCountryMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.Id, p => p.Country);
+
+	public async Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync() => await _context.Players
+		.AsNoTracking()
+		.OrderBy(x => x.Id)
+		.Select(x => new PlayerCountryMappingDTO
+		{
+			PlayerId = x.Id,
+			Country = x.Country
+		}).ToListAsync();
 
 	public async Task<int> GetIdByUserIdAsync(int userId) => await _context.Players.AsNoTracking()
 	                                                                       .Where(x => x.User != null && x.User.Id == userId)

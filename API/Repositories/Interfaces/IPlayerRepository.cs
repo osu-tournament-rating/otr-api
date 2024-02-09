@@ -25,7 +25,7 @@ public interface IPlayerRepository : IRepository<Player>
 	Task<string?> GetUsernameAsync(long? osuId);
 	Task<string?> GetUsernameAsync(int? id);
 	Task<IEnumerable<PlayerIdMappingDTO>> GetIdMappingAsync();
-	Task<Dictionary<int, string?>> GetCountryMappingAsync();
+	Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync();
 	Task<int> GetIdByUserIdAsync(int userId);
 	Task<string?> GetCountryAsync(int playerId);
 	Task<int> GetIdAsync(string username);
