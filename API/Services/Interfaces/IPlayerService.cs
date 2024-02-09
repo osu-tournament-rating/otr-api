@@ -19,7 +19,7 @@ public interface IPlayerService
 	/// A unique mapping of osu! user ids to our internal ids.
 	/// </summary>
 	/// <returns></returns>
-	Task<Dictionary<long, int>> GetIdMappingAsync();
+	Task<IEnumerable<PlayerIdMappingDTO>> GetIdMappingAsync();
 
 	Task<Dictionary<int, string?>> GetCountryMappingAsync();
 	Task<PlayerInfoDTO?> GetAsync(int userId);

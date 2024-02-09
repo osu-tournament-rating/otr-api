@@ -125,7 +125,7 @@ public class PlayersController : Controller
 	}
 
 	[HttpGet("id-mapping")]
-	public async Task<ActionResult<IEnumerable<Dictionary<long, int>>>> GetIdMappingAsync()
+	public async Task<ActionResult<IEnumerable<PlayerIdMappingDTO>>> GetIdMappingAsync()
 	{
 		var mapping = await _playerService.GetIdMappingAsync();
 		return Ok(mapping);

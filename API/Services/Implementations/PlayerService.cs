@@ -56,7 +56,7 @@ public class PlayerService : IPlayerService
 		return result;
 	}
 
-	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _playerRepository.GetIdMappingAsync();
+	public async Task<IEnumerable<PlayerIdMappingDTO>> GetIdMappingAsync() => await _playerRepository.GetIdMappingAsync();
 	public async Task<Dictionary<int, string?>> GetCountryMappingAsync() => await _playerRepository.GetCountryMappingAsync();
 	public async Task<PlayerInfoDTO?> GetAsync(int userId) => _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(userId));
 	public async Task<PlayerInfoDTO?> GetAsync(string username) => _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(username));
