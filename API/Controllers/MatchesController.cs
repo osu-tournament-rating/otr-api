@@ -187,7 +187,7 @@ public class MatchesController : Controller
 	}
 
 	[HttpGet("id-mapping")]
-	public async Task<ActionResult<Dictionary<long, int>>> GetIdMappingAsync()
+	public async Task<IActionResult> GetIdMappingAsync()
 	{
 		var mapping = await _matchesService.GetIdMappingAsync();
 		return Ok(mapping);
