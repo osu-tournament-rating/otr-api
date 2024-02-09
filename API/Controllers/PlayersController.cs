@@ -18,7 +18,7 @@ public class PlayersController : Controller
 	public PlayersController(IPlayerService playerService) { _playerService = playerService; }
 
 	[HttpGet("all")]
-	public async Task<ActionResult<IEnumerable<Player>?>> GetAllAsync()
+	public async Task<IActionResult> GetAllAsync()
 	{
 		var players = await _playerService.GetAllAsync();
 		return Ok(players);
@@ -125,7 +125,7 @@ public class PlayersController : Controller
 	}
 
 	[HttpGet("id-mapping")]
-	public async Task<ActionResult<IEnumerable<Dictionary<long, int>>>> GetIdMappingAsync()
+	public async Task<ActionResult<IEnumerable<PlayerIdMappingDTO>>> GetIdMappingAsync()
 	{
 		var mapping = await _playerService.GetIdMappingAsync();
 		return Ok(mapping);
