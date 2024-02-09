@@ -78,7 +78,7 @@ public class MatchesService : IMatchesService
 		}
 	}
 
-	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _matchesRepository.GetIdMappingAsync();
+	public async Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync() => await _matchesRepository.GetIdMappingAsync();
 	public async Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids) => _mapper.Map<IEnumerable<MatchDTO>>(await _matchesRepository.GetAsync(ids, true));
 
 	public async Task VerifyDuplicatesAsync(int verifierUserId, int matchRootId, bool confirmedDuplicate)

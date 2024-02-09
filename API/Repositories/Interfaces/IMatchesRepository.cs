@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Entities;
 using API.Enums;
 
@@ -29,7 +30,7 @@ public interface IMatchesRepository : IRepository<Match>
 	Task UpdateAsApiProcessed(Match match);
 	Task UpdateAsAutoChecked(Match match);
 	Task SetRequireAutoCheckAsync(bool invalidOnly = true);
-	Task<Dictionary<long, int>> GetIdMappingAsync();
+	Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync();
 
 	/// <summary>
 	///  Marks all duplicate matches of the <see cref="matchRootId" /> as duplicates. All game and score data from all of the
