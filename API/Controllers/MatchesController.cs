@@ -25,7 +25,7 @@ public class MatchesController : Controller
 	}
 
 	[HttpPost("batch")]
-	public async Task<IActionResult> PostAsync([FromBody] MatchWebSubmissionDTO wrapper, [FromQuery] bool verified = false)
+	public async Task<IActionResult> PostAsync([FromBody] TournamentWebSubmissionDTO wrapper, [FromQuery] bool verified = false)
 	{
 		/**
 		 * FLOW:
