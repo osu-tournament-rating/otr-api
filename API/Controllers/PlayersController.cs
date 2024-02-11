@@ -132,7 +132,7 @@ public class PlayersController : Controller
 	}
 
 	[HttpGet("country-mapping")]
-	public async Task<ActionResult<Dictionary<int, string>>> GetCountryMappingAsync()
+	public async Task<ActionResult<IEnumerable<PlayerCountryMappingDTO>>> GetCountryMappingAsync()
 	{
 		var mapping = await _playerService.GetCountryMappingAsync();
 		return Ok(mapping);
