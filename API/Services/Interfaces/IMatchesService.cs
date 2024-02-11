@@ -29,7 +29,7 @@ public interface IMatchesService
 	/// A unique mapping of osu! match ids to our internal ids.
 	/// </summary>
 	/// <returns></returns>
-	Task<Dictionary<long, int>> GetIdMappingAsync();
+	Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync();
 
 	/// <summary>
 	/// Converts a list of match ids to match id objects

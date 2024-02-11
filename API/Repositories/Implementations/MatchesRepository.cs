@@ -306,7 +306,14 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		}
 	}
 
-	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _context.Matches.AsNoTracking().ToDictionaryAsync(x => x.MatchId, x => x.Id);
+	public async Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync() => await _context.Matches
+		.AsNoTracking()
+		.OrderBy(x => x.Id)
+		.Select(x => new MatchIdMappingDTO
+		{
+			Id = x.Id,
+			OsuMatchId = x.MatchId
+		}).ToListAsync();
 
 	public async Task MergeDuplicatesAsync(int matchRootId)
 	{
