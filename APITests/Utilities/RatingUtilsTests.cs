@@ -110,4 +110,43 @@ public class RatingUtilsTests
 		// Assert
 		Assert.False(isProvisional);
 	}
+	
+	[Theory]
+	[InlineData(RatingUtils.RatingBronzeIII - 1, null)]
+	[InlineData(RatingUtils.RatingBronzeIII + 1, RatingUtils.RatingBronzeIII)]
+	[InlineData(RatingUtils.RatingBronzeII + 1, RatingUtils.RatingBronzeII)]
+	[InlineData(RatingUtils.RatingBronzeI + 1, RatingUtils.RatingBronzeI)]
+	[InlineData(RatingUtils.RatingSilverIII + 1, RatingUtils.RatingSilverIII)]
+	[InlineData(RatingUtils.RatingSilverII + 1, RatingUtils.RatingSilverII)]
+	[InlineData(RatingUtils.RatingSilverI + 1, RatingUtils.RatingSilverI)]
+	[InlineData(RatingUtils.RatingGoldIII + 1, RatingUtils.RatingGoldIII)]
+	[InlineData(RatingUtils.RatingGoldII + 1, RatingUtils.RatingGoldII)]
+	[InlineData(RatingUtils.RatingGoldI + 1, RatingUtils.RatingGoldI)]
+	[InlineData(RatingUtils.RatingPlatinumIII + 1, RatingUtils.RatingPlatinumIII)]
+	[InlineData(RatingUtils.RatingPlatinumII + 1, RatingUtils.RatingPlatinumII)]
+	[InlineData(RatingUtils.RatingPlatinumI + 1, RatingUtils.RatingPlatinumI)]
+	[InlineData(RatingUtils.RatingEmeraldIII + 1, RatingUtils.RatingEmeraldIII)]
+	[InlineData(RatingUtils.RatingEmeraldII + 1, RatingUtils.RatingEmeraldII)]
+	[InlineData(RatingUtils.RatingEmeraldI + 1, RatingUtils.RatingEmeraldI)]
+	[InlineData(RatingUtils.RatingDiamondIII + 1, RatingUtils.RatingDiamondIII)]
+	[InlineData(RatingUtils.RatingDiamondII + 1, RatingUtils.RatingDiamondII)]
+	[InlineData(RatingUtils.RatingDiamondI + 1, RatingUtils.RatingDiamondI)]
+	[InlineData(RatingUtils.RatingMasterIII + 1, RatingUtils.RatingMasterIII)]
+	[InlineData(RatingUtils.RatingMasterII + 1, RatingUtils.RatingMasterII)]
+	[InlineData(RatingUtils.RatingMasterI + 1, RatingUtils.RatingMasterI)]
+	[InlineData(RatingUtils.RatingGrandmasterIII + 1, RatingUtils.RatingGrandmasterIII)]
+	[InlineData(RatingUtils.RatingGrandmasterII + 1, RatingUtils.RatingGrandmasterII)]
+	[InlineData(RatingUtils.RatingGrandmasterI + 1, RatingUtils.RatingGrandmasterI)]
+	[InlineData(RatingUtils.RatingEliteGrandmaster + 1, RatingUtils.RatingEliteGrandmaster)]
+	public void GetPreviousTier_ReturnsCorrectTier_GivenCurrentTier(double rating, double? expectedPrevTier)
+	{
+		// Arrange
+
+		// Act
+		double? prevTier = RatingUtils.GetRatingForPreviousTier(rating);
+		
+		// Assert
+		Assert.Equal(expectedPrevTier, prevTier);
+	}
+	
 }
