@@ -132,7 +132,12 @@ public class PlayersController : Controller
 	}
 
 	[HttpGet("country-mapping")]
-	public async Task<ActionResult<IEnumerable<PlayerCountryMappingDTO>>> GetCountryMappingAsync()
+	[Produces(typeof(IEnumerable<PlayerCountryMappingDTO>))]
+	[ProducesResponseType(StatusCodes.Status200OKOK)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)] //In the case that a client is not authorized
+	[ProducesResponseType(StatusCodes.Status429TooManyRequests)] //Rate limit
+	[EndpointSummary("Returns a list of PlayerCountryMappingDTOs that have a player's id and their country tag.")]
+	public async Task<IActionResult> GetCountryMappingAsync()
 	{
 		var mapping = await _playerService.GetCountryMappingAsync();
 		return Ok(mapping);
