@@ -147,6 +147,7 @@ public class RatingUtilsTests
 		
 		// Assert
 		Assert.Equal(expectedPrevTier, prevTier);
+		
 	}
 	
 }
