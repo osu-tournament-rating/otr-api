@@ -133,7 +133,7 @@ public class PlayersController : Controller
 
 	[HttpGet("country-mapping")]
 	[Produces(typeof(IEnumerable<PlayerCountryMappingDTO>))]
-	[ProducesResponseType(StatusCodes.Status200OKOK)]
+	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status403Forbidden)] //In the case that a client is not authorized
 	[ProducesResponseType(StatusCodes.Status429TooManyRequests)] //Rate limit
 	[EndpointSummary("Returns a list of PlayerCountryMappingDTOs that have a player's id and their country tag.")]
