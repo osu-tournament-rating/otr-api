@@ -133,7 +133,6 @@ public class PlayersController : Controller
 
 	[HttpGet("country-mapping")]
 	[ProducesResponseType<IEnumerable<PlayerCountryMappingDTO>>(StatusCodes.Status200OK)]
-	[ProducesResponseType(StatusCodes.Status403Forbidden)] // In the case that a client is not authorized
 	[EndpointSummary("Returns a list of PlayerCountryMappingDTOs that have a player's id and their country tag.")]
 	public async Task<IActionResult> GetCountryMappingAsync()
 	{
