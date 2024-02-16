@@ -23,16 +23,65 @@ public class MeController : Controller
 		_playerStatsService = playerStatsService;
 	}
 
+	private bool IsWhitelisted(long osuId)
+	{
+		var whitelist = new long[]
+		{
+			11482346,
+			8191845,
+			11557554,
+			4001304,
+			6892711,
+			7153533,
+			3958619,
+			6701656,
+			1797189,
+			7802400,
+			11255340,
+			13175102
+		};
+
+		return whitelist.Contains(osuId);
+	}
+	
+	[HttpGet]
+	[EndpointSummary("Gets the logged in user's information, if they exist")]
+	[ProducesResponseType<UserInfoDTO>(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	public async Task<ActionResult<UserInfoDTO>> GetLoggedInUserAsync()
+	{
+		int? id = HttpContext.AuthorizedUserIdentity();
+
+		if (!id.HasValue)
+		{
+			return BadRequest("User is not logged in.");
+		}
+
+		var user = await _userService.GetForPlayerAsync(id.Value);
+		if (user?.OsuId == null)
+		{
+			return NotFound("User not found");
+		}
+
+		if (!IsWhitelisted(user.OsuId.Value))
+		{
+			return Unauthorized("User is not whitelisted");
+		}
+
+		return Ok(user);
+	}
+
 	/// <summary>
 	///  Validates the currently logged in user's OTR-Access-Token cookie
 	/// </summary>
 	/// <returns></returns>
+	[HttpGet("validate")]
 	[EndpointSummary("Validates the currently logged in user's OTR-Access-Token cookie")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	[HttpGet("validate")]
-	public IActionResult ValidateJwt()
+	public async Task<IActionResult> ValidateJwt()
 	{
 		if (!HttpContext.Request.Cookies.ContainsKey("OTR-Access-Token"))
 		{
@@ -45,13 +94,19 @@ public class MeController : Controller
 			return BadRequest("Cookie found, but was null or empty.");
 		}
 
+		var loggedInUser = await GetLoggedInUserAsync();
+		if (loggedInUser.Result is UnauthorizedResult)
+		{
+			return Unauthorized("User is not whitelisted");
+		}
+
 		var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
 		var expDate = jwtToken.ValidTo;
 		if (expDate < DateTime.UtcNow)
 		{
 			return NoContent();
 		}
-
+		
 		return Ok();
 	}
 
@@ -69,26 +124,6 @@ public class MeController : Controller
 		}
 
 		return idInt;
-	}
-
-	[HttpGet]
-	public async Task<ActionResult<UserInfoDTO>> GetLoggedInUserAsync()
-	{
-		int? id = HttpContext.AuthorizedUserIdentity();
-
-		if (!id.HasValue)
-		{
-			return BadRequest("User's login seems corrupted, couldn't identify osuId.");
-		}
-
-		var user = await _userService.GetForPlayerAsync(id.Value);
-
-		if (user == null)
-		{
-			return NotFound("User not found");
-		}
-
-		return Ok(user);
 	}
 
 	[HttpGet("stats")]
