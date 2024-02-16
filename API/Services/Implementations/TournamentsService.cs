@@ -17,7 +17,12 @@ public class TournamentsService : ITournamentsService
 		_mapper = mapper;
 	}
 
-	public async Task<Tournament> CreateOrUpdateAsync(MatchWebSubmissionDTO wrapper, bool updateExisting = false) => await _repository.CreateOrUpdateAsync(wrapper, updateExisting);
+	public async Task<TournamentDTO> CreateOrUpdateAsync(TournamentWebSubmissionDTO wrapper, bool updateExisting = false)
+	{
+		var tournament = await _repository.CreateOrUpdateAsync(wrapper, updateExisting);
+
+		return _mapper.Map<TournamentDTO>(tournament);
+	} 
 	public async Task<bool> ExistsAsync(string name, int mode) => await _repository.ExistsAsync(name, mode);
 
 	public async Task<IEnumerable<TournamentDTO>> GetAllAsync()
