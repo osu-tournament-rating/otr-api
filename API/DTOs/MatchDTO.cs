@@ -12,4 +12,5 @@ public class MatchDTO
     public DateTime? StartTime { get; set; }
     public DateTime? EndTime { get; set; }
     public ICollection<GameDTO> Games { get; set; } = new List<GameDTO>();
+    public int? VerificationStatus { get; set; }
 }
