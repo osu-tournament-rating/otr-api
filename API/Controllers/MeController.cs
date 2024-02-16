@@ -38,7 +38,8 @@ public class MeController : Controller
 			1797189,
 			7802400,
 			11255340,
-			13175102
+			13175102,
+			11955929
 		};
 
 		return whitelist.Contains(osuId);
