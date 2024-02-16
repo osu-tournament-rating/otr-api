@@ -33,10 +33,10 @@ public class MatchesService : IMatchesService
 		return _mapper.Map<IEnumerable<MatchDTO>>(matches);
 	}
 
-	public async Task BatchInsertOrUpdateAsync(MatchWebSubmissionDTO matchWebSubmissionDto, bool verified, int? verifier)
+	public async Task BatchInsertOrUpdateAsync(TournamentWebSubmissionDTO tournamentWebSubmissionDto, bool verified, int? verifier)
 	{
-		var existingMatches = (await _matchesRepository.GetByMatchIdsAsync(matchWebSubmissionDto.Ids)).ToList();
-		var tournament = await _tournamentsRepository.CreateOrUpdateAsync(matchWebSubmissionDto, verified);
+		var existingMatches = (await _matchesRepository.GetByMatchIdsAsync(tournamentWebSubmissionDto.Ids)).ToList();
+		var tournament = await _tournamentsRepository.CreateOrUpdateAsync(tournamentWebSubmissionDto, verified);
 
 		// Update the matches that already exist, if we are verified
 		if (verified)
@@ -47,27 +47,27 @@ public class MatchesService : IMatchesService
 				match.IsApiProcessed = false;
 				match.VerificationStatus = (int)MatchVerificationStatus.Verified;
 				match.VerificationSource = verifier;
-				match.VerifierUserId = matchWebSubmissionDto.SubmitterId;
+				match.VerifierUserId = tournamentWebSubmissionDto.SubmitterId;
 				match.TournamentId = tournament.Id;
-				match.SubmitterUserId = matchWebSubmissionDto.SubmitterId;
+				match.SubmitterUserId = tournamentWebSubmissionDto.SubmitterId;
 
 				await _matchesRepository.UpdateAsync(match);
 			}
 		}
 
 		// Matches that don't exist yet
-		var newMatchIds = matchWebSubmissionDto.Ids.Except(existingMatches.Select(x => x.MatchId)).ToList();
+		var newMatchIds = tournamentWebSubmissionDto.Ids.Except(existingMatches.Select(x => x.MatchId)).ToList();
 		var verificationStatus = verified ? MatchVerificationStatus.Verified : MatchVerificationStatus.PendingVerification;
 
 		var newMatches = newMatchIds.Select(id => new Match
 		{
 			MatchId = id,
 			VerificationStatus = (int)verificationStatus,
-			SubmitterUserId = matchWebSubmissionDto.SubmitterId,
+			SubmitterUserId = tournamentWebSubmissionDto.SubmitterId,
 			NeedsAutoCheck = true,
 			IsApiProcessed = false,
 			VerificationSource = verifier,
-			VerifierUserId = verified ? matchWebSubmissionDto.SubmitterId : null,
+			VerifierUserId = verified ? tournamentWebSubmissionDto.SubmitterId : null,
 			TournamentId = tournament.Id
 		});
 
@@ -78,7 +78,7 @@ public class MatchesService : IMatchesService
 		}
 	}
 
-	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _matchesRepository.GetIdMappingAsync();
+	public async Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync() => await _matchesRepository.GetIdMappingAsync();
 	public async Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids) => _mapper.Map<IEnumerable<MatchDTO>>(await _matchesRepository.GetAsync(ids, true));
 
 	public async Task VerifyDuplicatesAsync(int verifierUserId, int matchRootId, bool confirmedDuplicate)

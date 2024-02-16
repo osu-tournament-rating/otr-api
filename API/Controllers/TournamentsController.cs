@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -21,4 +22,13 @@ public class TournamentsController : Controller
 		var res = await _service.GetAllAsync();
 		return Ok(res);
 	}
+    
+    [HttpPut]
+    [AllowAnonymous]
+    public async Task<IActionResult> PutAsync(TournamentWebSubmissionDTO tournament)
+    {
+	    var res = await _service.CreateOrUpdateAsync(tournament, true);
+
+	    return Ok(res);
+    }
 }
