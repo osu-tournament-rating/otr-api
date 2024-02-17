@@ -27,7 +27,7 @@ public class BaseStatsService : IBaseStatsService
 
 	public async Task<IEnumerable<BaseStatsDTO?>> GetForPlayerAsync(long osuPlayerId)
 	{
-		int id = await _playerRepository.GetIdByOsuIdAsync(osuPlayerId);
+		int id = await _playerRepository.GetIdAsync(osuPlayerId);
 		var baseStats = await _baseStatsRepository.GetForPlayerAsync(osuPlayerId);
 		var ret = new List<BaseStatsDTO?>();
 

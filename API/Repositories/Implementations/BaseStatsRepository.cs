@@ -20,7 +20,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 	public async Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId)
 	{
-		int dbId = await _playerRepository.GetIdByOsuIdAsync(osuPlayerId);
+		int dbId = await _playerRepository.GetIdAsync(osuPlayerId);
 
 		if (dbId == default)
 		{
