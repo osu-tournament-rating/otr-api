@@ -286,8 +286,8 @@ public class ApiMatchRepository : IApiMatchRepository
 		int countSaved = 0;
 		foreach (var score in osuApiGame.Scores)
 		{
-			int playerId = await _playerRepository.GetIdAsync(score.UserId);
-			if (playerId == default)
+			int? playerId = await _playerRepository.GetIdAsync(score.UserId);
+			if (!playerId.HasValue)
 			{
 				_logger.LogWarning("Failed to resolve player ID for player {PlayerId} while processing scores for game {GameId}! This score will be missing!", score.UserId,
 					osuApiGame.GameId);
@@ -295,11 +295,11 @@ public class ApiMatchRepository : IApiMatchRepository
 				continue;
 			}
 
-			if (!await ScoreExistsInDatabaseAsync(osuApiGame.GameId, playerId))
+			if (!await ScoreExistsInDatabaseAsync(osuApiGame.GameId, playerId.Value))
 			{
 				var dbMatchScore = new MatchScore
 				{
-					PlayerId = playerId,
+					PlayerId = playerId.Value,
 					GameId = dbGame.Id,
 					Team = (int)score.Team,
 					Score = score.PlayerScore,

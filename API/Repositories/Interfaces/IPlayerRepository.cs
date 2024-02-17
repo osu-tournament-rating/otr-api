@@ -20,7 +20,12 @@ public interface IPlayerRepository : IRepository<Player>
 	/// <param name="eagerLoad">Whether to also load related fields (i.e. player matches)</param>
 	/// <returns></returns>
 	Task<IEnumerable<Player>> GetAsync(bool eagerLoad = false);
-	Task<int> GetIdAsync(long osuId);
+	/// <summary>
+	/// Returns the id of the player that has this osuId
+	/// </summary>
+	/// <param name="osuId"></param>
+	/// <returns></returns>
+	Task<int?> GetIdAsync(long osuId);
 	Task<long> GetOsuIdAsync(int id);
 
 	/// <summary>

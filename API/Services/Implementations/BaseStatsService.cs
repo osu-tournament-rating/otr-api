@@ -27,14 +27,20 @@ public class BaseStatsService : IBaseStatsService
 
 	public async Task<IEnumerable<BaseStatsDTO?>> GetForPlayerAsync(long osuPlayerId)
 	{
-		int id = await _playerRepository.GetIdAsync(osuPlayerId);
+		int? id = await _playerRepository.GetIdAsync(osuPlayerId);
+
+		if (!id.HasValue)
+		{
+			return new List<BaseStatsDTO?>();
+		}
+		
 		var baseStats = await _baseStatsRepository.GetForPlayerAsync(osuPlayerId);
 		var ret = new List<BaseStatsDTO?>();
 
 		foreach (var stat in baseStats)
 		{
 			// One per mode
-			ret.Add(await GetForPlayerAsync(stat, id, stat.Mode));
+			ret.Add(await GetForPlayerAsync(stat, id.Value, stat.Mode));
 		}
 
 		return ret;

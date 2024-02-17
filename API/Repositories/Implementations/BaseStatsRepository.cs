@@ -20,14 +20,14 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
 	public async Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId)
 	{
-		int dbId = await _playerRepository.GetIdAsync(osuPlayerId);
+		int? id = await _playerRepository.GetIdAsync(osuPlayerId);
 
-		if (dbId == default)
+		if (!id.HasValue)
 		{
 			return new List<BaseStats>();
 		}
 
-		return await _context.BaseStats.Where(x => x.PlayerId == dbId).ToListAsync();
+		return await _context.BaseStats.Where(x => x.PlayerId == id.Value).ToListAsync();
 	}
 
 	public async Task<BaseStats?> GetForPlayerAsync(int playerId, int mode) => await _context.BaseStats.Where(x => x.PlayerId == playerId && x.Mode == mode).FirstOrDefaultAsync();

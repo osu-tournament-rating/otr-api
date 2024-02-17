@@ -6,14 +6,6 @@ namespace APITests.MockRepositories;
 
 public class MockPlayerRepository : Mock<IPlayerRepository>
 {
-	public MockPlayerRepository SetupBasicValidPlayer()
-	{
-		Setup(x => x.GetAsync(It.IsAny<int>()))
-			.ReturnsAsync((int id) => SeededPlayer.Get(id));
-
-		return this;
-	}
-
 	public MockPlayerRepository SetupGetId()
 	{
 		Setup(x => x.GetIdAsync(It.IsAny<string>())).ReturnsAsync(440);
