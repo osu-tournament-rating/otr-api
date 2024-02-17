@@ -7,8 +7,8 @@ namespace API.Repositories.Interfaces;
 public interface IPlayerRepository : IRepository<Player>
 {
 	Task<Player?> GetAsync(string username);
-	Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1);
-	Task<int> GetIdByOsuIdAsync(long osuId);
+	Task<Player?> GetAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1);
+	Task<int> GetIdAsync(long osuId);
 	Task<long> GetOsuIdAsync(int id);
 
 	/// <summary>

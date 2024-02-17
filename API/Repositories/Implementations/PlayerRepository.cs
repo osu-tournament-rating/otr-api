@@ -62,7 +62,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	public async Task<Player?> GetAsync(string username) =>
 		await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).FirstOrDefaultAsync();
 
-	public async Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1)
+	public async Task<Player?> GetAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1)
 	{
 		if (!eagerLoad)
 		{
@@ -88,7 +88,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 		return p;
 	}
 
-	public async Task<int> GetIdByOsuIdAsync(long osuId) => await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
+	public async Task<int> GetIdAsync(long osuId) => await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
 	public async Task<long> GetOsuIdAsync(int id) => await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
 
 	public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode) => await (from p in _context.Players
@@ -151,7 +151,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 	public async Task<PlayerInfoDTO?> GetPlayerDTOByOsuIdAsync(long osuId, bool eagerLoad = false, OsuEnums.Mode mode = OsuEnums.Mode.Standard, int offsetDays = -1)
 	{
-		var obj = _mapper.Map<PlayerInfoDTO?>(await GetPlayerByOsuIdAsync(osuId, eagerLoad, (int)mode, offsetDays));
+		var obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)mode, offsetDays));
 
 		if (obj == null)
 		{

@@ -54,7 +54,7 @@ public class LoginController : Controller
 			var osuUser = await AuthorizeAsync(code);
 			long osuUserId = osuUser.Id;
 
-			var player = await _playerRepository.GetPlayerByOsuIdAsync(osuUserId);
+			var player = await _playerRepository.GetAsync(osuUserId);
 			if (player == null)
 			{
 				player = await _playerRepository.CreateAsync(new Player
