@@ -114,13 +114,13 @@ public class PlayerStatsService : IPlayerStatsService
 		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var modStats = await GetModStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
-		var ratingStats = await GetRatingStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+		var ratingChart = await _ratingStatsRepository.GetRatingChartAsync(playerId, mode, dateMin.Value, dateMax.Value);
 
 		var frequentTeammates = await _matchWinRecordRepository.GetFrequentTeammatesAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var frequentOpponents = await _matchWinRecordRepository.GetFrequentOpponentsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 
 		return new PlayerStatsDTO(playerInfo, baseStats, matchStats, modStats, tournamentStats,
-			ratingStats, frequentTeammates, frequentOpponents);
+			ratingChart, frequentTeammates, frequentOpponents);
 	}
 
 	public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody)
@@ -234,12 +234,6 @@ public class PlayerStatsService : IPlayerStatsService
 		return dto;
 	}
 
-	private async Task<IEnumerable<IEnumerable<MatchRatingStatsDTO>>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
-	{
-		var ratingStats = await _ratingStatsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax);
-		return _mapper.Map<IEnumerable<IEnumerable<MatchRatingStatsDTO>>>(ratingStats);
-	}
-
 	public async Task<PlayerModStatsDTO> GetModStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax) =>
 		await _matchStatsRepository.GetModStatsAsync(playerId, mode, dateMin, dateMax);
 
@@ -300,9 +294,6 @@ public class PlayerStatsService : IPlayerStatsService
 			MatchAverageMissesAggregate = matchStats.Average(x => x.AverageMisses),
 			AverageGamesPlayedAggregate = matchStats.Average(x => x.GamesPlayed),
 			AveragePlacingAggregate = matchStats.Average(x => x.AveragePlacement),
-			MostPlayedTeammateName = await _playerRepository.GetUsernameAsync(MostPlayedTeammateId(matchStats)),
-			MostPlayedOpponentName = await _playerRepository.GetUsernameAsync(MostPlayedOpponentId(matchStats)),
-			BestTeammateName = string.Empty, // TODO: Implement
 			PeriodStart = dateMin,
 			PeriodEnd = dateMax
 		};
@@ -331,17 +322,5 @@ public class PlayerStatsService : IPlayerStatsService
 		}
 
 		return highest;
-	}
-
-	private int? MostPlayedTeammateId(IEnumerable<PlayerMatchStats> stats)
-	{
-		var teammates = stats.SelectMany(x => x.TeammateIds).GroupBy(x => x).Select(x => new { Id = x.Key, Count = x.Count() }).ToList();
-		return teammates.Any() ? teammates.OrderByDescending(x => x.Count).First().Id : null;
-	}
-
-	private int? MostPlayedOpponentId(IEnumerable<PlayerMatchStats> stats)
-	{
-		var opponents = stats.SelectMany(x => x.OpponentIds).GroupBy(x => x).Select(x => new { Id = x.Key, Count = x.Count() }).ToList();
-		return opponents.Any() ? opponents.OrderByDescending(x => x.Count).First().Id : null;
 	}
 }
