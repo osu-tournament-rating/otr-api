@@ -52,7 +52,8 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 				                                     RatingAfter = mrs.RatingAfter,
 				                                     VolatilityBefore = mrs.VolatilityBefore,
 				                                     VolatilityAfter = mrs.VolatilityAfter,
-				                                     IsAdjustment = false
+				                                     IsAdjustment = false,
+				                                     Timestamp = mrs.Match.StartTime
 			                                     }
 		                                     })
 		                                     .ToListAsync();
@@ -70,7 +71,8 @@ public class MatchRatingStatsRepository : IMatchRatingStatsRepository
 				                                      RatingAfter = ra.RatingAfter,
 				                                      VolatilityBefore = ra.VolatilityBefore,
 				                                      VolatilityAfter = ra.VolatilityAfter,
-				                                      IsAdjustment = true
+				                                      IsAdjustment = true,
+				                                      Timestamp = ra.Timestamp
 			                                      }
 		                                      })
 		                                      .ToListAsync();

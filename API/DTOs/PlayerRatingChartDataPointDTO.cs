@@ -13,4 +13,5 @@ public class PlayerRatingChartDataPointDTO
 	public double RatingChange => RatingAfter - RatingBefore;
 	public double VolatilityChange => VolatilityAfter - VolatilityBefore;
 	public bool IsAdjustment { get; set; }
+	public DateTime? Timestamp { get; set; }
 }
