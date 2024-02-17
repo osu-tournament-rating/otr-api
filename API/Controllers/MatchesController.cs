@@ -12,7 +12,7 @@ namespace API.Controllers;
 [ApiController]
 [EnableCors]
 [Authorize]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 public class MatchesController : Controller
 {
 	private readonly IMatchesService _matchesService;

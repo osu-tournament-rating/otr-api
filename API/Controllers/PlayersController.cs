@@ -11,7 +11,7 @@ namespace API.Controllers;
 [ApiController]
 [EnableCors]
 [Authorize(Roles = "Admin, System")]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 public class PlayersController : Controller
 {
 	private readonly IPlayerService _playerService;
