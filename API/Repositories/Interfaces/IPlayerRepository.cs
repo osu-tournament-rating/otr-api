@@ -40,8 +40,18 @@ public interface IPlayerRepository : IRepository<Player>
 	/// <returns></returns>
 	Task<IEnumerable<Player>> GetPlayersMissingRankAsync();
 	Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode);
+	/// <summary>
+	/// Fetches the username for the given osu id, if available
+	/// </summary>
+	/// <param name="osuId"></param>
+	/// <returns></returns>
 	Task<string?> GetUsernameAsync(long? osuId);
-	Task<string?> GetUsernameAsync(int? id);
+	/// <summary>
+	/// Fetches the username for the given player id
+	/// </summary>
+	/// <param name="id"></param>
+	/// <returns></returns>
+	Task<string?> GetUsernameAsync(int id);
 	Task<IEnumerable<PlayerIdMappingDTO>> GetIdMappingAsync();
 	Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync();
 	/// <summary>
