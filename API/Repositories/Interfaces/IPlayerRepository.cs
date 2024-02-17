@@ -17,8 +17,11 @@ public interface IPlayerRepository : IRepository<Player>
 	/// </summary>
 	/// <returns></returns>
 	Task<IEnumerable<Player>> GetOutdatedAsync();
-
-	Task<IEnumerable<Player>> GetPlayersWhereMissingGlobalRankAsync();
+	/// <summary>
+	/// Get all players that are missing an earliest global rank in any mode (but have a current rank in that mode)
+	/// </summary>
+	/// <returns></returns>
+	Task<IEnumerable<Player>> GetPlayersMissingRankAsync();
 	Task<IEnumerable<Player>> GetByOsuIdsAsync(IEnumerable<long> osuIds);
 	Task<IEnumerable<Player>> GetAllAsync(bool eagerLoad = false);
 	Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode);

@@ -31,7 +31,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 		return await base.CreateAsync(player);
 	}
 
-	public async Task<IEnumerable<Player>> GetPlayersWhereMissingGlobalRankAsync()
+	public async Task<IEnumerable<Player>> GetPlayersMissingRankAsync()
 	{
 		// Get all players that are missing an earliest global rank in any mode (but have a current rank in that mode)
 		var players = await _context.Players.Where(x => (x.EarliestOsuGlobalRank == null && x.RankStandard != null) ||
