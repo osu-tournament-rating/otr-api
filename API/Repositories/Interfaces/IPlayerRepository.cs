@@ -12,6 +12,14 @@ public interface IPlayerRepository : IRepository<Player>
 	/// <param name="username"></param>
 	/// <returns></returns>
 	Task<Player?> GetAsync(string username);
+	/// <summary>
+	/// Returns a player, if available, that matches the given osu id with optional additional data.
+	/// </summary>
+	/// <param name="osuId">The osu id of the player</param>
+	/// <param name="eagerLoad">Whether to load additional related properties</param>
+	/// <param name="mode">What mode should the related information be (requires eagerLoad = true)</param>
+	/// <param name="offsetDays">What time period should the related information be from (requires eagerLoad = true)</param>
+	/// <returns></returns>
 	Task<Player?> GetAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1);
 	/// <summary>
 	/// Returns players that match the provided enumerable of osuIds
