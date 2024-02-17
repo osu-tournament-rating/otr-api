@@ -25,6 +25,4 @@ public static class HttpContextExtensions
 
 		return idInt;
 	}
-
-	public static StringValues WebAuthorization(this IHeaderDictionary headers) => headers["WebAuthorization"];
 }
