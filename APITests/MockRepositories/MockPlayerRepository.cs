@@ -22,7 +22,7 @@ public class MockPlayerRepository : Mock<IPlayerRepository>
 
 	public MockPlayerRepository SetupGetUsername()
 	{
-		Setup(x => x.GetUsernameAsync(It.IsAny<long?>())).ReturnsAsync("FooBar");
+		Setup(x => x.GetUsernameAsync(It.IsAny<long>())).ReturnsAsync("FooBar");
 
 		return this;
 	}
