@@ -52,7 +52,15 @@ public interface IPlayerRepository : IRepository<Player>
 	/// <param name="id"></param>
 	/// <returns></returns>
 	Task<string?> GetUsernameAsync(int id);
+	/// <summary>
+	/// Returns a collection of <see cref="PlayerIdMappingDTO"/> for all players
+	/// </summary>
+	/// <returns></returns>
 	Task<IEnumerable<PlayerIdMappingDTO>> GetIdMappingAsync();
+	/// <summary>
+	/// Returns a collection of <see cref="PlayerCountryMappingDTO"/> for all players
+	/// </summary>
+	/// <returns></returns>
 	Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync();
 	/// <summary>
 	/// Returns the player id for the given user id
