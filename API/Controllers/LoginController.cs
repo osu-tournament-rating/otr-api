@@ -19,7 +19,7 @@ public class LoginWrapper
 
 [ApiController]
 [EnableCors]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 public class LoginController : Controller
 {
 	private readonly IConfiguration _configuration;

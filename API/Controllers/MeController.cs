@@ -11,7 +11,7 @@ namespace API.Controllers;
 [ApiController]
 [EnableCors]
 [Authorize]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 public class MeController : Controller
 {
 	private readonly IUserService _userService;
