@@ -45,7 +45,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 	public async Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds) => await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
-	public async Task<IEnumerable<Player>> GetAllAsync(bool eagerLoad)
+	public async Task<IEnumerable<Player>> GetAsync(bool eagerLoad)
 	{
 		if (eagerLoad)
 		{

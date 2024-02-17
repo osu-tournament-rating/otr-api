@@ -14,6 +14,12 @@ public interface IPlayerRepository : IRepository<Player>
 	/// <param name="osuIds">A list of ids by which players should be fetched from</param>
 	/// <returns></returns>
 	Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds);
+	/// <summary>
+	/// Returns all players
+	/// </summary>
+	/// <param name="eagerLoad">Whether to also load related fields (i.e. player matches)</param>
+	/// <returns></returns>
+	Task<IEnumerable<Player>> GetAsync(bool eagerLoad = false);
 	Task<int> GetIdAsync(long osuId);
 	Task<long> GetOsuIdAsync(int id);
 
@@ -28,7 +34,6 @@ public interface IPlayerRepository : IRepository<Player>
 	/// </summary>
 	/// <returns></returns>
 	Task<IEnumerable<Player>> GetPlayersMissingRankAsync();
-	Task<IEnumerable<Player>> GetAllAsync(bool eagerLoad = false);
 	Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode);
 	Task<string?> GetUsernameAsync(long? osuId);
 	Task<string?> GetUsernameAsync(int? id);
