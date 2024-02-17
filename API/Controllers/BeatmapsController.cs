@@ -8,7 +8,7 @@ namespace API.Controllers;
 
 [ApiController]
 [EnableCors]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 [Authorize(Roles = "Admin, System")]
 public class BeatmapsController : Controller
 {

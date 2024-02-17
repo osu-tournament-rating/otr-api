@@ -9,7 +9,7 @@ namespace API.Controllers;
 
 [ApiController]
 [EnableCors]
-[Route("api/[controller]")]
+[Route("api/v1/[controller]")]
 public class LeaderboardsController : Controller
 {
 	private readonly ILeaderboardService _leaderboardService;
