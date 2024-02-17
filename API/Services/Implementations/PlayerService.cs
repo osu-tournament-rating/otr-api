@@ -23,7 +23,7 @@ public class PlayerService : IPlayerService
 		_mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(osuId, eagerLoad, (int)mode, offsetDays));
 
 	public async Task<IEnumerable<PlayerInfoDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds) =>
-		_mapper.Map<IEnumerable<PlayerInfoDTO>>(await _playerRepository.GetByOsuIdsAsync(osuIds));
+		_mapper.Map<IEnumerable<PlayerInfoDTO>>(await _playerRepository.GetAsync(osuIds));
 
 	public async Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync() { return _mapper.Map<IEnumerable<PlayerRanksDTO>>(await _playerRepository.GetAllAsync(false)); }
 

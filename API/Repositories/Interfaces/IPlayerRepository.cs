@@ -8,6 +8,12 @@ public interface IPlayerRepository : IRepository<Player>
 {
 	Task<Player?> GetAsync(string username);
 	Task<Player?> GetAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1);
+	/// <summary>
+	/// Returns players that match the provided enumerable of osuIds
+	/// </summary>
+	/// <param name="osuIds">A list of ids by which players should be fetched from</param>
+	/// <returns></returns>
+	Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds);
 	Task<int> GetIdAsync(long osuId);
 	Task<long> GetOsuIdAsync(int id);
 
@@ -22,7 +28,6 @@ public interface IPlayerRepository : IRepository<Player>
 	/// </summary>
 	/// <returns></returns>
 	Task<IEnumerable<Player>> GetPlayersMissingRankAsync();
-	Task<IEnumerable<Player>> GetByOsuIdsAsync(IEnumerable<long> osuIds);
 	Task<IEnumerable<Player>> GetAllAsync(bool eagerLoad = false);
 	Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode);
 	Task<string?> GetUsernameAsync(long? osuId);
