@@ -115,7 +115,6 @@ public class PlayerStatsService : IPlayerStatsService
 		var modStats = await GetModStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var ratingChart = await _ratingStatsRepository.GetRatingChartAsync(playerId, mode, dateMin.Value, dateMax.Value);
-		// var ratingStats = await GetRatingStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
 
 		var frequentTeammates = await _matchWinRecordRepository.GetFrequentTeammatesAsync(playerId, mode, dateMin.Value, dateMax.Value);
 		var frequentOpponents = await _matchWinRecordRepository.GetFrequentOpponentsAsync(playerId, mode, dateMin.Value, dateMax.Value);
@@ -234,12 +233,6 @@ public class PlayerStatsService : IPlayerStatsService
 
 		return dto;
 	}
-
-	// private async Task<IEnumerable<IEnumerable<MatchRatingStatsDTO>>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
-	// {
-	// 	var ratingStats = await _ratingStatsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax);
-	// 	return _mapper.Map<IEnumerable<IEnumerable<MatchRatingStatsDTO>>>(ratingStats);
-	// }
 
 	public async Task<PlayerModStatsDTO> GetModStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax) =>
 		await _matchStatsRepository.GetModStatsAsync(playerId, mode, dateMin, dateMax);
