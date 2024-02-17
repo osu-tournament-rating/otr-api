@@ -125,7 +125,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 			Country = x.Country
 		}).ToListAsync();
 
-	public async Task<int> GetIdByUserIdAsync(int userId) => await _context.Players.AsNoTracking()
+	public async Task<int> GetIdAsync(int userId) => await _context.Players.AsNoTracking()
 	                                                                       .Where(x => x.User != null && x.User.Id == userId)
 	                                                                       .Select(x => x.Id)
 	                                                                       .FirstOrDefaultAsync();
@@ -137,7 +137,9 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 		if (username.Contains(' '))
 		{
 			// Look for users with either ' ' or '_' in the name - osu only uses one (i.e. "Red Pixel" cannot coexist with "Red_Pixel")
-			return await _context.Players.Where(p => p.Username != null && (p.Username.ToLower() == username.ToLower() || p.Username.ToLower() == username.Replace(' ', '_')))
+			return await _context.Players.Where(p => p.Username != null && 
+			                                         (p.Username.ToLower() == username.ToLower() || 
+			                                          p.Username.ToLower() == username.Replace(' ', '_')))
 			                     .Select(p => p.Id)
 			                     .FirstOrDefaultAsync();
 		}

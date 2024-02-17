@@ -44,7 +44,23 @@ public interface IPlayerRepository : IRepository<Player>
 	Task<string?> GetUsernameAsync(int? id);
 	Task<IEnumerable<PlayerIdMappingDTO>> GetIdMappingAsync();
 	Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync();
-	Task<int> GetIdByUserIdAsync(int userId);
+	/// <summary>
+	/// Returns the player id for the given user id
+	/// </summary>
+	/// <param name="userId"></param>
+	/// <returns></returns>
+	Task<int> GetIdAsync(int userId);
+	/// <summary>
+	/// Returns the country of the player with the given player id, if available
+	/// </summary>
+	/// <param name="playerId"></param>
+	/// <returns></returns>
 	Task<string?> GetCountryAsync(int playerId);
+	/// <summary>
+	/// Return the id belonging to the player with this username. Case insensitive,
+	/// underscores and spaces cannot coexist with each other, so they are treated as unique.
+	/// </summary>
+	/// <param name="username"></param>
+	/// <returns></returns>
 	Task<int> GetIdAsync(string username);
 }
