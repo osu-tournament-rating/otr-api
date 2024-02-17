@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Enums;
+using API.Osu;
 using API.Repositories.Interfaces;
 using API.Utilities;
 using AutoMapper;
@@ -83,15 +84,13 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		                    .OrderBy(m => m.StartTime)
 		                    .AsQueryable();
 
-		if (filterInvalidMatches)
-		{
-			query = _context.Matches
+        if (filterInvalidMatches)
+            query = _context.Matches
+                .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
+                .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
 			                .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
-			                .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
-			                .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
-			                .ThenInclude(x => x.Beatmap)
-			                .Where(x => x.Games.Count > 0);
-		}
+                .ThenInclude(x => x.Beatmap)
+                .Where(x => x.Games.Count > 0);
 
 		var matches = await query
 		                    .Select(x => x.Id)
@@ -306,8 +305,18 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		}
 	}
 
-	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _context.Matches.AsNoTracking().ToDictionaryAsync(x => x.MatchId, x => x.Id);
-
+	public async Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync()
+	{
+		return await _context.Matches
+			.AsNoTracking()
+			.OrderBy(x => x.Id)
+			.Select(x => new MatchIdMappingDTO
+			{
+				Id = x.Id,
+				OsuMatchId = x.MatchId
+			}).ToListAsync();
+	}
+	
 	public async Task MergeDuplicatesAsync(int matchRootId)
 	{
 		var root = await GetAsync(matchRootId);

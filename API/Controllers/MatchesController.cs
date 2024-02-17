@@ -25,7 +25,7 @@ public class MatchesController : Controller
 	}
 
 	[HttpPost("batch")]
-	public async Task<IActionResult> PostAsync([FromBody] MatchWebSubmissionDTO wrapper, [FromQuery] bool verified = false)
+	public async Task<IActionResult> PostAsync([FromBody] TournamentWebSubmissionDTO wrapper, [FromQuery] bool verified = false)
 	{
 		/**
 		 * FLOW:
@@ -187,7 +187,7 @@ public class MatchesController : Controller
 	}
 
 	[HttpGet("id-mapping")]
-	public async Task<ActionResult<Dictionary<long, int>>> GetIdMappingAsync()
+	public async Task<IActionResult> GetIdMappingAsync()
 	{
 		var mapping = await _matchesService.GetIdMappingAsync();
 		return Ok(mapping);

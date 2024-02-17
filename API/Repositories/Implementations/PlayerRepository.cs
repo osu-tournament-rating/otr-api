@@ -107,8 +107,23 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 	public async Task<string?> GetUsernameAsync(long? osuId) => await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
 	public async Task<string?> GetUsernameAsync(int? id) => await _context.Players.Where(p => p.Id == id).Select(p => p.Username).FirstOrDefaultAsync();
-	public async Task<Dictionary<long, int>> GetIdMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.OsuId, p => p.Id);
-	public async Task<Dictionary<int, string?>> GetCountryMappingAsync() => await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.Id, p => p.Country);
+	public async Task<IEnumerable<PlayerIdMappingDTO>> GetIdMappingAsync() => (await _context.Players.AsNoTracking()
+		.ToDictionaryAsync(p => p.OsuId, p => p.Id))
+		.OrderBy(x => x.Value)
+		.Select(x => new PlayerIdMappingDTO
+		{
+			Id = x.Value,
+			OsuId = x.Key
+		});
+
+	public async Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync() => await _context.Players
+		.AsNoTracking()
+		.OrderBy(x => x.Id)
+		.Select(x => new PlayerCountryMappingDTO
+		{
+			PlayerId = x.Id,
+			Country = x.Country
+		}).ToListAsync();
 
 	public async Task<int> GetIdByUserIdAsync(int userId) => await _context.Players.AsNoTracking()
 	                                                                       .Where(x => x.User != null && x.User.Id == userId)
@@ -117,8 +132,18 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 
 	public async Task<string?> GetCountryAsync(int playerId) => await _context.Players.Where(p => p.Id == playerId).Select(p => p.Country).FirstOrDefaultAsync();
 
-	public async Task<int> GetIdAsync(string username) =>
-		await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).Select(p => p.Id).FirstOrDefaultAsync();
+	public async Task<int> GetIdAsync(string username)
+	{
+		if (username.Contains(' '))
+		{
+			// Look for users with either ' ' or '_' in the name - osu only uses one (i.e. "Red Pixel" cannot coexist with "Red_Pixel")
+			return await _context.Players.Where(p => p.Username != null && (p.Username.ToLower() == username.ToLower() || p.Username.ToLower() == username.Replace(' ', '_')))
+			                     .Select(p => p.Id)
+			                     .FirstOrDefaultAsync();
+		}
+
+		return await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).Select(p => p.Id).FirstOrDefaultAsync();
+	}
 
 	// This is used by a scheduled task to automatically populate user info, such as username, country, etc.
 	public async Task<IEnumerable<Player>> GetOutdatedAsync() =>

@@ -47,7 +47,7 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		};
 	}
 
-	public async Task<Tournament> CreateOrUpdateAsync(MatchWebSubmissionDTO wrapper, bool updateExisting = false)
+	public async Task<Tournament> CreateOrUpdateAsync(TournamentWebSubmissionDTO wrapper, bool updateExisting = false)
 	{
 		if (updateExisting && await ExistsAsync(wrapper.TournamentName, wrapper.Mode))
 		{
@@ -127,7 +127,7 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		                     .CountAsync();
 	}
 
-	private async Task<Tournament> UpdateExisting(MatchWebSubmissionDTO wrapper)
+	private async Task<Tournament> UpdateExisting(TournamentWebSubmissionDTO wrapper)
 	{
 		var existing = await GetAsync(wrapper.TournamentName);
 
@@ -146,7 +146,7 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		return existing;
 	}
 
-	private async Task<Tournament> CreateFromWrapperAsync(MatchWebSubmissionDTO wrapper)
+	private async Task<Tournament> CreateFromWrapperAsync(TournamentWebSubmissionDTO wrapper)
 	{
 		var tournament = new Tournament
 		{

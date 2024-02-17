@@ -1,6 +1,6 @@
 namespace API.DTOs;
 
-public class MatchWebSubmissionDTO
+public class TournamentWebSubmissionDTO
 {
 	public string TournamentName { get; set; } = null!;
 	public string Abbreviation { get; set; } = null!;
@@ -9,5 +9,8 @@ public class MatchWebSubmissionDTO
 	public int TeamSize { get; set; }
 	public int Mode { get; set; }
 	public int SubmitterId { get; set; }
+	/// <summary>
+	/// List of tournament match ids.
+	/// </summary>
 	public IEnumerable<long> Ids { get; set; } = new List<long>();
 }
