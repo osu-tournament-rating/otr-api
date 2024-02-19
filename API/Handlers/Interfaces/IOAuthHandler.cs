@@ -1,4 +1,4 @@
-using API.Entities;
+using API.DTOs;
 
 namespace API.Handlers.Interfaces;
 
@@ -13,26 +13,29 @@ public interface IOAuthHandler
     /// <a href="https://osu.ppy.sh/docs/index.html#authorization-code-grant">
     /// osu! Authorization Code Grant documentation</a>
     /// </param>
-    Task<User?> AuthorizeAsync(string osuAuthToken);
+    Task<OAuthResponseDTO?> AuthorizeAsync(string osuAuthToken);
 
     /// <summary>
-    /// Generates a JSON Web Token (JWT) for a given user id and set of roles (claims).
-    /// Encodes the identity, claims, and expiration into the JWT. This JWT acts as
-    /// the OAuth2 access token.
+    /// Authorize a user's OAuth client. Returns a response that allows
+    /// clients to call the API.
     /// </summary>
-    /// <param name="userId">The id of the user who has access to this token</param>
-    /// <param name="issuer">The issuer of the JWT. This should be an environment variable.</param>
-    /// <param name="roles">The claims the user has</param>
-    /// <param name="expirationSeconds">Token expiration</param>
+    /// <param name="userId">The id of the user for which the client belongs</param>
+    /// <param name="clientId">The id of the OAuth client</param>
+    /// <param name="clientSecret">The client secret</param>
     /// <returns></returns>
-    Task<string> GenerateAccessToken(int userId, string issuer, string[] roles, int expirationSeconds = 3600);
-
+    Task<OAuthResponseDTO?> AuthorizeAsync(int userId, int clientId, string clientSecret);
     /// <summary>
-    /// Generates a JSON Web Token (JWT) for a given user id to act as an OAuth2 refresh token.
+    /// Refreshes the accessToken using the provided refreshToken. Both tokens must be
+    /// previously encoded JWTs. 
     /// </summary>
-    /// <param name="userId">The id of the user the token belongs to</param>
-    /// <param name="issuer">The issuer of the JWT. This should be an environment variable.</param>
-    /// <param name="expirationSeconds">The expiration in seconds</param>
+    /// <param name="accessToken"></param>
+    /// <param name="refreshToken"></param>
     /// <returns></returns>
-    Task<string> GenerateRefreshToken(int userId, string issuer, int expirationSeconds = 1_209_600);
+    Task<OAuthResponseDTO?> RefreshAsync(string accessToken, string refreshToken);
+    /// <summary>
+    /// Creates a new OAuth client for a user that can be used for API access.
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    Task<OAuthClientDTO> CreateClientAsync(int userId);
 }

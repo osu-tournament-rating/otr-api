@@ -1,4 +1,5 @@
-﻿using API.Entities;
+﻿using API.DTOs;
+using API.Entities;
 using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
@@ -25,6 +26,7 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<MatchRatingStats> MatchRatingStats { get; set; }
 	public virtual DbSet<MatchScore> MatchScores { get; set; }
 	public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
+	public virtual DbSet<OAuthClient> OAuthClients { get; set; }
 	public virtual DbSet<Player> Players { get; set; }
 	public virtual DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
 	public virtual DbSet<RatingAdjustment> RatingAdjustments { get; set; }
@@ -186,6 +188,17 @@ public partial class OtrContext : DbContext
 			entity.HasIndex(e => e.TeamRed);
 		});
 
+		modelBuilder.Entity<OAuthClient>(entity =>
+		{
+			entity.HasKey(x => x.Id).HasName("oauth_clients_pk");
+			entity.Property(x => x.Id).UseIdentityColumn();
+
+			entity.HasOne(e => e.User)
+				.WithMany(e => e.Clients)
+				.OnDelete(DeleteBehavior.Cascade)
+				.IsRequired(false);
+		});
+
 		modelBuilder.Entity<Player>(entity =>
 		{
 			entity.HasKey(e => e.Id).HasName("Player_pk");
@@ -248,6 +261,8 @@ public partial class OtrContext : DbContext
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 			entity.Property(e => e.Roles);
+
+			entity.HasMany(e => e.Clients).WithOne(e => e.User).IsRequired(false);
 
 			entity.HasOne(d => d.Player)
 			      .WithOne(p => p.User)

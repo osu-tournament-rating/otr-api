@@ -25,7 +25,9 @@ public class User
 	[ForeignKey("PlayerId")]
 	[InverseProperty("User")]
 	public virtual Player Player { get; set; } = null!;
-	public IEnumerable<Match>? SubmittedMatches { get; set; }
+	[InverseProperty("User")]
+	public virtual ICollection<OAuthClient>? Clients { get; set; }
+	public virtual ICollection<Match>? SubmittedMatches { get; set; }
 	// Assuming the user has permission to verify, the matches they do verify will be here
 	public virtual ICollection<Match>? VerifiedMatches { get; set; }
 	[InverseProperty("Verifier")]
