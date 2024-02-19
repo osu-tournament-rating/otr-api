@@ -18,6 +18,8 @@ using Serilog;
 using Serilog.Events;
 using System.Text;
 using System.Text.Json.Serialization;
+using API.Handlers.Implementations;
+using API.Handlers.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,11 +70,16 @@ builder.Services.AddSingleton(configuration.CreateMapper());
 
 builder.Services.AddLogging();
 
+// Hosted services
 builder.Services.AddHostedService<MatchDuplicateDataWorker>();
 builder.Services.AddHostedService<OsuPlayerDataWorker>();
 builder.Services.AddHostedService<OsuMatchDataWorker>();
 builder.Services.AddHostedService<OsuTrackApiWorker>();
 
+// Handlers
+builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
+
+// Database context
 builder.Services.AddDbContext<OtrContext>(o =>
 {
 	o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection") ??

@@ -60,18 +60,16 @@ public class OAuthHandler : IOAuthHandler
         
         // Because this user is logging in with osu!, we can
         // issue a new refresh token.
-        const int accessExpirationSeconds = 3600;
-        
-        var accessToken = GenerateAccessToken(user!.Id.ToString(), _jwtAudience, user.Scopes, accessExpirationSeconds);
+        var accessToken = GenerateAccessToken(user!.Id.ToString(), _jwtAudience, user.Scopes, ACCESS_DURATION_SECONDS);
         var refreshToken = GenerateRefreshToken(user.Id.ToString(), _jwtAudience);
 
-        _logger.LogDebug("Authorized user with id {Id}, access expires in {seconds}", user.Id, accessExpirationSeconds);
+        _logger.LogDebug("Authorized user with id {Id}, access expires in {seconds}", user.Id, ACCESS_DURATION_SECONDS);
         
         return new OAuthResponseDTO
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            AccessExpiration = accessExpirationSeconds
+            AccessExpiration = ACCESS_DURATION_SECONDS
         };
     }
 
