@@ -11,6 +11,6 @@ public static class SeededUser
 		LastLogin = new DateTime(2023,11,22),
 		Created = new DateTime(2023,9,25),
 		Updated = new DateTime(2023,11,22),
-		Roles = new []{"MatchVerifier"},
+		Scopes = new []{"MatchVerifier"},
 	};
 }

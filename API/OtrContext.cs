@@ -260,7 +260,7 @@ public partial class OtrContext : DbContext
 			entity.Property(e => e.Id).UseIdentityColumn();
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
-			entity.Property(e => e.Roles);
+			entity.Property(e => e.Scopes);
 
 			entity.HasMany(e => e.Clients).WithOne(e => e.User).IsRequired(false);
 

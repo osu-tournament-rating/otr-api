@@ -27,7 +27,7 @@ public class UserService : IUserService
 			OsuId = user.Player.OsuId,
 			OsuPlayMode = 0, // TODO: Set to user's preferred mode
 			Username = user.Player.Username,
-			Roles = user.Roles
+			Roles = user.Scopes
 		};
 	}
 

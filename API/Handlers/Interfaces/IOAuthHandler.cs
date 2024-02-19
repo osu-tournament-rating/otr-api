@@ -32,10 +32,12 @@ public interface IOAuthHandler
     /// <param name="refreshToken"></param>
     /// <returns></returns>
     Task<OAuthResponseDTO?> RefreshAsync(string accessToken, string refreshToken);
+
     /// <summary>
     /// Creates a new OAuth client for a user that can be used for API access.
     /// </summary>
-    /// <param name="userId"></param>
+    /// <param name="userId">The id of the user who owns this client</param>
+    /// <param name="scopes">The scopes this client has access to</param>
     /// <returns></returns>
-    Task<OAuthClientDTO> CreateClientAsync(int userId);
+    Task<OAuthClientDTO?> CreateClientAsync(int userId, params string[] scopes);
 }

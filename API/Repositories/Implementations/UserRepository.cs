@@ -28,12 +28,12 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
 
 	public async Task<User?> GetOrCreateSystemUserAsync()
 	{
-		var sysUser = await _context.Users.FirstOrDefaultAsync(u => u.Roles.Contains("System"));
+		var sysUser = await _context.Users.FirstOrDefaultAsync(u => u.Scopes.Contains("System"));
 		if (sysUser == null)
 		{
 			var created = await CreateAsync(new User
 			{
-				Roles = new[] { "System" }
+				Scopes = new[] { "System" }
 			});
 
 			if (created == null)
@@ -50,6 +50,6 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
 
 	public async Task<bool> HasRoleAsync(long osuId, string role)
 	{
-		return await _context.Users.AnyAsync(u => u.Player.OsuId == osuId && u.Roles.Contains(role));
+		return await _context.Users.AnyAsync(u => u.Player.OsuId == osuId && u.Scopes.Contains(role));
 	}
 }

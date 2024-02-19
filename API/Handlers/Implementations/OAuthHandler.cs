@@ -1,5 +1,7 @@
 using API.DTOs;
+using API.Entities;
 using API.Handlers.Interfaces;
+using API.Services.Interfaces;
 
 namespace API.Handlers.Implementations;
 
@@ -8,24 +10,40 @@ namespace API.Handlers.Implementations;
 /// </summary>
 public class OAuthHandler : IOAuthHandler
 {
-    public Task<OAuthResponseDTO?> AuthorizeAsync(string osuAuthToken)
+    private readonly IOAuthClientService _clientService;
+    private readonly IConfiguration _configuration;
+
+    public OAuthHandler(IOAuthClientService clientService, IConfiguration configuration)
+    {
+        _clientService = clientService;
+        _configuration = configuration;
+    }
+
+    public async Task<OAuthResponseDTO?> AuthorizeAsync(string osuAuthToken)
     {
         throw new NotImplementedException();
     }
 
-    public Task<OAuthResponseDTO?> AuthorizeAsync(int userId, int clientId, string clientSecret)
+    public async Task<OAuthResponseDTO?> AuthorizeAsync(int userId, int clientId, string clientSecret)
     {
         throw new NotImplementedException();
     }
 
-    public Task<OAuthResponseDTO?> RefreshAsync(string accessToken, string refreshToken)
+    public async Task<OAuthResponseDTO?> RefreshAsync(string accessToken, string refreshToken)
     {
         throw new NotImplementedException();
     }
 
-    public Task<OAuthClientDTO> CreateClientAsync(int userId)
+    public async Task<OAuthClientDTO?> CreateClientAsync(int userId, params string[] scopes)
     {
-        throw new NotImplementedException();
+        var secret = GenerateClientSecret();
+
+        while (await _clientService.SecretInUse(secret))
+        {
+            secret = GenerateClientSecret();
+        }
+        
+        return await _clientService.CreateAsync(userId, secret, scopes);
     }
 
     /// <summary>
@@ -53,5 +71,19 @@ public class OAuthHandler : IOAuthHandler
     private string GenerateRefreshToken(int userId, string issuer, int expirationSeconds = 1_209_600)
     {
         return string.Empty;
+    }
+    
+    /// <summary>
+    /// Generates a new alpha-numeric client secret (size 50 chars)
+    /// </summary>
+    /// <returns></returns>
+    private static string GenerateClientSecret()
+    {
+        const int length = 50;
+        const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        
+        var r = new Random();
+        return new string(Enumerable.Repeat(chars, length)
+            .Select(s => s[r.Next(s.Length)]).ToArray());
     }
 }

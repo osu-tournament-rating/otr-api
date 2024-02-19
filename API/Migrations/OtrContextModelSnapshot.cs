@@ -1032,10 +1032,10 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("player_id");
 
-                    b.Property<string[]>("Roles")
+                    b.Property<string[]>("Scopes")
                         .IsRequired()
                         .HasColumnType("text[]")
-                        .HasColumnName("roles");
+                        .HasColumnName("scopes");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")

@@ -142,7 +142,7 @@ public class LoginController : Controller
 			new(JwtRegisteredClaimNames.Name, name)
 		};
 
-		foreach (string role in user.Roles)
+		foreach (string role in user.Scopes)
 		{
 			claims.Add(new Claim(ClaimTypes.Role, role));
 		}
@@ -167,7 +167,7 @@ public class LoginController : Controller
 				PlayerId = associatedPlayer.Id,
 				Created = DateTime.UtcNow,
 				LastLogin = DateTime.UtcNow,
-				Roles = Array.Empty<string>()
+				Scopes = Array.Empty<string>()
 			});
 		}
 
