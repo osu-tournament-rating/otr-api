@@ -179,23 +179,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ??
 		                                                                          throw new Exception("Missing Jwt:Key in configuration!")))
 	       };
-
-	       options.Events = new JwtBearerEvents
-	       {
-		       OnMessageReceived = context =>
-		       {
-			       if (context.Request.Cookies.ContainsKey("OTR-Access-Token"))
-			       {
-				       context.Token = context.Request.Cookies["OTR-Access-Token"];
-			       }
-			       else if (context.Request.Headers.ContainsKey("Authorization"))
-			       {
-				       context.Token = context.Request.Headers.Authorization;
-			       }
-			       
-			       return Task.CompletedTask;
-		       }
-	       };
        });
 
 var app = builder.Build();
