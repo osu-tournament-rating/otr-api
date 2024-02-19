@@ -10,7 +10,7 @@ namespace API.Controllers;
 
 [ApiController]
 [EnableCors]
-[Authorize]
+[Authorize(Roles = "user")]
 [Route("api/[controller]")]
 public class MeController : Controller
 {
@@ -51,7 +51,7 @@ public class MeController : Controller
 	[ProducesResponseType<UserInfoDTO>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
-	public async Task<ActionResult<UserInfoDTO>> GetLoggedInUserAsync()
+	public async Task<IActionResult> GetLoggedInUserAsync()
 	{
 		int? id = HttpContext.AuthorizedUserIdentity();
 
@@ -66,10 +66,10 @@ public class MeController : Controller
 			return NotFound("User not found");
 		}
 
-		if (!IsWhitelisted(user.OsuId.Value))
-		{
-			return Unauthorized("User is not whitelisted");
-		}
+		// if (!IsWhitelisted(user.OsuId.Value))
+		// {
+		// 	return Unauthorized("User is not whitelisted");
+		// }
 
 		return Ok(user);
 	}
@@ -97,7 +97,7 @@ public class MeController : Controller
 		}
 
 		var loggedInUser = await GetLoggedInUserAsync();
-		if (loggedInUser.Result is UnauthorizedResult)
+		if (loggedInUser is UnauthorizedResult)
 		{
 			return Unauthorized("User is not whitelisted");
 		}
@@ -114,7 +114,7 @@ public class MeController : Controller
 
 	private int? GetId()
 	{
-		string? id = HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Name)?.Value;
+		string? id = HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Iss)?.Value;
 		if (id == null)
 		{
 			return null;

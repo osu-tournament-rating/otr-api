@@ -1,5 +1,4 @@
-﻿using API.DTOs;
-using API.Entities;
+﻿using API.Entities;
 using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable PropertyCanBeMadeInitOnly.Global

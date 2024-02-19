@@ -1,7 +1,6 @@
 using API.DTOs;
 using API.Entities;
 using API.Enums;
-using API.Osu;
 using API.Repositories.Interfaces;
 using API.Utilities;
 using AutoMapper;

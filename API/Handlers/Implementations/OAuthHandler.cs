@@ -4,7 +4,6 @@ using System.Text;
 using API.DTOs;
 using API.Entities;
 using API.Handlers.Interfaces;
-using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
@@ -58,9 +57,14 @@ public class OAuthHandler : IOAuthHandler
         var player = await _playerRepository.GetOrCreateAsync(osuUser.Id);
         var user = await AuthenticateUserAsync(player.Id);
         
+        // Because this is a user, we need to also encode a user permission.
+        // This is an alternative to storing it in a database (meaning,
+        // no redundant "user" role for users).
+        user.Scopes = user.Scopes.Append("user").ToArray();
+        
         // Because this user is logging in with osu!, we can
         // issue a new refresh token.
-        var accessToken = GenerateAccessToken(user!.Id.ToString(), _jwtAudience, user.Scopes, ACCESS_DURATION_SECONDS);
+        var accessToken = GenerateAccessToken(user.Id.ToString(), _jwtAudience, user.Scopes, ACCESS_DURATION_SECONDS);
         var refreshToken = GenerateRefreshToken(user.Id.ToString(), _jwtAudience);
 
         _logger.LogDebug("Authorized user with id {Id}, access expires in {seconds}", user.Id, ACCESS_DURATION_SECONDS);
@@ -88,9 +92,18 @@ public class OAuthHandler : IOAuthHandler
         }
 
         var client = await _clientService.GetAsync(clientId);
+        if (client == null)
+        {
+            // Very unlikely, but possible
+            return null;
+        }
+        
+        // Add the 'client' scope to the scopes array
+        client.Scopes = client.Scopes.Append("client").ToArray();
+        
         return new OAuthResponseDTO
         {
-            AccessToken = GenerateAccessToken(clientId.ToString(), _jwtAudience, client!.Scopes, ACCESS_DURATION_SECONDS),
+            AccessToken = GenerateAccessToken(clientId.ToString(), _jwtAudience, client.Scopes, ACCESS_DURATION_SECONDS),
             RefreshToken = GenerateRefreshToken(clientId.ToString(), _jwtAudience),
             AccessExpiration = ACCESS_DURATION_SECONDS
         };
@@ -217,7 +230,7 @@ public class OAuthHandler : IOAuthHandler
         return await _osuClient.GetCurrentUserAsync();
     }
     
-    private async Task<User?> AuthenticateUserAsync(int playerId)
+    private async Task<User> AuthenticateUserAsync(int playerId)
     {
         // Double db call, kind of inefficient
         var user = await _userRepository.GetOrCreateAsync(playerId);
