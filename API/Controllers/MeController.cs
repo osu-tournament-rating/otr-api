@@ -79,6 +79,7 @@ public class MeController : Controller
 	/// </summary>
 	/// <returns></returns>
 	[HttpGet("validate")]
+	[Authorize(Roles = "whitelist")]
 	[EndpointSummary("Validates the currently logged in user's OTR-Access-Token cookie")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]

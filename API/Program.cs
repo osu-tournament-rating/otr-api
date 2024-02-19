@@ -175,9 +175,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		       ValidateAudience = true,
 		       ValidateLifetime = true,
 		       ValidateIssuerSigningKey = true,
+		       ClockSkew = TimeSpan.Zero,
 		       ValidAudience = builder.Configuration["Jwt:Issuer"],  // TODO: Rename to Jwt:Audience
 		       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ??
-		                                                                          throw new Exception("Missing Jwt:Key in configuration!")))
+		                                                                          throw new Exception("Missing Jwt:Key in configuration!"))),
 	       };
        });
 
@@ -206,7 +207,7 @@ app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
-	app.MapControllers()/*.AllowAnonymous()*/;
+	app.MapControllers().AllowAnonymous();
 }
 else
 {

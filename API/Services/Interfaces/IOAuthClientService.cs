@@ -22,11 +22,10 @@ public interface IOAuthClientService
     /// <param name="clientSecret">The new secret to check</param>
     Task<bool> SecretInUse(string clientSecret);
     /// <summary>
-    /// Checks whether the provided user id has access to the given client id & secret.
+    /// Checks the provided client id & secret are valid.
     /// </summary>
-    /// <param name="userId">The id of the user who owns the client</param>
     /// <param name="clientId">The id of the client</param>
     /// <param name="clientSecret">The client secret</param>
     /// <returns>True if the client id & secret provided belong to this user, false otherwise</returns>
-    Task<bool> ValidateAsync(int userId, int clientId, string clientSecret);
+    Task<bool> ValidateAsync(int clientId, string clientSecret);
 }

@@ -19,11 +19,10 @@ public interface IOAuthHandler
     /// Authorize a user's OAuth client. Returns a response that allows
     /// clients to call the API.
     /// </summary>
-    /// <param name="userId">The id of the user for which the client belongs</param>
     /// <param name="clientId">The id of the OAuth client</param>
     /// <param name="clientSecret">The client secret</param>
     /// <returns></returns>
-    Task<OAuthResponseDTO?> AuthorizeAsync(int userId, int clientId, string clientSecret);
+    Task<OAuthResponseDTO?> AuthorizeAsync(int clientId, string clientSecret);
     /// <summary>
     /// Refreshes the accessToken using the provided refreshToken. Both tokens must be
     /// previously encoded JWTs. 

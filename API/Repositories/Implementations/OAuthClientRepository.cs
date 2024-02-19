@@ -11,11 +11,11 @@ public class OAuthClientRepository(OtrContext context) : RepositoryBase<OAuthCli
         return await context.OAuthClients.AnyAsync(x => x.Secret == clientSecret);
     }
 
-    public async Task<bool> ValidateAsync(int userId, int clientId, string clientSecret)
+    public async Task<bool> ValidateAsync(int clientId, string clientSecret)
     {
         var match = await context.OAuthClients
             .FirstOrDefaultAsync(x => x.Id == clientId && x.Secret == clientSecret);
 
-        return match != null && match.UserId == userId;
+        return match != null;
     }
 }

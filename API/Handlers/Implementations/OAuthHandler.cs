@@ -26,7 +26,7 @@ public class OAuthHandler : IOAuthHandler
     private readonly string _jwtAudience;
     private readonly string _jwtKey;
 
-    private const int ACCESS_DURATION_SECONDS = 3600;
+    private const int ACCESS_DURATION_SECONDS = 60;
     
     public OAuthHandler(ILogger<OAuthHandler> logger, IOAuthClientService clientService, 
         IOsuClient osuClient, IConfiguration configuration, IPlayerRepository playerRepository,
@@ -77,15 +77,9 @@ public class OAuthHandler : IOAuthHandler
         };
     }
 
-    public async Task<OAuthResponseDTO?> AuthorizeAsync(int userId, int clientId, string clientSecret)
+    public async Task<OAuthResponseDTO?> AuthorizeAsync(int clientId, string clientSecret)
     {
-        var user = await _userRepository.GetAsync(userId);
-        if (user == null)
-        {
-            return null;
-        }
-
-        bool validClient = await _clientService.ValidateAsync(userId, clientId, clientSecret);
+        bool validClient = await _clientService.ValidateAsync(clientId, clientSecret);
         if (!validClient)
         {
             return null;
@@ -174,18 +168,23 @@ public class OAuthHandler : IOAuthHandler
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var claims = roles.Select(role => new Claim(ClaimTypes.Role, role));
-        var token = new JwtSecurityToken(issuer, audience, 
-            claims, expires: DateTime.UtcNow.AddSeconds(expirationSeconds),
-            signingCredentials: credentials);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            IssuedAt = DateTime.UtcNow,
+            Expires = DateTime.UtcNow.AddSeconds(expirationSeconds),
+            Issuer = issuer,
+            Audience = audience,
+            SigningCredentials = credentials
+        };
+        
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
     }
 
-    private JwtSecurityToken ReadToken(string token)
+    private static JwtSecurityToken ReadToken(string token)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
         return new JwtSecurityTokenHandler().ReadJwtToken(token);
     }
 
