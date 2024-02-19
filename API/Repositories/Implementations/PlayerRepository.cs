@@ -62,6 +62,19 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
 	public async Task<Player?> GetAsync(string username) =>
 		await _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower()).FirstOrDefaultAsync();
 
+	public async Task<Player> GetOrCreateAsync(long osuId)
+	{
+		if (await _context.Players.AnyAsync(x => x.OsuId == osuId))
+		{
+			return await _context.Players.FirstAsync(x => x.OsuId == osuId);
+		}
+
+		return await CreateAsync(new Player
+		{
+			OsuId = osuId
+		}) ?? throw new Exception($"Critical failure: failed to create player with osu id {osuId}");
+	}
+
 	public async Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1)
 	{
 		if (!eagerLoad)

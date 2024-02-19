@@ -7,6 +7,13 @@ namespace API.Repositories.Interfaces;
 public interface IPlayerRepository : IRepository<Player>
 {
 	Task<Player?> GetAsync(string username);
+	/// <summary>
+	/// Attempts to fetch a player by the osu id. If non exists, create a new player
+	/// and return it.
+	/// </summary>
+	/// <param name="osuId">The osu id of the player</param>
+	/// <returns></returns>
+	Task<Player> GetOrCreateAsync(long osuId);
 	Task<Player?> GetPlayerByOsuIdAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1);
 	Task<int> GetIdByOsuIdAsync(long osuId);
 	Task<long> GetOsuIdAsync(int id);

@@ -58,4 +58,9 @@ public class OAuthClientService : IOAuthClientService
     {
         return await _repository.SecretInUseAsync(clientSecret);
     }
+
+    public async Task<bool> ValidateAsync(int userId, int clientId, string clientSecret)
+    {
+        return await _repository.ValidateAsync(userId, clientId, clientSecret);
+    }
 }

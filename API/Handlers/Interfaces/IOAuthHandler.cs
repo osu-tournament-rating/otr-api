@@ -7,13 +7,13 @@ public interface IOAuthHandler
     /// <summary>
     /// Authorizes a new or returning user via osu!
     /// </summary>
-    /// <param name="osuAuthToken">The token provided by
+    /// <param name="osuAuthCode">The token provided by
     /// the osu! oAuth redirect.
     /// 
     /// <a href="https://osu.ppy.sh/docs/index.html#authorization-code-grant">
     /// osu! Authorization Code Grant documentation</a>
     /// </param>
-    Task<OAuthResponseDTO?> AuthorizeAsync(string osuAuthToken);
+    Task<OAuthResponseDTO?> AuthorizeAsync(string osuAuthCode);
 
     /// <summary>
     /// Authorize a user's OAuth client. Returns a response that allows

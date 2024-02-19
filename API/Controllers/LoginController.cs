@@ -53,7 +53,7 @@ public class LoginController : Controller
 		{
 			var osuUser = await AuthorizeAsync(code);
 			long osuUserId = osuUser.Id;
-
+			// TODO: Make GetOrCreateAsync player method
 			var player = await _playerRepository.GetPlayerByOsuIdAsync(osuUserId);
 			if (player == null)
 			{
@@ -176,14 +176,6 @@ public class LoginController : Controller
 		user.PlayerId = associatedPlayer.Id;
 		await _userRepository.UpdateAsync(user);
 		return user;
-	}
-
-	private async Task<IGlobalUser> AuthorizeAsync(string osuCode)
-	{
-		string cbUrl = _configuration["Auth:ClientCallbackUrl"] ?? throw new Exception("Missing Auth:ClientCallbackUrl in configuration!!");
-		// Use OsuSharp to validate that the user is who they say they are
-		await _osuClient.GetAccessTokenFromCodeAsync(osuCode, cbUrl);
-		return await _osuClient.GetCurrentUserAsync();
 	}
 
 	private async Task<User?> AuthenticateSystemUserAsync()

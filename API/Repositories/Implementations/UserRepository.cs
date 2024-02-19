@@ -52,4 +52,20 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
 	{
 		return await _context.Users.AnyAsync(u => u.Player.OsuId == osuId && u.Scopes.Contains(role));
 	}
+
+	public async Task<User> GetOrCreateAsync(int playerId)
+	{
+		if (await _context.Users.AnyAsync(x => x.PlayerId == playerId))
+		{
+			return await _context.Users.FirstAsync(x => x.PlayerId == playerId);
+		}
+
+		return await CreateAsync(new User
+		{
+			PlayerId = playerId,
+			Created = DateTime.UtcNow,
+			LastLogin = DateTime.UtcNow,
+			Scopes = Array.Empty<string>()
+		}) ?? throw new Exception("Critical error: User cannot be null after creation");
+	}
 }
