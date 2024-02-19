@@ -60,7 +60,7 @@ public class MeController : Controller
 			return BadRequest("User is not logged in.");
 		}
 
-		var user = await _userService.GetForPlayerAsync(id.Value);
+		var user = await _userService.GetAsync(id.Value);
 		if (user?.OsuId == null)
 		{
 			return NotFound("User not found");

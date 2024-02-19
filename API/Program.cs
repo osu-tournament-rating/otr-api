@@ -171,29 +171,30 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
        {
 	       options.TokenValidationParameters = new TokenValidationParameters
 	       {
-		       ValidateIssuer = true,
+		       ValidateIssuer = false,
 		       ValidateAudience = true,
 		       ValidateLifetime = true,
 		       ValidateIssuerSigningKey = true,
-		       ValidIssuer = builder.Configuration["Jwt:Issuer"],
-		       ValidAudience = builder.Configuration["Jwt:Issuer"],
+		       ValidAudience = builder.Configuration["Jwt:Issuer"],  // TODO: Rename to Jwt:Audience
 		       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ??
 		                                                                          throw new Exception("Missing Jwt:Key in configuration!")))
 	       };
 
-	       options.Events = new JwtBearerEvents();
-	       options.Events.OnMessageReceived = context =>
+	       options.Events = new JwtBearerEvents
 	       {
-		       if (context.Request.Cookies.ContainsKey("OTR-Access-Token"))
+		       OnMessageReceived = context =>
 		       {
-			       context.Token = context.Request.Cookies["OTR-Access-Token"];
+			       if (context.Request.Cookies.ContainsKey("OTR-Access-Token"))
+			       {
+				       context.Token = context.Request.Cookies["OTR-Access-Token"];
+			       }
+			       else if (context.Request.Headers.ContainsKey("Authorization"))
+			       {
+				       context.Token = context.Request.Headers.Authorization;
+			       }
+			       
+			       return Task.CompletedTask;
 		       }
-		       else if (context.Request.Headers.ContainsKey("Authorization"))
-		       {
-			       context.Token = context.Request.Headers.Authorization;
-		       }
-
-		       return Task.CompletedTask;
 	       };
        });
 

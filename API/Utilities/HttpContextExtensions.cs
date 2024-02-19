@@ -11,7 +11,7 @@ public static class HttpContextExtensions
 	/// <returns>An optional user id</returns>
 	public static int? AuthorizedUserIdentity(this HttpContext context)
 	{
-		string? id = context.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Name)?.Value;
+		string? id = context.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Iss)?.Value;
 		if (id == null)
 		{
 			return null;

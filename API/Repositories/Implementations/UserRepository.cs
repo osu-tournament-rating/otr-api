@@ -15,6 +15,13 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
 		_context = context;
 	}
 
+	public override async Task<User?> GetAsync(int id)
+	{
+		return await _context.Users
+		                     .Include(x => x.Player)
+		                     .FirstOrDefaultAsync(u => u.Id == id);
+	}
+	
 	public async Task<User?> GetForPlayerAsync(int playerId)
 	{
 		return await _context.Users
