@@ -324,27 +324,6 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 		return query;
 	}
 
-	// TODO: Insert winrate as a base stats before implementing
-	// private IQueryable<BaseStats> FilterByWinrate(IQueryable<BaseStats> query, double? minWinrate, double? maxWinrate)
-	// {
-	// 	if(minWinrate.HasValue || maxWinrate.HasValue)
-	// 	{
-	// 		query = query.Include(x => x.Player).ThenInclude(x => x.MatchStats);
-	// 	}
-	// 	
-	// 	if (minWinrate.HasValue)
-	// 	{
-	// 		query = query.Where(x => x.Player. >= minWinrate.Value);
-	// 	}
-	//
-	// 	if (maxWinrate.HasValue)
-	// 	{
-	// 		query = query.Where(x => x.Player.MatchStats.Count() <= maxWinrate.Value);
-	// 	}
-	//
-	// 	return query;
-	// }
-
 	private IQueryable<BaseStats> FilterByTier(IQueryable<BaseStats> query, LeaderboardTierFilterDTO tierFilter)
 	{
 		// Filter for Bronze tier

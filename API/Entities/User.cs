@@ -17,7 +17,6 @@ public class User
 	public DateTime Created { get; set; }
 	/// <summary>
 	/// Comma-delimited list of scopes
-	/// TODO: [SCOPE DOCS]
 	/// </summary>
 	[Column("scopes")]
 	public string[] Scopes { get; set; } = Array.Empty<string>();
