@@ -26,7 +26,7 @@ public class OAuthHandler : IOAuthHandler
     private readonly string _jwtAudience;
     private readonly string _jwtKey;
 
-    private const int ACCESS_DURATION_SECONDS = 60;
+    private const int ACCESS_DURATION_SECONDS = 3600;
     
     public OAuthHandler(ILogger<OAuthHandler> logger, IOAuthClientService clientService, 
         IOsuClient osuClient, IConfiguration configuration, IPlayerRepository playerRepository,
