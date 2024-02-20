@@ -27,7 +27,6 @@ public class OAuthController : Controller
             return Unauthorized();
         }
         
-        Console.WriteLine(result.AccessToken);
         return Ok(result);
     }
 
