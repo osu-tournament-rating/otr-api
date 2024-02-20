@@ -64,4 +64,17 @@ public class OAuthController : Controller
 
         return Ok(result);
     }
+    
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshAsync([FromQuery] string refreshToken)
+    {
+        var result = await _oAuthHandler.RefreshAsync(refreshToken);
+
+        if (result == null)
+        {
+            return Unauthorized();
+        }
+
+        return Ok(result);
+    }
 }

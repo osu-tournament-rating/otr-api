@@ -176,7 +176,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 		       ValidateLifetime = true,
 		       ValidateIssuerSigningKey = true,
 		       ClockSkew = TimeSpan.Zero,
-		       ValidAudience = builder.Configuration["Jwt:Issuer"],  // TODO: Rename to Jwt:Audience
+		       ValidAudience = builder.Configuration["Jwt:Audience"],
 		       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ??
 		                                                                          throw new Exception("Missing Jwt:Key in configuration!"))),
 	       };

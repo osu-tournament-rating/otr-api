@@ -24,13 +24,11 @@ public interface IOAuthHandler
     /// <returns></returns>
     Task<OAuthResponseDTO?> AuthorizeAsync(int clientId, string clientSecret);
     /// <summary>
-    /// Refreshes the accessToken using the provided refreshToken. Both tokens must be
-    /// previously encoded JWTs. 
+    /// Refreshes the accessToken using the provided refreshToken.
     /// </summary>
-    /// <param name="accessToken"></param>
     /// <param name="refreshToken"></param>
     /// <returns></returns>
-    Task<OAuthResponseDTO?> RefreshAsync(string accessToken, string refreshToken);
+    Task<OAuthResponseDTO?> RefreshAsync(string refreshToken);
 
     /// <summary>
     /// Creates a new OAuth client for a user that can be used for API access.
