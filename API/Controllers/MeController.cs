@@ -23,28 +23,29 @@ public class MeController : Controller
 		_playerStatsService = playerStatsService;
 	}
 
-	private bool IsWhitelisted(long osuId)
-	{
-		var whitelist = new long[]
-		{
-			11482346,
-			8191845,
-			11557554,
-			4001304,
-			6892711,
-			7153533,
-			3958619,
-			6701656,
-			1797189,
-			7802400,
-			11255340,
-			13175102,
-			11955929,
-			11292327
-		};
-
-		return whitelist.Contains(osuId);
-	}
+	// Will remove once all users are whitelisted in the database
+	// private bool IsWhitelisted(long osuId)
+	// {
+	// 	var whitelist = new long[]
+	// 	{
+	// 		11482346,
+	// 		8191845,
+	// 		11557554,
+	// 		4001304,
+	// 		6892711,
+	// 		7153533,
+	// 		3958619,
+	// 		6701656,
+	// 		1797189,
+	// 		7802400,
+	// 		11255340,
+	// 		13175102,
+	// 		11955929,
+	// 		11292327
+	// 	};
+	//
+	// 	return whitelist.Contains(osuId);
+	// }
 	
 	[HttpGet]
 	[EndpointSummary("Gets the logged in user's information, if they exist")]
@@ -66,11 +67,6 @@ public class MeController : Controller
 			return NotFound("User not found");
 		}
 
-		// if (!IsWhitelisted(user.OsuId.Value))
-		// {
-		// 	return Unauthorized("User is not whitelisted");
-		// }
-
 		return Ok(user);
 	}
 
@@ -86,30 +82,8 @@ public class MeController : Controller
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<IActionResult> ValidateJwt()
 	{
-		if (!HttpContext.Request.Cookies.ContainsKey("OTR-Access-Token"))
-		{
-			return BadRequest("No access token cookie found.");
-		}
-
-		string? token = HttpContext.Request.Cookies["OTR-Access-Token"];
-		if (string.IsNullOrEmpty(token))
-		{
-			return BadRequest("Cookie found, but was null or empty.");
-		}
-
-		var loggedInUser = await GetLoggedInUserAsync();
-		if (loggedInUser is UnauthorizedResult)
-		{
-			return Unauthorized("User is not whitelisted");
-		}
-
-		var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
-		var expDate = jwtToken.ValidTo;
-		if (expDate < DateTime.UtcNow)
-		{
-			return NoContent();
-		}
-		
+		// Middleware will return 403 if the user does not
+		// have the correct roles
 		return Ok();
 	}
 
