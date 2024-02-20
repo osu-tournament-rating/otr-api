@@ -80,11 +80,11 @@ public class MeController : Controller
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<IActionResult> ValidateJwt()
+	public IActionResult ValidateJwt()
 	{
 		// Middleware will return 403 if the user does not
 		// have the correct roles
-		return Ok();
+		return NoContent();
 	}
 
 	private int? GetId()
