@@ -122,7 +122,7 @@ public class OAuthHandler : IOAuthHandler
         }
         
         // Check the role of the issuer
-        if (!decryptedRefresh.Claims.Any(claim => claim.Type == ClaimTypes.Role && claim.Value is "user" or "client"))
+        if (!decryptedRefresh.Claims.Any(claim => claim.Type == "role" && claim.Value is "user" or "client"))
         {
             _logger.LogWarning("Decrypted refresh token issuer does not have a valid role");
             return null;
@@ -130,7 +130,7 @@ public class OAuthHandler : IOAuthHandler
         
         // Get the role
         string accessToken;
-        var issuerRole = decryptedRefresh.Claims.First(claim => claim.Type == ClaimTypes.Role).Value;
+        var issuerRole = decryptedRefresh.Claims.First(claim => claim.Type == "role").Value;
         
         // If the issuer is a client, validate the client id.
         // If it's a user, validate the user id.
@@ -194,7 +194,7 @@ public class OAuthHandler : IOAuthHandler
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var claims = roles.Select(role => new Claim(ClaimTypes.Role, role));
+        var claims = roles.Select(role => new Claim("role", role));
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
@@ -236,7 +236,7 @@ public class OAuthHandler : IOAuthHandler
         
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, role) }),
+            Subject = new ClaimsIdentity(new[] { new Claim("role", role) }),
             IssuedAt = DateTime.UtcNow,
             Expires = DateTime.UtcNow.AddSeconds(expirationSeconds),
             Issuer = issuer,
