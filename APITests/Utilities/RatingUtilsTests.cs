@@ -138,7 +138,7 @@ public class RatingUtilsTests
 	[InlineData(RatingUtils.RatingGrandmasterII + 1, RatingUtils.RatingGrandmasterII)]
 	[InlineData(RatingUtils.RatingGrandmasterI + 1, RatingUtils.RatingGrandmasterI)]
 	[InlineData(RatingUtils.RatingEliteGrandmaster + 1, RatingUtils.RatingEliteGrandmaster)]
-	public void GetPreviousTier_ReturnsCorrectTier_GivenCurrentTier(double rating, double? expectedPrevTier)
+	public void GetPreviousTier_ReturnsPreviousTier_GivenCurrentTier(double rating, double? expectedPrevTier)
 	{
 		// Arrange
 
@@ -147,7 +147,41 @@ public class RatingUtilsTests
 		
 		// Assert
 		Assert.Equal(expectedPrevTier, prevTier);
-		
 	}
-	
+	[Theory]
+	[InlineData(RatingUtils.RatingBronzeIII, 3)]
+	[InlineData(RatingUtils.RatingBronzeII, 2)]
+	[InlineData(RatingUtils.RatingBronzeI, 1)]
+	[InlineData(RatingUtils.RatingSilverIII, 3)]
+	[InlineData(RatingUtils.RatingSilverII, 2)]
+	[InlineData(RatingUtils.RatingSilverI, 1)]
+	[InlineData(RatingUtils.RatingGoldIII, 3)]
+	[InlineData(RatingUtils.RatingGoldII, 2)]
+	[InlineData(RatingUtils.RatingGoldI, 1)]
+	[InlineData(RatingUtils.RatingPlatinumIII, 3)]
+	[InlineData(RatingUtils.RatingPlatinumII, 2)]
+	[InlineData(RatingUtils.RatingPlatinumI, 1)]
+	[InlineData(RatingUtils.RatingEmeraldIII, 3)]
+	[InlineData(RatingUtils.RatingEmeraldII, 2)]
+	[InlineData(RatingUtils.RatingEmeraldI, 1)]
+	[InlineData(RatingUtils.RatingDiamondIII, 3)]
+	[InlineData(RatingUtils.RatingDiamondII, 2)]
+	[InlineData(RatingUtils.RatingDiamondI, 1)]
+	[InlineData(RatingUtils.RatingMasterIII, 3)]
+	[InlineData(RatingUtils.RatingMasterII, 2)]
+	[InlineData(RatingUtils.RatingMasterI, 1)]
+	[InlineData(RatingUtils.RatingGrandmasterIII, 3)]
+	[InlineData(RatingUtils.RatingGrandmasterII, 2)]
+	[InlineData(RatingUtils.RatingGrandmasterI, 1)]
+	[InlineData(RatingUtils.RatingEliteGrandmaster, null)]
+	public void GetSubTier_ReturnsSubTier_GivenCurrentTier(double rating, int? expectedSubTier)
+	{
+		// Arrange
+		
+		// Act
+		int? subTier = RatingUtils.GetCurrentSubTier(rating);
+		
+		// Assert
+		Assert.Equal(expectedSubTier, subTier);
+	}
 }
