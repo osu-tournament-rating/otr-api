@@ -4,16 +4,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class OAuthClientRepository(OtrContext context) : RepositoryBase<OAuthClient>(context), IOAuthClientRepository
+public class OAuthClientRepository : RepositoryBase<OAuthClient>, IOAuthClientRepository
 {
+    private readonly OtrContext _context;
+
+    public OAuthClientRepository(OtrContext context) : base(context)
+    {
+        _context = context;
+    }
+    
     public async Task<bool> SecretInUseAsync(string clientSecret)
     {
-        return await context.OAuthClients.AnyAsync(x => x.Secret == clientSecret);
+        return await _context.OAuthClients.AnyAsync(x => x.Secret == clientSecret);
     }
 
     public async Task<bool> ValidateAsync(int clientId, string clientSecret)
     {
-        var match = await context.OAuthClients
+        var match = await _context.OAuthClients
             .FirstOrDefaultAsync(x => x.Id == clientId && x.Secret == clientSecret);
 
         return match != null;

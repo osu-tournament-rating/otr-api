@@ -17,5 +17,5 @@ public class OAuthClient
     [Column("user_id")]
     public int UserId { get; set; }
     [InverseProperty("Clients")]
-    public virtual User User { get; set; }
+    public virtual User User { get; set; } = null!;
 }
