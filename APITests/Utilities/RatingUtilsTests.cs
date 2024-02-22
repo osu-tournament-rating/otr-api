@@ -184,4 +184,78 @@ public class RatingUtilsTests
 		// Assert
 		Assert.Equal(expectedSubTier, subTier);
 	}
+	
+	[Theory]
+	[InlineData(RatingUtils.RatingBronzeIII + 5, RatingUtils.RatingBronzeII-(RatingUtils.RatingBronzeIII+5))]
+	[InlineData(RatingUtils.RatingBronzeII + 5, RatingUtils.RatingBronzeI-(RatingUtils.RatingBronzeII+5))]
+	[InlineData(RatingUtils.RatingBronzeI + 5, RatingUtils.RatingSilverIII-(RatingUtils.RatingBronzeI+5))]
+	[InlineData(RatingUtils.RatingSilverIII + 5, RatingUtils.RatingSilverII-(RatingUtils.RatingSilverIII+5))]
+	[InlineData(RatingUtils.RatingSilverII + 5, RatingUtils.RatingSilverI-(RatingUtils.RatingSilverII+5))]
+	[InlineData(RatingUtils.RatingSilverI + 5, RatingUtils.RatingGoldIII-(RatingUtils.RatingSilverI+5))]
+	[InlineData(RatingUtils.RatingGoldIII + 5, RatingUtils.RatingGoldII-(RatingUtils.RatingGoldIII+5))]
+	[InlineData(RatingUtils.RatingGoldII + 5, RatingUtils.RatingGoldI-(RatingUtils.RatingGoldII+5))]
+	[InlineData(RatingUtils.RatingGoldI + 5, RatingUtils.RatingPlatinumIII-(RatingUtils.RatingGoldI+5))]
+	[InlineData(RatingUtils.RatingPlatinumIII + 5, RatingUtils.RatingPlatinumII-(RatingUtils.RatingPlatinumIII+5))]
+	[InlineData(RatingUtils.RatingPlatinumII + 5, RatingUtils.RatingPlatinumI-(RatingUtils.RatingPlatinumII+5))]
+	[InlineData(RatingUtils.RatingPlatinumI + 5, RatingUtils.RatingEmeraldIII-(RatingUtils.RatingPlatinumI+5))]
+	[InlineData(RatingUtils.RatingEmeraldIII + 5, RatingUtils.RatingEmeraldII-(RatingUtils.RatingEmeraldIII+5))]
+	[InlineData(RatingUtils.RatingEmeraldII + 5, RatingUtils.RatingEmeraldI-(RatingUtils.RatingEmeraldII+5))]
+	[InlineData(RatingUtils.RatingEmeraldI + 5, RatingUtils.RatingDiamondIII-(RatingUtils.RatingEmeraldI+5))]
+	[InlineData(RatingUtils.RatingDiamondIII + 5, RatingUtils.RatingDiamondII-(RatingUtils.RatingDiamondIII+5))]
+	[InlineData(RatingUtils.RatingDiamondII + 5, RatingUtils.RatingDiamondI-(RatingUtils.RatingDiamondII+5))]
+	[InlineData(RatingUtils.RatingDiamondI + 5, RatingUtils.RatingMasterIII-(RatingUtils.RatingDiamondI+5))]
+	[InlineData(RatingUtils.RatingMasterIII + 5, RatingUtils.RatingMasterII-(RatingUtils.RatingMasterIII+5))]
+	[InlineData(RatingUtils.RatingMasterII + 5, RatingUtils.RatingMasterI-(RatingUtils.RatingMasterII+5))]
+	[InlineData(RatingUtils.RatingMasterI + 5, RatingUtils.RatingGrandmasterIII-(RatingUtils.RatingMasterI+5))]
+	[InlineData(RatingUtils.RatingGrandmasterIII + 5, RatingUtils.RatingGrandmasterII-(RatingUtils.RatingGrandmasterIII+5))]
+	[InlineData(RatingUtils.RatingGrandmasterII + 5, RatingUtils.RatingGrandmasterI-(RatingUtils.RatingGrandmasterII+5))]
+	[InlineData(RatingUtils.RatingGrandmasterI + 5, RatingUtils.RatingEliteGrandmaster-(RatingUtils.RatingGrandmasterI+5))]
+	[InlineData(RatingUtils.RatingEliteGrandmaster + 5, 0)]
+	public void GetRatingDelta_ReturnsRatingDelta_GivenCurrentRating(double rating, double expectedDelta)
+	{
+		// Arrange
+		
+		// Act
+		double delta = RatingUtils.GetRatingDeltaForNextTier(rating);
+		
+		// Assert
+		Assert.Equal(expectedDelta, delta);
+	}
+
+	[Theory]
+	[InlineData(RatingUtils.RatingBronzeIII,RatingUtils.RatingBronzeII)]
+	[InlineData(RatingUtils.RatingBronzeII,RatingUtils.RatingBronzeI)]
+	[InlineData(RatingUtils.RatingBronzeI,RatingUtils.RatingSilverIII)]
+	[InlineData(RatingUtils.RatingSilverIII,RatingUtils.RatingSilverII)]
+	[InlineData(RatingUtils.RatingSilverII,RatingUtils.RatingSilverI)]
+	[InlineData(RatingUtils.RatingSilverI,RatingUtils.RatingGoldIII)]
+	[InlineData(RatingUtils.RatingGoldIII,RatingUtils.RatingGoldII)]
+	[InlineData(RatingUtils.RatingGoldII,RatingUtils.RatingGoldI)]
+	[InlineData(RatingUtils.RatingGoldI,RatingUtils.RatingPlatinumIII)]
+	[InlineData(RatingUtils.RatingPlatinumIII,RatingUtils.RatingPlatinumII)]
+	[InlineData(RatingUtils.RatingPlatinumII,RatingUtils.RatingPlatinumI)]
+	[InlineData(RatingUtils.RatingPlatinumI,RatingUtils.RatingEmeraldIII)]
+	[InlineData(RatingUtils.RatingEmeraldIII,RatingUtils.RatingEmeraldII)]
+	[InlineData(RatingUtils.RatingEmeraldII,RatingUtils.RatingEmeraldI)]
+	[InlineData(RatingUtils.RatingEmeraldI,RatingUtils.RatingDiamondIII)]
+	[InlineData(RatingUtils.RatingDiamondIII,RatingUtils.RatingDiamondII)]
+	[InlineData(RatingUtils.RatingDiamondII,RatingUtils.RatingDiamondI)]
+	[InlineData(RatingUtils.RatingDiamondI,RatingUtils.RatingMasterIII)]
+	[InlineData(RatingUtils.RatingMasterIII,RatingUtils.RatingMasterII)]
+	[InlineData(RatingUtils.RatingMasterII,RatingUtils.RatingMasterI)]
+	[InlineData(RatingUtils.RatingMasterI,RatingUtils.RatingGrandmasterIII)]
+	[InlineData(RatingUtils.RatingGrandmasterIII,RatingUtils.RatingGrandmasterII)]
+	[InlineData(RatingUtils.RatingGrandmasterII,RatingUtils.RatingGrandmasterI)]
+	[InlineData(RatingUtils.RatingGrandmasterI,RatingUtils.RatingEliteGrandmaster)]
+	[InlineData(RatingUtils.RatingEliteGrandmaster,null)]
+	public void GetRatingForNextTier_ReturnsRatingForNextTier_GivenCurrentRating(double rating, double? expectedNextTier)
+	{
+		// Arrange
+		
+		// Act
+		double? nextTier = RatingUtils.GetRatingForNextTier(rating);
+		
+		// Assert
+		Assert.Equal(expectedNextTier, nextTier);
+	}
 }
