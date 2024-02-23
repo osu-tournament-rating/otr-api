@@ -5,6 +5,7 @@ using API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.JsonPatch;
 
 // ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;
@@ -191,5 +192,33 @@ public class MatchesController : Controller
 	{
 		var mapping = await _matchesService.GetIdMappingAsync();
 		return Ok(mapping);
+	}
+
+	[HttpPatch("verification-status/{id:int}")]
+	public async Task<IActionResult> EditVerificationStatusById(int matchId, [FromBody] JsonPatchDocument<MatchDTO> patch)
+	{
+		var match = await _matchesService.GetAsync(matchId);
+
+		var original = match;
+
+		if (match is null)
+		{
+			return NotFound($"Match with id {matchId} does not exist");
+		}
+		
+		patch.ApplyTo(match, ModelState);
+
+		if (!TryValidateModel(match))
+		{
+			return BadRequest(ModelState);
+		}
+		
+		//_matchesService.Update(match);
+
+		return Ok(new
+		{
+			original,
+			patched = match
+		});
 	}
 }

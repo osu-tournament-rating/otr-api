@@ -18,6 +18,7 @@ using Serilog;
 using Serilog.Events;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +29,8 @@ builder.Services.AddControllers(options => { options.ModelBinderProviders.Insert
        {
 	       o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
 	       o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-       });
+       })
+       .AddNewtonsoftJson();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
