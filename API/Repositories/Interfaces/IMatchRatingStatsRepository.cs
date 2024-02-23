@@ -18,6 +18,11 @@ public interface IMatchRatingStatsRepository
 	/// <returns></returns>
 	Task<IEnumerable<IEnumerable<MatchRatingStats>>> GetForPlayerAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
 
+	/// <summary>
+	///  Get the rating chart for a player
+	/// </summary>
+	Task<PlayerRatingChartDTO> GetRatingChartAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
+
 	Task InsertAsync(MatchRatingStats item);
 	Task InsertAsync(IEnumerable<MatchRatingStats> items);
 	Task TruncateAsync();

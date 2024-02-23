@@ -93,19 +93,6 @@ public class AggregatePlayerMatchStatsDTO
 	/// </summary>
 	public double AveragePlacingAggregate { get; set; }
 	/// <summary>
-	/// The name of the teammate the player has played with the most during the period.
-	/// </summary>
-	public string? MostPlayedTeammateName { get; set; }
-	/// <summary>
-	/// The name of the opponent the player has played against the most during the period.
-	/// </summary>
-	public string? MostPlayedOpponentName { get; set; }
-	/// <summary>
-	/// The name of the teammate who has the highest rating during the period.
-	/// If the period is looking to the present, this will be the teammate with the highest current rating.
-	/// </summary>
-	public string? BestTeammateName { get; set; }
-	/// <summary>
 	/// The beginning of the period for which the statistics are calculated.
 	/// </summary>
 	public DateTime PeriodStart { get; set; }
