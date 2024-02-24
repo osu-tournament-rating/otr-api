@@ -152,9 +152,9 @@ public class MatchesService : IMatchesService
 		return _mapper.Map<MatchDTO?>(match);
 	}
 
-	public async Task<MatchDTO> UpdateAsync(MatchDTO matchDto)
+	public async Task<MatchDTO> UpdateVerificationStatus(int id, int? verificationStatus)
 	{
-		var match = await _matchesRepository.UpdateExisting(matchDto);
+		var match = await _matchesRepository.UpdateVerificationStatus(id, verificationStatus);
 		return _mapper.Map<MatchDTO>(match);
 	}
 }

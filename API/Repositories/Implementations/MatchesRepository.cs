@@ -1,7 +1,6 @@
 using API.DTOs;
 using API.Entities;
 using API.Enums;
-using API.Osu;
 using API.Repositories.Interfaces;
 using API.Utilities;
 using AutoMapper;
@@ -40,19 +39,16 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		return await _context.SaveChangesAsync();
 	}
 
-	public async Task<Match> UpdateExisting(MatchDTO matchDto)
+	public async Task<Match> UpdateVerificationStatus(int id, int? verificationStatus)
 	{
-		var existing = await GetAsync(matchDto.Id);
+		var existing = await GetAsync(id, false);
 
 		if (existing == null)
 		{
 			throw new Exception("Match does not exist, this method assumes the match exists.");
 		}
-
-		existing.Name = matchDto.Name;
-		existing.StartTime = matchDto.StartTime;
-		existing.EndTime = matchDto.EndTime;
-		existing.VerificationStatus = matchDto.VerificationStatus;
+		
+		existing.VerificationStatus = verificationStatus;
 
 		await UpdateAsync(existing);
 		return existing;

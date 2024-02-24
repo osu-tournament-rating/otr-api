@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 
 // ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;
@@ -194,17 +195,23 @@ public class MatchesController : Controller
 		return Ok(mapping);
 	}
 
-	[HttpPatch("{id:int}/patch")]
-	[EndpointSummary("Takes in json patch for match properties, and returns the patched object. The object being patched is a MatchDTO.")]
+	[HttpPatch("verification-status/{id:int}")]
+	[EndpointSummary("Takes in json patch for verification status, and returns the patched object. The object being patched is a MatchDTO.")]
 	[ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<IActionResult> PatchMatchById(int matchId, [FromBody] JsonPatchDocument<MatchDTO> patch)
+	public async Task<IActionResult> EditVerificationStatus(int id, [FromBody] JsonPatchDocument<MatchDTO> patch)
 	{
-		var match = await _matchesService.GetAsync(matchId);
+		var match = await _matchesService.GetAsync(id, false);
 
 		if (match is null)
 		{
-			return NotFound($"Match with id {matchId} does not exist");
+			return NotFound($"Match with id {id} does not exist");
+		}
+
+		//Ensure request is only attempting to perform a replace operation.
+		if (patch.Operations.Any(op => op.op != "replace"))
+		{
+			return BadRequest("This endpoint can only perform replace operations.");
 		}
 		
 		patch.ApplyTo(match, ModelState);
@@ -214,7 +221,7 @@ public class MatchesController : Controller
 			return BadRequest(ModelState);
 		}
 		
-		var updatedMatch = await _matchesService.UpdateAsync(match);
+		var updatedMatch = await _matchesService.UpdateVerificationStatus(id, match.VerificationStatus);
 
 		return Ok(updatedMatch);
 	}
