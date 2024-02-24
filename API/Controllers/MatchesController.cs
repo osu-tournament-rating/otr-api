@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.JsonPatch.Operations;
 
 // ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;
@@ -29,7 +28,7 @@ public class MatchesController : Controller
 	[HttpPost("batch")]
 	public async Task<IActionResult> PostAsync([FromBody] TournamentWebSubmissionDTO wrapper, [FromQuery] bool verified = false)
 	{
-		/**
+		/*
 		 * FLOW:
 		 *
 		 * The user submits a batch of links to the front-end. They are looking to add new data
@@ -127,7 +126,7 @@ public class MatchesController : Controller
 
 	[Authorize(Roles = "Admin")]
 	[HttpGet("duplicates")]
-	[EndpointSummary("Retreives all known duplicate groups")]
+	[EndpointSummary("Retrieves all known duplicate groups")]
 	public async Task<IActionResult> GetDuplicatesAsync() => Ok(await _matchesService.GetAllDuplicatesAsync());
 
 	[Authorize(Roles = "Admin")]
