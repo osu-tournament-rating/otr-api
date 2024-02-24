@@ -40,6 +40,24 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		return await _context.SaveChangesAsync();
 	}
 
+	public async Task<Match> UpdateExisting(MatchDTO matchDto)
+	{
+		var existing = await GetAsync(matchDto.Id);
+
+		if (existing == null)
+		{
+			throw new Exception("Match does not exist, this method assumes the match exists.");
+		}
+
+		existing.Name = matchDto.Name;
+		existing.StartTime = matchDto.StartTime;
+		existing.EndTime = matchDto.EndTime;
+		existing.VerificationStatus = matchDto.VerificationStatus;
+
+		await UpdateAsync(existing);
+		return existing;
+	}
+
 	public async Task RefreshAutomationChecks(bool invalidOnly = true)
 	{
 		var query = _context.Matches

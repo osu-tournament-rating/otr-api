@@ -194,12 +194,13 @@ public class MatchesController : Controller
 		return Ok(mapping);
 	}
 
-	[HttpPatch("verification-status/{id:int}")]
-	public async Task<IActionResult> EditVerificationStatusById(int matchId, [FromBody] JsonPatchDocument<MatchDTO> patch)
+	[HttpPatch("{id:int}/patch")]
+	[EndpointSummary("Takes in json patch for match properties, and returns the patched object. The object being patched is a MatchDTO.")]
+	[ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	public async Task<IActionResult> PatchMatchById(int matchId, [FromBody] JsonPatchDocument<MatchDTO> patch)
 	{
 		var match = await _matchesService.GetAsync(matchId);
-
-		var original = match;
 
 		if (match is null)
 		{
@@ -213,12 +214,8 @@ public class MatchesController : Controller
 			return BadRequest(ModelState);
 		}
 		
-		//_matchesService.Update(match);
+		var updatedMatch = await _matchesService.UpdateAsync(match);
 
-		return Ok(new
-		{
-			original,
-			patched = match
-		});
+		return Ok(updatedMatch);
 	}
 }

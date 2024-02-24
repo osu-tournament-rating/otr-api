@@ -15,6 +15,7 @@ public interface IMatchesRepository : IRepository<Match>
 	Task<Match?> GetFirstMatchNeedingAutoCheckAsync();
 	Task<IList<Match>> GetNeedApiProcessingAsync();
 	Task<IEnumerable<Match>> GetByMatchIdsAsync(IEnumerable<long> matchIds);
+	Task<Match> UpdateExisting(MatchDTO matchDto);
 
 	/// <summary>
 	///  Used to queue up matches for verification.

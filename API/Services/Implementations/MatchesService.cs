@@ -151,4 +151,10 @@ public class MatchesService : IMatchesService
 		var match = await _matchesRepository.GetByMatchIdAsync(osuMatchId);
 		return _mapper.Map<MatchDTO?>(match);
 	}
+
+	public async Task<MatchDTO> UpdateAsync(MatchDTO matchDto)
+	{
+		var match = await _matchesRepository.UpdateExisting(matchDto);
+		return _mapper.Map<MatchDTO>(match);
+	}
 }
