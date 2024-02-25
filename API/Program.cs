@@ -148,6 +148,8 @@ builder.Services.AddCors(options =>
 	});
 });
 
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
 builder.Host.ConfigureOsuSharp((ctx, options) =>
 {
 	options.Configuration = new OsuClientConfiguration
