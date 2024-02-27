@@ -4,7 +4,6 @@ using API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace API.Controllers;
 
@@ -46,7 +45,7 @@ public class MeController : Controller
 	//
 	// 	return whitelist.Contains(osuId);
 	// }
-	
+
 	[HttpGet]
 	[EndpointSummary("Gets the logged in user's information, if they exist")]
 	[ProducesResponseType<UserInfoDTO>(StatusCodes.Status200OK)]
@@ -87,32 +86,23 @@ public class MeController : Controller
 		return NoContent();
 	}
 
-	private int? GetId()
-	{
-		string? id = HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Iss)?.Value;
-		if (id == null)
-		{
-			return null;
-		}
-
-		if (!int.TryParse(id, out int idInt))
-		{
-			return null;
-		}
-
-		return idInt;
-	}
-
 	[HttpGet("stats")]
 	public async Task<ActionResult<PlayerStatsDTO>> GetStatsAsync([FromQuery] int mode = 0, [FromQuery] DateTime? dateMin = null, [FromQuery] DateTime? dateMax = null)
 	{
-		int? id = GetId();
+		int? userId = HttpContext.AuthorizedUserIdentity();
 
-		if (!id.HasValue)
+		if (!userId.HasValue)
 		{
 			return BadRequest("User is not logged in or id could not be retreived from logged in user.");
 		}
 
-		return await _playerStatsService.GetAsync(id.Value, null, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
+		int? playerId = (await _userService.GetAsync(userId.Value))?.Id;
+
+		if (!playerId.HasValue)
+		{
+			return BadRequest("Unidentifiable user (unable to discern playerId).");
+		}
+
+		return await _playerStatsService.GetAsync(playerId.Value, null, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.UtcNow);
 	}
 }
