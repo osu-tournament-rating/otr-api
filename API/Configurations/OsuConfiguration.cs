@@ -10,7 +10,7 @@ namespace API.Configurations
         public string ApiKey { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "ClientId is required!")]
-        [Range(1, long.MaxValue, ErrorMessage = "ClientId is required!")]
+        [Range(1, long.MaxValue, ErrorMessage = "ClientId must be a positive, non-zero value!")]
         public long ClientId { get; set; } = 0;
 
         [Required(ErrorMessage = "ClientSecret is required!")]

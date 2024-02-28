@@ -9,8 +9,8 @@ namespace API.Configurations
         [Required(ErrorMessage = "Key is required!")]
         public string Key { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Audience is required!")]
         [Url]
+        [Required(ErrorMessage = "Audience is required!")]
         public string Audience = string.Empty;
     }
 }
