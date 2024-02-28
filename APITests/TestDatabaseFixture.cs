@@ -1,6 +1,8 @@
 using API;
+using API.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace APITests;
 
@@ -8,6 +10,7 @@ namespace APITests;
 public class TestDatabaseFixture : IDisposable
 {
 	public IConfiguration Configuration { get; private set; }
+	public IOptions<ConnectionStringsConfiguration> ConnectionStringsOptions { get; private set; }
 
 	public TestDatabaseFixture()
 	{
@@ -18,13 +21,17 @@ public class TestDatabaseFixture : IDisposable
 		var configBuilder = new ConfigurationBuilder().AddEnvironmentVariables();
 		#endif
 		Configuration = configBuilder.Build();
-	}
+		ConnectionStringsOptions = new OptionsWrapper<ConnectionStringsConfiguration>(new ConnectionStringsConfiguration
+		{
+			DefaultConnection = Configuration.GetConnectionString("DefaultConnection")!
+		});
+    }
 	
 	public OtrContext CreateContext()
 	{
 		var optionsBuilder = new DbContextOptionsBuilder<OtrContext>();
 		optionsBuilder.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
-		return new OtrContext(optionsBuilder.Options, Configuration);
+		return new OtrContext(optionsBuilder.Options, ConnectionStringsOptions);
 	}
 
 	public void Dispose()

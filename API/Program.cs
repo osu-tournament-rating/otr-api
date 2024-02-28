@@ -7,6 +7,7 @@ using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Implementations;
 using API.Services.Interfaces;
+using API.Utilities;
 using AutoMapper;
 using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,6 +22,17 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configurations
+builder.Services.AddOptionsWithValidateOnStart<ConnectionStringsConfiguration>()
+	.Bind(builder.Configuration.GetSection(ConnectionStringsConfiguration.Position))
+	.ValidateDataAnnotations();
+builder.Services.AddOptionsWithValidateOnStart<OsuConfiguration>()
+    .Bind(builder.Configuration.GetSection(OsuConfiguration.Position))
+    .ValidateDataAnnotations();
+builder.Services.AddOptionsWithValidateOnStart<JwtConfiguration>()
+    .Bind(builder.Configuration.GetSection(JwtConfiguration.Position))
+	.ValidateDataAnnotations();
 
 // Add services to the container.
 
@@ -38,8 +50,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSerilog(configuration =>
 {
-	string connString = builder.Configuration.GetConnectionString("DefaultConnection") ??
-	                    throw new InvalidOperationException("Missing connection string!");
+    string connString = builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection;
 
 #if DEBUG
 	configuration.MinimumLevel.Debug();
@@ -77,8 +88,7 @@ builder.Services.AddHostedService<OsuTrackApiWorker>();
 
 builder.Services.AddDbContext<OtrContext>(o =>
 {
-	o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection") ??
-	            throw new InvalidOperationException("Missing connection string!"));
+	o.UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection);
 });
 
 builder.Services.AddDistributedMemoryCache();
@@ -112,31 +122,15 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddOsuSharp(options =>
 {
-	options.Configuration = new OsuClientConfiguration
+	var osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
+    options.Configuration = new OsuClientConfiguration
 	{
-		ClientId = int.Parse(builder.Configuration["Osu:ClientId"]!),
-		ClientSecret = builder.Configuration["Osu:ClientSecret"]!
-	};
+		ClientId = osuConfiguration.ClientId,
+		ClientSecret = osuConfiguration.ClientSecret
+    };
 });
 
 builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
-builder.Services.AddSingleton<ICredentials, Credentials>(serviceProvider =>
-{
-	string? connString = serviceProvider.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
-	string? osuApiKey = serviceProvider.GetRequiredService<IConfiguration>().GetSection("Osu").GetValue<string>("ApiKey");
-
-	if (string.IsNullOrWhiteSpace(connString))
-	{
-		throw new InvalidOperationException("Missing connection string!");
-	}
-
-	if (string.IsNullOrWhiteSpace(osuApiKey))
-	{
-		throw new InvalidOperationException("Missing osu! API Key!");
-	}
-
-	return new Credentials(connString, osuApiKey);
-});
 
 builder.Services.AddCors(options =>
 {
@@ -154,11 +148,12 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 builder.Host.ConfigureOsuSharp((ctx, options) =>
 {
-	options.Configuration = new OsuClientConfiguration
+    var osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
+    options.Configuration = new OsuClientConfiguration
 	{
-		ClientId = int.Parse(ctx.Configuration["Osu:ClientId"]!),
-		ClientSecret = ctx.Configuration["Osu:ClientSecret"]!
-	};
+		ClientId = osuConfiguration.ClientId,
+		ClientSecret = osuConfiguration.ClientSecret
+    };
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
