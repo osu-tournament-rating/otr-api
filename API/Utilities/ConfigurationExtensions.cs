@@ -4,7 +4,7 @@ namespace API.Utilities
 {
     public static class ConfigurationExtensions
     {
-        public static T BindAndValidate<T>(this IConfiguration configuration, string sectionName) where T : new()
+        public static T BindAndValidate<T>(this IConfiguration configuration, string sectionName) where T : class, new()
         {
             var section = configuration.GetSection(sectionName).Get<T>();
             if (section == null)
