@@ -11,11 +11,11 @@ namespace API.Configurations
 
         [Required(ErrorMessage = "ClientId is required!")]
         [Range(1, long.MaxValue, ErrorMessage = "ClientId must be a positive, non-zero value!")]
-        public long ClientId { get; set; } = 0;
+        public long ClientId { get; set; }
 
         [Required(ErrorMessage = "ClientSecret is required!")]
         public string ClientSecret { get; set; } = string.Empty;
-        public bool AutoUpdateUsers { get; set; } = false;
-        public bool AllowDataFetching { get; set; } = false;
+        public bool AutoUpdateUsers { get; set; }
+        public bool AllowDataFetching { get; set; }
     }
 }
