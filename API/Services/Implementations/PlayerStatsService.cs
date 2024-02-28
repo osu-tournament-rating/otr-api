@@ -38,19 +38,24 @@ public class PlayerStatsService : IPlayerStatsService
 		_mapper = mapper;
 	}
 
-	public async Task<PlayerStatsDTO> GetAsync(string username, int? comparerId, int mode, DateTime? dateMin = null,
+	public async Task<PlayerStatsDTO?> GetAsync(string username, int? comparerId, int mode, DateTime? dateMin = null,
 		DateTime? dateMax = null)
 	{
-		int id = await _playerRepository.GetIdAsync(username);
+		int? id = await _playerRepository.GetIdAsync(username);
 
-		if (id == default && username.Contains('_'))
+		if (!id.HasValue && username.Contains('_'))
 		{
 			// Search for spaces
 			string repl = username.Replace('_', ' ');
 			id = await _playerRepository.GetIdAsync(repl);
 		}
 
-		return await GetAsync(id, comparerId, mode, dateMin, dateMax);
+		if (!id.HasValue)
+		{
+			return null;
+		}
+
+		return await GetAsync(id.Value, comparerId, mode, dateMin, dateMax);
 	}
 
 	public async Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(int playerId, int teammateId, int mode, DateTime dateMin,

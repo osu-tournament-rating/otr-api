@@ -18,7 +18,7 @@ public class LeaderboardsController : Controller
 	[HttpGet]
 	public async Task<ActionResult<LeaderboardDTO>> GetAsync([FromQuery] LeaderboardRequestQueryDTO requestQuery)
 	{
-		/**
+		/*
 		 * Note:
 		 *
 		 * Due to model binding, the query is able to be called as such:

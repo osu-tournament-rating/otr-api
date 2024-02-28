@@ -52,7 +52,7 @@ public class OsuTrackApiWorker : BackgroundService
 					var playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
 					var ratingStatsRepository = scope.ServiceProvider.GetRequiredService<IMatchRatingStatsRepository>();
 
-					var playersToUpdate = (await playerService.GetPlayersWhereMissingGlobalRankAsync()).ToList();
+					var playersToUpdate = (await playerService.GetPlayersMissingRankAsync()).ToList();
 
 					if (!playersToUpdate.Any())
 					{
