@@ -1,5 +1,7 @@
-﻿using API.Entities;
+﻿using API.Configurations;
+using API.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -8,9 +10,9 @@ namespace API;
 
 public partial class OtrContext : DbContext
 {
-	private readonly IConfiguration _configuration;
+	private readonly IOptions<ConnectionStringsConfiguration> _configuration;
 
-	public OtrContext(DbContextOptions<OtrContext> options, IConfiguration configuration)
+	public OtrContext(DbContextOptions<OtrContext> options, IOptions<ConnectionStringsConfiguration> configuration)
 		: base(options)
 	{
 		_configuration = configuration;
@@ -31,7 +33,7 @@ public partial class OtrContext : DbContext
 	public virtual DbSet<RatingAdjustment> RatingAdjustments { get; set; }
 	public virtual DbSet<Tournament> Tournaments { get; set; }
 	public virtual DbSet<User> Users { get; set; }
-	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
+	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseNpgsql(_configuration.Value.DefaultConnection);
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{

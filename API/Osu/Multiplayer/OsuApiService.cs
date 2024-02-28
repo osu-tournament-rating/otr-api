@@ -1,4 +1,5 @@
 using API.Configurations;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OsuSharp.Domain;
 using OsuSharp.Interfaces;
@@ -24,17 +25,17 @@ public class OsuApiService : IOsuApiService
 	private const int MAX_CONCURRENT_THREADS = 5;
 	private const string BaseUrl = "https://osu.ppy.sh/api/";
 	private readonly HttpClient _client;
-	private readonly ICredentials _credentials;
-	private readonly IOsuClient _v2Client;
+	private readonly IOptions<OsuConfiguration> _osuConfiguration;
+    private readonly IOsuClient _v2Client;
 	private readonly ILogger<OsuApiService> _logger;
 	private readonly SemaphoreSlim _semaphore = new(MAX_CONCURRENT_THREADS, MAX_CONCURRENT_THREADS);
 	private int _rateLimitCounter;
 	private DateTime _rateLimitResetTime = DateTime.Now.AddSeconds(RATE_LIMIT_INTERVAL_SECONDS);
 
-	public OsuApiService(ILogger<OsuApiService> logger, ICredentials credentials, IOsuClient v2Client)
+	public OsuApiService(ILogger<OsuApiService> logger, IOptions<OsuConfiguration> osuConfiguration, IOsuClient v2Client)
 	{
 		_logger = logger;
-		_credentials = credentials;
+		_osuConfiguration = osuConfiguration;
 		_v2Client = v2Client;
 		_client = new HttpClient
 		{
@@ -44,7 +45,7 @@ public class OsuApiService : IOsuApiService
 
 	public async Task<OsuApiMatchData?> GetMatchAsync(long matchId, string reason) => await ExecuteApiCallAsync(async () =>
 	{
-		string response = await _client.GetStringAsync($"get_match?k={_credentials.OsuApiKey}&mp={matchId}");
+		string response = await _client.GetStringAsync($"get_match?k={_osuConfiguration.Value.ApiKey}&mp={matchId}");
 		_logger.LogDebug("Successfully received response from osu! API for match {MatchId} [{Reason}]", matchId, reason);
 
 		return JsonConvert.DeserializeObject<OsuApiMatchData>(response);

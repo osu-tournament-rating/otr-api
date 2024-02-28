@@ -100,7 +100,4 @@ public class AggregatePlayerMatchStatsDTO
 	/// The end of the period for which the statistics are calculated.
 	/// </summary>
 	public DateTime PeriodEnd { get; set; }
-	/// <summary>
-	/// The total number of games played in the period
-	/// </summary>
 }

@@ -39,6 +39,21 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		return await _context.SaveChangesAsync();
 	}
 
+	public async Task<Match> UpdateVerificationStatus(int id, int? verificationStatus)
+	{
+		var existing = await GetAsync(id, false);
+
+		if (existing == null)
+		{
+			throw new Exception("Match does not exist, this method assumes the match exists.");
+		}
+		
+		existing.VerificationStatus = verificationStatus;
+
+		await UpdateAsync(existing);
+		return existing;
+	}
+
 	public async Task RefreshAutomationChecks(bool invalidOnly = true)
 	{
 		var query = _context.Matches
