@@ -5,6 +5,7 @@ using API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.JsonPatch;
 
 // ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;
@@ -27,7 +28,7 @@ public class MatchesController : Controller
 	[HttpPost("batch")]
 	public async Task<IActionResult> PostAsync([FromBody] TournamentWebSubmissionDTO wrapper, [FromQuery] bool verified = false)
 	{
-		/**
+		/*
 		 * FLOW:
 		 *
 		 * The user submits a batch of links to the front-end. They are looking to add new data
@@ -125,7 +126,7 @@ public class MatchesController : Controller
 
 	[Authorize(Roles = "Admin")]
 	[HttpGet("duplicates")]
-	[EndpointSummary("Retreives all known duplicate groups")]
+	[EndpointSummary("Retrieves all known duplicate groups")]
 	public async Task<IActionResult> GetDuplicatesAsync() => Ok(await _matchesService.GetAllDuplicatesAsync());
 
 	[Authorize(Roles = "Admin")]
@@ -191,5 +192,36 @@ public class MatchesController : Controller
 	{
 		var mapping = await _matchesService.GetIdMappingAsync();
 		return Ok(mapping);
+	}
+
+	[HttpPatch("verification-status/{id:int}")]
+	[EndpointSummary("Takes in json patch for verification status, and returns the patched object. The object being patched is a MatchDTO.")]
+	[ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
+	[ProducesResponseType(StatusCodes.Status400BadRequest)]
+	public async Task<IActionResult> EditVerificationStatus(int id, [FromBody] JsonPatchDocument<MatchDTO> patch)
+	{
+		var match = await _matchesService.GetAsync(id, false);
+
+		if (match is null)
+		{
+			return NotFound($"Match with id {id} does not exist");
+		}
+
+		//Ensure request is only attempting to perform a replace operation.
+		if (patch.Operations.Any(op => op.op != "replace"))
+		{
+			return BadRequest("This endpoint can only perform replace operations.");
+		}
+		
+		patch.ApplyTo(match, ModelState);
+
+		if (!TryValidateModel(match))
+		{
+			return BadRequest(ModelState);
+		}
+		
+		var updatedMatch = await _matchesService.UpdateVerificationStatus(id, match.VerificationStatus);
+
+		return Ok(updatedMatch);
 	}
 }

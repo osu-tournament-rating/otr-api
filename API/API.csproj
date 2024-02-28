@@ -16,6 +16,8 @@
         <PackageReference Include="AutoMapper" Version="12.0.1" />
         <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="4.0.4"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.2" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.1"/>
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.4"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.1"/>
