@@ -25,6 +25,7 @@ public class Tournament
 	public int TeamSize { get; set; }
 	[Column("submitter_id")]
 	public int? SubmitterUserId { get; set; }
+	public User? SubmittedBy { get; set; }
 	[Column("created", TypeName = "timestamp with time zone")]
 	public DateTime Created { get; set; }
 	[Column("updated", TypeName = "timestamp with time zone")]

@@ -123,8 +123,6 @@ public partial class OtrContext : DbContext
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-			entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
-			entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedMatches).HasForeignKey(e => e.SubmitterUserId).IsRequired(false);
 			entity.HasOne(e => e.VerifiedBy).WithMany(u => u.VerifiedMatches).HasForeignKey(e => e.VerifierUserId).IsRequired(false);
 			entity.HasMany(e => e.Games).WithOne(g => g.Match).OnDelete(DeleteBehavior.Cascade);
 			entity.HasOne(e => e.Tournament).WithMany(t => t.Matches).IsRequired().OnDelete(DeleteBehavior.Cascade);
@@ -241,6 +239,7 @@ public partial class OtrContext : DbContext
 			      .IsRequired();
 
             entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
+			entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedTournaments).HasForeignKey(e => e.SubmitterUserId).IsRequired(false);
 
             entity.HasIndex(e => new { e.Name, e.Abbreviation }).IsUnique();
 		});

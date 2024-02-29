@@ -35,8 +35,6 @@ public class Match
 	public int? VerificationSource { get; set; }
 	[Column("verification_status")]
 	public int? VerificationStatus { get; set; }
-	[Column("submitted_by_user")]
-	public int? SubmitterUserId { get; set; }
 	[Column("verified_by_user")]
 	public int? VerifierUserId { get; set; }
 	[Column("tournament_id")]
@@ -51,7 +49,6 @@ public class Match
 	/// </summary>
 	[Column("is_api_processed")]
 	public bool? IsApiProcessed { get; set; }
-	public User? SubmittedBy { get; set; }
 	public User? VerifiedBy { get; set; }
 	[InverseProperty("Match")]
 	public virtual ICollection<Game> Games { get; set; } = new List<Game>();

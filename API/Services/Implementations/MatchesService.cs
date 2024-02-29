@@ -49,7 +49,6 @@ public class MatchesService : IMatchesService
 				match.VerificationSource = verifier;
 				match.VerifierUserId = tournamentWebSubmissionDto.SubmitterId;
 				match.TournamentId = tournament.Id;
-				match.SubmitterUserId = tournamentWebSubmissionDto.SubmitterId;
 
 				await _matchesRepository.UpdateAsync(match);
 			}
@@ -63,7 +62,6 @@ public class MatchesService : IMatchesService
 		{
 			MatchId = id,
 			VerificationStatus = (int)verificationStatus,
-			SubmitterUserId = tournamentWebSubmissionDto.SubmitterId,
 			NeedsAutoCheck = true,
 			IsApiProcessed = false,
 			VerificationSource = verifier,
