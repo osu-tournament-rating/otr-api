@@ -240,7 +240,9 @@ public partial class OtrContext : DbContext
 			      .HasConstraintName("Tournaments___fkmatchid")
 			      .IsRequired();
 
-			entity.HasIndex(e => new { e.Name, e.Abbreviation }).IsUnique();
+            entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
+
+            entity.HasIndex(e => new { e.Name, e.Abbreviation }).IsUnique();
 		});
 
 		modelBuilder.Entity<User>(entity =>
