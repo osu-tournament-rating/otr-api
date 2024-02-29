@@ -141,6 +141,7 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 		existing.Mode = wrapper.Mode;
 		existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
 		existing.TeamSize = wrapper.TeamSize;
+		existing.SubmitterUserId = wrapper.SubmitterId;
 
 		await UpdateAsync(existing);
 		return existing;
@@ -155,7 +156,8 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 			ForumUrl = wrapper.ForumPost,
 			Mode = wrapper.Mode,
 			RankRangeLowerBound = wrapper.RankRangeLowerBound,
-			TeamSize = wrapper.TeamSize
+			TeamSize = wrapper.TeamSize,
+			SubmitterUserId = wrapper.SubmitterId,
 		};
 
 		var result = await CreateAsync(tournament);
