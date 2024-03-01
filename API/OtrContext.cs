@@ -238,8 +238,11 @@ public partial class OtrContext : DbContext
 			      .HasConstraintName("Tournaments___fkmatchid")
 			      .IsRequired();
 
-            entity.Property(e => e.SubmitterUserId).IsRequired();
-			entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedTournaments).HasForeignKey(e => e.SubmitterUserId).IsRequired();
+            /**
+			 * These are nullable because a user's account could be deleted
+			 */
+            entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
+			entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedTournaments).HasForeignKey(e => e.SubmitterUserId).IsRequired(false);
 
             entity.HasIndex(e => new { e.Name, e.Abbreviation }).IsUnique();
 		});

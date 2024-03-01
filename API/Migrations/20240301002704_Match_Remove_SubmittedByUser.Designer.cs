@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    [Migration("20240229222539_Match_Remove_SubmittedByUser")]
+    [Migration("20240301002704_Match_Remove_SubmittedByUser")]
     partial class Match_Remove_SubmittedByUser
     {
         /// <inheritdoc />
