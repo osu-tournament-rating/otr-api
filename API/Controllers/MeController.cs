@@ -75,8 +75,7 @@ public class MeController : Controller
 	/// <returns></returns>
 	[HttpGet("validate")]
 	[Authorize(Roles = "whitelist")]
-	[EndpointSummary("Validates the currently logged in user's OTR-Access-Token cookie")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+	[EndpointSummary("Validates the currently logged in user has permissions to access the website.")]
 	[ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public IActionResult ValidateJwt()
