@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Entities;
 using API.Osu;
 using API.Services.Interfaces;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -9,9 +10,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [ApiController]
+[ApiVersion(1)]
 [EnableCors]
 [Authorize(Roles = "Admin, System")]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class PlayersController : Controller
 {
 	private readonly IPlayerService _playerService;

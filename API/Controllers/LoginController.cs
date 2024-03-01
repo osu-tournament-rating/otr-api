@@ -9,6 +9,7 @@ using OsuSharp.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Asp.Versioning;
 
 namespace API.Controllers;
 
@@ -18,8 +19,9 @@ public class LoginWrapper
 }
 
 [ApiController]
+[ApiVersion(1)]
 [EnableCors]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class LoginController : Controller
 {
 	private readonly IConfiguration _configuration;
