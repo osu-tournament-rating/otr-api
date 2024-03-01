@@ -123,7 +123,13 @@ public partial class OtrContext : DbContext
 
 			entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-			entity.HasOne(e => e.VerifiedBy).WithMany(u => u.VerifiedMatches).HasForeignKey(e => e.VerifierUserId).IsRequired(false);
+            /**
+			 * These are nullable because a user's account could be deleted
+			 */
+            entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
+            entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedMatches).HasForeignKey(e => e.SubmitterUserId).IsRequired(false);
+
+            entity.HasOne(e => e.VerifiedBy).WithMany(u => u.VerifiedMatches).HasForeignKey(e => e.VerifierUserId).IsRequired(false);
 			entity.HasMany(e => e.Games).WithOne(g => g.Match).OnDelete(DeleteBehavior.Cascade);
 			entity.HasOne(e => e.Tournament).WithMany(t => t.Matches).IsRequired().OnDelete(DeleteBehavior.Cascade);
 			entity.HasMany(e => e.Stats).WithOne(s => s.Match).HasForeignKey(e => e.MatchId).IsRequired().OnDelete(DeleteBehavior.Cascade);

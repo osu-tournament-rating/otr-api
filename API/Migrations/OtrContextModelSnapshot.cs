@@ -370,6 +370,10 @@ namespace API.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_time");
 
+                    b.Property<int?>("SubmitterUserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("submitted_by_user");
+
                     b.Property<int>("TournamentId")
                         .HasColumnType("integer")
                         .HasColumnName("tournament_id");
@@ -400,6 +404,8 @@ namespace API.Migrations
 
                     b.HasIndex("MatchId")
                         .IsUnique();
+
+                    b.HasIndex("SubmitterUserId");
 
                     b.HasIndex("TournamentId");
 
@@ -1064,6 +1070,10 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.Match", b =>
                 {
+                    b.HasOne("API.Entities.User", "SubmittedBy")
+                        .WithMany("SubmittedMatches")
+                        .HasForeignKey("SubmitterUserId");
+
                     b.HasOne("API.Entities.Tournament", "Tournament")
                         .WithMany("Matches")
                         .HasForeignKey("TournamentId")
@@ -1074,6 +1084,8 @@ namespace API.Migrations
                     b.HasOne("API.Entities.User", "VerifiedBy")
                         .WithMany("VerifiedMatches")
                         .HasForeignKey("VerifierUserId");
+
+                    b.Navigation("SubmittedBy");
 
                     b.Navigation("Tournament");
 
@@ -1238,6 +1250,8 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.User", b =>
                 {
+                    b.Navigation("SubmittedMatches");
+
                     b.Navigation("SubmittedTournaments");
 
                     b.Navigation("VerifiedDuplicates");

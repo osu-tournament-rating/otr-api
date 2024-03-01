@@ -49,6 +49,9 @@ public class Match
 	/// </summary>
 	[Column("is_api_processed")]
 	public bool? IsApiProcessed { get; set; }
+	[Column("submitted_by_user")]
+	public int? SubmitterUserId { get; set; }
+	public virtual User? SubmittedBy {  get; set; }
 	public User? VerifiedBy { get; set; }
 	[InverseProperty("Match")]
 	public virtual ICollection<Game> Games { get; set; } = new List<Game>();

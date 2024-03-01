@@ -49,6 +49,7 @@ public class MatchesService : IMatchesService
 				match.VerificationSource = verifier;
 				match.VerifierUserId = tournamentWebSubmissionDto.SubmitterId;
 				match.TournamentId = tournament.Id;
+				match.SubmitterUserId = tournamentWebSubmissionDto.SubmitterId;
 
 				await _matchesRepository.UpdateAsync(match);
 			}
@@ -66,7 +67,8 @@ public class MatchesService : IMatchesService
 			IsApiProcessed = false,
 			VerificationSource = verifier,
 			VerifierUserId = verified ? tournamentWebSubmissionDto.SubmitterId : null,
-			TournamentId = tournament.Id
+			TournamentId = tournament.Id,
+			SubmitterUserId = tournamentWebSubmissionDto.SubmitterId
 		});
 
 		int? result = await _matchesRepository.BatchInsertAsync(newMatches);

@@ -32,7 +32,8 @@ public static class SeededMatch
 			VerificationInfo = null,
 			VerificationSource = 0,
 			VerificationStatus = 0,
-			VerifierUserId = null,
+            SubmitterUserId = 21,
+            VerifierUserId = null,
 			TournamentId = tournamentId,
 			NeedsAutoCheck = false,
 			IsApiProcessed = true
