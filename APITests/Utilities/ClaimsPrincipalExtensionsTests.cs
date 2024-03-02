@@ -20,7 +20,7 @@ public class ClaimsPrincipalExtensionsTests
 		var claims = new ClaimsPrincipal();
 		claims.AddIdentity(new ClaimsIdentity(new List<Claim>
 		{
-			new(ClaimTypes.Role, "Admin")
+			new(ClaimTypes.Role, "admin")
 		}));
 
 		Assert.True(claims.IsAdmin());
@@ -32,7 +32,7 @@ public class ClaimsPrincipalExtensionsTests
 		var claims = new ClaimsPrincipal();
 		claims.AddIdentity(new ClaimsIdentity(new List<Claim>
 		{
-			new(ClaimTypes.Role, "MatchVerifier")
+			new(ClaimTypes.Role, "verifier")
 		}));
 
 		Assert.True(claims.IsMatchVerifier());
@@ -46,7 +46,7 @@ public class ClaimsPrincipalExtensionsTests
 		var claims = new ClaimsPrincipal();
 		claims.AddIdentity(new ClaimsIdentity(new List<Claim>
 		{
-			new(ClaimTypes.Role, "Admin")
+			new(ClaimTypes.Role, "admin")
 		}));
 		
 		Assert.True(claims.IsAdmin());
@@ -58,7 +58,7 @@ public class ClaimsPrincipalExtensionsTests
 		var claims = new ClaimsPrincipal();
 		claims.AddIdentity(new ClaimsIdentity(new List<Claim>
 		{
-			new(ClaimTypes.Role, "System")
+			new(ClaimTypes.Role, "system")
 		}));
 
 		Assert.True(claims.IsAdmin());
