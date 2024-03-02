@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,6 +10,7 @@ namespace API.Controllers;
 
 [ApiController]
 [EnableCors]
+[Authorize(Roles = "user")]
 [Route("api/[controller]")]
 public class LeaderboardsController : Controller
 {
@@ -16,6 +18,7 @@ public class LeaderboardsController : Controller
 	public LeaderboardsController(ILeaderboardService leaderboardService) { _leaderboardService = leaderboardService; }
 
 	[HttpGet]
+	[AllowAnonymous] // TODO: Frontend needs to have a dedicated client for these requests.
 	public async Task<ActionResult<LeaderboardDTO>> GetAsync([FromQuery] LeaderboardRequestQueryDTO requestQuery)
 	{
 		/*
@@ -30,16 +33,6 @@ public class LeaderboardsController : Controller
 		 * This avoids annoying calls to ".Filter" in the query string (and .Filter.TierFilters for the tier filters)
 		 */
 
-		// if (string.IsNullOrEmpty(HttpContext.Request.Headers.Authorization))
-		// {
-		// 	return Unauthorized("Missing authorization header");
-		// }
-		//
-		// if (_configuration["Auth:WebLoginAuthSecret"] != HttpContext.Request.Headers.WebAuthorization())
-		// {
-		// 	return Unauthorized("Invalid authorization header");
-		// }
-		//
 		int? authorizedUserId = HttpContext.AuthorizedUserIdentity();
 
 		if (!authorizedUserId.HasValue && requestQuery.ChartType == LeaderboardChartType.Country)

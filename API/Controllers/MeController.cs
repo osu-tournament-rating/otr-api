@@ -57,7 +57,7 @@ public class MeController : Controller
 
 		if (!id.HasValue)
 		{
-			return BadRequest("User is not logged in.");
+			return BadRequest("Authorization invalid.");
 		}
 
 		var user = await _userService.GetAsync(id.Value);

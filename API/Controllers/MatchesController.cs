@@ -12,7 +12,7 @@ namespace API.Controllers;
 
 [ApiController]
 [EnableCors]
-[Authorize]
+[Authorize(Roles = "user")]
 [Route("api/[controller]")]
 public class MatchesController : Controller
 {
@@ -26,12 +26,13 @@ public class MatchesController : Controller
 	}
 
 	[HttpPost("batch")]
+	[Authorize(Roles = "submit")]
 	public async Task<IActionResult> PostAsync([FromBody] TournamentWebSubmissionDTO wrapper, [FromQuery] bool verified = false)
 	{
 		/*
 		 * FLOW:
 		 *
-		 * The user submits a batch of links to the front-end. They are looking to add new data
+		 * The user submits a tournament (containing metadata and links) to the front-end. They are looking to add new data
 		 * to our database that will eventually count towards ratings.
 		 *
 		 * This post endpoint takes these links, validates them (i.e. checks for duplicates,
@@ -54,36 +55,15 @@ public class MatchesController : Controller
 			return BadRequest($"Tournament {wrapper.TournamentName} already exists for this mode");
 		}
 
-		await _matchesService.BatchInsertOrUpdateAsync(wrapper, verified, IdentifyVerifier(verified));
+		await _matchesService.BatchInsertOrUpdateAsync(wrapper, verified, (int)MatchVerificationSource.MatchVerifier);
 
 		return Ok();
 	}
 
-	private int? IdentifyVerifier(bool verified)
-	{
-		if (!verified)
-		{
-			return null;
-		}
-
-		// We need to know what entity verified the match
-		int verifier = (int)MatchVerificationSource.MatchVerifier;
-
-		if (User.IsAdmin())
-		{
-			verifier = (int)MatchVerificationSource.Admin;
-		}
-
-		if (User.IsSystem())
-		{
-			verifier = (int)MatchVerificationSource.System;
-		}
-
-		return verifier;
-	}
-
-	[HttpPost("refresh/automations")]
-	[Authorize(Roles = "Admin, System")]
+	[HttpPost("checks/refresh")]
+	[Authorize(Roles = "admin, system")]
+	[EndpointSummary("Sets all matches as requiring automation checks. Should be run if " +
+	                 "automation checks are altered.")]
 	public async Task<IActionResult> RefreshAutomationChecksAsync()
 	{
 		// Marks all matches as needing automation checks
@@ -92,7 +72,7 @@ public class MatchesController : Controller
 	}
 
 	[HttpGet("ids")]
-	[Authorize(Roles = "Admin, System")]
+	[Authorize(Roles = "system")]
 	[EndpointSummary("Returns all verified match ids")]
 	public async Task<ActionResult<IEnumerable<int>>> GetAllAsync()
 	{
@@ -101,7 +81,6 @@ public class MatchesController : Controller
 	}
 
 	[HttpGet("{id:int}")]
-	[Authorize(Roles = "Admin, System")]
 	public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
 	{
 		var match = await _matchesService.GetAsync(id);
@@ -115,6 +94,7 @@ public class MatchesController : Controller
 	}
 
 	[HttpPost("convert")]
+	[Authorize(Roles = "system")]
 	[EndpointSummary("Converts a list of match ids to MatchDTO objects")]
 	[EndpointDescription("This is a useful way to fetch a list of matches without starving the " +
 	                     "program of memory. This is used by the rating processor to fetch matches")]
@@ -124,12 +104,12 @@ public class MatchesController : Controller
 		return Ok(matches);
 	}
 
-	[Authorize(Roles = "Admin")]
+	[Authorize(Roles = "admin")]
 	[HttpGet("duplicates")]
 	[EndpointSummary("Retrieves all known duplicate groups")]
 	public async Task<IActionResult> GetDuplicatesAsync() => Ok(await _matchesService.GetAllDuplicatesAsync());
 
-	[Authorize(Roles = "Admin")]
+	[Authorize(Roles = "admin")]
 	[HttpPost("duplicate")]
 	[EndpointSummary("Mark a match as a confirmed or denied duplicate of the root")]
 	public async Task<IActionResult> MarkDuplicatesAsync([FromQuery] int rootId, [FromQuery] bool confirmedDuplicate)
@@ -148,28 +128,15 @@ public class MatchesController : Controller
 		await _matchesService.VerifyDuplicatesAsync(loggedInUser.Value, rootId, confirmedDuplicate);
 		return Ok();
 	}
-
-	// [HttpGet("{osuMatchId:long}")]
-	// [Authorize(Roles = "Admin, System")]
-	// public async Task<ActionResult<Match>> GetByOsuMatchIdAsync(long osuMatchId)
-	// {
-	// 	var match = await _matchesService.GetAsync(osuMatchId);
-	//
-	// 	if (match == null)
-	// 	{
-	// 		return NotFound($"Failed to locate match {osuMatchId}");
-	// 	}
-	//
-	// 	return Ok(match);
-	// }
-
+	
+	// TODO: Should be /player/{osuId}/matches instead.
 	[HttpGet("player/{osuId:long}")]
-	[Authorize(Roles = "Admin, System")]
+	[Authorize(Roles = "admin, system")]
 	public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatchesAsync(long osuId, int mode) =>
 		Ok(await _matchesService.GetAllForPlayerAsync(osuId, mode, DateTime.MinValue, DateTime.MaxValue));
 
 	[HttpGet("{id:int}/osuid")]
-	[Authorize(Roles = "Admin, System")]
+	[Authorize(Roles = "system")]
 	public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
 	{
 		var match = await _matchesService.GetByOsuIdAsync(id);
@@ -188,6 +155,7 @@ public class MatchesController : Controller
 	}
 
 	[HttpGet("id-mapping")]
+	[Authorize(Roles = "system")]
 	public async Task<IActionResult> GetIdMappingAsync()
 	{
 		var mapping = await _matchesService.GetIdMappingAsync();
@@ -195,6 +163,7 @@ public class MatchesController : Controller
 	}
 
 	[HttpPatch("verification-status/{id:int}")]
+	[Authorize(Roles = "admin")]
 	[EndpointSummary("Takes in json patch for verification status, and returns the patched object. The object being patched is a MatchDTO.")]
 	[ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]

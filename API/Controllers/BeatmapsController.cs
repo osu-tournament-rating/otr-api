@@ -9,7 +9,7 @@ namespace API.Controllers;
 [ApiController]
 [EnableCors]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin, System")]
+[Authorize(Roles = "system")] // Internal access only at this time
 public class BeatmapsController : Controller
 {
 	private readonly IBeatmapService _beatmapService;
