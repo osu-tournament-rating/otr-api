@@ -12,34 +12,49 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 {
 	private readonly OtrContext _context;
 	private readonly IMatchDuplicateRepository _matchDuplicateRepository;
+	private readonly IMatchHistoryRepository _matchHistoryRepository;
 	private readonly ILogger<MatchesRepository> _logger;
 	private readonly IMapper _mapper;
 
-	public MatchesRepository(ILogger<MatchesRepository> logger, IMapper mapper, OtrContext context, IMatchDuplicateRepository matchDuplicateRepository) : base(context)
+	public MatchesRepository(ILogger<MatchesRepository> logger, IMapper mapper, OtrContext context, IMatchDuplicateRepository matchDuplicateRepository, IMatchHistoryRepository matchHistoryRepository) : base(context)
 	{
 		_logger = logger;
 		_mapper = mapper;
 		_context = context;
 		_matchDuplicateRepository = matchDuplicateRepository;
+		_matchHistoryRepository = matchHistoryRepository;
 	}
 
 	public override async Task<Match?> GetAsync(int id) =>
 		// Get the match with all associated data
 		await _context.Matches
-		              .Include(x => x.Games)
-		              .ThenInclude(x => x.MatchScores)
-		              .Include(x => x.Games)
-		              .ThenInclude(x => x.Beatmap)
-		              .FirstOrDefaultAsync(x => x.Id == id);
+					  .Include(x => x.Games)
+					  .ThenInclude(x => x.MatchScores)
+					  .Include(x => x.Games)
+					  .ThenInclude(x => x.Beatmap)
+					  .FirstOrDefaultAsync(x => x.Id == id);
 
 	public override async Task<int> UpdateAsync(Match entity)
 	{
-		entity.Updated = DateTime.UtcNow;
+		var origMatch = await GetNoTrackingAsync(entity.Id);
+		if (origMatch != null) await _matchHistoryRepository.CreateAsync(origMatch, HistoryActionType.Update);
+
+        entity.Updated = DateTime.UtcNow;
 		_context.Matches.Update(entity);
-		return await _context.SaveChangesAsync();
+        return await _context.SaveChangesAsync();
 	}
 
-	public async Task<Match> UpdateVerificationStatus(int id, int? verificationStatus)
+	public override async Task<int?> DeleteAsync(int id)
+	{
+        var origMatch = await GetNoTrackingAsync(id);
+		if (origMatch != null) await _matchHistoryRepository.CreateAsync(origMatch, HistoryActionType.Delete);
+
+		return await base.DeleteAsync(id);
+    }
+
+    public async Task<Match?> GetNoTrackingAsync(int id) => await _context.Matches.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+
+    public async Task<Match> UpdateVerificationStatus(int id, int? verificationStatus)
 	{
 		var existing = await GetAsync(id, false);
 
@@ -78,9 +93,9 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		if (!filterInvalidMatches)
 		{
 			return _context.Matches.Include(x => x.Games)
-			               .ThenInclude(x => x.MatchScores)
-			               .Include(x => x.Games)
-			               .ThenInclude(x => x.Beatmap);
+						   .ThenInclude(x => x.MatchScores)
+						   .Include(x => x.Games)
+						   .ThenInclude(x => x.Beatmap);
 		}
 
 		return _context.Matches.WhereVerified()
@@ -149,13 +164,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 	                                                                                .FirstOrDefaultAsync();
 
 	public async Task<IList<Match>> GetNeedApiProcessingAsync() => await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();
+	
 	public async Task<IEnumerable<Match>> GetByMatchIdsAsync(IEnumerable<long> matchIds) => await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
-
-	public async Task<int> BatchInsertAsync(IEnumerable<Match> matches)
-	{
-		await _context.Matches.AddRangeAsync(matches);
-		return await _context.SaveChangesAsync();
-	}
 
 	public async Task<int> UpdateVerificationStatusAsync(long matchId, MatchVerificationStatus status, MatchVerificationSource source, string? info = null)
 	{
@@ -171,7 +181,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		match.VerificationInfo = info;
 
 		_logger.LogInformation("Updated verification status of match {MatchId} to {Status} (source: {Source}, info: {Info})", matchId, status, source, info);
-		return await _context.SaveChangesAsync();
+		return await UpdateAsync(match);
 	}
 
 	public async Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, int mode, DateTime before, DateTime after)

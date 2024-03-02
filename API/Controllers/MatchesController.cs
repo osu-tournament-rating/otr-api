@@ -219,7 +219,7 @@ public class MatchesController : Controller
 		{
 			return BadRequest(ModelState);
 		}
-		
+
 		var updatedMatch = await _matchesService.UpdateVerificationStatus(id, match.VerificationStatus);
 
 		return Ok(updatedMatch);

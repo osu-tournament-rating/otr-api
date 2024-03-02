@@ -99,6 +99,7 @@ builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
 builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
+builder.Services.AddScoped<IMatchHistoryRepository, MatchHistoryRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
 builder.Services.AddScoped<IMatchDuplicateRepository, MatchDuplicateRepository>();
 builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();

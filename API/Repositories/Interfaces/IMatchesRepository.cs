@@ -14,15 +14,9 @@ public interface IMatchesRepository : IRepository<Match>
 	Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
 	Task<Match?> GetFirstMatchNeedingAutoCheckAsync();
 	Task<IList<Match>> GetNeedApiProcessingAsync();
-	Task<IEnumerable<Match>> GetByMatchIdsAsync(IEnumerable<long> matchIds);
+	Task<Match?> GetNoTrackingAsync(int id);
+    Task<IEnumerable<Match>> GetByMatchIdsAsync(IEnumerable<long> matchIds);
 	Task<Match> UpdateVerificationStatus(int id, int? verificationStatus);
-
-	/// <summary>
-	///  Used to queue up matches for verification.
-	/// </summary>
-	/// <returns>Number of rows inserted</returns>
-	Task<int> BatchInsertAsync(IEnumerable<Match> matches);
-
 	Task<int> UpdateVerificationStatusAsync(long matchId, MatchVerificationStatus status, MatchVerificationSource source, string? info = null);
 	Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, int mode, DateTime before, DateTime after);
 	Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime);

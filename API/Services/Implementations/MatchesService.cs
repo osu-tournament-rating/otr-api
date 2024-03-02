@@ -71,7 +71,7 @@ public class MatchesService : IMatchesService
 			SubmitterUserId = tournamentWebSubmissionDto.SubmitterId
 		});
 
-		int? result = await _matchesRepository.BatchInsertAsync(newMatches);
+		int? result = await _matchesRepository.BulkInsertAsync(newMatches);
 		if (result > 0)
 		{
 			_logger.LogInformation("Successfully inserted {Matches} new matches as {Status}", result, verificationStatus);

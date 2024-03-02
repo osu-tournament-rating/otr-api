@@ -13,6 +13,14 @@ public class MapperProfile : Profile
         CreateMap<GameWinRecord, GameWinRecordDTO>();
         CreateMap<Match, MatchDTO>()
             .ForMember(x => x.Mode, opt => opt.MapFrom(x => x.Tournament.Mode));
+        CreateMap<Match, MatchHistory>()
+            .ForMember(x => x.ReferenceId, opt => opt.MapFrom(x => x.Id))
+            .ForMember(x => x.HistoryStartTime, opt => opt.MapFrom(x => x.Updated))
+            .ForMember(x => x.Id, opt => opt.Ignore())
+            .ForMember(x => x.HistoryAction, opt => opt.Ignore())
+            .ForMember(x => x.HistoryEndTime, opt => opt.Ignore())
+            .ForMember(x => x.ModifierId, opt => opt.Ignore())
+            .ForMember(x => x.ReferenceMatch, opt => opt.Ignore());
         CreateMap<MatchScore, MatchScoreDTO>().ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
         CreateMap<RatingAdjustment, RatingAdjustmentDTO>();
         CreateMap<MatchRatingStats, MatchRatingStatsDTO>()
