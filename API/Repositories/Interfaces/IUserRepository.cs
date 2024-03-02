@@ -8,4 +8,5 @@ public interface IUserRepository : IRepository<User>
 	Task<User?> GetForPlayerAsync(long osuId);
 	Task<User?> GetOrCreateSystemUserAsync();
 	Task<bool> HasRoleAsync(long osuId, string role);
+	Task<User> GetOrCreateAsync(int playerId);
 }

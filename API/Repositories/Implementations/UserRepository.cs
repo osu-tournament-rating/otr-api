@@ -15,6 +15,13 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
 		_context = context;
 	}
 
+	public override async Task<User?> GetAsync(int id)
+	{
+		return await _context.Users
+		                     .Include(x => x.Player)
+		                     .FirstOrDefaultAsync(u => u.Id == id);
+	}
+	
 	public async Task<User?> GetForPlayerAsync(int playerId)
 	{
 		return await _context.Users
@@ -28,12 +35,12 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
 
 	public async Task<User?> GetOrCreateSystemUserAsync()
 	{
-		var sysUser = await _context.Users.FirstOrDefaultAsync(u => u.Roles.Contains("System"));
+		var sysUser = await _context.Users.FirstOrDefaultAsync(u => u.Scopes.Contains("System"));
 		if (sysUser == null)
 		{
 			var created = await CreateAsync(new User
 			{
-				Roles = new[] { "System" }
+				Scopes = new[] { "System" }
 			});
 
 			if (created == null)
@@ -50,6 +57,22 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
 
 	public async Task<bool> HasRoleAsync(long osuId, string role)
 	{
-		return await _context.Users.AnyAsync(u => u.Player.OsuId == osuId && u.Roles.Contains(role));
+		return await _context.Users.AnyAsync(u => u.Player.OsuId == osuId && u.Scopes.Contains(role));
+	}
+
+	public async Task<User> GetOrCreateAsync(int playerId)
+	{
+		if (await _context.Users.AnyAsync(x => x.PlayerId == playerId))
+		{
+			return await _context.Users.FirstAsync(x => x.PlayerId == playerId);
+		}
+
+		return await CreateAsync(new User
+		{
+			PlayerId = playerId,
+			Created = DateTime.UtcNow,
+			LastLogin = DateTime.UtcNow,
+			Scopes = Array.Empty<string>()
+		}) ?? throw new Exception("Critical error: User cannot be null after creation");
 	}
 }

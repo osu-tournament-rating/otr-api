@@ -21,6 +21,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Asp.Versioning.Conventions;
+using API.Handlers.Implementations;
+using API.Handlers.Interfaces;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,11 +47,6 @@ builder.Services.AddControllers(options => { options.ModelBinderProviders.Insert
 	       o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
        })
        .AddNewtonsoftJson();
-
-builder.Services.AddApiVersioning(options =>
-{
-	options.ApiVersionReader = new UrlSegmentApiVersionReader();
-}).AddMvc();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

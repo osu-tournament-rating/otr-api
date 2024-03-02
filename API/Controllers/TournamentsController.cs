@@ -18,7 +18,6 @@ public class TournamentsController : Controller
 	public TournamentsController(ITournamentsService service) { _service = service; }
 
 	[HttpGet]
-	[AllowAnonymous]
 	public async Task<IActionResult> GetAsync()
 	{
 		var res = await _service.GetAllAsync();
@@ -26,7 +25,6 @@ public class TournamentsController : Controller
 	}
     
     [HttpPut]
-    [AllowAnonymous]
     public async Task<IActionResult> PutAsync(TournamentWebSubmissionDTO tournament)
     {
 	    var res = await _service.CreateOrUpdateAsync(tournament, true);
