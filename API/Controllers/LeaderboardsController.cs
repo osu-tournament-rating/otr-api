@@ -2,14 +2,16 @@ using API.DTOs;
 using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
+[ApiVersion(1)]
 [EnableCors]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class LeaderboardsController : Controller
 {
 	private readonly ILeaderboardService _leaderboardService;

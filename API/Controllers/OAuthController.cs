@@ -1,13 +1,15 @@
 using API.Handlers.Interfaces;
 using API.Utilities;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
+[ApiVersion(1)]
 [AllowAnonymous]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class OAuthController : Controller
 {
     private readonly IOAuthHandler _oAuthHandler;
