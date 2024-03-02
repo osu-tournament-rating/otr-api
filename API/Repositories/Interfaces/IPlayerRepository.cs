@@ -13,6 +13,13 @@ public interface IPlayerRepository : IRepository<Player>
 	/// <returns></returns>
 	Task<Player?> GetAsync(string username);
 	/// <summary>
+	/// Attempts to fetch a player by the osu id. If none exists, create a new player
+	/// and return it.
+	/// </summary>
+	/// <param name="osuId">The osu id of the player</param>
+	/// <returns></returns>
+	Task<Player> GetOrCreateAsync(long osuId);
+	/// <summary>
 	/// Returns a player, if available, that matches the given osu id with optional additional data.
 	/// </summary>
 	/// <param name="osuId">The osu id of the player</param>
@@ -52,7 +59,6 @@ public interface IPlayerRepository : IRepository<Player>
 	/// <param name="id"></param>
 	/// <returns></returns>
 	Task<long> GetOsuIdAsync(int id);
-
 	/// <summary>
 	///  Returns players that haven't been updated in the last 14 days,
 	///  or players that have never been updated.

@@ -68,10 +68,8 @@ public class RequestLoggingMiddleware
 				bodyAsText = bodyAsText[..500] + "...";
 			}
 
-			string? ident = request.HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Name)?.Value;
-
-			_logger.LogInformation("User with identity {Identity} on scheme {Scheme} requests {Method} {Host}{Path}{QueryString} with body '{Body}'",
-				ident, request.Scheme, request.Method, request.Host, request.Path,
+			_logger.LogInformation("Client on scheme {Scheme} requests {Method} {Host}{Path}{QueryString} with body '{Body}'",
+				request.Scheme, request.Method, request.Host, request.Path,
 				request.QueryString, bodyAsText);
 
 			// Reset the memory stream position again before assigning it back to the request body to be read by subsequent middlewares.
@@ -106,11 +104,11 @@ public class RequestLoggingMiddleware
 			text += "...";
 		}
 
-		string? ident = response.HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Name)?.Value;
+		string? ident = response.HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Iss)?.Value;
 
 		if (response.StatusCode >= 400)
 		{
-			_logger.LogError("User with identity {Identity} on scheme {Scheme} {Method} {Host}{Path}{QueryString} with body '{Body}' returned status {StatusCode}",
+			_logger.LogError("Client with identity {Identity} on scheme {Scheme} {Method} {Host}{Path}{QueryString} with body '{Body}' returned status {StatusCode}",
 				ident, response.HttpContext.Request.Scheme, response.HttpContext.Request.Method, response.HttpContext.Request.Host, response.HttpContext.Request.Path,
 				response.HttpContext.Request.QueryString, text, response.StatusCode);
 
@@ -118,8 +116,8 @@ public class RequestLoggingMiddleware
 		}
 
 		//Return the string for the response, including the status code (e.g. 200, 404, 401, etc.)
-		_logger.LogInformation("Returned status {StatusCode} to {Scheme} {Method} {Host}{Path}{QueryString} with body '{Body}'", response.StatusCode,
-			response.HttpContext.Request.Scheme, response.HttpContext.Request.Method, response.HttpContext.Request.Host, response.HttpContext.Request.Path,
+		_logger.LogInformation("Returned status {StatusCode} to client with identity {Ident} on scheme {Scheme} {Method} {Host}{Path}{QueryString} with body '{Body}'", response.StatusCode,
+			ident, response.HttpContext.Request.Scheme, response.HttpContext.Request.Method, response.HttpContext.Request.Host, response.HttpContext.Request.Path,
 			response.HttpContext.Request.QueryString, text);
 	}
 }

@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240219164547_OAuthClients")]
+    partial class OAuthClients
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -699,25 +702,21 @@ namespace API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string[]>("Scopes")
                         .IsRequired()
-                        .HasColumnType("text[]")
-                        .HasColumnName("scopes");
+                        .HasColumnType("text[]");
 
                     b.Property<string>("Secret")
                         .IsRequired()
                         .HasMaxLength(70)
-                        .HasColumnType("character varying(70)")
-                        .HasColumnName("secret");
+                        .HasColumnType("character varying(70)");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("user_id");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id")
                         .HasName("oauth_clients_pk");
@@ -1032,10 +1031,10 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("player_id");
 
-                    b.Property<string[]>("Scopes")
+                    b.Property<string[]>("Roles")
                         .IsRequired()
                         .HasColumnType("text[]")
-                        .HasColumnName("scopes");
+                        .HasColumnName("roles");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")

@@ -16,16 +16,18 @@ public class User
 	[Column("created", TypeName = "timestamp with time zone")]
 	public DateTime Created { get; set; }
 	/// <summary>
-	/// Comma-delimited list of roles (e.g. user, admin, etc.)
+	/// Comma-delimited list of scopes
 	/// </summary>
-	[Column("roles")]
-	public string[] Roles { get; set; } = Array.Empty<string>();
+	[Column("scopes")]
+	public string[] Scopes { get; set; } = Array.Empty<string>();
 	[Column("updated", TypeName = "timestamp with time zone")]
 	public DateTime? Updated { get; set; }
 	[ForeignKey("PlayerId")]
 	[InverseProperty("User")]
 	public virtual Player Player { get; set; } = null!;
-	public IEnumerable<Match>? SubmittedMatches { get; set; }
+	[InverseProperty("User")]
+	public virtual ICollection<OAuthClient>? Clients { get; set; }
+	public virtual ICollection<Match>? SubmittedMatches { get; set; }
 	// Assuming the user has permission to verify, the matches they do verify will be here
 	public virtual ICollection<Match>? VerifiedMatches { get; set; }
 	[InverseProperty("Verifier")]
