@@ -19,11 +19,10 @@ using Serilog;
 using Serilog.Events;
 using System.Text;
 using System.Text.Json.Serialization;
-using Asp.Versioning;
-using Asp.Versioning.Conventions;
 using API.Handlers.Implementations;
 using API.Handlers.Interfaces;
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+using Asp.Versioning;
+using Asp.Versioning.Conventions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +46,11 @@ builder.Services.AddControllers(options => { options.ModelBinderProviders.Insert
 	       o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
        })
        .AddNewtonsoftJson();
+
+builder.Services.AddApiVersioning(options =>
+{
+	options.ApiVersionReader = new UrlSegmentApiVersionReader();
+}).AddMvc();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -85,11 +89,16 @@ builder.Services.AddSingleton(configuration.CreateMapper());
 
 builder.Services.AddLogging();
 
+// Hosted services
 builder.Services.AddHostedService<MatchDuplicateDataWorker>();
 builder.Services.AddHostedService<OsuPlayerDataWorker>();
 builder.Services.AddHostedService<OsuMatchDataWorker>();
 builder.Services.AddHostedService<OsuTrackApiWorker>();
 
+// Handlers
+builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
+
+// Database context
 builder.Services.AddDbContext<OtrContext>(o =>
 {
 	o.UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection);
@@ -108,6 +117,7 @@ builder.Services.AddScoped<IMatchDuplicateRepository, MatchDuplicateRepository>(
 builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
 builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
 builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
+builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
 builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
 builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
@@ -119,6 +129,7 @@ builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
+builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
@@ -165,29 +176,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
        {
 	       options.TokenValidationParameters = new TokenValidationParameters
 	       {
-		       ValidateIssuer = true,
+		       ValidateIssuer = false,
 		       ValidateAudience = true,
 		       ValidateLifetime = true,
 		       ValidateIssuerSigningKey = true,
-		       ValidIssuer = builder.Configuration["Jwt:Issuer"],
-		       ValidAudience = builder.Configuration["Jwt:Issuer"],
+		       ClockSkew = TimeSpan.Zero,
+		       ValidAudience = builder.Configuration["Jwt:Audience"],
 		       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ??
-		                                                                          throw new Exception("Missing Jwt:Key in configuration!")))
-	       };
-
-	       options.Events = new JwtBearerEvents();
-	       options.Events.OnMessageReceived = context =>
-	       {
-		       if (context.Request.Cookies.ContainsKey("OTR-Access-Token"))
-		       {
-			       context.Token = context.Request.Cookies["OTR-Access-Token"];
-		       }
-		       else if (context.Request.Headers.ContainsKey("Authorization"))
-		       {
-			       context.Token = context.Request.Headers.Authorization;
-		       }
-
-		       return Task.CompletedTask;
+		                                                                          throw new Exception("Missing Jwt:Key in configuration!"))),
 	       };
        });
 
