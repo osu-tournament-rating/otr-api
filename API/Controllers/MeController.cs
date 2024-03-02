@@ -4,13 +4,15 @@ using API.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Asp.Versioning;
 
 namespace API.Controllers;
 
 [ApiController]
+[ApiVersion(1)]
 [EnableCors]
+[Route("api/v{version:apiVersion}/[controller]")]
 [Authorize(Roles = "user")]
-[Route("api/[controller]")]
 public class MeController : Controller
 {
 	private readonly IUserService _userService;

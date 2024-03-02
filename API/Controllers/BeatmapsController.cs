@@ -1,5 +1,6 @@
 using API.Entities;
 using API.Services.Interfaces;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -7,9 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [ApiController]
+[ApiVersion(1)]
 [EnableCors]
-[Route("api/[controller]")]
 [Authorize(Roles = "system")] // Internal access only at this time
+[Route("api/v{version:apiVersion}/[controller]")]
 public class BeatmapsController : Controller
 {
 	private readonly IBeatmapService _beatmapService;

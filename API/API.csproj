@@ -13,6 +13,7 @@
   </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
         <PackageReference Include="AutoMapper" Version="12.0.1" />
         <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="4.0.4"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1"/>

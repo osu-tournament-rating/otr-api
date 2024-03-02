@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -11,9 +12,10 @@ using Microsoft.AspNetCore.JsonPatch;
 namespace API.Controllers;
 
 [ApiController]
+[ApiVersion(1)]
 [EnableCors]
 [Authorize(Roles = "user")]
-[Route("api/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]")]
 public class MatchesController : Controller
 {
 	private readonly IMatchesService _matchesService;
