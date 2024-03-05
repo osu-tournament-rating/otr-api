@@ -10,330 +10,438 @@ namespace API.Services.Implementations;
 
 public class PlayerStatsService : IPlayerStatsService
 {
-	private readonly IBaseStatsService _baseStatsService;
-	private readonly IGameWinRecordsRepository _gameWinRecordsRepository;
-	private readonly IMatchWinRecordRepository _matchWinRecordRepository;
-	private readonly IMapper _mapper;
-	private readonly IPlayerMatchStatsRepository _matchStatsRepository;
-	private readonly IPlayerService _playerService;
-	private readonly IPlayerRepository _playerRepository;
-	private readonly IRatingAdjustmentsRepository _ratingAdjustmentsRepository;
-	private readonly IMatchRatingStatsRepository _ratingStatsRepository;
-	private readonly ITournamentsRepository _tournamentsRepository;
+    private readonly IBaseStatsService _baseStatsService;
+    private readonly IGameWinRecordsRepository _gameWinRecordsRepository;
+    private readonly IMatchWinRecordRepository _matchWinRecordRepository;
+    private readonly IMapper _mapper;
+    private readonly IPlayerMatchStatsRepository _matchStatsRepository;
+    private readonly IPlayerService _playerService;
+    private readonly IPlayerRepository _playerRepository;
+    private readonly IRatingAdjustmentsRepository _ratingAdjustmentsRepository;
+    private readonly IMatchRatingStatsRepository _ratingStatsRepository;
+    private readonly ITournamentsRepository _tournamentsRepository;
 
-	public PlayerStatsService(IPlayerService playerService, IPlayerRepository playerRepository, IPlayerMatchStatsRepository matchStatsRepository,
-		IMatchRatingStatsRepository ratingStatsRepository, ITournamentsRepository tournamentsRepository,
-		IBaseStatsService baseStatsService, IRatingAdjustmentsRepository ratingAdjustmentsRepository,
-		IGameWinRecordsRepository gameWinRecordsRepository, IMatchWinRecordRepository matchWinRecordRepository, IMapper mapper)
-	{
-		_playerService = playerService;
-		_playerRepository = playerRepository;
-		_matchStatsRepository = matchStatsRepository;
-		_ratingStatsRepository = ratingStatsRepository;
-		_tournamentsRepository = tournamentsRepository;
-		_baseStatsService = baseStatsService;
-		_ratingAdjustmentsRepository = ratingAdjustmentsRepository;
-		_gameWinRecordsRepository = gameWinRecordsRepository;
-		_matchWinRecordRepository = matchWinRecordRepository;
-		_mapper = mapper;
-	}
+    public PlayerStatsService(
+        IPlayerService playerService,
+        IPlayerRepository playerRepository,
+        IPlayerMatchStatsRepository matchStatsRepository,
+        IMatchRatingStatsRepository ratingStatsRepository,
+        ITournamentsRepository tournamentsRepository,
+        IBaseStatsService baseStatsService,
+        IRatingAdjustmentsRepository ratingAdjustmentsRepository,
+        IGameWinRecordsRepository gameWinRecordsRepository,
+        IMatchWinRecordRepository matchWinRecordRepository,
+        IMapper mapper
+    )
+    {
+        _playerService = playerService;
+        _playerRepository = playerRepository;
+        _matchStatsRepository = matchStatsRepository;
+        _ratingStatsRepository = ratingStatsRepository;
+        _tournamentsRepository = tournamentsRepository;
+        _baseStatsService = baseStatsService;
+        _ratingAdjustmentsRepository = ratingAdjustmentsRepository;
+        _gameWinRecordsRepository = gameWinRecordsRepository;
+        _matchWinRecordRepository = matchWinRecordRepository;
+        _mapper = mapper;
+    }
 
-	public async Task<PlayerStatsDTO> GetAsync(string username, int? comparerId, int mode, DateTime? dateMin = null,
-		DateTime? dateMax = null)
-	{
-		int id = await _playerRepository.GetIdAsync(username);
-		return await GetAsync(id, comparerId, mode, dateMin, dateMax);
-	}
+    public async Task<PlayerStatsDTO?> GetAsync(
+        string username,
+        int? comparerId,
+        int mode,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    )
+    {
+        int? id = await _playerRepository.GetIdAsync(username);
 
-	public async Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(int playerId, int teammateId, int mode, DateTime dateMin,
-		DateTime dateMax)
-	{
-		var teammateRatingStats = (await _ratingStatsRepository.TeammateRatingStatsAsync(playerId, teammateId, mode, dateMin, dateMax)).ToList();
-		var teammateMatchStats = (await _matchStatsRepository.TeammateStatsAsync(playerId, teammateId, mode, dateMin, dateMax)).ToList();
+        if (!id.HasValue && username.Contains('_'))
+        {
+            // Search for spaces
+            string repl = username.Replace('_', ' ');
+            id = await _playerRepository.GetIdAsync(repl);
+        }
 
-		int matchesPlayed = teammateMatchStats.Count;
-		int matchesWon = teammateMatchStats.Sum(x => x.Won ? 1 : 0);
-		int matchesLost = teammateMatchStats.Sum(x => x.Won ? 0 : 1);
-		double winRate = matchesWon / (double)matchesPlayed;
+        if (!id.HasValue)
+        {
+            return null;
+        }
 
-		return new PlayerTeammateComparisonDTO
-		{
-			PlayerId = playerId,
-			TeammateId = teammateId,
-			GamesPlayed = teammateMatchStats.Sum(x => x.GamesPlayed),
-			MatchesPlayed = matchesPlayed,
-			MatchesWon = matchesWon,
-			MatchesLost = matchesLost,
-			RatingDelta = teammateRatingStats.Sum(x => x.RatingChange),
-			WinRate = winRate
-		};
-	}
+        return await GetAsync(id.Value, comparerId, mode, dateMin, dateMax);
+    }
 
-	public async Task<PlayerOpponentComparisonDTO> GetOpponentComparisonAsync(int playerId, int opponentId, int mode, DateTime dateMin,
-		DateTime dateMax)
-	{
-		var opponentRatingStats = (await _ratingStatsRepository.OpponentRatingStatsAsync(playerId, opponentId, mode, dateMin, dateMax)).ToList();
-		var opponentMatchStats = (await _matchStatsRepository.OpponentStatsAsync(playerId, opponentId, mode, dateMin, dateMax)).ToList();
+    public async Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(
+        int playerId,
+        int teammateId,
+        int mode,
+        DateTime dateMin,
+        DateTime dateMax
+    )
+    {
+        var teammateRatingStats = (
+            await _ratingStatsRepository.TeammateRatingStatsAsync(
+                playerId,
+                teammateId,
+                mode,
+                dateMin,
+                dateMax
+            )
+        ).ToList();
+        var teammateMatchStats = (
+            await _matchStatsRepository.TeammateStatsAsync(playerId, teammateId, mode, dateMin, dateMax)
+        ).ToList();
 
-		int matchesWon = opponentMatchStats.Sum(x => x.Won ? 1 : 0);
-		int matchesPlayed = opponentMatchStats.Count;
-		double winRate = matchesWon / (double)matchesPlayed;
+        int matchesPlayed = teammateMatchStats.Count;
+        int matchesWon = teammateMatchStats.Sum(x => x.Won ? 1 : 0);
+        int matchesLost = teammateMatchStats.Sum(x => x.Won ? 0 : 1);
+        double winRate = matchesWon / (double)matchesPlayed;
 
-		return new PlayerOpponentComparisonDTO
-		{
-			PlayerId = playerId,
-			OpponentId = opponentId,
-			GamesPlayed = opponentMatchStats.Sum(x => x.GamesPlayed),
-			MatchesPlayed = matchesPlayed,
-			MatchesWon = matchesWon,
-			MatchesLost = opponentMatchStats.Sum(x => x.Won ? 0 : 1),
-			RatingDelta = opponentRatingStats.Sum(x => x.RatingChange),
-			WinRate = winRate
-		};
-	}
+        return new PlayerTeammateComparisonDTO
+        {
+            PlayerId = playerId,
+            TeammateId = teammateId,
+            GamesPlayed = teammateMatchStats.Sum(x => x.GamesPlayed),
+            MatchesPlayed = matchesPlayed,
+            MatchesWon = matchesWon,
+            MatchesLost = matchesLost,
+            RatingDelta = teammateRatingStats.Sum(x => x.RatingChange),
+            WinRate = winRate
+        };
+    }
 
-	public async Task<PlayerRankChartDTO> GetRankChartAsync(int playerId, int mode, LeaderboardChartType chartType, DateTime? dateMin = null,
-		DateTime? dateMax = null) => await _ratingStatsRepository.GetRankChartAsync(playerId, mode, chartType, dateMin, dateMax);
+    public async Task<PlayerOpponentComparisonDTO> GetOpponentComparisonAsync(
+        int playerId,
+        int opponentId,
+        int mode,
+        DateTime dateMin,
+        DateTime dateMax
+    )
+    {
+        var opponentRatingStats = (
+            await _ratingStatsRepository.OpponentRatingStatsAsync(
+                playerId,
+                opponentId,
+                mode,
+                dateMin,
+                dateMax
+            )
+        ).ToList();
+        var opponentMatchStats = (
+            await _matchStatsRepository.OpponentStatsAsync(playerId, opponentId, mode, dateMin, dateMax)
+        ).ToList();
 
-	public async Task<PlayerStatsDTO> GetAsync(int playerId, int? comparerId, int mode, DateTime? dateMin = null,
-		DateTime? dateMax = null)
-	{
-		dateMin ??= DateTime.MinValue;
-		dateMax ??= DateTime.MaxValue;
+        int matchesWon = opponentMatchStats.Sum(x => x.Won ? 1 : 0);
+        int matchesPlayed = opponentMatchStats.Count;
+        double winRate = matchesWon / (double)matchesPlayed;
 
-		var playerInfo = await _playerService.GetAsync(playerId);
-		var baseStats = await GetBaseStatsAsync(playerId, mode);
-		var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
-		var modStats = await GetModStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
-		var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
-		var ratingStats = await GetRatingStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+        return new PlayerOpponentComparisonDTO
+        {
+            PlayerId = playerId,
+            OpponentId = opponentId,
+            GamesPlayed = opponentMatchStats.Sum(x => x.GamesPlayed),
+            MatchesPlayed = matchesPlayed,
+            MatchesWon = matchesWon,
+            MatchesLost = opponentMatchStats.Sum(x => x.Won ? 0 : 1),
+            RatingDelta = opponentRatingStats.Sum(x => x.RatingChange),
+            WinRate = winRate
+        };
+    }
 
-		var frequentTeammates = await _matchWinRecordRepository.GetFrequentTeammatesAsync(playerId, mode, dateMin.Value, dateMax.Value);
-		var frequentOpponents = await _matchWinRecordRepository.GetFrequentOpponentsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+    public async Task<PlayerRankChartDTO> GetRankChartAsync(
+        int playerId,
+        int mode,
+        LeaderboardChartType chartType,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    ) => await _ratingStatsRepository.GetRankChartAsync(playerId, mode, chartType, dateMin, dateMax);
 
-		return new PlayerStatsDTO(playerInfo, baseStats, matchStats, modStats, tournamentStats,
-			ratingStats, frequentTeammates, frequentOpponents);
-	}
+    public async Task<PlayerStatsDTO> GetAsync(
+        int playerId,
+        int? comparerId,
+        int mode,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    )
+    {
+        dateMin ??= DateTime.MinValue;
+        dateMax ??= DateTime.MaxValue;
 
-	public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody)
-	{
-		var items = new List<PlayerMatchStats>();
+        var playerInfo = await _playerService.GetAsync(playerId);
+        var baseStats = await GetBaseStatsAsync(playerId, mode);
+        var matchStats = await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+        var modStats = await GetModStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+        var tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+        var ratingChart = await _ratingStatsRepository.GetRatingChartAsync(
+            playerId,
+            mode,
+            dateMin.Value,
+            dateMax.Value
+        );
 
-		foreach (var item in postBody)
-		{
-			var stats = new PlayerMatchStats
-			{
-				PlayerId = item.PlayerId,
-				MatchId = item.MatchId,
-				Won = item.Won,
-				AverageScore = item.AverageScore,
-				AverageMisses = item.AverageMisses,
-				AverageAccuracy = item.AverageAccuracy,
-				GamesPlayed = item.GamesPlayed,
-				AveragePlacement = item.AveragePlacement,
-				GamesWon = item.GamesWon,
-				GamesLost = item.GamesLost,
-				TeammateIds = item.TeammateIds,
-				OpponentIds = item.OpponentIds
-			};
+        var frequentTeammates = await _matchWinRecordRepository.GetFrequentTeammatesAsync(
+            playerId,
+            mode,
+            dateMin.Value,
+            dateMax.Value
+        );
+        var frequentOpponents = await _matchWinRecordRepository.GetFrequentOpponentsAsync(
+            playerId,
+            mode,
+            dateMin.Value,
+            dateMax.Value
+        );
 
-			items.Add(stats);
-		}
+        return new PlayerStatsDTO(
+            playerInfo,
+            baseStats,
+            matchStats,
+            modStats,
+            tournamentStats,
+            ratingChart,
+            frequentTeammates,
+            frequentOpponents
+        );
+    }
 
-		await _matchStatsRepository.InsertAsync(items);
-	}
+    public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody)
+    {
+        var items = new List<PlayerMatchStats>();
 
-	public async Task BatchInsertAsync(IEnumerable<MatchRatingStatsDTO> postBody)
-	{
-		var items = new List<MatchRatingStats>();
-		foreach (var item in postBody)
-		{
-			var stats = new MatchRatingStats
-			{
-				PlayerId = item.PlayerId,
-				MatchId = item.MatchId,
-				MatchCost = item.MatchCost,
-				RatingBefore = item.RatingBefore,
-				RatingAfter = item.RatingAfter,
-				RatingChange = item.RatingChange,
-				VolatilityBefore = item.VolatilityBefore,
-				VolatilityAfter = item.VolatilityAfter,
-				VolatilityChange = item.VolatilityChange,
-				GlobalRankBefore = item.GlobalRankBefore,
-				GlobalRankAfter = item.GlobalRankAfter,
-				GlobalRankChange = item.GlobalRankChange,
-				CountryRankBefore = item.CountryRankBefore,
-				CountryRankAfter = item.CountryRankAfter,
-				CountryRankChange = item.CountryRankChange,
-				PercentileBefore = item.PercentileBefore,
-				PercentileAfter = item.PercentileAfter,
-				PercentileChange = item.PercentileChange,
-				AverageTeammateRating = item.AverageTeammateRating,
-				AverageOpponentRating = item.AverageOpponentRating
-			};
+        foreach (var item in postBody)
+        {
+            var stats = new PlayerMatchStats
+            {
+                PlayerId = item.PlayerId,
+                MatchId = item.MatchId,
+                Won = item.Won,
+                AverageScore = item.AverageScore,
+                AverageMisses = item.AverageMisses,
+                AverageAccuracy = item.AverageAccuracy,
+                GamesPlayed = item.GamesPlayed,
+                AveragePlacement = item.AveragePlacement,
+                GamesWon = item.GamesWon,
+                GamesLost = item.GamesLost,
+                TeammateIds = item.TeammateIds,
+                OpponentIds = item.OpponentIds
+            };
 
-			items.Add(stats);
-		}
+            items.Add(stats);
+        }
 
-		await _ratingStatsRepository.InsertAsync(items);
-	}
+        await _matchStatsRepository.InsertAsync(items);
+    }
 
-	public async Task BatchInsertAsync(IEnumerable<BaseStatsPostDTO> postBody) => await _baseStatsService.BatchInsertAsync(postBody);
-	public async Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody) => await _ratingAdjustmentsRepository.BatchInsertAsync(postBody);
-	public async Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody) => await _gameWinRecordsRepository.BatchInsertAsync(postBody);
-	public async Task BatchInsertAsync(IEnumerable<MatchWinRecordDTO> postBody) => await _matchWinRecordRepository.BatchInsertAsync(postBody);
+    public async Task BatchInsertAsync(IEnumerable<MatchRatingStatsDTO> postBody)
+    {
+        var items = new List<MatchRatingStats>();
+        foreach (var item in postBody)
+        {
+            var stats = new MatchRatingStats
+            {
+                PlayerId = item.PlayerId,
+                MatchId = item.MatchId,
+                MatchCost = item.MatchCost,
+                RatingBefore = item.RatingBefore,
+                RatingAfter = item.RatingAfter,
+                RatingChange = item.RatingChange,
+                VolatilityBefore = item.VolatilityBefore,
+                VolatilityAfter = item.VolatilityAfter,
+                VolatilityChange = item.VolatilityChange,
+                GlobalRankBefore = item.GlobalRankBefore,
+                GlobalRankAfter = item.GlobalRankAfter,
+                GlobalRankChange = item.GlobalRankChange,
+                CountryRankBefore = item.CountryRankBefore,
+                CountryRankAfter = item.CountryRankAfter,
+                CountryRankChange = item.CountryRankChange,
+                PercentileBefore = item.PercentileBefore,
+                PercentileAfter = item.PercentileAfter,
+                PercentileChange = item.PercentileChange,
+                AverageTeammateRating = item.AverageTeammateRating,
+                AverageOpponentRating = item.AverageOpponentRating
+            };
 
-	public async Task TruncateAsync()
-	{
-		await _baseStatsService.TruncateAsync();
-		await _gameWinRecordsRepository.TruncateAsync();
-		await _matchStatsRepository.TruncateAsync();
-		await _ratingStatsRepository.TruncateAsync();
-		await _matchWinRecordRepository.TruncateAsync();
-	}
+            items.Add(stats);
+        }
 
-	public async Task TruncateRatingAdjustmentsAsync() => await _ratingAdjustmentsRepository.TruncateAsync();
+        await _ratingStatsRepository.InsertAsync(items);
+    }
 
-	// Returns overall stats for the player, no need to filter by date.
-	private async Task<BaseStatsDTO?> GetBaseStatsAsync(int playerId, int mode)
-	{
-		var dto = await _baseStatsService.GetForPlayerAsync(null, playerId, mode);
+    public async Task BatchInsertAsync(IEnumerable<BaseStatsPostDTO> postBody) =>
+        await _baseStatsService.BatchInsertAsync(postBody);
 
-		if (dto == null)
-		{
-			return null;
-		}
+    public async Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody) =>
+        await _ratingAdjustmentsRepository.BatchInsertAsync(postBody);
 
-		int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(playerId, mode);
-		double winRate = await _matchStatsRepository.GlobalWinrateAsync(playerId, mode);
-		int highestRank = await _ratingStatsRepository.HighestGlobalRankAsync(playerId, mode);
+    public async Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody) =>
+        await _gameWinRecordsRepository.BatchInsertAsync(postBody);
 
-		dto.MatchesPlayed = matchesPlayed;
-		dto.Winrate = winRate;
-		dto.HighestGlobalRank = highestRank;
+    public async Task BatchInsertAsync(IEnumerable<MatchWinRecordDTO> postBody) =>
+        await _matchWinRecordRepository.BatchInsertAsync(postBody);
 
-		dto.RankProgress = new RankProgressDTO
-		{
-			CurrentTier = RatingUtils.GetTier(dto.Rating),
-			CurrentSubTier = RatingUtils.GetCurrentSubTier(dto.Rating),
-			RatingForNextTier = RatingUtils.GetRatingDeltaForNextTier(dto.Rating),
-			RatingForNextMajorTier = RatingUtils.GetRatingDeltaForNextMajorTier(dto.Rating),
-			NextMajorTier = RatingUtils.GetNextMajorTier(dto.Rating),
-			SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(dto.Rating),
-			MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(dto.Rating)
-		};
+    public async Task TruncateAsync()
+    {
+        await _baseStatsService.TruncateAsync();
+        await _gameWinRecordsRepository.TruncateAsync();
+        await _matchStatsRepository.TruncateAsync();
+        await _ratingStatsRepository.TruncateAsync();
+        await _matchWinRecordRepository.TruncateAsync();
+    }
 
-		return dto;
-	}
+    public async Task TruncateRatingAdjustmentsAsync() => await _ratingAdjustmentsRepository.TruncateAsync();
 
-	private async Task<IEnumerable<IEnumerable<MatchRatingStatsDTO>>> GetRatingStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
-	{
-		var ratingStats = await _ratingStatsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax);
-		return _mapper.Map<IEnumerable<IEnumerable<MatchRatingStatsDTO>>>(ratingStats);
-	}
+    // Returns overall stats for the player, no need to filter by date.
+    private async Task<BaseStatsDTO?> GetBaseStatsAsync(int playerId, int mode)
+    {
+        var dto = await _baseStatsService.GetForPlayerAsync(null, playerId, mode);
 
-	public async Task<PlayerModStatsDTO> GetModStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax) =>
-		await _matchStatsRepository.GetModStatsAsync(playerId, mode, dateMin, dateMax);
+        if (dto == null)
+        {
+            return null;
+        }
 
-	private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax)
-	{
-		const int maxTournaments = 5;
+        int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(playerId, mode);
+        double winRate = await _matchStatsRepository.GlobalWinrateAsync(playerId, mode);
+        int highestRank = await _ratingStatsRepository.HighestGlobalRankAsync(playerId, mode);
 
-		var bestPerformances = await _tournamentsRepository.GetPerformancesAsync(maxTournaments, playerId, mode, dateMin, dateMax,
-			true);
+        dto.MatchesPlayed = matchesPlayed;
+        dto.Winrate = winRate;
+        dto.HighestGlobalRank = highestRank;
 
-		var worstPerformances = await _tournamentsRepository.GetPerformancesAsync(maxTournaments, playerId, mode, dateMin, dateMax,
-			false);
+        dto.RankProgress = new RankProgressDTO
+        {
+            CurrentTier = RatingUtils.GetTier(dto.Rating),
+            CurrentSubTier = RatingUtils.GetCurrentSubTier(dto.Rating),
+            RatingForNextTier = RatingUtils.GetRatingDeltaForNextTier(dto.Rating),
+            RatingForNextMajorTier = RatingUtils.GetRatingDeltaForNextMajorTier(dto.Rating),
+            NextMajorTier = RatingUtils.GetNextMajorTier(dto.Rating),
+            SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(dto.Rating),
+            MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(dto.Rating)
+        };
 
-		// Remove any best performances from worst performances
-		// ReSharper disable PossibleMultipleEnumeration
-		foreach (var performance in bestPerformances)
-		{
-			worstPerformances = worstPerformances.Where(x => x.TournamentId != performance.TournamentId);
-		}
+        return dto;
+    }
 
-		var counts = await _tournamentsRepository.GetPlayerTeamSizeStatsAsync(playerId, mode, dateMin, dateMax);
-		return new PlayerTournamentStatsDTO
-		{
-			TeamSizeCounts = counts,
-			BestPerformances = bestPerformances,
-			WorstPerformances = worstPerformances
-		};
-	}
+    public async Task<PlayerModStatsDTO> GetModStatsAsync(
+        int playerId,
+        int mode,
+        DateTime dateMin,
+        DateTime dateMax
+    ) => await _matchStatsRepository.GetModStatsAsync(playerId, mode, dateMin, dateMax);
 
-	private async Task<AggregatePlayerMatchStatsDTO?> GetMatchStatsAsync(int id, int mode, DateTime dateMin, DateTime dateMax)
-	{
-		var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
-		var ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList().SelectMany(x => x);
+    private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(
+        int playerId,
+        int mode,
+        DateTime dateMin,
+        DateTime dateMax
+    )
+    {
+        const int maxTournaments = 5;
 
-		if (!matchStats.Any())
-		{
-			return new AggregatePlayerMatchStatsDTO();
-		}
+        var bestPerformances = await _tournamentsRepository.GetPerformancesAsync(
+            maxTournaments,
+            playerId,
+            mode,
+            dateMin,
+            dateMax,
+            true
+        );
 
-		return new AggregatePlayerMatchStatsDTO
-		{
-			AverageMatchCostAggregate = ratingStats.Average(x => x.MatchCost),
-			HighestRating = ratingStats.Max(x => x.RatingAfter),
-			HighestGlobalRank = ratingStats.Min(x => x.GlobalRankAfter),
-			HighestCountryRank = ratingStats.Min(x => x.CountryRankAfter),
-			HighestPercentile = ratingStats.Max(x => x.PercentileAfter),
-			RatingGained = ratingStats.Last().RatingAfter - ratingStats.First().RatingAfter,
-			GamesWon = matchStats.Sum(x => x.GamesWon),
-			GamesLost = matchStats.Sum(x => x.GamesLost),
-			GamesPlayed = matchStats.Sum(x => x.GamesPlayed),
-			MatchesWon = matchStats.Count(x => x.Won),
-			MatchesLost = matchStats.Count(x => !x.Won),
-			AverageTeammateRating = ratingStats.Average(x => x.AverageTeammateRating),
-			AverageOpponentRating = ratingStats.Average(x => x.AverageOpponentRating),
-			BestWinStreak = GetHighestWinStreak(matchStats),
-			MatchAverageScoreAggregate = matchStats.Average(x => x.AverageScore),
-			MatchAverageAccuracyAggregate = matchStats.Average(x => x.AverageAccuracy),
-			MatchAverageMissesAggregate = matchStats.Average(x => x.AverageMisses),
-			AverageGamesPlayedAggregate = matchStats.Average(x => x.GamesPlayed),
-			AveragePlacingAggregate = matchStats.Average(x => x.AveragePlacement),
-			MostPlayedTeammateName = await _playerRepository.GetUsernameAsync(MostPlayedTeammateId(matchStats)),
-			MostPlayedOpponentName = await _playerRepository.GetUsernameAsync(MostPlayedOpponentId(matchStats)),
-			BestTeammateName = string.Empty, // TODO: Implement
-			PeriodStart = dateMin,
-			PeriodEnd = dateMax
-		};
-	}
+        var worstPerformances = await _tournamentsRepository.GetPerformancesAsync(
+            maxTournaments,
+            playerId,
+            mode,
+            dateMin,
+            dateMax,
+            false
+        );
 
-	private int GetHighestWinStreak(IEnumerable<PlayerMatchStats> stats)
-	{
-		int highest = 0;
-		int current = 0;
+        // Remove any best performances from worst performances
+        // ReSharper disable PossibleMultipleEnumeration
+        foreach (var performance in bestPerformances)
+        {
+            worstPerformances = worstPerformances.Where(x => x.TournamentId != performance.TournamentId);
+        }
 
-		foreach (var item in stats)
-		{
-			if (item.Won)
-			{
-				current++;
-			}
-			else
-			{
-				if (current > highest)
-				{
-					highest = current;
-				}
+        var counts = await _tournamentsRepository.GetPlayerTeamSizeStatsAsync(
+            playerId,
+            mode,
+            dateMin,
+            dateMax
+        );
+        return new PlayerTournamentStatsDTO
+        {
+            TeamSizeCounts = counts,
+            BestPerformances = bestPerformances,
+            WorstPerformances = worstPerformances
+        };
+    }
 
-				current = 0;
-			}
-		}
+    private async Task<AggregatePlayerMatchStatsDTO?> GetMatchStatsAsync(
+        int id,
+        int mode,
+        DateTime dateMin,
+        DateTime dateMax
+    )
+    {
+        var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
+        var ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax))
+            .ToList()
+            .SelectMany(x => x);
 
-		return highest;
-	}
+        if (!matchStats.Any())
+        {
+            return new AggregatePlayerMatchStatsDTO();
+        }
 
-	private int? MostPlayedTeammateId(IEnumerable<PlayerMatchStats> stats)
-	{
-		var teammates = stats.SelectMany(x => x.TeammateIds).GroupBy(x => x).Select(x => new { Id = x.Key, Count = x.Count() }).ToList();
-		return teammates.Any() ? teammates.OrderByDescending(x => x.Count).First().Id : null;
-	}
+        return new AggregatePlayerMatchStatsDTO
+        {
+            AverageMatchCostAggregate = ratingStats.Average(x => x.MatchCost),
+            HighestRating = ratingStats.Max(x => x.RatingAfter),
+            HighestGlobalRank = ratingStats.Min(x => x.GlobalRankAfter),
+            HighestCountryRank = ratingStats.Min(x => x.CountryRankAfter),
+            HighestPercentile = ratingStats.Max(x => x.PercentileAfter),
+            RatingGained = ratingStats.Last().RatingAfter - ratingStats.First().RatingAfter,
+            GamesWon = matchStats.Sum(x => x.GamesWon),
+            GamesLost = matchStats.Sum(x => x.GamesLost),
+            GamesPlayed = matchStats.Sum(x => x.GamesPlayed),
+            MatchesWon = matchStats.Count(x => x.Won),
+            MatchesLost = matchStats.Count(x => !x.Won),
+            AverageTeammateRating = ratingStats.Average(x => x.AverageTeammateRating),
+            AverageOpponentRating = ratingStats.Average(x => x.AverageOpponentRating),
+            BestWinStreak = GetHighestWinStreak(matchStats),
+            MatchAverageScoreAggregate = matchStats.Average(x => x.AverageScore),
+            MatchAverageAccuracyAggregate = matchStats.Average(x => x.AverageAccuracy),
+            MatchAverageMissesAggregate = matchStats.Average(x => x.AverageMisses),
+            AverageGamesPlayedAggregate = matchStats.Average(x => x.GamesPlayed),
+            AveragePlacingAggregate = matchStats.Average(x => x.AveragePlacement),
+            PeriodStart = dateMin,
+            PeriodEnd = dateMax
+        };
+    }
 
-	private int? MostPlayedOpponentId(IEnumerable<PlayerMatchStats> stats)
-	{
-		var opponents = stats.SelectMany(x => x.OpponentIds).GroupBy(x => x).Select(x => new { Id = x.Key, Count = x.Count() }).ToList();
-		return opponents.Any() ? opponents.OrderByDescending(x => x.Count).First().Id : null;
-	}
+    private int GetHighestWinStreak(IEnumerable<PlayerMatchStats> stats)
+    {
+        int highest = 0;
+        int current = 0;
+
+        foreach (var item in stats)
+        {
+            if (item.Won)
+            {
+                current++;
+            }
+            else
+            {
+                if (current > highest)
+                {
+                    highest = current;
+                }
+
+                current = 0;
+            }
+        }
+
+        return highest;
+    }
 }

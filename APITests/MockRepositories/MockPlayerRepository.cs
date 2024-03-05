@@ -6,39 +6,31 @@ namespace APITests.MockRepositories;
 
 public class MockPlayerRepository : Mock<IPlayerRepository>
 {
-	public MockPlayerRepository SetupBasicValidPlayer()
-	{
-		Setup(x => x.GetAsync(It.IsAny<int>()))
-			.ReturnsAsync((int id) => SeededPlayer.Get(id));
+    public MockPlayerRepository SetupGetId()
+    {
+        Setup(x => x.GetIdAsync(It.IsAny<string>())).ReturnsAsync(440);
 
-		return this;
-	}
+        return this;
+    }
 
-	public MockPlayerRepository SetupGetId()
-	{
-		Setup(x => x.GetIdAsync(It.IsAny<string>())).ReturnsAsync(440);
+    public MockPlayerRepository SetupGetOsuId()
+    {
+        Setup(x => x.GetOsuIdAsync(It.IsAny<int>())).ReturnsAsync(123456);
 
-		return this;
-	}
+        return this;
+    }
 
-	public MockPlayerRepository SetupGetOsuId()
-	{
-		Setup(x => x.GetOsuIdAsync(It.IsAny<int>())).ReturnsAsync(123456);
+    public MockPlayerRepository SetupGetUsername()
+    {
+        Setup(x => x.GetUsernameAsync(It.IsAny<long>())).ReturnsAsync("FooBar");
 
-		return this;
-	}
+        return this;
+    }
 
-	public MockPlayerRepository SetupGetUsername()
-	{
-		Setup(x => x.GetUsernameAsync(It.IsAny<long?>())).ReturnsAsync("FooBar");
+    public MockPlayerRepository SetupGetCountry()
+    {
+        Setup(x => x.GetCountryAsync(It.IsAny<int>())).ReturnsAsync("US");
 
-		return this;
-	}
-
-	public MockPlayerRepository SetupGetCountry()
-	{
-		Setup(x => x.GetCountryAsync(It.IsAny<int>())).ReturnsAsync("US");
-
-		return this;
-	}
+        return this;
+    }
 }
