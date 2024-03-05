@@ -4,7 +4,8 @@ namespace API.Utilities
 {
     public static class ConfigurationExtensions
     {
-        public static T BindAndValidate<T>(this IConfiguration configuration, string sectionName) where T : class, new()
+        public static T BindAndValidate<T>(this IConfiguration configuration, string sectionName)
+            where T : class, new()
         {
             var section = configuration.GetSection(sectionName).Get<T>();
             if (section == null)
@@ -19,7 +20,9 @@ namespace API.Utilities
             if (!isValid)
             {
                 var errorMessages = validationResults.Select(result => result.ErrorMessage).ToArray();
-                throw new InvalidOperationException($"Configuration validation failed for {sectionName}: {string.Join(", ", errorMessages)}");
+                throw new InvalidOperationException(
+                    $"Configuration validation failed for {sectionName}: {string.Join(", ", errorMessages)}"
+                );
             }
 
             return section;
