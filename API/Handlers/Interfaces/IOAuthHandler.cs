@@ -9,7 +9,7 @@ public interface IOAuthHandler
     /// </summary>
     /// <param name="osuAuthCode">The token provided by
     /// the osu! oAuth redirect.
-    /// 
+    ///
     /// <a href="https://osu.ppy.sh/docs/index.html#authorization-code-grant">
     /// osu! Authorization Code Grant documentation</a>
     /// </param>
@@ -23,6 +23,7 @@ public interface IOAuthHandler
     /// <param name="clientSecret">The client secret</param>
     /// <returns></returns>
     Task<OAuthResponseDTO?> AuthorizeAsync(int clientId, string clientSecret);
+
     /// <summary>
     /// Refreshes the accessToken using the provided refreshToken.
     /// </summary>

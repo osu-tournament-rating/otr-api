@@ -7,31 +7,36 @@ namespace API.Repositories.Implementations;
 
 public class GameWinRecordsRepository : RepositoryBase<GameWinRecord>, IGameWinRecordsRepository
 {
-	private readonly OtrContext _context;
-	public GameWinRecordsRepository(OtrContext context) : base(context) { _context = context; }
+    private readonly OtrContext _context;
 
-	public async Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody)
-	{
-		foreach (var item in postBody)
-		{
-			var record = new GameWinRecord
-			{
-				GameId = item.GameId,
-				Winners = item.Winners,
-				Losers = item.Losers,
-				WinnerTeam = item.WinnerTeam,
-				LoserTeam = item.LoserTeam
-			};
+    public GameWinRecordsRepository(OtrContext context)
+        : base(context)
+    {
+        _context = context;
+    }
 
-			await _context.AddAsync(record);
-		}
+    public async Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody)
+    {
+        foreach (var item in postBody)
+        {
+            var record = new GameWinRecord
+            {
+                GameId = item.GameId,
+                Winners = item.Winners,
+                Losers = item.Losers,
+                WinnerTeam = item.WinnerTeam,
+                LoserTeam = item.LoserTeam
+            };
 
-		await _context.SaveChangesAsync();
-	}
+            await _context.AddAsync(record);
+        }
 
-	public async Task TruncateAsync()
-	{
-		await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE game_win_records RESTART IDENTITY");
-		await _context.SaveChangesAsync();
-	}
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task TruncateAsync()
+    {
+        await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE game_win_records RESTART IDENTITY");
+        await _context.SaveChangesAsync();
+    }
 }

@@ -6,12 +6,12 @@ namespace API.DTOs;
 /// </summary>
 public class PlayerFrequencyDTO
 {
-	/// <summary>
-	/// The id of the player whom we are interested in knowing how many games/matches
-	/// they have shared with this player.
-	/// </summary>
-	public int PlayerId { get; set; }
-	public long OsuId { get; set; }
-	public string? Username { get; set; }
-	public int Frequency { get; set; }
+    /// <summary>
+    /// The id of the player whom we are interested in knowing how many games/matches
+    /// they have shared with this player.
+    /// </summary>
+    public int PlayerId { get; set; }
+    public long OsuId { get; set; }
+    public string? Username { get; set; }
+    public int Frequency { get; set; }
 }

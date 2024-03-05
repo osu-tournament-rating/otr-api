@@ -20,8 +20,15 @@ jobs:
             - name: Restore Dependencies
               run: dotnet restore
 
-            - name: .NET Code Style
+            - name: .NET Warnings & Code Style
               run: dotnet build -c Debug -warnaserror -p:EnforceCodeStyleInBuild=true
+
+            - name: CSharpier Formatting
+              run: |
+                dotnet tool restore
+                dotnet csharpier --check .
+
+
     
     test:
       name: Test

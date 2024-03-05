@@ -1,3 +1,3 @@
 namespace APITests.Utilities;
 
-public class StringExtensionsTests {}
+public class StringExtensionsTests { }

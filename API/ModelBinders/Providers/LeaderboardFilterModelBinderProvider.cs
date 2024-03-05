@@ -6,18 +6,18 @@ namespace API.ModelBinders.Providers;
 
 public class LeaderboardFilterModelBinderProvider : IModelBinderProvider
 {
-	public IModelBinder? GetBinder(ModelBinderProviderContext context)
-	{
-		if (context == null)
-		{
-			throw new ArgumentNullException(nameof(context));
-		}
+    public IModelBinder? GetBinder(ModelBinderProviderContext context)
+    {
+        if (context == null)
+        {
+            throw new ArgumentNullException(nameof(context));
+        }
 
-		if (context.Metadata.ModelType == typeof(LeaderboardFilterDTO))
-		{
-			return new BinderTypeModelBinder(typeof(LeaderboardFilterModelBinder));
-		}
+        if (context.Metadata.ModelType == typeof(LeaderboardFilterDTO))
+        {
+            return new BinderTypeModelBinder(typeof(LeaderboardFilterModelBinder));
+        }
 
-		return null;
-	}
+        return null;
+    }
 }

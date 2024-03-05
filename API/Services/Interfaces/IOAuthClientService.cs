@@ -16,11 +16,13 @@ public interface IOAuthClientService
     /// <param name="secret">The client secret</param>
     /// <param name="scopes">The scopes this client has access to</param>
     Task<OAuthClientDTO?> CreateAsync(int userId, string secret, params string[] scopes);
+
     /// <summary>
     /// Returns true if there already exists a client with this secret.
     /// </summary>
     /// <param name="clientSecret">The new secret to check</param>
     Task<bool> SecretInUse(string clientSecret);
+
     /// <summary>
     /// Checks the provided client id & secret are valid.
     /// </summary>
