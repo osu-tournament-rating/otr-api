@@ -1,6 +1,10 @@
+using System.Text;
+using System.Text.Json.Serialization;
 using API;
 using API.BackgroundWorkers;
 using API.Configurations;
+using API.Handlers.Implementations;
+using API.Handlers.Interfaces;
 using API.ModelBinders.Providers;
 using API.Osu.Multiplayer;
 using API.Repositories.Implementations;
@@ -8,6 +12,8 @@ using API.Repositories.Interfaces;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.Utilities;
+using Asp.Versioning;
+using Asp.Versioning.Conventions;
 using AutoMapper;
 using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,40 +23,43 @@ using OsuSharp;
 using OsuSharp.Extensions;
 using Serilog;
 using Serilog.Events;
-using System.Text;
-using System.Text.Json.Serialization;
-using API.Handlers.Implementations;
-using API.Handlers.Interfaces;
-using Asp.Versioning;
-using Asp.Versioning.Conventions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configurations
-builder.Services.AddOptionsWithValidateOnStart<ConnectionStringsConfiguration>()
-	.Bind(builder.Configuration.GetSection(ConnectionStringsConfiguration.Position))
-	.ValidateDataAnnotations();
-builder.Services.AddOptionsWithValidateOnStart<OsuConfiguration>()
+builder
+    .Services.AddOptionsWithValidateOnStart<ConnectionStringsConfiguration>()
+    .Bind(builder.Configuration.GetSection(ConnectionStringsConfiguration.Position))
+    .ValidateDataAnnotations();
+builder
+    .Services.AddOptionsWithValidateOnStart<OsuConfiguration>()
     .Bind(builder.Configuration.GetSection(OsuConfiguration.Position))
     .ValidateDataAnnotations();
-builder.Services.AddOptionsWithValidateOnStart<JwtConfiguration>()
+builder
+    .Services.AddOptionsWithValidateOnStart<JwtConfiguration>()
     .Bind(builder.Configuration.GetSection(JwtConfiguration.Position))
-	.ValidateDataAnnotations();
+    .ValidateDataAnnotations();
 
 // Add services to the container.
 
-builder.Services.AddControllers(options => { options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider()); })
-       .AddJsonOptions(o =>
-       {
-	       o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
-	       o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-       })
-       .AddNewtonsoftJson();
+builder
+    .Services.AddControllers(options =>
+    {
+        options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
+    })
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
+        o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    })
+    .AddNewtonsoftJson();
 
-builder.Services.AddApiVersioning(options =>
-{
-	options.ApiVersionReader = new UrlSegmentApiVersionReader();
-}).AddMvc();
+builder
+    .Services.AddApiVersioning(options =>
+    {
+        options.ApiVersionReader = new UrlSegmentApiVersionReader();
+    })
+    .AddMvc();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -58,27 +67,45 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSerilog(configuration =>
 {
-    string connString = builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection;
+    string connString = builder
+        .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+            ConnectionStringsConfiguration.Position
+        )
+        .DefaultConnection;
 
 #if DEBUG
-	configuration.MinimumLevel.Debug();
+    configuration.MinimumLevel.Debug();
 #else
-	configuration.MinimumLevel.Information();
+    configuration.MinimumLevel.Information();
 #endif
 
-	configuration
-		.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-		.MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
-		.MinimumLevel.Override("OsuSharp", LogEventLevel.Fatal)
-		.Enrich.FromLogContext()
-		.WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-		.WriteTo.File(Path.Join("logs", "log.log"), rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: LogEventLevel.Information)
-		.WriteTo.PostgreSQL(connString, "Logs", needAutoCreateTable: true, restrictedToMinimumLevel: LogEventLevel.Warning);
+    configuration
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+        .MinimumLevel.Override("OsuSharp", LogEventLevel.Fatal)
+        .Enrich.FromLogContext()
+        .WriteTo.Console(
+            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+        )
+        .WriteTo.File(
+            Path.Join("logs", "log.log"),
+            rollingInterval: RollingInterval.Day,
+            restrictedToMinimumLevel: LogEventLevel.Information
+        )
+        .WriteTo.PostgreSQL(
+            connString,
+            "Logs",
+            needAutoCreateTable: true,
+            restrictedToMinimumLevel: LogEventLevel.Warning
+        );
 });
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-var configuration = new MapperConfiguration(cfg => { cfg.AddProfile<MapperProfile>(); });
+var configuration = new MapperConfiguration(cfg =>
+{
+    cfg.AddProfile<MapperProfile>();
+});
 
 // only during development, validate your mappings; remove it before release
 #if DEBUG
@@ -101,7 +128,13 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 // Database context
 builder.Services.AddDbContext<OtrContext>(o =>
 {
-	o.UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection);
+    o.UseNpgsql(
+        builder
+            .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+                ConnectionStringsConfiguration.Position
+            )
+            .DefaultConnection
+    );
 });
 
 builder.Services.AddDistributedMemoryCache();
@@ -137,11 +170,11 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddOsuSharp(options =>
 {
-	var osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
+    var osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
     options.Configuration = new OsuClientConfiguration
-	{
-		ClientId = osuConfiguration.ClientId,
-		ClientSecret = osuConfiguration.ClientSecret
+    {
+        ClientId = osuConfiguration.ClientId,
+        ClientSecret = osuConfiguration.ClientSecret
     };
 });
 
@@ -149,43 +182,52 @@ builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
 
 builder.Services.AddCors(options =>
 {
-	options.AddDefaultPolicy(corsPolicyBuilder =>
-	{
-		corsPolicyBuilder
-			.WithOrigins("https://staging.otr.stagec.xyz", "https://otr.stagec.xyz")
-			.AllowAnyHeader()
-			.AllowAnyMethod()
-			.AllowCredentials();
-	});
+    options.AddDefaultPolicy(corsPolicyBuilder =>
+    {
+        corsPolicyBuilder
+            .WithOrigins("https://staging.otr.stagec.xyz", "https://otr.stagec.xyz")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
 });
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
-builder.Host.ConfigureOsuSharp((ctx, options) =>
-{
-    var osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
-    options.Configuration = new OsuClientConfiguration
-	{
-		ClientId = osuConfiguration.ClientId,
-		ClientSecret = osuConfiguration.ClientSecret
-    };
-});
+builder.Host.ConfigureOsuSharp(
+    (ctx, options) =>
+    {
+        var osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
+            OsuConfiguration.Position
+        );
+        options.Configuration = new OsuClientConfiguration
+        {
+            ClientId = osuConfiguration.ClientId,
+            ClientSecret = osuConfiguration.ClientSecret
+        };
+    }
+);
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-       .AddJwtBearer(options =>
-       {
-	       options.TokenValidationParameters = new TokenValidationParameters
-	       {
-		       ValidateIssuer = false,
-		       ValidateAudience = true,
-		       ValidateLifetime = true,
-		       ValidateIssuerSigningKey = true,
-		       ClockSkew = TimeSpan.Zero,
-		       ValidAudience = builder.Configuration["Jwt:Audience"],
-		       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ??
-		                                                                          throw new Exception("Missing Jwt:Key in configuration!"))),
-	       };
-       });
+builder
+    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration["Jwt:Key"]
+                        ?? throw new Exception("Missing Jwt:Key in configuration!")
+                )
+            ),
+        };
+    });
 
 var app = builder.Build();
 
@@ -195,8 +237,8 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-	app.UseSwagger();
-	app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -221,8 +263,8 @@ var context = scope.ServiceProvider.GetRequiredService<OtrContext>();
 int migrationsCount = context.Database.GetPendingMigrations().Count();
 if (migrationsCount > 0)
 {
-	await context.Database.MigrateAsync();
-	app.Logger.LogInformation($"Applied {migrationsCount} pending migrations.");
+    await context.Database.MigrateAsync();
+    app.Logger.LogInformation($"Applied {migrationsCount} pending migrations.");
 }
 
 app.Run();

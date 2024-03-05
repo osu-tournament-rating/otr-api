@@ -4,7 +4,7 @@ namespace API.Services.Interfaces;
 
 public interface IBeatmapService
 {
-	Task<IEnumerable<BeatmapDTO>> GetAllAsync();
-	Task<IEnumerable<BeatmapDTO>> GetByBeatmapIdsAsync(IEnumerable<long> beatmapIds);
-	Task<BeatmapDTO?> GetAsync(long osuBeatmapId);
+    Task<IEnumerable<BeatmapDTO>> GetAllAsync();
+    Task<IEnumerable<BeatmapDTO>> GetByBeatmapIdsAsync(IEnumerable<long> beatmapIds);
+    Task<BeatmapDTO?> GetAsync(long osuBeatmapId);
 }

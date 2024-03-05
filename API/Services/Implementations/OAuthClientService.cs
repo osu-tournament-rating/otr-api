@@ -13,7 +13,7 @@ public class OAuthClientService : IOAuthClientService
     {
         _repository = repository;
     }
-    
+
     public async Task<OAuthClientDTO?> GetAsync(int clientId)
     {
         var client = await _repository.GetAsync(clientId);

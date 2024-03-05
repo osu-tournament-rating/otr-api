@@ -8,8 +8,8 @@ namespace API.DTOs;
 /// </summary>
 public class RankChartDataPointDTO
 {
-	public string TournamentName { get; set; } = null!;
-	public string MatchName { get; set; } = null!;
-	public int Rank { get; set; }
-	public int RankChange { get; set; }
+    public string TournamentName { get; set; } = null!;
+    public string MatchName { get; set; } = null!;
+    public int Rank { get; set; }
+    public int RankChange { get; set; }
 }

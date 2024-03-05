@@ -28,7 +28,7 @@ public class OAuthController : Controller
         {
             return Unauthorized();
         }
-        
+
         return Ok(result);
     }
 
@@ -36,12 +36,12 @@ public class OAuthController : Controller
     public async Task<IActionResult> AuthorizeAsync([FromQuery] int clientId, [FromQuery] string clientSecret)
     {
         var authorizationResponse = await _oAuthHandler.AuthorizeAsync(clientId, clientSecret);
-        
+
         if (authorizationResponse == null)
         {
             return Unauthorized();
         }
-        
+
         return Ok(authorizationResponse);
     }
 
@@ -50,12 +50,12 @@ public class OAuthController : Controller
     public async Task<IActionResult> CreateClientAsync()
     {
         var userId = HttpContext.AuthorizedUserIdentity();
-        
+
         if (!userId.HasValue)
         {
             return Unauthorized();
         }
-        
+
         var result = await _oAuthHandler.CreateClientAsync(userId!.Value);
 
         if (result == null)
@@ -65,7 +65,7 @@ public class OAuthController : Controller
 
         return Ok(result);
     }
-    
+
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshAsync([FromQuery] string refreshToken)
     {
