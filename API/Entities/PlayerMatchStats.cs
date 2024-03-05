@@ -10,34 +10,48 @@ namespace API.Entities;
 [Table("player_match_stats")]
 public class PlayerMatchStats
 {
-	[Column("id")]
-	public int Id { get; set; }
-	[Column("player_id")]
-	public int PlayerId { get; set; }
-	[Column("match_id")]
-	public int MatchId { get; set; }
-	[Column("won")]
-	public bool Won { get; set; }
-	[Column("average_score")]
-	public int AverageScore { get; set; }
-	[Column("average_misses")]
-	public double AverageMisses { get; set; }
-	[Column("average_accuracy")]
-	public double AverageAccuracy { get; set; }
-	[Column("games_played")]
-	public int GamesPlayed { get; set; }
-	[Column("average_placement")]
-	public double AveragePlacement { get; set; }
-	[Column("games_won")]
-	public int GamesWon { get; set; }
-	[Column("games_lost")]
-	public int GamesLost { get; set; }
-	[Column("teammate_ids")]
-	public int[] TeammateIds { get; set; } = Array.Empty<int>();
-	[Column("opponent_ids")]
-	public int[] OpponentIds { get; set; } = Array.Empty<int>();
-	[InverseProperty("MatchStats")]
-	public virtual Player Player { get; set; } = null!;
-	[InverseProperty("Stats")]
-	public virtual Match Match { get; set; } = null!;
+    [Column("id")]
+    public int Id { get; set; }
+
+    [Column("player_id")]
+    public int PlayerId { get; set; }
+
+    [Column("match_id")]
+    public int MatchId { get; set; }
+
+    [Column("won")]
+    public bool Won { get; set; }
+
+    [Column("average_score")]
+    public int AverageScore { get; set; }
+
+    [Column("average_misses")]
+    public double AverageMisses { get; set; }
+
+    [Column("average_accuracy")]
+    public double AverageAccuracy { get; set; }
+
+    [Column("games_played")]
+    public int GamesPlayed { get; set; }
+
+    [Column("average_placement")]
+    public double AveragePlacement { get; set; }
+
+    [Column("games_won")]
+    public int GamesWon { get; set; }
+
+    [Column("games_lost")]
+    public int GamesLost { get; set; }
+
+    [Column("teammate_ids")]
+    public int[] TeammateIds { get; set; } = Array.Empty<int>();
+
+    [Column("opponent_ids")]
+    public int[] OpponentIds { get; set; } = Array.Empty<int>();
+
+    [InverseProperty("MatchStats")]
+    public virtual Player Player { get; set; } = null!;
+
+    [InverseProperty("Stats")]
+    public virtual Match Match { get; set; } = null!;
 }

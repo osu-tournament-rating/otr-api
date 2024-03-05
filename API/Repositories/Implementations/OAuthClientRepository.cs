@@ -8,11 +8,12 @@ public class OAuthClientRepository : RepositoryBase<OAuthClient>, IOAuthClientRe
 {
     private readonly OtrContext _context;
 
-    public OAuthClientRepository(OtrContext context) : base(context)
+    public OAuthClientRepository(OtrContext context)
+        : base(context)
     {
         _context = context;
     }
-    
+
     public async Task<bool> SecretInUseAsync(string clientSecret)
     {
         return await _context.OAuthClients.AnyAsync(x => x.Secret == clientSecret);
@@ -20,8 +21,9 @@ public class OAuthClientRepository : RepositoryBase<OAuthClient>, IOAuthClientRe
 
     public async Task<bool> ValidateAsync(int clientId, string clientSecret)
     {
-        var match = await _context.OAuthClients
-            .FirstOrDefaultAsync(x => x.Id == clientId && x.Secret == clientSecret);
+        var match = await _context.OAuthClients.FirstOrDefaultAsync(x =>
+            x.Id == clientId && x.Secret == clientSecret
+        );
 
         return match != null;
     }
