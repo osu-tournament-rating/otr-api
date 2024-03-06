@@ -50,9 +50,7 @@ public class MatchesService : IMatchesService
         int? verifier
     )
     {
-        var existingMatches = (
-            await _matchesRepository.GetByMatchIdsAsync(tournamentWebSubmissionDto.Ids)
-        ).ToList();
+        var existingMatches = (await _matchesRepository.GetAsync(tournamentWebSubmissionDto.Ids)).ToList();
         var tournament = await _tournamentsRepository.CreateOrUpdateAsync(
             tournamentWebSubmissionDto,
             verified

@@ -184,14 +184,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
     public async Task<IList<Match>> GetNeedApiProcessingAsync() =>
         await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();
 
-    public async Task<IEnumerable<Match>> GetByMatchIdsAsync(IEnumerable<long> matchIds) =>
+    public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
         await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
-
-    public async Task<int> BatchInsertAsync(IEnumerable<Match> matches)
-    {
-        await _context.Matches.AddRangeAsync(matches);
-        return await _context.SaveChangesAsync();
-    }
 
     public async Task<int> UpdateVerificationStatusAsync(
         long matchId,

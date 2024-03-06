@@ -17,9 +17,9 @@ public class MatchHistoryRepository : RepositoryBase<MatchHistory>, IHistoryRepo
 
     public async Task<MatchHistory?> CreateAsync(Match match, HistoryActionType action)
     {
-        var record = _mapper.Map<MatchHistory>(match);
+        MatchHistory record = _mapper.Map<MatchHistory>(match);
         record.HistoryAction = (int)action;
-        // API modifications have an Id of null
+        // Modifications made automatically (without user intervention) have an Id of null
         record.ModifierId = null;
         return await base.CreateAsync(record);
     }
