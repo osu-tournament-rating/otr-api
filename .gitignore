@@ -1,5 +1,6 @@
 ﻿.idea/
 logs/
+.vs/
 
 **/*.idea/
 **/obj/
@@ -15,4 +16,6 @@ redis.env
 
 .DS_Store
 *.DotSettings.user
+*Backup.csproj
+*.csproj.user
 .vscode/
