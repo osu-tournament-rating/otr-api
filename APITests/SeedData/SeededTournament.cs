@@ -20,7 +20,7 @@ public static class SeededTournament
 			SubmitterUserId = 21
 		};
 
-		tournament.Matches = SeededMatch.Generate(tournament.Id, 5);
-		return tournament;
-	}
+        tournament.Matches = SeededMatch.Generate(tournament.Id, 5);
+        return tournament;
+    }
 }

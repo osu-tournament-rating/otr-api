@@ -25,14 +25,14 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 		_matchHistoryRepository = matchHistoryRepository;
 	}
 
-	public override async Task<Match?> GetAsync(int id) =>
-		// Get the match with all associated data
-		await _context.Matches
-					  .Include(x => x.Games)
-					  .ThenInclude(x => x.MatchScores)
-					  .Include(x => x.Games)
-					  .ThenInclude(x => x.Beatmap)
-					  .FirstOrDefaultAsync(x => x.Id == id);
+    public override async Task<Match?> GetAsync(int id) =>
+        // Get the match with all associated data
+        await _context
+            .Matches.Include(x => x.Games)
+            .ThenInclude(x => x.MatchScores)
+            .Include(x => x.Games)
+            .ThenInclude(x => x.Beatmap)
+            .FirstOrDefaultAsync(x => x.Id == id);
 
 	public override async Task<int> UpdateAsync(Match entity)
 	{
@@ -58,443 +58,507 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 	{
 		var existing = await GetAsync(id, false);
 
-		if (existing == null)
-		{
-			throw new Exception("Match does not exist, this method assumes the match exists.");
-		}
-		
-		existing.VerificationStatus = verificationStatus;
+        if (existing == null)
+        {
+            throw new Exception("Match does not exist, this method assumes the match exists.");
+        }
 
-		await UpdateAsync(existing);
-		return existing;
-	}
+        existing.VerificationStatus = verificationStatus;
 
-	public async Task RefreshAutomationChecks(bool invalidOnly = true)
-	{
-		var query = _context.Matches
-		                    .Where(x => x.NeedsAutoCheck == false && x.IsApiProcessed == true);
+        await UpdateAsync(existing);
+        return existing;
+    }
 
-		if (invalidOnly)
-		{
-			query = query.Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Rejected);
-		}
+    public async Task RefreshAutomationChecks(bool invalidOnly = true)
+    {
+        var query = _context.Matches.Where(x => x.NeedsAutoCheck == false && x.IsApiProcessed == true);
 
-		await query.ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
-		_logger.LogInformation("Refreshed automation checks for {Count} matches", await query.CountAsync());
-	}
+        if (invalidOnly)
+        {
+            query = query.Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Rejected);
+        }
 
-	public async Task<Match> GetAsync(int id, bool filterInvalidMatches = true) => await MatchBaseQuery(filterInvalidMatches).FirstAsync(x => x.Id == id);
+        await query.ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
+        _logger.LogInformation("Refreshed automation checks for {Count} matches", await query.CountAsync());
+    }
 
-	public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered) =>
-		await MatchBaseQuery(onlyIncludeFiltered).Where(x => ids.Contains(x.Id)).ToListAsync();
+    public async Task<Match> GetAsync(int id, bool filterInvalidMatches = true) =>
+        await MatchBaseQuery(filterInvalidMatches).FirstAsync(x => x.Id == id);
 
-	private IQueryable<Match> MatchBaseQuery(bool filterInvalidMatches)
-	{
-		if (!filterInvalidMatches)
-		{
-			return _context.Matches.Include(x => x.Games)
-						   .ThenInclude(x => x.MatchScores)
-						   .Include(x => x.Games)
-						   .ThenInclude(x => x.Beatmap);
-		}
+    public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered) =>
+        await MatchBaseQuery(onlyIncludeFiltered).Where(x => ids.Contains(x.Id)).ToListAsync();
 
-		return _context.Matches.WhereVerified()
-		               .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
-		               .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
-		               .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
-		               .ThenInclude(x => x.Beatmap)
-		               .Where(x => x.Games.Count > 0)
-		               .OrderBy(x => x.StartTime);
-	}
+    private IQueryable<Match> MatchBaseQuery(bool filterInvalidMatches)
+    {
+        if (!filterInvalidMatches)
+        {
+            return _context
+                .Matches.Include(x => x.Games)
+                .ThenInclude(x => x.MatchScores)
+                .Include(x => x.Games)
+                .ThenInclude(x => x.Beatmap);
+        }
 
-	public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches)
-	{
-		var query = _context.Matches
-		                    .OrderBy(m => m.StartTime)
-		                    .AsQueryable();
+        return _context
+            .Matches.WhereVerified()
+            .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
+            .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
+            .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
+            .ThenInclude(x => x.Beatmap)
+            .Where(x => x.Games.Count > 0)
+            .OrderBy(x => x.StartTime);
+    }
+
+    public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches)
+    {
+        var query = _context.Matches.OrderBy(m => m.StartTime).AsQueryable();
 
         if (filterInvalidMatches)
-            query = _context.Matches
-                .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
+            query = _context
+                .Matches.Include(x =>
+                    x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified)
+                )
                 .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
-			                .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
+                .Include(x =>
+                    x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified)
+                )
                 .ThenInclude(x => x.Beatmap)
                 .Where(x => x.Games.Count > 0);
 
-		var matches = await query
-		                    .Select(x => x.Id)
-		                    .ToListAsync();
+        var matches = await query.Select(x => x.Id).ToListAsync();
 
-		return matches;
-	}
+        return matches;
+    }
 
-	public async Task<MatchDTO?> GetDTOByOsuMatchIdAsync(long osuMatchId) => _mapper.Map<MatchDTO?>(await _context.Matches
-	                                                                                                              .Include(x => x.Games)
-	                                                                                                              .ThenInclude(g => g.Beatmap)
-	                                                                                                              .Include(x => x.Games)
-	                                                                                                              .ThenInclude(x => x.MatchScores)
-	                                                                                                              .FirstOrDefaultAsync(x => x.MatchId == osuMatchId));
+    public async Task<MatchDTO?> GetDTOByOsuMatchIdAsync(long osuMatchId) =>
+        _mapper.Map<MatchDTO?>(
+            await _context
+                .Matches.Include(x => x.Games)
+                .ThenInclude(g => g.Beatmap)
+                .Include(x => x.Games)
+                .ThenInclude(x => x.MatchScores)
+                .FirstOrDefaultAsync(x => x.MatchId == osuMatchId)
+        );
 
-	public async Task<Match?> GetByMatchIdAsync(long matchId) => await _context.Matches
-	                                                                           .Include(x => x.Games)
-	                                                                           .ThenInclude(x => x.MatchScores)
-	                                                                           .Include(x => x.Tournament)
-	                                                                           .FirstOrDefaultAsync(x => x.MatchId == matchId);
+    public async Task<Match?> GetByMatchIdAsync(long matchId) =>
+        await _context
+            .Matches.Include(x => x.Games)
+            .ThenInclude(x => x.MatchScores)
+            .Include(x => x.Tournament)
+            .FirstOrDefaultAsync(x => x.MatchId == matchId);
 
-	public async Task<IList<Match>> GetMatchesNeedingAutoCheckAsync() =>
-		// We only want api processed matches because the verification checks require the data from the API
-		await _context.Matches
-		              .Include(x => x.Games)
-		              .ThenInclude(x => x.MatchScores)
-		              .Include(x => x.Tournament)
-		              .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
-		              .ToListAsync();
+    public async Task<IList<Match>> GetMatchesNeedingAutoCheckAsync() =>
+        // We only want api processed matches because the verification checks require the data from the API
+        await _context
+            .Matches.Include(x => x.Games)
+            .ThenInclude(x => x.MatchScores)
+            .Include(x => x.Tournament)
+            .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
+            .ToListAsync();
 
-	public async Task<Match?> GetFirstMatchNeedingApiProcessingAsync() => await _context.Matches
-	                                                                                    .Include(x => x.Games)
-	                                                                                    .ThenInclude(x => x.MatchScores)
-	                                                                                    .Where(x => x.IsApiProcessed == false)
-	                                                                                    .FirstOrDefaultAsync();
+    public async Task<Match?> GetFirstMatchNeedingApiProcessingAsync() =>
+        await _context
+            .Matches.Include(x => x.Games)
+            .ThenInclude(x => x.MatchScores)
+            .Where(x => x.IsApiProcessed == false)
+            .FirstOrDefaultAsync();
 
-	public async Task<Match?> GetFirstMatchNeedingAutoCheckAsync() => await _context.Matches
-	                                                                                .Include(x => x.Tournament)
-	                                                                                .Include(x => x.Games)
-	                                                                                .ThenInclude(x => x.MatchScores)
-	                                                                                .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
-	                                                                                .FirstOrDefaultAsync();
+    public async Task<Match?> GetFirstMatchNeedingAutoCheckAsync() =>
+        await _context
+            .Matches.Include(x => x.Tournament)
+            .Include(x => x.Games)
+            .ThenInclude(x => x.MatchScores)
+            .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
+            .FirstOrDefaultAsync();
 
-	public async Task<IList<Match>> GetNeedApiProcessingAsync() => await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();
-	
-	public async Task<IEnumerable<Match>> GetByMatchIdsAsync(IEnumerable<long> matchIds) => await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
+    public async Task<IList<Match>> GetNeedApiProcessingAsync() =>
+        await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();
 
-	public async Task<int> UpdateVerificationStatusAsync(long matchId, MatchVerificationStatus status, MatchVerificationSource source, string? info = null)
-	{
-		var match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
-		if (match == null)
-		{
-			_logger.LogWarning("Match {MatchId} not found (failed to update verification status)", matchId);
-			return 0;
-		}
+    public async Task<IEnumerable<Match>> GetByMatchIdsAsync(IEnumerable<long> matchIds) =>
+        await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
 
-		match.VerificationStatus = (int)status;
-		match.VerificationSource = (int)source;
-		match.VerificationInfo = info;
+    public async Task<int> BatchInsertAsync(IEnumerable<Match> matches)
+    {
+        await _context.Matches.AddRangeAsync(matches);
+        return await _context.SaveChangesAsync();
+    }
 
-		_logger.LogInformation("Updated verification status of match {MatchId} to {Status} (source: {Source}, info: {Info})", matchId, status, source, info);
-		return await UpdateAsync(match);
-	}
+    public async Task<int> UpdateVerificationStatusAsync(
+        long matchId,
+        MatchVerificationStatus status,
+        MatchVerificationSource source,
+        string? info = null
+    )
+    {
+        var match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
+        if (match == null)
+        {
+            _logger.LogWarning("Match {MatchId} not found (failed to update verification status)", matchId);
+            return 0;
+        }
 
-	public async Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, int mode, DateTime before, DateTime after)
-	{
-		return await _context.Matches
-		                     .IncludeAllChildren()
-		                     .WherePlayerParticipated(osuId)
-		                     .WhereMode(mode)
-		                     .Before(before)
-		                     .After(after)
-		                     .ToListAsync();
-	}
+        match.VerificationStatus = (int)status;
+        match.VerificationSource = (int)source;
+        match.VerificationInfo = info;
 
-	public async Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime)
-	{
-		int wins = 0;
-		var matches = await _context.Matches
-		                            .WhereVerified()
-		                            .After(fromTime)
-		                            .Include(x => x.Games)
-		                            .ThenInclude(x => x.MatchScores)
-		                            .ThenInclude(x => x.Player)
-		                            .Where(x => x.Games.Any(y => y.PlayMode == mode && y.MatchScores.Any(z => z.Player.OsuId == osuPlayerId)))
-		                            .ToListAsync();
+        _logger.LogInformation(
+            "Updated verification status of match {MatchId} to {Status} (source: {Source}, info: {Info})",
+            matchId,
+            status,
+            source,
+            info
+        );
+        return await _context.SaveChangesAsync();
+    }
 
-		foreach (var match in matches)
-		{
-			// For head to head (lobby size 2), calculate the winner based on score
-			int pointsPlayer = 0;
-			int pointsOpponent = 0;
-			int team = 0;
-			foreach (var game in match.Games)
-			{
-				if (!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
-				{
-					continue;
-				}
+    public async Task<IEnumerable<Match>> GetPlayerMatchesAsync(
+        long osuId,
+        int mode,
+        DateTime before,
+        DateTime after
+    )
+    {
+        return await _context
+            .Matches.IncludeAllChildren()
+            .WherePlayerParticipated(osuId)
+            .WhereMode(mode)
+            .Before(before)
+            .After(after)
+            .ToListAsync();
+    }
 
-				team = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
-			}
+    public async Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime)
+    {
+        int wins = 0;
+        var matches = await _context
+            .Matches.WhereVerified()
+            .After(fromTime)
+            .Include(x => x.Games)
+            .ThenInclude(x => x.MatchScores)
+            .ThenInclude(x => x.Player)
+            .Where(x =>
+                x.Games.Any(y => y.PlayMode == mode && y.MatchScores.Any(z => z.Player.OsuId == osuPlayerId))
+            )
+            .ToListAsync();
 
-			foreach (var game in match.Games)
-			{
-				try
-				{
-					if (game.MatchScores.Count == 2)
-					{
-						// Assuming this is a 1v1...
-						if (!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
-						{
-							continue;
-						}
+        foreach (var match in matches)
+        {
+            // For head to head (lobby size 2), calculate the winner based on score
+            int pointsPlayer = 0;
+            int pointsOpponent = 0;
+            int team = 0;
+            foreach (var game in match.Games)
+            {
+                if (!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
+                {
+                    continue;
+                }
 
-						long playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Score;
-						long opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Score;
+                team = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
+            }
 
-						if (playerScore > opponentScore)
-						{
-							pointsPlayer++;
-						}
-						else
-						{
-							pointsOpponent++;
-						}
-					}
-					else if (game.MatchScores.Count >= 4)
-					{
-						// Identify player team, sum the scores, then add points this way
-						int playerTeam = team;
-						int? opponentTeam = game.MatchScores.FirstOrDefault(x => x.Team != playerTeam)?.Team;
+            foreach (var game in match.Games)
+            {
+                try
+                {
+                    if (game.MatchScores.Count == 2)
+                    {
+                        // Assuming this is a 1v1...
+                        if (!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
+                        {
+                            continue;
+                        }
 
-						long playerTeamScores = game.MatchScores.Where(x => x.Team == playerTeam).Sum(x => x.Score);
-						long opponentTeamScores = game.MatchScores.Where(x => x.Team == opponentTeam).Sum(x => x.Score);
+                        long playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Score;
+                        long opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Score;
 
-						if (playerTeamScores > opponentTeamScores)
-						{
-							pointsPlayer++;
-						}
-						else
-						{
-							pointsOpponent++;
-						}
-					}
-				}
-				catch (Exception e)
-				{
-					_logger.LogWarning(e, "Error occurred while calculating match wins for player {OsuId}", osuPlayerId);
-				}
-			}
+                        if (playerScore > opponentScore)
+                        {
+                            pointsPlayer++;
+                        }
+                        else
+                        {
+                            pointsOpponent++;
+                        }
+                    }
+                    else if (game.MatchScores.Count >= 4)
+                    {
+                        // Identify player team, sum the scores, then add points this way
+                        int playerTeam = team;
+                        int? opponentTeam = game.MatchScores.FirstOrDefault(x => x.Team != playerTeam)?.Team;
 
-			if (pointsPlayer > pointsOpponent)
-			{
-				wins++;
-			}
-		}
+                        long playerTeamScores = game
+                            .MatchScores.Where(x => x.Team == playerTeam)
+                            .Sum(x => x.Score);
+                        long opponentTeamScores = game
+                            .MatchScores.Where(x => x.Team == opponentTeam)
+                            .Sum(x => x.Score);
 
-		return wins;
-	}
+                        if (playerTeamScores > opponentTeamScores)
+                        {
+                            pointsPlayer++;
+                        }
+                        else
+                        {
+                            pointsOpponent++;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(
+                        e,
+                        "Error occurred while calculating match wins for player {OsuId}",
+                        osuPlayerId
+                    );
+                }
+            }
 
-	public async Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime) => await _context.MatchScores
-	                                                                                                               .WhereVerified()
-	                                                                                                               .WhereOsuPlayerId(osuPlayerId)
-	                                                                                                               .WhereMode(mode)
-	                                                                                                               .After(fromTime)
-	                                                                                                               .Include(x => x.Game)
-	                                                                                                               .GroupBy(x => x.Game.MatchId)
-	                                                                                                               .CountAsync();
+            if (pointsPlayer > pointsOpponent)
+            {
+                wins++;
+            }
+        }
 
-	public async Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime)
-	{
-		int played = await CountMatchesPlayedAsync(osuPlayerId, mode, fromTime);
-		int won = await CountMatchWinsAsync(osuPlayerId, mode, fromTime);
+        return wins;
+    }
 
-		if (played == 0)
-		{
-			return 0;
-		}
+    public async Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime) =>
+        await _context
+            .MatchScores.WhereVerified()
+            .WhereOsuPlayerId(osuPlayerId)
+            .WhereMode(mode)
+            .After(fromTime)
+            .Include(x => x.Game)
+            .GroupBy(x => x.Game.MatchId)
+            .CountAsync();
 
-		return (double)won / played;
-	}
+    public async Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime)
+    {
+        int played = await CountMatchesPlayedAsync(osuPlayerId, mode, fromTime);
+        int won = await CountMatchWinsAsync(osuPlayerId, mode, fromTime);
 
-	public async Task UpdateAsApiProcessed(Match match)
-	{
-		match.IsApiProcessed = true;
-		await UpdateAsync(match);
-	}
+        if (played == 0)
+        {
+            return 0;
+        }
 
-	public async Task UpdateAsAutoChecked(Match match)
-	{
-		match.NeedsAutoCheck = false;
-		await UpdateAsync(match);
-	}
+        return (double)won / played;
+    }
 
-	public async Task SetRequireAutoCheckAsync(bool invalidOnly = true)
-	{
-		if (invalidOnly)
-		{
-			await _context.Matches.Where(x => x.VerificationStatus != (int)MatchVerificationStatus.Verified && x.VerificationStatus != (int)MatchVerificationStatus.PreVerified)
-			              .ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
-		}
-		else
-		{
-			// Applies to all matches
-			await _context.Matches.ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
-		}
-	}
+    public async Task UpdateAsApiProcessed(Match match)
+    {
+        match.IsApiProcessed = true;
+        await UpdateAsync(match);
+    }
 
-	public async Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync()
-	{
-		return await _context.Matches
-			.AsNoTracking()
-			.OrderBy(x => x.Id)
-			.Select(x => new MatchIdMappingDTO
-			{
-				Id = x.Id,
-				OsuMatchId = x.MatchId
-			}).ToListAsync();
-	}
-	
-	public async Task MergeDuplicatesAsync(int matchRootId)
-	{
-		var root = await GetAsync(matchRootId);
+    public async Task UpdateAsAutoChecked(Match match)
+    {
+        match.NeedsAutoCheck = false;
+        await UpdateAsync(match);
+    }
 
-		if (root == null)
-		{
-			throw new InvalidOperationException($"Failed to find corresponding match: {matchRootId}");
-		}
+    public async Task SetRequireAutoCheckAsync(bool invalidOnly = true)
+    {
+        if (invalidOnly)
+        {
+            await _context
+                .Matches.Where(x =>
+                    x.VerificationStatus != (int)MatchVerificationStatus.Verified
+                    && x.VerificationStatus != (int)MatchVerificationStatus.PreVerified
+                )
+                .ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
+        }
+        else
+        {
+            // Applies to all matches
+            await _context.Matches.ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
+        }
+    }
 
-		if (root.IsApiProcessed != true)
-		{
-			throw new Exception("All matches must be API processed.");
-		}
+    public async Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync()
+    {
+        return await _context
+            .Matches.AsNoTracking()
+            .OrderBy(x => x.Id)
+            .Select(x => new MatchIdMappingDTO { Id = x.Id, OsuMatchId = x.MatchId })
+            .ToListAsync();
+    }
 
-		if (root.Games.Count == 0)
-		{
-			throw new Exception("Root does not contain any games.");
-		}
+    public async Task MergeDuplicatesAsync(int matchRootId)
+    {
+        var root = await GetAsync(matchRootId);
 
-		int totalScores = root.Games.Select(x => x.MatchScores.Count).Sum();
-		if (totalScores == 0)
-		{
-			throw new Exception("Root has no scores.");
-		}
+        if (root == null)
+        {
+            throw new InvalidOperationException($"Failed to find corresponding match: {matchRootId}");
+        }
 
-		var duplicateReferences = (await _matchDuplicateRepository.GetDuplicatesAsync(matchRootId)).ToList();
-		if (!duplicateReferences.Any())
-		{
-			throw new Exception("Match does not have any detected duplicates.");
-		}
+        if (root.IsApiProcessed != true)
+        {
+            throw new Exception("All matches must be API processed.");
+        }
 
-		var duplicateMatches = (await GetMatchesFromDuplicatesAsync(duplicateReferences)).ToList();
+        if (root.Games.Count == 0)
+        {
+            throw new Exception("Root does not contain any games.");
+        }
 
-		foreach (var duplicate in duplicateMatches)
-		{
-			if (root.TournamentId != duplicate.TournamentId)
-			{
-				throw new Exception("Tournament ids must match");
-			}
+        int totalScores = root.Games.Select(x => x.MatchScores.Count).Sum();
+        if (totalScores == 0)
+        {
+            throw new Exception("Root has no scores.");
+        }
 
-			if (duplicate.IsApiProcessed != true)
-			{
-				throw new Exception("All matches must be API processed.");
-			}
+        var duplicateReferences = (await _matchDuplicateRepository.GetDuplicatesAsync(matchRootId)).ToList();
+        if (!duplicateReferences.Any())
+        {
+            throw new Exception("Match does not have any detected duplicates.");
+        }
 
-			bool satisfiesNameCheck = root.Name == duplicate.Name;
-			bool satisfiesOsuIdCheck = root.MatchId == duplicate.MatchId;
-			if (!satisfiesNameCheck && !satisfiesOsuIdCheck)
-			{
-				throw new Exception("Failed to satisfy preconditions. Either the name is a mismatch or the match id is a mismatch from the root.");
-			}
-		}
+        var duplicateMatches = (await GetMatchesFromDuplicatesAsync(duplicateReferences)).ToList();
 
-		// The rootId will be used when reassigning game / score data.
-		int rootId = root.Id;
-		foreach (var duplicate in duplicateMatches)
-		{
-			// Reassign all of the games' matchid fields.
-			foreach (var game in duplicate.Games)
-			{
-				game.MatchId = rootId;
-				_context.Games.Update(game);
-			}
+        foreach (var duplicate in duplicateMatches)
+        {
+            if (root.TournamentId != duplicate.TournamentId)
+            {
+                throw new Exception("Tournament ids must match");
+            }
 
-			await _context.SaveChangesAsync();
+            if (duplicate.IsApiProcessed != true)
+            {
+                throw new Exception("All matches must be API processed.");
+            }
 
-			// Delete the match.
-			// We don't delete the duplicate item entry because we
-			// want to preserve the merged match links. This gives us
-			// the ability to say "this match X was merged from Y, Z, etc."
-			await DeleteAsync(duplicate.Id);
+            bool satisfiesNameCheck = root.Name == duplicate.Name;
+            bool satisfiesOsuIdCheck = root.MatchId == duplicate.MatchId;
+            if (!satisfiesNameCheck && !satisfiesOsuIdCheck)
+            {
+                throw new Exception(
+                    "Failed to satisfy preconditions. Either the name is a mismatch or the match id is a mismatch from the root."
+                );
+            }
+        }
 
-			_logger.LogInformation("Updated {GamesCount} games in duplicate match {DuplicateId} to point to new root parent match {RootId}",
-				duplicate.Games.Count, duplicate.Id, rootId);
-		}
-	}
+        // The rootId will be used when reassigning game / score data.
+        int rootId = root.Id;
+        foreach (var duplicate in duplicateMatches)
+        {
+            // Reassign all of the games' matchid fields.
+            foreach (var game in duplicate.Games)
+            {
+                game.MatchId = rootId;
+                _context.Games.Update(game);
+            }
 
-	private async Task<IEnumerable<Match>> GetMatchesFromDuplicatesAsync(IEnumerable<MatchDuplicate> duplicates)
-	{
-		var ls = new List<Match>();
-		foreach (var dupe in duplicates)
-		{
-			var match = await GetByMatchIdAsync(dupe.OsuMatchId);
-			if (match == null)
-			{
-				continue;
-			}
+            await _context.SaveChangesAsync();
 
-			ls.Add(match);
-		}
+            // Delete the match.
+            // We don't delete the duplicate item entry because we
+            // want to preserve the merged match links. This gives us
+            // the ability to say "this match X was merged from Y, Z, etc."
+            await DeleteAsync(duplicate.Id);
 
-		return ls;
-	}
+            _logger.LogInformation(
+                "Updated {GamesCount} games in duplicate match {DuplicateId} to point to new root parent match {RootId}",
+                duplicate.Games.Count,
+                duplicate.Id,
+                rootId
+            );
+        }
+    }
 
-	public async Task MarkSuspectedDuplicatesAsync(Match root, IEnumerable<Match> duplicates)
-	{
-		int rootId = root.Id;
-		foreach (var dupe in duplicates)
-		{
-			var duplicateXref = new MatchDuplicate
-			{
-				OsuMatchId = dupe.MatchId,
-				SuspectedDuplicateOf = rootId
-			};
+    private async Task<IEnumerable<Match>> GetMatchesFromDuplicatesAsync(
+        IEnumerable<MatchDuplicate> duplicates
+    )
+    {
+        var ls = new List<Match>();
+        foreach (var dupe in duplicates)
+        {
+            var match = await GetByMatchIdAsync(dupe.OsuMatchId);
+            if (match == null)
+            {
+                continue;
+            }
 
-			await _matchDuplicateRepository.CreateAsync(duplicateXref);
-		}
-	}
+            ls.Add(match);
+        }
 
-	public async Task VerifyDuplicatesAsync(int matchRoot, int userId, bool confirmed)
-	{
-		var duplicates = await _matchDuplicateRepository.GetDuplicatesAsync(matchRoot);
-		foreach (var dupe in duplicates)
-		{
-			dupe.VerifiedBy = userId;
-			dupe.VerifiedAsDuplicate = confirmed;
+        return ls;
+    }
 
-			await _matchDuplicateRepository.UpdateAsync(dupe);
-		}
-	}
+    public async Task MarkSuspectedDuplicatesAsync(Match root, IEnumerable<Match> duplicates)
+    {
+        int rootId = root.Id;
+        foreach (var dupe in duplicates)
+        {
+            var duplicateXref = new MatchDuplicate
+            {
+                OsuMatchId = dupe.MatchId,
+                SuspectedDuplicateOf = rootId
+            };
 
-	public async Task<IEnumerable<IList<Match>>> GetDuplicateGroupsAsync()
-	{
-		// Fetch groups by MatchId, excluding matches present in MatchDuplicates and confirmed duplicates
-		var duplicatesById = (await _context.Matches
-		                                    .Where(m => !_context.MatchDuplicates.Any(md => md.OsuMatchId == m.MatchId))
-		                                    .Where(m => !_context.MatchDuplicates.Any(md => md.VerifiedAsDuplicate == true))
-		                                    .GroupBy(m => new { m.TournamentId, m.MatchId })
-		                                    .ToListAsync())
-		                     .Select(g => new { Group = g, Count = g.Count() })
-		                     .Where(g => g.Count > 1)
-		                     .Select(g => g.Group.ToList()) // Convert each group to List<Match>
-		                     .ToList();
+            await _matchDuplicateRepository.CreateAsync(duplicateXref);
+        }
+    }
 
-		// Fetch groups by Name and start date, excluding matches present in MatchDuplicates
-		var groupedByNameAndDate = await _context.Matches
-		                                         .Where(m => m.Name != null && m.StartTime.HasValue && !_context.MatchDuplicates.Any(md => md.OsuMatchId == m.MatchId))
-		                                         .GroupBy(m => new
-		                                         {
-			                                         m.TournamentId, m.Name,
-			                                         m.StartTime!.Value.Date
-		                                         })
-		                                         .ToListAsync();
+    public async Task VerifyDuplicatesAsync(int matchRoot, int userId, bool confirmed)
+    {
+        var duplicates = await _matchDuplicateRepository.GetDuplicatesAsync(matchRoot);
+        foreach (var dupe in duplicates)
+        {
+            dupe.VerifiedBy = userId;
+            dupe.VerifiedAsDuplicate = confirmed;
 
-		var duplicatesByName = groupedByNameAndDate
-		                       .Select(g => new
-		                       {
-			                       Group = g.Where(m1 => g.Any(m2 => m1 != m2 && Math.Abs((m2.StartTime - m1.StartTime)!.Value.TotalHours) <= 2)).ToList(),
-			                       Count = g.Count()
-		                       })
-		                       .Where(g => g.Group.Count > 1)
-		                       .Select(x => x.Group)
-		                       .ToList();
+            await _matchDuplicateRepository.UpdateAsync(dupe);
+        }
+    }
 
-		return duplicatesById.Concat(duplicatesByName);
-	}
+    public async Task<IEnumerable<IList<Match>>> GetDuplicateGroupsAsync()
+    {
+        // Fetch groups by MatchId, excluding matches present in MatchDuplicates and confirmed duplicates
+        var duplicatesById = (
+            await _context
+                .Matches.Where(m => !_context.MatchDuplicates.Any(md => md.OsuMatchId == m.MatchId))
+                .Where(m => !_context.MatchDuplicates.Any(md => md.VerifiedAsDuplicate == true))
+                .GroupBy(m => new { m.TournamentId, m.MatchId })
+                .ToListAsync()
+        )
+            .Select(g => new { Group = g, Count = g.Count() })
+            .Where(g => g.Count > 1)
+            .Select(g => g.Group.ToList()) // Convert each group to List<Match>
+            .ToList();
+
+        // Fetch groups by Name and start date, excluding matches present in MatchDuplicates
+        var groupedByNameAndDate = await _context
+            .Matches.Where(m =>
+                m.Name != null
+                && m.StartTime.HasValue
+                && !_context.MatchDuplicates.Any(md => md.OsuMatchId == m.MatchId)
+            )
+            .GroupBy(m => new
+            {
+                m.TournamentId,
+                m.Name,
+                m.StartTime!.Value.Date
+            })
+            .ToListAsync();
+
+        var duplicatesByName = groupedByNameAndDate
+            .Select(g => new
+            {
+                Group = g.Where(m1 =>
+                        g.Any(m2 =>
+                            m1 != m2 && Math.Abs((m2.StartTime - m1.StartTime)!.Value.TotalHours) <= 2
+                        )
+                    )
+                    .ToList(),
+                Count = g.Count()
+            })
+            .Where(g => g.Group.Count > 1)
+            .Select(x => x.Group)
+            .ToList();
+
+        return duplicatesById.Concat(duplicatesByName);
+    }
 }

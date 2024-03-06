@@ -1,7 +1,7 @@
-﻿using API.Enums;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using API.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Entities;
 
@@ -35,20 +35,21 @@ public class Match : MatchEntityBase
 				return (MatchVerificationSource)VerificationSource;
 			}
 
-			return null;
-		}
-	}
-	[NotMapped]
-	public MatchVerificationStatus? VerificationStatusEnum
-	{
-		get
-		{
-			if (VerificationStatus != null)
-			{
-				return (MatchVerificationStatus)VerificationStatus;
-			}
+            return null;
+        }
+    }
 
-			return null;
-		}
-	}
+    [NotMapped]
+    public MatchVerificationStatus? VerificationStatusEnum
+    {
+        get
+        {
+            if (VerificationStatus != null)
+            {
+                return (MatchVerificationStatus)VerificationStatus;
+            }
+
+            return null;
+        }
+    }
 }
