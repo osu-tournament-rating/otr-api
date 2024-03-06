@@ -77,7 +77,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
             ?? throw new Exception($"Critical failure: failed to create player with osu id {osuId}");
     }
 
-    public async Task<Player?> GetAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1)
+    public async Task<Player?> GetAsync(long osuId, bool eagerLoad, int mode = 0, int offsetDays = -1)
     {
         if (!eagerLoad)
         {
