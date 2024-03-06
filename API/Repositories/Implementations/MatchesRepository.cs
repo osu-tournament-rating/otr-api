@@ -8,11 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
+public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMatchesRepository
 {
     private readonly OtrContext _context;
     private readonly IMatchDuplicateRepository _matchDuplicateRepository;
-    private readonly IHistoryRepository<MatchHistory, Match> _matchHistoryRepository;
     private readonly ILogger<MatchesRepository> _logger;
     private readonly IMapper _mapper;
 
@@ -20,16 +19,14 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
         ILogger<MatchesRepository> logger,
         IMapper mapper,
         OtrContext context,
-        IMatchDuplicateRepository matchDuplicateRepository,
-        IHistoryRepository<MatchHistory, Match> matchHistoryRepository
+        IMatchDuplicateRepository matchDuplicateRepository
     )
-        : base(context)
+        : base(context, mapper)
     {
         _logger = logger;
         _mapper = mapper;
         _context = context;
         _matchDuplicateRepository = matchDuplicateRepository;
-        _matchHistoryRepository = matchHistoryRepository;
     }
 
     public override async Task<Match?> GetAsync(int id) =>
@@ -40,29 +37,6 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
             .Include(x => x.Games)
             .ThenInclude(x => x.Beatmap)
             .FirstOrDefaultAsync(x => x.Id == id);
-
-    public override async Task<int> UpdateAsync(Match entity)
-    {
-        var origMatch = await GetNoTrackingAsync(entity.Id);
-        if (origMatch != null)
-            await _matchHistoryRepository.CreateAsync(origMatch, HistoryActionType.Update);
-
-        entity.Updated = DateTime.UtcNow;
-        _context.Matches.Update(entity);
-        return await _context.SaveChangesAsync();
-    }
-
-    public override async Task<int?> DeleteAsync(int id)
-    {
-        var origMatch = await GetNoTrackingAsync(id);
-        if (origMatch != null)
-            await _matchHistoryRepository.CreateAsync(origMatch, HistoryActionType.Delete);
-
-        return await base.DeleteAsync(id);
-    }
-
-    public async Task<Match?> GetNoTrackingAsync(int id) =>
-        await _context.Matches.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
 
     public async Task<Match> UpdateVerificationStatus(int id, int? verificationStatus)
     {

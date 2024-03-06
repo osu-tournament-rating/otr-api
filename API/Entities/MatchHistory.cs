@@ -1,11 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using API.Entities.Interfaces;
 using API.Enums;
 
 namespace API.Entities;
 
 [Table("matches_hist")]
-public class MatchHistory : MatchEntityBase
+public class MatchHistory : MatchEntityBase, IHistoryEntity
 {
     /// <summary>
     /// Id of the original record

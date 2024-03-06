@@ -1,15 +1,25 @@
-﻿using API.Enums;
+﻿using API.Entities;
+using API.Entities.Interfaces;
 
 namespace API.Repositories.Interfaces;
 
-public interface IHistoryRepository<THistory, TEntity> : IRepository<THistory>
-    where THistory : class
+public interface IHistoryRepository<TEntity, THistory> : IRepository<TEntity>
+    where TEntity : class, IEntityBase
+    where THistory : class, IHistoryEntity
 {
     /// <summary>
-    /// Creates a new entity of type THistory, mapped to the values of <paramref name="entity"/> with action type <paramref name="action"/>
+    /// Updates <paramref name="entity"/> and blames the change on <see cref="User"/> with id <paramref name="modifierId"/>
     /// </summary>
     /// <param name="entity"></param>
-    /// <param name="action"></param>
+    /// <param name="modifierId"></param>
     /// <returns></returns>
-    Task<THistory?> CreateAsync(TEntity entity, HistoryActionType action);
+    Task<int> UpdateAsync(TEntity entity, int modifierId);
+
+    /// <summary>
+    /// Deletes <typeparamref name="TEntity"/> of <paramref name="id"/> and blames the change on <see cref="User"/> with id <paramref name="modifierId"/>
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="modifierId"></param>
+    /// <returns></returns>
+    Task<int?> DeleteAsync(int id, int modifierId);
 }

@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using API.Entities.Interfaces;
 using API.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +7,7 @@ namespace API.Entities;
 
 [Table("matches")]
 [Index("MatchId", Name = "osumatches_matchid", IsUnique = true)]
-public class Match : MatchEntityBase
+public class Match : MatchEntityBase, IEntityBase
 {
     [Column("created", TypeName = "timestamp with time zone")]
     public DateTime Created { get; set; }

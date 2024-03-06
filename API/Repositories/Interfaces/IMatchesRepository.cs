@@ -26,7 +26,6 @@ public interface IMatchesRepository : IRepository<Match>
     Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime);
     Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime);
     Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime);
-    Task<Match?> GetNoTrackingAsync(int id);
     Task UpdateAsApiProcessed(Match match);
     Task UpdateAsAutoChecked(Match match);
     Task SetRequireAutoCheckAsync(bool invalidOnly = true);
