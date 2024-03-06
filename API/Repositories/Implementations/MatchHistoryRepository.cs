@@ -5,7 +5,7 @@ using AutoMapper;
 
 namespace API.Repositories.Implementations;
 
-public class MatchHistoryRepository : RepositoryBase<MatchHistory>, IMatchHistoryRepository
+public class MatchHistoryRepository : RepositoryBase<MatchHistory>, IHistoryRepository<MatchHistory, Match>
 {
     private readonly IMapper _mapper;
 

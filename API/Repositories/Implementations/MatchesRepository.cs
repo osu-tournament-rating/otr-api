@@ -12,7 +12,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 {
     private readonly OtrContext _context;
     private readonly IMatchDuplicateRepository _matchDuplicateRepository;
-    private readonly IMatchHistoryRepository _matchHistoryRepository;
+    private readonly IHistoryRepository<MatchHistory, Match> _matchHistoryRepository;
     private readonly ILogger<MatchesRepository> _logger;
     private readonly IMapper _mapper;
 
@@ -21,7 +21,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
         IMapper mapper,
         OtrContext context,
         IMatchDuplicateRepository matchDuplicateRepository,
-        IMatchHistoryRepository matchHistoryRepository
+        IHistoryRepository<MatchHistory, Match> matchHistoryRepository
     )
         : base(context)
     {
