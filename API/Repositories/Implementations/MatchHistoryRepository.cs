@@ -9,7 +9,8 @@ public class MatchHistoryRepository : RepositoryBase<MatchHistory>, IMatchHistor
 {
     private readonly IMapper _mapper;
 
-    public MatchHistoryRepository(OtrContext context ,IMapper mapper) : base(context)
+    public MatchHistoryRepository(OtrContext context, IMapper mapper)
+        : base(context)
     {
         _mapper = mapper;
     }

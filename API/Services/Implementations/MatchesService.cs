@@ -87,24 +87,13 @@ public class MatchesService : IMatchesService
         {
             MatchId = id,
             VerificationStatus = (int)verificationStatus,
-            SubmitterUserId = tournamentWebSubmissionDto.SubmitterId,
             NeedsAutoCheck = true,
             IsApiProcessed = false,
             VerificationSource = verifier,
             VerifierUserId = verified ? tournamentWebSubmissionDto.SubmitterId : null,
-            TournamentId = tournament.Id
+            TournamentId = tournament.Id,
+            SubmitterUserId = tournamentWebSubmissionDto.SubmitterId
         });
-		var newMatches = newMatchIds.Select(id => new Match
-		{
-			MatchId = id,
-			VerificationStatus = (int)verificationStatus,
-			NeedsAutoCheck = true,
-			IsApiProcessed = false,
-			VerificationSource = verifier,
-			VerifierUserId = verified ? tournamentWebSubmissionDto.SubmitterId : null,
-			TournamentId = tournament.Id,
-			SubmitterUserId = tournamentWebSubmissionDto.SubmitterId
-		});
 
         int? result = await _matchesRepository.BulkInsertAsync(newMatches);
         if (result > 0)

@@ -176,29 +176,29 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
             throw new Exception("Tournament does not exist, this method assumes the tournament exists.");
         }
 
-		existing.Abbreviation = wrapper.Abbreviation;
-		existing.ForumUrl = wrapper.ForumPost;
-		existing.Mode = wrapper.Mode;
-		existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
-		existing.TeamSize = wrapper.TeamSize;
-		existing.SubmitterUserId = wrapper.SubmitterId;
+        existing.Abbreviation = wrapper.Abbreviation;
+        existing.ForumUrl = wrapper.ForumPost;
+        existing.Mode = wrapper.Mode;
+        existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
+        existing.TeamSize = wrapper.TeamSize;
+        existing.SubmitterUserId = wrapper.SubmitterId;
 
         await UpdateAsync(existing);
         return existing;
     }
 
-	private async Task<Tournament> CreateFromWrapperAsync(TournamentWebSubmissionDTO wrapper)
-	{
-		var tournament = new Tournament
-		{
-			Name = wrapper.TournamentName,
-			Abbreviation = wrapper.Abbreviation,
-			ForumUrl = wrapper.ForumPost,
-			Mode = wrapper.Mode,
-			RankRangeLowerBound = wrapper.RankRangeLowerBound,
-			TeamSize = wrapper.TeamSize,
-			SubmitterUserId = wrapper.SubmitterId,
-		};
+    private async Task<Tournament> CreateFromWrapperAsync(TournamentWebSubmissionDTO wrapper)
+    {
+        var tournament = new Tournament
+        {
+            Name = wrapper.TournamentName,
+            Abbreviation = wrapper.Abbreviation,
+            ForumUrl = wrapper.ForumPost,
+            Mode = wrapper.Mode,
+            RankRangeLowerBound = wrapper.RankRangeLowerBound,
+            TeamSize = wrapper.TeamSize,
+            SubmitterUserId = wrapper.SubmitterId,
+        };
 
         var result = await CreateAsync(tournament);
         if (result == null)

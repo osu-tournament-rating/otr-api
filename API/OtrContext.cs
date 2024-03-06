@@ -134,37 +134,58 @@ public partial class OtrContext : DbContext
 
             entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-			// These are nullable because a user's account could be deleted
+            // These are nullable because a user's account could be deleted
             entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
-            entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedMatches).HasForeignKey(e => e.SubmitterUserId).IsRequired(false);
+            entity
+                .HasOne(e => e.SubmittedBy)
+                .WithMany(u => u.SubmittedMatches)
+                .HasForeignKey(e => e.SubmitterUserId)
+                .IsRequired(false);
 
-            entity.HasOne(e => e.VerifiedBy).WithMany(u => u.VerifiedMatches).HasForeignKey(e => e.VerifierUserId).IsRequired(false);
-			entity.HasMany(e => e.Games).WithOne(g => g.Match).OnDelete(DeleteBehavior.Cascade);
-			entity.HasOne(e => e.Tournament).WithMany(t => t.Matches).IsRequired().OnDelete(DeleteBehavior.Cascade);
-			entity.HasMany(e => e.Stats).WithOne(s => s.Match).HasForeignKey(e => e.MatchId).IsRequired().OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne(e => e.VerifiedBy)
+                .WithMany(u => u.VerifiedMatches)
+                .HasForeignKey(e => e.VerifierUserId)
+                .IsRequired(false);
+            entity.HasMany(e => e.Games).WithOne(g => g.Match).OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasOne(e => e.Tournament)
+                .WithMany(t => t.Matches)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasMany(e => e.Stats)
+                .WithOne(s => s.Match)
+                .HasForeignKey(e => e.MatchId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(x => x.MatchId);
         });
 
-		modelBuilder.Entity<MatchHistory>(entity =>
-		{
-			entity.HasKey(e => e.Id).HasName("matches_hist_pk");
+        modelBuilder.Entity<MatchHistory>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("matches_hist_pk");
             entity.Property(e => e.Id).UseIdentityColumn();
 
             // Set nullable and no action on delete because we want to keep the records if a match is deleted
             entity.Property(e => e.ReferenceId).IsRequired(false).HasDefaultValue(null);
-			entity.HasOne(e => e.ReferenceMatch).WithMany().HasForeignKey(e => e.ReferenceId).OnDelete(DeleteBehavior.SetNull);
+            entity
+                .HasOne(e => e.ReferenceMatch)
+                .WithMany()
+                .HasForeignKey(e => e.ReferenceId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Set nullable because the API itself performs many edits on matches records
             entity.Property(e => e.ModifierId).IsRequired(false).HasDefaultValue(null);
-			// If an edit / delete record is being created, it means the data stopped being available on history creation
-			entity.Property(e => e.HistoryEndTime).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            // If an edit / delete record is being created, it means the data stopped being available on history creation
+            entity.Property(e => e.HistoryEndTime).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
-		modelBuilder.Entity<MatchDuplicate>(entity =>
-		{
-			entity.HasKey(e => e.Id).HasName("match_duplicate_xref_pk");
-			entity.Property(e => e.Id).UseIdentityColumn();
+        modelBuilder.Entity<MatchDuplicate>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("match_duplicate_xref_pk");
+            entity.Property(e => e.Id).UseIdentityColumn();
 
             entity.HasIndex(e => e.SuspectedDuplicateOf);
             entity.HasIndex(e => e.OsuMatchId);
@@ -296,13 +317,17 @@ public partial class OtrContext : DbContext
                 .IsRequired();
 
             /**
-			 * These are nullable because a user's account could be deleted
-			 */
+             * These are nullable because a user's account could be deleted
+             */
             entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
-			entity.HasOne(e => e.SubmittedBy).WithMany(u => u.SubmittedTournaments).HasForeignKey(e => e.SubmitterUserId).IsRequired(false);
+            entity
+                .HasOne(e => e.SubmittedBy)
+                .WithMany(u => u.SubmittedTournaments)
+                .HasForeignKey(e => e.SubmitterUserId)
+                .IsRequired(false);
 
             entity.HasIndex(e => new { e.Name, e.Abbreviation }).IsUnique();
-		});
+        });
 
         modelBuilder.Entity<User>(entity =>
         {
