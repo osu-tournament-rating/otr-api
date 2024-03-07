@@ -18,7 +18,7 @@ public static class SeededPlayerMatchStats
             AveragePlacement = 5,
             GamesWon = 2,
             GamesLost = 0,
-            TeammateIds = new[] { 194, 1421, 11217 },
-            OpponentIds = new[] { 1046, 5482, 6070, 11067, 11068 },
+            TeammateIds = [194, 1421, 11217],
+            OpponentIds = [1046, 5482, 6070, 11067, 11068],
         };
 }

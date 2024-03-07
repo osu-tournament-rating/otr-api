@@ -5,7 +5,7 @@ namespace API.Osu;
 public static class LobbyNameChecker
 {
     // List of regex patterns for lobby names
-    private static readonly List<string> patterns = new() { @"^[^\n\r]*(\(.+\)\s*vs\.?\s*\(.+\)).*$", };
+    private static readonly List<string> patterns = [@"^[^\n\r]*(\(.+\)\s*vs\.?\s*\(.+\)).*$",];
 
     public static bool IsNameValid(string name, string abbreviation)
     {

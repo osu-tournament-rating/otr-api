@@ -5,19 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class RatingAdjustmentsRepository : RepositoryBase<RatingAdjustment>, IRatingAdjustmentsRepository
+public class RatingAdjustmentsRepository(OtrContext context) : RepositoryBase<RatingAdjustment>(context), IRatingAdjustmentsRepository
 {
-    private readonly OtrContext _context;
-
-    public RatingAdjustmentsRepository(OtrContext context)
-        : base(context)
-    {
-        _context = context;
-    }
+    private readonly OtrContext _context = context;
 
     public async Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody)
     {
-        foreach (var item in postBody)
+        foreach (RatingAdjustmentDTO item in postBody)
         {
             var adjustment = new RatingAdjustment
             {

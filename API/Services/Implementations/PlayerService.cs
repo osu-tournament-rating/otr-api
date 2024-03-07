@@ -6,16 +6,10 @@ using AutoMapper;
 
 namespace API.Services.Implementations;
 
-public class PlayerService : IPlayerService
+public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) : IPlayerService
 {
-    private readonly IMapper _mapper;
-    private readonly IPlayerRepository _playerRepository;
-
-    public PlayerService(IPlayerRepository playerRepository, IMapper mapper)
-    {
-        _playerRepository = playerRepository;
-        _mapper = mapper;
-    }
+    private readonly IMapper _mapper = mapper;
+    private readonly IPlayerRepository _playerRepository = playerRepository;
 
     public async Task<IEnumerable<PlayerDTO>> GetAllAsync() =>
         _mapper.Map<IEnumerable<PlayerDTO>>(await _playerRepository.GetAsync());

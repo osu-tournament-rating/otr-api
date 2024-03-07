@@ -6,17 +6,21 @@ using Newtonsoft.Json;
 
 namespace API.BackgroundWorkers;
 
-public class OsuTrackApiWorker : BackgroundService
+public class OsuTrackApiWorker(
+    ILogger<OsuTrackApiWorker> logger,
+    IServiceProvider serviceProvider,
+    IConfiguration configuration
+    ) : BackgroundService
 {
     private const string URL_BASE = "https://osutrack-api.ameo.dev";
     private const int UPDATE_INTERVAL_MINUTES = 1; // Every minute, check if this call needs to be made.
     private const int API_RATELIMIT = 200; // 200 requests per minute.
-    private readonly ILogger<OsuTrackApiWorker> _logger;
+    private readonly ILogger<OsuTrackApiWorker> _logger = logger;
     private readonly SemaphoreSlim _semaphore = new(1);
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
     private DateTime _ratelimitReset = DateTime.UtcNow;
     private int _ratelimitTracker;
-    private readonly bool _allowDataFetching;
+    private readonly bool _allowDataFetching = configuration.GetValue<bool>("Osu:AutoUpdateUsers");
     private readonly OsuEnums.Mode[] _modes =
     [
         OsuEnums.Mode.Standard,
@@ -24,17 +28,6 @@ public class OsuTrackApiWorker : BackgroundService
         OsuEnums.Mode.Catch,
         OsuEnums.Mode.Mania
     ];
-
-    public OsuTrackApiWorker(
-        ILogger<OsuTrackApiWorker> logger,
-        IServiceProvider serviceProvider,
-        IConfiguration configuration
-    )
-    {
-        _logger = logger;
-        _serviceProvider = serviceProvider;
-        _allowDataFetching = configuration.GetValue<bool>("Osu:AutoUpdateUsers");
-    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -57,15 +50,15 @@ public class OsuTrackApiWorker : BackgroundService
             try
             {
                 await _semaphore.WaitAsync(stoppingToken);
-                using (var scope = _serviceProvider.CreateScope())
+                using (IServiceScope scope = _serviceProvider.CreateScope())
                 {
-                    var playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
-                    var ratingStatsRepository =
+                    IPlayerRepository playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+                    IMatchRatingStatsRepository ratingStatsRepository =
                         scope.ServiceProvider.GetRequiredService<IMatchRatingStatsRepository>();
 
                     var playersToUpdate = (await playerService.GetPlayersMissingRankAsync()).ToList();
 
-                    if (!playersToUpdate.Any())
+                    if (playersToUpdate.Count == 0)
                     {
                         await Task.Delay(UPDATE_INTERVAL_MINUTES * 60 * 1000, stoppingToken);
                         continue;
@@ -75,7 +68,7 @@ public class OsuTrackApiWorker : BackgroundService
                         "Identified {PlayerCount} players to update earliest ranks for",
                         playersToUpdate.Count
                     );
-                    foreach (var player in playersToUpdate)
+                    foreach (Player? player in playersToUpdate)
                     {
                         // If the player doesn't have any history, we need to set their earliest mode rank to what we have now,
                         // then save what we end up with after we process all the modes.
@@ -117,9 +110,9 @@ public class OsuTrackApiWorker : BackgroundService
         HttpClient client
     )
     {
-        foreach (var mode in _modes)
+        foreach (OsuEnums.Mode mode in _modes)
         {
-            var oldestStatDate = await ratingStatsRepository.GetOldestForPlayerAsync(player.Id, (int)mode);
+            DateTime? oldestStatDate = await ratingStatsRepository.GetOldestForPlayerAsync(player.Id, (int)mode);
 
             if (!oldestStatDate.HasValue)
             {
@@ -148,14 +141,14 @@ public class OsuTrackApiWorker : BackgroundService
 
             try
             {
-                var stats = JsonConvert.DeserializeObject<OsuTrackHistoryStats[]>(responseText);
+                OsuTrackHistoryStats[]? stats = JsonConvert.DeserializeObject<OsuTrackHistoryStats[]>(responseText);
 
                 if (stats == null)
                 {
                     continue;
                 }
 
-                var relevant = stats[0]; // The response is ordered by date.
+                OsuTrackHistoryStats relevant = stats[0]; // The response is ordered by date.
                 switch (mode)
                 {
                     case OsuEnums.Mode.Standard:
@@ -205,7 +198,7 @@ public class OsuTrackApiWorker : BackgroundService
     )
     {
         string url = FormedUrl(player.OsuId, mode, oldestStatDate, oldestStatDate.AddYears(1));
-        var response = await client.GetAsync(url, stoppingToken);
+        HttpResponseMessage response = await client.GetAsync(url, stoppingToken);
         _ratelimitTracker++;
 
         if (!response.IsSuccessStatusCode)
@@ -263,7 +256,7 @@ public class OsuTrackApiWorker : BackgroundService
         return _ratelimitTracker >= API_RATELIMIT;
     }
 
-    private string FormedUrl(long osuPlayerId, OsuEnums.Mode mode, DateTime from, DateTime? to = null) =>
+    private static string FormedUrl(long osuPlayerId, OsuEnums.Mode mode, DateTime from, DateTime? to = null) =>
         new StringBuilder(URL_BASE)
             .Append("/stats_history")
             .Append($"?user={osuPlayerId}")

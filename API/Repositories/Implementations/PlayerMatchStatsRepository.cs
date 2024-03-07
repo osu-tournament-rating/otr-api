@@ -7,14 +7,9 @@ using Npgsql;
 
 namespace API.Repositories.Implementations;
 
-public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
+public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsRepository
 {
-    private readonly OtrContext _context;
-
-    public PlayerMatchStatsRepository(OtrContext context)
-    {
-        _context = context;
-    }
+    private readonly OtrContext _context = context;
 
     public async Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(
         int playerId,
@@ -77,7 +72,7 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
         DateTime dateMax
     )
     {
-        using (var command = _context.Database.GetDbConnection().CreateCommand())
+        using (System.Data.Common.DbCommand command = _context.Database.GetDbConnection().CreateCommand())
         {
             const string sql = """
                 -- Potential results:
@@ -160,7 +155,7 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 
             await _context.Database.OpenConnectionAsync();
 
-            using (var result = await command.ExecuteReaderAsync())
+            using (System.Data.Common.DbDataReader result = await command.ExecuteReaderAsync())
             {
                 var pms = new PlayerModStatsDTO();
                 while (await result.ReadAsync())

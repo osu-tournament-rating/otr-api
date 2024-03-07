@@ -16,7 +16,7 @@ public class MatchAutomationChecks_Warmups
     [Fact]
     public void Ensure_GameFailure_BadTeamSize()
     {
-        var game = _dbMatch.Games.First();
+        Game game = _dbMatch.Games.First();
         Assert.False(GameAutomationChecks.PassesTeamSizeCheck(game));
     }
 
@@ -33,15 +33,17 @@ public class MatchAutomationChecks_Warmups
             TeamSize = 3
         };
 
-        var match = new Match();
-        match.Tournament = tournament;
-        match.MatchId = matchData.OsuApiMatch.MatchId;
-        match.Name = matchData.OsuApiMatch.Name;
-        match.StartTime = matchData.OsuApiMatch.StartTime;
-        match.EndTime = matchData.OsuApiMatch.EndTime;
-        match.Games = new List<Game>();
+        var match = new Match
+        {
+            Tournament = tournament,
+            MatchId = matchData.OsuApiMatch.MatchId,
+            Name = matchData.OsuApiMatch.Name,
+            StartTime = matchData.OsuApiMatch.StartTime,
+            EndTime = matchData.OsuApiMatch.EndTime,
+            Games = new List<Game>()
+        };
 
-        foreach (var game in matchData.Games)
+        foreach (OsuApiGame game in matchData.Games)
         {
             var toAdd = new Game
             {
@@ -50,7 +52,7 @@ public class MatchAutomationChecks_Warmups
                 MatchScores = new List<MatchScore>()
             };
 
-            foreach (var score in matchData.Games.SelectMany(x => x.Scores))
+            foreach (OsuApiScore? score in matchData.Games.SelectMany(x => x.Scores))
             {
                 toAdd.MatchScores.Add(
                     new MatchScore

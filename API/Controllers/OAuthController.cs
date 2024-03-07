@@ -10,19 +10,14 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [AllowAnonymous]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class OAuthController : Controller
+public class OAuthController(IOAuthHandler oAuthHandler) : Controller
 {
-    private readonly IOAuthHandler _oAuthHandler;
-
-    public OAuthController(IOAuthHandler oAuthHandler)
-    {
-        _oAuthHandler = oAuthHandler;
-    }
+    private readonly IOAuthHandler _oAuthHandler = oAuthHandler;
 
     [HttpPost("authorize")]
     public async Task<IActionResult> AuthorizeAsync([FromQuery] string code)
     {
-        var result = await _oAuthHandler.AuthorizeAsync(code);
+        DTOs.OAuthResponseDTO? result = await _oAuthHandler.AuthorizeAsync(code);
 
         if (result == null)
         {
@@ -35,7 +30,7 @@ public class OAuthController : Controller
     [HttpPost("token")]
     public async Task<IActionResult> AuthorizeAsync([FromQuery] int clientId, [FromQuery] string clientSecret)
     {
-        var authorizationResponse = await _oAuthHandler.AuthorizeAsync(clientId, clientSecret);
+        DTOs.OAuthResponseDTO? authorizationResponse = await _oAuthHandler.AuthorizeAsync(clientId, clientSecret);
 
         if (authorizationResponse == null)
         {
@@ -49,14 +44,14 @@ public class OAuthController : Controller
     [Authorize(Roles = "user")]
     public async Task<IActionResult> CreateClientAsync()
     {
-        var userId = HttpContext.AuthorizedUserIdentity();
+        int? userId = HttpContext.AuthorizedUserIdentity();
 
         if (!userId.HasValue)
         {
             return Unauthorized();
         }
 
-        var result = await _oAuthHandler.CreateClientAsync(userId!.Value);
+        DTOs.OAuthClientDTO result = await _oAuthHandler.CreateClientAsync(userId!.Value);
 
         if (result == null)
         {
@@ -69,7 +64,7 @@ public class OAuthController : Controller
     [HttpPost("refresh")]
     public async Task<IActionResult> RefreshAsync([FromQuery] string refreshToken)
     {
-        var result = await _oAuthHandler.RefreshAsync(refreshToken);
+        DTOs.OAuthResponseDTO? result = await _oAuthHandler.RefreshAsync(refreshToken);
 
         if (result == null)
         {

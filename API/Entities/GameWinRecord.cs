@@ -17,10 +17,10 @@ public sealed class GameWinRecord
     public int GameId { get; set; }
 
     [Column("winners")]
-    public int[] Winners { get; set; } = Array.Empty<int>();
+    public int[] Winners { get; set; } = [];
 
     [Column("losers")]
-    public int[] Losers { get; set; } = Array.Empty<int>();
+    public int[] Losers { get; set; } = [];
 
     [Column("winner_team")]
     public int WinnerTeam { get; set; }

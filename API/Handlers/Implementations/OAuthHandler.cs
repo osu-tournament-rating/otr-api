@@ -59,24 +59,24 @@ public class OAuthHandler : IOAuthHandler
             return null;
         }
 
-        var osuUser = await AuthorizeOsuUserAsync(osuAuthCode);
-        var player = await _playerRepository.GetOrCreateAsync(osuUser.Id);
-        var user = await AuthenticateUserAsync(player.Id);
+        IGlobalUser osuUser = await AuthorizeOsuUserAsync(osuAuthCode);
+        Player player = await _playerRepository.GetOrCreateAsync(osuUser.Id);
+        User user = await AuthenticateUserAsync(player.Id);
 
         // Because this is a user, we need to also encode a user permission.
         // This is an alternative to storing it in a database (meaning,
         // no redundant "user" role for users).
-        user.Scopes = user.Scopes.Append("user").ToArray();
+        user.Scopes = [.. user.Scopes, "user"];
 
         // Because this user is logging in with osu!, we can
         // issue a new refresh token.
-        var accessToken = GenerateAccessToken(
+        string accessToken = GenerateAccessToken(
             user.Id.ToString(),
             _jwtAudience,
             user.Scopes,
             ACCESS_DURATION_SECONDS
         );
-        var refreshToken = GenerateRefreshToken(user.Id.ToString(), _jwtAudience, "user");
+        string refreshToken = GenerateRefreshToken(user.Id.ToString(), _jwtAudience, "user");
 
         _logger.LogDebug(
             "Authorized user with id {Id}, access expires in {seconds}",
@@ -100,7 +100,7 @@ public class OAuthHandler : IOAuthHandler
             return null;
         }
 
-        var client = await _clientService.GetAsync(clientId);
+        OAuthClientDTO? client = await _clientService.GetAsync(clientId);
         if (client == null)
         {
             // Very unlikely, but possible
@@ -108,7 +108,7 @@ public class OAuthHandler : IOAuthHandler
         }
 
         // Add the 'client' scope to the scopes array
-        client.Scopes = client.Scopes.Append("client").ToArray();
+        client.Scopes = [.. client.Scopes, "client"];
 
         return new OAuthResponseDTO
         {
@@ -125,14 +125,14 @@ public class OAuthHandler : IOAuthHandler
 
     public async Task<OAuthResponseDTO?> RefreshAsync(string refreshToken)
     {
-        var decryptedRefresh = ReadToken(refreshToken);
+        JwtSecurityToken decryptedRefresh = ReadToken(refreshToken);
 
         if (decryptedRefresh.ValidTo < DateTime.UtcNow)
         {
             return null;
         }
 
-        var refreshIssuer = decryptedRefresh.Issuer;
+        string refreshIssuer = decryptedRefresh.Issuer;
 
         // The ids of the access token and refresh token align. Validate the user's information
         if (!int.TryParse(refreshIssuer, out int issuerId))
@@ -150,14 +150,14 @@ public class OAuthHandler : IOAuthHandler
 
         // Get the role
         string accessToken;
-        var issuerRole = decryptedRefresh.Claims.First(claim => claim.Type == "role").Value;
+        string issuerRole = decryptedRefresh.Claims.First(claim => claim.Type == "role").Value;
 
         // If the issuer is a client, validate the client id.
         // If it's a user, validate the user id.
         switch (issuerRole)
         {
             case "client":
-                var client = await _clientService.GetAsync(issuerId);
+                OAuthClientDTO? client = await _clientService.GetAsync(issuerId);
                 if (client == null)
                 {
                     _logger.LogWarning("Decrypted refresh token issuer is not a valid client");
@@ -171,7 +171,7 @@ public class OAuthHandler : IOAuthHandler
                 );
                 break;
             case "user":
-                var user = await _userRepository.GetAsync(issuerId);
+                User? user = await _userRepository.GetAsync(issuerId);
                 if (user == null)
                 {
                     _logger.LogWarning("Decrypted refresh token issuer is not a valid user");
@@ -200,7 +200,7 @@ public class OAuthHandler : IOAuthHandler
 
     public async Task<OAuthClientDTO> CreateClientAsync(int userId, params string[] scopes)
     {
-        var secret = GenerateClientSecret();
+        string secret = GenerateClientSecret();
 
         while (await _clientService.SecretInUse(secret))
         {
@@ -225,7 +225,7 @@ public class OAuthHandler : IOAuthHandler
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var claims = roles.Select(role => new Claim("role", role));
+        IEnumerable<Claim> claims = roles.Select(role => new Claim("role", role));
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
@@ -237,7 +237,7 @@ public class OAuthHandler : IOAuthHandler
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
+        SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
 
@@ -281,7 +281,7 @@ public class OAuthHandler : IOAuthHandler
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
+        SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
 
@@ -312,7 +312,7 @@ public class OAuthHandler : IOAuthHandler
     private async Task<User> AuthenticateUserAsync(int playerId)
     {
         // Double db call, kind of inefficient
-        var user = await _userRepository.GetOrCreateAsync(playerId);
+        User user = await _userRepository.GetOrCreateAsync(playerId);
 
         user.LastLogin = DateTime.UtcNow;
         user.Updated = DateTime.UtcNow;

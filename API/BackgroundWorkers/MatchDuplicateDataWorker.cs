@@ -6,20 +6,14 @@ namespace API.BackgroundWorkers;
 /// <summary>
 ///  Scans and fixes any match duplicates.
 /// </summary>
-public class MatchDuplicateDataWorker : BackgroundService
+public class MatchDuplicateDataWorker(
+    ILogger<MatchDuplicateDataWorker> logger,
+    IServiceProvider serviceProvider
+    ) : BackgroundService
 {
-    private readonly ILogger<MatchDuplicateDataWorker> _logger;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<MatchDuplicateDataWorker> _logger = logger;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly TimeSpan _interval = TimeSpan.FromMinutes(10);
-
-    public MatchDuplicateDataWorker(
-        ILogger<MatchDuplicateDataWorker> logger,
-        IServiceProvider serviceProvider
-    )
-    {
-        _logger = logger;
-        _serviceProvider = serviceProvider;
-    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) =>
         await BackgroundTask(stoppingToken);
@@ -30,9 +24,9 @@ public class MatchDuplicateDataWorker : BackgroundService
         // Any duplicates found will be marked for manual review
         while (!stoppingToken.IsCancellationRequested)
         {
-            using var scope = _serviceProvider.CreateScope();
-            var matchesRepository = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
-            var duplicateRepository = scope.ServiceProvider.GetRequiredService<IMatchDuplicateRepository>();
+            using IServiceScope scope = _serviceProvider.CreateScope();
+            IMatchesRepository matchesRepository = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
+            IMatchDuplicateRepository duplicateRepository = scope.ServiceProvider.GetRequiredService<IMatchDuplicateRepository>();
             var duplicateGroups = (await matchesRepository.GetDuplicateGroupsAsync()).ToList();
             int created = 0;
 
@@ -40,12 +34,12 @@ public class MatchDuplicateDataWorker : BackgroundService
             {
                 _logger.LogInformation("Identified {Count} duplicate groups", duplicateGroups.Count);
 
-                foreach (var duplicateGroup in duplicateGroups)
+                foreach (IList<Match>? duplicateGroup in duplicateGroups)
                 {
-                    var root = duplicateGroup.OrderBy(x => x.StartTime).First();
+                    Match root = duplicateGroup.OrderBy(x => x.StartTime).First();
                     duplicateGroup.Remove(root);
 
-                    foreach (var remainingDuplicate in duplicateGroup)
+                    foreach (Match? remainingDuplicate in duplicateGroup)
                     {
                         var duplicate = new MatchDuplicate
                         {

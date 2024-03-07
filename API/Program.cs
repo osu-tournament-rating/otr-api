@@ -24,7 +24,7 @@ using OsuSharp.Extensions;
 using Serilog;
 using Serilog.Events;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Configurations
 builder
@@ -170,7 +170,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddOsuSharp(options =>
 {
-    var osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
+    OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
     options.Configuration = new OsuClientConfiguration
     {
         ClientId = osuConfiguration.ClientId,
@@ -197,7 +197,7 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Host.ConfigureOsuSharp(
     (ctx, options) =>
     {
-        var osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
+        OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
             OsuConfiguration.Position
         );
         options.Configuration = new OsuClientConfiguration
@@ -229,7 +229,7 @@ builder
         };
     });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Set switch for Npgsql
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -257,8 +257,8 @@ app.MapControllers();
 app.Logger.LogInformation("Running!");
 
 // Migrations
-using var scope = app.Services.CreateScope();
-var context = scope.ServiceProvider.GetRequiredService<OtrContext>();
+using IServiceScope scope = app.Services.CreateScope();
+OtrContext context = scope.ServiceProvider.GetRequiredService<OtrContext>();
 
 int migrationsCount = context.Database.GetPendingMigrations().Count();
 if (migrationsCount > 0)

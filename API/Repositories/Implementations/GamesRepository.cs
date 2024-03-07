@@ -3,11 +3,8 @@ using API.Repositories.Interfaces;
 
 namespace API.Repositories.Implementations;
 
-public class GamesRepository : RepositoryBase<Game>, IGamesRepository
+public class GamesRepository(OtrContext context) : RepositoryBase<Game>(context), IGamesRepository
 {
-    public GamesRepository(OtrContext context)
-        : base(context) { }
-
     public override async Task<int> UpdateAsync(Game game)
     {
         game.Updated = DateTime.UtcNow;

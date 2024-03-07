@@ -4,17 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class UserRepository : RepositoryBase<User>, IUserRepository
+public class UserRepository(ILogger<UserRepository> logger, OtrContext context) : RepositoryBase<User>(context), IUserRepository
 {
-    private readonly ILogger<UserRepository> _logger;
-    private readonly OtrContext _context;
-
-    public UserRepository(ILogger<UserRepository> logger, OtrContext context)
-        : base(context)
-    {
-        _logger = logger;
-        _context = context;
-    }
+    private readonly ILogger<UserRepository> _logger = logger;
+    private readonly OtrContext _context = context;
 
     public override async Task<User?> GetAsync(int id)
     {
@@ -31,10 +24,10 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
 
     public async Task<User?> GetOrCreateSystemUserAsync()
     {
-        var sysUser = await _context.Users.FirstOrDefaultAsync(u => u.Scopes.Contains("System"));
+        User? sysUser = await _context.Users.FirstOrDefaultAsync(u => u.Scopes.Contains("System"));
         if (sysUser == null)
         {
-            return await CreateAsync(new User { Scopes = new[] { "System" } });
+            return await CreateAsync(new User { Scopes = ["System"] });
         }
         return sysUser;
     }
@@ -57,7 +50,7 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
                 PlayerId = playerId,
                 Created = DateTime.UtcNow,
                 LastLogin = DateTime.UtcNow,
-                Scopes = Array.Empty<string>()
+                Scopes = []
             }
         );
     }

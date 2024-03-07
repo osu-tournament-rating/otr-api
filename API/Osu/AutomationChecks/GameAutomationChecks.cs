@@ -17,7 +17,7 @@ public static class GameAutomationChecks
 
     public static bool PassesTeamSizeCheck(Game game)
     {
-        var tournament = game.Match.Tournament;
+        Tournament tournament = game.Match.Tournament;
 
         int? teamSize = tournament.TeamSize;
         if (teamSize is < 1 or > 8)
@@ -129,7 +129,7 @@ public static class GameAutomationChecks
 
     public static bool PassesModeCheck(Game game)
     {
-        var tournament = game.Match.Tournament;
+        Tournament tournament = game.Match.Tournament;
         int gameMode = tournament.Mode;
 
         if (gameMode is < 0 or > 3)
@@ -183,7 +183,7 @@ public static class GameAutomationChecks
 
     public static bool PassesTeamTypeCheck(Game game)
     {
-        var teamType = game.TeamTypeEnum;
+        OsuEnums.TeamType teamType = game.TeamTypeEnum;
         if (teamType is OsuEnums.TeamType.TagTeamVs or OsuEnums.TeamType.TagCoop)
         {
             _logger.Information(
@@ -219,7 +219,7 @@ public static class GameAutomationChecks
 
     public static bool PassesScoreSanityCheck(Game game)
     {
-        if (!game.MatchScores.Any())
+        if (game.MatchScores.Count == 0)
         {
             _logger.Warning("Game {GameId} has no scores, can't verify", game.GameId);
             return false;

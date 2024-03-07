@@ -2,22 +2,18 @@ using System.ComponentModel;
 using System.Globalization;
 using API.DTOs;
 
-namespace API.ModelBinders;
-
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
+namespace API.ModelBinders;
 public class LeaderboardFilterModelBinder : IModelBinder
 {
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
-        if (bindingContext == null)
-        {
-            throw new ArgumentNullException(nameof(bindingContext));
-        }
+        ArgumentNullException.ThrowIfNull(bindingContext);
 
-        var values = bindingContext.ValueProvider;
+        IValueProvider values = bindingContext.ValueProvider;
 
         // Create an instance of the FilterDTO
         var filterDto = new LeaderboardFilterDTO
@@ -51,13 +47,13 @@ public class LeaderboardFilterModelBinder : IModelBinder
         // Helper function to retrieve values for the properties
         T? GetValue<T>(string key)
         {
-            var valueProviderResult = values.GetValue(key);
+            ValueProviderResult valueProviderResult = values.GetValue(key);
             if (
                 valueProviderResult != ValueProviderResult.None
                 && !string.IsNullOrEmpty(valueProviderResult.FirstValue)
             )
             {
-                var converter = TypeDescriptor.GetConverter(typeof(T));
+                TypeConverter converter = TypeDescriptor.GetConverter(typeof(T));
                 if (converter.CanConvertFrom(valueProviderResult.FirstValue.GetType()))
                 {
                     return (T?)

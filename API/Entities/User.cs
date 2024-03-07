@@ -23,7 +23,7 @@ public class User
     /// Comma-delimited list of scopes
     /// </summary>
     [Column("scopes")]
-    public string[] Scopes { get; set; } = Array.Empty<string>();
+    public string[] Scopes { get; set; } = [];
 
     [Column("updated", TypeName = "timestamp with time zone")]
     public DateTime? Updated { get; set; }
