@@ -13,7 +13,9 @@ public class LeaderboardFilterModelBinder : IModelBinder
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
         if (bindingContext == null)
+        {
             throw new ArgumentNullException(nameof(bindingContext));
+        }
 
         var values = bindingContext.ValueProvider;
 
