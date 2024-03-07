@@ -197,6 +197,7 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
             RankRangeLowerBound = wrapper.RankRangeLowerBound,
             TeamSize = wrapper.TeamSize
         };
+
         return await CreateAsync(tournament);
     }
 }
