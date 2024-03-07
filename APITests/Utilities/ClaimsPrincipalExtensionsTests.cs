@@ -42,4 +42,13 @@ public class ClaimsPrincipalExtensionsTests
 
         Assert.True(claims.IsAdmin());
     }
+
+    [Fact]
+    public void ClaimsPrincipal_IsUser()
+    {
+        var claims = new ClaimsPrincipal();
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, "user") }));
+
+        Assert.True(claims.IsUser());
+    }
 }
