@@ -74,7 +74,7 @@ public class ApiMatchRepository : IApiMatchRepository
 
             _logger.LogInformation(
                 "Saved new player: {PlayerId} (osuId: {OsuId}) from match {MatchId}",
-                player?.Id,
+                player.Id,
                 osuId,
                 apiMatch.OsuApiMatch.MatchId
             );
@@ -304,11 +304,6 @@ public class ApiMatchRepository : IApiMatchRepository
 
         var persisted = await _gamesRepository.CreateAsync(dbGame);
         _logger.LogDebug("Saved game {GameId}", dbGame.GameId);
-
-        if (persisted == null)
-        {
-            _logger.LogError("Failed to save game {GameId}!", dbGame.GameId);
-        }
 
         return persisted;
     }

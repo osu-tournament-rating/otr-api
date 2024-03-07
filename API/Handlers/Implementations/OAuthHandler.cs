@@ -198,7 +198,7 @@ public class OAuthHandler : IOAuthHandler
         };
     }
 
-    public async Task<OAuthClientDTO?> CreateClientAsync(int userId, params string[] scopes)
+    public async Task<OAuthClientDTO> CreateClientAsync(int userId, params string[] scopes)
     {
         var secret = GenerateClientSecret();
 
