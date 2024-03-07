@@ -4,7 +4,7 @@ using API.Enums;
 
 namespace API.Repositories.Interfaces;
 
-public interface IMatchesRepository : IRepository<Match>
+public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
 {
     Task<Match> GetAsync(int id, bool filterInvalidMatches = true);
     Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered);
