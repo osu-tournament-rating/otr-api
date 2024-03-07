@@ -18,12 +18,7 @@ public static class HttpContextExtensions
 
     public static int? AuthorizedClientIdentity(this HttpContext context)
     {
-        if (!context.User.IsClient())
-        {
-            return null;
-        }
-
-        return ParseIdFromIssuer(context);
+        return !context.User.IsClient() ? null : ParseIdFromIssuer(context);
     }
 
     private static int? ParseIdFromIssuer(HttpContext context)
