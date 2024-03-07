@@ -23,10 +23,9 @@ jobs:
             - name: .NET Warnings & Code Style
               run: dotnet build -c Debug -warnaserror -p:EnforceCodeStyleInBuild=true
 
-            - name: CSharpier Formatting
+            - name: .NET Format
               run: |
-                dotnet tool restore
-                dotnet csharpier --check .
+                dotnet format --verify-no-changes
 
 
     
