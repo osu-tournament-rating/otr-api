@@ -25,7 +25,7 @@ jobs:
 
             - name: .NET Format
               run: |
-                dotnet format --verify-no-changes
+                dotnet format --severity info --verify-no-changes --exclude **/Migrations/*
 
 
     
