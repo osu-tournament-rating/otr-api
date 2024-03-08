@@ -25,29 +25,17 @@ public class PlayersController(IPlayerService playerService) : Controller
         return Ok(players);
     }
 
-    [HttpGet("{osuId:long}/info")]
-    public async Task<ActionResult<PlayerInfoDTO?>> GetByUserIdAsync(long osuId)
+    [HttpGet("{key}/info")]
+    public async Task<ActionResult<PlayerInfoDTO?>> GetAsync(string key)
     {
-        PlayerInfoDTO? info = await _playerService.GetAsync(osuId);
+        var info = await _playerService.GetVersatileAsync(key);
 
         if (info == null)
         {
-            return NotFound($"User with osuid {osuId} does not exist");
+            return NotFound($"User with key {key} does not exist");
         }
 
         return info;
-    }
-
-    [HttpGet("{username}/info")]
-    public async Task<ActionResult<PlayerInfoDTO?>> GetByUserIdAsync(string username)
-    {
-        PlayerInfoDTO? player = await _playerService.GetAsync(username);
-        if (player != null)
-        {
-            return Ok(player);
-        }
-
-        return NotFound($"User with username {username} does not exist");
     }
 
     [HttpGet("ranks/all")]
