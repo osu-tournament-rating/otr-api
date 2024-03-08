@@ -1,3 +1,4 @@
+using API.Entities;
 using API.Osu;
 using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
@@ -49,7 +50,7 @@ public class OsuPlayerDataWorker(
                     continue;
                 }
 
-                foreach (Entities.Player? player in playersToUpdate)
+                foreach (Player? player in playersToUpdate)
                 {
                     // Fetch ranks for all 4 game modes and update accordingly.
                     foreach (OsuEnums.Mode gameModeEnum in Enum.GetValues<OsuEnums.Mode>())

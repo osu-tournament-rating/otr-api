@@ -1,4 +1,5 @@
 using System.Data;
+using System.Data.Common;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
@@ -80,7 +81,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     {
         string order = bestPerformances ? "DESC" : "ASC";
 
-        using (System.Data.Common.DbCommand command = _context.Database.GetDbConnection().CreateCommand())
+        using (DbCommand command = _context.Database.GetDbConnection().CreateCommand())
         {
             string sql = $"""
                 SELECT t.id as TournamentId, t.name as TournamentName, AVG(mrs.match_cost) as MatchCost, t.abbreviation AS TournamentAcronym
@@ -108,7 +109,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
             await _context.Database.OpenConnectionAsync();
 
-            using (System.Data.Common.DbDataReader result = await command.ExecuteReaderAsync())
+            using (DbDataReader result = await command.ExecuteReaderAsync())
             {
                 var results = new List<PlayerTournamentMatchCostDTO>();
                 while (await result.ReadAsync())
