@@ -30,7 +30,7 @@ public class OAuthClientService : IOAuthClientService
         };
     }
 
-    public async Task<OAuthClientDTO?> CreateAsync(int userId, string secret, params string[] scopes)
+    public async Task<OAuthClientDTO> CreateAsync(int userId, string secret, params string[] scopes)
     {
         var client = new OAuthClient
         {
@@ -40,11 +40,6 @@ public class OAuthClientService : IOAuthClientService
         };
 
         var newClient = await _repository.CreateAsync(client);
-
-        if (newClient == null)
-        {
-            return null;
-        }
 
         return new OAuthClientDTO
         {

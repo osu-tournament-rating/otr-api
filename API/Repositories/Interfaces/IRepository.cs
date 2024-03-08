@@ -8,7 +8,7 @@ public interface IRepository<T>
     /// <summary>
     ///  Adds a new entity to the database. Returns the added entity.
     /// </summary>
-    Task<T?> CreateAsync(T entity);
+    Task<T> CreateAsync(T entity);
 
     /// <summary>
     ///  Gets an entity from the database by its primary key. Returns null if not found.
