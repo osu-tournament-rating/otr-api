@@ -1,19 +1,21 @@
-using API.DTOs;
 using System.ComponentModel;
 using System.Globalization;
+using API.DTOs;
 
 namespace API.ModelBinders;
 
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 public class LeaderboardFilterModelBinder : IModelBinder
 {
     public Task BindModelAsync(ModelBindingContext bindingContext)
     {
         if (bindingContext == null)
+        {
             throw new ArgumentNullException(nameof(bindingContext));
+        }
 
         var values = bindingContext.ValueProvider;
 
@@ -50,12 +52,20 @@ public class LeaderboardFilterModelBinder : IModelBinder
         T? GetValue<T>(string key)
         {
             var valueProviderResult = values.GetValue(key);
-            if (valueProviderResult != ValueProviderResult.None && !string.IsNullOrEmpty(valueProviderResult.FirstValue))
+            if (
+                valueProviderResult != ValueProviderResult.None
+                && !string.IsNullOrEmpty(valueProviderResult.FirstValue)
+            )
             {
                 var converter = TypeDescriptor.GetConverter(typeof(T));
                 if (converter.CanConvertFrom(valueProviderResult.FirstValue.GetType()))
                 {
-                    return (T?)converter.ConvertFromString(null, CultureInfo.InvariantCulture, valueProviderResult.FirstValue);
+                    return (T?)
+                        converter.ConvertFromString(
+                            null,
+                            CultureInfo.InvariantCulture,
+                            valueProviderResult.FirstValue
+                        );
                 }
             }
             return default;

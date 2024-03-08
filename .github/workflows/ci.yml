@@ -20,8 +20,14 @@ jobs:
             - name: Restore Dependencies
               run: dotnet restore
 
-            - name: .NET Code Style
+            - name: .NET Warnings & Code Style
               run: dotnet build -c Debug -warnaserror -p:EnforceCodeStyleInBuild=true
+
+            - name: .NET Format
+              run: |
+                dotnet format --severity info --exclude **/Migrations/* --verify-no-changes
+
+
     
     test:
       name: Test

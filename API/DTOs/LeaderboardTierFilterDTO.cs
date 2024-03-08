@@ -9,13 +9,13 @@ namespace API.DTOs;
 /// </summary>
 public class LeaderboardTierFilterDTO
 {
-	public bool? FilterBronze { get; set; }
-	public bool? FilterSilver { get; set; }
-	public bool? FilterGold { get; set; }
-	public bool? FilterPlatinum { get; set; }
-	public bool? FilterEmerald { get; set; }
-	public bool? FilterDiamond { get; set; }
-	public bool? FilterMaster { get; set; }
-	public bool? FilterGrandmaster { get; set; }
-	public bool? FilterEliteGrandmaster { get; set; }
+    public bool? FilterBronze { get; set; }
+    public bool? FilterSilver { get; set; }
+    public bool? FilterGold { get; set; }
+    public bool? FilterPlatinum { get; set; }
+    public bool? FilterEmerald { get; set; }
+    public bool? FilterDiamond { get; set; }
+    public bool? FilterMaster { get; set; }
+    public bool? FilterGrandmaster { get; set; }
+    public bool? FilterEliteGrandmaster { get; set; }
 }
