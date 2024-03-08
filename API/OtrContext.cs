@@ -180,6 +180,7 @@ public partial class OtrContext : DbContext
             entity.Property(e => e.ModifierId).IsRequired(false).HasDefaultValue(null);
             // If an edit / delete record is being created, it means the data stopped being available on history creation
             entity.Property(e => e.HistoryEndTime).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
         });
 
         modelBuilder.Entity<MatchDuplicate>(entity =>

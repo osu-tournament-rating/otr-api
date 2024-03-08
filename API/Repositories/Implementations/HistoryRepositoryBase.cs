@@ -10,7 +10,7 @@ public class HistoryRepositoryBase<TEntity, THistory>
     : RepositoryBase<TEntity>,
         IHistoryRepository<TEntity, THistory>
     where THistory : class, IHistoryEntity
-    where TEntity : class, IEntityBase
+    where TEntity : class, IEntity
 {
     private readonly OtrContext _context;
     private readonly IMapper _mapper;
@@ -25,7 +25,10 @@ public class HistoryRepositoryBase<TEntity, THistory>
     public override async Task<int> UpdateAsync(TEntity entity)
     {
         await CreateHistoryAsync(entity.Id, HistoryActionType.Update);
-        entity.Updated = DateTime.UtcNow;
+        if (entity is IUpdateableEntity updateableEntity)
+        {
+            updateableEntity.Updated = DateTime.UtcNow;
+        }
         return await base.UpdateAsync(entity);
     }
 
@@ -38,7 +41,10 @@ public class HistoryRepositoryBase<TEntity, THistory>
     public async Task<int> UpdateAsync(TEntity entity, int modifierId)
     {
         await CreateHistoryAsync(entity.Id, HistoryActionType.Update, modifierId);
-        entity.Updated = DateTime.UtcNow;
+        if (entity is IUpdateableEntity updateableEntity)
+        {
+            updateableEntity.Updated = DateTime.UtcNow;
+        }
         return await base.UpdateAsync(entity);
     }
 

@@ -7,7 +7,7 @@ namespace API.Entities;
 
 [Table("matches")]
 [Index("MatchId", Name = "osumatches_matchid", IsUnique = true)]
-public class Match : MatchEntityBase, IEntityBase
+public class Match : MatchEntityBase, IEntity, IUpdateableEntity
 {
     [Column("created", TypeName = "timestamp with time zone")]
     public DateTime Created { get; set; }

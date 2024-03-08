@@ -4,7 +4,7 @@ using API.Entities.Interfaces;
 namespace API.Repositories.Interfaces;
 
 public interface IHistoryRepository<TEntity, THistory> : IRepository<TEntity>
-    where TEntity : class, IEntityBase
+    where TEntity : class, IEntity
     where THistory : class, IHistoryEntity
 {
     /// <summary>
