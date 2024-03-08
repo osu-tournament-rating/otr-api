@@ -10,8 +10,8 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [EnableCors]
+[Authorize(Roles = "system")] // Internal access only at this time
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "Admin, System")]
 public class BeatmapsController : Controller
 {
     private readonly IBeatmapService _beatmapService;

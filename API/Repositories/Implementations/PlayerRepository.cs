@@ -26,7 +26,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
         return await base.UpdateAsync(player);
     }
 
-    public override async Task<Player?> CreateAsync(Player player)
+    public override async Task<Player> CreateAsync(Player player)
     {
         player.Created = DateTime.UtcNow;
         return await base.CreateAsync(player);
@@ -73,11 +73,10 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
             return await _context.Players.FirstAsync(x => x.OsuId == osuId);
         }
 
-        return await CreateAsync(new Player { OsuId = osuId })
-            ?? throw new Exception($"Critical failure: failed to create player with osu id {osuId}");
+        return await CreateAsync(new Player { OsuId = osuId });
     }
 
-    public async Task<Player?> GetAsync(long osuId, bool eagerLoad = false, int mode = 0, int offsetDays = -1)
+    public async Task<Player?> GetAsync(long osuId, bool eagerLoad, int mode = 0, int offsetDays = -1)
     {
         if (!eagerLoad)
         {

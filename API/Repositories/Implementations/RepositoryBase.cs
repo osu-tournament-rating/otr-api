@@ -13,9 +13,11 @@ public class RepositoryBase<T> : IRepository<T>
         _context = context;
     }
 
-    public virtual async Task<T?> CreateAsync(T entity)
+    public virtual async Task<T> CreateAsync(T entity)
     {
-        var created = (await _context.Set<T>().AddAsync(entity)).Entity;
+        T? created = (await _context.Set<T>().AddAsync(entity)).Entity;
+        if (created == null)
+            throw new Exception($"Failed to create {nameof(T)} entity");
         await _context.SaveChangesAsync();
 
         return created;

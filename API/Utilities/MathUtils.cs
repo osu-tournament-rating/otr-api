@@ -11,7 +11,10 @@ public static class MathUtils
     public static T? Median<T>(List<T?> values)
     {
         if (values.Count == 0)
+        {
             return default;
+        }
+
         values.Sort();
         return values[values.Count / 2];
     }

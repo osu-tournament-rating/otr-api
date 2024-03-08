@@ -34,17 +34,8 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
         var sysUser = await _context.Users.FirstOrDefaultAsync(u => u.Scopes.Contains("System"));
         if (sysUser == null)
         {
-            var created = await CreateAsync(new User { Scopes = new[] { "System" } });
-
-            if (created == null)
-            {
-                _logger.LogError("Failed to create system user");
-                return null;
-            }
-
-            return created;
+            return await CreateAsync(new User { Scopes = new[] { "System" } });
         }
-
         return sysUser;
     }
 
@@ -61,13 +52,13 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
         }
 
         return await CreateAsync(
-                new User
-                {
-                    PlayerId = playerId,
-                    Created = DateTime.UtcNow,
-                    LastLogin = DateTime.UtcNow,
-                    Scopes = Array.Empty<string>()
-                }
-            ) ?? throw new Exception("Critical error: User cannot be null after creation");
+            new User
+            {
+                PlayerId = playerId,
+                Created = DateTime.UtcNow,
+                LastLogin = DateTime.UtcNow,
+                Scopes = Array.Empty<string>()
+            }
+        );
     }
 }

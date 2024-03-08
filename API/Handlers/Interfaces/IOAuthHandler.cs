@@ -37,5 +37,5 @@ public interface IOAuthHandler
     /// <param name="userId">The id of the user who owns this client</param>
     /// <param name="scopes">The scopes this client has access to</param>
     /// <returns></returns>
-    Task<OAuthClientDTO?> CreateClientAsync(int userId, params string[] scopes);
+    Task<OAuthClientDTO> CreateClientAsync(int userId, params string[] scopes);
 }

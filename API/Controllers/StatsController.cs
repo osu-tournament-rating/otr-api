@@ -10,8 +10,8 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [EnableCors]
+[Authorize(Roles = "user")]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "Admin, System")]
 public class StatsController : Controller
 {
     private readonly IBaseStatsService _baseStatsService;
@@ -23,7 +23,6 @@ public class StatsController : Controller
         _baseStatsService = baseStatsService;
     }
 
-    [AllowAnonymous]
     [HttpGet("{playerId:int}")]
     public async Task<ActionResult<PlayerStatsDTO>> GetAsync(
         int playerId,
@@ -40,7 +39,6 @@ public class StatsController : Controller
             dateMax ?? DateTime.UtcNow
         );
 
-    [AllowAnonymous]
     [HttpGet("{username}")]
     public async Task<ActionResult<PlayerStatsDTO?>> GetAsync(
         string username,
@@ -57,13 +55,13 @@ public class StatsController : Controller
             dateMax ?? DateTime.UtcNow
         );
 
-    [AllowAnonymous]
     [HttpGet("histogram")]
     public async Task<ActionResult<IDictionary<int, int>>> GetRatingHistogramAsync(
         [FromQuery] int mode = 0
     ) => Ok(await _baseStatsService.GetHistogramAsync(mode));
 
     [HttpPost("ratingadjustments")]
+    [Authorize(Roles = "system")]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<RatingAdjustmentDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -71,6 +69,7 @@ public class StatsController : Controller
     }
 
     [HttpDelete("ratingadjustments")]
+    [Authorize(Roles = "system")]
     public async Task<IActionResult> TruncateAdjustmentsAsync()
     {
         await _playerStatsService.TruncateRatingAdjustmentsAsync();
@@ -78,6 +77,7 @@ public class StatsController : Controller
     }
 
     [HttpPost("matchstats")]
+    [Authorize(Roles = "system")]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerMatchStatsDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -85,6 +85,7 @@ public class StatsController : Controller
     }
 
     [HttpPost("ratingstats")]
+    [Authorize(Roles = "system")]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchRatingStatsDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -92,6 +93,7 @@ public class StatsController : Controller
     }
 
     [HttpPost("basestats")]
+    [Authorize(Roles = "system")]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<BaseStatsPostDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -99,6 +101,7 @@ public class StatsController : Controller
     }
 
     [HttpPost("gamewinrecords")]
+    [Authorize(Roles = "system")]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<GameWinRecordDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -106,6 +109,7 @@ public class StatsController : Controller
     }
 
     [HttpPost("matchwinrecords")]
+    [Authorize(Roles = "system")]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchWinRecordDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -113,6 +117,7 @@ public class StatsController : Controller
     }
 
     [HttpDelete]
+    [Authorize(Roles = "system")]
     public async Task<IActionResult> TruncateAsync()
     {
         await _playerStatsService.TruncateAsync();

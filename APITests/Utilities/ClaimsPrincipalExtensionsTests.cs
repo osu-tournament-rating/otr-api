@@ -18,7 +18,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_IsAdmin()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, "Admin") }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, "admin") }));
 
         Assert.True(claims.IsAdmin());
     }
@@ -27,7 +27,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_IsMatchVerifier()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, "MatchVerifier") }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, "verifier") }));
 
         Assert.True(claims.IsMatchVerifier());
         Assert.False(claims.IsAdmin());
@@ -38,18 +38,17 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_Admin_IsMatchVerifier()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, "Admin") }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, "admin") }));
 
         Assert.True(claims.IsAdmin());
     }
 
     [Fact]
-    public void ClaimsPrincipal_System_IsAdmin()
+    public void ClaimsPrincipal_IsUser()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, "System") }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, "user") }));
 
-        Assert.True(claims.IsAdmin());
-        Assert.True(claims.IsSystem());
+        Assert.True(claims.IsUser());
     }
 }
