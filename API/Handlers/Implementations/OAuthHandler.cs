@@ -225,7 +225,7 @@ public class OAuthHandler : IOAuthHandler
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var claims = roles.Select(role => new Claim("role", role));
+        var claims = roles.Select(role => new Claim(ClaimTypes.Role, role));
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
