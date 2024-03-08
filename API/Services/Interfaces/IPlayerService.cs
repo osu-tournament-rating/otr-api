@@ -21,5 +21,6 @@ public interface IPlayerService
 
     Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync();
     Task<PlayerInfoDTO?> GetAsync(int userId);
+    Task<PlayerInfoDTO?> GetAsync(long osuId);
     Task<PlayerInfoDTO?> GetAsync(string username);
 }

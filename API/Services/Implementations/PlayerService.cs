@@ -59,6 +59,13 @@ public class PlayerService : IPlayerService
     public async Task<PlayerInfoDTO?> GetAsync(int userId) =>
         _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(userId));
 
+    public async Task<PlayerInfoDTO?> GetAsync(long osuId)
+    {
+        int? id = await GetIdAsync(osuId);
+
+        return id == null ? null : _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(id.Value));
+    }
+
     public async Task<PlayerInfoDTO?> GetAsync(string username) =>
         _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(username));
 }
