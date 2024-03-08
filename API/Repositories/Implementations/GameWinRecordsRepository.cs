@@ -5,19 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class GameWinRecordsRepository : RepositoryBase<GameWinRecord>, IGameWinRecordsRepository
+public class GameWinRecordsRepository(OtrContext context) : RepositoryBase<GameWinRecord>(context), IGameWinRecordsRepository
 {
-    private readonly OtrContext _context;
-
-    public GameWinRecordsRepository(OtrContext context)
-        : base(context)
-    {
-        _context = context;
-    }
+    private readonly OtrContext _context = context;
 
     public async Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody)
     {
-        foreach (var item in postBody)
+        foreach (GameWinRecordDTO item in postBody)
         {
             var record = new GameWinRecord
             {

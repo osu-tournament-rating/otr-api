@@ -3,22 +3,16 @@ using System.Text;
 
 namespace API;
 
-public class RequestLoggingMiddleware
+public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
 {
-    private readonly ILogger<RequestLoggingMiddleware> _logger;
-    private readonly RequestDelegate _next;
-
-    public RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+    private readonly ILogger<RequestLoggingMiddleware> _logger = logger;
+    private readonly RequestDelegate _next = next;
 
     public async Task Invoke(HttpContext context)
     {
         await LogRequest(context.Request);
 
-        var originalBodyStream = context.Response.Body;
+        Stream originalBodyStream = context.Response.Body;
 
         try
         {
@@ -47,7 +41,7 @@ public class RequestLoggingMiddleware
     {
         request.EnableBuffering();
 
-        var body = request.Body;
+        Stream body = request.Body;
         try
         {
             // Create a new memory stream.
@@ -60,7 +54,7 @@ public class RequestLoggingMiddleware
             // Read from the memory stream and convert to string for logging.
             byte[] buffer = new byte[memStream.Length];
             // ReSharper disable once MustUseReturnValue
-            await memStream.ReadAsync(buffer, 0, buffer.Length);
+            await memStream.ReadAsync(buffer);
             string bodyAsText = Encoding.UTF8.GetString(buffer);
 
             if (bodyAsText.Length > 500)

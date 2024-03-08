@@ -8,26 +8,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMatchesRepository
+public class MatchesRepository(
+    ILogger<MatchesRepository> logger,
+    IMapper mapper,
+    OtrContext context,
+    IMatchDuplicateRepository matchDuplicateRepository
+    ) : HistoryRepositoryBase<Match, MatchHistory>(context, mapper), IMatchesRepository
 {
-    private readonly OtrContext _context;
-    private readonly IMatchDuplicateRepository _matchDuplicateRepository;
-    private readonly ILogger<MatchesRepository> _logger;
-    private readonly IMapper _mapper;
-
-    public MatchesRepository(
-        ILogger<MatchesRepository> logger,
-        IMapper mapper,
-        OtrContext context,
-        IMatchDuplicateRepository matchDuplicateRepository
-    )
-        : base(context, mapper)
-    {
-        _logger = logger;
-        _mapper = mapper;
-        _context = context;
-        _matchDuplicateRepository = matchDuplicateRepository;
-    }
+    private readonly OtrContext _context = context;
+    private readonly IMatchDuplicateRepository _matchDuplicateRepository = matchDuplicateRepository;
+    private readonly ILogger<MatchesRepository> _logger = logger;
+    private readonly IMapper _mapper = mapper;
 
     public override async Task<Match?> GetAsync(int id) =>
         // Get the match with all associated data
@@ -40,13 +31,7 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
 
     public async Task<Match> UpdateVerificationStatus(int id, int? verificationStatus)
     {
-        var existing = await GetAsync(id, false);
-
-        if (existing == null)
-        {
-            throw new Exception("Match does not exist, this method assumes the match exists.");
-        }
-
+        Match existing = await GetAsync(id, false) ?? throw new Exception("Match does not exist, this method assumes the match exists.");
         existing.VerificationStatus = verificationStatus;
 
         await UpdateAsync(existing);
@@ -55,7 +40,7 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
 
     public async Task RefreshAutomationChecks(bool invalidOnly = true)
     {
-        var query = _context.Matches.Where(x => x.NeedsAutoCheck == false && x.IsApiProcessed == true);
+        IQueryable<Match> query = _context.Matches.Where(x => x.NeedsAutoCheck == false && x.IsApiProcessed == true);
 
         if (invalidOnly)
         {
@@ -95,7 +80,7 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
 
     public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches)
     {
-        var query = _context.Matches.OrderBy(m => m.StartTime).AsQueryable();
+        IQueryable<Match> query = _context.Matches.OrderBy(m => m.StartTime).AsQueryable();
 
         if (filterInvalidMatches)
         {
@@ -111,7 +96,7 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
                 .Where(x => x.Games.Count > 0);
         }
 
-        var matches = await query.Select(x => x.Id).ToListAsync();
+        List<int> matches = await query.Select(x => x.Id).ToListAsync();
 
         return matches;
     }
@@ -170,7 +155,7 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
         string? info = null
     )
     {
-        var match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
+        Match? match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
         if (match == null)
         {
             _logger.LogWarning("Match {MatchId} not found (failed to update verification status)", matchId);
@@ -210,7 +195,7 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
     public async Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime)
     {
         int wins = 0;
-        var matches = await _context
+        List<Match> matches = await _context
             .Matches.WhereVerified()
             .After(fromTime)
             .Include(x => x.Games)
@@ -221,13 +206,13 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
             )
             .ToListAsync();
 
-        foreach (var match in matches)
+        foreach (Match? match in matches)
         {
             // For head to head (lobby size 2), calculate the winner based on score
             int pointsPlayer = 0;
             int pointsOpponent = 0;
             int team = 0;
-            foreach (var game in match.Games)
+            foreach (Game game in match.Games)
             {
                 if (!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
                 {
@@ -237,7 +222,7 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
                 team = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
             }
 
-            foreach (var game in match.Games)
+            foreach (Game game in match.Games)
             {
                 try
                 {
@@ -367,13 +352,7 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
 
     public async Task MergeDuplicatesAsync(int matchRootId)
     {
-        var root = await GetAsync(matchRootId);
-
-        if (root == null)
-        {
-            throw new InvalidOperationException($"Failed to find corresponding match: {matchRootId}");
-        }
-
+        Match root = await GetAsync(matchRootId) ?? throw new InvalidOperationException($"Failed to find corresponding match: {matchRootId}");
         if (root.IsApiProcessed != true)
         {
             throw new Exception("All matches must be API processed.");
@@ -391,14 +370,14 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
         }
 
         var duplicateReferences = (await _matchDuplicateRepository.GetDuplicatesAsync(matchRootId)).ToList();
-        if (!duplicateReferences.Any())
+        if (duplicateReferences.Count == 0)
         {
             throw new Exception("Match does not have any detected duplicates.");
         }
 
         var duplicateMatches = (await GetMatchesFromDuplicatesAsync(duplicateReferences)).ToList();
 
-        foreach (var duplicate in duplicateMatches)
+        foreach (Match? duplicate in duplicateMatches)
         {
             if (root.TournamentId != duplicate.TournamentId)
             {
@@ -422,10 +401,10 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
 
         // The rootId will be used when reassigning game / score data.
         int rootId = root.Id;
-        foreach (var duplicate in duplicateMatches)
+        foreach (Match? duplicate in duplicateMatches)
         {
             // Reassign all of the games' matchid fields.
-            foreach (var game in duplicate.Games)
+            foreach (Game game in duplicate.Games)
             {
                 game.MatchId = rootId;
                 _context.Games.Update(game);
@@ -453,9 +432,9 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
     )
     {
         var ls = new List<Match>();
-        foreach (var dupe in duplicates)
+        foreach (MatchDuplicate dupe in duplicates)
         {
-            var match = await GetByMatchIdAsync(dupe.OsuMatchId);
+            Match? match = await GetByMatchIdAsync(dupe.OsuMatchId);
             if (match == null)
             {
                 continue;
@@ -470,7 +449,7 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
     public async Task MarkSuspectedDuplicatesAsync(Match root, IEnumerable<Match> duplicates)
     {
         int rootId = root.Id;
-        foreach (var dupe in duplicates)
+        foreach (Match dupe in duplicates)
         {
             var duplicateXref = new MatchDuplicate
             {
@@ -484,8 +463,8 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
 
     public async Task VerifyDuplicatesAsync(int matchRoot, int userId, bool confirmed)
     {
-        var duplicates = await _matchDuplicateRepository.GetDuplicatesAsync(matchRoot);
-        foreach (var dupe in duplicates)
+        IEnumerable<MatchDuplicate> duplicates = await _matchDuplicateRepository.GetDuplicatesAsync(matchRoot);
+        foreach (MatchDuplicate dupe in duplicates)
         {
             dupe.VerifiedBy = userId;
             dupe.VerifiedAsDuplicate = confirmed;

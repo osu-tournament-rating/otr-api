@@ -6,26 +6,18 @@ using API.Repositories.Interfaces;
 
 namespace API.BackgroundWorkers;
 
-public class OsuMatchDataWorker : BackgroundService
+public class OsuMatchDataWorker(
+    ILogger<OsuMatchDataWorker> logger,
+    IServiceProvider serviceProvider,
+    IOsuApiService apiService,
+    IConfiguration configuration
+    ) : BackgroundService
 {
     private const int INTERVAL_SECONDS = 5;
-    private readonly IOsuApiService _apiService;
-    private readonly ILogger<OsuMatchDataWorker> _logger;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly bool _allowDataFetching;
-
-    public OsuMatchDataWorker(
-        ILogger<OsuMatchDataWorker> logger,
-        IServiceProvider serviceProvider,
-        IOsuApiService apiService,
-        IConfiguration configuration
-    )
-    {
-        _logger = logger;
-        _serviceProvider = serviceProvider;
-        _apiService = apiService;
-        _allowDataFetching = configuration.GetValue<bool>("Osu:AllowDataFetching");
-    }
+    private readonly IOsuApiService _apiService = apiService;
+    private readonly ILogger<OsuMatchDataWorker> _logger = logger;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly bool _allowDataFetching = configuration.GetValue<bool>("Osu:AllowDataFetching");
 
     /// <summary>
     ///  This background service constantly checks the database for pending matches and processes them.
@@ -47,15 +39,15 @@ public class OsuMatchDataWorker : BackgroundService
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            using (var scope = _serviceProvider.CreateScope())
+            using (IServiceScope scope = _serviceProvider.CreateScope())
             {
-                var matchesService = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
-                var apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchRepository>();
-                var gamesRepository = scope.ServiceProvider.GetRequiredService<IGamesRepository>();
-                var matchScoresService = scope.ServiceProvider.GetRequiredService<IMatchScoresRepository>();
+                IMatchesRepository matchesService = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
+                IApiMatchRepository apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchRepository>();
+                IGamesRepository gamesRepository = scope.ServiceProvider.GetRequiredService<IGamesRepository>();
+                IMatchScoresRepository matchScoresService = scope.ServiceProvider.GetRequiredService<IMatchScoresRepository>();
 
-                var apiMatch = await matchesService.GetFirstMatchNeedingApiProcessingAsync();
-                var autoCheckMatch = await matchesService.GetFirstMatchNeedingAutoCheckAsync();
+                Match? apiMatch = await matchesService.GetFirstMatchNeedingApiProcessingAsync();
+                Match? autoCheckMatch = await matchesService.GetFirstMatchNeedingAutoCheckAsync();
 
                 if (apiMatch == null && autoCheckMatch == null)
                 {
@@ -124,14 +116,14 @@ public class OsuMatchDataWorker : BackgroundService
         }
 
         // Game verification checks
-        foreach (var game in match.Games)
+        foreach (Game game in match.Games)
         {
             // NOTE: MUST be done in this order: Scores -> Game
             // The game checker has a sanity check to ensure the game scores are valid.
             // If a game has any invalid scores, it will fail.
 
             // Score verification checks
-            foreach (var score in game.MatchScores)
+            foreach (MatchScore score in game.MatchScores)
             {
                 if (!ScoreAutomationChecks.PassesAutomationChecks(score))
                 {
@@ -205,7 +197,7 @@ public class OsuMatchDataWorker : BackgroundService
         {
             // Matches at this point should only contain data posted from the web interface.
             // We need to call the osu! API on these matches and persist them.
-            var updatedEntity = await ProcessMatchAsync(match.MatchId, apiMatchRepository, matchesRepository);
+            Match? updatedEntity = await ProcessMatchAsync(match.MatchId, apiMatchRepository, matchesRepository);
 
             if (updatedEntity == null)
             {
@@ -231,13 +223,13 @@ public class OsuMatchDataWorker : BackgroundService
         IMatchesRepository matchesRepository
     )
     {
-        var osuMatch = await _apiService.GetMatchAsync(
+        OsuApiMatchData? osuMatch = await _apiService.GetMatchAsync(
             osuMatchId,
             $"{osuMatchId} was identified as a match that needs to be processed"
         );
         if (osuMatch == null)
         {
-            var existingEntity = await matchesRepository.GetByMatchIdAsync(osuMatchId);
+            Match? existingEntity = await matchesRepository.GetByMatchIdAsync(osuMatchId);
             if (existingEntity != null)
             {
                 await matchesRepository.UpdateVerificationStatusAsync(

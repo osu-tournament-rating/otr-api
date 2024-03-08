@@ -4,7 +4,7 @@ namespace APITests.SeedData;
 
 public static class SeededGame
 {
-    private static readonly Random _rand = new();
+    private static readonly Random s_rand = new();
 
     public static ICollection<Game> Generate(int matchId, int amount)
     {
@@ -22,7 +22,7 @@ public static class SeededGame
     {
         var game = new Game
         {
-            Id = _rand.Next(),
+            Id = s_rand.Next(),
             MatchId = matchId,
             BeatmapId = 24245,
             PlayMode = 0,
@@ -39,11 +39,11 @@ public static class SeededGame
             Updated = new DateTime(2023, 11, 04),
             Beatmap = new Beatmap
             {
-                Id = _rand.Next(),
+                Id = s_rand.Next(),
                 Artist = "Bob Jilly Jones",
-                BeatmapId = _rand.Next(),
+                BeatmapId = s_rand.Next(),
                 Bpm = 170.0,
-                MapperId = _rand.NextInt64(),
+                MapperId = s_rand.NextInt64(),
                 MapperName = "Smithy Lilly",
                 Sr = 5.3,
                 AimDiff = 3.2,

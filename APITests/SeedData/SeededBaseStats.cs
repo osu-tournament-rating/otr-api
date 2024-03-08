@@ -36,7 +36,7 @@ public static class SeededBaseStats
     public static List<BaseStats> GetLeaderboardFiltered(LeaderboardFilterDTO filter, int size = 25)
     {
         var lb = new List<BaseStats>();
-        var tiers = filter.TierFilters;
+        LeaderboardTierFilterDTO? tiers = filter.TierFilters;
 
         if (tiers == null)
         {
@@ -100,7 +100,7 @@ public static class SeededBaseStats
 
         for (int i = 0; i < fillAmount; i++)
         {
-            var toAdd = Get();
+            BaseStats toAdd = Get();
             toAdd.Rating = fillRating;
 
             lb.Add(toAdd);

@@ -4,7 +4,7 @@ namespace APITests.SeedData;
 
 public static class SeededMatch
 {
-    private static readonly Random _rand = new();
+    private static readonly Random s_rand = new();
 
     public static ICollection<Match> Generate(int tournamentId, int amount)
     {
@@ -22,8 +22,8 @@ public static class SeededMatch
     {
         var match = new Match
         {
-            Id = _rand.Next(),
-            MatchId = _rand.NextInt64(),
+            Id = s_rand.Next(),
+            MatchId = s_rand.NextInt64(),
             Name = "OWC2021: (United States) vs (Germany)",
             StartTime = new DateTime(2022, 01, 23),
             Created = new DateTime(2023, 09, 30),

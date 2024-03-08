@@ -8,17 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
+public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBase<Player>(context), IPlayerRepository
 {
-    private readonly OtrContext _context;
-    private readonly IMapper _mapper;
-
-    public PlayerRepository(OtrContext context, IMapper mapper)
-        : base(context)
-    {
-        _context = context;
-        _mapper = mapper;
-    }
+    private readonly OtrContext _context = context;
+    private readonly IMapper _mapper = mapper;
 
     public override async Task<int> UpdateAsync(Player player)
     {
@@ -35,7 +28,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
     public async Task<IEnumerable<Player>> GetPlayersMissingRankAsync()
     {
         // Get all players that are missing an earliest global rank in any mode (but have a current rank in that mode)
-        var players = await _context
+        List<Player> players = await _context
             .Players.Where(x =>
                 (x.EarliestOsuGlobalRank == null && x.RankStandard != null)
                 || (x.EarliestTaikoGlobalRank == null && x.RankTaiko != null)
@@ -83,9 +76,9 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
             return await _context.Players.WhereOsuId(osuId).FirstOrDefaultAsync();
         }
 
-        var time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
+        DateTime time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
 
-        var p = await _context
+        Player? p = await _context
             .Players.Include(x =>
                 x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == mode)
             )
@@ -170,13 +163,13 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
             return _context.Players.Where(p =>
                 p.Username != null
                 && (
-                    p.Username.ToLower() == username.ToLower()
-                    || p.Username.ToLower() == username.Replace(' ', '_')
+                    p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase)
+                    || p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase)
                 )
             );
         }
 
-        return _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower());
+        return _context.Players.Where(p => p.Username != null && p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase));
     }
 
     // This is used by a scheduled task to automatically populate user info, such as username, country, etc.
@@ -192,7 +185,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
         int offsetDays = -1
     )
     {
-        var obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)mode, offsetDays));
+        PlayerInfoDTO? obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)mode, offsetDays));
 
         if (obj == null)
         {

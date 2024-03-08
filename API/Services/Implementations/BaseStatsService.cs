@@ -7,28 +7,19 @@ using API.Utilities;
 
 namespace API.Services.Implementations;
 
-public class BaseStatsService : IBaseStatsService
+public class BaseStatsService(
+    IBaseStatsRepository baseStatsRepository,
+    IPlayerMatchStatsRepository matchStatsRepository,
+    IMatchRatingStatsRepository ratingStatsRepository,
+    IPlayerRepository playerRepository,
+    ITournamentsService tournamentsService
+    ) : IBaseStatsService
 {
-    private readonly IBaseStatsRepository _baseStatsRepository;
-    private readonly IPlayerMatchStatsRepository _matchStatsRepository;
-    private readonly IPlayerRepository _playerRepository;
-    private readonly ITournamentsService _tournamentsService;
-    private readonly IMatchRatingStatsRepository _ratingStatsRepository;
-
-    public BaseStatsService(
-        IBaseStatsRepository baseStatsRepository,
-        IPlayerMatchStatsRepository matchStatsRepository,
-        IMatchRatingStatsRepository ratingStatsRepository,
-        IPlayerRepository playerRepository,
-        ITournamentsService tournamentsService
-    )
-    {
-        _baseStatsRepository = baseStatsRepository;
-        _matchStatsRepository = matchStatsRepository;
-        _ratingStatsRepository = ratingStatsRepository;
-        _playerRepository = playerRepository;
-        _tournamentsService = tournamentsService;
-    }
+    private readonly IBaseStatsRepository _baseStatsRepository = baseStatsRepository;
+    private readonly IPlayerMatchStatsRepository _matchStatsRepository = matchStatsRepository;
+    private readonly IPlayerRepository _playerRepository = playerRepository;
+    private readonly ITournamentsService _tournamentsService = tournamentsService;
+    private readonly IMatchRatingStatsRepository _ratingStatsRepository = ratingStatsRepository;
 
     public async Task<IEnumerable<BaseStatsDTO?>> GetForPlayerAsync(long osuPlayerId)
     {
@@ -39,10 +30,10 @@ public class BaseStatsService : IBaseStatsService
             return new List<BaseStatsDTO?>();
         }
 
-        var baseStats = await _baseStatsRepository.GetForPlayerAsync(osuPlayerId);
+        IEnumerable<BaseStats> baseStats = await _baseStatsRepository.GetForPlayerAsync(osuPlayerId);
         var ret = new List<BaseStatsDTO?>();
 
-        foreach (var stat in baseStats)
+        foreach (BaseStats stat in baseStats)
         {
             // One per mode
             ret.Add(await GetForPlayerAsync(stat, id.Value, stat.Mode));
@@ -96,7 +87,7 @@ public class BaseStatsService : IBaseStatsService
     public async Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats)
     {
         var toInsert = new List<BaseStats>();
-        foreach (var item in stats)
+        foreach (BaseStatsPostDTO item in stats)
         {
             toInsert.Add(
                 new BaseStats
@@ -125,7 +116,7 @@ public class BaseStatsService : IBaseStatsService
         int? playerId
     )
     {
-        var baseStats = await _baseStatsRepository.GetLeaderboardAsync(
+        IEnumerable<BaseStats> baseStats = await _baseStatsRepository.GetLeaderboardAsync(
             page,
             pageSize,
             mode,
@@ -136,7 +127,7 @@ public class BaseStatsService : IBaseStatsService
 
         var leaderboard = new List<BaseStatsDTO?>();
 
-        foreach (var baseStat in baseStats)
+        foreach (BaseStats baseStat in baseStats)
         {
             leaderboard.Add(await GetForPlayerAsync(baseStat, baseStat.PlayerId, mode));
         }

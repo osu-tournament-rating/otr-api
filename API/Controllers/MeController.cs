@@ -13,16 +13,10 @@ namespace API.Controllers;
 [EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize(Roles = "user")]
-public class MeController : Controller
+public class MeController(IUserService userService, IPlayerStatsService playerStatsService) : Controller
 {
-    private readonly IUserService _userService;
-    private readonly IPlayerStatsService _playerStatsService;
-
-    public MeController(IUserService userService, IPlayerStatsService playerStatsService)
-    {
-        _userService = userService;
-        _playerStatsService = playerStatsService;
-    }
+    private readonly IUserService _userService = userService;
+    private readonly IPlayerStatsService _playerStatsService = playerStatsService;
 
     [HttpGet]
     [EndpointSummary("Gets the logged in user's information, if they exist")]
@@ -38,7 +32,7 @@ public class MeController : Controller
             return BadRequest("Authorization invalid.");
         }
 
-        var user = await _userService.GetAsync(id.Value);
+        UserInfoDTO? user = await _userService.GetAsync(id.Value);
         if (user?.OsuId == null)
         {
             return NotFound("User not found");

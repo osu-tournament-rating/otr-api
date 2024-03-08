@@ -5,23 +5,17 @@ using AutoMapper;
 
 namespace API.Services.Implementations;
 
-public class TournamentsService : ITournamentsService
+public class TournamentsService(ITournamentsRepository repository, IMapper mapper) : ITournamentsService
 {
-    private readonly ITournamentsRepository _repository;
-    private readonly IMapper _mapper;
-
-    public TournamentsService(ITournamentsRepository repository, IMapper mapper)
-    {
-        _repository = repository;
-        _mapper = mapper;
-    }
+    private readonly ITournamentsRepository _repository = repository;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<TournamentDTO> CreateOrUpdateAsync(
         TournamentWebSubmissionDTO wrapper,
         bool updateExisting = false
     )
     {
-        var tournament = await _repository.CreateOrUpdateAsync(wrapper, updateExisting);
+        Entities.Tournament tournament = await _repository.CreateOrUpdateAsync(wrapper, updateExisting);
 
         return _mapper.Map<TournamentDTO>(tournament);
     }
@@ -30,7 +24,7 @@ public class TournamentsService : ITournamentsService
 
     public async Task<IEnumerable<TournamentDTO>> GetAllAsync()
     {
-        var items = await _repository.GetAllAsync();
+        IEnumerable<Entities.Tournament> items = await _repository.GetAllAsync();
         items = items.OrderBy(x => x.Name);
 
         return _mapper.Map<IEnumerable<TournamentDTO>>(items);

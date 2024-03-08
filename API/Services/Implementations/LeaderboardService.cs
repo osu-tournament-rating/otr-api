@@ -7,28 +7,19 @@ using API.Services.Interfaces;
 namespace API.Services.Implementations;
 
 [SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly")]
-public class LeaderboardService : ILeaderboardService
+public class LeaderboardService(
+    IPlayerRepository playerRepository,
+    IBaseStatsService baseStatsService,
+    IMatchRatingStatsRepository ratingStatsRepository,
+    IPlayerService playerService,
+    IPlayerStatsService playerStatsService
+    ) : ILeaderboardService
 {
-    private readonly IBaseStatsService _baseStatsService;
-    private readonly IPlayerRepository _playerRepository;
-    private readonly IPlayerService _playerService;
-    private readonly IPlayerStatsService _playerStatsService;
-    private readonly IMatchRatingStatsRepository _ratingStatsRepository;
-
-    public LeaderboardService(
-        IPlayerRepository playerRepository,
-        IBaseStatsService baseStatsService,
-        IMatchRatingStatsRepository ratingStatsRepository,
-        IPlayerService playerService,
-        IPlayerStatsService playerStatsService
-    )
-    {
-        _playerRepository = playerRepository;
-        _baseStatsService = baseStatsService;
-        _ratingStatsRepository = ratingStatsRepository;
-        _playerService = playerService;
-        _playerStatsService = playerStatsService;
-    }
+    private readonly IBaseStatsService _baseStatsService = baseStatsService;
+    private readonly IPlayerRepository _playerRepository = playerRepository;
+    private readonly IPlayerService _playerService = playerService;
+    private readonly IPlayerStatsService _playerStatsService = playerStatsService;
+    private readonly IMatchRatingStatsRepository _ratingStatsRepository = ratingStatsRepository;
 
     public async Task<LeaderboardDTO> GetLeaderboardAsync(
         LeaderboardRequestQueryDTO requestQuery,
@@ -66,7 +57,7 @@ public class LeaderboardService : ILeaderboardService
             }
         }
 
-        var baseStats = await _baseStatsService.GetLeaderboardAsync(
+        IEnumerable<BaseStatsDTO?> baseStats = await _baseStatsService.GetLeaderboardAsync(
             requestQuery.Mode,
             requestQuery.Page,
             requestQuery.PageSize,
@@ -77,7 +68,7 @@ public class LeaderboardService : ILeaderboardService
 
         var leaderboardPlayerInfo = new List<LeaderboardPlayerInfoDTO>();
 
-        foreach (var baseStat in baseStats)
+        foreach (BaseStatsDTO? baseStat in baseStats)
         {
             if (baseStat == null)
             {
@@ -109,7 +100,7 @@ public class LeaderboardService : ILeaderboardService
         return leaderboard;
     }
 
-    private void ValidateRequest(LeaderboardRequestQueryDTO query)
+    private static void ValidateRequest(LeaderboardRequestQueryDTO query)
     {
         if (query.Filter.MinRank < 1 || query.Filter.MinRank > query.Filter.MaxRank)
         {
@@ -187,7 +178,7 @@ public class LeaderboardService : ILeaderboardService
         LeaderboardChartType chartType
     )
     {
-        var baseStats = await _baseStatsService.GetForPlayerAsync(null, playerId, mode);
+        BaseStatsDTO? baseStats = await _baseStatsService.GetForPlayerAsync(null, playerId, mode);
 
         if (baseStats == null)
         {
@@ -210,7 +201,7 @@ public class LeaderboardService : ILeaderboardService
             _ => throw new ArgumentOutOfRangeException(nameof(chartType), chartType, null)
         };
 
-        var rankChart = await _playerStatsService.GetRankChartAsync(playerId, mode, chartType);
+        PlayerRankChartDTO rankChart = await _playerStatsService.GetRankChartAsync(playerId, mode, chartType);
 
         return new LeaderboardPlayerChartDTO
         {

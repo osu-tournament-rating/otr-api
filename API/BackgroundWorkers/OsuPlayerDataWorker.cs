@@ -4,26 +4,18 @@ using API.Repositories.Interfaces;
 
 namespace API.BackgroundWorkers;
 
-public class OsuPlayerDataWorker : BackgroundService
+public class OsuPlayerDataWorker(
+    ILogger<OsuPlayerDataWorker> logger,
+    IOsuApiService apiService,
+    IServiceProvider serviceProvider,
+    IConfiguration config
+    ) : BackgroundService
 {
-    private readonly ILogger<OsuPlayerDataWorker> _logger;
-    private readonly IOsuApiService _apiService;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly bool _shouldUpdateUsersAutomatically;
+    private readonly ILogger<OsuPlayerDataWorker> _logger = logger;
+    private readonly IOsuApiService _apiService = apiService;
+    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private readonly bool _shouldUpdateUsersAutomatically = config.GetValue<bool>("Osu:AutoUpdateUsers");
     private const int UPDATE_INTERVAL_SECONDS = 5;
-
-    public OsuPlayerDataWorker(
-        ILogger<OsuPlayerDataWorker> logger,
-        IOsuApiService apiService,
-        IServiceProvider serviceProvider,
-        IConfiguration config
-    )
-    {
-        _logger = logger;
-        _apiService = apiService;
-        _serviceProvider = serviceProvider;
-        _shouldUpdateUsersAutomatically = config.GetValue<bool>("Osu:AutoUpdateUsers");
-    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) =>
         await BackgroundTask(stoppingToken);
@@ -46,23 +38,23 @@ public class OsuPlayerDataWorker : BackgroundService
              * since their last update. This process automatically fetches updated
              * information from the osu! API. This updates the player's rank and username.
              */
-            using (var scope = _serviceProvider.CreateScope())
+            using (IServiceScope scope = _serviceProvider.CreateScope())
             {
-                var playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+                IPlayerRepository playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
                 var playersToUpdate = (await playerService.GetOutdatedAsync()).ToList();
 
-                if (!playersToUpdate.Any())
+                if (playersToUpdate.Count == 0)
                 {
                     await Task.Delay(UPDATE_INTERVAL_SECONDS * 1000, cancellationToken);
                     continue;
                 }
 
-                foreach (var player in playersToUpdate)
+                foreach (Entities.Player? player in playersToUpdate)
                 {
                     // Fetch ranks for all 4 game modes and update accordingly.
-                    foreach (var gameModeEnum in Enum.GetValues<OsuEnums.Mode>())
+                    foreach (OsuEnums.Mode gameModeEnum in Enum.GetValues<OsuEnums.Mode>())
                     {
-                        var apiResult = await _apiService.GetUserAsync(
+                        OsuApiUser? apiResult = await _apiService.GetUserAsync(
                             player.OsuId,
                             gameModeEnum,
                             $"Identified player that needs to have ranks updated for mode {gameModeEnum}"
