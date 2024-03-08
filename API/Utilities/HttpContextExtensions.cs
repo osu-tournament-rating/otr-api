@@ -11,26 +11,14 @@ public static class HttpContextExtensions
     /// <returns>An optional user id</returns>
     public static int? AuthorizedUserIdentity(this HttpContext context)
     {
-        string? role = context.User.Claims.FirstOrDefault(x => x.Type == "role")?.Value;
+        bool user = context.User.IsUser();
 
-        if (role != "user")
-        {
-            return null;
-        }
-
-        return ParseIdFromIssuer(context);
+        return user ? ParseIdFromIssuer(context) : null;
     }
 
     public static int? AuthorizedClientIdentity(this HttpContext context)
     {
-        string? role = context.User.Claims.FirstOrDefault(x => x.Type == "role")?.Value;
-
-        if (role != "client")
-        {
-            return null;
-        }
-
-        return ParseIdFromIssuer(context);
+        return !context.User.IsClient() ? null : ParseIdFromIssuer(context);
     }
 
     private static int? ParseIdFromIssuer(HttpContext context)
