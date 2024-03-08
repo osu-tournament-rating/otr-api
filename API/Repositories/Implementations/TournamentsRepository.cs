@@ -200,12 +200,6 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
             SubmitterUserId = wrapper.SubmitterId,
         };
 
-        var result = await CreateAsync(tournament);
-        if (result == null)
-        {
-            throw new Exception("Tournament could not be created.");
-        }
-
-        return result;
+        return await CreateAsync(tournament);
     }
 }

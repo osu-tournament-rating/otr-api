@@ -218,7 +218,6 @@ builder
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ClockSkew = TimeSpan.Zero,
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(
@@ -252,14 +251,7 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapControllers().AllowAnonymous();
-}
-else
-{
-    app.MapControllers();
-}
+app.MapControllers();
 
 app.Logger.LogInformation("Running!");
 
@@ -267,11 +259,11 @@ app.Logger.LogInformation("Running!");
 using var scope = app.Services.CreateScope();
 var context = scope.ServiceProvider.GetRequiredService<OtrContext>();
 
-int count = context.Database.GetPendingMigrations().Count();
-if (count > 0)
+int migrationsCount = context.Database.GetPendingMigrations().Count();
+if (migrationsCount > 0)
 {
     await context.Database.MigrateAsync();
-    app.Logger.LogInformation($"Applied {count} pending migrations.");
+    app.Logger.LogInformation($"Applied {migrationsCount} pending migrations.");
 }
 
 app.Run();

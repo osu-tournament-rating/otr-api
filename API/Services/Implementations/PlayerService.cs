@@ -20,19 +20,6 @@ public class PlayerService : IPlayerService
     public async Task<IEnumerable<PlayerDTO>> GetAllAsync() =>
         _mapper.Map<IEnumerable<PlayerDTO>>(await _playerRepository.GetAsync());
 
-    public async Task<PlayerInfoDTO?> GetByOsuIdAsync(
-        long osuId,
-        bool eagerLoad = false,
-        OsuEnums.Mode mode = OsuEnums.Mode.Standard,
-        int offsetDays = -1
-    ) =>
-        _mapper.Map<PlayerInfoDTO?>(
-            await _playerRepository.GetAsync(osuId, eagerLoad, (int)mode, offsetDays)
-        );
-
-    public async Task<IEnumerable<PlayerInfoDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds) =>
-        _mapper.Map<IEnumerable<PlayerInfoDTO>>(await _playerRepository.GetAsync(osuIds));
-
     public async Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync() =>
         _mapper.Map<IEnumerable<PlayerRanksDTO>>(await _playerRepository.GetAllAsync());
 
@@ -71,6 +58,13 @@ public class PlayerService : IPlayerService
 
     public async Task<PlayerInfoDTO?> GetAsync(int userId) =>
         _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(userId));
+
+    public async Task<PlayerInfoDTO?> GetAsync(long osuId)
+    {
+        int? id = await GetIdAsync(osuId);
+
+        return id == null ? null : _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(id.Value));
+    }
 
     public async Task<PlayerInfoDTO?> GetAsync(string username) =>
         _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(username));

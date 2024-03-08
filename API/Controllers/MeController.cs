@@ -24,30 +24,6 @@ public class MeController : Controller
         _playerStatsService = playerStatsService;
     }
 
-    // Will remove once all users are whitelisted in the database
-    // private bool IsWhitelisted(long osuId)
-    // {
-    // 	var whitelist = new long[]
-    // 	{
-    // 		11482346,
-    // 		8191845,
-    // 		11557554,
-    // 		4001304,
-    // 		6892711,
-    // 		7153533,
-    // 		3958619,
-    // 		6701656,
-    // 		1797189,
-    // 		7802400,
-    // 		11255340,
-    // 		13175102,
-    // 		11955929,
-    // 		11292327
-    // 	};
-    //
-    // 	return whitelist.Contains(osuId);
-    // }
-
     [HttpGet]
     [EndpointSummary("Gets the logged in user's information, if they exist")]
     [ProducesResponseType<UserInfoDTO>(StatusCodes.Status200OK)]
@@ -59,7 +35,7 @@ public class MeController : Controller
 
         if (!id.HasValue)
         {
-            return BadRequest("User is not logged in.");
+            return BadRequest("Authorization invalid.");
         }
 
         var user = await _userService.GetAsync(id.Value);

@@ -98,6 +98,7 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
         var query = _context.Matches.OrderBy(m => m.StartTime).AsQueryable();
 
         if (filterInvalidMatches)
+        {
             query = _context
                 .Matches.Include(x =>
                     x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified)
@@ -108,6 +109,7 @@ public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMa
                 )
                 .ThenInclude(x => x.Beatmap)
                 .Where(x => x.Games.Count > 0);
+        }
 
         var matches = await query.Select(x => x.Id).ToListAsync();
 
