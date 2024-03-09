@@ -12,7 +12,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [EnableCors]
-[Authorize(Roles = "user")]
+[Authorize(Roles = "user, whitelist")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class LeaderboardsController : Controller
 {
