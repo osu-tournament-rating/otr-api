@@ -13,7 +13,8 @@ namespace API.Controllers;
 [EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize(Roles = "user")]
-public class MeController(IUserService userService, IPlayerStatsService playerStatsService) : Controller
+[Authorize(Roles = "whitelist")]
+public class MeController : Controller
 {
     private readonly IUserService _userService = userService;
     private readonly IPlayerStatsService _playerStatsService = playerStatsService;
