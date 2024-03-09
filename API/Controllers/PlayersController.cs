@@ -31,6 +31,8 @@ public class PlayersController : Controller
     }
 
     [HttpGet("{key}/info")]
+    [EndpointSummary("Get player info by versatile search")]
+    [EnpointDescription("Get player info searching first by id, then osuId, then username")]
     public async Task<ActionResult<PlayerInfoDTO?>> GetAsync(string key)
     {
         var info = await _playerService.GetVersatileAsync(key);
