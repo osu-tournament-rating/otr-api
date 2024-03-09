@@ -10,8 +10,6 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [EnableCors]
-[Authorize(Roles = "user")]
-[Authorize(Roles = "whitelist")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsService baseStatsService) : Controller
 {
@@ -19,6 +17,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     private readonly IPlayerStatsService _playerStatsService = playerStatsService;
 
     [HttpGet("{playerId:int}")]
+    [Authorize(Roles = "user, client")]
     public async Task<ActionResult<PlayerStatsDTO>> GetAsync(
         int playerId,
         [FromQuery] int? comparerId,
@@ -35,6 +34,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
         );
 
     [HttpGet("{username}")]
+    [Authorize(Roles = "user, client")]
     public async Task<ActionResult<PlayerStatsDTO?>> GetAsync(
         string username,
         [FromQuery] int? comparerId,
@@ -51,6 +51,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
         );
 
     [HttpGet("histogram")]
+    [Authorize(Roles = "user, client")]
     public async Task<ActionResult<IDictionary<int, int>>> GetRatingHistogramAsync(
         [FromQuery] int mode = 0
     ) => Ok(await _baseStatsService.GetHistogramAsync(mode));
