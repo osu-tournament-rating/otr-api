@@ -12,7 +12,8 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "user, whitelist")]
+[Authorize(Roles = "user")]
+[Authorize(Roles = "whitelist")]
 public class MeController : Controller
 {
     private readonly IUserService _userService;
