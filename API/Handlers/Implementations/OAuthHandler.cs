@@ -6,6 +6,7 @@ using API.Entities;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using API.Utilities;
 using Microsoft.IdentityModel.Tokens;
 using OsuSharp.Interfaces;
 
@@ -142,51 +143,51 @@ public class OAuthHandler : IOAuthHandler
         }
 
         // Check the role of the issuer
-        if (!decryptedRefresh.Claims.Any(claim => claim.Type == "role" && claim.Value is "user" or "client"))
+        var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(decryptedRefresh.Claims));
+        if (!claimsPrincipal.IsUser() && !claimsPrincipal.IsClient())
         {
-            _logger.LogWarning("Decrypted refresh token issuer does not have a valid role");
+            _logger.LogWarning("Refresh token does not have the user or client role.");
+        }
+
+        if (claimsPrincipal.IsUser() && claimsPrincipal.IsClient())
+        {
+            _logger.LogError("Refresh token cannot have both user and client roles.");
             return null;
         }
 
-        // Get the role
-        string accessToken;
-        var issuerRole = decryptedRefresh.Claims.First(claim => claim.Type == "role").Value;
-
+        // If the issuer is a user, validate the user id.
         // If the issuer is a client, validate the client id.
-        // If it's a user, validate the user id.
-        switch (issuerRole)
+        string accessToken = string.Empty;
+
+        if (claimsPrincipal.IsUser())
         {
-            case "client":
-                var client = await _clientService.GetAsync(issuerId);
-                if (client == null)
-                {
-                    _logger.LogWarning("Decrypted refresh token issuer is not a valid client");
-                    return null;
-                }
-                accessToken = GenerateAccessToken(
-                    client.ClientId.ToString(),
-                    _jwtAudience,
-                    client.Scopes,
-                    ACCESS_DURATION_SECONDS
-                );
-                break;
-            case "user":
-                var user = await _userRepository.GetAsync(issuerId);
-                if (user == null)
-                {
-                    _logger.LogWarning("Decrypted refresh token issuer is not a valid user");
-                    return null;
-                }
-                accessToken = GenerateAccessToken(
-                    user.Id.ToString(),
-                    _jwtAudience,
-                    user.Scopes,
-                    ACCESS_DURATION_SECONDS
-                );
-                break;
-            default:
-                _logger.LogWarning("Decrypted refresh token issuer does not have a valid role");
+            var user = await _userRepository.GetAsync(issuerId);
+            if (user == null)
+            {
+                _logger.LogWarning("Decrypted refresh token issuer is not a valid user");
                 return null;
+            }
+            accessToken = GenerateAccessToken(
+                user.Id.ToString(),
+                _jwtAudience,
+                user.Scopes,
+                ACCESS_DURATION_SECONDS
+            );
+        }
+        else if (claimsPrincipal.IsClient())
+        {
+            var client = await _clientService.GetAsync(issuerId);
+            if (client == null)
+            {
+                _logger.LogWarning("Decrypted refresh token issuer is not a valid client");
+                return null;
+            }
+            accessToken = GenerateAccessToken(
+                client.ClientId.ToString(),
+                _jwtAudience,
+                client.Scopes,
+                ACCESS_DURATION_SECONDS
+            );
         }
 
         // Return a new OAuthResponseDTO containing only a new access token, NOT a new refresh token.
@@ -225,7 +226,7 @@ public class OAuthHandler : IOAuthHandler
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var claims = roles.Select(role => new Claim("role", role));
+        var claims = roles.Select(role => new Claim(ClaimTypes.Role, role));
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),

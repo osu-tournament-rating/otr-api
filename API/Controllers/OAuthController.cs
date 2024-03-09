@@ -57,12 +57,6 @@ public class OAuthController : Controller
         }
 
         var result = await _oAuthHandler.CreateClientAsync(userId!.Value);
-
-        if (result == null)
-        {
-            return BadRequest();
-        }
-
         return Ok(result);
     }
 
