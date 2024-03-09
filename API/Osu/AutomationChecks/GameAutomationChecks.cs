@@ -35,9 +35,9 @@ public static class GameAutomationChecks
 
         if (teamSize == 1)
         {
-            int countPlayers = game.MatchScores.Count;
-            bool refereePresent = game.MatchScores.Any(score => score.Score == 0);
-            bool satisfiesOneVersusOne = refereePresent ? countPlayers == 3 : countPlayers == 2;
+            var countPlayers = game.MatchScores.Count;
+            var refereePresent = game.MatchScores.Any(score => score.Score == 0);
+            var satisfiesOneVersusOne = refereePresent ? countPlayers == 3 : countPlayers == 2;
             if (!satisfiesOneVersusOne)
             {
                 s_logger.Information(
@@ -53,8 +53,8 @@ public static class GameAutomationChecks
             return satisfiesOneVersusOne;
         }
 
-        int countRed = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Red);
-        int countBlue = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Blue);
+        var countRed = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Red);
+        var countBlue = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Blue);
 
         if (countRed == 0 && countBlue == 0)
         {
@@ -70,7 +70,7 @@ public static class GameAutomationChecks
             return false;
         }
 
-        bool hasReferee = false;
+        var hasReferee = false;
         if (countRed != countBlue)
         {
             // Check for any scores that equal 0. Likely a referee in the lobby.
@@ -121,8 +121,8 @@ public static class GameAutomationChecks
             return Math.Abs(red - blue) != 1;
         }
 
-        bool redUnexpected = red != expectedSize;
-        bool blueUnexpected = blue != expectedSize;
+        var redUnexpected = red != expectedSize;
+        var blueUnexpected = blue != expectedSize;
 
         return redUnexpected || blueUnexpected;
     }
@@ -130,7 +130,7 @@ public static class GameAutomationChecks
     public static bool PassesModeCheck(Game game)
     {
         Tournament tournament = game.Match.Tournament;
-        int gameMode = tournament.Mode;
+        var gameMode = tournament.Mode;
 
         if (gameMode is < 0 or > 3)
         {

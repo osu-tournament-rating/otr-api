@@ -25,7 +25,7 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetLoggedInUserAsync()
     {
-        int? id = HttpContext.AuthorizedUserIdentity();
+        var id = HttpContext.AuthorizedUserIdentity();
 
         if (!id.HasValue)
         {
@@ -64,14 +64,14 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
         [FromQuery] DateTime? dateMax = null
     )
     {
-        int? userId = HttpContext.AuthorizedUserIdentity();
+        var userId = HttpContext.AuthorizedUserIdentity();
 
         if (!userId.HasValue)
         {
             return BadRequest("User is not logged in or id could not be retreived from logged in user.");
         }
 
-        int? playerId = (await _userService.GetAsync(userId.Value))?.Id;
+        var playerId = (await _userService.GetAsync(userId.Value))?.Id;
 
         if (!playerId.HasValue)
         {

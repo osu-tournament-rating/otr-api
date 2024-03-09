@@ -36,7 +36,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Co
          * This avoids annoying calls to ".Filter" in the query string (and .Filter.TierFilters for the tier filters)
          */
 
-        int? authorizedUserId = HttpContext.AuthorizedUserIdentity();
+        var authorizedUserId = HttpContext.AuthorizedUserIdentity();
 
         if (!authorizedUserId.HasValue && requestQuery.ChartType == LeaderboardChartType.Country)
         {

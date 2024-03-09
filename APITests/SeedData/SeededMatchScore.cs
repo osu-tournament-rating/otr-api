@@ -22,7 +22,7 @@ public static class SeededMatchScore
 
         if (amountBlue.HasValue)
         {
-            for (int i = 0; i < amountBlue; i++)
+            for (var i = 0; i < amountBlue; i++)
             {
                 ret.Add(Generate(gameId, 1));
             }
@@ -30,7 +30,7 @@ public static class SeededMatchScore
 
         if (amountRed != null)
         {
-            for (int i = 0; i < amountBlue; i++)
+            for (var i = 0; i < amountBlue; i++)
             {
                 ret.Add(Generate(gameId, 2));
             }
@@ -38,7 +38,7 @@ public static class SeededMatchScore
 
         if (amountHeadToHead != null)
         {
-            for (int i = 0; i < amountBlue; i++)
+            for (var i = 0; i < amountBlue; i++)
             {
                 ret.Add(Generate(gameId, 0));
             }
@@ -49,8 +49,8 @@ public static class SeededMatchScore
 
     private static MatchScore Generate(int gameId, int team)
     {
-        int misses = s_rand.Next() % MISS_LIMIT;
-        bool perfect = misses == 0;
+        var misses = s_rand.Next() % MISS_LIMIT;
+        var perfect = misses == 0;
 
         return new MatchScore
         {

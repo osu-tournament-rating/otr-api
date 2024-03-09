@@ -25,7 +25,7 @@ public static class SeededBaseStats
     public static List<BaseStats> GetSimpleLeaderboard(int size = 25)
     {
         var lb = new List<BaseStats>();
-        for (int i = 0; i < size; i++)
+        for (var i = 0; i < size; i++)
         {
             lb.Add(Get());
         }
@@ -95,10 +95,10 @@ public static class SeededBaseStats
         }
 
         // Get the first item's fill rating because it's guaranteed to be allowed
-        double fillRating = lb.First().Rating;
-        int fillAmount = size - lb.Count;
+        var fillRating = lb.First().Rating;
+        var fillAmount = size - lb.Count;
 
-        for (int i = 0; i < fillAmount; i++)
+        for (var i = 0; i < fillAmount; i++)
         {
             BaseStats toAdd = Get();
             toAdd.Rating = fillRating;

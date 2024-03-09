@@ -10,7 +10,7 @@ public static class SeededMatch
     {
         var matches = new List<Match>();
 
-        for (int i = 0; i < amount; i++)
+        for (var i = 0; i < amount; i++)
         {
             matches.Add(Generate(tournamentId));
         }

@@ -194,7 +194,7 @@ public class MatchesRepository(
 
     public async Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime)
     {
-        int wins = 0;
+        var wins = 0;
         List<Match> matches = await _context
             .Matches.WhereVerified()
             .After(fromTime)
@@ -209,9 +209,9 @@ public class MatchesRepository(
         foreach (Match? match in matches)
         {
             // For head to head (lobby size 2), calculate the winner based on score
-            int pointsPlayer = 0;
-            int pointsOpponent = 0;
-            int team = 0;
+            var pointsPlayer = 0;
+            var pointsOpponent = 0;
+            var team = 0;
             foreach (Game game in match.Games)
             {
                 if (!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
@@ -234,8 +234,8 @@ public class MatchesRepository(
                             continue;
                         }
 
-                        long playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Score;
-                        long opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Score;
+                        var playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Score;
+                        var opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Score;
 
                         if (playerScore > opponentScore)
                         {
@@ -249,13 +249,13 @@ public class MatchesRepository(
                     else if (game.MatchScores.Count >= 4)
                     {
                         // Identify player team, sum the scores, then add points this way
-                        int playerTeam = team;
-                        int? opponentTeam = game.MatchScores.FirstOrDefault(x => x.Team != playerTeam)?.Team;
+                        var playerTeam = team;
+                        var opponentTeam = game.MatchScores.FirstOrDefault(x => x.Team != playerTeam)?.Team;
 
-                        long playerTeamScores = game
+                        var playerTeamScores = game
                             .MatchScores.Where(x => x.Team == playerTeam)
                             .Sum(x => x.Score);
-                        long opponentTeamScores = game
+                        var opponentTeamScores = game
                             .MatchScores.Where(x => x.Team == opponentTeam)
                             .Sum(x => x.Score);
 
@@ -300,8 +300,8 @@ public class MatchesRepository(
 
     public async Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime)
     {
-        int played = await CountMatchesPlayedAsync(osuPlayerId, mode, fromTime);
-        int won = await CountMatchWinsAsync(osuPlayerId, mode, fromTime);
+        var played = await CountMatchesPlayedAsync(osuPlayerId, mode, fromTime);
+        var won = await CountMatchWinsAsync(osuPlayerId, mode, fromTime);
 
         if (played == 0)
         {
@@ -363,7 +363,7 @@ public class MatchesRepository(
             throw new Exception("Root does not contain any games.");
         }
 
-        int totalScores = root.Games.Select(x => x.MatchScores.Count).Sum();
+        var totalScores = root.Games.Select(x => x.MatchScores.Count).Sum();
         if (totalScores == 0)
         {
             throw new Exception("Root has no scores.");
@@ -389,8 +389,8 @@ public class MatchesRepository(
                 throw new Exception("All matches must be API processed.");
             }
 
-            bool satisfiesNameCheck = root.Name == duplicate.Name;
-            bool satisfiesOsuIdCheck = root.MatchId == duplicate.MatchId;
+            var satisfiesNameCheck = root.Name == duplicate.Name;
+            var satisfiesOsuIdCheck = root.MatchId == duplicate.MatchId;
             if (!satisfiesNameCheck && !satisfiesOsuIdCheck)
             {
                 throw new Exception(
@@ -400,7 +400,7 @@ public class MatchesRepository(
         }
 
         // The rootId will be used when reassigning game / score data.
-        int rootId = root.Id;
+        var rootId = root.Id;
         foreach (Match? duplicate in duplicateMatches)
         {
             // Reassign all of the games' matchid fields.
@@ -448,7 +448,7 @@ public class MatchesRepository(
 
     public async Task MarkSuspectedDuplicatesAsync(Match root, IEnumerable<Match> duplicates)
     {
-        int rootId = root.Id;
+        var rootId = root.Id;
         foreach (Match dupe in duplicates)
         {
             var duplicateXref = new MatchDuplicate

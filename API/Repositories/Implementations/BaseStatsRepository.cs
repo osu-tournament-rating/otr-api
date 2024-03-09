@@ -14,7 +14,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
 
     public async Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId)
     {
-        int? id = await _playerRepository.GetIdAsync(osuPlayerId);
+        var id = await _playerRepository.GetIdAsync(osuPlayerId);
 
         if (!id.HasValue)
         {
@@ -83,7 +83,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
 
     public async Task<int> GetGlobalRankAsync(long osuPlayerId, int mode)
     {
-        int globalIndex = (
+        var globalIndex = (
             await _context
                 .BaseStats.WhereMode(mode)
                 .OrderByRatingDescending()
@@ -199,10 +199,10 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
     public async Task<IDictionary<int, int>> GetHistogramAsync(int mode)
     {
         // Determine the maximum rating as a double
-        double maxRating = await _context.BaseStats.Where(x => x.Mode == mode).MaxAsync(x => x.Rating);
+        var maxRating = await _context.BaseStats.Where(x => x.Mode == mode).MaxAsync(x => x.Rating);
 
         // Round up maxRating to the nearest multiple of 25
-        int maxBucket = (int)(Math.Ceiling(maxRating / 25) * 25);
+        var maxBucket = (int)(Math.Ceiling(maxRating / 25) * 25);
 
         // Initialize all buckets from 100 to maxBucket with 0
         var histogram = Enumerable.Range(4, (maxBucket / 25) - 3).ToDictionary(bucket => bucket * 25, _ => 0);
@@ -229,7 +229,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
 
     public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
     {
-        double averageRating =
+        var averageRating =
             await _context
                 .MatchScores.AsNoTracking()
                 .WhereVerified()
@@ -253,7 +253,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
 
         if (chartType == LeaderboardChartType.Country && playerId.HasValue)
         {
-            string? playerCountry = await _context
+            var playerCountry = await _context
                 .Players.Where(x => x.Id == playerId)
                 .Select(x => x.Country)
                 .FirstOrDefaultAsync();
@@ -263,7 +263,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
                 playerCountry != null
                 && LeaderboardUtils.DependentTerritoriesMapping.TryGetValue(
                     playerCountry,
-                    out string? mappedCountry
+                    out var mappedCountry
                 )
             )
             {

@@ -49,7 +49,7 @@ public class ApiMatchRepository(
             return;
         }
 
-        foreach (long osuId in GetUserIdsFromMatch(apiMatch))
+        foreach (var osuId in GetUserIdsFromMatch(apiMatch))
         {
             if (existingPlayersMapping.ContainsKey(osuId))
             {
@@ -117,9 +117,9 @@ public class ApiMatchRepository(
         }
 
         var beatmapsToSave = new List<Beatmap>();
-        int countSaved = 0;
+        var countSaved = 0;
 
-        foreach (long beatmapId in beatmapIds)
+        foreach (var beatmapId in beatmapIds)
         {
             Beatmap? existingBeatmap = await _beatmapRepository.GetByOsuIdAsync(beatmapId);
             if (existingBeatmap == null)
@@ -237,7 +237,7 @@ public class ApiMatchRepository(
         var persisted = new List<Game>();
         foreach (OsuApiGame game in osuMatchGames)
         {
-            int? beatmapIdResult = await _beatmapRepository.GetIdByBeatmapIdAsync(game.BeatmapId);
+            var beatmapIdResult = await _beatmapRepository.GetIdByBeatmapIdAsync(game.BeatmapId);
 
             Game? existingGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
 
@@ -310,10 +310,10 @@ public class ApiMatchRepository(
             return;
         }
 
-        int countSaved = 0;
+        var countSaved = 0;
         foreach (OsuApiScore score in osuApiGame.Scores)
         {
-            int? playerId = await _playerRepository.GetIdAsync(score.UserId);
+            var playerId = await _playerRepository.GetIdAsync(score.UserId);
             if (!playerId.HasValue)
             {
                 _logger.LogWarning(

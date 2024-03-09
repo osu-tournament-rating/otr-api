@@ -125,7 +125,7 @@ public class MatchesController(IMatchesService matchesService, ITournamentsServi
         [FromQuery] bool confirmedDuplicate
     )
     {
-        int? loggedInUser = HttpContext.AuthorizedUserIdentity();
+        var loggedInUser = HttpContext.AuthorizedUserIdentity();
         if (!loggedInUser.HasValue)
         {
             return Unauthorized("You must be logged in to perform this action.");
@@ -156,7 +156,7 @@ public class MatchesController(IMatchesService matchesService, ITournamentsServi
             return NotFound($"Match with id {id} does not exist");
         }
 
-        long osuMatchId = match.MatchId;
+        var osuMatchId = match.MatchId;
         if (osuMatchId != 0)
         {
             return Ok(osuMatchId);

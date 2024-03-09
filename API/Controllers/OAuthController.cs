@@ -45,7 +45,7 @@ public class OAuthController(IOAuthHandler oAuthHandler) : Controller
     [Authorize(Roles = "user")]
     public async Task<IActionResult> CreateClientAsync()
     {
-        int? userId = HttpContext.AuthorizedUserIdentity();
+        var userId = HttpContext.AuthorizedUserIdentity();
 
         if (!userId.HasValue)
         {

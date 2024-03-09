@@ -160,11 +160,11 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
                 var pms = new PlayerModStatsDTO();
                 while (await result.ReadAsync())
                 {
-                    string modType = await result.GetFieldValueAsync<string>("modtype");
-                    int gamesPlayed = await result.GetFieldValueAsync<int>("gamesplayed");
-                    int gamesWon = await result.GetFieldValueAsync<int>("gameswon");
-                    double winrate = await result.GetFieldValueAsync<double>("winrate");
-                    double normalizedAverageScore = await result.GetFieldValueAsync<double>(
+                    var modType = await result.GetFieldValueAsync<string>("modtype");
+                    var gamesPlayed = await result.GetFieldValueAsync<int>("gamesplayed");
+                    var gamesWon = await result.GetFieldValueAsync<int>("gameswon");
+                    var winrate = await result.GetFieldValueAsync<double>("winrate");
+                    var normalizedAverageScore = await result.GetFieldValueAsync<double>(
                         "normalizedaveragescore"
                     );
 
@@ -276,8 +276,8 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        int matchesPlayed = await CountMatchesPlayedAsync(playerId, mode, dateMin, dateMax);
-        int matchesWon = await CountMatchesWonAsync(playerId, mode, dateMin, dateMax);
+        var matchesPlayed = await CountMatchesPlayedAsync(playerId, mode, dateMin, dateMax);
+        var matchesWon = await CountMatchesWonAsync(playerId, mode, dateMin, dateMax);
 
         if (matchesPlayed == 0)
         {

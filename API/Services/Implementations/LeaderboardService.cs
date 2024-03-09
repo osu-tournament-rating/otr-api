@@ -45,7 +45,7 @@ public class LeaderboardService(
 
         if (authorizedPlayerId.HasValue)
         {
-            int? playerId = await _playerService.GetIdAsync(authorizedPlayerId.Value);
+            var playerId = await _playerService.GetIdAsync(authorizedPlayerId.Value);
 
             if (playerId.HasValue)
             {
@@ -75,9 +75,9 @@ public class LeaderboardService(
                 continue;
             }
 
-            long osuId = await _playerRepository.GetOsuIdAsync(baseStat.PlayerId);
-            string? name = await _playerRepository.GetUsernameAsync(baseStat.PlayerId);
-            string? country = await _playerRepository.GetCountryAsync(baseStat.PlayerId);
+            var osuId = await _playerRepository.GetOsuIdAsync(baseStat.PlayerId);
+            var name = await _playerRepository.GetUsernameAsync(baseStat.PlayerId);
+            var country = await _playerRepository.GetCountryAsync(baseStat.PlayerId);
 
             leaderboardPlayerInfo.Add(
                 new LeaderboardPlayerInfoDTO
@@ -185,14 +185,14 @@ public class LeaderboardService(
             return null;
         }
 
-        int rank = chartType switch
+        var rank = chartType switch
         {
             LeaderboardChartType.Global => baseStats.GlobalRank,
             LeaderboardChartType.Country => baseStats.CountryRank,
             _ => throw new ArgumentOutOfRangeException(nameof(chartType), chartType, null)
         };
 
-        int highestRank = chartType switch
+        var highestRank = chartType switch
         {
             LeaderboardChartType.Global
                 => await _ratingStatsRepository.HighestGlobalRankAsync(playerId, mode),

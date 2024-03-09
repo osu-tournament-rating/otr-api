@@ -67,7 +67,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSerilog(configuration =>
 {
-    string connString = builder
+    var connString = builder
         .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
             ConnectionStringsConfiguration.Position
         )
@@ -259,7 +259,7 @@ app.Logger.LogInformation("Running!");
 using IServiceScope scope = app.Services.CreateScope();
 OtrContext context = scope.ServiceProvider.GetRequiredService<OtrContext>();
 
-int migrationsCount = context.Database.GetPendingMigrations().Count();
+var migrationsCount = context.Database.GetPendingMigrations().Count();
 if (migrationsCount > 0)
 {
     await context.Database.MigrateAsync();

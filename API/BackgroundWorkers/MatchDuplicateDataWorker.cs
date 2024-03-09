@@ -28,7 +28,7 @@ public class MatchDuplicateDataWorker(
             IMatchesRepository matchesRepository = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
             IMatchDuplicateRepository duplicateRepository = scope.ServiceProvider.GetRequiredService<IMatchDuplicateRepository>();
             var duplicateGroups = (await matchesRepository.GetDuplicateGroupsAsync()).ToList();
-            int created = 0;
+            var created = 0;
 
             if (duplicateGroups.Count > 0)
             {

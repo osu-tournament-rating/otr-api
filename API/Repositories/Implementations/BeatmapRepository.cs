@@ -21,7 +21,7 @@ public class BeatmapRepository(OtrContext context) : RepositoryBase<Beatmap>(con
 
     public async Task CreateIfNotExistsAsync(IEnumerable<long> beatmapIds)
     {
-        foreach (long id in beatmapIds)
+        foreach (var id in beatmapIds)
         {
             if (!await _context.Beatmaps.AnyAsync(x => x.BeatmapId == id))
             {

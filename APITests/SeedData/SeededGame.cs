@@ -10,7 +10,7 @@ public static class SeededGame
     {
         var ls = new List<Game>();
 
-        for (int i = 0; i < amount; i++)
+        for (var i = 0; i < amount; i++)
         {
             ls.Add(Generate(matchId));
         }

@@ -35,7 +35,7 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
 
     public async Task<long?> GetOsuIdAsync(int id)
     {
-        long result = await _playerRepository.GetOsuIdAsync(id);
+        var result = await _playerRepository.GetOsuIdAsync(id);
         if (result == default)
         {
             return null;
@@ -55,7 +55,7 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
 
     public async Task<PlayerInfoDTO?> GetAsync(long osuId)
     {
-        int? id = await GetIdAsync(osuId);
+        var id = await GetIdAsync(osuId);
 
         return id == null ? null : _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(id.Value));
     }

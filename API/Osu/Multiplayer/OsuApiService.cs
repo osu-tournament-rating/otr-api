@@ -51,7 +51,7 @@ public class OsuApiService : IOsuApiService
         await ExecuteApiCallAsync(
             async () =>
             {
-                string response = await _client.GetStringAsync(
+                var response = await _client.GetStringAsync(
                     $"get_match?k={_osuConfiguration.Value.ApiKey}&mp={matchId}"
                 );
                 _logger.LogDebug(

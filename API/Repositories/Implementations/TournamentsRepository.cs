@@ -79,11 +79,11 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         bool bestPerformances
     )
     {
-        string order = bestPerformances ? "DESC" : "ASC";
+        var order = bestPerformances ? "DESC" : "ASC";
 
         using (DbCommand command = _context.Database.GetDbConnection().CreateCommand())
         {
-            string sql = $"""
+            var sql = $"""
                 SELECT t.id as TournamentId, t.name as TournamentName, AVG(mrs.match_cost) as MatchCost, t.abbreviation AS TournamentAcronym
                 								FROM tournaments t
                 								INNER JOIN matches m ON m.tournament_id = t.id

@@ -14,7 +14,7 @@ public static class MatchAutomationChecks
 
     public static bool HasTournament(Match match)
     {
-        bool passes = match.TournamentId == match.Tournament.Id;
+        var passes = match.TournamentId == match.Tournament.Id;
         if (!passes)
         {
             s_logger.Warning(
@@ -75,7 +75,7 @@ public static class MatchAutomationChecks
     public static bool ValidGameMode(Match match)
     {
         // Ensures the mode for the match's tournament is valid.
-        bool valid = match.Tournament.Mode is >= 0 and <= 3;
+        var valid = match.Tournament.Mode is >= 0 and <= 3;
 
         if (!valid)
         {

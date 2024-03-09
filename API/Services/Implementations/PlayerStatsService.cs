@@ -38,12 +38,12 @@ public class PlayerStatsService(
         DateTime? dateMax = null
     )
     {
-        int? id = await _playerRepository.GetIdAsync(username);
+        var id = await _playerRepository.GetIdAsync(username);
 
         if (!id.HasValue && username.Contains('_'))
         {
             // Search for spaces
-            string repl = username.Replace('_', ' ');
+            var repl = username.Replace('_', ' ');
             id = await _playerRepository.GetIdAsync(repl);
         }
 
@@ -76,10 +76,10 @@ public class PlayerStatsService(
             await _matchStatsRepository.TeammateStatsAsync(playerId, teammateId, mode, dateMin, dateMax)
         ).ToList();
 
-        int matchesPlayed = teammateMatchStats.Count;
-        int matchesWon = teammateMatchStats.Sum(x => x.Won ? 1 : 0);
-        int matchesLost = teammateMatchStats.Sum(x => x.Won ? 0 : 1);
-        double winRate = matchesWon / (double)matchesPlayed;
+        var matchesPlayed = teammateMatchStats.Count;
+        var matchesWon = teammateMatchStats.Sum(x => x.Won ? 1 : 0);
+        var matchesLost = teammateMatchStats.Sum(x => x.Won ? 0 : 1);
+        var winRate = matchesWon / (double)matchesPlayed;
 
         return new PlayerTeammateComparisonDTO
         {
@@ -115,9 +115,9 @@ public class PlayerStatsService(
             await _matchStatsRepository.OpponentStatsAsync(playerId, opponentId, mode, dateMin, dateMax)
         ).ToList();
 
-        int matchesWon = opponentMatchStats.Sum(x => x.Won ? 1 : 0);
-        int matchesPlayed = opponentMatchStats.Count;
-        double winRate = matchesWon / (double)matchesPlayed;
+        var matchesWon = opponentMatchStats.Sum(x => x.Won ? 1 : 0);
+        var matchesPlayed = opponentMatchStats.Count;
+        var winRate = matchesWon / (double)matchesPlayed;
 
         return new PlayerOpponentComparisonDTO
         {
@@ -284,9 +284,9 @@ public class PlayerStatsService(
             return null;
         }
 
-        int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(playerId, mode);
-        double winRate = await _matchStatsRepository.GlobalWinrateAsync(playerId, mode);
-        int highestRank = await _ratingStatsRepository.HighestGlobalRankAsync(playerId, mode);
+        var matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(playerId, mode);
+        var winRate = await _matchStatsRepository.GlobalWinrateAsync(playerId, mode);
+        var highestRank = await _ratingStatsRepository.HighestGlobalRankAsync(playerId, mode);
 
         dto.MatchesPlayed = matchesPlayed;
         dto.Winrate = winRate;
@@ -406,8 +406,8 @@ public class PlayerStatsService(
 
     private static int GetHighestWinStreak(IEnumerable<PlayerMatchStats> stats)
     {
-        int highest = 0;
-        int current = 0;
+        var highest = 0;
+        var current = 0;
 
         foreach (PlayerMatchStats item in stats)
         {

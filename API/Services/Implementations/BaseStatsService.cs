@@ -23,7 +23,7 @@ public class BaseStatsService(
 
     public async Task<IEnumerable<BaseStatsDTO?>> GetForPlayerAsync(long osuPlayerId)
     {
-        int? id = await _playerRepository.GetIdAsync(osuPlayerId);
+        var id = await _playerRepository.GetIdAsync(osuPlayerId);
 
         if (!id.HasValue)
         {
@@ -51,10 +51,10 @@ public class BaseStatsService(
             return null;
         }
 
-        int matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(id, mode);
-        double winRate = await _matchStatsRepository.GlobalWinrateAsync(id, mode);
-        int highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(id, mode);
-        int tournamentsPlayed = await _tournamentsService.CountPlayedAsync(id, mode);
+        var matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(id, mode);
+        var winRate = await _matchStatsRepository.GlobalWinrateAsync(id, mode);
+        var highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(id, mode);
+        var tournamentsPlayed = await _tournamentsService.CountPlayedAsync(id, mode);
         var rankProgress = new RankProgressDTO
         {
             CurrentTier = RatingUtils.GetTier(currentStats.Rating),

@@ -70,13 +70,13 @@ public class OAuthHandler : IOAuthHandler
 
         // Because this user is logging in with osu!, we can
         // issue a new refresh token.
-        string accessToken = GenerateAccessToken(
+        var accessToken = GenerateAccessToken(
             user.Id.ToString(),
             _jwtAudience,
             user.Scopes,
             ACCESS_DURATION_SECONDS
         );
-        string refreshToken = GenerateRefreshToken(user.Id.ToString(), _jwtAudience, "user");
+        var refreshToken = GenerateRefreshToken(user.Id.ToString(), _jwtAudience, "user");
 
         _logger.LogDebug(
             "Authorized user with id {Id}, access expires in {seconds}",
@@ -94,7 +94,7 @@ public class OAuthHandler : IOAuthHandler
 
     public async Task<OAuthResponseDTO?> AuthorizeAsync(int clientId, string clientSecret)
     {
-        bool validClient = await _clientService.ValidateAsync(clientId, clientSecret);
+        var validClient = await _clientService.ValidateAsync(clientId, clientSecret);
         if (!validClient)
         {
             return null;
@@ -132,10 +132,10 @@ public class OAuthHandler : IOAuthHandler
             return null;
         }
 
-        string refreshIssuer = decryptedRefresh.Issuer;
+        var refreshIssuer = decryptedRefresh.Issuer;
 
         // The ids of the access token and refresh token align. Validate the user's information
-        if (!int.TryParse(refreshIssuer, out int issuerId))
+        if (!int.TryParse(refreshIssuer, out var issuerId))
         {
             _logger.LogWarning("Failed to decrypt refresh token issuer into an integer (id)");
             return null;
@@ -150,7 +150,7 @@ public class OAuthHandler : IOAuthHandler
 
         // Get the role
         string accessToken;
-        string issuerRole = decryptedRefresh.Claims.First(claim => claim.Type == "role").Value;
+        var issuerRole = decryptedRefresh.Claims.First(claim => claim.Type == "role").Value;
 
         // If the issuer is a client, validate the client id.
         // If it's a user, validate the user id.
@@ -200,7 +200,7 @@ public class OAuthHandler : IOAuthHandler
 
     public async Task<OAuthClientDTO> CreateClientAsync(int userId, params string[] scopes)
     {
-        string secret = GenerateClientSecret();
+        var secret = GenerateClientSecret();
 
         while (await _clientService.SecretInUse(secret))
         {
@@ -300,7 +300,7 @@ public class OAuthHandler : IOAuthHandler
 
     private async Task<IGlobalUser> AuthorizeOsuUserAsync(string osuCode)
     {
-        string callbackUrl =
+        var callbackUrl =
             _configuration["Auth:ClientCallbackUrl"]
             ?? throw new Exception("Missing Auth:ClientCallbackUrl in configuration!!");
 

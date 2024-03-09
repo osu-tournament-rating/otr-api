@@ -125,7 +125,7 @@ public class OsuTrackApiWorker(
                 await Task.Delay(_ratelimitReset - DateTime.UtcNow, stoppingToken);
             }
 
-            string responseText = await FetchOsuTrackRankAsync(
+            var responseText = await FetchOsuTrackRankAsync(
                 player,
                 client,
                 mode,
@@ -197,7 +197,7 @@ public class OsuTrackApiWorker(
         CancellationToken stoppingToken
     )
     {
-        string url = FormedUrl(player.OsuId, mode, oldestStatDate, oldestStatDate.AddYears(1));
+        var url = FormedUrl(player.OsuId, mode, oldestStatDate, oldestStatDate.AddYears(1));
         HttpResponseMessage response = await client.GetAsync(url, stoppingToken);
         _ratelimitTracker++;
 
@@ -213,7 +213,7 @@ public class OsuTrackApiWorker(
             return string.Empty;
         }
 
-        string responseText = await response.Content.ReadAsStringAsync(stoppingToken);
+        var responseText = await response.Content.ReadAsStringAsync(stoppingToken);
         return responseText;
     }
 
