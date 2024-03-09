@@ -14,7 +14,7 @@ namespace API.Utilities
 
             if (!isValid)
             {
-                string?[] errorMessages = validationResults.Select(result => result.ErrorMessage).ToArray();
+                var errorMessages = validationResults.Select(result => result.ErrorMessage).ToArray();
                 throw new InvalidOperationException(
                     $"Configuration validation failed for {sectionName}: {string.Join(", ", errorMessages)}"
                 );
