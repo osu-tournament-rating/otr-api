@@ -147,6 +147,7 @@ public class OAuthHandler : IOAuthHandler
         if (!claimsPrincipal.IsUser() && !claimsPrincipal.IsClient())
         {
             _logger.LogWarning("Refresh token does not have the user or client role.");
+            return null;
         }
 
         if (claimsPrincipal.IsUser() && claimsPrincipal.IsClient())
