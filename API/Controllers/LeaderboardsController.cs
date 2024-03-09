@@ -25,7 +25,7 @@ public class LeaderboardsController : Controller
     }
 
     [HttpGet]
-    [AllowAnonymous] // TODO: Frontend needs to have a dedicated client for these requests.
+    // [AllowAnonymous] // TODO: Frontend needs to have a dedicated client for these requests.
     public async Task<ActionResult<LeaderboardDTO>> GetAsync(
         [FromQuery] LeaderboardRequestQueryDTO requestQuery
     )
