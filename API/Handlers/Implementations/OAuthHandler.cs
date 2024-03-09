@@ -273,7 +273,7 @@ public class OAuthHandler : IOAuthHandler
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[] { new Claim("role", role) }),
+            Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, role) }),
             IssuedAt = DateTime.UtcNow,
             Expires = DateTime.UtcNow.AddSeconds(expirationSeconds),
             Issuer = issuer,
