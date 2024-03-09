@@ -157,6 +157,7 @@ public class OAuthHandler : IOAuthHandler
 
         // If the issuer is a user, validate the user id.
         // If the issuer is a client, validate the client id.
+
         var accessToken = string.Empty;
 
         if (claimsPrincipal.IsUser())
