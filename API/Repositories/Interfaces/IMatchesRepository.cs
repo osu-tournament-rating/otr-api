@@ -4,25 +4,18 @@ using API.Enums;
 
 namespace API.Repositories.Interfaces;
 
-public interface IMatchesRepository : IRepository<Match>
+public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
 {
     Task<Match> GetAsync(int id, bool filterInvalidMatches = true);
     Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered);
+    Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds);
     Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches);
     Task<Match?> GetByMatchIdAsync(long matchId);
     Task<IList<Match>> GetMatchesNeedingAutoCheckAsync();
     Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
     Task<Match?> GetFirstMatchNeedingAutoCheckAsync();
     Task<IList<Match>> GetNeedApiProcessingAsync();
-    Task<IEnumerable<Match>> GetByMatchIdsAsync(IEnumerable<long> matchIds);
     Task<Match> UpdateVerificationStatus(int id, int? verificationStatus);
-
-    /// <summary>
-    ///  Used to queue up matches for verification.
-    /// </summary>
-    /// <returns>Number of rows inserted</returns>
-    Task<int> BatchInsertAsync(IEnumerable<Match> matches);
-
     Task<int> UpdateVerificationStatusAsync(
         long matchId,
         MatchVerificationStatus status,

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
+public class MatchesRepository : HistoryRepositoryBase<Match, MatchHistory>, IMatchesRepository
 {
     private readonly OtrContext _context;
     private readonly IMatchDuplicateRepository _matchDuplicateRepository;
@@ -21,7 +21,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
         OtrContext context,
         IMatchDuplicateRepository matchDuplicateRepository
     )
-        : base(context)
+        : base(context, mapper)
     {
         _logger = logger;
         _mapper = mapper;
@@ -37,13 +37,6 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
             .Include(x => x.Games)
             .ThenInclude(x => x.Beatmap)
             .FirstOrDefaultAsync(x => x.Id == id);
-
-    public override async Task<int> UpdateAsync(Match entity)
-    {
-        entity.Updated = DateTime.UtcNow;
-        _context.Matches.Update(entity);
-        return await _context.SaveChangesAsync();
-    }
 
     public async Task<Match> UpdateVerificationStatus(int id, int? verificationStatus)
     {
@@ -167,14 +160,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
     public async Task<IList<Match>> GetNeedApiProcessingAsync() =>
         await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();
 
-    public async Task<IEnumerable<Match>> GetByMatchIdsAsync(IEnumerable<long> matchIds) =>
+    public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
         await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
-
-    public async Task<int> BatchInsertAsync(IEnumerable<Match> matches)
-    {
-        await _context.Matches.AddRangeAsync(matches);
-        return await _context.SaveChangesAsync();
-    }
 
     public async Task<int> UpdateVerificationStatusAsync(
         long matchId,
