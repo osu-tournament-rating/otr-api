@@ -11,7 +11,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [EnableCors]
-[Authorize(Roles = "user")]
+[Authorize(Roles = "user, whitelist")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class PlayersController : Controller
 {
@@ -30,16 +30,17 @@ public class PlayersController : Controller
         return Ok(players);
     }
 
-    [HttpGet("{userId:int}/info")]
-    public async Task<ActionResult<PlayerInfoDTO?>> GetByUserIdAsync(int userId)
+    [HttpGet("{osuId:long}/info")]
+    public async Task<ActionResult<PlayerInfoDTO?>> GetByUserIdAsync(long osuId)
     {
-        var player = await _playerService.GetAsync(userId);
-        if (player != null)
+        var info = await _playerService.GetAsync(osuId);
+
+        if (info == null)
         {
-            return Ok(player);
+            return NotFound($"User with osuid {osuId} does not exist");
         }
 
-        return NotFound($"User with id {userId} does not exist");
+        return info;
     }
 
     [HttpGet("{username}/info")]

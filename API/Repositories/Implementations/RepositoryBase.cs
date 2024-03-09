@@ -46,7 +46,7 @@ public class RepositoryBase<T> : IRepository<T>
 
     public virtual async Task<bool> ExistsAsync(int id) => await _context.Set<T>().FindAsync(id) != null;
 
-    public async Task<int> BulkInsertAsync(IEnumerable<T> entities)
+    public virtual async Task<int> BulkInsertAsync(IEnumerable<T> entities)
     {
         await _context.Set<T>().AddRangeAsync(entities);
         return await _context.SaveChangesAsync();
