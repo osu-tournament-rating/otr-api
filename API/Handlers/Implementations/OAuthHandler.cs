@@ -147,6 +147,7 @@ public class OAuthHandler : IOAuthHandler
         if (!claimsPrincipal.IsUser() && !claimsPrincipal.IsClient())
         {
             _logger.LogWarning("Refresh token does not have the user or client role.");
+            return null;
         }
 
         if (claimsPrincipal.IsUser() && claimsPrincipal.IsClient())
@@ -274,7 +275,7 @@ public class OAuthHandler : IOAuthHandler
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[] { new Claim("role", role) }),
+            Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Role, role) }),
             IssuedAt = DateTime.UtcNow,
             Expires = DateTime.UtcNow.AddSeconds(expirationSeconds),
             Issuer = issuer,
