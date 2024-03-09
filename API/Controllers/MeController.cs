@@ -14,7 +14,7 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize(Roles = "user")]
 [Authorize(Roles = "whitelist")]
-public class MeController : Controller
+public class MeController(IUserService userService, IPlayerStatsService playerStatsService) : Controller
 {
     private readonly IUserService _userService = userService;
     private readonly IPlayerStatsService _playerStatsService = playerStatsService;

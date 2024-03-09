@@ -52,13 +52,13 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
 
     public async Task<PlayerInfoDTO?> GetVersatileAsync(string key)
     {
-        if (!int.TryParse(key, out int value))
+        if (!int.TryParse(key, out var value))
         {
             return await GetAsync(key);
         }
 
         // Check for the player id
-        var result = await GetAsync(value);
+        PlayerInfoDTO? result = await GetAsync(value);
 
         if (result != null)
         {
@@ -66,7 +66,7 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
         }
 
         // Check for the osu id
-        if (long.TryParse(key, out long longValue))
+        if (long.TryParse(key, out var longValue))
         {
             return await GetAsync(longValue);
         }
