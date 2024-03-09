@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240229211116_Tournament_Add_SubmitterUserId")]
+    partial class Tournament_Add_SubmitterUserId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -458,101 +461,6 @@ namespace API.Migrations
                     b.ToTable("match_duplicates");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("hist_created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<DateTime?>("EndTime")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_time");
-
-                    b.Property<int>("HistoryAction")
-                        .HasColumnType("integer")
-                        .HasColumnName("hist_action");
-
-                    b.Property<DateTime>("HistoryEndTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("hist_end_time")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<DateTime?>("HistoryStartTime")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("hist_start_time");
-
-                    b.Property<bool?>("IsApiProcessed")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_api_processed");
-
-                    b.Property<long>("MatchId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("match_id");
-
-                    b.Property<int?>("ModifierId")
-                        .HasColumnType("integer")
-                        .HasColumnName("hist_modifier_id");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("name");
-
-                    b.Property<bool?>("NeedsAutoCheck")
-                        .HasColumnType("boolean")
-                        .HasColumnName("needs_auto_check");
-
-                    b.Property<int?>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("hist_ref_id");
-
-                    b.Property<DateTime?>("StartTime")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_time");
-
-                    b.Property<int?>("SubmitterUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("submitted_by_user");
-
-                    b.Property<int>("TournamentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("tournament_id");
-
-                    b.Property<string>("VerificationInfo")
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("verification_info");
-
-                    b.Property<int?>("VerificationSource")
-                        .HasColumnType("integer")
-                        .HasColumnName("verification_source");
-
-                    b.Property<int?>("VerificationStatus")
-                        .HasColumnType("integer")
-                        .HasColumnName("verification_status");
-
-                    b.Property<int?>("VerifierUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_by_user");
-
-                    b.HasKey("Id")
-                        .HasName("matches_hist_pk");
-
-                    b.HasIndex("ReferenceId");
-
-                    b.ToTable("matches_hist");
-                });
-
             modelBuilder.Entity("API.Entities.MatchRatingStats", b =>
                 {
                     b.Property<int>("Id")
@@ -788,38 +696,6 @@ namespace API.Migrations
                     b.HasIndex("TeamRed");
 
                     b.ToTable("match_win_records");
-                });
-
-            modelBuilder.Entity("API.Entities.OAuthClient", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string[]>("Scopes")
-                        .IsRequired()
-                        .HasColumnType("text[]")
-                        .HasColumnName("scopes");
-
-                    b.Property<string>("Secret")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("character varying(70)")
-                        .HasColumnName("secret");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("oauth_clients_pk");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("oauth_clients");
                 });
 
             modelBuilder.Entity("API.Entities.Player", b =>
@@ -1102,8 +978,6 @@ namespace API.Migrations
                     b.HasKey("Id")
                         .HasName("Tournaments_pk");
 
-                    b.HasIndex("SubmitterUserId");
-
                     b.HasIndex("Name", "Abbreviation")
                         .IsUnique();
 
@@ -1133,10 +1007,10 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("player_id");
 
-                    b.Property<string[]>("Scopes")
+                    b.Property<string[]>("Roles")
                         .IsRequired()
                         .HasColumnType("text[]")
-                        .HasColumnName("scopes");
+                        .HasColumnName("roles");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
@@ -1228,16 +1102,6 @@ namespace API.Migrations
                     b.Navigation("Verifier");
                 });
 
-            modelBuilder.Entity("API.Entities.MatchHistory", b =>
-                {
-                    b.HasOne("API.Entities.Match", "ReferenceMatch")
-                        .WithMany()
-                        .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ReferenceMatch");
-                });
-
             modelBuilder.Entity("API.Entities.MatchRatingStats", b =>
                 {
                     b.HasOne("API.Entities.Match", "Match")
@@ -1290,16 +1154,6 @@ namespace API.Migrations
                     b.Navigation("Match");
                 });
 
-            modelBuilder.Entity("API.Entities.OAuthClient", b =>
-                {
-                    b.HasOne("API.Entities.User", "User")
-                        .WithMany("Clients")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("API.Entities.PlayerMatchStats", b =>
                 {
                     b.HasOne("API.Entities.Match", "Match")
@@ -1328,15 +1182,6 @@ namespace API.Migrations
                         .IsRequired();
 
                     b.Navigation("Player");
-                });
-
-            modelBuilder.Entity("API.Entities.Tournament", b =>
-                {
-                    b.HasOne("API.Entities.User", "SubmittedBy")
-                        .WithMany("SubmittedTournaments")
-                        .HasForeignKey("SubmitterUserId");
-
-                    b.Navigation("SubmittedBy");
                 });
 
             modelBuilder.Entity("API.Entities.User", b =>
@@ -1397,11 +1242,7 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.User", b =>
                 {
-                    b.Navigation("Clients");
-
                     b.Navigation("SubmittedMatches");
-
-                    b.Navigation("SubmittedTournaments");
 
                     b.Navigation("VerifiedDuplicates");
 

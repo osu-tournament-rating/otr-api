@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240302070707_MatchHistory")]
+    partial class MatchHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -467,12 +470,6 @@ namespace API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("hist_created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_time");
@@ -790,38 +787,6 @@ namespace API.Migrations
                     b.ToTable("match_win_records");
                 });
 
-            modelBuilder.Entity("API.Entities.OAuthClient", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string[]>("Scopes")
-                        .IsRequired()
-                        .HasColumnType("text[]")
-                        .HasColumnName("scopes");
-
-                    b.Property<string>("Secret")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("character varying(70)")
-                        .HasColumnName("secret");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("oauth_clients_pk");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("oauth_clients");
-                });
-
             modelBuilder.Entity("API.Entities.Player", b =>
                 {
                     b.Property<int>("Id")
@@ -1133,10 +1098,10 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("player_id");
 
-                    b.Property<string[]>("Scopes")
+                    b.Property<string[]>("Roles")
                         .IsRequired()
                         .HasColumnType("text[]")
-                        .HasColumnName("scopes");
+                        .HasColumnName("roles");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
@@ -1290,16 +1255,6 @@ namespace API.Migrations
                     b.Navigation("Match");
                 });
 
-            modelBuilder.Entity("API.Entities.OAuthClient", b =>
-                {
-                    b.HasOne("API.Entities.User", "User")
-                        .WithMany("Clients")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("API.Entities.PlayerMatchStats", b =>
                 {
                     b.HasOne("API.Entities.Match", "Match")
@@ -1397,8 +1352,6 @@ namespace API.Migrations
 
             modelBuilder.Entity("API.Entities.User", b =>
                 {
-                    b.Navigation("Clients");
-
                     b.Navigation("SubmittedMatches");
 
                     b.Navigation("SubmittedTournaments");

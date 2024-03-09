@@ -50,9 +50,7 @@ public class MatchesService : IMatchesService
         int? verifier
     )
     {
-        var existingMatches = (
-            await _matchesRepository.GetByMatchIdsAsync(tournamentWebSubmissionDto.Ids)
-        ).ToList();
+        var existingMatches = (await _matchesRepository.GetAsync(tournamentWebSubmissionDto.Ids)).ToList();
         var tournament = await _tournamentsRepository.CreateOrUpdateAsync(
             tournamentWebSubmissionDto,
             verified
@@ -87,15 +85,15 @@ public class MatchesService : IMatchesService
         {
             MatchId = id,
             VerificationStatus = (int)verificationStatus,
-            SubmitterUserId = tournamentWebSubmissionDto.SubmitterId,
             NeedsAutoCheck = true,
             IsApiProcessed = false,
             VerificationSource = verifier,
             VerifierUserId = verified ? tournamentWebSubmissionDto.SubmitterId : null,
-            TournamentId = tournament.Id
+            TournamentId = tournament.Id,
+            SubmitterUserId = tournamentWebSubmissionDto.SubmitterId
         });
 
-        int? result = await _matchesRepository.BatchInsertAsync(newMatches);
+        int? result = await _matchesRepository.BulkInsertAsync(newMatches);
         if (result > 0)
         {
             _logger.LogInformation(
