@@ -52,7 +52,7 @@ public class OAuthController(IOAuthHandler oAuthHandler) : Controller
             return Unauthorized();
         }
 
-        var result = await _oAuthHandler.CreateClientAsync(userId!.Value);
+        OAuthClientDTO result = await _oAuthHandler.CreateClientAsync(userId!.Value);
 
         return Ok(result);
     }
