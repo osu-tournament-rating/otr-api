@@ -11,16 +11,21 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "user")]
-public class TournamentsController(ITournamentsService service) : Controller
+[Authorize(Roles = "user, whitelist")]
+public class TournamentsController : Controller
 {
-    private readonly ITournamentsService _service = service;
+    private readonly ITournamentsService _service;
+
+    public TournamentsController(ITournamentsService service)
+    {
+        _service = service;
+    }
 
     [HttpGet]
     [Authorize(Roles = "system")]
     public async Task<IActionResult> GetAsync()
     {
-        IEnumerable<TournamentDTO> res = await _service.GetAllAsync();
+        var res = await _service.GetAllAsync();
         return Ok(res);
     }
 
@@ -28,7 +33,7 @@ public class TournamentsController(ITournamentsService service) : Controller
     [Authorize(Roles = "system")]
     public async Task<IActionResult> PutAsync(TournamentWebSubmissionDTO tournament)
     {
-        TournamentDTO res = await _service.CreateOrUpdateAsync(tournament, true);
+        var res = await _service.CreateOrUpdateAsync(tournament, true);
 
         return Ok(res);
     }
