@@ -11,7 +11,7 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "user")]
+[Authorize(Roles = "user, whitelist")]
 public class TournamentsController : Controller
 {
     private readonly ITournamentsService _service;

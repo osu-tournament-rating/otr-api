@@ -30,6 +30,9 @@ public class Tournament
     [Column("team_size")]
     public int TeamSize { get; set; }
 
+    [Column("submitter_id")]
+    public int? SubmitterUserId { get; set; }
+
     [Column("created", TypeName = "timestamp with time zone")]
     public DateTime Created { get; set; }
 
@@ -38,4 +41,5 @@ public class Tournament
 
     [InverseProperty("Tournament")]
     public virtual ICollection<Match> Matches { get; set; } = new List<Match>();
+    public virtual User? SubmittedBy { get; set; }
 }
