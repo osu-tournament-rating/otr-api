@@ -53,7 +53,6 @@ public class MeController : Controller
     /// </summary>
     /// <returns></returns>
     [HttpGet("validate")]
-    [Authorize(Roles = "whitelist")]
     [EndpointSummary("Validates the currently logged in user has permissions to access the website.")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
