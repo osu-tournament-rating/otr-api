@@ -11,7 +11,8 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [EnableCors]
-[Authorize(Roles = "user, whitelist")]
+[Authorize(Roles = "user")]
+[Authorize(Roles = "whitelist")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class PlayersController(IPlayerService playerService) : Controller
 {
