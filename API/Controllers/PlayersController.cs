@@ -11,8 +11,6 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [EnableCors]
-[Authorize(Roles = "user")]
-[Authorize(Roles = "whitelist")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class PlayersController(IPlayerService playerService) : Controller
 {
@@ -27,6 +25,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     }
 
     [HttpGet("{key}/info")]
+    [Authorize(Roles = "user, client")]
     [EndpointSummary("Get player info by versatile search")]
     [EndpointDescription("Get player info searching first by id, then osuId, then username")]
     public async Task<ActionResult<PlayerInfoDTO?>> GetAsync(string key)
