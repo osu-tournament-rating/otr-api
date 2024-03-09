@@ -11,16 +11,10 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class StatsController : Controller
+public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsService baseStatsService) : Controller
 {
-    private readonly IBaseStatsService _baseStatsService;
-    private readonly IPlayerStatsService _playerStatsService;
-
-    public StatsController(IPlayerStatsService playerStatsService, IBaseStatsService baseStatsService)
-    {
-        _playerStatsService = playerStatsService;
-        _baseStatsService = baseStatsService;
-    }
+    private readonly IBaseStatsService _baseStatsService = baseStatsService;
+    private readonly IPlayerStatsService _playerStatsService = playerStatsService;
 
     [HttpGet("{playerId:int}")]
     [Authorize(Roles = "user, client")]

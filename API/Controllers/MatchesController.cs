@@ -15,16 +15,10 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class MatchesController : Controller
+public class MatchesController(IMatchesService matchesService, ITournamentsService tournamentsService) : Controller
 {
-    private readonly IMatchesService _matchesService;
-    private readonly ITournamentsService _tournamentsService;
-
-    public MatchesController(IMatchesService matchesService, ITournamentsService tournamentsService)
-    {
-        _matchesService = matchesService;
-        _tournamentsService = tournamentsService;
-    }
+    private readonly IMatchesService _matchesService = matchesService;
+    private readonly ITournamentsService _tournamentsService = tournamentsService;
 
     // TODO: Move to tournaments controller
     [HttpPost("batch")]
@@ -87,7 +81,7 @@ public class MatchesController : Controller
     [EndpointSummary("Returns all verified match ids")]
     public async Task<ActionResult<IEnumerable<int>>> GetAllAsync()
     {
-        var matches = await _matchesService.GetAllIdsAsync(true);
+        IEnumerable<int> matches = await _matchesService.GetAllIdsAsync(true);
         return Ok(matches);
     }
 
@@ -95,7 +89,7 @@ public class MatchesController : Controller
     [Authorize("user, client")]
     public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
     {
-        var match = await _matchesService.GetAsync(id);
+        MatchDTO? match = await _matchesService.GetAsync(id);
 
         if (match == null)
         {
@@ -114,7 +108,7 @@ public class MatchesController : Controller
     )]
     public async Task<ActionResult<IEnumerable<MatchDTO>>> ConvertAsync([FromBody] IEnumerable<int> ids)
     {
-        var matches = await _matchesService.ConvertAsync(ids);
+        IEnumerable<MatchDTO> matches = await _matchesService.ConvertAsync(ids);
         return Ok(matches);
     }
 
@@ -132,7 +126,7 @@ public class MatchesController : Controller
         [FromQuery] bool confirmedDuplicate
     )
     {
-        int? loggedInUser = HttpContext.AuthorizedUserIdentity();
+        var loggedInUser = HttpContext.AuthorizedUserIdentity();
         if (!loggedInUser.HasValue)
         {
             return Unauthorized("You must be logged in to perform this action.");
@@ -157,13 +151,13 @@ public class MatchesController : Controller
     [Authorize(Roles = "system")]
     public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
     {
-        var match = await _matchesService.GetByOsuIdAsync(id);
+        MatchDTO? match = await _matchesService.GetByOsuIdAsync(id);
         if (match == null)
         {
             return NotFound($"Match with id {id} does not exist");
         }
 
-        long osuMatchId = match.MatchId;
+        var osuMatchId = match.MatchId;
         if (osuMatchId != 0)
         {
             return Ok(osuMatchId);
@@ -176,7 +170,7 @@ public class MatchesController : Controller
     [Authorize(Roles = "system")]
     public async Task<IActionResult> GetIdMappingAsync()
     {
-        var mapping = await _matchesService.GetIdMappingAsync();
+        IEnumerable<MatchIdMappingDTO> mapping = await _matchesService.GetIdMappingAsync();
         return Ok(mapping);
     }
 
@@ -192,7 +186,7 @@ public class MatchesController : Controller
         [FromBody] JsonPatchDocument<MatchDTO> patch
     )
     {
-        var match = await _matchesService.GetAsync(id, false);
+        MatchDTO? match = await _matchesService.GetAsync(id, false);
 
         if (match is null)
         {
@@ -212,7 +206,7 @@ public class MatchesController : Controller
             return BadRequest(ModelState);
         }
 
-        var updatedMatch = await _matchesService.UpdateVerificationStatus(id, match.VerificationStatus);
+        MatchDTO updatedMatch = await _matchesService.UpdateVerificationStatus(id, match.VerificationStatus);
 
         return Ok(updatedMatch);
     }

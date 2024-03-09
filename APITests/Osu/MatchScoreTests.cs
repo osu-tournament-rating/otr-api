@@ -103,7 +103,7 @@ public class MatchScoreTests
     {
         var matchScore = new MatchScore() { Count300 = 500 };
 
-        string json = JsonConvert.SerializeObject(matchScore);
+        var json = JsonConvert.SerializeObject(matchScore);
         Assert.Contains("Accuracy", json);
         Assert.Contains("100.0", json);
     }

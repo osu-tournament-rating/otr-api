@@ -7,21 +7,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsRepository
+public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRepository) : RepositoryBase<BaseStats>(context), IBaseStatsRepository
 {
-    private readonly OtrContext _context;
-    private readonly IPlayerRepository _playerRepository;
-
-    public BaseStatsRepository(OtrContext context, IPlayerRepository playerRepository)
-        : base(context)
-    {
-        _context = context;
-        _playerRepository = playerRepository;
-    }
+    private readonly OtrContext _context = context;
+    private readonly IPlayerRepository _playerRepository = playerRepository;
 
     public async Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId)
     {
-        int? id = await _playerRepository.GetIdAsync(osuPlayerId);
+        var id = await _playerRepository.GetIdAsync(osuPlayerId);
 
         if (!id.HasValue)
         {
@@ -42,7 +35,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
     public async Task<int> InsertOrUpdateForPlayerAsync(int playerId, BaseStats baseStats)
     {
-        var existingRating = await _context
+        BaseStats? existingRating = await _context
             .BaseStats.Where(r => r.PlayerId == baseStats.PlayerId && r.Mode == baseStats.Mode)
             .FirstOrDefaultAsync();
 
@@ -63,7 +56,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
     public async Task<int> BatchInsertAsync(IEnumerable<BaseStats> baseStats)
     {
         var ls = new List<BaseStats>();
-        foreach (var stat in baseStats)
+        foreach (BaseStats stat in baseStats)
         {
             ls.Add(
                 new BaseStats
@@ -90,7 +83,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
     public async Task<int> GetGlobalRankAsync(long osuPlayerId, int mode)
     {
-        int globalIndex = (
+        var globalIndex = (
             await _context
                 .BaseStats.WhereMode(mode)
                 .OrderByRatingDescending()
@@ -119,7 +112,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
         int? playerId
     )
     {
-        var query = await LeaderboardQuery(mode, chartType, filter, playerId);
+        IQueryable<BaseStats> query = await LeaderboardQuery(mode, chartType, filter, playerId);
 
         return await query
             .OrderByRatingDescending()
@@ -136,7 +129,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
         int? playerId
     )
     {
-        var query = await LeaderboardQuery(mode, chartType, filter, playerId);
+        IQueryable<BaseStats> query = await LeaderboardQuery(mode, chartType, filter, playerId);
 
         return await query.CountAsync();
     }
@@ -206,16 +199,16 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
     public async Task<IDictionary<int, int>> GetHistogramAsync(int mode)
     {
         // Determine the maximum rating as a double
-        double maxRating = await _context.BaseStats.Where(x => x.Mode == mode).MaxAsync(x => x.Rating);
+        var maxRating = await _context.BaseStats.Where(x => x.Mode == mode).MaxAsync(x => x.Rating);
 
         // Round up maxRating to the nearest multiple of 25
-        int maxBucket = (int)(Math.Ceiling(maxRating / 25) * 25);
+        var maxBucket = (int)(Math.Ceiling(maxRating / 25) * 25);
 
         // Initialize all buckets from 100 to maxBucket with 0
         var histogram = Enumerable.Range(4, (maxBucket / 25) - 3).ToDictionary(bucket => bucket * 25, _ => 0);
 
         // Adjust the GroupBy to correctly bucket the rating of 100
-        var dbHistogram = await _context
+        Dictionary<int, int> dbHistogram = await _context
             .BaseStats.AsNoTracking()
             .Where(x => x.Mode == mode && x.Rating >= 100)
             .GroupBy(x => (int)(x.Rating / 25) * 25)
@@ -223,7 +216,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
             .ToDictionaryAsync(g => g.Bucket, g => g.Count);
 
         // Update the histogram with actual counts
-        foreach (var item in dbHistogram)
+        foreach (KeyValuePair<int, int> item in dbHistogram)
         {
             if (histogram.ContainsKey(item.Key))
             {
@@ -236,7 +229,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
 
     public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
     {
-        double averageRating =
+        var averageRating =
             await _context
                 .MatchScores.AsNoTracking()
                 .WhereVerified()
@@ -256,11 +249,11 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
         int? playerId
     )
     {
-        var baseQuery = _context.BaseStats.WhereMode(mode);
+        IQueryable<BaseStats> baseQuery = _context.BaseStats.WhereMode(mode);
 
         if (chartType == LeaderboardChartType.Country && playerId.HasValue)
         {
-            string? playerCountry = await _context
+            var playerCountry = await _context
                 .Players.Where(x => x.Id == playerId)
                 .Select(x => x.Country)
                 .FirstOrDefaultAsync();
@@ -270,7 +263,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
                 playerCountry != null
                 && LeaderboardUtils.DependentTerritoriesMapping.TryGetValue(
                     playerCountry,
-                    out string? mappedCountry
+                    out var mappedCountry
                 )
             )
             {
@@ -296,7 +289,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
         return baseQuery;
     }
 
-    private IQueryable<BaseStats> FilterByRank(
+    private static IQueryable<BaseStats> FilterByRank(
         int mode,
         IQueryable<BaseStats> query,
         int? minRank,
@@ -332,7 +325,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
         return query;
     }
 
-    private IQueryable<BaseStats> FilterByRating(IQueryable<BaseStats> query, int? minRating, int? maxRating)
+    private static IQueryable<BaseStats> FilterByRating(IQueryable<BaseStats> query, int? minRating, int? maxRating)
     {
         if (minRating.HasValue)
         {
@@ -347,7 +340,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
         return query;
     }
 
-    private IQueryable<BaseStats> FilterByMatchesPlayed(
+    private static IQueryable<BaseStats> FilterByMatchesPlayed(
         IQueryable<BaseStats> query,
         int? minMatches,
         int? maxMatches
@@ -374,7 +367,7 @@ public class BaseStatsRepository : RepositoryBase<BaseStats>, IBaseStatsReposito
         return query;
     }
 
-    private IQueryable<BaseStats> FilterByTier(
+    private static IQueryable<BaseStats> FilterByTier(
         IQueryable<BaseStats> query,
         LeaderboardTierFilterDTO tierFilter
     )

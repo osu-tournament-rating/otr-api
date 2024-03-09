@@ -5,16 +5,10 @@ using AutoMapper;
 
 namespace API.Services.Implementations;
 
-public class BeatmapService : IBeatmapService
+public class BeatmapService(IBeatmapRepository beatmapRepository, IMapper mapper) : IBeatmapService
 {
-    private readonly IBeatmapRepository _beatmapRepository;
-    private readonly IMapper _mapper;
-
-    public BeatmapService(IBeatmapRepository beatmapRepository, IMapper mapper)
-    {
-        _beatmapRepository = beatmapRepository;
-        _mapper = mapper;
-    }
+    private readonly IBeatmapRepository _beatmapRepository = beatmapRepository;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<IEnumerable<BeatmapDTO>> GetAllAsync() =>
         _mapper.Map<IEnumerable<BeatmapDTO>>(await _beatmapRepository.GetAllAsync());

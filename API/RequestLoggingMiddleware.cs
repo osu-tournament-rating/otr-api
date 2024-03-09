@@ -3,22 +3,16 @@ using System.Text;
 
 namespace API;
 
-public class RequestLoggingMiddleware
+public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
 {
-    private readonly ILogger<RequestLoggingMiddleware> _logger;
-    private readonly RequestDelegate _next;
-
-    public RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+    private readonly ILogger<RequestLoggingMiddleware> _logger = logger;
+    private readonly RequestDelegate _next = next;
 
     public async Task Invoke(HttpContext context)
     {
         await LogRequest(context.Request);
 
-        var originalBodyStream = context.Response.Body;
+        Stream originalBodyStream = context.Response.Body;
 
         try
         {
@@ -47,7 +41,7 @@ public class RequestLoggingMiddleware
     {
         request.EnableBuffering();
 
-        var body = request.Body;
+        Stream body = request.Body;
         try
         {
             // Create a new memory stream.
@@ -58,10 +52,10 @@ public class RequestLoggingMiddleware
             memStream.Position = 0;
 
             // Read from the memory stream and convert to string for logging.
-            byte[] buffer = new byte[memStream.Length];
+            var buffer = new byte[memStream.Length];
             // ReSharper disable once MustUseReturnValue
-            await memStream.ReadAsync(buffer, 0, buffer.Length);
-            string bodyAsText = Encoding.UTF8.GetString(buffer);
+            await memStream.ReadAsync(buffer);
+            var bodyAsText = Encoding.UTF8.GetString(buffer);
 
             if (bodyAsText.Length > 500)
             {
@@ -98,7 +92,7 @@ public class RequestLoggingMiddleware
         response.Body.Seek(0, SeekOrigin.Begin);
 
         //...and copy it into a string
-        char[] buff = new char[1000];
+        var buff = new char[1000];
         await new StreamReader(response.Body).ReadAsync(buff, 0, (int)Math.Min(1000, response.Body.Length));
 
         //We need to reset the reader for the response so that the client can read it.
@@ -110,7 +104,7 @@ public class RequestLoggingMiddleware
             text += "...";
         }
 
-        string? ident = response
+        var ident = response
             .HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Iss)
             ?.Value;
 

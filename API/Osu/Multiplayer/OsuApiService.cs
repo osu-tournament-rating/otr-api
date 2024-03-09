@@ -51,7 +51,7 @@ public class OsuApiService : IOsuApiService
         await ExecuteApiCallAsync(
             async () =>
             {
-                string response = await _client.GetStringAsync(
+                var response = await _client.GetStringAsync(
                     $"get_match?k={_osuConfiguration.Value.ApiKey}&mp={matchId}"
                 );
                 _logger.LogDebug(
@@ -69,7 +69,7 @@ public class OsuApiService : IOsuApiService
         await ExecuteApiCallAsync(
             async () =>
             {
-                var response = await _v2Client.GetBeatmapAttributesAsync(beatmapId);
+                IBeatmapDifficulty response = await _v2Client.GetBeatmapAttributesAsync(beatmapId);
                 _logger.LogDebug(
                     "Successfully received response from osu! API for beatmap attributes {BeatmapId}",
                     beatmapId
@@ -84,14 +84,14 @@ public class OsuApiService : IOsuApiService
         await ExecuteApiCallAsync(
             async () =>
             {
-                var response = await _v2Client.GetBeatmapAsync(beatmapId);
+                IBeatmap response = await _v2Client.GetBeatmapAsync(beatmapId);
                 _logger.LogDebug(
                     "Successfully received response from osu! API for beatmap {BeatmapId} [{Reason}]",
                     beatmapId,
                     reason
                 );
 
-                var attributes = await GetDifficultyAttributesAsync(beatmapId);
+                IBeatmapDifficulty? attributes = await GetDifficultyAttributesAsync(beatmapId);
 
                 var beatmap = new Entities.Beatmap
                 {
@@ -116,7 +116,7 @@ public class OsuApiService : IOsuApiService
 
                 if (attributes != null)
                 {
-                    var attr = attributes.Attributes;
+                    IBeatmapDifficultyAttributes attr = attributes.Attributes;
                     beatmap.Sr = attr.StarRating;
                     beatmap.AimDiff = attr.AimDifficulty;
                     beatmap.SpeedDiff = attr.SpeedDifficulty;
@@ -131,7 +131,7 @@ public class OsuApiService : IOsuApiService
         await ExecuteApiCallAsync(
             async () =>
             {
-                var response = await _v2Client.GetUserAsync(userId, (GameMode)(int)mode);
+                IGlobalUser response = await _v2Client.GetUserAsync(userId, (GameMode)(int)mode);
 
                 if (response.IsRestricted == true)
                 {

@@ -11,7 +11,7 @@ public class OsuApiMatchData
     public OsuApiMatch OsuApiMatch { get; set; } = new();
 
     [JsonProperty("games")]
-    public List<OsuApiGame> Games { get; set; } = new();
+    public List<OsuApiGame> Games { get; set; } = [];
 }
 
 public class OsuApiMatch
@@ -92,7 +92,7 @@ public class OsuApiGame
     public Mods Mods { get; set; }
 
     [JsonProperty("scores")]
-    public List<OsuApiScore> Scores { get; set; } = new();
+    public List<OsuApiScore> Scores { get; set; } = [];
 }
 
 public class OsuApiScore

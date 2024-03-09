@@ -7,14 +7,9 @@ using Npgsql;
 
 namespace API.Repositories.Implementations;
 
-public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
+public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsRepository
 {
-    private readonly OtrContext _context;
-
-    public PlayerMatchStatsRepository(OtrContext context)
-    {
-        _context = context;
-    }
+    private readonly OtrContext _context = context;
 
     public async Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(
         int playerId,
@@ -77,7 +72,7 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
         DateTime dateMax
     )
     {
-        using (var command = _context.Database.GetDbConnection().CreateCommand())
+        using (System.Data.Common.DbCommand command = _context.Database.GetDbConnection().CreateCommand())
         {
             const string sql = """
                 -- Potential results:
@@ -160,16 +155,16 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
 
             await _context.Database.OpenConnectionAsync();
 
-            using (var result = await command.ExecuteReaderAsync())
+            using (System.Data.Common.DbDataReader result = await command.ExecuteReaderAsync())
             {
                 var pms = new PlayerModStatsDTO();
                 while (await result.ReadAsync())
                 {
-                    string modType = await result.GetFieldValueAsync<string>("modtype");
-                    int gamesPlayed = await result.GetFieldValueAsync<int>("gamesplayed");
-                    int gamesWon = await result.GetFieldValueAsync<int>("gameswon");
-                    double winrate = await result.GetFieldValueAsync<double>("winrate");
-                    double normalizedAverageScore = await result.GetFieldValueAsync<double>(
+                    var modType = await result.GetFieldValueAsync<string>("modtype");
+                    var gamesPlayed = await result.GetFieldValueAsync<int>("gamesplayed");
+                    var gamesWon = await result.GetFieldValueAsync<int>("gameswon");
+                    var winrate = await result.GetFieldValueAsync<double>("winrate");
+                    var normalizedAverageScore = await result.GetFieldValueAsync<double>(
                         "normalizedaveragescore"
                     );
 
@@ -281,8 +276,8 @@ public class PlayerMatchStatsRepository : IPlayerMatchStatsRepository
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        int matchesPlayed = await CountMatchesPlayedAsync(playerId, mode, dateMin, dateMax);
-        int matchesWon = await CountMatchesWonAsync(playerId, mode, dateMin, dateMax);
+        var matchesPlayed = await CountMatchesPlayedAsync(playerId, mode, dateMin, dateMax);
+        var matchesWon = await CountMatchesWonAsync(playerId, mode, dateMin, dateMax);
 
         if (matchesPlayed == 0)
         {
