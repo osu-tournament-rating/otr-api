@@ -5,23 +5,52 @@ namespace API.Services.Interfaces;
 public interface ITournamentsService
 {
     /// <summary>
-    /// Creates or udpates a tournament from a web submission.
+    /// Create a tournament from a web submission.
     /// </summary>
     /// <param name="wrapper">The user input required for this tournament</param>
-    /// <param name="updateExisting">Whether to overwrite values for an existing occurrence of this tournament</param>
     /// <returns></returns>
-    public Task<TournamentDTO> CreateOrUpdateAsync(
-        TournamentWebSubmissionDTO wrapper,
-        bool updateExisting = false
-    );
+    Task<TournamentDTO> CreateAsync(TournamentWebSubmissionDTO wrapper);
 
-    public Task<bool> ExistsAsync(string name, int mode);
+    /// <summary>
+    /// Does a tournament with matching <paramref name="id"/> exist
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <returns></returns>
+    Task<bool> ExistsAsync(int id);
+
+    /// <summary>
+    /// Does a tournament with matching <paramref name="name"/> and <paramref name="mode"/> exist
+    /// </summary>
+    /// <param name="name">Tournament name</param>
+    /// <param name="mode">Tournament mode</param>
+    /// <returns></returns>
+    Task<bool> ExistsAsync(string name, int mode);
+
+    /// <summary>
+    /// Get all tournaments
+    /// </summary>
+    /// <returns></returns>
     Task<IEnumerable<TournamentDTO>> GetAllAsync();
 
     /// <summary>
-    ///  Counts the number of tournaments played by the given player.
+    /// Get a tournament by id, returns null if not found
+    /// </summary>
+    /// <param name="id">Primary key</param>
+    /// <returns></returns>
+    Task<TournamentDTO?> GetAsync(int id);
+
+    /// <summary>
+    /// Counts the number of tournaments played by the given player.
     /// </summary>
     /// <param name="playerId"></param>
     /// <returns></returns>
     Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
+
+    /// <summary>
+    /// Updates a database entity based on values from a DTO
+    /// </summary>
+    /// <param name="wrapper">User provided values</param>
+    /// <param name="id">Id of the target tournament</param>
+    /// <returns></returns>
+    Task<TournamentDTO> UpdateAsync(int id, TournamentDTO wrapper);
 }

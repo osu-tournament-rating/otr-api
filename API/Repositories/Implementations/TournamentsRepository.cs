@@ -14,6 +14,24 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 {
     private readonly OtrContext _context = context;
 
+    public override async Task<Tournament?> GetAsync(int id) => await _context.Tournaments.Include(x => x.Matches).FirstOrDefaultAsync(x => x.Id == id);
+
+    public async Task<Tournament> CreateAsync(TournamentWebSubmissionDTO wrapper)
+    {
+        var tournament = new Tournament
+        {
+            Name = wrapper.TournamentName,
+            Abbreviation = wrapper.Abbreviation,
+            ForumUrl = wrapper.ForumPost,
+            Mode = wrapper.Mode,
+            RankRangeLowerBound = wrapper.RankRangeLowerBound,
+            TeamSize = wrapper.TeamSize,
+            SubmitterUserId = wrapper.SubmitterId,
+        };
+
+        return await CreateAsync(tournament);
+    }
+
     public async Task<Tournament?> GetAsync(string name) =>
         await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
 
@@ -55,19 +73,6 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             Count4v4 = participatedTournaments.Count(x => x.TeamSize == 4),
             CountOther = participatedTournaments.Count(x => x.TeamSize > 4)
         };
-    }
-
-    public async Task<Tournament> CreateOrUpdateAsync(
-        TournamentWebSubmissionDTO wrapper,
-        bool updateExisting = false
-    )
-    {
-        if (updateExisting && await ExistsAsync(wrapper.TournamentName, wrapper.Mode))
-        {
-            return await UpdateExisting(wrapper);
-        }
-
-        return await CreateFromWrapperAsync(wrapper);
     }
 
     public async Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(
@@ -162,33 +167,19 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .CountAsync();
     }
 
-    private async Task<Tournament> UpdateExisting(TournamentWebSubmissionDTO wrapper)
+    public async Task<Tournament> UpdateAsync(int id, TournamentDTO wrapper)
     {
-        Tournament? existing = await GetAsync(wrapper.TournamentName) ?? throw new Exception("Tournament does not exist, this method assumes the tournament exists.");
+        Tournament? existing = await GetAsync(id) ?? throw new Exception($"Tournament with id {id} does not exist");
+
+        existing.Name = wrapper.Name;
         existing.Abbreviation = wrapper.Abbreviation;
-        existing.ForumUrl = wrapper.ForumPost;
+        existing.ForumUrl = wrapper.ForumUrl;
         existing.Mode = wrapper.Mode;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
         existing.TeamSize = wrapper.TeamSize;
-        existing.SubmitterUserId = wrapper.SubmitterId;
+        existing.SubmitterUserId = wrapper.SubmitterUserId;
 
         await UpdateAsync(existing);
         return existing;
-    }
-
-    private async Task<Tournament> CreateFromWrapperAsync(TournamentWebSubmissionDTO wrapper)
-    {
-        var tournament = new Tournament
-        {
-            Name = wrapper.TournamentName,
-            Abbreviation = wrapper.Abbreviation,
-            ForumUrl = wrapper.ForumPost,
-            Mode = wrapper.Mode,
-            RankRangeLowerBound = wrapper.RankRangeLowerBound,
-            TeamSize = wrapper.TeamSize,
-            SubmitterUserId = wrapper.SubmitterId,
-        };
-
-        return await CreateAsync(tournament);
     }
 }

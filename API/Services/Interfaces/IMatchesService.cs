@@ -1,9 +1,27 @@
 using API.DTOs;
+using API.Enums;
 
 namespace API.Services.Interfaces;
 
 public interface IMatchesService
 {
+    /// <summary>
+    /// Create matches included in a submission. Assumes associated tournament has already been created
+    /// </summary>
+    /// <param name="tournamentId">Id of the associated tournament</param>
+    /// <param name="submitterId">Id of the submitting user</param>
+    /// <param name="matchIds">List of match ids</param>
+    /// <param name="verify">Submitter is a match verifier</param>
+    /// <param name="verificationSource">Source of verification (int representation of <see cref="MatchVerificationSource"/></param>
+    /// <returns></returns>
+    Task<IEnumerable<MatchDTO>> CreateAsync(
+        int tournamentId,
+        int submitterId,
+        IEnumerable<long> matchIds,
+        bool verify,
+        int? verificationSource
+    );
+
     /// <summary>
     /// Marks matches as needing automated checks
     /// </summary>
@@ -20,19 +38,6 @@ public interface IMatchesService
         int mode,
         DateTime start,
         DateTime end
-    );
-
-    /// <summary>
-    /// Inserts or updates based on user input. Only updates if verified is true.
-    /// </summary>
-    /// <param name="tournamentWebSubmissionDto"></param>
-    /// <param name="verified">Whether to mark the matches inserted as verified. Also allows overwriting of existing values.</param>
-    /// <param name="verifier">The entity who verified the matches (int representation of <see cref="MatchVerificationSource")/></param>
-    /// <returns></returns>
-    Task BatchInsertOrUpdateAsync(
-        TournamentWebSubmissionDTO tournamentWebSubmissionDto,
-        bool verified,
-        int? verifier
     );
 
     /// <summary>

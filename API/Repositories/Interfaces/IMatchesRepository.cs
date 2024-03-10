@@ -6,6 +6,22 @@ namespace API.Repositories.Interfaces;
 
 public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
 {
+    /// <summary>
+    /// Create matches from a list of match ids
+    /// </summary>
+    /// <param name="tournamentId">Id of the associated tournament</param>
+    /// <param name="submitterId">Id of the submitting user</param>
+    /// <param name="matchIds">List of match ids</param>
+    /// <param name="verify">Submitter is a match verifier</param>
+    /// <param name="verificationSource">Source of verification (int representation of <see cref="MatchVerificationSource"/></param>
+    /// <returns></returns>
+    Task<IEnumerable<Match>> CreateAsync(
+        int tournamentId,
+        int submitterId,
+        IEnumerable<long> matchIds,
+        bool verify,
+        int? verificationSource
+    );
     Task<Match> GetAsync(int id, bool filterInvalidMatches = true);
     Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered);
     Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds);

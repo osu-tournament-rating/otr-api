@@ -8,17 +8,15 @@ public interface ITournamentsRepository : IRepository<Tournament>
     public Task<Tournament?> GetAsync(string name);
 
     /// <summary>
-    ///  Creates or udpates a tournament from a web submission.
+    /// Creates a tournament from a web submission
     /// </summary>
     /// <param name="wrapper">The user input required for this tournament</param>
-    /// <param name="updateExisting">Whether to overwrite values for an existing occurrence of this tournament</param>
     /// <returns></returns>
-    public Task<Tournament> CreateOrUpdateAsync(
-        TournamentWebSubmissionDTO wrapper,
-        bool updateExisting = false
-    );
+    public Task<Tournament> CreateAsync(TournamentWebSubmissionDTO wrapper);
 
+    Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
     public Task<bool> ExistsAsync(string name, int mode);
+
     public Task<PlayerTournamentTeamSizeCountDTO> GetPlayerTeamSizeStatsAsync(
         int playerId,
         int mode,
@@ -40,5 +38,11 @@ public interface ITournamentsRepository : IRepository<Tournament>
         bool bestPerformances
     );
 
-    Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
+    /// <summary>
+    /// Updates a tournament from a web submission
+    /// </summary>
+    /// <param name="wrapper">The user input required for this tournament</param>
+    /// <param name="id">Id of the target tournament</param>
+    /// <returns></returns>
+    public Task<Tournament> UpdateAsync(int id, TournamentDTO wrapper);
 }

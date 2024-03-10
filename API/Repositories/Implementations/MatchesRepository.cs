@@ -29,6 +29,36 @@ public class MatchesRepository(
             .ThenInclude(x => x.Beatmap)
             .FirstOrDefaultAsync(x => x.Id == id);
 
+    public async Task<IEnumerable<Match>> CreateAsync(
+        int tournamentId,
+        int submitterId,
+        IEnumerable<long> matchIds,
+        bool verify,
+        int? verificationSource
+    )
+    {
+        MatchVerificationStatus verificationStatus = verify
+            ? MatchVerificationStatus.Verified
+            : MatchVerificationStatus.PendingVerification;
+
+        IEnumerable<Match> existingMatches = await GetAsync(matchIds);
+        // Only create matches that dont already exist
+        IEnumerable<Match> newMatches = matchIds.Except(existingMatches.Select(x => x.MatchId))
+            .Select(matchId => new Match
+            {
+                MatchId = matchId,
+                VerificationStatus = (int)verificationStatus,
+                NeedsAutoCheck = true,
+                IsApiProcessed = false,
+                VerificationSource = verificationSource,
+                VerifierUserId = verify ? submitterId : null,
+                TournamentId = tournamentId,
+                SubmitterUserId = submitterId
+            });
+        await BulkInsertAsync(newMatches);
+        return newMatches;
+    }
+
     public async Task<Match> UpdateVerificationStatus(int id, int? verificationStatus)
     {
         Match existing = await GetAsync(id, false) ?? throw new Exception("Match does not exist, this method assumes the match exists.");

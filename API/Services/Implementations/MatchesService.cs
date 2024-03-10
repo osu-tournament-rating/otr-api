@@ -8,21 +8,36 @@ using AutoMapper;
 namespace API.Services.Implementations;
 
 public class MatchesService(
-    ILogger<MatchesService> logger,
     IMatchesRepository matchesRepository,
     ITournamentsRepository tournamentsRepository,
     IMatchDuplicateRepository duplicateRepository,
     IMapper mapper
-    ) : IMatchesService
+) : IMatchesService
 {
-    private readonly ILogger<MatchesService> _logger = logger;
     private readonly IMatchesRepository _matchesRepository = matchesRepository;
     private readonly ITournamentsRepository _tournamentsRepository = tournamentsRepository;
     private readonly IMatchDuplicateRepository _duplicateRepository = duplicateRepository;
     private readonly IMapper _mapper = mapper;
 
+    public async Task<IEnumerable<MatchDTO>> CreateAsync(
+        int tournamentId,
+        int submitterId,
+        IEnumerable<long> matchIds,
+        bool verify,
+        int? verificationSource
+    )
+    {
+        if (!await _tournamentsRepository.ExistsAsync(tournamentId))
+        {
+            throw new Exception($"Tournament with id {tournamentId} does not exist");
+        }
+
+        IEnumerable<Match> result = await _matchesRepository.CreateAsync(tournamentId, submitterId, matchIds, verify, verificationSource);
+        return _mapper.Map<IEnumerable<MatchDTO>>(result);
+    }
+
     public async Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true) =>
-        _mapper.Map<MatchDTO?>(await _matchesRepository.GetAsync(id, filterInvalid));
+            _mapper.Map<MatchDTO?>(await _matchesRepository.GetAsync(id, filterInvalid));
 
     public async Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(
         long osuPlayerId,
@@ -33,66 +48,6 @@ public class MatchesService(
     {
         IEnumerable<Match> matches = await _matchesRepository.GetPlayerMatchesAsync(osuPlayerId, mode, start, end);
         return _mapper.Map<IEnumerable<MatchDTO>>(matches);
-    }
-
-    public async Task BatchInsertOrUpdateAsync(
-        TournamentWebSubmissionDTO tournamentWebSubmissionDto,
-        bool verified,
-        int? verifier
-    )
-    {
-        var existingMatches = (await _matchesRepository.GetAsync(tournamentWebSubmissionDto.Ids)).ToList();
-        Tournament tournament = await _tournamentsRepository.CreateOrUpdateAsync(
-            tournamentWebSubmissionDto,
-            verified
-        );
-
-        // Update the matches that already exist, if we are verified
-        if (verified)
-        {
-            foreach (Match? match in existingMatches)
-            {
-                match.NeedsAutoCheck = true;
-                match.IsApiProcessed = false;
-                match.VerificationStatus = (int)MatchVerificationStatus.Verified;
-                match.VerificationSource = verifier;
-                match.VerifierUserId = tournamentWebSubmissionDto.SubmitterId;
-                match.TournamentId = tournament.Id;
-                match.SubmitterUserId = tournamentWebSubmissionDto.SubmitterId;
-
-                await _matchesRepository.UpdateAsync(match);
-            }
-        }
-
-        // Matches that don't exist yet
-        var newMatchIds = tournamentWebSubmissionDto
-            .Ids.Except(existingMatches.Select(x => x.MatchId))
-            .ToList();
-        MatchVerificationStatus verificationStatus = verified
-            ? MatchVerificationStatus.Verified
-            : MatchVerificationStatus.PendingVerification;
-
-        IEnumerable<Match> newMatches = newMatchIds.Select(id => new Match
-        {
-            MatchId = id,
-            VerificationStatus = (int)verificationStatus,
-            NeedsAutoCheck = true,
-            IsApiProcessed = false,
-            VerificationSource = verifier,
-            VerifierUserId = verified ? tournamentWebSubmissionDto.SubmitterId : null,
-            TournamentId = tournament.Id,
-            SubmitterUserId = tournamentWebSubmissionDto.SubmitterId
-        });
-
-        int? result = await _matchesRepository.BulkInsertAsync(newMatches);
-        if (result > 0)
-        {
-            _logger.LogInformation(
-                "Successfully inserted {Matches} new matches as {Status}",
-                result,
-                verificationStatus
-            );
-        }
     }
 
     public async Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync() =>
