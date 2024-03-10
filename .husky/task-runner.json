@@ -1,11 +1,36 @@
 {
-   "tasks": [
-      {
-         "name": "dotnet-format-staged",
-         "group": "pre-commit",
-         "command": "dotnet",
-         "args": [ "format", "--include", "${staged}", "--severity", "info" ],
-         "include": ["**/*.cs"]
-      }
-   ]
+    "tasks": [
+        {
+            "name": "dotnet-format-staged",
+            "group": "pre-commit",
+            "command": "dotnet",
+            "args": [
+                "format",
+                "--include",
+                "${staged}",
+                "--severity",
+                "info"
+            ],
+            "include": [
+                "**/*.cs"
+            ]
+        },
+        {
+            "name": "dotnet-verify-staged",
+            "command": "dotnet",
+            "args": [
+                "format",
+                "--verify-no-changes",
+                "--include",
+                "${staged}",
+                "--severity",
+                "info",
+                "--verbosity",
+                "normal"
+            ],
+            "include": [
+                "**/*.cs"
+            ]
+        }
+    ]
 }

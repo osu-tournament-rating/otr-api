@@ -1,24 +1,16 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-## husky task runner examples -------------------
-## Note : for local installation use 'dotnet' prefix. e.g. 'dotnet husky'
+echo "Running pre-commit tasks..."
 
-## run all tasks
-#husky run
+FORMAT_OUTPUT=$(dotnet husky run --group pre-commit 2>&1)
 
-### run all tasks with group: 'group-name'
-#husky run --group group-name
+echo "$FORMAT_OUTPUT"
 
-## run task with name: 'task-name'
-#husky run --name task-name
+if echo "$FORMAT_OUTPUT" | grep -q "Unable to fix"; then
+    echo "Found unfixable violations. Please fix the violations and commit again."
+    echo "Generating detailed violation description"
+    dotnet husky run --name dotnet-verify-staged
+fi
 
-## pass hook arguments to task
-#husky run --args "$1" "$2"
-
-## or put your custom commands -------------------
-#echo 'Husky.Net is awesome!'
-
-dotnet husky run --group pre-commit
-
-echo 'Completed pre-commit changes'
+echo "Completed pre-commit tasks"
