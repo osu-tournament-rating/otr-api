@@ -13,8 +13,6 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [EnableCors]
-[Authorize(Roles = "user")]
-[Authorize(Roles = "whitelist")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class MatchesController(IMatchesService matchesService) : Controller
 {
@@ -43,6 +41,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     [HttpGet("{id:int}")]
+    [Authorize("user, client")]
     public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
     {
         MatchDTO? match = await _matchesService.GetAsync(id);
@@ -68,14 +67,14 @@ public class MatchesController(IMatchesService matchesService) : Controller
         return Ok(matches);
     }
 
-    [Authorize(Roles = "admin")]
     [HttpGet("duplicates")]
+    [Authorize(Roles = "admin")]
     [EndpointSummary("Retrieves all known duplicate groups")]
     public async Task<IActionResult> GetDuplicatesAsync() =>
         Ok(await _matchesService.GetAllDuplicatesAsync());
 
-    [Authorize(Roles = "admin")]
     [HttpPost("duplicate")]
+    [Authorize(Roles = "admin")]
     [EndpointSummary("Mark a match as a confirmed or denied duplicate of the root")]
     public async Task<IActionResult> MarkDuplicatesAsync(
         [FromQuery] int rootId,
