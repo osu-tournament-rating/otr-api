@@ -13,7 +13,6 @@ using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
-using Asp.Versioning.Conventions;
 using AutoMapper;
 using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -57,9 +56,16 @@ builder
 builder
     .Services.AddApiVersioning(options =>
     {
+        options.ReportApiVersions = true;
+        options.DefaultApiVersion = new ApiVersion(1);
         options.ApiVersionReader = new UrlSegmentApiVersionReader();
     })
-    .AddMvc();
+    .AddMvc()
+    .AddApiExplorer(options =>
+    {
+        options.GroupNameFormat = "'v'VVV";
+        options.SubstituteApiVersionInUrl = true;
+    });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -195,7 +201,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 builder.Host.ConfigureOsuSharp(
-    (ctx, options) =>
+    (_, options) =>
     {
         OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
             OsuConfiguration.Position
