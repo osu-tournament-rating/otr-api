@@ -1,12 +1,14 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using API.Configurations;
 using API.DTOs;
 using API.Entities;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OsuSharp.Interfaces;
 
@@ -15,40 +17,25 @@ namespace API.Handlers.Implementations;
 /// <summary>
 /// Handles API access from clients
 /// </summary>
-public class OAuthHandler : IOAuthHandler
+public class OAuthHandler(
+    ILogger<OAuthHandler> logger,
+    IOAuthClientService clientService,
+    IOsuClient osuClient,
+    IOptions<JwtConfiguration> jwtConfiguration,
+    IOptions<AuthConfiguration> authConfiguration,
+    IPlayerRepository playerRepository,
+    IUserRepository userRepository
+    ) : IOAuthHandler
 {
-    private readonly ILogger<OAuthHandler> _logger;
-    private readonly IOAuthClientService _clientService;
-    private readonly IOsuClient _osuClient;
-    private readonly IConfiguration _configuration;
-    private readonly IPlayerRepository _playerRepository;
-    private readonly IUserRepository _userRepository;
-
-    private readonly string _jwtAudience;
-    private readonly string _jwtKey;
+    private readonly ILogger<OAuthHandler> _logger = logger;
+    private readonly IOAuthClientService _clientService = clientService;
+    private readonly IOsuClient _osuClient = osuClient;
+    private readonly IOptions<JwtConfiguration> _jwtConfiguration = jwtConfiguration;
+    private readonly IOptions<AuthConfiguration> _authConfiguration = authConfiguration;
+    private readonly IPlayerRepository _playerRepository = playerRepository;
+    private readonly IUserRepository _userRepository = userRepository;
 
     private const int ACCESS_DURATION_SECONDS = 3600;
-
-    public OAuthHandler(
-        ILogger<OAuthHandler> logger,
-        IOAuthClientService clientService,
-        IOsuClient osuClient,
-        IConfiguration configuration,
-        IPlayerRepository playerRepository,
-        IUserRepository userRepository
-    )
-    {
-        _logger = logger;
-        _clientService = clientService;
-        _osuClient = osuClient;
-        _configuration = configuration;
-        _playerRepository = playerRepository;
-        _userRepository = userRepository;
-
-        _jwtAudience =
-            _configuration["Jwt:Audience"] ?? throw new Exception("Jwt:Audience missing from config");
-        _jwtKey = _configuration["Jwt:Key"] ?? throw new Exception("Jwt:Key missing from config");
-    }
 
     public async Task<OAuthResponseDTO?> AuthorizeAsync(string osuAuthCode)
     {
@@ -73,11 +60,11 @@ public class OAuthHandler : IOAuthHandler
         // issue a new refresh token.
         var accessToken = GenerateAccessToken(
             user.Id.ToString(),
-            _jwtAudience,
+            _jwtConfiguration.Value.Audience,
             user.Scopes,
             ACCESS_DURATION_SECONDS
         );
-        var refreshToken = GenerateRefreshToken(user.Id.ToString(), _jwtAudience, "user");
+        var refreshToken = GenerateRefreshToken(user.Id.ToString(), _jwtConfiguration.Value.Audience, "user");
 
         _logger.LogDebug(
             "Authorized user with id {Id}, access expires in {seconds}",
@@ -115,11 +102,11 @@ public class OAuthHandler : IOAuthHandler
         {
             AccessToken = GenerateAccessToken(
                 clientId.ToString(),
-                _jwtAudience,
+                _jwtConfiguration.Value.Audience,
                 client.Scopes,
                 ACCESS_DURATION_SECONDS
             ),
-            RefreshToken = GenerateRefreshToken(clientId.ToString(), _jwtAudience, "client"),
+            RefreshToken = GenerateRefreshToken(clientId.ToString(), _jwtConfiguration.Value.Audience, "client"),
             AccessExpiration = ACCESS_DURATION_SECONDS
         };
     }
@@ -171,7 +158,7 @@ public class OAuthHandler : IOAuthHandler
             }
             accessToken = GenerateAccessToken(
                 user.Id.ToString(),
-                _jwtAudience,
+                _jwtConfiguration.Value.Audience,
                 [.. user.Scopes, "user"],
                 ACCESS_DURATION_SECONDS
             );
@@ -186,7 +173,7 @@ public class OAuthHandler : IOAuthHandler
             }
             accessToken = GenerateAccessToken(
                 client.ClientId.ToString(),
-                _jwtAudience,
+                _jwtConfiguration.Value.Audience,
                 [.. client.Scopes, "client"],
                 ACCESS_DURATION_SECONDS
             );
@@ -225,7 +212,7 @@ public class OAuthHandler : IOAuthHandler
     /// <returns></returns>
     private string GenerateAccessToken(string issuer, string audience, string[] roles, int expirationSeconds)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.Value.Key));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         IEnumerable<Claim> claims = roles.Select(role => new Claim(ClaimTypes.Role, role));
@@ -265,7 +252,7 @@ public class OAuthHandler : IOAuthHandler
         int expirationSeconds = 1_209_600
     )
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.Value.Key));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         if (role != "user" && role != "client")
@@ -303,12 +290,8 @@ public class OAuthHandler : IOAuthHandler
 
     private async Task<IGlobalUser> AuthorizeOsuUserAsync(string osuCode)
     {
-        var callbackUrl =
-            _configuration["Auth:ClientCallbackUrl"]
-            ?? throw new Exception("Missing Auth:ClientCallbackUrl in configuration!!");
-
         // Use OsuSharp to authorize via osu! API v2
-        await _osuClient.GetAccessTokenFromCodeAsync(osuCode, callbackUrl);
+        await _osuClient.GetAccessTokenFromCodeAsync(osuCode, _authConfiguration.Value.ClientCallbackUrl);
         return await _osuClient.GetCurrentUserAsync();
     }
 

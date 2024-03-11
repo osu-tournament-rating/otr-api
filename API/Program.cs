@@ -38,6 +38,10 @@ builder
     .Services.AddOptionsWithValidateOnStart<JwtConfiguration>()
     .Bind(builder.Configuration.GetSection(JwtConfiguration.Position))
     .ValidateDataAnnotations();
+builder
+    .Services.AddOptionsWithValidateOnStart<AuthConfiguration>()
+    .Bind(builder.Configuration.GetSection(AuthConfiguration.Position))
+    .ValidateDataAnnotations();
 
 // Add services to the container.
 
@@ -218,19 +222,16 @@ builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        JwtConfiguration jwtConfiguration =
+            builder.Configuration.BindAndValidate<JwtConfiguration>(JwtConfiguration.Position);
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    builder.Configuration["Jwt:Key"]
-                        ?? throw new Exception("Missing Jwt:Key in configuration!")
-                )
-            ),
+            ValidAudience = jwtConfiguration.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.Key)),
         };
     });
 
