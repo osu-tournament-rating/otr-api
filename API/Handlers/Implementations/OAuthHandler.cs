@@ -159,7 +159,7 @@ public class OAuthHandler(
             accessToken = GenerateAccessToken(
                 user.Id.ToString(),
                 _jwtConfiguration.Value.Audience,
-                user.Scopes,
+                [.. user.Scopes, "user"],
                 ACCESS_DURATION_SECONDS
             );
         }
@@ -174,7 +174,7 @@ public class OAuthHandler(
             accessToken = GenerateAccessToken(
                 client.ClientId.ToString(),
                 _jwtConfiguration.Value.Audience,
-                client.Scopes,
+                [.. client.Scopes, "client"],
                 ACCESS_DURATION_SECONDS
             );
         }

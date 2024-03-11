@@ -42,21 +42,6 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
         return Ok(user);
     }
 
-    /// <summary>
-    ///  Validates the currently logged in user's OTR-Access-Token cookie
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet("validate")]
-    [EndpointSummary("Validates the currently logged in user has permissions to access the website.")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public IActionResult ValidateJwt()
-    {
-        // Middleware will return 403 if the user does not
-        // have the correct roles
-        return NoContent();
-    }
-
     [HttpGet("stats")]
     public async Task<ActionResult<PlayerStatsDTO>> GetStatsAsync(
         [FromQuery] int mode = 0,
@@ -68,7 +53,7 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
 
         if (!userId.HasValue)
         {
-            return BadRequest("User is not logged in or id could not be retreived from logged in user.");
+            return BadRequest("User is not logged in or id could not be retrieved from logged in user.");
         }
 
         var playerId = (await _userService.GetAsync(userId.Value))?.Id;
