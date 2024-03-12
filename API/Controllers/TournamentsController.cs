@@ -45,16 +45,14 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         [FromQuery] bool verify = false
     )
     {
-        int? verificationSource = null;
+        MatchVerificationSource? verificationSource = null;
         if (verify)
         {
-            if (!User.IsMatchVerifier())
+            if (!User.CanVerifyMatches())
             {
                 return Unauthorized("You are not authorized to verify matches");
             }
-            verificationSource = User.IsAdmin()
-                ? (int)MatchVerificationSource.Admin
-                : (int)MatchVerificationSource.MatchVerifier;
+            verificationSource = User.VerificationSource();
         }
 
         if (await _tournamentsService.ExistsAsync(wrapper.TournamentName, wrapper.Mode))
@@ -63,7 +61,12 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         }
 
         TournamentDTO result = await _tournamentsService.CreateAsync(wrapper);
-        await _matchesService.CreateAsync(result.Id, wrapper.SubmitterId, wrapper.Ids, verify, verificationSource);
+        await _matchesService.CreateAsync(
+            result.Id,
+            wrapper.SubmitterId,
+            wrapper.Ids, verify,
+            (int?)verificationSource
+        );
         return Ok(result);
     }
 
@@ -78,16 +81,14 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         [FromQuery] bool verify = false
     )
     {
-        int? verificationSource = null;
+        MatchVerificationSource? verificationSource = null;
         if (verify)
         {
-            if (!User.IsMatchVerifier())
+            if (!User.CanVerifyMatches())
             {
                 return Unauthorized("You are not authorized to verify matches");
             }
-            verificationSource = User.IsAdmin()
-                ? (int)MatchVerificationSource.Admin
-                : (int)MatchVerificationSource.MatchVerifier;
+            verificationSource = User.VerificationSource();
         }
 
         if (!await _tournamentsService.ExistsAsync(id))
@@ -96,7 +97,12 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         }
 
         IEnumerable<MatchDTO> result =
-            await _matchesService.CreateAsync(id, wrapper.SubmitterId, wrapper.Ids, verify, verificationSource);
+            await _matchesService.CreateAsync(
+                id,
+                wrapper.SubmitterId,
+                wrapper.Ids, verify,
+                (int?)verificationSource
+            );
         return Ok(result);
     }
 
