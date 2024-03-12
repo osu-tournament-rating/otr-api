@@ -261,7 +261,7 @@ public class OAuthHandler(
             throw new ArgumentException("Role must be either 'user' or 'client'");
         }
 
-        Claim[] claims = new[] { new Claim(ClaimTypes.Role, role), new Claim("Instance", Guid.NewGuid().ToString()) };
+        Claim[] claims = [new Claim(ClaimTypes.Role, role), new Claim("Instance", Guid.NewGuid().ToString())];
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
