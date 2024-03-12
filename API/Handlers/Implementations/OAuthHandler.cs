@@ -216,7 +216,7 @@ public class OAuthHandler(
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         IEnumerable<Claim> claims = roles.Select(role => new Claim(ClaimTypes.Role, role));
-        claims = [.. claims, new Claim("Instance", Guid.NewGuid().ToString())];
+        claims = [.. claims, new Claim("instance", Guid.NewGuid().ToString())];
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
@@ -261,7 +261,7 @@ public class OAuthHandler(
             throw new ArgumentException("Role must be either 'user' or 'client'");
         }
 
-        Claim[] claims = [new Claim(ClaimTypes.Role, role), new Claim("Instance", Guid.NewGuid().ToString())];
+        Claim[] claims = [new Claim(ClaimTypes.Role, role), new Claim("instance", Guid.NewGuid().ToString())];
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
