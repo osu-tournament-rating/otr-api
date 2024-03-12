@@ -9,7 +9,6 @@ public class JwtConfiguration
     [Required(ErrorMessage = "Key is required!")]
     public string Key { get; set; } = string.Empty;
 
-    [Url]
     [Required(ErrorMessage = "Audience is required!")]
-    public string Audience = string.Empty;
+    public string Audience { get; set; } = string.Empty;
 }
