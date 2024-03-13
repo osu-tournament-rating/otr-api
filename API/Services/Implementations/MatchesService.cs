@@ -32,8 +32,28 @@ public class MatchesService(
             throw new Exception($"Tournament with id {tournamentId} does not exist");
         }
 
-        IEnumerable<Match> result = await _matchesRepository.CreateAsync(tournamentId, submitterId, matchIds, verify, verificationSource);
-        return _mapper.Map<IEnumerable<MatchDTO>>(result);
+        MatchVerificationStatus verificationStatus = verify
+            ? MatchVerificationStatus.Verified
+            : MatchVerificationStatus.PendingVerification;
+
+        IEnumerable<Match> existingMatches = await _matchesRepository.GetAsync(matchIds);
+        // Only create matches that dont already exist
+        IEnumerable<Match> newMatches = matchIds.Except(existingMatches.Select(x => x.MatchId))
+            .Select(matchId => new Match
+            {
+                MatchId = matchId,
+                VerificationStatus = (int)verificationStatus,
+                NeedsAutoCheck = true,
+                IsApiProcessed = false,
+                VerificationSource = verificationSource,
+                VerifierUserId = verify ? submitterId : null,
+                TournamentId = tournamentId,
+                SubmitterUserId = submitterId
+            }).ToList();
+        await _matchesRepository.BulkInsertAsync(newMatches);
+        IEnumerable<Match> createdMatches = await matchesRepository.GetAsync(newMatches.Select(m => m.MatchId));
+
+        return _mapper.Map<IEnumerable<MatchDTO>>(createdMatches);
     }
 
     public async Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true) =>

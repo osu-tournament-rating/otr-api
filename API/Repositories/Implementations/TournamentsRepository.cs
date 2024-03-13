@@ -36,7 +36,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
-        await _context.Tournaments.AnyAsync(x => x.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase) && x.Mode == mode);
+        await _context.Tournaments.AnyAsync(x => x.Name.Equals(name) && x.Mode == mode);
 
     public async Task<PlayerTournamentTeamSizeCountDTO> GetPlayerTeamSizeStatsAsync(
         int playerId,
@@ -165,21 +165,5 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .Select(x => x.Id)
             .Distinct()
             .CountAsync();
-    }
-
-    public async Task<Tournament> UpdateAsync(int id, TournamentDTO wrapper)
-    {
-        Tournament? existing = await GetAsync(id) ?? throw new Exception($"Tournament with id {id} does not exist");
-
-        existing.Name = wrapper.Name;
-        existing.Abbreviation = wrapper.Abbreviation;
-        existing.ForumUrl = wrapper.ForumUrl;
-        existing.Mode = wrapper.Mode;
-        existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
-        existing.TeamSize = wrapper.TeamSize;
-        existing.SubmitterUserId = wrapper.SubmitterUserId;
-
-        await UpdateAsync(existing);
-        return existing;
     }
 }

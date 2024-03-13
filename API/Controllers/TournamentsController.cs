@@ -61,12 +61,14 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         }
 
         TournamentDTO result = await _tournamentsService.CreateAsync(wrapper);
-        await _matchesService.CreateAsync(
+        // Create matches, add them to the DTO
+        result.Matches = (await _matchesService.CreateAsync(
             result.Id,
             wrapper.SubmitterId,
             wrapper.Ids, verify,
             (int?)verificationSource
-        );
+        )).ToList();
+
         return Ok(result);
     }
 
@@ -75,7 +77,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     [EndpointSummary("Create matches associated with a tournament")]
     [EndpointDescription("Submit tournament matches not included in the original submission")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<MatchDTO>> CreateMatchesAsync(
+    public async Task<ActionResult<IEnumerable<MatchDTO>>> CreateMatchesAsync(
         int id,
         [FromBody] MatchesWebSubmissionDTO wrapper,
         [FromQuery] bool verify = false
@@ -142,17 +144,27 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         {
             return NotFound($"A tournament with id {id} does not exist");
         }
+
         // Ensure request is only attempting to perform a replace operation.
-        if (patch.Operations.Any(op => op.op != "replace"))
+        if (!patch.IsReplaceOnly())
         {
             return BadRequest("This endpoint can only perform replace operations.");
         }
+
+        // Ensure request is not editing any restricted fields
+        IEnumerable<string> invalidFields = patch.IncludesFields(["Id", "Matches"]).ToList();
+        if (invalidFields.Any())
+        {
+            return BadRequest($"The following fields cannot be replaced: [{string.Join(", ", invalidFields)}]");
+        }
+
         // Patch and validate
         patch.ApplyTo(tournament, ModelState);
         if (!TryValidateModel(tournament))
         {
             return BadRequest(ModelState);
         }
+
         // Apply patched values to entity
         TournamentDTO updatedTournament = await _tournamentsService.UpdateAsync(id, tournament);
         return Ok(updatedTournament);

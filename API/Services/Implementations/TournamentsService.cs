@@ -13,7 +13,16 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
 
     public async Task<TournamentDTO> CreateAsync(TournamentWebSubmissionDTO wrapper)
     {
-        Tournament tournament = await _tournamentsRepository.CreateAsync(wrapper);
+        Tournament tournament = await _tournamentsRepository.CreateAsync(new Tournament()
+        {
+            Name = wrapper.TournamentName,
+            Abbreviation = wrapper.Abbreviation,
+            ForumUrl = wrapper.ForumPost,
+            RankRangeLowerBound = wrapper.RankRangeLowerBound,
+            Mode = wrapper.Mode,
+            TeamSize = wrapper.TeamSize,
+            SubmitterUserId = wrapper.SubmitterId
+        });
         return _mapper.Map<TournamentDTO>(tournament);
     }
 
@@ -41,6 +50,17 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
 
     public async Task<TournamentDTO> UpdateAsync(int id, TournamentDTO wrapper)
     {
-        return _mapper.Map<TournamentDTO>(await _tournamentsRepository.UpdateAsync(id, wrapper));
+        Tournament? existing = await _tournamentsRepository.GetAsync(id) ?? throw new Exception($"Tournament with id {id} does not exist");
+
+        existing.Name = wrapper.Name;
+        existing.Abbreviation = wrapper.Abbreviation;
+        existing.ForumUrl = wrapper.ForumUrl;
+        existing.Mode = wrapper.Mode;
+        existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
+        existing.TeamSize = wrapper.TeamSize;
+        existing.SubmitterUserId = wrapper.SubmitterUserId;
+
+        await _tournamentsRepository.UpdateAsync(existing);
+        return _mapper.Map<TournamentDTO>(existing);
     }
 }

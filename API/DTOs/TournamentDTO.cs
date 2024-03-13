@@ -10,5 +10,5 @@ public class TournamentDTO
     public int Mode { get; set; }
     public int TeamSize { get; set; }
     public int SubmitterUserId { get; set; }
-    public MatchDTO[] Matches { get; set; } = [];
+    public ICollection<MatchDTO> Matches { get; set; } = new List<MatchDTO>();
 }
