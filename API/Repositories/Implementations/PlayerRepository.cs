@@ -169,7 +169,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
             );
         }
 
-        return _context.Players.Where(p => p.Username != null && p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase));
+        return _context.Players.Where(p => p.Username != null && p.Username.ToLower().Equals(username.ToLower()));
     }
 
     // This is used by a scheduled task to automatically populate user info, such as username, country, etc.

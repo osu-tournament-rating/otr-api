@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Entities;
 
 namespace API.Services.Interfaces;
 
@@ -17,6 +18,7 @@ public interface ITournamentsService
 
     public Task<bool> ExistsAsync(string name, int mode);
     Task<IEnumerable<TournamentDTO>> GetAllAsync();
+    Task<TournamentDTO?> GetByName(string name);
 
     /// <summary>
     ///  Counts the number of tournaments played by the given player.

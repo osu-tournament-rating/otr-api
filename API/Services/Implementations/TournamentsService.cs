@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Entities;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -28,6 +29,13 @@ public class TournamentsService(ITournamentsRepository repository, IMapper mappe
         items = items.OrderBy(x => x.Name);
 
         return _mapper.Map<IEnumerable<TournamentDTO>>(items);
+    }
+
+    public async Task<TournamentDTO?> GetByName(string name)
+    {
+        Tournament? tournament = await _repository.GetAsync(name);
+
+        return tournament is null ? null : _mapper.Map<TournamentDTO?>(tournament) ?? null;
     }
 
     public async Task<int> CountPlayedAsync(

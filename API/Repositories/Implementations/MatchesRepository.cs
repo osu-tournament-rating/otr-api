@@ -38,6 +38,13 @@ public class MatchesRepository(
         return existing;
     }
 
+    public async Task<Match?> GetByNameAsync(string name)
+    {
+        Match? match = await MatchBaseQuery(true).FirstOrDefaultAsync(x => x.Name == name);
+
+        return match;
+    }
+
     public async Task RefreshAutomationChecks(bool invalidOnly = true)
     {
         IQueryable<Match> query = _context.Matches.Where(x => x.NeedsAutoCheck == false && x.IsApiProcessed == true);

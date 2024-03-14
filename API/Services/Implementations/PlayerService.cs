@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Entities;
 using API.Osu;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
@@ -86,4 +87,11 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
 
     public async Task<PlayerInfoDTO?> GetAsync(string username) =>
         _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(username));
+
+    public async Task<PlayerDTO?> GetByUsernameAsync(string username)
+    {
+        Player? player = await _playerRepository.GetAsync(username);
+
+        return player == null ? null : _mapper.Map<PlayerDTO>(player);
+    }
 }
