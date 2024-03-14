@@ -51,7 +51,7 @@ public class SearchController(ITournamentsService tournamentsService, IMatchesSe
         {
             return Ok(null);
         }
-        Console.WriteLine(username);
+
         PlayerDTO? playerDto = await playerService.GetByUsernameAsync(username);
 
         return playerDto is null ? Ok(null) : Ok(new SearchResponseDTO()
