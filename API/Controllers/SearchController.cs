@@ -11,7 +11,6 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [EnableCors]
 [Authorize(Roles = "system")] // Internal access only at this time
-[AllowAnonymous]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class SearchController(ITournamentsService tournamentsService, IMatchesService matchesService, IPlayerService playerService) : Controller
 {
