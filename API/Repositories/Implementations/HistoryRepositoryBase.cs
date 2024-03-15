@@ -1,4 +1,5 @@
-﻿using API.Entities.Interfaces;
+﻿using System.Diagnostics.CodeAnalysis;
+using API.Entities.Interfaces;
 using API.Enums;
 using API.Repositories.Interfaces;
 using AutoMapper;
@@ -6,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class HistoryRepositoryBase<TEntity, THistory>
     : RepositoryBase<TEntity>,
         IHistoryRepository<TEntity, THistory>
