@@ -15,12 +15,14 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class SearchController(ITournamentsService tournamentsService, IMatchesService matchesService, IPlayerService playerService) : Controller
 {
-    [HttpPost]
+    [HttpGet]
+    [EndpointSummary("Allows for partial or full searching on the names of tournaments, matches and usernames.")]
+    [ProducesResponseType<SearchResponseDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> SearchByNames([FromQuery] string? tournamentName, [FromQuery] string? matchName, [FromQuery] string? username)
     {
         if (!string.IsNullOrEmpty(tournamentName))
         {
-            TournamentDTO? tournamentDto = await tournamentsService.GetByName(tournamentName);
+            TournamentDTO? tournamentDto = await tournamentsService.SearchAsync(tournamentName);
 
             return tournamentDto is null ? Ok(null) : Ok(new SearchResponseDTO()
             {
@@ -31,7 +33,7 @@ public class SearchController(ITournamentsService tournamentsService, IMatchesSe
 
         if (!string.IsNullOrEmpty(matchName))
         {
-            MatchDTO? matchDto = await matchesService.GetByNameAsync(matchName);
+            MatchDTO? matchDto = await matchesService.SearchAsync(matchName);
 
             return matchDto is null ? Ok(null) : Ok(new SearchResponseDTO()
             {
@@ -46,7 +48,7 @@ public class SearchController(ITournamentsService tournamentsService, IMatchesSe
             return Ok(null);
         }
 
-        PlayerDTO? playerDto = await playerService.GetByUsernameAsync(username);
+        PlayerDTO? playerDto = await playerService.SearchAsync(username);
 
         return playerDto is null ? Ok(null) : Ok(new SearchResponseDTO()
         {

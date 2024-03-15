@@ -60,7 +60,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return await _context.Players.AsNoTracking().ToListAsync();
     }
 
-    public async Task<Player?> GetAsync(string username) => await Search(username).FirstOrDefaultAsync();
+    public async Task<Player?> SearchAsync(string username) => await Search(username).FirstOrDefaultAsync();
 
     public async Task<Player> GetOrCreateAsync(long osuId)
     {
@@ -166,13 +166,13 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
             return _context.Players.Where(p =>
                 p.Username != null
                 && (
-                    p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase)
-                    || p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase)
+                    EF.Functions.Like(p.Username, $"%{username}%")
+                    || EF.Functions.Like(p.Username, $"%{username}%")
                 )
             );
         }
 
-        return _context.Players.Where(p => p.Username != null && p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase));
+        return _context.Players.Where(p => p.Username != null && EF.Functions.Like(p.Username, $"%{username}%"));
     }
 
     // This is used by a scheduled task to automatically populate user info, such as username, country, etc.

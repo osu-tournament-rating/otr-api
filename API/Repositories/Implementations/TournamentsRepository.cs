@@ -1,6 +1,7 @@
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using System.Xml.Schema;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
@@ -17,8 +18,8 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 {
     private readonly OtrContext _context = context;
 
-    public async Task<Tournament?> GetAsync(string name) =>
-        await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
+    public async Task<Tournament?> SearchAsync(string name) =>
+        await _context.Tournaments.FirstOrDefaultAsync(x => EF.Functions.Like(x.Name, name));
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
@@ -167,7 +168,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
     private async Task<Tournament> UpdateExisting(TournamentWebSubmissionDTO wrapper)
     {
-        Tournament? existing = await GetAsync(wrapper.TournamentName) ?? throw new Exception("Tournament does not exist, this method assumes the tournament exists.");
+        Tournament? existing = await SearchAsync(wrapper.TournamentName) ?? throw new Exception("Tournament does not exist, this method assumes the tournament exists.");
         existing.Abbreviation = wrapper.Abbreviation;
         existing.ForumUrl = wrapper.ForumPost;
         existing.Mode = wrapper.Mode;

@@ -5,7 +5,7 @@ namespace API.Repositories.Interfaces;
 
 public interface ITournamentsRepository : IRepository<Tournament>
 {
-    public Task<Tournament?> GetAsync(string name);
+    public Task<Tournament?> SearchAsync(string name);
 
     /// <summary>
     ///  Creates or udpates a tournament from a web submission.

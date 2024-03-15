@@ -31,10 +31,9 @@ public class TournamentsService(ITournamentsRepository repository, IMapper mappe
         return _mapper.Map<IEnumerable<TournamentDTO>>(items);
     }
 
-    public async Task<TournamentDTO?> GetByName(string name)
+    public async Task<TournamentDTO?> SearchAsync(string name)
     {
-        Tournament? tournament = await _repository.GetAsync(name);
-
+        Tournament? tournament = await _repository.SearchAsync(name);
         return tournament is null ? null : _mapper.Map<TournamentDTO?>(tournament) ?? null;
     }
 

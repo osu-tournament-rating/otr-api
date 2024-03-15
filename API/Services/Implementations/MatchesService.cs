@@ -175,9 +175,9 @@ public class MatchesService(
         return _mapper.Map<MatchDTO?>(match);
     }
 
-    public async Task<MatchDTO?> GetByNameAsync(string name)
+    public async Task<MatchDTO?> SearchAsync(string name)
     {
-        Match? match = await _matchesRepository.GetByNameAsync(name);
+        Match? match = await _matchesRepository.SearchAsync(name);
 
         return match is null ? null : _mapper.Map<MatchDTO>(match);
     }
