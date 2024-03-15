@@ -56,7 +56,7 @@ public class SearchController(ITournamentsService tournamentsService, IMatchesSe
 
         return playerDto is null ? Ok(null) : Ok(new SearchResponseDTO()
         {
-            Text = playerDto.Username ?? "Restricted",
+            Text = playerDto.Username ?? "<Unknown>",
             Url = $"/users/{playerDto.Id}",
             Thumbnail = $"a.ppy.sh/{playerDto.OsuId}"
         });
