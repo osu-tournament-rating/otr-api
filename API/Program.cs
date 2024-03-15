@@ -86,12 +86,10 @@ builder
         RateLimitConfiguration rateLimitConfiguration = builder.Configuration.BindAndValidate<RateLimitConfiguration>(
             RateLimitConfiguration.Position);
 
-        var defaultBucketOptions = new TokenBucketRateLimiterOptions()
+        var defaultFixedOptions = new FixedWindowRateLimiterOptions()
         {
-            TokenLimit = rateLimitConfiguration.TokenLimit,
-            TokensPerPeriod = rateLimitConfiguration.TokensPerPeriod,
-            ReplenishmentPeriod = TimeSpan.FromSeconds(rateLimitConfiguration.ReplenishmentPeriod),
-            AutoReplenishment = true,
+            PermitLimit = 30,
+            Window = TimeSpan.FromSeconds(60),
             QueueLimit = 0
         };
 
@@ -115,6 +113,7 @@ builder
             }
         };
 
+
         options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
         {
             // Try to get access token
@@ -125,9 +124,9 @@ builder
             // Shared partition for anonymous users
             if (accessToken.IsNullOrEmpty())
             {
-                return RateLimitPartition.GetTokenBucketLimiter(
+                return RateLimitPartition.GetFixedWindowLimiter(
                     "anonymous",
-                    _ => defaultBucketOptions
+                    _ => defaultFixedOptions
                 );
             }
 
@@ -143,16 +142,14 @@ builder
             // Partition for each unique user / client
             if (overrides is null)
             {
-                return RateLimitPartition.GetTokenBucketLimiter(jwtToken.Issuer, _ => defaultBucketOptions);
+                return RateLimitPartition.GetFixedWindowLimiter(jwtToken.Issuer, _ => defaultFixedOptions);
             }
-            return RateLimitPartition.GetTokenBucketLimiter(
+            return RateLimitPartition.GetFixedWindowLimiter(
                 jwtToken.Issuer,
-                _ => new TokenBucketRateLimiterOptions()
+                _ => new FixedWindowRateLimiterOptions()
                 {
-                    TokenLimit = overrides.TokenLimit ?? defaultBucketOptions.TokenLimit,
-                    TokensPerPeriod = overrides.TokensPerPeriod ?? defaultBucketOptions.TokensPerPeriod,
-                    ReplenishmentPeriod = TimeSpan.FromSeconds(overrides.ReplenishmentPeriod ?? rateLimitConfiguration.ReplenishmentPeriod),
-                    AutoReplenishment = true,
+                    PermitLimit = overrides.PermitLimit ?? defaultFixedOptions.PermitLimit,
+                    Window = TimeSpan.FromSeconds(overrides.Window ?? rateLimitConfiguration.Window),
                     QueueLimit = 0
                 }
             );

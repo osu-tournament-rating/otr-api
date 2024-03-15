@@ -23,8 +23,7 @@
     "ClientCallbackUrl": ""
   },
   "RateLimit": {
-    "TokenLimit": 30,
-    "TokensPerPeriod": 30,
-    "ReplenishmentPeriod": 60
+    "PermitLimit": 30,
+    "Window": 60
   }
 }

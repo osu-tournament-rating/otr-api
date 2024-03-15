@@ -3,13 +3,11 @@ namespace API.Entities;
 public class RateLimitOverrides
 {
     public RateLimitOverrides() { }
-    public RateLimitOverrides(int? tokenLimit, int? tokensPerPeriod, int? replenishmentPeriod)
+    public RateLimitOverrides(int? permitLimit, int? window)
     {
-        TokenLimit = tokenLimit;
-        TokensPerPeriod = tokensPerPeriod;
-        ReplenishmentPeriod = replenishmentPeriod;
+        PermitLimit = permitLimit;
+        Window = window;
     }
-    public int? TokenLimit { get; set; }
-    public int? TokensPerPeriod { get; set; }
-    public int? ReplenishmentPeriod { get; set; }
+    public int? PermitLimit { get; set; }
+    public int? Window { get; set; }
 }

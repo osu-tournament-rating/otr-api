@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    [Migration("20240315041609_User_Client_RateLimitOverrides")]
+    [Migration("20240315190145_User_Client_RateLimitOverrides")]
     partial class User_Client_RateLimitOverrides
     {
         /// <inheritdoc />
@@ -1305,13 +1305,10 @@ namespace API.Migrations
                             b1.Property<int>("OAuthClientId")
                                 .HasColumnType("integer");
 
-                            b1.Property<int?>("ReplenishmentPeriod")
+                            b1.Property<int?>("PermitLimit")
                                 .HasColumnType("integer");
 
-                            b1.Property<int?>("TokenLimit")
-                                .HasColumnType("integer");
-
-                            b1.Property<int?>("TokensPerPeriod")
+                            b1.Property<int?>("Window")
                                 .HasColumnType("integer");
 
                             b1.HasKey("OAuthClientId");
@@ -1381,13 +1378,10 @@ namespace API.Migrations
                             b1.Property<int>("UserId")
                                 .HasColumnType("integer");
 
-                            b1.Property<int?>("ReplenishmentPeriod")
+                            b1.Property<int?>("PermitLimit")
                                 .HasColumnType("integer");
 
-                            b1.Property<int?>("TokenLimit")
-                                .HasColumnType("integer");
-
-                            b1.Property<int?>("TokensPerPeriod")
+                            b1.Property<int?>("Window")
                                 .HasColumnType("integer");
 
                             b1.HasKey("UserId");

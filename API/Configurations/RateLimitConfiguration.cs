@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API.Configurations;
 
 public class RateLimitConfiguration
@@ -5,15 +7,13 @@ public class RateLimitConfiguration
     public const string Position = "RateLimit";
 
     /// <summary>
-    /// The total amount of tokens available per bucket
+    /// The total amount of tokens available per <see cref="Window"/>
     /// </summary>
-    public int TokenLimit { get; } = 30;
+    [Range(1, int.MaxValue, ErrorMessage = "PermitLimit must be an integer greater than 1!")]
+    public int PermitLimit { get; } = 30;
     /// <summary>
-    /// The amount of tokens returned to the bucket per <see cref="RateLimitConfiguration.ReplenishmentPeriod"/>
+    /// The amount of time (in seconds) before the <see cref="PermitLimit"/> is refreshed
     /// </summary>
-    public int TokensPerPeriod { get; } = 30;
-    /// <summary>
-    /// The amount of time (in seconds) between token replenishment
-    /// </summary>
-    public int ReplenishmentPeriod { get; } = 60;
+    [Range(1, int.MaxValue, ErrorMessage = "Window must be an integer greater than 1!")]
+    public int Window { get; } = 30;
 }
