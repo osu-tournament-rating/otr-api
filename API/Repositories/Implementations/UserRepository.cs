@@ -1,9 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
 using API.Entities;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class UserRepository(ILogger<UserRepository> logger, OtrContext context) : RepositoryBase<User>(context), IUserRepository
 {
     private readonly ILogger<UserRepository> _logger = logger;

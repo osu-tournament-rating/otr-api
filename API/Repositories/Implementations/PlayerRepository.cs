@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Osu;
@@ -8,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBase<Player>(context), IPlayerRepository
 {
     private readonly OtrContext _context = context;
@@ -163,13 +166,13 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
             return _context.Players.Where(p =>
                 p.Username != null
                 && (
-                    EF.Functions.Like(p.Username, username)
-                    || EF.Functions.Like(p.Username, username)
+                    p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase)
+                    || p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase)
                 )
             );
         }
 
-        return _context.Players.Where(p => p.Username != null && EF.Functions.Like(p.Username, username));
+        return _context.Players.Where(p => p.Username != null && p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase));
     }
 
     // This is used by a scheduled task to automatically populate user info, such as username, country, etc.

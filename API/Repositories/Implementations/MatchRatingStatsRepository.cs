@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
@@ -6,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsRepository
 {
     private readonly OtrContext _context = context;
