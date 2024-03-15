@@ -21,5 +21,10 @@
   },
   "Auth": {
     "ClientCallbackUrl": ""
+  },
+  "RateLimit": {
+    "TokenLimit": 30,
+    "TokensPerPeriod": 30,
+    "ReplenishmentPeriod": 60
   }
 }

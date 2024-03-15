@@ -20,6 +20,8 @@ public class OAuthClient
     [Column("user_id")]
     public int UserId { get; set; }
 
+    public RateLimitOverrides? RateLimitOverrides { get; set; }
+
     [InverseProperty("Clients")]
     public virtual User User { get; set; } = null!;
 }

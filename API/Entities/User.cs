@@ -28,6 +28,8 @@ public class User
     [Column("updated", TypeName = "timestamp with time zone")]
     public DateTime? Updated { get; set; }
 
+    public RateLimitOverrides? RateLimitOverrides { get; set; }
+
     [ForeignKey("PlayerId")]
     [InverseProperty("User")]
     public virtual Player Player { get; set; } = null!;

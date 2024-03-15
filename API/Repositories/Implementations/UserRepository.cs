@@ -11,7 +11,8 @@ public class UserRepository(ILogger<UserRepository> logger, OtrContext context) 
 
     public override async Task<User?> GetAsync(int id)
     {
-        return await _context.Users.Include(x => x.Player).FirstOrDefaultAsync(u => u.Id == id);
+        return await UserBaseQuery()
+            .FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task<User?> GetForPlayerAsync(int playerId)
@@ -54,4 +55,9 @@ public class UserRepository(ILogger<UserRepository> logger, OtrContext context) 
             }
         );
     }
+
+    private IQueryable<User> UserBaseQuery() =>
+        _context.Users
+            .Include(x => x.Player)
+            .Include(x => x.RateLimitOverrides);
 }
