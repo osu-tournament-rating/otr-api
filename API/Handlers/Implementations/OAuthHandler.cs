@@ -174,6 +174,11 @@ public class OAuthHandler(
         return await _clientService.CreateAsync(userId, secret, scopes);
     }
 
+    /// <summary>
+    /// Wrapper for generating a JSON Web Token (JWT) for a given client
+    /// </summary>
+    /// <param name="client"></param>
+    /// <returns></returns>
     private string GenerateAccessToken(OAuthClient client)
     {
         client.Scopes = [.. client.Scopes, "client"];
@@ -182,7 +187,7 @@ public class OAuthHandler(
         {
             claims = [.. claims,
                 new Claim(
-                "ratelimitoverrides",
+                OtrClaimTypes.RateLimitOverrides,
                 RateLimitOverridesSerializer.Serialize(client.RateLimitOverrides))
             ];
         }
@@ -195,6 +200,11 @@ public class OAuthHandler(
         );
     }
 
+    /// <summary>
+    /// Wrapper for generating a JSON Web Token (JWT) for a given user
+    /// </summary>
+    /// <param name="user"></param>
+    /// <returns></returns>
     private string GenerateAccessToken(User user)
     {
         user.Scopes = [.. user.Scopes, "user"];
@@ -203,7 +213,7 @@ public class OAuthHandler(
         {
             claims = [.. claims,
                 new Claim(
-                "ratelimitoverrides",
+                OtrClaimTypes.RateLimitOverrides,
                 RateLimitOverridesSerializer.Serialize(user.RateLimitOverrides))
             ];
         }

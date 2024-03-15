@@ -15,5 +15,5 @@ public class RateLimitConfiguration
     /// The amount of time (in seconds) before the <see cref="PermitLimit"/> is refreshed
     /// </summary>
     [Range(1, int.MaxValue, ErrorMessage = "Window must be an integer greater than 1!")]
-    public int Window { get; } = 30;
+    public int Window { get; } = 60;
 }

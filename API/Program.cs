@@ -87,7 +87,7 @@ builder
         RateLimitConfiguration rateLimitConfiguration = builder.Configuration.BindAndValidate<RateLimitConfiguration>(
             RateLimitConfiguration.Position);
 
-        var defaultFixedOptions = new FixedWindowRateLimiterOptions()
+        var anonymousRateLimiterOptions = new FixedWindowRateLimiterOptions()
         {
             PermitLimit = 30,
             Window = TimeSpan.FromSeconds(60),
@@ -114,31 +114,32 @@ builder
             }
         };
 
-
         options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
         {
             // Try to get access token
             var accessToken =
                 context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult?.Properties
-                    ?.GetTokenValue("access_token")?.ToString() ?? string.Empty;
+                    ?.GetTokenValue("access_token")?.ToString();
 
             // Shared partition for anonymous users
-            if (accessToken.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(accessToken))
             {
                 return RateLimitPartition.GetFixedWindowLimiter(
                     "anonymous",
-                    _ => defaultFixedOptions
+                    _ => anonymousRateLimiterOptions
                 );
             }
 
             JwtSecurityToken jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
             var principal = new ClaimsPrincipal(new ClaimsIdentity(jwtToken.Claims));
-            // Try parse rate limit override claim
-            var overrideClaim = principal.Claims.FirstOrDefault(c => c.Type == "ratelimitoverrides")?.Value;
+
+            // Try to parse rate limit override claim
+            var overrideClaimValue = principal.Claims
+                .FirstOrDefault(c => c.Type == OtrClaimTypes.RateLimitOverrides)?.Value;
             RateLimitOverrides? overrides = null;
-            if (!string.IsNullOrEmpty(overrideClaim))
+            if (!string.IsNullOrEmpty(overrideClaimValue))
             {
-                overrides = JsonSerializer.Deserialize<RateLimitOverrides>(overrideClaim);
+                overrides = JsonSerializer.Deserialize<RateLimitOverrides>(overrideClaimValue);
             }
 
             // Differentiate between client and users, as they can have the same id
@@ -149,14 +150,14 @@ builder
             {
                 return RateLimitPartition.GetFixedWindowLimiter(
                     $"{prefix}_{jwtToken.Issuer}",
-                    _ => defaultFixedOptions
+                    _ => anonymousRateLimiterOptions
                 );
             }
             return RateLimitPartition.GetFixedWindowLimiter(
                 $"{prefix}_{jwtToken.Issuer}",
                 _ => new FixedWindowRateLimiterOptions()
                 {
-                    PermitLimit = overrides.PermitLimit ?? defaultFixedOptions.PermitLimit,
+                    PermitLimit = overrides.PermitLimit ?? rateLimitConfiguration.PermitLimit,
                     Window = TimeSpan.FromSeconds(overrides.Window ?? rateLimitConfiguration.Window),
                     QueueLimit = 0
                 }

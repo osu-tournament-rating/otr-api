@@ -20,6 +20,10 @@ public class OAuthClient
     [Column("user_id")]
     public int UserId { get; set; }
 
+    // Column name is assigned via OtrContext
+    /// <summary>
+    /// Represents values that override the API rate limit for the OAuthClient
+    /// </summary>
     public RateLimitOverrides? RateLimitOverrides { get; set; }
 
     [InverseProperty("Clients")]
