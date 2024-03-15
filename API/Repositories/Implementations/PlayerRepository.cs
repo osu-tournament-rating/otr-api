@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Osu;
@@ -155,6 +156,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
     /// </summary>
     /// <param name="username">The username to search for</param>
     /// <returns>A query that filters players by the username provided</returns>
+    [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
     private IQueryable<Player> Search(string username)
     {
         if (username.Contains(' '))
@@ -163,13 +165,12 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
             return _context.Players.Where(p =>
                 p.Username != null
                 && (
-                    p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase)
-                    || p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase)
-                )
+                    p.Username.ToLower() == username.ToLower()
+                    || p.Username.ToLower() == username.ToLower())
             );
         }
 
-        return _context.Players.Where(p => p.Username != null && p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase));
+        return _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower());
     }
 
     // This is used by a scheduled task to automatically populate user info, such as username, country, etc.
