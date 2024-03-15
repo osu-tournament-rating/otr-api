@@ -9,7 +9,7 @@ public static class SeededPlayerRankChartDTO
         var chart = new PlayerRankChartDTO();
         var chartData = new List<RankChartDataPointDTO>();
 
-        for (int i = 0; i < 25; i++)
+        for (var i = 0; i < 25; i++)
         {
             chartData.Add(
                 new RankChartDataPointDTO

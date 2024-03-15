@@ -4,8 +4,8 @@ namespace API.Osu.AutomationChecks;
 
 public static class MatchAutomationChecks
 {
-    private const string _logPrefix = "[Automations: Match Check]";
-    private static readonly Serilog.ILogger _logger = Serilog.Log.ForContext(typeof(MatchAutomationChecks));
+    private const string LogPrefix = "[Automations: Match Check]";
+    private static readonly Serilog.ILogger s_logger = Serilog.Log.ForContext(typeof(MatchAutomationChecks));
 
     public static bool PassesAllChecks(Match match)
     {
@@ -14,12 +14,12 @@ public static class MatchAutomationChecks
 
     public static bool HasTournament(Match match)
     {
-        bool passes = match.TournamentId == match.Tournament.Id;
+        var passes = match.TournamentId == match.Tournament.Id;
         if (!passes)
         {
-            _logger.Warning(
+            s_logger.Warning(
                 "{Prefix} Match {MatchID} has no tournament, failing automation checks",
-                _logPrefix,
+                LogPrefix,
                 match.MatchId
             );
         }
@@ -31,9 +31,9 @@ public static class MatchAutomationChecks
     {
         if (string.IsNullOrEmpty(match.Tournament.Abbreviation))
         {
-            _logger.Information(
+            s_logger.Information(
                 "{Prefix} Match {MatchID} had null or empty abbreviation, failing",
-                _logPrefix,
+                LogPrefix,
                 match.MatchId
             );
             return false;
@@ -41,9 +41,9 @@ public static class MatchAutomationChecks
 
         if (string.IsNullOrEmpty(match.Name))
         {
-            _logger.Information(
+            s_logger.Information(
                 "{Prefix} Match {MatchID} had null or empty name, failing",
-                _logPrefix,
+                LogPrefix,
                 match.MatchId
             );
             return false;
@@ -51,9 +51,9 @@ public static class MatchAutomationChecks
 
         if (!match.Name.StartsWith(match.Tournament.Abbreviation, StringComparison.OrdinalIgnoreCase))
         {
-            _logger.Information(
+            s_logger.Information(
                 "{Prefix} Match {MatchID} had a name that didn't start with the expected abbreviation, failing",
-                _logPrefix,
+                LogPrefix,
                 match.MatchId
             );
             return false;
@@ -61,9 +61,9 @@ public static class MatchAutomationChecks
 
         if (!LobbyNameChecker.IsNameValid(match.Name, match.Tournament.Abbreviation))
         {
-            _logger.Information(
+            s_logger.Information(
                 "{Prefix} Match {MatchID} had a name that didn't pass the lobby name check, failing",
-                _logPrefix,
+                LogPrefix,
                 match.MatchId
             );
             return false;
@@ -75,13 +75,13 @@ public static class MatchAutomationChecks
     public static bool ValidGameMode(Match match)
     {
         // Ensures the mode for the match's tournament is valid.
-        bool valid = match.Tournament.Mode is >= 0 and <= 3;
+        var valid = match.Tournament.Mode is >= 0 and <= 3;
 
         if (!valid)
         {
-            _logger.Information(
+            s_logger.Information(
                 "{Prefix} Match {MatchID} had an invalid mode, failing automation checks",
-                _logPrefix,
+                LogPrefix,
                 match.MatchId
             );
         }

@@ -8,18 +8,12 @@ using Microsoft.Extensions.Options;
 
 namespace API;
 
-public partial class OtrContext : DbContext
+public partial class OtrContext(
+    DbContextOptions<OtrContext> options,
+    IOptions<ConnectionStringsConfiguration> configuration
+    ) : DbContext(options)
 {
-    private readonly IOptions<ConnectionStringsConfiguration> _configuration;
-
-    public OtrContext(
-        DbContextOptions<OtrContext> options,
-        IOptions<ConnectionStringsConfiguration> configuration
-    )
-        : base(options)
-    {
-        _configuration = configuration;
-    }
+    private readonly IOptions<ConnectionStringsConfiguration> _configuration = configuration;
 
     public virtual DbSet<BaseStats> BaseStats { get; set; }
     public virtual DbSet<Beatmap> Beatmaps { get; set; }

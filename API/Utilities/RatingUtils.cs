@@ -271,8 +271,8 @@ public static class RatingUtils
 
     public static double? GetSubTierFillPercentage(double rating)
     {
-        double? minRating = GetRatingForPreviousTier(rating);
-        double? maxRating = GetRatingForNextTier(rating);
+        var minRating = GetRatingForPreviousTier(rating);
+        var maxRating = GetRatingForNextTier(rating);
 
         if (minRating == null || maxRating == null)
         {
@@ -284,8 +284,8 @@ public static class RatingUtils
 
     public static double? GetMajorTierFillPercentage(double rating)
     {
-        double? minRating = GetMinimumRatingBeforeMajorTierFalloff(rating);
-        double maxRating = GetRatingForNextMajorTier(rating);
+        var minRating = GetMinimumRatingBeforeMajorTierFalloff(rating);
+        var maxRating = GetRatingForNextMajorTier(rating);
         if (minRating == null || maxRating == 0)
         {
             return null;

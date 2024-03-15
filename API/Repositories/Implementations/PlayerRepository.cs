@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Osu;
@@ -8,17 +9,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
+public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBase<Player>(context), IPlayerRepository
 {
-    private readonly OtrContext _context;
-    private readonly IMapper _mapper;
-
-    public PlayerRepository(OtrContext context, IMapper mapper)
-        : base(context)
-    {
-        _context = context;
-        _mapper = mapper;
-    }
+    private readonly OtrContext _context = context;
+    private readonly IMapper _mapper = mapper;
 
     public override async Task<int> UpdateAsync(Player player)
     {
@@ -35,7 +29,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
     public async Task<IEnumerable<Player>> GetPlayersMissingRankAsync()
     {
         // Get all players that are missing an earliest global rank in any mode (but have a current rank in that mode)
-        var players = await _context
+        List<Player> players = await _context
             .Players.Where(x =>
                 (x.EarliestOsuGlobalRank == null && x.RankStandard != null)
                 || (x.EarliestTaikoGlobalRank == null && x.RankTaiko != null)
@@ -83,9 +77,9 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
             return await _context.Players.WhereOsuId(osuId).FirstOrDefaultAsync();
         }
 
-        var time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
+        DateTime time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
 
-        var p = await _context
+        Player? p = await _context
             .Players.Include(x =>
                 x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == mode)
             )
@@ -162,6 +156,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
     /// </summary>
     /// <param name="username">The username to search for</param>
     /// <returns>A query that filters players by the username provided</returns>
+    [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
     private IQueryable<Player> Search(string username)
     {
         if (username.Contains(' '))
@@ -171,8 +166,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
                 p.Username != null
                 && (
                     p.Username.ToLower() == username.ToLower()
-                    || p.Username.ToLower() == username.Replace(' ', '_')
-                )
+                    || p.Username.ToLower() == username.ToLower())
             );
         }
 
@@ -192,7 +186,7 @@ public class PlayerRepository : RepositoryBase<Player>, IPlayerRepository
         int offsetDays = -1
     )
     {
-        var obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)mode, offsetDays));
+        PlayerInfoDTO? obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)mode, offsetDays));
 
         if (obj == null)
         {

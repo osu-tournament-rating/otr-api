@@ -15,17 +15,12 @@ namespace API.Controllers;
 [Authorize(Roles = "user")]
 [Authorize(Roles = "whitelist")]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class LeaderboardsController : Controller
+public class LeaderboardsController(ILeaderboardService leaderboardService) : Controller
 {
-    private readonly ILeaderboardService _leaderboardService;
-
-    public LeaderboardsController(ILeaderboardService leaderboardService)
-    {
-        _leaderboardService = leaderboardService;
-    }
+    private readonly ILeaderboardService _leaderboardService = leaderboardService;
 
     [HttpGet]
-    [AllowAnonymous] // TODO: Frontend needs to have a dedicated client for these requests.
+    // [AllowAnonymous] // TODO: Frontend needs to have a dedicated client for these requests.
     public async Task<ActionResult<LeaderboardDTO>> GetAsync(
         [FromQuery] LeaderboardRequestQueryDTO requestQuery
     )
@@ -42,14 +37,14 @@ public class LeaderboardsController : Controller
          * This avoids annoying calls to ".Filter" in the query string (and .Filter.TierFilters for the tier filters)
          */
 
-        int? authorizedUserId = HttpContext.AuthorizedUserIdentity();
+        var authorizedUserId = HttpContext.AuthorizedUserIdentity();
 
         if (!authorizedUserId.HasValue && requestQuery.ChartType == LeaderboardChartType.Country)
         {
             return BadRequest("Country leaderboards are only available to logged in users");
         }
 
-        var leaderboard = await _leaderboardService.GetLeaderboardAsync(requestQuery, authorizedUserId);
+        LeaderboardDTO leaderboard = await _leaderboardService.GetLeaderboardAsync(requestQuery, authorizedUserId);
         return Ok(leaderboard);
     }
 }

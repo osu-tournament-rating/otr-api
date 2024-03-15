@@ -11,7 +11,7 @@ public static class HttpContextExtensions
     /// <returns>An optional user id</returns>
     public static int? AuthorizedUserIdentity(this HttpContext context)
     {
-        bool user = context.User.IsUser();
+        var user = context.User.IsUser();
 
         return user ? ParseIdFromIssuer(context) : null;
     }
@@ -23,13 +23,13 @@ public static class HttpContextExtensions
 
     private static int? ParseIdFromIssuer(HttpContext context)
     {
-        string? id = context.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Iss)?.Value;
+        var id = context.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Iss)?.Value;
         if (id == null)
         {
             return null;
         }
 
-        if (!int.TryParse(id, out int idInt))
+        if (!int.TryParse(id, out var idInt))
         {
             return null;
         }

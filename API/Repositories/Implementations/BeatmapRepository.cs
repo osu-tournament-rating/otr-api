@@ -4,15 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class BeatmapRepository : RepositoryBase<Beatmap>, IBeatmapRepository
+public class BeatmapRepository(OtrContext context) : RepositoryBase<Beatmap>(context), IBeatmapRepository
 {
-    private readonly OtrContext _context;
-
-    public BeatmapRepository(OtrContext context)
-        : base(context)
-    {
-        _context = context;
-    }
+    private readonly OtrContext _context = context;
 
     public async Task<long> GetBeatmapIdAsync(int id) =>
         await _context.Beatmaps.Where(b => b.Id == id).Select(b => b.BeatmapId).FirstOrDefaultAsync();
@@ -27,7 +21,7 @@ public class BeatmapRepository : RepositoryBase<Beatmap>, IBeatmapRepository
 
     public async Task CreateIfNotExistsAsync(IEnumerable<long> beatmapIds)
     {
-        foreach (long id in beatmapIds)
+        foreach (var id in beatmapIds)
         {
             if (!await _context.Beatmaps.AnyAsync(x => x.BeatmapId == id))
             {

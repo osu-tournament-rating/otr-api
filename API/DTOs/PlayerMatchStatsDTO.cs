@@ -15,6 +15,6 @@ public class PlayerMatchStatsDTO
     public int GamesWon { get; set; }
     public int GamesLost { get; set; }
     public int GamesPlayed { get; set; }
-    public int[] TeammateIds { get; set; } = Array.Empty<int>();
-    public int[] OpponentIds { get; set; } = Array.Empty<int>();
+    public int[] TeammateIds { get; set; } = [];
+    public int[] OpponentIds { get; set; } = [];
 }
