@@ -18,7 +18,7 @@ public class SearchController(ITournamentsService tournamentsService, IMatchesSe
     [HttpPost]
     public async Task<IActionResult> SearchByNames([FromQuery] string? tournamentName, [FromQuery] string? matchName, [FromQuery] string? username)
     {
-        if (string.IsNullOrEmpty(tournamentName))
+        if (!string.IsNullOrEmpty(tournamentName))
         {
             TournamentDTO? tournamentDto = await tournamentsService.GetByName(tournamentName);
 
@@ -29,7 +29,7 @@ public class SearchController(ITournamentsService tournamentsService, IMatchesSe
             });
         }
 
-        if (string.IsNullOrEmpty(matchName))
+        if (!string.IsNullOrEmpty(matchName))
         {
             MatchDTO? matchDto = await matchesService.GetByNameAsync(matchName);
 
