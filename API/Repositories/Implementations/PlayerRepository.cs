@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBase<Player>(context), IPlayerRepository
 {
     private readonly OtrContext _context = context;
@@ -156,7 +158,6 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
     /// </summary>
     /// <param name="username">The username to search for</param>
     /// <returns>A query that filters players by the username provided</returns>
-    [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
     private IQueryable<Player> Search(string username)
     {
         if (username.Contains(' '))
