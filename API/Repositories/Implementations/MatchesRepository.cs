@@ -40,7 +40,7 @@ public class MatchesRepository(
 
     public async Task<Match?> GetByNameAsync(string name)
     {
-        Match? match = await MatchBaseQuery(true).FirstOrDefaultAsync(x => x.Name == name);
+        Match? match = await MatchBaseQuery(true).FirstOrDefaultAsync(x => EF.Functions.Like(x.Name, name));
 
         return match;
     }

@@ -15,16 +15,10 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class SearchController(ITournamentsService tournamentsService, IMatchesService matchesService, IPlayerService playerService) : Controller
 {
-    [HttpGet]
-    public async Task<IActionResult> Test()
-    {
-        return Ok();
-    }
-
     [HttpPost]
-    public async Task<IActionResult> SearchByNames([FromQuery(Name = "tournamentName")] string? tournamentName, [FromQuery(Name = "matchName")] string? matchName, [FromQuery(Name = "username")] string? username)
+    public async Task<IActionResult> SearchByNames([FromQuery] string? tournamentName, [FromQuery] string? matchName, [FromQuery] string? username)
     {
-        if (tournamentName is not null)
+        if (string.IsNullOrEmpty(tournamentName))
         {
             TournamentDTO? tournamentDto = await tournamentsService.GetByName(tournamentName);
 
@@ -35,7 +29,7 @@ public class SearchController(ITournamentsService tournamentsService, IMatchesSe
             });
         }
 
-        if (matchName is not null)
+        if (string.IsNullOrEmpty(matchName))
         {
             MatchDTO? matchDto = await matchesService.GetByNameAsync(matchName);
 
@@ -47,7 +41,7 @@ public class SearchController(ITournamentsService tournamentsService, IMatchesSe
         }
 
         //Since this is the last check, checking the inverse so code looks a bit cleaner.
-        if (username is null)
+        if (string.IsNullOrEmpty(username))
         {
             return Ok(null);
         }
@@ -60,6 +54,5 @@ public class SearchController(ITournamentsService tournamentsService, IMatchesSe
             Url = $"/users/{playerDto.Id}",
             Thumbnail = $"a.ppy.sh/{playerDto.OsuId}"
         });
-
     }
 }

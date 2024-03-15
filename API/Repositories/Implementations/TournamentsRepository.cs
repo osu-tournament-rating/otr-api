@@ -15,7 +15,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     private readonly OtrContext _context = context;
 
     public async Task<Tournament?> GetAsync(string name) =>
-        await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.ToLower().Equals(name.ToLower()));
+        await _context.Tournaments.FirstOrDefaultAsync(x => EF.Functions.Like(x.Name, name));
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase) && x.Mode == mode);

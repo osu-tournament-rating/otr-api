@@ -163,13 +163,13 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
             return _context.Players.Where(p =>
                 p.Username != null
                 && (
-                    p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase)
-                    || p.Username.Equals(username, StringComparison.CurrentCultureIgnoreCase)
+                    EF.Functions.Like(p.Username, username)
+                    || EF.Functions.Like(p.Username, username)
                 )
             );
         }
 
-        return _context.Players.Where(p => p.Username != null && p.Username.ToLower().Equals(username.ToLower()));
+        return _context.Players.Where(p => p.Username != null && EF.Functions.Like(p.Username, username));
     }
 
     // This is used by a scheduled task to automatically populate user info, such as username, country, etc.
