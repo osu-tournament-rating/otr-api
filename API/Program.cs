@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -130,22 +131,29 @@ builder
                 );
             }
 
-            // Try parse rate limit override claim
             JwtSecurityToken jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
-            var overrideClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "ratelimitoverrides")?.Value;
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(jwtToken.Claims));
+            // Try parse rate limit override claim
+            var overrideClaim = principal.Claims.FirstOrDefault(c => c.Type == "ratelimitoverrides")?.Value;
             RateLimitOverrides? overrides = null;
             if (!string.IsNullOrEmpty(overrideClaim))
             {
                 overrides = JsonSerializer.Deserialize<RateLimitOverrides>(overrideClaim);
             }
 
+            // Differentiate between client and users, as they can have the same id
+            var prefix = principal.IsUser() ? "user" : "client";
+
             // Partition for each unique user / client
             if (overrides is null)
             {
-                return RateLimitPartition.GetFixedWindowLimiter(jwtToken.Issuer, _ => defaultFixedOptions);
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    $"{prefix}_{jwtToken.Issuer}",
+                    _ => defaultFixedOptions
+                );
             }
             return RateLimitPartition.GetFixedWindowLimiter(
-                jwtToken.Issuer,
+                $"{prefix}_{jwtToken.Issuer}",
                 _ => new FixedWindowRateLimiterOptions()
                 {
                     PermitLimit = overrides.PermitLimit ?? defaultFixedOptions.PermitLimit,
