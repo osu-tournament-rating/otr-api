@@ -14,16 +14,10 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 [Authorize(Roles = "user")]
 [Authorize(Roles = "whitelist")]
-public class MeController : Controller
+public class MeController(IUserService userService, IPlayerStatsService playerStatsService) : Controller
 {
-    private readonly IUserService _userService;
-    private readonly IPlayerStatsService _playerStatsService;
-
-    public MeController(IUserService userService, IPlayerStatsService playerStatsService)
-    {
-        _userService = userService;
-        _playerStatsService = playerStatsService;
-    }
+    private readonly IUserService _userService = userService;
+    private readonly IPlayerStatsService _playerStatsService = playerStatsService;
 
     [HttpGet]
     [EndpointSummary("Gets the logged in user's information, if they exist")]
@@ -32,36 +26,20 @@ public class MeController : Controller
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetLoggedInUserAsync()
     {
-        int? id = HttpContext.AuthorizedUserIdentity();
+        var id = HttpContext.AuthorizedUserIdentity();
 
         if (!id.HasValue)
         {
             return BadRequest("Authorization invalid.");
         }
 
-        var user = await _userService.GetAsync(id.Value);
+        UserInfoDTO? user = await _userService.GetAsync(id.Value);
         if (user?.OsuId == null)
         {
             return NotFound("User not found");
         }
 
         return Ok(user);
-    }
-
-    /// <summary>
-    ///  Validates the currently logged in user's OTR-Access-Token cookie
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet("validate")]
-    [Authorize(Roles = "whitelist")]
-    [EndpointSummary("Validates the currently logged in user has permissions to access the website.")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public IActionResult ValidateJwt()
-    {
-        // Middleware will return 403 if the user does not
-        // have the correct roles
-        return NoContent();
     }
 
     [HttpGet("stats")]
@@ -71,14 +49,14 @@ public class MeController : Controller
         [FromQuery] DateTime? dateMax = null
     )
     {
-        int? userId = HttpContext.AuthorizedUserIdentity();
+        var userId = HttpContext.AuthorizedUserIdentity();
 
         if (!userId.HasValue)
         {
-            return BadRequest("User is not logged in or id could not be retreived from logged in user.");
+            return BadRequest("User is not logged in or id could not be retrieved from logged in user.");
         }
 
-        int? playerId = (await _userService.GetAsync(userId.Value))?.Id;
+        var playerId = (await _userService.GetAsync(userId.Value))?.Id;
 
         if (!playerId.HasValue)
         {

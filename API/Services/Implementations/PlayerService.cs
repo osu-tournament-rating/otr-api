@@ -6,16 +6,10 @@ using AutoMapper;
 
 namespace API.Services.Implementations;
 
-public class PlayerService : IPlayerService
+public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) : IPlayerService
 {
-    private readonly IMapper _mapper;
-    private readonly IPlayerRepository _playerRepository;
-
-    public PlayerService(IPlayerRepository playerRepository, IMapper mapper)
-    {
-        _playerRepository = playerRepository;
-        _mapper = mapper;
-    }
+    private readonly IMapper _mapper = mapper;
+    private readonly IPlayerRepository _playerRepository = playerRepository;
 
     public async Task<IEnumerable<PlayerDTO>> GetAllAsync() =>
         _mapper.Map<IEnumerable<PlayerDTO>>(await _playerRepository.GetAsync());
@@ -41,7 +35,7 @@ public class PlayerService : IPlayerService
 
     public async Task<long?> GetOsuIdAsync(int id)
     {
-        long result = await _playerRepository.GetOsuIdAsync(id);
+        var result = await _playerRepository.GetOsuIdAsync(id);
         if (result == default)
         {
             return null;
@@ -58,13 +52,13 @@ public class PlayerService : IPlayerService
 
     public async Task<PlayerInfoDTO?> GetVersatileAsync(string key)
     {
-        if (!int.TryParse(key, out int value))
+        if (!int.TryParse(key, out var value))
         {
             return await GetAsync(key);
         }
 
         // Check for the player id
-        var result = await GetAsync(value);
+        PlayerInfoDTO? result = await GetAsync(value);
 
         if (result != null)
         {
@@ -72,7 +66,7 @@ public class PlayerService : IPlayerService
         }
 
         // Check for the osu id
-        if (long.TryParse(key, out long longValue))
+        if (long.TryParse(key, out var longValue))
         {
             return await GetAsync(longValue);
         }
@@ -85,7 +79,7 @@ public class PlayerService : IPlayerService
 
     public async Task<PlayerInfoDTO?> GetAsync(long osuId)
     {
-        int? id = await GetIdAsync(osuId);
+        var id = await GetIdAsync(osuId);
 
         return id == null ? null : _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(id.Value));
     }

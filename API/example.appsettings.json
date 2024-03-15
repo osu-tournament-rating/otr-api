@@ -20,8 +20,6 @@
     "Audience": ""
   },
   "Auth": {
-    "WebLoginAuthSecret": "",
-    "PrivilegedClientSecret": "",
     "ClientCallbackUrl": ""
   }
 }

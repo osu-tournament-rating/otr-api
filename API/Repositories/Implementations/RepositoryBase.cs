@@ -15,9 +15,7 @@ public class RepositoryBase<T> : IRepository<T>
 
     public virtual async Task<T> CreateAsync(T entity)
     {
-        T? created = (await _context.Set<T>().AddAsync(entity)).Entity;
-        if (created == null)
-            throw new Exception($"Failed to create {nameof(T)} entity");
+        T? created = (await _context.Set<T>().AddAsync(entity)).Entity ?? throw new Exception($"Failed to create {nameof(T)} entity");
         await _context.SaveChangesAsync();
 
         return created;
@@ -33,7 +31,7 @@ public class RepositoryBase<T> : IRepository<T>
 
     public virtual async Task<int?> DeleteAsync(int id)
     {
-        var entity = await _context.Set<T>().FindAsync(id);
+        T? entity = await _context.Set<T>().FindAsync(id);
         if (entity == null)
         {
             return null;

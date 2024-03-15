@@ -61,7 +61,9 @@ public class HistoryRepositoryBase<TEntity, THistory>
     {
         TEntity? origEntity = await GetNoTrackingAsync(id);
         if (origEntity == null)
+        {
             return null;
+        }
 
         THistory record = _mapper.Map<THistory>(origEntity);
         record.HistoryAction = (int)action;

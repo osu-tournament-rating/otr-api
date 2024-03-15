@@ -90,7 +90,7 @@ public class MatchScore
     {
         get
         {
-            double divisor = 300d * (Count300 + Count100 + Count50 + CountMiss);
+            var divisor = 300d * (Count300 + Count100 + Count50 + CountMiss);
 
             if (divisor == 0)
             {
@@ -128,9 +128,9 @@ public class MatchScore
     {
         get
         {
-            int nFruitsCaught = Count300;
-            int nDropsCaught = Count100;
-            int nDropletsCaught = Count50;
+            var nFruitsCaught = Count300;
+            var nDropsCaught = Count100;
+            var nDropletsCaught = Count50;
 
             double divisor = nFruitsCaught + nDropsCaught + nDropletsCaught + CountMiss + CountKatu;
 
@@ -152,7 +152,7 @@ public class MatchScore
     {
         get
         {
-            double divisor = 305d * (CountGeki + Count300 + CountKatu + Count100 + Count50 + CountMiss);
+            var divisor = 305d * (CountGeki + Count300 + CountKatu + Count100 + Count50 + CountMiss);
 
             if (divisor == 0)
             {

@@ -35,7 +35,7 @@ public class RatingUtilsTests
         // Arrange
 
         // Act
-        string actualTier = RatingUtils.GetTier(rating);
+        var actualTier = RatingUtils.GetTier(rating);
 
         // Assert
         Assert.Equal(expectedTier, actualTier);
@@ -72,7 +72,7 @@ public class RatingUtilsTests
         // Arrange
 
         // Act
-        string actualNextTier = RatingUtils.GetNextTier(currentRating);
+        var actualNextTier = RatingUtils.GetNextTier(currentRating);
 
         // Assert
         Assert.Equal(expectedNextTier, actualNextTier);
@@ -94,7 +94,7 @@ public class RatingUtilsTests
         // Arrange
 
         // Act
-        bool isProvisional = RatingUtils.IsProvisional(volatility, matchesPlayed, tournamentsPlayed);
+        var isProvisional = RatingUtils.IsProvisional(volatility, matchesPlayed, tournamentsPlayed);
 
         // Assert
         Assert.True(isProvisional);
@@ -113,7 +113,7 @@ public class RatingUtilsTests
         // Arrange
 
         // Act
-        bool isProvisional = RatingUtils.IsProvisional(volatility, matchesPlayed, tournamentsPlayed);
+        var isProvisional = RatingUtils.IsProvisional(volatility, matchesPlayed, tournamentsPlayed);
 
         // Assert
         Assert.False(isProvisional);

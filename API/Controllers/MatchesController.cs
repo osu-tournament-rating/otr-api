@@ -14,26 +14,18 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [EnableCors]
-[Authorize(Roles = "user")]
-[Authorize(Roles = "whitelist")]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class MatchesController : Controller
+public class MatchesController(IMatchesService matchesService, ITournamentsService tournamentsService) : Controller
 {
-    private readonly IMatchesService _matchesService;
-    private readonly ITournamentsService _tournamentsService;
+    private readonly IMatchesService _matchesService = matchesService;
+    private readonly ITournamentsService _tournamentsService = tournamentsService;
 
-    public MatchesController(IMatchesService matchesService, ITournamentsService tournamentsService)
-    {
-        _matchesService = matchesService;
-        _tournamentsService = tournamentsService;
-    }
-
+    // TODO: Move to tournaments controller
     [HttpPost("batch")]
     [Authorize(Roles = "submit")]
-    public async Task<IActionResult> PostAsync(
-        [FromBody] TournamentWebSubmissionDTO wrapper,
-        [FromQuery] bool verified = false
-    )
+    public async Task<IActionResult> PostAsync([FromBody] TournamentWebSubmissionDTO wrapper,
+        [FromQuery]
+        bool verified = false)
     {
         /*
          * FLOW:
@@ -73,8 +65,7 @@ public class MatchesController : Controller
     [HttpPost("checks/refresh")]
     [Authorize(Roles = "admin, system")]
     [EndpointSummary(
-        "Sets all matches as requiring automation checks. Should be run if "
-            + "automation checks are altered."
+        "Sets all matches as requiring automation checks. Should be run if " + "automation checks are altered."
     )]
     public async Task<IActionResult> RefreshAutomationChecksAsync()
     {
@@ -88,14 +79,15 @@ public class MatchesController : Controller
     [EndpointSummary("Returns all verified match ids")]
     public async Task<ActionResult<IEnumerable<int>>> GetAllAsync()
     {
-        var matches = await _matchesService.GetAllIdsAsync(true);
+        IEnumerable<int> matches = await _matchesService.GetAllIdsAsync(true);
         return Ok(matches);
     }
 
     [HttpGet("{id:int}")]
+    [Authorize(Roles = "user, client")]
     public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
     {
-        var match = await _matchesService.GetAsync(id);
+        MatchDTO? match = await _matchesService.GetAsync(id);
 
         if (match == null)
         {
@@ -109,30 +101,27 @@ public class MatchesController : Controller
     [Authorize(Roles = "system")]
     [EndpointSummary("Converts a list of match ids to MatchDTO objects")]
     [EndpointDescription(
-        "This is a useful way to fetch a list of matches without starving the "
-            + "program of memory. This is used by the rating processor to fetch matches"
+        "This is a useful way to fetch a list of matches without starving the " + "program of memory. This is used by the rating processor to fetch matches"
     )]
     public async Task<ActionResult<IEnumerable<MatchDTO>>> ConvertAsync([FromBody] IEnumerable<int> ids)
     {
-        var matches = await _matchesService.ConvertAsync(ids);
+        IEnumerable<MatchDTO> matches = await _matchesService.ConvertAsync(ids);
         return Ok(matches);
     }
 
-    [Authorize(Roles = "admin")]
     [HttpGet("duplicates")]
-    [EndpointSummary("Retrieves all known duplicate groups")]
-    public async Task<IActionResult> GetDuplicatesAsync() =>
-        Ok(await _matchesService.GetAllDuplicatesAsync());
-
     [Authorize(Roles = "admin")]
+    [EndpointSummary("Retrieves all known duplicate groups")]
+    public async Task<IActionResult> GetDuplicatesAsync() => Ok(await _matchesService.GetAllDuplicatesAsync());
+
     [HttpPost("duplicate")]
+    [Authorize(Roles = "admin")]
     [EndpointSummary("Mark a match as a confirmed or denied duplicate of the root")]
-    public async Task<IActionResult> MarkDuplicatesAsync(
-        [FromQuery] int rootId,
-        [FromQuery] bool confirmedDuplicate
-    )
+    public async Task<IActionResult> MarkDuplicatesAsync([FromQuery] int rootId,
+        [FromQuery]
+        bool confirmedDuplicate)
     {
-        int? loggedInUser = HttpContext.AuthorizedUserIdentity();
+        var loggedInUser = HttpContext.AuthorizedUserIdentity();
         if (!loggedInUser.HasValue)
         {
             return Unauthorized("You must be logged in to perform this action.");
@@ -157,13 +146,13 @@ public class MatchesController : Controller
     [Authorize(Roles = "system")]
     public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
     {
-        var match = await _matchesService.GetByOsuIdAsync(id);
+        MatchDTO? match = await _matchesService.GetByOsuIdAsync(id);
         if (match == null)
         {
             return NotFound($"Match with id {id} does not exist");
         }
 
-        long osuMatchId = match.MatchId;
+        var osuMatchId = match.MatchId;
         if (osuMatchId != 0)
         {
             return Ok(osuMatchId);
@@ -176,7 +165,7 @@ public class MatchesController : Controller
     [Authorize(Roles = "system")]
     public async Task<IActionResult> GetIdMappingAsync()
     {
-        var mapping = await _matchesService.GetIdMappingAsync();
+        IEnumerable<MatchIdMappingDTO> mapping = await _matchesService.GetIdMappingAsync();
         return Ok(mapping);
     }
 
@@ -187,12 +176,11 @@ public class MatchesController : Controller
     )]
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> EditVerificationStatus(
-        int id,
-        [FromBody] JsonPatchDocument<MatchDTO> patch
-    )
+    public async Task<IActionResult> EditVerificationStatus(int id,
+        [FromBody]
+        JsonPatchDocument<MatchDTO> patch)
     {
-        var match = await _matchesService.GetAsync(id, false);
+        MatchDTO? match = await _matchesService.GetAsync(id, false);
 
         if (match is null)
         {
@@ -212,7 +200,7 @@ public class MatchesController : Controller
             return BadRequest(ModelState);
         }
 
-        var updatedMatch = await _matchesService.UpdateVerificationStatus(id, match.VerificationStatus);
+        MatchDTO updatedMatch = await _matchesService.UpdateVerificationStatus(id, match.VerificationStatus);
 
         return Ok(updatedMatch);
     }

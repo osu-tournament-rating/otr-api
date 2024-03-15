@@ -15,7 +15,7 @@ public class OAuthClient
     public string Secret { get; set; } = string.Empty;
 
     [Column("scopes")]
-    public string[] Scopes { get; set; } = Array.Empty<string>();
+    public string[] Scopes { get; set; } = [];
 
     [Column("user_id")]
     public int UserId { get; set; }
