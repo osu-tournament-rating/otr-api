@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using API.Entities;
 using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
@@ -5,12 +6,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
+
 /// <summary>
 /// Strictly responsible for processing matches from the osu! API and adding them to the database. This includes:
 /// * Player data
 /// * Beatmap data
 /// * Match data, game data, and score data
 /// </summary>
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class ApiMatchRepository(
     ILogger<ApiMatchRepository> logger,
     OtrContext context,
