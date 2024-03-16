@@ -3,7 +3,7 @@ using API.Utilities;
 
 namespace APITests.Utilities;
 
-public class RateLimitsSerializerTests
+public class RateLimitOverridesSerializerTests
 {
     [Fact]
     public void Serializer_Produces_EmptyString_For_Empty_Input()
