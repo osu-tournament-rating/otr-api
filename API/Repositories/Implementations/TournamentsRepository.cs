@@ -1,5 +1,6 @@
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
@@ -10,6 +11,8 @@ using NpgsqlTypes;
 
 namespace API.Repositories.Implementations;
 
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class TournamentsRepository(OtrContext context) : RepositoryBase<Tournament>(context), ITournamentsRepository
 {
     private readonly OtrContext _context = context;
@@ -33,10 +36,10 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     }
 
     public async Task<Tournament?> GetAsync(string name) =>
-        await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
+        await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
-        await _context.Tournaments.AnyAsync(x => x.Name.Equals(name) && x.Mode == mode);
+        await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
 
     public async Task<PlayerTournamentTeamSizeCountDTO> GetPlayerTeamSizeStatsAsync(
         int playerId,
