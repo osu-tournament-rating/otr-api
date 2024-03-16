@@ -1303,10 +1303,12 @@ namespace API.Migrations
                                 .HasColumnType("integer");
 
                             b1.Property<int?>("PermitLimit")
-                                .HasColumnType("integer");
+                                .HasColumnType("integer")
+                                .HasColumnName("permit_limit");
 
                             b1.Property<int?>("Window")
-                                .HasColumnType("integer");
+                                .HasColumnType("integer")
+                                .HasColumnName("window");
 
                             b1.HasKey("OAuthClientId");
 
@@ -1318,7 +1320,8 @@ namespace API.Migrations
                                 .HasForeignKey("OAuthClientId");
                         });
 
-                    b.Navigation("RateLimitOverrides");
+                    b.Navigation("RateLimitOverrides")
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -1376,10 +1379,12 @@ namespace API.Migrations
                                 .HasColumnType("integer");
 
                             b1.Property<int?>("PermitLimit")
-                                .HasColumnType("integer");
+                                .HasColumnType("integer")
+                                .HasColumnName("permit_limit");
 
                             b1.Property<int?>("Window")
-                                .HasColumnType("integer");
+                                .HasColumnType("integer")
+                                .HasColumnName("window");
 
                             b1.HasKey("UserId");
 
@@ -1393,7 +1398,8 @@ namespace API.Migrations
 
                     b.Navigation("Player");
 
-                    b.Navigation("RateLimitOverrides");
+                    b.Navigation("RateLimitOverrides")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("API.Entities.Beatmap", b =>

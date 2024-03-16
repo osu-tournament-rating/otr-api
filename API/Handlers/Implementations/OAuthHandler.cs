@@ -183,12 +183,14 @@ public class OAuthHandler(
     {
         client.Scopes = [.. client.Scopes, "client"];
         IEnumerable<Claim> claims = client.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
-        if (client.RateLimitOverrides is not null)
+        var serializedOverrides = RateLimitOverridesSerializer.Serialize(client.RateLimitOverrides);
+        if (!string.IsNullOrEmpty(serializedOverrides))
         {
             claims = [.. claims,
                 new Claim(
-                OtrClaimTypes.RateLimitOverrides,
-                RateLimitOverridesSerializer.Serialize(client.RateLimitOverrides))
+                    OtrClaimTypes.RateLimitOverrides,
+                    serializedOverrides
+                )
             ];
         }
 
@@ -209,12 +211,14 @@ public class OAuthHandler(
     {
         user.Scopes = [.. user.Scopes, "user"];
         IEnumerable<Claim> claims = user.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
-        if (user.RateLimitOverrides is not null)
+        var serializedOverrides = RateLimitOverridesSerializer.Serialize(user.RateLimitOverrides);
+        if (!string.IsNullOrEmpty(serializedOverrides))
         {
             claims = [.. claims,
                 new Claim(
                 OtrClaimTypes.RateLimitOverrides,
-                RateLimitOverridesSerializer.Serialize(user.RateLimitOverrides))
+                serializedOverrides
+                )
             ];
         }
 

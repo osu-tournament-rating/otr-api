@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API;
@@ -139,7 +138,7 @@ builder
             RateLimitOverrides? overrides = null;
             if (!string.IsNullOrEmpty(overrideClaimValue))
             {
-                overrides = JsonSerializer.Deserialize<RateLimitOverrides>(overrideClaimValue);
+                overrides = RateLimitOverridesSerializer.Deserialize(overrideClaimValue);
             }
 
             // Differentiate between client and users, as they can have the same id

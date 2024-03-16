@@ -20,11 +20,11 @@ public class OAuthClient
     [Column("user_id")]
     public int UserId { get; set; }
 
-    // Column name is assigned via OtrContext
+    // Column name and value initialization is handled via OtrContext
     /// <summary>
     /// Represents values that override the API rate limit for the OAuthClient
     /// </summary>
-    public RateLimitOverrides? RateLimitOverrides { get; set; }
+    public RateLimitOverrides RateLimitOverrides { get; set; } = null!;
 
     [InverseProperty("Clients")]
     public virtual User User { get; set; } = null!;

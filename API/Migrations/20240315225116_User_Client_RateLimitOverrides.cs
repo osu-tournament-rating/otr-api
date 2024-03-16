@@ -14,13 +14,15 @@ namespace API.Migrations
                 name: "rate_limit_overrides",
                 table: "users",
                 type: "jsonb",
-                nullable: true);
+                nullable: false,
+                defaultValue: "");
 
             migrationBuilder.AddColumn<string>(
                 name: "rate_limit_overrides",
                 table: "oauth_clients",
                 type: "jsonb",
-                nullable: true);
+                nullable: false,
+                defaultValue: "");
         }
 
         /// <inheritdoc />

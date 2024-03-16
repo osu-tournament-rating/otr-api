@@ -245,7 +245,12 @@ public partial class OtrContext(
             entity.Property(x => x.Id).UseIdentityColumn();
 
             entity
-                .OwnsOne(e => e.RateLimitOverrides, rlo => rlo.ToJson("rate_limit_overrides"));
+                .OwnsOne(e => e.RateLimitOverrides, rlo =>
+                {
+                    rlo.ToJson("rate_limit_overrides");
+                    rlo.Property(p => p.PermitLimit).HasDefaultValue(null);
+                    rlo.Property(p => p.Window).HasDefaultValue(null);
+                });
             entity
                 .HasOne(e => e.User)
                 .WithMany(e => e.Clients)
@@ -331,7 +336,13 @@ public partial class OtrContext(
 
             entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Scopes);
-            entity.OwnsOne(e => e.RateLimitOverrides, rlo => rlo.ToJson("rate_limit_overrides"));
+            entity
+                .OwnsOne(e => e.RateLimitOverrides, rlo =>
+                {
+                    rlo.ToJson("rate_limit_overrides");
+                    rlo.Property(p => p.PermitLimit).HasDefaultValue(null);
+                    rlo.Property(p => p.Window).HasDefaultValue(null);
+                });
 
             entity.HasMany(e => e.Clients).WithOne(e => e.User).IsRequired(false);
 
