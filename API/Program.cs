@@ -35,18 +35,22 @@ builder
     .Services.AddOptionsWithValidateOnStart<ConnectionStringsConfiguration>()
     .Bind(builder.Configuration.GetSection(ConnectionStringsConfiguration.Position))
     .ValidateDataAnnotations();
+
 builder
     .Services.AddOptionsWithValidateOnStart<OsuConfiguration>()
     .Bind(builder.Configuration.GetSection(OsuConfiguration.Position))
     .ValidateDataAnnotations();
+
 builder
     .Services.AddOptionsWithValidateOnStart<JwtConfiguration>()
     .Bind(builder.Configuration.GetSection(JwtConfiguration.Position))
     .ValidateDataAnnotations();
+
 builder
     .Services.AddOptionsWithValidateOnStart<AuthConfiguration>()
     .Bind(builder.Configuration.GetSection(AuthConfiguration.Position))
     .ValidateDataAnnotations();
+
 builder
     .Services.AddOptionsWithValidateOnStart<RateLimitConfiguration>()
     .Bind(builder.Configuration.GetSection(RateLimitConfiguration.Position))
@@ -55,10 +59,7 @@ builder
 // Add services to the container.
 
 builder
-    .Services.AddControllers(options =>
-    {
-        options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
-    })
+    .Services.AddControllers(options => { options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider()); })
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
@@ -171,10 +172,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSerilog(configuration =>
 {
     var connString = builder
-        .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-            ConnectionStringsConfiguration.Position
-        )
-        .DefaultConnection;
+                     .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+                         ConnectionStringsConfiguration.Position
+                     )
+                     .DefaultConnection;
 
 #if DEBUG
     configuration.MinimumLevel.Debug();
@@ -205,10 +206,7 @@ builder.Services.AddSerilog(configuration =>
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-var configuration = new MapperConfiguration(cfg =>
-{
-    cfg.AddProfile<MapperProfile>();
-});
+var configuration = new MapperConfiguration(cfg => { cfg.AddProfile<MapperProfile>(); });
 
 // only during development, validate your mappings; remove it before release
 #if DEBUG
@@ -274,11 +272,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddOsuSharp(options =>
 {
     OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
-    options.Configuration = new OsuClientConfiguration
-    {
-        ClientId = osuConfiguration.ClientId,
-        ClientSecret = osuConfiguration.ClientSecret
-    };
+    options.Configuration = new OsuClientConfiguration { ClientId = osuConfiguration.ClientId, ClientSecret = osuConfiguration.ClientSecret };
 });
 
 builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
@@ -303,11 +297,8 @@ builder.Host.ConfigureOsuSharp(
         OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
             OsuConfiguration.Position
         );
-        options.Configuration = new OsuClientConfiguration
-        {
-            ClientId = osuConfiguration.ClientId,
-            ClientSecret = osuConfiguration.ClientSecret
-        };
+
+        options.Configuration = new OsuClientConfiguration { ClientId = osuConfiguration.ClientId, ClientSecret = osuConfiguration.ClientSecret };
     }
 );
 
@@ -317,6 +308,7 @@ builder
     {
         JwtConfiguration jwtConfiguration =
             builder.Configuration.BindAndValidate<JwtConfiguration>(JwtConfiguration.Position);
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
@@ -353,7 +345,14 @@ app.UseAuthorization();
 
 app.UseRateLimiter();
 
-app.MapControllers();
+if (app.Environment.IsDevelopment())
+{
+    app.MapControllers().AllowAnonymous();
+}
+else
+{
+    app.MapControllers();
+}
 
 app.Logger.LogInformation("Running!");
 

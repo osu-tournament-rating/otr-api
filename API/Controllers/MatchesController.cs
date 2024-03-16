@@ -23,10 +23,9 @@ public class MatchesController(IMatchesService matchesService, ITournamentsServi
     // TODO: Move to tournaments controller
     [HttpPost("batch")]
     [Authorize(Roles = "submit")]
-    public async Task<IActionResult> PostAsync(
-        [FromBody] TournamentWebSubmissionDTO wrapper,
-        [FromQuery] bool verified = false
-    )
+    public async Task<IActionResult> PostAsync([FromBody] TournamentWebSubmissionDTO wrapper,
+        [FromQuery]
+        bool verified = false)
     {
         /*
          * FLOW:
@@ -66,8 +65,7 @@ public class MatchesController(IMatchesService matchesService, ITournamentsServi
     [HttpPost("checks/refresh")]
     [Authorize(Roles = "admin, system")]
     [EndpointSummary(
-        "Sets all matches as requiring automation checks. Should be run if "
-            + "automation checks are altered."
+        "Sets all matches as requiring automation checks. Should be run if " + "automation checks are altered."
     )]
     public async Task<IActionResult> RefreshAutomationChecksAsync()
     {
@@ -86,7 +84,7 @@ public class MatchesController(IMatchesService matchesService, ITournamentsServi
     }
 
     [HttpGet("{id:int}")]
-    [Authorize("user, client")]
+    [Authorize(Roles = "user, client")]
     public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
     {
         MatchDTO? match = await _matchesService.GetAsync(id);
@@ -103,8 +101,7 @@ public class MatchesController(IMatchesService matchesService, ITournamentsServi
     [Authorize(Roles = "system")]
     [EndpointSummary("Converts a list of match ids to MatchDTO objects")]
     [EndpointDescription(
-        "This is a useful way to fetch a list of matches without starving the "
-            + "program of memory. This is used by the rating processor to fetch matches"
+        "This is a useful way to fetch a list of matches without starving the " + "program of memory. This is used by the rating processor to fetch matches"
     )]
     public async Task<ActionResult<IEnumerable<MatchDTO>>> ConvertAsync([FromBody] IEnumerable<int> ids)
     {
@@ -115,16 +112,14 @@ public class MatchesController(IMatchesService matchesService, ITournamentsServi
     [HttpGet("duplicates")]
     [Authorize(Roles = "admin")]
     [EndpointSummary("Retrieves all known duplicate groups")]
-    public async Task<IActionResult> GetDuplicatesAsync() =>
-        Ok(await _matchesService.GetAllDuplicatesAsync());
+    public async Task<IActionResult> GetDuplicatesAsync() => Ok(await _matchesService.GetAllDuplicatesAsync());
 
     [HttpPost("duplicate")]
     [Authorize(Roles = "admin")]
     [EndpointSummary("Mark a match as a confirmed or denied duplicate of the root")]
-    public async Task<IActionResult> MarkDuplicatesAsync(
-        [FromQuery] int rootId,
-        [FromQuery] bool confirmedDuplicate
-    )
+    public async Task<IActionResult> MarkDuplicatesAsync([FromQuery] int rootId,
+        [FromQuery]
+        bool confirmedDuplicate)
     {
         var loggedInUser = HttpContext.AuthorizedUserIdentity();
         if (!loggedInUser.HasValue)
@@ -181,10 +176,9 @@ public class MatchesController(IMatchesService matchesService, ITournamentsServi
     )]
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> EditVerificationStatus(
-        int id,
-        [FromBody] JsonPatchDocument<MatchDTO> patch
-    )
+    public async Task<IActionResult> EditVerificationStatus(int id,
+        [FromBody]
+        JsonPatchDocument<MatchDTO> patch)
     {
         MatchDTO? match = await _matchesService.GetAsync(id, false);
 
