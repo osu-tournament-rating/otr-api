@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Repositories.Interfaces;
@@ -5,21 +6,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class MatchWinRecordRepository : RepositoryBase<MatchWinRecord>, IMatchWinRecordRepository
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
+public class MatchWinRecordRepository(OtrContext context, IPlayerRepository playerRepository) : RepositoryBase<MatchWinRecord>(context), IMatchWinRecordRepository
 {
-    private readonly OtrContext _context;
-    private readonly IPlayerRepository _playerRepository;
-
-    public MatchWinRecordRepository(OtrContext context, IPlayerRepository playerRepository)
-        : base(context)
-    {
-        _context = context;
-        _playerRepository = playerRepository;
-    }
+    private readonly OtrContext _context = context;
+    private readonly IPlayerRepository _playerRepository = playerRepository;
 
     public async Task BatchInsertAsync(IEnumerable<MatchWinRecordDTO> postBody)
     {
-        foreach (var item in postBody)
+        foreach (MatchWinRecordDTO item in postBody)
         {
             var record = new MatchWinRecord
             {
@@ -50,7 +46,7 @@ public class MatchWinRecordRepository : RepositoryBase<MatchWinRecord>, IMatchWi
         int limit = 5
     )
     {
-        var redTeams = await _context
+        List<MatchWinRecord> redTeams = await _context
             .MatchWinRecords.Where(x =>
                 x.Match.Tournament.Mode == mode
                 && x.Match.StartTime >= dateMin
@@ -59,7 +55,7 @@ public class MatchWinRecordRepository : RepositoryBase<MatchWinRecord>, IMatchWi
             )
             .ToListAsync();
 
-        var blueTeams = await _context
+        List<MatchWinRecord> blueTeams = await _context
             .MatchWinRecords.Where(x =>
                 x.Match.Tournament.Mode == mode
                 && x.Match.StartTime >= dateMin
@@ -93,7 +89,7 @@ public class MatchWinRecordRepository : RepositoryBase<MatchWinRecord>, IMatchWi
         int limit = 5
     )
     {
-        var matchData = await _context
+        List<MatchWinRecord> matchData = await _context
             .MatchWinRecords.Where(x =>
                 (!x.TeamRed.Contains(playerId) && x.TeamBlue.Contains(playerId))
                 || (!x.TeamBlue.Contains(playerId) && x.TeamRed.Contains(playerId))
@@ -105,7 +101,7 @@ public class MatchWinRecordRepository : RepositoryBase<MatchWinRecord>, IMatchWi
             )
             .ToListAsync();
 
-        var filteredData = matchData
+        IEnumerable<int> filteredData = matchData
             .Where(x => x.TeamRed.Contains(playerId))
             .SelectMany(x => x.TeamBlue)
             .Concat(matchData.Where(x => x.TeamBlue.Contains(playerId)).SelectMany(x => x.TeamRed));

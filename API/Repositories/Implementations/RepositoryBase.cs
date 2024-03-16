@@ -13,9 +13,9 @@ public class RepositoryBase<T> : IRepository<T>
         _context = context;
     }
 
-    public virtual async Task<T?> CreateAsync(T entity)
+    public virtual async Task<T> CreateAsync(T entity)
     {
-        var created = (await _context.Set<T>().AddAsync(entity)).Entity;
+        T? created = (await _context.Set<T>().AddAsync(entity)).Entity ?? throw new Exception($"Failed to create {nameof(T)} entity");
         await _context.SaveChangesAsync();
 
         return created;
@@ -31,7 +31,7 @@ public class RepositoryBase<T> : IRepository<T>
 
     public virtual async Task<int?> DeleteAsync(int id)
     {
-        var entity = await _context.Set<T>().FindAsync(id);
+        T? entity = await _context.Set<T>().FindAsync(id);
         if (entity == null)
         {
             return null;
@@ -44,7 +44,7 @@ public class RepositoryBase<T> : IRepository<T>
 
     public virtual async Task<bool> ExistsAsync(int id) => await _context.Set<T>().FindAsync(id) != null;
 
-    public async Task<int> BulkInsertAsync(IEnumerable<T> entities)
+    public virtual async Task<int> BulkInsertAsync(IEnumerable<T> entities)
     {
         await _context.Set<T>().AddRangeAsync(entities);
         return await _context.SaveChangesAsync();

@@ -13,7 +13,6 @@ using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
-using Asp.Versioning.Conventions;
 using AutoMapper;
 using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -24,29 +23,33 @@ using OsuSharp.Extensions;
 using Serilog;
 using Serilog.Events;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Configurations
 builder
     .Services.AddOptionsWithValidateOnStart<ConnectionStringsConfiguration>()
     .Bind(builder.Configuration.GetSection(ConnectionStringsConfiguration.Position))
     .ValidateDataAnnotations();
+
 builder
     .Services.AddOptionsWithValidateOnStart<OsuConfiguration>()
     .Bind(builder.Configuration.GetSection(OsuConfiguration.Position))
     .ValidateDataAnnotations();
+
 builder
     .Services.AddOptionsWithValidateOnStart<JwtConfiguration>()
     .Bind(builder.Configuration.GetSection(JwtConfiguration.Position))
     .ValidateDataAnnotations();
 
+builder
+    .Services.AddOptionsWithValidateOnStart<AuthConfiguration>()
+    .Bind(builder.Configuration.GetSection(AuthConfiguration.Position))
+    .ValidateDataAnnotations();
+
 // Add services to the container.
 
 builder
-    .Services.AddControllers(options =>
-    {
-        options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
-    })
+    .Services.AddControllers(options => { options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider()); })
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
@@ -57,9 +60,16 @@ builder
 builder
     .Services.AddApiVersioning(options =>
     {
+        options.ReportApiVersions = true;
+        options.DefaultApiVersion = new ApiVersion(1);
         options.ApiVersionReader = new UrlSegmentApiVersionReader();
     })
-    .AddMvc();
+    .AddMvc()
+    .AddApiExplorer(options =>
+    {
+        options.GroupNameFormat = "'v'VVV";
+        options.SubstituteApiVersionInUrl = true;
+    });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -67,11 +77,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSerilog(configuration =>
 {
-    string connString = builder
-        .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-            ConnectionStringsConfiguration.Position
-        )
-        .DefaultConnection;
+    var connString = builder
+                     .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+                         ConnectionStringsConfiguration.Position
+                     )
+                     .DefaultConnection;
 
 #if DEBUG
     configuration.MinimumLevel.Debug();
@@ -102,10 +112,7 @@ builder.Services.AddSerilog(configuration =>
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-var configuration = new MapperConfiguration(cfg =>
-{
-    cfg.AddProfile<MapperProfile>();
-});
+var configuration = new MapperConfiguration(cfg => { cfg.AddProfile<MapperProfile>(); });
 
 // only during development, validate your mappings; remove it before release
 #if DEBUG
@@ -170,12 +177,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddOsuSharp(options =>
 {
-    var osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
-    options.Configuration = new OsuClientConfiguration
-    {
-        ClientId = osuConfiguration.ClientId,
-        ClientSecret = osuConfiguration.ClientSecret
-    };
+    OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
+    options.Configuration = new OsuClientConfiguration { ClientId = osuConfiguration.ClientId, ClientSecret = osuConfiguration.ClientSecret };
 });
 
 builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
@@ -195,16 +198,13 @@ builder.Services.AddCors(options =>
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 builder.Host.ConfigureOsuSharp(
-    (ctx, options) =>
+    (_, options) =>
     {
-        var osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
+        OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
             OsuConfiguration.Position
         );
-        options.Configuration = new OsuClientConfiguration
-        {
-            ClientId = osuConfiguration.ClientId,
-            ClientSecret = osuConfiguration.ClientSecret
-        };
+
+        options.Configuration = new OsuClientConfiguration { ClientId = osuConfiguration.ClientId, ClientSecret = osuConfiguration.ClientSecret };
     }
 );
 
@@ -212,24 +212,21 @@ builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        JwtConfiguration jwtConfiguration =
+            builder.Configuration.BindAndValidate<JwtConfiguration>(JwtConfiguration.Position);
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ClockSkew = TimeSpan.Zero,
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    builder.Configuration["Jwt:Key"]
-                        ?? throw new Exception("Missing Jwt:Key in configuration!")
-                )
-            ),
+            ValidAudience = jwtConfiguration.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.Key)),
         };
     });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Set switch for Npgsql
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -264,14 +261,14 @@ else
 app.Logger.LogInformation("Running!");
 
 // Migrations
-using var scope = app.Services.CreateScope();
-var context = scope.ServiceProvider.GetRequiredService<OtrContext>();
+using IServiceScope scope = app.Services.CreateScope();
+OtrContext context = scope.ServiceProvider.GetRequiredService<OtrContext>();
 
-int count = context.Database.GetPendingMigrations().Count();
-if (count > 0)
+var migrationsCount = context.Database.GetPendingMigrations().Count();
+if (migrationsCount > 0)
 {
     await context.Database.MigrateAsync();
-    app.Logger.LogInformation($"Applied {count} pending migrations.");
+    app.Logger.LogInformation("Applied {MigrationsCount} pending migrations.", migrationsCount);
 }
 
 app.Run();

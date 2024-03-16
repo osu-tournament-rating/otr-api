@@ -16,7 +16,8 @@ public static class SeededTournament
             Mode = 0,
             TeamSize = 4,
             Created = new DateTime(2023, 10, 14),
-            Updated = null
+            Updated = null,
+            SubmitterUserId = 21
         };
 
         tournament.Matches = SeededMatch.Generate(tournament.Id, 5);

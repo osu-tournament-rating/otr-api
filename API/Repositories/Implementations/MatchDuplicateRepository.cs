@@ -1,18 +1,15 @@
+using System.Diagnostics.CodeAnalysis;
 using API.Entities;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class MatchDuplicateRepository : RepositoryBase<MatchDuplicate>, IMatchDuplicateRepository
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
+public class MatchDuplicateRepository(OtrContext context) : RepositoryBase<MatchDuplicate>(context), IMatchDuplicateRepository
 {
-    private readonly OtrContext _context;
-
-    public MatchDuplicateRepository(OtrContext context)
-        : base(context)
-    {
-        _context = context;
-    }
+    private readonly OtrContext _context = context;
 
     public async Task<IEnumerable<MatchDuplicate>> GetDuplicatesAsync(int matchId) =>
         await _context.MatchDuplicates.Where(x => x.SuspectedDuplicateOf == matchId).ToListAsync();

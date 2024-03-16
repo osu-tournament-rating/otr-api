@@ -17,10 +17,10 @@ public sealed class MatchWinRecord
 
     // Team arrays can represent individual players in individual matches (head to head)
     [Column("team_blue")]
-    public int[] TeamBlue { get; set; } = Array.Empty<int>();
+    public int[] TeamBlue { get; set; } = [];
 
     [Column("team_red")]
-    public int[] TeamRed { get; set; } = Array.Empty<int>();
+    public int[] TeamRed { get; set; } = [];
 
     [Column("blue_points")]
     public int BluePoints { get; set; }

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using API.Entities;
 using API.Osu;
 using API.Repositories.Interfaces;
@@ -6,19 +7,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class MatchScoresRepository : RepositoryBase<MatchScore>, IMatchScoresRepository
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
+public class MatchScoresRepository(OtrContext context) : RepositoryBase<MatchScore>(context), IMatchScoresRepository
 {
-    private readonly OtrContext _context;
-
-    public MatchScoresRepository(OtrContext context)
-        : base(context)
-    {
-        _context = context;
-    }
+    private readonly OtrContext _context = context;
 
     public async Task<int> AverageTeammateScoreAsync(long osuPlayerId, int mode, DateTime fromTime)
     {
-        var teammateScores = await _context
+        List<long> teammateScores = await _context
             .MatchScores.WhereVerified()
             .After(fromTime)
             .WhereMode(mode)
@@ -30,7 +27,7 @@ public class MatchScoresRepository : RepositoryBase<MatchScore>, IMatchScoresRep
 
     public async Task<int> AverageOpponentScoreAsync(long osuPlayerId, int mode, DateTime fromTime)
     {
-        var oppScoresHeadToHead = await _context
+        List<long> oppScoresHeadToHead = await _context
             .MatchScores.WhereVerified()
             .After(fromTime)
             .WhereMode(mode)
@@ -39,7 +36,7 @@ public class MatchScoresRepository : RepositoryBase<MatchScore>, IMatchScoresRep
             .Select(ms => ms.Score)
             .ToListAsync();
 
-        var oppScoresTeamVs = await _context
+        List<long> oppScoresTeamVs = await _context
             .MatchScores.WhereVerified()
             .After(fromTime)
             .WhereMode(mode)
@@ -48,7 +45,7 @@ public class MatchScoresRepository : RepositoryBase<MatchScore>, IMatchScoresRep
             .Select(ms => ms.Score)
             .ToListAsync();
 
-        var oppScores = oppScoresHeadToHead.Concat(oppScoresTeamVs);
+        IEnumerable<long> oppScores = oppScoresHeadToHead.Concat(oppScoresTeamVs);
         return (int)oppScores.Average();
     }
 

@@ -4,7 +4,7 @@ namespace APITests.SeedData;
 
 public static class SeededMatchScore
 {
-    private static readonly Random _rand = new();
+    private static readonly Random s_rand = new();
     private const int MAX_COMBO_LIMIT = 1200;
     private const int COUNT_50_LIMIT = 3;
     private const int COUNT_100_LIMIT = 50;
@@ -22,7 +22,7 @@ public static class SeededMatchScore
 
         if (amountBlue.HasValue)
         {
-            for (int i = 0; i < amountBlue; i++)
+            for (var i = 0; i < amountBlue; i++)
             {
                 ret.Add(Generate(gameId, 1));
             }
@@ -30,7 +30,7 @@ public static class SeededMatchScore
 
         if (amountRed != null)
         {
-            for (int i = 0; i < amountBlue; i++)
+            for (var i = 0; i < amountBlue; i++)
             {
                 ret.Add(Generate(gameId, 2));
             }
@@ -38,7 +38,7 @@ public static class SeededMatchScore
 
         if (amountHeadToHead != null)
         {
-            for (int i = 0; i < amountBlue; i++)
+            for (var i = 0; i < amountBlue; i++)
             {
                 ret.Add(Generate(gameId, 0));
             }
@@ -49,24 +49,24 @@ public static class SeededMatchScore
 
     private static MatchScore Generate(int gameId, int team)
     {
-        int misses = _rand.Next() % MISS_LIMIT;
-        bool perfect = misses == 0;
+        var misses = s_rand.Next() % MISS_LIMIT;
+        var perfect = misses == 0;
 
         return new MatchScore
         {
-            Id = _rand.Next(),
+            Id = s_rand.Next(),
             GameId = gameId,
             Team = team,
-            Score = _rand.NextInt64(),
-            MaxCombo = _rand.Next() % 2000,
-            Count50 = _rand.Next() % COUNT_50_LIMIT,
-            Count100 = _rand.Next() % COUNT_100_LIMIT,
-            Count300 = _rand.Next() % COUNT_300_LIMIT,
-            CountKatu = _rand.Next() % (COUNT_100_LIMIT / 7),
-            CountGeki = _rand.Next() % (COUNT_300_LIMIT / 7),
+            Score = s_rand.NextInt64(),
+            MaxCombo = s_rand.Next() % 2000,
+            Count50 = s_rand.Next() % COUNT_50_LIMIT,
+            Count100 = s_rand.Next() % COUNT_100_LIMIT,
+            Count300 = s_rand.Next() % COUNT_300_LIMIT,
+            CountKatu = s_rand.Next() % (COUNT_100_LIMIT / 7),
+            CountGeki = s_rand.Next() % (COUNT_300_LIMIT / 7),
             CountMiss = misses,
             Perfect = perfect,
-            PlayerId = _rand.Next() % 10000,
+            PlayerId = s_rand.Next() % 10000,
             IsValid = true,
             EnabledMods = null
         };

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
@@ -8,26 +9,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
+public class MatchesRepository(
+    ILogger<MatchesRepository> logger,
+    IMapper mapper,
+    OtrContext context,
+    IMatchDuplicateRepository matchDuplicateRepository
+    ) : HistoryRepositoryBase<Match, MatchHistory>(context, mapper), IMatchesRepository
 {
-    private readonly OtrContext _context;
-    private readonly IMatchDuplicateRepository _matchDuplicateRepository;
-    private readonly ILogger<MatchesRepository> _logger;
-    private readonly IMapper _mapper;
-
-    public MatchesRepository(
-        ILogger<MatchesRepository> logger,
-        IMapper mapper,
-        OtrContext context,
-        IMatchDuplicateRepository matchDuplicateRepository
-    )
-        : base(context)
-    {
-        _logger = logger;
-        _mapper = mapper;
-        _context = context;
-        _matchDuplicateRepository = matchDuplicateRepository;
-    }
+    private readonly OtrContext _context = context;
+    private readonly IMatchDuplicateRepository _matchDuplicateRepository = matchDuplicateRepository;
+    private readonly ILogger<MatchesRepository> _logger = logger;
+    private readonly IMapper _mapper = mapper;
 
     public override async Task<Match?> GetAsync(int id) =>
         // Get the match with all associated data
@@ -38,22 +32,9 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
             .ThenInclude(x => x.Beatmap)
             .FirstOrDefaultAsync(x => x.Id == id);
 
-    public override async Task<int> UpdateAsync(Match entity)
-    {
-        entity.Updated = DateTime.UtcNow;
-        _context.Matches.Update(entity);
-        return await _context.SaveChangesAsync();
-    }
-
     public async Task<Match> UpdateVerificationStatus(int id, int? verificationStatus)
     {
-        var existing = await GetAsync(id, false);
-
-        if (existing == null)
-        {
-            throw new Exception("Match does not exist, this method assumes the match exists.");
-        }
-
+        Match existing = await GetAsync(id, false) ?? throw new Exception("Match does not exist, this method assumes the match exists.");
         existing.VerificationStatus = verificationStatus;
 
         await UpdateAsync(existing);
@@ -62,7 +43,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
     public async Task RefreshAutomationChecks(bool invalidOnly = true)
     {
-        var query = _context.Matches.Where(x => x.NeedsAutoCheck == false && x.IsApiProcessed == true);
+        IQueryable<Match> query = _context.Matches.Where(x => x.NeedsAutoCheck == false && x.IsApiProcessed == true);
 
         if (invalidOnly)
         {
@@ -102,9 +83,10 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
     public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches)
     {
-        var query = _context.Matches.OrderBy(m => m.StartTime).AsQueryable();
+        IQueryable<Match> query = _context.Matches.OrderBy(m => m.StartTime).AsQueryable();
 
         if (filterInvalidMatches)
+        {
             query = _context
                 .Matches.Include(x =>
                     x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified)
@@ -115,8 +97,9 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
                 )
                 .ThenInclude(x => x.Beatmap)
                 .Where(x => x.Games.Count > 0);
+        }
 
-        var matches = await query.Select(x => x.Id).ToListAsync();
+        List<int> matches = await query.Select(x => x.Id).ToListAsync();
 
         return matches;
     }
@@ -165,14 +148,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
     public async Task<IList<Match>> GetNeedApiProcessingAsync() =>
         await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();
 
-    public async Task<IEnumerable<Match>> GetByMatchIdsAsync(IEnumerable<long> matchIds) =>
+    public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
         await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
-
-    public async Task<int> BatchInsertAsync(IEnumerable<Match> matches)
-    {
-        await _context.Matches.AddRangeAsync(matches);
-        return await _context.SaveChangesAsync();
-    }
 
     public async Task<int> UpdateVerificationStatusAsync(
         long matchId,
@@ -181,7 +158,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
         string? info = null
     )
     {
-        var match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
+        Match? match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
         if (match == null)
         {
             _logger.LogWarning("Match {MatchId} not found (failed to update verification status)", matchId);
@@ -220,8 +197,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
     public async Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime)
     {
-        int wins = 0;
-        var matches = await _context
+        var wins = 0;
+        List<Match> matches = await _context
             .Matches.WhereVerified()
             .After(fromTime)
             .Include(x => x.Games)
@@ -232,13 +209,13 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
             )
             .ToListAsync();
 
-        foreach (var match in matches)
+        foreach (Match? match in matches)
         {
             // For head to head (lobby size 2), calculate the winner based on score
-            int pointsPlayer = 0;
-            int pointsOpponent = 0;
-            int team = 0;
-            foreach (var game in match.Games)
+            var pointsPlayer = 0;
+            var pointsOpponent = 0;
+            var team = 0;
+            foreach (Game game in match.Games)
             {
                 if (!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
                 {
@@ -248,7 +225,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
                 team = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
             }
 
-            foreach (var game in match.Games)
+            foreach (Game game in match.Games)
             {
                 try
                 {
@@ -260,8 +237,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
                             continue;
                         }
 
-                        long playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Score;
-                        long opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Score;
+                        var playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Score;
+                        var opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Score;
 
                         if (playerScore > opponentScore)
                         {
@@ -275,13 +252,13 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
                     else if (game.MatchScores.Count >= 4)
                     {
                         // Identify player team, sum the scores, then add points this way
-                        int playerTeam = team;
-                        int? opponentTeam = game.MatchScores.FirstOrDefault(x => x.Team != playerTeam)?.Team;
+                        var playerTeam = team;
+                        var opponentTeam = game.MatchScores.FirstOrDefault(x => x.Team != playerTeam)?.Team;
 
-                        long playerTeamScores = game
+                        var playerTeamScores = game
                             .MatchScores.Where(x => x.Team == playerTeam)
                             .Sum(x => x.Score);
-                        long opponentTeamScores = game
+                        var opponentTeamScores = game
                             .MatchScores.Where(x => x.Team == opponentTeam)
                             .Sum(x => x.Score);
 
@@ -326,8 +303,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
     public async Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime)
     {
-        int played = await CountMatchesPlayedAsync(osuPlayerId, mode, fromTime);
-        int won = await CountMatchWinsAsync(osuPlayerId, mode, fromTime);
+        var played = await CountMatchesPlayedAsync(osuPlayerId, mode, fromTime);
+        var won = await CountMatchWinsAsync(osuPlayerId, mode, fromTime);
 
         if (played == 0)
         {
@@ -378,13 +355,7 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
     public async Task MergeDuplicatesAsync(int matchRootId)
     {
-        var root = await GetAsync(matchRootId);
-
-        if (root == null)
-        {
-            throw new InvalidOperationException($"Failed to find corresponding match: {matchRootId}");
-        }
-
+        Match root = await GetAsync(matchRootId) ?? throw new InvalidOperationException($"Failed to find corresponding match: {matchRootId}");
         if (root.IsApiProcessed != true)
         {
             throw new Exception("All matches must be API processed.");
@@ -395,21 +366,21 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
             throw new Exception("Root does not contain any games.");
         }
 
-        int totalScores = root.Games.Select(x => x.MatchScores.Count).Sum();
+        var totalScores = root.Games.Select(x => x.MatchScores.Count).Sum();
         if (totalScores == 0)
         {
             throw new Exception("Root has no scores.");
         }
 
         var duplicateReferences = (await _matchDuplicateRepository.GetDuplicatesAsync(matchRootId)).ToList();
-        if (!duplicateReferences.Any())
+        if (duplicateReferences.Count == 0)
         {
             throw new Exception("Match does not have any detected duplicates.");
         }
 
         var duplicateMatches = (await GetMatchesFromDuplicatesAsync(duplicateReferences)).ToList();
 
-        foreach (var duplicate in duplicateMatches)
+        foreach (Match? duplicate in duplicateMatches)
         {
             if (root.TournamentId != duplicate.TournamentId)
             {
@@ -421,8 +392,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
                 throw new Exception("All matches must be API processed.");
             }
 
-            bool satisfiesNameCheck = root.Name == duplicate.Name;
-            bool satisfiesOsuIdCheck = root.MatchId == duplicate.MatchId;
+            var satisfiesNameCheck = root.Name == duplicate.Name;
+            var satisfiesOsuIdCheck = root.MatchId == duplicate.MatchId;
             if (!satisfiesNameCheck && !satisfiesOsuIdCheck)
             {
                 throw new Exception(
@@ -432,11 +403,11 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
         }
 
         // The rootId will be used when reassigning game / score data.
-        int rootId = root.Id;
-        foreach (var duplicate in duplicateMatches)
+        var rootId = root.Id;
+        foreach (Match? duplicate in duplicateMatches)
         {
             // Reassign all of the games' matchid fields.
-            foreach (var game in duplicate.Games)
+            foreach (Game game in duplicate.Games)
             {
                 game.MatchId = rootId;
                 _context.Games.Update(game);
@@ -464,9 +435,9 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
     )
     {
         var ls = new List<Match>();
-        foreach (var dupe in duplicates)
+        foreach (MatchDuplicate dupe in duplicates)
         {
-            var match = await GetByMatchIdAsync(dupe.OsuMatchId);
+            Match? match = await GetByMatchIdAsync(dupe.OsuMatchId);
             if (match == null)
             {
                 continue;
@@ -480,8 +451,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
     public async Task MarkSuspectedDuplicatesAsync(Match root, IEnumerable<Match> duplicates)
     {
-        int rootId = root.Id;
-        foreach (var dupe in duplicates)
+        var rootId = root.Id;
+        foreach (Match dupe in duplicates)
         {
             var duplicateXref = new MatchDuplicate
             {
@@ -495,8 +466,8 @@ public class MatchesRepository : RepositoryBase<Match>, IMatchesRepository
 
     public async Task VerifyDuplicatesAsync(int matchRoot, int userId, bool confirmed)
     {
-        var duplicates = await _matchDuplicateRepository.GetDuplicatesAsync(matchRoot);
-        foreach (var dupe in duplicates)
+        IEnumerable<MatchDuplicate> duplicates = await _matchDuplicateRepository.GetDuplicatesAsync(matchRoot);
+        foreach (MatchDuplicate dupe in duplicates)
         {
             dupe.VerifiedBy = userId;
             dupe.VerifiedAsDuplicate = confirmed;

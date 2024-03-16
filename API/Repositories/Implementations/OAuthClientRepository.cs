@@ -1,18 +1,15 @@
+using System.Diagnostics.CodeAnalysis;
 using API.Entities;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class OAuthClientRepository : RepositoryBase<OAuthClient>, IOAuthClientRepository
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
+public class OAuthClientRepository(OtrContext context) : RepositoryBase<OAuthClient>(context), IOAuthClientRepository
 {
-    private readonly OtrContext _context;
-
-    public OAuthClientRepository(OtrContext context)
-        : base(context)
-    {
-        _context = context;
-    }
+    private readonly OtrContext _context = context;
 
     public async Task<bool> SecretInUseAsync(string clientSecret)
     {
@@ -21,7 +18,7 @@ public class OAuthClientRepository : RepositoryBase<OAuthClient>, IOAuthClientRe
 
     public async Task<bool> ValidateAsync(int clientId, string clientSecret)
     {
-        var match = await _context.OAuthClients.FirstOrDefaultAsync(x =>
+        OAuthClient? match = await _context.OAuthClients.FirstOrDefaultAsync(x =>
             x.Id == clientId && x.Secret == clientSecret
         );
 

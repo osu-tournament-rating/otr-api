@@ -458,6 +458,101 @@ namespace API.Migrations
                     b.ToTable("match_duplicates");
                 });
 
+            modelBuilder.Entity("API.Entities.MatchHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("hist_created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("end_time");
+
+                    b.Property<int>("HistoryAction")
+                        .HasColumnType("integer")
+                        .HasColumnName("hist_action");
+
+                    b.Property<DateTime>("HistoryEndTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("hist_end_time")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<DateTime?>("HistoryStartTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("hist_start_time");
+
+                    b.Property<bool?>("IsApiProcessed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_api_processed");
+
+                    b.Property<long>("MatchId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("match_id");
+
+                    b.Property<int?>("ModifierId")
+                        .HasColumnType("integer")
+                        .HasColumnName("hist_modifier_id");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("name");
+
+                    b.Property<bool?>("NeedsAutoCheck")
+                        .HasColumnType("boolean")
+                        .HasColumnName("needs_auto_check");
+
+                    b.Property<int?>("ReferenceId")
+                        .HasColumnType("integer")
+                        .HasColumnName("hist_ref_id");
+
+                    b.Property<DateTime?>("StartTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_time");
+
+                    b.Property<int?>("SubmitterUserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("submitted_by_user");
+
+                    b.Property<int>("TournamentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("tournament_id");
+
+                    b.Property<string>("VerificationInfo")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("verification_info");
+
+                    b.Property<int?>("VerificationSource")
+                        .HasColumnType("integer")
+                        .HasColumnName("verification_source");
+
+                    b.Property<int?>("VerificationStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("verification_status");
+
+                    b.Property<int?>("VerifierUserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("verified_by_user");
+
+                    b.HasKey("Id")
+                        .HasName("matches_hist_pk");
+
+                    b.HasIndex("ReferenceId");
+
+                    b.ToTable("matches_hist");
+                });
+
             modelBuilder.Entity("API.Entities.MatchRatingStats", b =>
                 {
                     b.Property<int>("Id")
@@ -992,6 +1087,10 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("rank_range_lower_bound");
 
+                    b.Property<int?>("SubmitterUserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("submitter_id");
+
                     b.Property<int>("TeamSize")
                         .HasColumnType("integer")
                         .HasColumnName("team_size");
@@ -1002,6 +1101,8 @@ namespace API.Migrations
 
                     b.HasKey("Id")
                         .HasName("Tournaments_pk");
+
+                    b.HasIndex("SubmitterUserId");
 
                     b.HasIndex("Name", "Abbreviation")
                         .IsUnique();
@@ -1127,6 +1228,16 @@ namespace API.Migrations
                     b.Navigation("Verifier");
                 });
 
+            modelBuilder.Entity("API.Entities.MatchHistory", b =>
+                {
+                    b.HasOne("API.Entities.Match", "ReferenceMatch")
+                        .WithMany()
+                        .HasForeignKey("ReferenceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ReferenceMatch");
+                });
+
             modelBuilder.Entity("API.Entities.MatchRatingStats", b =>
                 {
                     b.HasOne("API.Entities.Match", "Match")
@@ -1219,6 +1330,15 @@ namespace API.Migrations
                     b.Navigation("Player");
                 });
 
+            modelBuilder.Entity("API.Entities.Tournament", b =>
+                {
+                    b.HasOne("API.Entities.User", "SubmittedBy")
+                        .WithMany("SubmittedTournaments")
+                        .HasForeignKey("SubmitterUserId");
+
+                    b.Navigation("SubmittedBy");
+                });
+
             modelBuilder.Entity("API.Entities.User", b =>
                 {
                     b.HasOne("API.Entities.Player", "Player")
@@ -1280,6 +1400,8 @@ namespace API.Migrations
                     b.Navigation("Clients");
 
                     b.Navigation("SubmittedMatches");
+
+                    b.Navigation("SubmittedTournaments");
 
                     b.Navigation("VerifiedDuplicates");
 

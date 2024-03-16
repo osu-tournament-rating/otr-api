@@ -5,18 +5,13 @@ using API.Services.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class UserService : IUserService
+public class UserService(IUserRepository repository) : IUserService
 {
-    private readonly IUserRepository _repository;
-
-    public UserService(IUserRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IUserRepository _repository = repository;
 
     public async Task<UserInfoDTO?> GetAsync(int id)
     {
-        var user = await _repository.GetAsync(id);
+        User? user = await _repository.GetAsync(id);
 
         if (user == null)
         {
@@ -37,7 +32,7 @@ public class UserService : IUserService
 
     public async Task<UserInfoDTO?> GetForPlayerAsync(int playerId)
     {
-        var user = await _repository.GetForPlayerAsync(playerId);
+        User? user = await _repository.GetForPlayerAsync(playerId);
 
         if (user == null)
         {

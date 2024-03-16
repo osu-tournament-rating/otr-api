@@ -1,4 +1,6 @@
 using System.Data;
+using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
@@ -9,15 +11,11 @@ using NpgsqlTypes;
 
 namespace API.Repositories.Implementations;
 
-public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRepository
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
+public class TournamentsRepository(OtrContext context) : RepositoryBase<Tournament>(context), ITournamentsRepository
 {
-    private readonly OtrContext _context;
-
-    public TournamentsRepository(OtrContext context)
-        : base(context)
-    {
-        _context = context;
-    }
+    private readonly OtrContext _context = context;
 
     public async Task<Tournament?> GetAsync(string name) =>
         await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
@@ -84,11 +82,11 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
         bool bestPerformances
     )
     {
-        string order = bestPerformances ? "DESC" : "ASC";
+        var order = bestPerformances ? "DESC" : "ASC";
 
-        using (var command = _context.Database.GetDbConnection().CreateCommand())
+        using (DbCommand command = _context.Database.GetDbConnection().CreateCommand())
         {
-            string sql = $"""
+            var sql = $"""
                 SELECT t.id as TournamentId, t.name as TournamentName, AVG(mrs.match_cost) as MatchCost, t.abbreviation AS TournamentAcronym
                 								FROM tournaments t
                 								INNER JOIN matches m ON m.tournament_id = t.id
@@ -114,7 +112,7 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 
             await _context.Database.OpenConnectionAsync();
 
-            using (var result = await command.ExecuteReaderAsync())
+            using (DbDataReader result = await command.ExecuteReaderAsync())
             {
                 var results = new List<PlayerTournamentMatchCostDTO>();
                 while (await result.ReadAsync())
@@ -169,18 +167,13 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
 
     private async Task<Tournament> UpdateExisting(TournamentWebSubmissionDTO wrapper)
     {
-        var existing = await GetAsync(wrapper.TournamentName);
-
-        if (existing == null)
-        {
-            throw new Exception("Tournament does not exist, this method assumes the tournament exists.");
-        }
-
+        Tournament? existing = await GetAsync(wrapper.TournamentName) ?? throw new Exception("Tournament does not exist, this method assumes the tournament exists.");
         existing.Abbreviation = wrapper.Abbreviation;
         existing.ForumUrl = wrapper.ForumPost;
         existing.Mode = wrapper.Mode;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
         existing.TeamSize = wrapper.TeamSize;
+        existing.SubmitterUserId = wrapper.SubmitterId;
 
         await UpdateAsync(existing);
         return existing;
@@ -195,15 +188,10 @@ public class TournamentsRepository : RepositoryBase<Tournament>, ITournamentsRep
             ForumUrl = wrapper.ForumPost,
             Mode = wrapper.Mode,
             RankRangeLowerBound = wrapper.RankRangeLowerBound,
-            TeamSize = wrapper.TeamSize
+            TeamSize = wrapper.TeamSize,
+            SubmitterUserId = wrapper.SubmitterId,
         };
 
-        var result = await CreateAsync(tournament);
-        if (result == null)
-        {
-            throw new Exception("Tournament could not be created.");
-        }
-
-        return result;
+        return await CreateAsync(tournament);
     }
 }

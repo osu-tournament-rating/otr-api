@@ -1,20 +1,16 @@
+using System.Diagnostics.CodeAnalysis;
 using API.Entities;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class UserRepository : RepositoryBase<User>, IUserRepository
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
+public class UserRepository(ILogger<UserRepository> logger, OtrContext context) : RepositoryBase<User>(context), IUserRepository
 {
-    private readonly ILogger<UserRepository> _logger;
-    private readonly OtrContext _context;
-
-    public UserRepository(ILogger<UserRepository> logger, OtrContext context)
-        : base(context)
-    {
-        _logger = logger;
-        _context = context;
-    }
+    private readonly ILogger<UserRepository> _logger = logger;
+    private readonly OtrContext _context = context;
 
     public override async Task<User?> GetAsync(int id)
     {
@@ -31,20 +27,11 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
 
     public async Task<User?> GetOrCreateSystemUserAsync()
     {
-        var sysUser = await _context.Users.FirstOrDefaultAsync(u => u.Scopes.Contains("System"));
+        User? sysUser = await _context.Users.FirstOrDefaultAsync(u => u.Scopes.Contains("System"));
         if (sysUser == null)
         {
-            var created = await CreateAsync(new User { Scopes = new[] { "System" } });
-
-            if (created == null)
-            {
-                _logger.LogError("Failed to create system user");
-                return null;
-            }
-
-            return created;
+            return await CreateAsync(new User { Scopes = ["System"] });
         }
-
         return sysUser;
     }
 
@@ -61,13 +48,13 @@ public class UserRepository : RepositoryBase<User>, IUserRepository
         }
 
         return await CreateAsync(
-                new User
-                {
-                    PlayerId = playerId,
-                    Created = DateTime.UtcNow,
-                    LastLogin = DateTime.UtcNow,
-                    Scopes = Array.Empty<string>()
-                }
-            ) ?? throw new Exception("Critical error: User cannot be null after creation");
+            new User
+            {
+                PlayerId = playerId,
+                Created = DateTime.UtcNow,
+                LastLogin = DateTime.UtcNow,
+                Scopes = []
+            }
+        );
     }
 }

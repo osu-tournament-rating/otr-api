@@ -6,32 +6,13 @@ using AutoMapper;
 
 namespace API.Services.Implementations;
 
-public class PlayerService : IPlayerService
+public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) : IPlayerService
 {
-    private readonly IMapper _mapper;
-    private readonly IPlayerRepository _playerRepository;
-
-    public PlayerService(IPlayerRepository playerRepository, IMapper mapper)
-    {
-        _playerRepository = playerRepository;
-        _mapper = mapper;
-    }
+    private readonly IMapper _mapper = mapper;
+    private readonly IPlayerRepository _playerRepository = playerRepository;
 
     public async Task<IEnumerable<PlayerDTO>> GetAllAsync() =>
         _mapper.Map<IEnumerable<PlayerDTO>>(await _playerRepository.GetAsync());
-
-    public async Task<PlayerInfoDTO?> GetByOsuIdAsync(
-        long osuId,
-        bool eagerLoad = false,
-        OsuEnums.Mode mode = OsuEnums.Mode.Standard,
-        int offsetDays = -1
-    ) =>
-        _mapper.Map<PlayerInfoDTO?>(
-            await _playerRepository.GetAsync(osuId, eagerLoad, (int)mode, offsetDays)
-        );
-
-    public async Task<IEnumerable<PlayerInfoDTO>> GetByOsuIdsAsync(IEnumerable<long> osuIds) =>
-        _mapper.Map<IEnumerable<PlayerInfoDTO>>(await _playerRepository.GetAsync(osuIds));
 
     public async Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync() =>
         _mapper.Map<IEnumerable<PlayerRanksDTO>>(await _playerRepository.GetAllAsync());
@@ -54,7 +35,7 @@ public class PlayerService : IPlayerService
 
     public async Task<long?> GetOsuIdAsync(int id)
     {
-        long result = await _playerRepository.GetOsuIdAsync(id);
+        var result = await _playerRepository.GetOsuIdAsync(id);
         if (result == default)
         {
             return null;
@@ -69,8 +50,39 @@ public class PlayerService : IPlayerService
     public async Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync() =>
         await _playerRepository.GetCountryMappingAsync();
 
+    public async Task<PlayerInfoDTO?> GetVersatileAsync(string key)
+    {
+        if (!int.TryParse(key, out var value))
+        {
+            return await GetAsync(key);
+        }
+
+        // Check for the player id
+        PlayerInfoDTO? result = await GetAsync(value);
+
+        if (result != null)
+        {
+            return result;
+        }
+
+        // Check for the osu id
+        if (long.TryParse(key, out var longValue))
+        {
+            return await GetAsync(longValue);
+        }
+
+        return await GetAsync(key);
+    }
+
     public async Task<PlayerInfoDTO?> GetAsync(int userId) =>
         _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(userId));
+
+    public async Task<PlayerInfoDTO?> GetAsync(long osuId)
+    {
+        var id = await GetIdAsync(osuId);
+
+        return id == null ? null : _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(id.Value));
+    }
 
     public async Task<PlayerInfoDTO?> GetAsync(string username) =>
         _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(username));

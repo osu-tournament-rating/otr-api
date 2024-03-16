@@ -44,10 +44,10 @@ public class PlayerMatchStats
     public int GamesLost { get; set; }
 
     [Column("teammate_ids")]
-    public int[] TeammateIds { get; set; } = Array.Empty<int>();
+    public int[] TeammateIds { get; set; } = [];
 
     [Column("opponent_ids")]
-    public int[] OpponentIds { get; set; } = Array.Empty<int>();
+    public int[] OpponentIds { get; set; } = [];
 
     [InverseProperty("MatchStats")]
     public virtual Player Player { get; set; } = null!;

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Repositories.Interfaces;
@@ -5,19 +6,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class RatingAdjustmentsRepository : RepositoryBase<RatingAdjustment>, IRatingAdjustmentsRepository
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("ReSharper", "SpecifyStringComparison")]
+public class RatingAdjustmentsRepository(OtrContext context) : RepositoryBase<RatingAdjustment>(context), IRatingAdjustmentsRepository
 {
-    private readonly OtrContext _context;
-
-    public RatingAdjustmentsRepository(OtrContext context)
-        : base(context)
-    {
-        _context = context;
-    }
+    private readonly OtrContext _context = context;
 
     public async Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody)
     {
-        foreach (var item in postBody)
+        foreach (RatingAdjustmentDTO item in postBody)
         {
             var adjustment = new RatingAdjustment
             {
