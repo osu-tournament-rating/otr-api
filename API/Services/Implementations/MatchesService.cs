@@ -175,13 +175,6 @@ public class MatchesService(
         return _mapper.Map<MatchDTO?>(match);
     }
 
-    public async Task<MatchDTO?> SearchAsync(string name)
-    {
-        Match? match = await _matchesRepository.SearchAsync(name);
-
-        return match is null ? null : _mapper.Map<MatchDTO>(match);
-    }
-
     public async Task<MatchDTO> UpdateVerificationStatus(int id, int? verificationStatus)
     {
         Match match = await _matchesRepository.UpdateVerificationStatus(id, verificationStatus);

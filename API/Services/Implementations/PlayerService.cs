@@ -87,10 +87,4 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
 
     public async Task<PlayerInfoDTO?> GetAsync(string username) =>
         _mapper.Map<PlayerInfoDTO?>(await _playerRepository.SearchAsync(username));
-
-    public async Task<PlayerDTO?> SearchAsync(string username)
-    {
-        Player? player = await _playerRepository.SearchAsync(username);
-        return player == null ? null : _mapper.Map<PlayerDTO>(player);
-    }
 }

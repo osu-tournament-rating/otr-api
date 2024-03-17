@@ -17,7 +17,6 @@ public interface ITournamentsService
 
     public Task<bool> ExistsAsync(string name, int mode);
     Task<IEnumerable<TournamentDTO>> GetAllAsync();
-    Task<TournamentDTO?> SearchAsync(string name);
 
     /// <summary>
     ///  Counts the number of tournaments played by the given player.

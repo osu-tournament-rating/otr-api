@@ -18,8 +18,10 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 {
     private readonly OtrContext _context = context;
 
-    public async Task<Tournament?> SearchAsync(string name) =>
-        await _context.Tournaments.FirstOrDefaultAsync(x => EF.Functions.Like(x.Name, name));
+    private async Task<Tournament?> SearchSingleAsync(string name) =>
+        await _context.Tournaments.FirstOrDefaultAsync(x => EF.Functions.ILike(x.Name ?? "", $"%{name}%"));
+    public async Task<IEnumerable<Tournament>> SearchAsync(string name) =>
+        await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name ?? "", $"%{name}%")).ToListAsync();
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
@@ -168,7 +170,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
     private async Task<Tournament> UpdateExisting(TournamentWebSubmissionDTO wrapper)
     {
-        Tournament? existing = await SearchAsync(wrapper.TournamentName) ?? throw new Exception("Tournament does not exist, this method assumes the tournament exists.");
+        Tournament? existing = await SearchSingleAsync(wrapper.TournamentName) ?? throw new Exception("Tournament does not exist, this method assumes the tournament exists.");
         existing.Abbreviation = wrapper.Abbreviation;
         existing.ForumUrl = wrapper.ForumPost;
         existing.Mode = wrapper.Mode;
