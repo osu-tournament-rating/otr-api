@@ -245,6 +245,13 @@ public partial class OtrContext(
             entity.Property(x => x.Id).UseIdentityColumn();
 
             entity
+                .OwnsOne(e => e.RateLimitOverrides, rlo =>
+                {
+                    rlo.ToJson("rate_limit_overrides");
+                    rlo.Property(p => p.PermitLimit).HasDefaultValue(null);
+                    rlo.Property(p => p.Window).HasDefaultValue(null);
+                });
+            entity
                 .HasOne(e => e.User)
                 .WithMany(e => e.Clients)
                 .OnDelete(DeleteBehavior.Cascade)
@@ -311,9 +318,7 @@ public partial class OtrContext(
                 .HasConstraintName("Tournaments___fkmatchid")
                 .IsRequired();
 
-            /**
-             * These are nullable because a user's account could be deleted
-             */
+            // These are nullable because a user's account could be deleted
             entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
             entity
                 .HasOne(e => e.SubmittedBy)
@@ -331,6 +336,13 @@ public partial class OtrContext(
 
             entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.Property(e => e.Scopes);
+            entity
+                .OwnsOne(e => e.RateLimitOverrides, rlo =>
+                {
+                    rlo.ToJson("rate_limit_overrides");
+                    rlo.Property(p => p.PermitLimit).HasDefaultValue(null);
+                    rlo.Property(p => p.Window).HasDefaultValue(null);
+                });
 
             entity.HasMany(e => e.Clients).WithOne(e => e.User).IsRequired(false);
 
