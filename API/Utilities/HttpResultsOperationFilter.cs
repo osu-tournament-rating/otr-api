@@ -76,7 +76,7 @@ public class HttpResultsOperationFilter(IOptions<MvcOptions> mvc) : IOperationFi
         {
             operation.Responses.Add(
                 StatusCodes.Status401Unauthorized.ToString(),
-                GenerateOar(typeof(UnauthorizedHttpResult), StatusCodes.Status401Unauthorized, context)
+                GenerateOpenApiResponse(typeof(UnauthorizedHttpResult), StatusCodes.Status401Unauthorized, context)
             );
             // Return if this is the only type
             if (actionReturnType == typeof(UnauthorizedHttpResult))
@@ -110,11 +110,11 @@ public class HttpResultsOperationFilter(IOptions<MvcOptions> mvc) : IOperationFi
         foreach (IProducesResponseTypeMetadata? responseType in responseTypes)
         {
             var statusCode = responseType.StatusCode;
-            operation.Responses.Add(statusCode.ToString(), GenerateOar(responseType.Type, statusCode, context));
+            operation.Responses.Add(statusCode.ToString(), GenerateOpenApiResponse(responseType.Type, statusCode, context));
         }
     }
 
-    private OpenApiResponse GenerateOar(Type? responseType, int statusCode, OperationFilterContext context)
+    private OpenApiResponse GenerateOpenApiResponse(Type? responseType, int statusCode, OperationFilterContext context)
     {
         var oar = new OpenApiResponse { Description = ReasonPhrases.GetReasonPhrase(statusCode) };
         if (responseType is null)
