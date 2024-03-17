@@ -62,7 +62,7 @@ public class OAuthController(IOAuthHandler oAuthHandler) : Controller
     }
 
     [HttpPost("refresh")]
-    [EndpointDescription("Refresh an access token")]
+    [EndpointDescription("Generate new OAuth credentials from a valid refresh token")]
     public async Task<Results<UnauthorizedHttpResult, Ok<OAuthResponseDTO>>> RefreshAsync([FromQuery] string refreshToken)
     {
         OAuthResponseDTO? result = await _oAuthHandler.RefreshAsync(refreshToken);
