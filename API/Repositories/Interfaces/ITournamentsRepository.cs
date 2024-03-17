@@ -5,7 +5,13 @@ namespace API.Repositories.Interfaces;
 
 public interface ITournamentsRepository : IRepository<Tournament>
 {
-    public Task<Tournament?> GetAsync(string name);
+    /// <summary>
+    /// Get a <see cref="Tournament"/> entity
+    /// </summary>
+    /// <param name="id">Primary key</param>
+    /// <param name="eagerLoad">Whether to include navigational properties</param>
+    /// <returns></returns>
+    Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
 
     Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
 

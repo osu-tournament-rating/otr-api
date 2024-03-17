@@ -36,9 +36,11 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
      * periodically and processes them automatically.
      */
     [HttpPost]
+    [Authorize(Roles = "user")]
+    [Authorize(Roles = "whitelist")]
     [Authorize(Roles = "submit")]
     [EndpointSummary("Create a tournament")]
-    [EndpointDescription("Submit a tournament and associated matches for verification")]
+    [EndpointDescription("Submit a tournament and associated matches")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<TournamentDTO>> CreateAsync(
         [FromBody] TournamentWebSubmissionDTO wrapper,
@@ -73,9 +75,11 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     }
 
     [HttpPost("{id:int}/matches")]
+    [Authorize(Roles = "user")]
+    [Authorize(Roles = "whitelist")]
     [Authorize(Roles = "submit")]
     [EndpointSummary("Create matches associated with a tournament")]
-    [EndpointDescription("Submit tournament matches not included in the original submission")]
+    [EndpointDescription("Append tournament matches to an existing tournament")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<IEnumerable<MatchDTO>>> CreateMatchesAsync(
         int id,

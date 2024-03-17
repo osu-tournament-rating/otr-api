@@ -38,8 +38,8 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
         return _mapper.Map<IEnumerable<TournamentDTO>>(items);
     }
 
-    public async Task<TournamentDTO?> GetAsync(int id) =>
-        _mapper.Map<TournamentDTO>(await _tournamentsRepository.GetAsync(id));
+    public async Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true) =>
+        _mapper.Map<TournamentDTO>(await _tournamentsRepository.GetAsync(id, eagerLoad));
 
     public async Task<int> CountPlayedAsync(
         int playerId,
@@ -50,7 +50,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
 
     public async Task<TournamentDTO> UpdateAsync(int id, TournamentDTO wrapper)
     {
-        Tournament? existing = await _tournamentsRepository.GetAsync(id) ?? throw new Exception($"Tournament with id {id} does not exist");
+        Tournament existing = await _tournamentsRepository.GetAsync(id) ?? throw new Exception($"Tournament with id {id} does not exist");
 
         existing.Name = wrapper.Name;
         existing.Abbreviation = wrapper.Abbreviation;

@@ -36,9 +36,11 @@ public class MatchesService(
             ? MatchVerificationStatus.Verified
             : MatchVerificationStatus.PendingVerification;
 
-        IEnumerable<Match> existingMatches = await _matchesRepository.GetAsync(matchIds);
+        matchIds = matchIds.ToList();
         // Only create matches that dont already exist
-        IEnumerable<Match> newMatches = matchIds.Except(existingMatches.Select(x => x.MatchId))
+        IEnumerable<Match> existingMatches = await _matchesRepository.GetAsync(matchIds);
+        IEnumerable<Match> newMatches = matchIds
+            .Except(existingMatches.Select(x => x.MatchId))
             .Select(matchId => new Match
             {
                 MatchId = matchId,
@@ -49,9 +51,12 @@ public class MatchesService(
                 VerifierUserId = verify ? submitterId : null,
                 TournamentId = tournamentId,
                 SubmitterUserId = submitterId
-            }).ToList();
+            })
+            .ToList();
+
         await _matchesRepository.BulkInsertAsync(newMatches);
-        IEnumerable<Match> createdMatches = await matchesRepository.GetAsync(newMatches.Select(m => m.MatchId));
+        // Query db again for full Match entities
+        IEnumerable<Match> createdMatches = await _matchesRepository.GetAsync(newMatches.Select(m => m.MatchId));
 
         return _mapper.Map<IEnumerable<MatchDTO>>(createdMatches);
     }

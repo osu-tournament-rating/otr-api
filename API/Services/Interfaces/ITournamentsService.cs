@@ -36,8 +36,9 @@ public interface ITournamentsService
     /// Get a tournament by id, returns null if not found
     /// </summary>
     /// <param name="id">Primary key</param>
+    /// <param name="eagerLoad">Whether to include child resources of the tournament</param>
     /// <returns></returns>
-    Task<TournamentDTO?> GetAsync(int id);
+    Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true);
 
     /// <summary>
     /// Counts the number of tournaments played by the given player.

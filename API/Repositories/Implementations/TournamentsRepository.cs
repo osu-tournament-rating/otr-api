@@ -17,26 +17,15 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 {
     private readonly OtrContext _context = context;
 
-    public override async Task<Tournament?> GetAsync(int id) => await _context.Tournaments.Include(x => x.Matches).FirstOrDefaultAsync(x => x.Id == id);
-
-    public async Task<Tournament> CreateAsync(TournamentWebSubmissionDTO wrapper)
+    public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false)
     {
-        var tournament = new Tournament
+        if (eagerLoad)
         {
-            Name = wrapper.TournamentName,
-            Abbreviation = wrapper.Abbreviation,
-            ForumUrl = wrapper.ForumPost,
-            Mode = wrapper.Mode,
-            RankRangeLowerBound = wrapper.RankRangeLowerBound,
-            TeamSize = wrapper.TeamSize,
-            SubmitterUserId = wrapper.SubmitterId,
-        };
+            return await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id);
+        }
 
-        return await CreateAsync(tournament);
+        return await base.GetAsync(id);
     }
-
-    public async Task<Tournament?> GetAsync(string name) =>
-        await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
@@ -168,5 +157,17 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .Select(x => x.Id)
             .Distinct()
             .CountAsync();
+    }
+
+    private IQueryable<Tournament> TournamentsBaseQuery()
+    {
+        return _context.Tournaments
+            .Include(e => e.Matches)
+            .ThenInclude(m => m.Games)
+            .ThenInclude(g => g.MatchScores)
+            .Include(e => e.Matches)
+            .ThenInclude(m => m.Games)
+            .ThenInclude(g => g.Beatmap)
+            .Include(e => e.SubmittedBy);
     }
 }
