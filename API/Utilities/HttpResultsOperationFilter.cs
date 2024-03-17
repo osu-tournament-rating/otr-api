@@ -26,7 +26,7 @@ namespace API.Utilities;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class HttpResultsOperationFilter(IOptions<MvcOptions> mvc) : IOperationFilter
 {
-    private readonly Lazy<string[]> _contentTypes = new Lazy<string[]>(() =>
+    private readonly Lazy<string[]> _contentTypes = new(() =>
         {
             var apiResponseTypes = new List<string>();
 
