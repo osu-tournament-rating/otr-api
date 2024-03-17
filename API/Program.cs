@@ -1,8 +1,12 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using API;
 using API.BackgroundWorkers;
 using API.Configurations;
+using API.Entities;
 using API.Handlers.Implementations;
 using API.Handlers.Interfaces;
 using API.ModelBinders.Providers;
@@ -15,6 +19,7 @@ using API.Utilities;
 using Asp.Versioning;
 using AutoMapper;
 using Dapper;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -46,6 +51,11 @@ builder
     .Bind(builder.Configuration.GetSection(AuthConfiguration.Position))
     .ValidateDataAnnotations();
 
+builder
+    .Services.AddOptionsWithValidateOnStart<RateLimitConfiguration>()
+    .Bind(builder.Configuration.GetSection(RateLimitConfiguration.Position))
+    .ValidateDataAnnotations();
+
 // Add services to the container.
 
 builder
@@ -69,6 +79,90 @@ builder
     {
         options.GroupNameFormat = "'v'VVV";
         options.SubstituteApiVersionInUrl = true;
+    });
+
+builder
+    .Services.AddRateLimiter(options =>
+    {
+        RateLimitConfiguration rateLimitConfiguration = builder.Configuration.BindAndValidate<RateLimitConfiguration>(
+            RateLimitConfiguration.Position);
+
+        var anonymousRateLimiterOptions = new FixedWindowRateLimiterOptions()
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromSeconds(60),
+            QueueLimit = 0
+        };
+
+        // Configure response for rate limited clients
+        options.OnRejected = async (context, token) =>
+        {
+            context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+            const string readMore =
+                "Read more about our rate limits at https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/limits/en.md";
+            if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
+            {
+                await context.HttpContext.Response.WriteAsync(
+                    $"Too many requests. Please try again after {retryAfter.TotalSeconds} second(s). " + readMore,
+                    token
+                );
+            }
+            else
+            {
+                await context.HttpContext.Response.WriteAsync(
+                    "Too many requests. Please try again later. " + readMore, token);
+            }
+        };
+
+        options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        {
+            // Try to get access token
+            var accessToken =
+                context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult?.Properties
+                    ?.GetTokenValue("access_token")?.ToString();
+
+            // Shared partition for anonymous users
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    "anonymous",
+                    _ => anonymousRateLimiterOptions
+                );
+            }
+
+            JwtSecurityToken jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(jwtToken.Claims));
+
+            // Try to parse rate limit override claim
+            var overrideClaimValue = principal.Claims
+                .FirstOrDefault(c => c.Type == OtrClaimTypes.RateLimitOverrides)?.Value;
+            RateLimitOverrides? overrides = null;
+            if (!string.IsNullOrEmpty(overrideClaimValue))
+            {
+                overrides = RateLimitOverridesSerializer.Deserialize(overrideClaimValue);
+            }
+
+            // Differentiate between client and users, as they can have the same id
+            var prefix = principal.IsUser() ? "user" : "client";
+
+            // Partition for each unique user / client
+            if (overrides is null)
+            {
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    $"{prefix}_{jwtToken.Issuer}",
+                    _ => anonymousRateLimiterOptions
+                );
+            }
+            return RateLimitPartition.GetFixedWindowLimiter(
+                $"{prefix}_{jwtToken.Issuer}",
+                _ => new FixedWindowRateLimiterOptions()
+                {
+                    PermitLimit = overrides.PermitLimit ?? rateLimitConfiguration.PermitLimit,
+                    Window = TimeSpan.FromSeconds(overrides.Window ?? rateLimitConfiguration.Window),
+                    QueueLimit = 0
+                }
+            );
+        });
     });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -249,6 +343,8 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseRateLimiter();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapControllers().AllowAnonymous();
@@ -268,7 +364,7 @@ var migrationsCount = context.Database.GetPendingMigrations().Count();
 if (migrationsCount > 0)
 {
     await context.Database.MigrateAsync();
-    app.Logger.LogInformation("Applied {MigrationsCount} pending migrations.", migrationsCount);
+    app.Logger.LogInformation("Applied {MigrationsCount} pending migration(s).", migrationsCount);
 }
 
 app.Run();
