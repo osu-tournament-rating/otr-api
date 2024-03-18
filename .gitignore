@@ -19,5 +19,3 @@ redis.env
 *Backup.csproj
 *.csproj.user
 .vscode/
-
-.husky/pre-commit
