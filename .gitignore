@@ -20,4 +20,4 @@ redis.env
 *.csproj.user
 .vscode/
 
-pre-commit
+.husky/pre-commit
