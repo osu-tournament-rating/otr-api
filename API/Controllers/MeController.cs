@@ -25,7 +25,6 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
     public async Task<Results<BadRequest, NotFound, Ok<UserInfoDTO>>> GetLoggedInUserAsync()
     {
         var id = HttpContext.AuthorizedUserIdentity();
-
         if (!id.HasValue)
         {
             return TypedResults.BadRequest();
@@ -42,24 +41,22 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
 
     [HttpGet("stats")]
     [EndpointSummary("Get stats for the currently logged in user")]
-    public async Task<Results<BadRequest, Ok<PlayerStatsDTO>>> GetStatsAsync(
+    public async Task<Results<BadRequest, NotFound, Ok<PlayerStatsDTO>>> GetStatsAsync(
         [FromQuery] int mode = 0,
         [FromQuery] DateTime? dateMin = null,
         [FromQuery] DateTime? dateMax = null
     )
     {
         var userId = HttpContext.AuthorizedUserIdentity();
-
         if (!userId.HasValue)
         {
             return TypedResults.BadRequest();
         }
 
         var playerId = (await _userService.GetAsync(userId.Value))?.Id;
-
         if (!playerId.HasValue)
         {
-            return TypedResults.BadRequest();
+            return TypedResults.NotFound();
         }
 
         PlayerStatsDTO result = await _playerStatsService.GetAsync(
