@@ -4,9 +4,17 @@ namespace API.Repositories.Interfaces;
 
 public interface IUserRepository : IRepository<User>
 {
-    Task<User?> GetForPlayerAsync(int playerId);
-    Task<User?> GetForPlayerAsync(long osuId);
-    Task<User?> GetOrCreateSystemUserAsync();
-    Task<bool> HasRoleAsync(long osuId, string role);
-    Task<User> GetOrCreateAsync(int playerId);
+    /// <summary>
+    /// Get user by osu! player id
+    /// </summary>
+    /// <param name="osuId">osu! account id</param>
+    /// <returns></returns>
+    Task<User?> GetByOsuIdAsync(int osuId);
+
+    /// <summary>
+    /// Get user by osu! player id, or create if one doesn't exist
+    /// </summary>
+    /// <param name="osuId">osu! account id</param>
+    /// <returns></returns>
+    Task<User> GetOrCreateAsync(int osuId);
 }

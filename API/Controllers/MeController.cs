@@ -4,6 +4,7 @@ using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -21,29 +22,27 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
 
     [HttpGet]
     [EndpointSummary("Gets the logged in user's information, if they exist")]
-    [ProducesResponseType<UserInfoDTO>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetLoggedInUserAsync()
+    public async Task<Results<BadRequest, NotFound, Ok<UserInfoDTO>>> GetLoggedInUserAsync()
     {
         var id = HttpContext.AuthorizedUserIdentity();
 
         if (!id.HasValue)
         {
-            return BadRequest("Authorization invalid.");
+            return TypedResults.BadRequest();
         }
 
         UserInfoDTO? user = await _userService.GetAsync(id.Value);
         if (user?.OsuId == null)
         {
-            return NotFound("User not found");
+            return TypedResults.NotFound();
         }
 
-        return Ok(user);
+        return TypedResults.Ok(user);
     }
 
     [HttpGet("stats")]
-    public async Task<ActionResult<PlayerStatsDTO>> GetStatsAsync(
+    [EndpointSummary("Get stats for the currently logged in user")]
+    public async Task<Results<BadRequest, Ok<PlayerStatsDTO>>> GetStatsAsync(
         [FromQuery] int mode = 0,
         [FromQuery] DateTime? dateMin = null,
         [FromQuery] DateTime? dateMax = null
@@ -53,22 +52,23 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
 
         if (!userId.HasValue)
         {
-            return BadRequest("User is not logged in or id could not be retrieved from logged in user.");
+            return TypedResults.BadRequest();
         }
 
         var playerId = (await _userService.GetAsync(userId.Value))?.Id;
 
         if (!playerId.HasValue)
         {
-            return BadRequest("Unidentifiable user (unable to discern playerId).");
+            return TypedResults.BadRequest();
         }
 
-        return await _playerStatsService.GetAsync(
+        PlayerStatsDTO result = await _playerStatsService.GetAsync(
             playerId.Value,
             null,
             mode,
             dateMin ?? DateTime.MinValue,
             dateMax ?? DateTime.UtcNow
         );
+        return TypedResults.Ok(result);
     }
 }
