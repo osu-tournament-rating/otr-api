@@ -19,3 +19,5 @@ redis.env
 *Backup.csproj
 *.csproj.user
 .vscode/
+
+pre-commit
