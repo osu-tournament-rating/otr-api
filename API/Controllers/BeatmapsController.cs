@@ -22,10 +22,10 @@ public class BeatmapsController(IBeatmapService beatmapService) : Controller
     public async Task<Ok<IEnumerable<BeatmapDTO>>> ListAsync() =>
         TypedResults.Ok(await _beatmapService.ListAsync());
 
-    [HttpGet("{key}")]
+    [HttpGet("{key:long}")]
     [EndpointSummary("Get a beatmap by versatile search")]
     [EndpointDescription("Get a beatmap searching first by id, then by osu! beatmap id")]
-    public async Task<Results<NotFound, Ok<BeatmapDTO>>> GetAsync(string key)
+    public async Task<Results<NotFound, Ok<BeatmapDTO>>> GetAsync(long key)
     {
         BeatmapDTO? beatmap = await _beatmapService.GetVersatileAsync(key);
         if (beatmap == null)

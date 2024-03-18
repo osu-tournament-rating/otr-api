@@ -19,26 +19,15 @@ public class BeatmapService(IBeatmapRepository beatmapRepository, IMapper mapper
     public async Task<BeatmapDTO?> GetAsync(long beatmapId) =>
         _mapper.Map<BeatmapDTO?>(await _beatmapRepository.GetAsync(beatmapId: beatmapId));
 
-    public async Task<BeatmapDTO?> GetVersatileAsync(string key)
+    public async Task<BeatmapDTO?> GetVersatileAsync(long key)
     {
-        if (!int.TryParse(key, out var intValue))
-        {
-            return null;
-        }
-
         // Check for primary key
-        BeatmapDTO? result = await GetAsync(intValue);
+        BeatmapDTO? result = await GetAsync((int)key);
         if (result is not null)
         {
             return result;
         }
-
-        // Check for beatmapId
-        if (long.TryParse(key, out var longValue))
-        {
-            return await GetAsync(longValue);
-        }
-
-        return null;
+        // Check for beatmap id
+        return await GetAsync(key);
     }
 }

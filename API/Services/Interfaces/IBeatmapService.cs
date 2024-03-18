@@ -35,5 +35,5 @@ public interface IBeatmapService
     /// </summary>
     /// <param name="key">The dynamic key of the beatmap to look for</param>
     /// <returns></returns>
-    Task<BeatmapDTO?> GetVersatileAsync(string key);
+    Task<BeatmapDTO?> GetVersatileAsync(long key);
 }
