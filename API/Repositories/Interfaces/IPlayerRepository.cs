@@ -7,11 +7,17 @@ namespace API.Repositories.Interfaces;
 public interface IPlayerRepository : IRepository<Player>
 {
     /// <summary>
-    /// Returns a player, if available, that matches the given username. Case insensitive
+    /// Returns a list of players, if available, that matches the given username. Case insensitive
     /// </summary>
     /// <param name="username"></param>
     /// <returns></returns>
     Task<IEnumerable<Player>> SearchAsync(string username);
+    /// <summary>
+    /// Returns a player, if available, that matches the given username. Case insensitive
+    /// </summary>
+    /// <param name="username"></param>
+    /// <returns></returns>
+    Task<Player?> GetAsync(string username);
 
     /// <summary>
     /// Attempts to fetch a player by the osu id. If none exists, create a new player

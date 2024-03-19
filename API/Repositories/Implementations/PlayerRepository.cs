@@ -61,6 +61,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
     }
 
     public async Task<IEnumerable<Player>> SearchAsync(string username) => await Search(username).ToListAsync();
+    public async Task<Player?> GetAsync(string username) => await Search(username).FirstOrDefaultAsync();
 
     public async Task<Player> GetOrCreateAsync(long osuId)
     {
