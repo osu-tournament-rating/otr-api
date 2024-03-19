@@ -18,7 +18,6 @@ public class SearchService(ITournamentsRepository tournamentsRepository, IMatche
     {
         var returnList = new List<SearchResponseDTO>();
 
-
         if (!string.IsNullOrEmpty(tournamentName))
         {
             var tournaments = (await _tournamentsRepository.SearchAsync(tournamentName)).ToList();
@@ -29,7 +28,6 @@ public class SearchService(ITournamentsRepository tournamentsRepository, IMatche
             }
 
             returnList.AddRange(tournaments.Select(tournament => new SearchResponseDTO() { Text = tournament.Name, Url = $"/tournaments/{tournament.Name}" }));
-
 
             return returnList;
         }
