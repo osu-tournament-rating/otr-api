@@ -3,6 +3,7 @@ using API.Handlers.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -16,57 +17,61 @@ public class OAuthController(IOAuthHandler oAuthHandler) : Controller
     private readonly IOAuthHandler _oAuthHandler = oAuthHandler;
 
     [HttpPost("authorize")]
-    public async Task<IActionResult> AuthorizeAsync([FromQuery] string code)
+    [EndpointDescription("Authorize using an osu! OAuth code")]
+    public async Task<Results<UnauthorizedHttpResult, Ok<OAuthResponseDTO>>> AuthorizeAsync([FromQuery] string code)
     {
         OAuthResponseDTO? result = await _oAuthHandler.AuthorizeAsync(code);
 
         if (result == null)
         {
-            return Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
-        return Ok(result);
+        return TypedResults.Ok(result);
     }
 
     [HttpPost("token")]
-    public async Task<IActionResult> AuthorizeAsync([FromQuery] int clientId, [FromQuery] string clientSecret)
+    [EndpointDescription("Obtain an access and refresh token using OAuth credentials")]
+    public async Task<Results<UnauthorizedHttpResult, Ok<OAuthResponseDTO>>> AuthorizeAsync([FromQuery] int clientId, [FromQuery] string clientSecret)
     {
         OAuthResponseDTO? authorizationResponse = await _oAuthHandler.AuthorizeAsync(clientId, clientSecret);
 
         if (authorizationResponse == null)
         {
-            return Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
-        return Ok(authorizationResponse);
+        return TypedResults.Ok(authorizationResponse);
     }
 
     [HttpPost("client")]
     [Authorize(Roles = "user")]
-    public async Task<IActionResult> CreateClientAsync()
+    [EndpointDescription("Create a new OAuth client")]
+    public async Task<Results<UnauthorizedHttpResult, Ok<OAuthClientDTO>>> CreateClientAsync()
     {
         var userId = HttpContext.AuthorizedUserIdentity();
 
         if (!userId.HasValue)
         {
-            return Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
-        OAuthClientDTO result = await _oAuthHandler.CreateClientAsync(userId!.Value);
+        OAuthClientDTO result = await _oAuthHandler.CreateClientAsync(userId.Value);
 
-        return Ok(result);
+        return TypedResults.Ok(result);
     }
 
     [HttpPost("refresh")]
-    public async Task<IActionResult> RefreshAsync([FromQuery] string refreshToken)
+    [EndpointDescription("Generate new OAuth credentials from a valid refresh token")]
+    public async Task<Results<UnauthorizedHttpResult, Ok<OAuthResponseDTO>>> RefreshAsync([FromQuery] string refreshToken)
     {
         OAuthResponseDTO? result = await _oAuthHandler.RefreshAsync(refreshToken);
 
         if (result == null)
         {
-            return Unauthorized();
+            return TypedResults.Unauthorized();
         }
 
-        return Ok(result);
+        return TypedResults.Ok(result);
     }
 }

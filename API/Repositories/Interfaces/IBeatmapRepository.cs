@@ -4,15 +4,17 @@ namespace API.Repositories.Interfaces;
 
 public interface IBeatmapRepository : IRepository<Beatmap>
 {
-    Task<long> GetBeatmapIdAsync(int id);
-    Task<Beatmap?> GetByOsuIdAsync(long osuBeatmapId);
-    Task CreateIfNotExistsAsync(IEnumerable<long> beatmapIds);
-    Task<int?> GetIdByBeatmapIdAsync(long gameBeatmapId);
+    /// <summary>
+    /// Returns a beatmap for the given osu! beatmap id
+    /// </summary>
+    /// <param name="beatmapId">osu! beatmap id</param>
+    /// <returns></returns>
+    Task<Beatmap?> GetAsync(long beatmapId);
 
     /// <summary>
-    /// Returns a collection of beatmap objects for the given beatmap IDs.
+    /// Returns the Id (primary key) of a <see cref="Beatmap"/> for a given osu! beatmap id
     /// </summary>
-    /// <param name="beatmapIds"></param>
+    /// <param name="beatmapId">osu! beatmap id</param>
     /// <returns></returns>
-    Task<IEnumerable<Beatmap>> GetAsync(IEnumerable<long> beatmapIds);
+    Task<int?> GetIdAsync(long beatmapId);
 }

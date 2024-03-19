@@ -12,15 +12,11 @@ public class UserRepository(ILogger<UserRepository> logger, OtrContext context) 
     private readonly ILogger<UserRepository> _logger = logger;
     private readonly OtrContext _context = context;
 
-    public override async Task<User?> GetAsync(int id)
-    {
-        return await _context.Users.Include(x => x.Player).FirstOrDefaultAsync(u => u.Id == id);
-    }
+    public override async Task<User?> GetAsync(int id) =>
+        await UserBaseQuery().FirstOrDefaultAsync(u => u.Id == id);
 
-    public async Task<User?> GetForPlayerAsync(int playerId)
-    {
-        return await _context.Users.Include(x => x.Player).FirstOrDefaultAsync(u => u.PlayerId == playerId);
-    }
+    public async Task<User?> GetForPlayerAsync(int playerId) =>
+        await UserBaseQuery().FirstOrDefaultAsync(u => u.PlayerId == playerId);
 
     public async Task<User?> GetForPlayerAsync(long osuId) =>
         await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Player.OsuId == osuId);
@@ -57,4 +53,8 @@ public class UserRepository(ILogger<UserRepository> logger, OtrContext context) 
             }
         );
     }
+
+    private IQueryable<User> UserBaseQuery() =>
+        _context.Users
+            .Include(x => x.Player);
 }

@@ -21,5 +21,9 @@
   },
   "Auth": {
     "ClientCallbackUrl": ""
+  },
+  "RateLimit": {
+    "PermitLimit": 30,
+    "Window": 60
   }
 }
