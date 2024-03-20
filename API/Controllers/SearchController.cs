@@ -19,9 +19,9 @@ public class SearchController(ISearchService service) : Controller
 
     [HttpGet]
     [EndpointSummary("Allows for partial or full searching on the names of tournaments, matches and usernames.")]
-    public async Task<Results<NotFound<string>, Ok<List<SearchResponseDTO>>>> SearchByNames([FromQuery] string? tournamentName, [FromQuery] string? matchName, [FromQuery] string? username)
+    public async Task<Results<NotFound, Ok<List<SearchResponseDTO>>>> SearchByNames([FromQuery] string? tournamentName, [FromQuery] string? matchName, [FromQuery] string? username)
     {
         List<SearchResponseDTO>? response = await _searchService.SearchByNameAsync(tournamentName, matchName, username);
-        return response is null ? TypedResults.NotFound("Requested search returned nothing.") : TypedResults.Ok(response);
+        return response is null ? TypedResults.NotFound() : TypedResults.Ok(response);
     }
 }
