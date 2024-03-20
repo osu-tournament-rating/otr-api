@@ -201,7 +201,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
             );
         }
 
-        return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? "", username));
+        return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, username));
     }
 
     // This is used by a scheduled task to automatically populate user info, such as username, country, etc.
