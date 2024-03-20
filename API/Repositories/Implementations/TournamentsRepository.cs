@@ -20,7 +20,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
     private async Task<Tournament?> GetAsync(string name)
     {
-        List<Tournament> tournaments = await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name ?? "", name)).ToListAsync();
+        List<Tournament> tournaments = await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name ?? string.Empty, name)).ToListAsync();
 
         if (tournaments.Count > 1)
         {
@@ -31,7 +31,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     }
 
     public async Task<IEnumerable<Tournament>> SearchAsync(string name) =>
-        await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name ?? "", $"%{name}%")).ToListAsync();
+        await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%")).ToListAsync();
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
