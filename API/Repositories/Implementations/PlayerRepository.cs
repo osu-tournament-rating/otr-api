@@ -68,12 +68,12 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
 
         if (players.Count > 1)
         {
-            throw new Exception("More than one player was found. This function requires a single player to be returned.");
+            throw new Exception("More than one player was found.");
         }
 
         if (players.Count == 0)
         {
-            throw new Exception("No players were found, this function requires a single player to be returned.");
+            throw new Exception("No players were found.");
         }
 
         return players.First();
