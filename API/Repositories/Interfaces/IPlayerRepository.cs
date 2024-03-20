@@ -7,7 +7,7 @@ namespace API.Repositories.Interfaces;
 public interface IPlayerRepository : IRepository<Player>
 {
     /// <summary>
-    /// Returns a list of players, if available, that matches the given username. Case insensitive
+    /// Returns a list of players that matches the given username. Case insensitive
     /// </summary>
     /// <param name="username"></param>
     /// <returns></returns>
