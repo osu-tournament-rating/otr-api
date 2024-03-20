@@ -60,18 +60,23 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return await _context.Players.AsNoTracking().ToListAsync();
     }
 
-    public async Task<IEnumerable<Player>> SearchAsync(string username) => await Search(username, true).ToListAsync();
+    public async Task<IEnumerable<Player>> SearchAsync(string username) => await SearchQuery(username, true).ToListAsync();
 
-    public async Task<Player?> GetAsync(string username)
+    public async Task<Player> GetAsync(string username)
     {
-        List<Player> players = await Search(username, false).ToListAsync();
+        List<Player> players = await SearchQuery(username, false).ToListAsync();
 
         if (players.Count > 1)
         {
             throw new Exception("More than one player was found. This function requires a single player to be returned.");
         }
 
-        return players.FirstOrDefault();
+        if (players.Count == 0)
+        {
+            throw new Exception("No players were found, this function requires a single player to be returned.");
+        }
+
+        return players.First();
     }
 
     public async Task<Player> GetOrCreateAsync(long osuId)
@@ -104,12 +109,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
             .WhereOsuId(osuId)
             .FirstOrDefaultAsync();
 
-        if (p == null)
-        {
-            return null;
-        }
-
-        return p;
+        return p ?? null;
     }
 
     public async Task<int?> GetIdAsync(long osuId) =>
@@ -162,7 +162,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
 
     public async Task<int?> GetIdAsync(string username)
     {
-        return await Search(username, false).Select(x => x.Id).FirstOrDefaultAsync();
+        return await SearchQuery(username, false).Select(x => x.Id).FirstOrDefaultAsync();
     }
 
     /// <summary>
@@ -171,7 +171,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
     /// <param name="username">The username to search for</param>
     /// <param name="partialMatch">Whether or not we want to check for partial name matches on lookup.</param>
     /// <returns>A query that filters players by the username provided</returns>
-    private IQueryable<Player> Search(string username, bool partialMatch)
+    private IQueryable<Player> SearchQuery(string username, bool partialMatch)
     {
         if (partialMatch)
         {
@@ -182,12 +182,11 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
                     p.Username != null
                     && (
                         EF.Functions.ILike(p.Username, $"%{username}%")
-                        || EF.Functions.ILike(p.Username, $"%{username}%")
                     )
                 );
             }
 
-            return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? "", $"%{username}%"));
+            return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, $"%{username}%"));
         }
 
         if (username.Contains(' '))
