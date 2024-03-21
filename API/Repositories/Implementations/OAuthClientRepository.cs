@@ -12,7 +12,7 @@ public class OAuthClientRepository(OtrContext context) : RepositoryBase<OAuthCli
     private readonly OtrContext _context = context;
     public async Task<bool> SecretInUseAsync(string clientSecret) { return await _context.OAuthClients.AnyAsync(x => x.Secret == clientSecret); }
 
-    public async Task<bool> ValidateAsync(int clientId, string clientSecret)
+    public async Task<bool> ExistsAsync(int clientId, string clientSecret)
     {
         OAuthClient? match = await _context.OAuthClients.FirstOrDefaultAsync(x =>
             x.Id == clientId && x.Secret == clientSecret
@@ -23,7 +23,7 @@ public class OAuthClientRepository(OtrContext context) : RepositoryBase<OAuthCli
 
     public async Task<OAuthClient?> SetRatelimitOverridesAsync(int clientId, RateLimitOverrides rateLimitOverrides)
     {
-        OAuthClient? match = await _context.OAuthClients.FirstOrDefaultAsync(x => x.Id == clientId);
+        OAuthClient? match = await GetAsync(clientId);
 
         if (match == null)
         {

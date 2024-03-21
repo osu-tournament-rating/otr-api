@@ -9,7 +9,7 @@ namespace API.Services.Implementations;
 public class OAuthClientService(IOAuthClientRepository repository, IMapper mapper) : IOAuthClientService
 {
     private readonly IOAuthClientRepository _repository = repository;
-    public async Task<bool> ValidateAsync(int clientId, string clientSecret) => await _repository.ValidateAsync(clientId, clientSecret);
+    public async Task<bool> ValidateAsync(int clientId, string clientSecret) => await _repository.ExistsAsync(clientId, clientSecret);
 
     public async Task<OAuthClientDTO?> GetAsync(int clientId)
     {
