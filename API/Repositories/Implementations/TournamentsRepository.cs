@@ -24,14 +24,19 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
         if (tournaments.Count > 1)
         {
-            throw new Exception("More than one tournament was found. This method requires to return a single tournament.");
+            throw new Exception("More than one tournament was found.");
         }
 
-        return tournaments.FirstOrDefault();
+        if (tournaments.Count == 0)
+        {
+            throw new Exception("No tournaments were found.");
+        }
+
+        return tournaments.First();
     }
 
     public async Task<IEnumerable<Tournament>> SearchAsync(string name) =>
-        await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%")).ToListAsync();
+        await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name, $"%{name}%")).ToListAsync();
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);

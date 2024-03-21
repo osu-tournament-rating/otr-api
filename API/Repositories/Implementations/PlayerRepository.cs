@@ -196,7 +196,6 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
                 p.Username != null
                 && (
                     EF.Functions.ILike(p.Username, username)
-                    || EF.Functions.ILike(p.Username, username)
                 )
             );
         }
