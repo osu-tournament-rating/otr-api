@@ -18,7 +18,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 {
     private readonly OtrContext _context = context;
 
-    private async Task<Tournament?> GetAsync(string name)
+    private async Task<Tournament> GetAsync(string name)
     {
         List<Tournament> tournaments = await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name ?? string.Empty, name)).ToListAsync();
 

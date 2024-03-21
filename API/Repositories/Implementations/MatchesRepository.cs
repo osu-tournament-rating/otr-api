@@ -43,8 +43,7 @@ public class MatchesRepository(
 
     public async Task<IEnumerable<Match>> SearchAsync(string name)
     {
-        List<Match> match = await MatchBaseQuery(true).Where(x => EF.Functions.ILike(x.Name ?? "", $"%{name}%")).ToListAsync();
-
+        List<Match> match = await MatchBaseQuery(true).Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%")).ToListAsync();
         return match;
     }
 
