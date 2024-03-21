@@ -6,6 +6,7 @@ using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -14,7 +15,7 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [AllowAnonymous]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class OAuthController(IOAuthHandler oAuthHandler, IOAuthClientService clientService) : Controller
+public class OAuthController(IOAuthHandler oAuthHandler) : Controller
 {
     private readonly IOAuthHandler _oAuthHandler = oAuthHandler;
 
@@ -72,22 +73,6 @@ public class OAuthController(IOAuthHandler oAuthHandler, IOAuthClientService cli
         if (result == null)
         {
             return TypedResults.Unauthorized();
-        }
-
-        return TypedResults.Ok(result);
-    }
-
-    [HttpPost("ratelimit")]
-    [Authorize(Roles = "admin")]
-    [EndpointDescription("Sets new ratelimit overrides for a given client")]
-    public async Task<Results<BadRequest, Ok<OAuthClientDTO>>> SetRatelimitOverridesAsync([FromQuery] int clientId, [FromQuery] int window, [FromQuery] int limit)
-    {
-        OAuthClientDTO? result = await clientService.SetRatelimitOverridesAsync(clientId,
-            new RateLimitOverrides { PermitLimit = limit, Window = window });
-
-        if (result == null)
-        {
-            return TypedResults.BadRequest();
         }
 
         return TypedResults.Ok(result);
