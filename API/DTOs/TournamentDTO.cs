@@ -16,6 +16,5 @@ public class TournamentDTO
     // Requested by Cytusine, normally we don't return this info.
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public DateTime Created { get; set; }
-    public int SubmitterUserId { get; set; }
     public ICollection<MatchDTO> Matches { get; set; } = new List<MatchDTO>();
 }
