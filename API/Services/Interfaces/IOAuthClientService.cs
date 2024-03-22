@@ -1,9 +1,18 @@
 using API.DTOs;
+using API.Entities;
 
 namespace API.Services.Interfaces;
 
 public interface IOAuthClientService
 {
+    /// <summary>
+    ///     Checks whether the given clientId and clientSecret match a valid client.
+    /// </summary>
+    /// <param name="clientId">The id of the client</param>
+    /// <param name="clientSecret">The client secret</param>
+    /// <returns>true if the clientId and clientSecret are in the database, false otherwise.</returns>
+    Task<bool> ValidateAsync(int clientId, string clientSecret);
+
     /// <summary>
     /// Gets an OAuthClient that matches the given client id, if it exists.
     /// </summary>
@@ -24,10 +33,12 @@ public interface IOAuthClientService
     Task<bool> SecretInUse(string clientSecret);
 
     /// <summary>
-    /// Checks the provided client id & secret are valid.
+    /// Applies the provided <see cref="RateLimitOverrides"/> to the
+    /// client which has the id of <see cref="clientId"/>
     /// </summary>
     /// <param name="clientId">The id of the client</param>
-    /// <param name="clientSecret">The client secret</param>
-    /// <returns>True if the client id & secret provided belong to this user, false otherwise</returns>
-    Task<bool> ValidateAsync(int clientId, string clientSecret);
+    /// <param name="rateLimitOverrides">The new <see cref="RateLimitOverrides"/></param>
+    /// <returns>A valid <see cref="OAuthClientDTO"/> with the current state of the client,
+    /// null if any errors are encountered.</returns>
+    Task<OAuthClientDTO?> SetRatelimitOverridesAsync(int clientId, RateLimitOverrides rateLimitOverrides);
 }
