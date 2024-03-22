@@ -48,9 +48,13 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
         DateTime? dateMax = null
     ) => await _tournamentsRepository.CountPlayedAsync(playerId, mode, dateMin, dateMax);
 
-    public async Task<TournamentDTO> UpdateAsync(int id, TournamentDTO wrapper)
+    public async Task<TournamentDTO?> UpdateAsync(int id, TournamentDTO wrapper)
     {
-        Tournament existing = await _tournamentsRepository.GetAsync(id) ?? throw new Exception($"Tournament with id {id} does not exist");
+        Tournament? existing = await _tournamentsRepository.GetAsync(id);
+        if (existing is null)
+        {
+            return null;
+        }
 
         existing.Name = wrapper.Name;
         existing.Abbreviation = wrapper.Abbreviation;

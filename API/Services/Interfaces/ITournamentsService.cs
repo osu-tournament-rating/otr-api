@@ -41,17 +41,20 @@ public interface ITournamentsService
     Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true);
 
     /// <summary>
-    /// Counts the number of tournaments played by the given player.
+    /// Get the number of tournaments played by the given player
     /// </summary>
     /// <param name="playerId"></param>
+    /// <param name="mode"></param>
+    /// <param name="dateMin"></param>
+    /// <param name="dateMax"></param>
     /// <returns></returns>
     Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
 
     /// <summary>
-    /// Updates a database entity based on values from a DTO
+    /// Updates a tournament entity from a wrapper
     /// </summary>
-    /// <param name="wrapper">User provided values</param>
-    /// <param name="id">Id of the target tournament</param>
+    /// <param name="wrapper">Provided values</param>
+    /// <param name="id">Id (primary key) of the target tournament</param>
     /// <returns></returns>
-    Task<TournamentDTO> UpdateAsync(int id, TournamentDTO wrapper);
+    Task<TournamentDTO?> UpdateAsync(int id, TournamentDTO wrapper);
 }

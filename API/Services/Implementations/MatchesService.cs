@@ -9,13 +9,11 @@ namespace API.Services.Implementations;
 
 public class MatchesService(
     IMatchesRepository matchesRepository,
-    ITournamentsRepository tournamentsRepository,
     IMatchDuplicateRepository duplicateRepository,
     IMapper mapper
 ) : IMatchesService
 {
     private readonly IMatchesRepository _matchesRepository = matchesRepository;
-    private readonly ITournamentsRepository _tournamentsRepository = tournamentsRepository;
     private readonly IMatchDuplicateRepository _duplicateRepository = duplicateRepository;
     private readonly IMapper _mapper = mapper;
 
@@ -27,11 +25,6 @@ public class MatchesService(
         int? verificationSource
     )
     {
-        if (!await _tournamentsRepository.ExistsAsync(tournamentId))
-        {
-            throw new Exception($"Tournament with id {tournamentId} does not exist");
-        }
-
         MatchVerificationStatus verificationStatus = verify
             ? MatchVerificationStatus.Verified
             : MatchVerificationStatus.PendingVerification;

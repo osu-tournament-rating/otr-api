@@ -5,8 +5,10 @@ using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace API.Controllers;
 
@@ -36,32 +38,30 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
      * periodically and processes them automatically.
      */
     [HttpPost]
-    [Authorize(Roles = "user")]
-    [Authorize(Roles = "whitelist")]
-    [Authorize(Roles = "submit")]
     [EndpointSummary("Create a tournament")]
     [EndpointDescription("Submit a tournament and associated matches")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<TournamentDTO>> CreateAsync(
+    public async Task<Results<UnauthorizedHttpResult, BadRequest<string>, Ok<TournamentDTO>>> CreateAsync(
         [FromBody] TournamentWebSubmissionDTO wrapper,
         [FromQuery] bool verify = false
     )
     {
+        // Determine verification source
         MatchVerificationSource? verificationSource = null;
         if (verify)
         {
             if (!User.CanVerifyMatches())
             {
-                return Unauthorized("You are not authorized to verify matches");
+                return TypedResults.Unauthorized();
             }
             verificationSource = User.VerificationSource();
         }
 
         if (await _tournamentsService.ExistsAsync(wrapper.TournamentName, wrapper.Mode))
         {
-            return BadRequest($"A tournament with name {wrapper.TournamentName} for mode {wrapper.Mode} already exists");
+            return TypedResults.BadRequest($"A tournament with name {wrapper.TournamentName} for mode {wrapper.Mode} already exists");
         }
 
+        // Create tournament
         TournamentDTO result = await _tournamentsService.CreateAsync(wrapper);
         // Create matches, add them to the DTO
         result.Matches = (await _matchesService.CreateAsync(
@@ -71,17 +71,13 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
             (int?)verificationSource
         )).ToList();
 
-        return Ok(result);
+        return TypedResults.Ok(result);
     }
 
     [HttpPost("{id:int}/matches")]
-    [Authorize(Roles = "user")]
-    [Authorize(Roles = "whitelist")]
-    [Authorize(Roles = "submit")]
     [EndpointSummary("Create matches associated with a tournament")]
     [EndpointDescription("Append tournament matches to an existing tournament")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<IEnumerable<MatchDTO>>> CreateMatchesAsync(
+    public async Task<Results<UnauthorizedHttpResult, NotFound, Ok<IEnumerable<MatchDTO>>>> CreateMatchesAsync(
         int id,
         [FromBody] MatchesWebSubmissionDTO wrapper,
         [FromQuery] bool verify = false
@@ -92,14 +88,14 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         {
             if (!User.CanVerifyMatches())
             {
-                return Unauthorized("You are not authorized to verify matches");
+                return TypedResults.Unauthorized();
             }
             verificationSource = User.VerificationSource();
         }
 
         if (!await _tournamentsService.ExistsAsync(id))
         {
-            return NotFound($"A tournament with id {id} does not exist");
+            return TypedResults.NotFound();
         }
 
         IEnumerable<MatchDTO> result =
@@ -109,35 +105,34 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
                 wrapper.Ids, verify,
                 (int?)verificationSource
             );
-        return Ok(result);
+        return TypedResults.Ok(result);
     }
 
     [HttpGet("{id:int}")]
     [EndpointSummary("Get a tournament")]
-    public async Task<ActionResult<TournamentDTO>> GetAsync(int id)
+    public async Task<Results<NotFound, Ok<TournamentDTO>>> GetAsync(int id)
     {
         TournamentDTO? result = await _tournamentsService.GetAsync(id);
         if (result is null)
         {
-            return NotFound($"A tournament with id {id} does not exist");
+            return TypedResults.NotFound();
         }
-        return Ok(result);
+        return TypedResults.Ok(result);
     }
 
     [HttpGet]
     [Authorize(Roles = "admin, system")]
     [EndpointSummary("List all tournaments")]
-    public async Task<ActionResult<IEnumerable<TournamentDTO>>> ListAsync()
+    public async Task<Ok<IEnumerable<TournamentDTO>>> ListAsync()
     {
         IEnumerable<TournamentDTO> result = await _tournamentsService.GetAllAsync();
-        return Ok(result);
+        return TypedResults.Ok(result);
     }
 
     [HttpPatch("{id:int}")]
-    [Authorize(Roles = "admin, system")]
+    [Authorize(Roles = "admin")]
     [EndpointSummary("Amend tournament data")]
-    [EndpointDescription("Amend tournament data (Excluded fields: id, matches)")]
-    public async Task<ActionResult<TournamentDTO>> UpdateAsync(
+    public async Task<Results<NotFound, BadRequest, BadRequest<ModelStateDictionary>, Ok<TournamentDTO>>> UpdateAsync(
         int id,
         [FromBody] JsonPatchDocument<TournamentDTO> patch
     )
@@ -146,31 +141,24 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         TournamentDTO? tournament = await _tournamentsService.GetAsync(id);
         if (tournament is null)
         {
-            return NotFound($"A tournament with id {id} does not exist");
+            return TypedResults.NotFound();
         }
 
         // Ensure request is only attempting to perform a replace operation.
         if (!patch.IsReplaceOnly())
         {
-            return BadRequest("This endpoint can only perform replace operations.");
-        }
-
-        // Ensure request is not editing any restricted fields
-        IEnumerable<string> invalidFields = patch.IncludesFields(["Id", "Matches"]).ToList();
-        if (invalidFields.Any())
-        {
-            return BadRequest($"The following fields cannot be replaced: [{string.Join(", ", invalidFields)}]");
+            return TypedResults.BadRequest();
         }
 
         // Patch and validate
         patch.ApplyTo(tournament, ModelState);
         if (!TryValidateModel(tournament))
         {
-            return BadRequest(ModelState);
+            return TypedResults.BadRequest(ModelState);
         }
 
         // Apply patched values to entity
-        TournamentDTO updatedTournament = await _tournamentsService.UpdateAsync(id, tournament);
-        return Ok(updatedTournament);
+        TournamentDTO? updatedTournament = await _tournamentsService.UpdateAsync(id, tournament);
+        return TypedResults.Ok(updatedTournament);
     }
 }
