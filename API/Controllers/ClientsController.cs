@@ -19,9 +19,16 @@ public class ClientsController(IOAuthClientService clientService) : Controller
     [HttpPatch("{id:int}/ratelimit")]
     [Authorize(Roles = "admin")]
     [EndpointSummary("Patches the ratelimit for a given client")]
-    public async Task<Results<BadRequest, NotFound, Ok<OAuthClientDTO>>> PatchRatelimitAsync(int id, [FromBody] JsonPatchDocument<RateLimitOverrides> patchedOverrides)
+    public async Task<Results<BadRequest, NotFound<string>, Ok<OAuthClientDTO>>> PatchRatelimitAsync(int id, [FromBody] JsonPatchDocument<RateLimitOverrides> patchedOverrides)
     {
-        var overrides = new RateLimitOverrides();
+        OAuthClientDTO? currentClient = await clientService.GetAsync(id);
+
+        if (currentClient == null)
+        {
+            return TypedResults.NotFound("Client not found");
+        }
+
+        RateLimitOverrides overrides = currentClient.RateLimitOverrides;
 
         if (patchedOverrides.Operations.Any(op => op.op != "replace"))
         {
@@ -30,13 +37,8 @@ public class ClientsController(IOAuthClientService clientService) : Controller
 
         patchedOverrides.ApplyTo(overrides, ModelState);
 
+        // We know client is not null here due to the previous null check
         OAuthClientDTO? client = await clientService.SetRatelimitOverridesAsync(id, overrides);
-
-        if (client == null)
-        {
-            return TypedResults.NotFound();
-        }
-
-        return TypedResults.Ok(client);
+        return TypedResults.Ok(client!);
     }
 }
