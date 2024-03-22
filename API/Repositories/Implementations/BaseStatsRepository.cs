@@ -286,7 +286,6 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
             {
                 baseQuery = FilterByTier(baseQuery, filter.TierFilters!);
             }
-            // baseQuery = FilterByWinrate(baseQuery, filter.MinWinrate, filter.MaxWinrate);
         }
 
         return baseQuery;
@@ -375,15 +374,15 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         LeaderboardTierFilterDTO tierFilter
     )
     {
-        bool includeBronze = tierFilter.FilterBronze;
-        bool includeSilver = tierFilter.FilterSilver;
-        bool includeGold = tierFilter.FilterGold;
-        bool includePlatinum = tierFilter.FilterPlatinum;
-        bool includeEmerald = tierFilter.FilterEmerald;
-        bool includeDiamond = tierFilter.FilterDiamond;
-        bool includeMaster = tierFilter.FilterMaster;
-        bool includeGrandmaster = tierFilter.FilterGrandmaster;
-        bool includeEliteGrandmaster = tierFilter.FilterEliteGrandmaster;
+        var includeBronze = tierFilter.FilterBronze;
+        var includeSilver = tierFilter.FilterSilver;
+        var includeGold = tierFilter.FilterGold;
+        var includePlatinum = tierFilter.FilterPlatinum;
+        var includeEmerald = tierFilter.FilterEmerald;
+        var includeDiamond = tierFilter.FilterDiamond;
+        var includeMaster = tierFilter.FilterMaster;
+        var includeGrandmaster = tierFilter.FilterGrandmaster;
+        var includeEliteGrandmaster = tierFilter.FilterEliteGrandmaster;
 
         return query.Where(x =>
             (includeBronze && x.Rating < RatingUtils.RatingSilverIII)
