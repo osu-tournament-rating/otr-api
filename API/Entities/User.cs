@@ -28,6 +28,12 @@ public class User
     [Column("updated", TypeName = "timestamp with time zone")]
     public DateTime? Updated { get; set; }
 
+    // // Column name and value initialization is handled via OtrContext
+    /// <summary>
+    /// Represents values that override the API rate limit for the User
+    /// </summary>
+    public RateLimitOverrides RateLimitOverrides { get; set; } = null!;
+
     [ForeignKey("PlayerId")]
     [InverseProperty("User")]
     public virtual Player Player { get; set; } = null!;

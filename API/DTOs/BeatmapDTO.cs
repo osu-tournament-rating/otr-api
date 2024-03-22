@@ -2,6 +2,7 @@ namespace API.DTOs;
 
 public class BeatmapDTO
 {
+    public int Id { get; set; }
     public string Artist { get; set; } = null!;
     public long BeatmapId { get; set; }
     public double? Bpm { get; set; }
