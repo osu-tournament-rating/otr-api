@@ -13,7 +13,7 @@ public class UserService(IUserRepository repository) : IUserService
     {
         User? user = await _repository.GetAsync(id);
 
-        if (user == null)
+        if (user is null)
         {
             return null;
         }
@@ -22,26 +22,7 @@ public class UserService(IUserRepository repository) : IUserService
         {
             Id = user.Id,
             Scopes = user.Scopes,
-            OsuCountry = user.Player.Country,
-            OsuId = user.Player.OsuId,
-            OsuPlayMode = 0, // TODO: Set to user's preferred mode
-            OsuUsername = user.Player.Username
-        };
-    }
-
-    public async Task<UserInfoDTO?> GetForPlayerAsync(int playerId)
-    {
-        User? user = await _repository.GetByOsuIdAsync(playerId);
-
-        if (user == null)
-        {
-            return null;
-        }
-
-        return new UserInfoDTO
-        {
-            Id = user.Id,
-            Scopes = user.Scopes,
+            PlayerId = user.PlayerId,
             OsuCountry = user.Player.Country,
             OsuId = user.Player.OsuId,
             OsuPlayMode = 0, // TODO: Set to user's preferred mode

@@ -14,12 +14,12 @@ public class UserRepository(OtrContext context) : RepositoryBase<User>(context),
     public override async Task<User?> GetAsync(int id) =>
         await UserBaseQuery().FirstOrDefaultAsync(u => u.Id == id);
 
-    public async Task<User?> GetByOsuIdAsync(int osuId) =>
-        await UserBaseQuery().FirstOrDefaultAsync(u => u.PlayerId == osuId);
+    public async Task<User?> GetByPlayerIdAsync(int playerId) =>
+        await UserBaseQuery().FirstOrDefaultAsync(u => u.PlayerId == playerId);
 
-    public async Task<User> GetOrCreateAsync(int osuId)
+    public async Task<User> GetByPlayerIdOrCreateAsync(int playerId)
     {
-        User? user = await GetByOsuIdAsync(osuId);
+        User? user = await GetByPlayerIdAsync(playerId);
         if (user is not null)
         {
             return user;
@@ -28,7 +28,7 @@ public class UserRepository(OtrContext context) : RepositoryBase<User>(context),
         return await CreateAsync(
             new User
             {
-                PlayerId = osuId,
+                PlayerId = playerId,
                 Created = DateTime.UtcNow,
                 LastLogin = DateTime.UtcNow,
                 Scopes = []

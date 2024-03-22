@@ -330,7 +330,7 @@ public class OAuthHandler(
     private async Task<User> AuthenticateUserAsync(int playerId)
     {
         // Double db call, kind of inefficient
-        User user = await _userRepository.GetOrCreateAsync(playerId);
+        User user = await _userRepository.GetByPlayerIdOrCreateAsync(playerId);
 
         user.LastLogin = DateTime.UtcNow;
         user.Updated = DateTime.UtcNow;

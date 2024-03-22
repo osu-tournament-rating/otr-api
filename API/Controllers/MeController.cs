@@ -21,13 +21,13 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
     private readonly IPlayerStatsService _playerStatsService = playerStatsService;
 
     [HttpGet]
-    [EndpointSummary("Gets the logged in user's information, if they exist")]
-    public async Task<Results<BadRequest, NotFound, Ok<UserInfoDTO>>> GetLoggedInUserAsync()
+    [EndpointSummary("Get the currently logged in user")]
+    public async Task<Results<UnauthorizedHttpResult, NotFound, Ok<UserInfoDTO>>> GetAsync()
     {
         var id = HttpContext.AuthorizedUserIdentity();
         if (!id.HasValue)
         {
-            return TypedResults.BadRequest();
+            return TypedResults.Unauthorized();
         }
 
         UserInfoDTO? user = await _userService.GetAsync(id.Value);
@@ -41,7 +41,7 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
 
     [HttpGet("stats")]
     [EndpointSummary("Get stats for the currently logged in user")]
-    public async Task<Results<BadRequest, NotFound, Ok<PlayerStatsDTO>>> GetStatsAsync(
+    public async Task<Results<UnauthorizedHttpResult, NotFound, Ok<PlayerStatsDTO>>> GetStatsAsync(
         [FromQuery] int mode = 0,
         [FromQuery] DateTime? dateMin = null,
         [FromQuery] DateTime? dateMax = null
@@ -50,10 +50,10 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
         var userId = HttpContext.AuthorizedUserIdentity();
         if (!userId.HasValue)
         {
-            return TypedResults.BadRequest();
+            return TypedResults.Unauthorized();
         }
 
-        var playerId = (await _userService.GetAsync(userId.Value))?.Id;
+        var playerId = (await _userService.GetAsync(userId.Value))?.PlayerId;
         if (!playerId.HasValue)
         {
             return TypedResults.NotFound();

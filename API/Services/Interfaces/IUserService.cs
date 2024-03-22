@@ -5,9 +5,9 @@ namespace API.Services.Interfaces;
 public interface IUserService
 {
     /// <summary>
-    /// Get a <see cref="UserInfoDTO"/> for user by id
+    /// Get a user by id
     /// </summary>
-    /// <param name="id">User id (primary key)</param>
+    /// <param name="id">id (primary key)</param>
     /// <returns></returns>
     Task<UserInfoDTO?> GetAsync(int id);
 }
