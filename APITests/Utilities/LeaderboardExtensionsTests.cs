@@ -164,9 +164,9 @@ public class LeaderboardExtensionsTests
 
         Assert.Multiple(() =>
         {
-             Assert.True(RatingUtils.IsDiamond(lbInfo.Tier));
-             Assert.True(RatingUtils.IsDiamond(lbInfo2.Tier));
-             Assert.True(RatingUtils.IsDiamond(lbInfo3.Tier));
+            Assert.True(RatingUtils.IsDiamond(lbInfo.Tier));
+            Assert.True(RatingUtils.IsDiamond(lbInfo2.Tier));
+            Assert.True(RatingUtils.IsDiamond(lbInfo3.Tier));
         });
     }
 
