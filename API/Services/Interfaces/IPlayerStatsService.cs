@@ -59,4 +59,14 @@ public interface IPlayerStatsService
     Task TruncateAsync();
 
     Task TruncateRatingAdjustmentsAsync();
+
+    /// <summary>
+    /// Returns the peak rating of a player for a given mode and date range.
+    /// </summary>
+    /// <param name="playerId"></param>
+    /// <param name="mode"></param>
+    /// <param name="dateMin"></param>
+    /// <param name="dateMax"></param>
+    /// <returns></returns>
+    Task<double> GetPeakRatingAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
 }
