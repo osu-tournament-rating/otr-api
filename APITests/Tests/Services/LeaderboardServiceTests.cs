@@ -31,7 +31,7 @@ public class LeaderboardServiceTests
             .SetupGlobalWinrate()
             .SetupCountMatchesPlayed();
 
-        MockRatingStatsRepository ratingStatsRepository = new MockRatingStatsRepository()
+        MockMatchRatingStatsRepository matchRatingStatsRepository = new MockMatchRatingStatsRepository()
             .SetupHighestGlobalRank()
             .SetupHighestCountryRank()
             .SetupGetRankChart();
@@ -48,7 +48,7 @@ public class LeaderboardServiceTests
             playerService,
             playerRepository.Object,
             null,
-            ratingStatsRepository.Object,
+            matchRatingStatsRepository.Object,
             null
         );
 
@@ -57,7 +57,7 @@ public class LeaderboardServiceTests
         var baseStatsService = new BaseStatsService(
             baseStatsRepository.Object,
             playerMatchStatsRepository.Object,
-            ratingStatsRepository.Object,
+            matchRatingStatsRepository.Object,
             playerRepository.Object,
             tournamentsService
         );
@@ -66,7 +66,7 @@ public class LeaderboardServiceTests
         _leaderboardService = new LeaderboardService(
             playerRepository.Object,
             baseStatsService,
-            ratingStatsRepository.Object,
+            matchRatingStatsRepository.Object,
             playerService,
             playerStatsService
         );

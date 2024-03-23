@@ -5,9 +5,9 @@ using Moq;
 
 namespace APITests.Framework.MockRepositories;
 
-public class MockRatingStatsRepository : Mock<IMatchRatingStatsRepository>
+public class MockMatchRatingStatsRepository : Mock<IMatchRatingStatsRepository>
 {
-    public MockRatingStatsRepository SetupHighestGlobalRank()
+    public MockMatchRatingStatsRepository SetupHighestGlobalRank()
     {
         Setup(x =>
                 x.HighestGlobalRankAsync(
@@ -22,7 +22,7 @@ public class MockRatingStatsRepository : Mock<IMatchRatingStatsRepository>
         return this;
     }
 
-    public MockRatingStatsRepository SetupHighestCountryRank()
+    public MockMatchRatingStatsRepository SetupHighestCountryRank()
     {
         Setup(x =>
                 x.HighestCountryRankAsync(
@@ -37,7 +37,7 @@ public class MockRatingStatsRepository : Mock<IMatchRatingStatsRepository>
         return this;
     }
 
-    public MockRatingStatsRepository SetupGetRankChart()
+    public MockMatchRatingStatsRepository SetupGetRankChart()
     {
         Setup(x =>
                 x.GetRankChartAsync(
