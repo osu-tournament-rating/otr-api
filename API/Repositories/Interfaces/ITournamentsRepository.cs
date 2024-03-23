@@ -13,11 +13,23 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <returns></returns>
     Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
 
-    Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
-
+    /// <summary>
+    /// Returns true if an entity with the given name and mode exists
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="mode">Ruleset</param>
+    /// <returns></returns>
     public Task<bool> ExistsAsync(string name, int mode);
 
-    public Task<PlayerTournamentTeamSizeCountDTO> GetPlayerTeamSizeStatsAsync(
+    /// <summary>
+    /// Create team size statistics for a player
+    /// </summary>
+    /// <param name="playerId">Id (primary key) of target player</param>
+    /// <param name="mode">Ruleset</param>
+    /// <param name="dateMin">Date lower bound</param>
+    /// <param name="dateMax">Date upper bound</param>
+    /// <returns></returns>
+    public Task<PlayerTournamentTeamSizeCountDTO> GetTeamSizeStatsAsync(
         int playerId,
         int mode,
         DateTime dateMin,
@@ -25,16 +37,29 @@ public interface ITournamentsRepository : IRepository<Tournament>
     );
 
     /// <summary>
-    ///  Finds and returns the best or worst tournaments for a player, rated and ordered by average match cost.
+    /// Returns a list of best or worst tournament performances for a player
     /// </summary>
-    /// <param name="count">The number of tournaments to return</param>
-    /// <returns>A list of <see cref="count" /> tournaments ordered by the player's average match cost, descending</returns>
-    Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(
-        int count,
-        int playerId,
+    /// <param name="playerId">Id (primary key) of target player</param>
+    /// <param name="mode">Ruleset</param>
+    /// <param name="dateMin">Date lower bound</param>
+    /// <param name="dateMax">Date upper bound</param>
+    /// <param name="count">Size of results</param>
+    /// <param name="bestPerformances">Sort by best or worst performance</param>
+    /// <returns></returns>
+    Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(int playerId,
         int mode,
         DateTime dateMin,
         DateTime dateMax,
-        bool bestPerformances
-    );
+        int count,
+        bool bestPerformances);
+
+    /// <summary>
+    /// Count number of tournaments played for a player
+    /// </summary>
+    /// <param name="playerId">Id (primary key) of target player</param>
+    /// <param name="mode">Ruleset</param>
+    /// <param name="dateMin">Date lower bound</param>
+    /// <param name="dateMax">Date upper bound</param>
+    /// <returns></returns>
+    Task<int> CountPlayedAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax);
 }

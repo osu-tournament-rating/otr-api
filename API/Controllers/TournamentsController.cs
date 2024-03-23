@@ -125,7 +125,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     [EndpointSummary("List all tournaments")]
     public async Task<Ok<IEnumerable<TournamentDTO>>> ListAsync()
     {
-        IEnumerable<TournamentDTO> result = await _tournamentsService.GetAllAsync();
+        IEnumerable<TournamentDTO> result = await _tournamentsService.ListAsync();
         return TypedResults.Ok(result);
     }
 

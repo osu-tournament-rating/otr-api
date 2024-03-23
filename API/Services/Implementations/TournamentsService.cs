@@ -13,7 +13,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
 
     public async Task<TournamentDTO> CreateAsync(TournamentWebSubmissionDTO wrapper)
     {
-        Tournament tournament = await _tournamentsRepository.CreateAsync(new Tournament()
+        Tournament tournament = await _tournamentsRepository.CreateAsync(new Tournament
         {
             Name = wrapper.TournamentName,
             Abbreviation = wrapper.Abbreviation,
@@ -30,7 +30,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
 
     public async Task<bool> ExistsAsync(string name, int mode) => await _tournamentsRepository.ExistsAsync(name, mode);
 
-    public async Task<IEnumerable<TournamentDTO>> GetAllAsync()
+    public async Task<IEnumerable<TournamentDTO>> ListAsync()
     {
         IEnumerable<Tournament> items = await _tournamentsRepository.GetAllAsync();
         items = items.OrderBy(x => x.Name);
@@ -46,7 +46,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
         int mode,
         DateTime? dateMin = null,
         DateTime? dateMax = null
-    ) => await _tournamentsRepository.CountPlayedAsync(playerId, mode, dateMin, dateMax);
+    ) => await _tournamentsRepository.CountPlayedAsync(playerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.MaxValue);
 
     public async Task<TournamentDTO?> UpdateAsync(int id, TournamentDTO wrapper)
     {
@@ -62,7 +62,6 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
         existing.Mode = wrapper.Mode;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
         existing.TeamSize = wrapper.TeamSize;
-        existing.SubmitterUserId = wrapper.SubmitterUserId;
 
         await _tournamentsRepository.UpdateAsync(existing);
         return _mapper.Map<TournamentDTO>(existing);

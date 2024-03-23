@@ -1,13 +1,9 @@
-using System.Data;
-using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using NpgsqlTypes;
 
 namespace API.Repositories.Implementations;
 
@@ -30,30 +26,16 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
 
-    public async Task<PlayerTournamentTeamSizeCountDTO> GetPlayerTeamSizeStatsAsync(
+    public async Task<PlayerTournamentTeamSizeCountDTO> GetTeamSizeStatsAsync(
         int playerId,
         int mode,
         DateTime dateMin,
         DateTime dateMax
     )
     {
-        var participatedTournaments = await _context
-            .Tournaments.Where(tournament => tournament.Mode == mode)
-            .Include(tournament => tournament.Matches)
-            .ThenInclude(match => match.Games)
-            .ThenInclude(game => game.MatchScores)
-            .Where(tournament =>
-                tournament.Matches.Any(match =>
-                    match.StartTime >= dateMin
-                    && match.StartTime <= dateMax
-                    && match.VerificationStatus == 0
-                    && match.Games.Any(game =>
-                        game.VerificationStatus == 0
-                        && game.MatchScores.Any(score => score.PlayerId == playerId && score.IsValid == true)
-                    )
-                )
-            )
-            .Select(tournament => new { TournamentId = tournament.Id, tournament.TeamSize })
+        var participatedTournaments =
+            await QueryForParticipation(playerId, mode, dateMin, dateMax)
+            .Select(t => new { TournamentId = t.Id, t.TeamSize })
             .Distinct() // Ensures each tournament is counted once
             .ToListAsync();
 
@@ -67,96 +49,85 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         };
     }
 
-    public async Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(
-        int count,
-        int playerId,
+    public async Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(int playerId,
         int mode,
         DateTime dateMin,
         DateTime dateMax,
-        bool bestPerformances
-    )
+        int count,
+        bool bestPerformances)
     {
-        var order = bestPerformances ? "DESC" : "ASC";
-
-        using (DbCommand command = _context.Database.GetDbConnection().CreateCommand())
-        {
-            var sql = $"""
-                SELECT t.id as TournamentId, t.name as TournamentName, AVG(mrs.match_cost) as MatchCost, t.abbreviation AS TournamentAcronym
-                								FROM tournaments t
-                								INNER JOIN matches m ON m.tournament_id = t.id
-                								INNER JOIN match_rating_stats mrs ON mrs.match_id = m.id
-                								WHERE mrs.player_id = @playerId AND t.mode = @mode AND m.start_time >= @dateMin AND m.start_time <= @dateMax AND m.verification_status = 0
-                								GROUP BY t.id
-                								ORDER BY AVG(mrs.match_cost) {order}
-                								LIMIT @count
-                """;
-
-            command.CommandType = CommandType.Text;
-            command.CommandText = sql;
-
-            command.Parameters.Add(new NpgsqlParameter<int>("playerId", playerId));
-            command.Parameters.Add(new NpgsqlParameter<int>("mode", mode));
-            command.Parameters.Add(
-                new NpgsqlParameter<DateTime>("dateMin", NpgsqlDbType.TimestampTz) { Value = dateMin }
-            );
-            command.Parameters.Add(
-                new NpgsqlParameter<DateTime>("dateMax", NpgsqlDbType.TimestampTz) { Value = dateMax }
-            );
-            command.Parameters.Add(new NpgsqlParameter<int>("count", count));
-
-            await _context.Database.OpenConnectionAsync();
-
-            using (DbDataReader result = await command.ExecuteReaderAsync())
+        IQueryable<PlayerTournamentMatchCostDTO> query =
+            QueryForParticipation(playerId, mode, dateMin, dateMax)
+            .Select(t => new PlayerTournamentMatchCostDTO()
             {
-                var results = new List<PlayerTournamentMatchCostDTO>();
-                while (await result.ReadAsync())
-                {
-                    results.Add(
-                        new PlayerTournamentMatchCostDTO
-                        {
-                            PlayerId = playerId,
-                            TournamentId = result.GetInt32(0),
-                            TournamentName = result.GetString(1),
-                            MatchCost = result.GetDouble(2),
-                            TournamentAcronym = result.GetString(3),
-                            Mode = mode
-                        }
-                    );
-                }
+                PlayerId = playerId,
+                Mode = mode,
+                TournamentId = t.Id,
+                TournamentName = t.Name,
+                TournamentAcronym = t.Abbreviation,
+                // Calc average match cost
+                MatchCost = t.Matches
+                    // Filter invalid matches (Above filter uses Any, so invalid matches can still be included)
+                    .Where(m => m.VerificationStatus == (int)MatchVerificationStatus.Verified)
+                    // Filter for ratings belonging to target player
+                    .SelectMany(m => m.RatingStats)
+                    .Where(mrs => mrs.PlayerId == playerId)
+                    .Average(mrs => mrs.MatchCost)
+            });
 
-                return results;
-            }
-        }
+        // Sort
+        query = bestPerformances
+            ? query.OrderByDescending(d => d.MatchCost)
+            : query.OrderBy(d => d.MatchCost);
+
+        return await query.Take(count).ToListAsync();
     }
 
     public async Task<int> CountPlayedAsync(
         int playerId,
         int mode,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null
+        DateTime dateMin,
+        DateTime dateMax
+    ) => await QueryForParticipation(playerId, mode, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
+
+    /// <summary>
+    /// Returns a queryable containing tournaments for <see cref="mode"/>
+    /// with *any* match applicable to all of the following criteria:
+    /// - Is verified
+    /// - Started between <paramref name="dateMin"/> and <paramref name="dateMax"/>
+    /// - Contains a <see cref="MatchRatingStats"/> for given <paramref name="playerId"/> (Denotes participation)
+    /// </summary>
+    /// <param name="playerId">Id (primary key) of target player</param>
+    /// <param name="mode">Ruleset</param>
+    /// <param name="dateMin">Date lower bound</param>
+    /// <param name="dateMax">Date upper bound</param>
+    /// <remarks>Since filter uses Any, invalid matches can still exist in the resulting query</remarks>
+    /// <returns></returns>
+    private IQueryable<Tournament> QueryForParticipation(
+        int playerId,
+        int mode,
+        DateTime? dateMin,
+        DateTime? dateMax
     )
     {
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        return await _context
-            .Tournaments.Include(tournament => tournament.Matches)
-            .ThenInclude(match => match.Games)
-            .ThenInclude(game => game.MatchScores)
-            .Where(tournament =>
-                tournament.Mode == mode
-                && tournament.Matches.Any(match =>
-                    match.StartTime >= dateMin
-                    && match.StartTime <= dateMax
-                    && match.VerificationStatus == (int)MatchVerificationStatus.Verified
-                    && match.Games.Any(game =>
-                        game.MatchScores.Any(score => score.PlayerId == playerId && score.IsValid == true)
-                    )
-                )
-            )
-            .Select(x => x.Id)
-            .Distinct()
-            .CountAsync();
+        return _context.Tournaments
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.RatingStats)
+            .Where(t =>
+                t.Mode == mode
+                // Contains *any* match that is:
+                && t.Matches.Any(m =>
+                    // Within time range
+                    m.StartTime >= dateMin
+                    && m.StartTime <= dateMax
+                    // Verified
+                    && m.VerificationStatus == (int)MatchVerificationStatus.Verified
+                    // Participated in by player
+                    && m.RatingStats.Any(stat => stat.PlayerId == playerId)
+                ));
     }
 
     private IQueryable<Tournament> TournamentsBaseQuery()

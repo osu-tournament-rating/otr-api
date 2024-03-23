@@ -30,7 +30,7 @@ public interface ITournamentsService
     /// Get all tournaments
     /// </summary>
     /// <returns></returns>
-    Task<IEnumerable<TournamentDTO>> GetAllAsync();
+    Task<IEnumerable<TournamentDTO>> ListAsync();
 
     /// <summary>
     /// Get a tournament by id, returns null if not found
