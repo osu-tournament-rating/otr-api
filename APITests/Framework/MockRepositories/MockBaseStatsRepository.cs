@@ -8,6 +8,17 @@ namespace APITests.Framework.MockRepositories;
 
 public class MockBaseStatsRepository : Mock<IBaseStatsRepository>
 {
+    public MockBaseStatsRepository SetupAll() =>
+            SetupGet()
+            .SetupGetGlobalRank()
+            .SetupGetRecentCreatedDate()
+            .SetupLeaderboard()
+            .SetupHighestRating()
+            .SetupHighestMatches()
+            .SetupGetHistogramAsync()
+            .SetupHighestRank()
+            .SetupGetForPlayerAsync();
+
     public MockBaseStatsRepository SetupGet()
     {
         Setup(x =>
