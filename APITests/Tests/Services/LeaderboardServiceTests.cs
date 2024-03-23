@@ -2,9 +2,9 @@ using API.DTOs;
 using API.Enums;
 using API.Services.Implementations;
 using API.Utilities;
-using APITests.MockRepositories;
+using APITests.Framework.MockRepositories;
 
-namespace APITests.Services;
+namespace APITests.Tests.Services;
 
 public class LeaderboardServiceTests
 {

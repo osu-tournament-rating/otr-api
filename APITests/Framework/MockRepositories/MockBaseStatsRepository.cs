@@ -4,7 +4,7 @@ using API.Repositories.Interfaces;
 using APITests.SeedData;
 using Moq;
 
-namespace APITests.MockRepositories;
+namespace APITests.Framework.MockRepositories;
 
 public class MockBaseStatsRepository : Mock<IBaseStatsRepository>
 {

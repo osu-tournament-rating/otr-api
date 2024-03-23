@@ -33,4 +33,9 @@
         <ProjectReference Include="..\API\API.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Framework\" />
+      <Folder Include="Tests\" />
+    </ItemGroup>
+
 </Project>

@@ -1,6 +1,6 @@
 using API.Osu;
 
-namespace APITests.Osu;
+namespace APITests.Tests.Osu;
 
 public class LobbyNameCheckerTests
 {

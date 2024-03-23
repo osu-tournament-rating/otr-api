@@ -3,7 +3,7 @@ using API.Repositories.Interfaces;
 using APITests.SeedData.DTOs;
 using Moq;
 
-namespace APITests.MockRepositories;
+namespace APITests.Framework.MockRepositories;
 
 public class MockRatingStatsRepository : Mock<IMatchRatingStatsRepository>
 {

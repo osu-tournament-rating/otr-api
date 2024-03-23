@@ -1,7 +1,7 @@
 using API.Repositories.Interfaces;
 using Moq;
 
-namespace APITests.MockRepositories;
+namespace APITests.Framework.MockRepositories;
 
 public class MockTournamentsRepository : Mock<ITournamentsRepository>
 {

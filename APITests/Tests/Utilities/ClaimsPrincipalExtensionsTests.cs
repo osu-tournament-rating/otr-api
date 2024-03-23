@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using API.Utilities;
 
-namespace APITests.Utilities;
+namespace APITests.Tests.Utilities;
 
 public class ClaimsPrincipalExtensionsTests
 {
