@@ -277,7 +277,7 @@ public class PlayerStatsService(
     // Returns overall stats for the player, no need to filter by date.
     private async Task<BaseStatsDTO?> GetBaseStatsAsync(int playerId, int mode)
     {
-        BaseStatsDTO? dto = await _baseStatsService.GetForPlayerAsync(null, playerId, mode);
+        BaseStatsDTO? dto = await _baseStatsService.GetAsync(null, playerId, mode);
 
         if (dto == null)
         {
