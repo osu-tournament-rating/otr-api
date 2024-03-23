@@ -21,7 +21,6 @@ public class MatchesRepository(
     private readonly OtrContext _context = context;
     private readonly IMatchDuplicateRepository _matchDuplicateRepository = matchDuplicateRepository;
     private readonly ILogger<MatchesRepository> _logger = logger;
-    private readonly IMapper _mapper = mapper;
 
     public override async Task<Match?> GetAsync(int id) =>
         // Get the match with all associated data
@@ -103,16 +102,6 @@ public class MatchesRepository(
 
         return matches;
     }
-
-    public async Task<MatchDTO?> GetDTOByOsuMatchIdAsync(long osuMatchId) =>
-        _mapper.Map<MatchDTO?>(
-            await _context
-                .Matches.Include(x => x.Games)
-                .ThenInclude(g => g.Beatmap)
-                .Include(x => x.Games)
-                .ThenInclude(x => x.MatchScores)
-                .FirstOrDefaultAsync(x => x.MatchId == osuMatchId)
-        );
 
     public async Task<Match?> GetByMatchIdAsync(long matchId) =>
         await _context

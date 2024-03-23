@@ -44,12 +44,7 @@ public class MockApiMatchRepository : Mock<IApiMatchRepository>
                     Created = default,
                     Updated = null,
                     SubmittedBy = null,
-                    VerifiedBy = null,
-                    Games = null,
-                    Tournament = null,
-                    Stats = null,
-                    RatingStats = null,
-                    WinRecord = null
+                    VerifiedBy = null
                 };
 
                 return match;
