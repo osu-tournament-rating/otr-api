@@ -62,7 +62,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
 
     public async Task<IEnumerable<Player>> SearchAsync(string username) => await SearchQuery(username, true).ToListAsync();
 
-    public async Task<Player> GetAsync(string username)
+    public async Task<Player?> GetAsync(string username)
     {
         List<Player> players = await SearchQuery(username, false).ToListAsync();
 
@@ -71,12 +71,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
             throw new Exception("More than one player was found.");
         }
 
-        if (players.Count == 0)
-        {
-            throw new Exception("No players were found.");
-        }
-
-        return players.First();
+        return players.Count == 0 ? null : players.First();
     }
 
     public async Task<Player> GetOrCreateAsync(long osuId)
@@ -173,34 +168,15 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
     /// <returns>A query that filters players by the username provided</returns>
     private IQueryable<Player> SearchQuery(string username, bool partialMatch)
     {
+        //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
+        username = username.Replace("_", @"\_");
+
         if (partialMatch)
         {
-            if (username.Contains(' '))
-            {
-                // Look for users with either ' ' or '_' in the name - osu only uses one (i.e. "Red Pixel" cannot coexist with "Red_Pixel")
-                return _context.Players.Where(p =>
-                    p.Username != null
-                    && (
-                        EF.Functions.ILike(p.Username, $"%{username}%")
-                    )
-                );
-            }
-
-            return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, $"%{username}%"));
+            return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, $"%{username}%", @"\"));
         }
 
-        if (username.Contains(' '))
-        {
-            // Look for users with either ' ' or '_' in the name - osu only uses one (i.e. "Red Pixel" cannot coexist with "Red_Pixel")
-            return _context.Players.Where(p =>
-                p.Username != null
-                && (
-                    EF.Functions.ILike(p.Username, username)
-                )
-            );
-        }
-
-        return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, username));
+        return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, username, @"\"));
     }
 
     // This is used by a scheduled task to automatically populate user info, such as username, country, etc.

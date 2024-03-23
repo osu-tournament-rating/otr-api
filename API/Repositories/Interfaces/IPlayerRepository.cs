@@ -17,7 +17,7 @@ public interface IPlayerRepository : IRepository<Player>
     /// </summary>
     /// <param name="username"></param>
     /// <returns></returns>
-    Task<Player> GetAsync(string username);
+    Task<Player?> GetAsync(string username);
 
     /// <summary>
     /// Attempts to fetch a player by the osu id. If none exists, create a new player

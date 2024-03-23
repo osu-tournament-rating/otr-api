@@ -43,8 +43,9 @@ public class MatchesRepository(
 
     public async Task<IEnumerable<Match>> SearchAsync(string name)
     {
-        List<Match> match = await MatchBaseQuery(true).Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%")).ToListAsync();
-        return match;
+        //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
+        name = name.Replace("_", @"\_");
+        return await MatchBaseQuery(true).Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\")).ToListAsync();
     }
 
     public async Task RefreshAutomationChecks(bool invalidOnly = true)

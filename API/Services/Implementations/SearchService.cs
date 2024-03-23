@@ -16,38 +16,77 @@ public class SearchService(ITournamentsRepository tournamentsRepository, IMatche
 
     public async Task<List<SearchResponseDTO>?> SearchByNameAsync(string? tournamentName, string? matchName, string? username)
     {
+        IEnumerable<SearchResponseDTO>? returnList = await SearchTournamentsByNameAsync(tournamentName);
+
+        if (returnList is not null)
+        {
+            return returnList.ToList();
+        }
+
+        returnList = await SearchMatchesByNameAsync(matchName);
+
+        if (returnList is not null)
+        {
+            return returnList.ToList();
+        }
+
+        returnList = await SearchPlayersByNameAsync(username);
+
+        if (returnList is not null)
+        {
+            return returnList.ToList();
+        }
+
+        return null;
+    }
+
+    private async Task<IEnumerable<SearchResponseDTO>?> SearchTournamentsByNameAsync(string? tournamentName)
+    {
         var returnList = new List<SearchResponseDTO>();
 
-        if (!string.IsNullOrEmpty(tournamentName))
+        if (tournamentName is null)
         {
-            var tournaments = (await _tournamentsRepository.SearchAsync(tournamentName)).ToList();
-
-            if (tournaments.Count == 0)
-            {
-                return null;
-            }
-
-            returnList.AddRange(tournaments.Select(tournament => new SearchResponseDTO() { Text = tournament.Name, Url = $"/tournaments/{tournament.Name}" }));
-
-            return returnList;
+            return null;
         }
 
-        if (!string.IsNullOrEmpty(matchName))
+        var tournaments = (await _tournamentsRepository.SearchAsync(tournamentName)).ToList();
+
+        if (tournaments.Count == 0)
         {
-            var matches = (await _matchesRepository.SearchAsync(matchName)).ToList();
-
-            if (matches.Count == 0)
-            {
-                return null;
-            }
-
-            returnList.AddRange(matches.Select(match => new SearchResponseDTO() { Text = match.Id.ToString(), Url = $"/matches/{match.MatchId}" }));
-
-            return returnList;
+            return null;
         }
 
-        //Since this is the last check, checking the inverse so code looks a bit cleaner.
-        if (string.IsNullOrEmpty(username))
+        returnList.AddRange(tournaments.Select(tournament => new SearchResponseDTO() { Text = tournament.Name, Url = $"/tournaments/{tournament.Id}" }));
+
+        return returnList;
+    }
+
+    private async Task<IEnumerable<SearchResponseDTO>?> SearchMatchesByNameAsync(string? matchName)
+    {
+        var returnList = new List<SearchResponseDTO>();
+
+        if (matchName is null)
+        {
+            return null;
+        }
+
+        var matches = (await _matchesRepository.SearchAsync(matchName)).ToList();
+
+        if (matches.Count == 0)
+        {
+            return null;
+        }
+
+        returnList.AddRange(matches.Select(match => new SearchResponseDTO() { Text = match.Id.ToString(), Url = $"/matches/{match.MatchId}" }));
+
+        return returnList;
+    }
+
+    private async Task<IEnumerable<SearchResponseDTO>?> SearchPlayersByNameAsync(string? username)
+    {
+        var returnList = new List<SearchResponseDTO>();
+
+        if (username is null)
         {
             return null;
         }
