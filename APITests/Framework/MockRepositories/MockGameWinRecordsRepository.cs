@@ -11,10 +11,10 @@ public class MockGameWinRecordsRepository : Mock<IGameWinRecordsRepository>
         SetupAll();
     }
 
-    public MockGameWinRecordsRepository SetupAll() =>
+    private MockGameWinRecordsRepository SetupAll() =>
         SetupGet();
 
-    public MockGameWinRecordsRepository SetupGet()
+    private MockGameWinRecordsRepository SetupGet()
     {
         Setup(x => x.GetAsync(It.IsAny<int>()))
             .ReturnsAsync((int id) =>
@@ -25,11 +25,17 @@ public class MockGameWinRecordsRepository : Mock<IGameWinRecordsRepository>
                     GameId = 28397,
                     Winners =
                     [
-                        id, 2, 3, 4
+                        id,
+                        2,
+                        3,
+                        4
                     ],
                     Losers =
                     [
-                        5, 6, 7, 8
+                        5,
+                        6,
+                        7,
+                        8
                     ],
                     WinnerTeam = 2,
                     LoserTeam = 1
