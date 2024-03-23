@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities;
 
 namespace API.Services.Implementations;
 
@@ -33,7 +34,7 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
         return resultCollection;
     }
 
-    public async Task<(ScreeningResult result, ScreeningFailReason? failReason)> ScreenAsync(ScreeningDTO screeningRequest,
+    private async Task<(ScreeningResult result, ScreeningFailReason? failReason)> ScreenAsync(ScreeningDTO screeningRequest,
         PlayerInfoDTO? playerInfo)
     {
         ScreeningResult result = ScreeningResult.Pass;
@@ -47,8 +48,10 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
             return (result, failReason);
         }
 
+
         BaseStatsDTO? baseStats = await baseStatsService.GetAsync(null, playerInfo.Id, screeningRequest.Ruleset);
         var peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, screeningRequest.Ruleset);
+
 
         if (baseStats == null)
         {
@@ -68,6 +71,12 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
         {
             result = ScreeningResult.Fail;
             failReason |= ScreeningFailReason.MaxRating;
+        }
+
+        if (!screeningRequest.AllowProvisional && baseStats.IsProvisional)
+        {
+            result = ScreeningResult.Fail;
+            failReason |= ScreeningFailReason.IsProvisional;
         }
 
         if (baseStats.MatchesPlayed < screeningRequest.MatchesPlayed)
