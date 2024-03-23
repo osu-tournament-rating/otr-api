@@ -250,7 +250,7 @@ builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
 builder.Services.AddScoped<IMatchDuplicateRepository, MatchDuplicateRepository>();
 builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
 builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
-builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
+builder.Services.AddScoped<IMatchWinRecordsRepository, MatchWinRecordsRepository>();
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
 builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();

@@ -7,6 +7,11 @@ namespace APITests.Framework.MockRepositories;
 
 public class MockBeatmapRepository : Mock<IBeatmapRepository>
 {
+    public MockBeatmapRepository()
+    {
+        SetupAll();
+    }
+
     public MockBeatmapRepository SetupAll() =>
         SetupGet()
         .SetupGetId();

@@ -11,7 +11,7 @@ namespace API.Services.Implementations;
 public class PlayerStatsService(
     IBaseStatsService baseStatsService,
     IGameWinRecordsRepository gameWinRecordsRepository,
-    IMatchWinRecordRepository matchWinRecordRepository,
+    IMatchWinRecordsRepository matchWinRecordsRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
     IPlayerService playerService,
     IPlayerRepository playerRepository,
@@ -22,7 +22,7 @@ public class PlayerStatsService(
 {
     private readonly IBaseStatsService _baseStatsService = baseStatsService;
     private readonly IGameWinRecordsRepository _gameWinRecordsRepository = gameWinRecordsRepository;
-    private readonly IMatchWinRecordRepository _matchWinRecordRepository = matchWinRecordRepository;
+    private readonly IMatchWinRecordsRepository _matchWinRecordsRepository = matchWinRecordsRepository;
     private readonly IPlayerMatchStatsRepository _matchStatsRepository = matchStatsRepository;
     private readonly IPlayerService _playerService = playerService;
     private readonly IPlayerRepository _playerRepository = playerRepository;
@@ -163,13 +163,13 @@ public class PlayerStatsService(
             dateMax.Value
         );
 
-        IEnumerable<PlayerFrequencyDTO> frequentTeammates = await _matchWinRecordRepository.GetFrequentTeammatesAsync(
+        IEnumerable<PlayerFrequencyDTO> frequentTeammates = await _matchWinRecordsRepository.GetFrequentTeammatesAsync(
             playerId,
             mode,
             dateMin.Value,
             dateMax.Value
         );
-        IEnumerable<PlayerFrequencyDTO> frequentOpponents = await _matchWinRecordRepository.GetFrequentOpponentsAsync(
+        IEnumerable<PlayerFrequencyDTO> frequentOpponents = await _matchWinRecordsRepository.GetFrequentOpponentsAsync(
             playerId,
             mode,
             dateMin.Value,
@@ -261,7 +261,7 @@ public class PlayerStatsService(
         await _gameWinRecordsRepository.BatchInsertAsync(postBody);
 
     public async Task BatchInsertAsync(IEnumerable<MatchWinRecordDTO> postBody) =>
-        await _matchWinRecordRepository.BatchInsertAsync(postBody);
+        await _matchWinRecordsRepository.BatchInsertAsync(postBody);
 
     public async Task TruncateAsync()
     {
@@ -269,7 +269,7 @@ public class PlayerStatsService(
         await _gameWinRecordsRepository.TruncateAsync();
         await _matchStatsRepository.TruncateAsync();
         await _ratingStatsRepository.TruncateAsync();
-        await _matchWinRecordRepository.TruncateAsync();
+        await _matchWinRecordsRepository.TruncateAsync();
     }
 
     public async Task TruncateRatingAdjustmentsAsync() => await _ratingAdjustmentsRepository.TruncateAsync();

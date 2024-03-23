@@ -8,6 +8,11 @@ namespace APITests.Framework.MockRepositories;
 
 public class MockPlayerMatchStatsRepository : Mock<IPlayerMatchStatsRepository>
 {
+    public MockPlayerMatchStatsRepository()
+    {
+        SetupAll();
+    }
+
     public MockPlayerMatchStatsRepository SetupAll() =>
         SetupGet()
             .SetupTeammateStats()

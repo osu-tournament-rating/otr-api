@@ -7,6 +7,14 @@ namespace APITests.Framework.MockRepositories;
 
 public class MockGamesRepository : Mock<IGamesRepository>
 {
+    public MockGamesRepository()
+    {
+        SetupAll();
+    }
+
+    public MockGamesRepository SetupAll() =>
+        SetupGet();
+
     public MockGamesRepository SetupGet()
     {
         Setup(x =>

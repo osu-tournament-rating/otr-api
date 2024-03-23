@@ -5,6 +5,14 @@ namespace APITests.Framework.MockRepositories;
 
 public class MockTournamentsRepository : Mock<ITournamentsRepository>
 {
+    public MockTournamentsRepository()
+    {
+        SetupAll();
+    }
+
+    public MockTournamentsRepository SetupAll() =>
+        SetupCountPlayed();
+
     public MockTournamentsRepository SetupCountPlayed()
     {
         Setup(x =>

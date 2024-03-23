@@ -7,6 +7,16 @@ namespace APITests.Framework.MockRepositories;
 
 public class MockMatchRatingStatsRepository : Mock<IMatchRatingStatsRepository>
 {
+    public MockMatchRatingStatsRepository()
+    {
+        SetupAll();
+    }
+
+    public MockMatchRatingStatsRepository SetupAll() =>
+        SetupHighestGlobalRank()
+        .SetupHighestCountryRank()
+        .SetupGetRankChart();
+
     public MockMatchRatingStatsRepository SetupHighestGlobalRank()
     {
         Setup(x =>

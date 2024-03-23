@@ -8,6 +8,16 @@ namespace APITests.Framework.MockRepositories;
 
 public class MockApiMatchRepository : Mock<IApiMatchRepository>
 {
+    public MockApiMatchRepository()
+    {
+        SetupAll();
+    }
+
+    private void SetupAll()
+    {
+        SetupCreateFromApiMatch();
+    }
+
     public MockApiMatchRepository SetupCreateFromApiMatch()
     {
         Setup(x =>

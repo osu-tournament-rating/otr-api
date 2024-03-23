@@ -8,6 +8,11 @@ namespace APITests.Framework.MockRepositories;
 
 public class MockBaseStatsRepository : Mock<IBaseStatsRepository>
 {
+    public MockBaseStatsRepository()
+    {
+        SetupAll();
+    }
+
     public MockBaseStatsRepository SetupAll() =>
             SetupGet()
             .SetupGetGlobalRank()
