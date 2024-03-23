@@ -21,13 +21,13 @@ public class LeaderboardServiceTests
 
         MockBaseStatsRepository baseStatsRepository = new MockBaseStatsRepository()
             .SetupLeaderboard()
-            .SetupLeaderboardCount()
+            .SetupLeaderboard()
             .SetupHighestMatches()
             .SetupHighestRating()
             .SetupHighestRank()
             .SetupGetForPlayerAsync();
 
-        MockMatchStatsRepository matchStatsRepository = new MockMatchStatsRepository()
+        MockPlayerMatchStatsRepository playerMatchStatsRepository = new MockPlayerMatchStatsRepository()
             .SetupGlobalWinrate()
             .SetupCountMatchesPlayed();
 
@@ -44,7 +44,7 @@ public class LeaderboardServiceTests
             null,
             null,
             null,
-            matchStatsRepository.Object,
+            playerMatchStatsRepository.Object,
             playerService,
             playerRepository.Object,
             null,
@@ -56,7 +56,7 @@ public class LeaderboardServiceTests
 
         var baseStatsService = new BaseStatsService(
             baseStatsRepository.Object,
-            matchStatsRepository.Object,
+            playerMatchStatsRepository.Object,
             ratingStatsRepository.Object,
             playerRepository.Object,
             tournamentsService

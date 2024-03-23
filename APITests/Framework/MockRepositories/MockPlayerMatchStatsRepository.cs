@@ -3,9 +3,9 @@ using Moq;
 
 namespace APITests.Framework.MockRepositories;
 
-public class MockMatchStatsRepository : Mock<IPlayerMatchStatsRepository>
+public class MockPlayerMatchStatsRepository : Mock<IPlayerMatchStatsRepository>
 {
-    public MockMatchStatsRepository SetupCountMatchesPlayed()
+    public MockPlayerMatchStatsRepository SetupCountMatchesPlayed()
     {
         Setup(x =>
                 x.CountMatchesPlayedAsync(
@@ -20,7 +20,7 @@ public class MockMatchStatsRepository : Mock<IPlayerMatchStatsRepository>
         return this;
     }
 
-    public MockMatchStatsRepository SetupGlobalWinrate()
+    public MockPlayerMatchStatsRepository SetupGlobalWinrate()
     {
         Setup(x =>
                 x.GlobalWinrateAsync(
