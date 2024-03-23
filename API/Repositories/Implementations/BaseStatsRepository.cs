@@ -230,21 +230,6 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         return histogram;
     }
 
-    public async Task<int> AverageTeammateRating(long osuPlayerId, int mode)
-    {
-        var averageRating =
-            await _context
-                .MatchScores.AsNoTracking()
-                .WhereVerified()
-                .WhereNotHeadToHead()
-                .WhereTeammate(osuPlayerId)
-                .SelectMany(x => x.Player.Ratings)
-                .Where(rating => rating.Mode == mode)
-                .AverageAsync(rating => (double?)rating.Rating) ?? 0.0;
-
-        return (int)averageRating;
-    }
-
     private async Task<IQueryable<BaseStats>> LeaderboardQuery(
         int mode,
         LeaderboardChartType chartType,
