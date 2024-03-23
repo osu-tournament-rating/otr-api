@@ -9,7 +9,7 @@ public class MockBeatmapRepository : Mock<IBeatmapRepository>
 {
     public MockBeatmapRepository SetupAll() =>
         SetupGet()
-            .SetupGetId();
+        .SetupGetId();
 
     public MockBeatmapRepository SetupGet()
     {
