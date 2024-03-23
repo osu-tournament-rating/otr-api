@@ -55,6 +55,9 @@ public class ScreeningController(IScreeningService screeningService) : Controlle
             return TypedResults.BadRequest("Minimum rating must be less than maximum rating");
         }
 
+        // Filter out duplicate ids
+        screeningRequest.OsuPlayerIds = screeningRequest.OsuPlayerIds.Distinct();
+
         IEnumerable<ScreeningResultDTO> results = await screeningService.ScreenAsync(screeningRequest);
         return TypedResults.Ok(results);
     }
