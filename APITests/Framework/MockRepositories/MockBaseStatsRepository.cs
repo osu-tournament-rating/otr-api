@@ -66,7 +66,7 @@ public class MockBaseStatsRepository : Mock<IBaseStatsRepository>
 
     public MockBaseStatsRepository SetupGetForPlayerAsync()
     {
-        Setup(x => x.GetForPlayerAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(SeededBaseStats.Get());
+        Setup(x => x.GetAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(SeededBaseStats.Get());
 
         return this;
     }

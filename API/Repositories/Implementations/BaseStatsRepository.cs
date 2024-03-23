@@ -15,7 +15,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
     private readonly OtrContext _context = context;
     private readonly IPlayerRepository _playerRepository = playerRepository;
 
-    public async Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId)
+    public async Task<IEnumerable<BaseStats>> GetAsync(long osuPlayerId)
     {
         var id = await _playerRepository.GetIdAsync(osuPlayerId);
 
@@ -27,7 +27,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         return await _context.BaseStats.Where(x => x.PlayerId == id.Value).ToListAsync();
     }
 
-    public async Task<BaseStats?> GetForPlayerAsync(int playerId, int mode) =>
+    public async Task<BaseStats?> GetAsync(int playerId, int mode) =>
         await _context.BaseStats.Where(x => x.PlayerId == playerId && x.Mode == mode).FirstOrDefaultAsync();
 
     public override async Task<int> UpdateAsync(BaseStats entity)
@@ -36,7 +36,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         return await base.UpdateAsync(entity);
     }
 
-    public async Task<int> InsertOrUpdateForPlayerAsync(int playerId, BaseStats baseStats)
+    public async Task<int> UpsertAsync(int playerId, BaseStats baseStats)
     {
         BaseStats? existingRating = await _context
             .BaseStats.Where(r => r.PlayerId == baseStats.PlayerId && r.Mode == baseStats.Mode)
@@ -56,7 +56,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         return await _context.SaveChangesAsync();
     }
 
-    public async Task<int> BatchInsertAsync(IEnumerable<BaseStats> baseStats)
+    public async Task<int> InsertAsync(IEnumerable<BaseStats> baseStats)
     {
         var ls = new List<BaseStats>();
         foreach (BaseStats stat in baseStats)

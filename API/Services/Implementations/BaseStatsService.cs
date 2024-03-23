@@ -30,7 +30,7 @@ public class BaseStatsService(
             return new List<BaseStatsDTO?>();
         }
 
-        IEnumerable<BaseStats> baseStats = await _baseStatsRepository.GetForPlayerAsync(osuPlayerId);
+        IEnumerable<BaseStats> baseStats = await _baseStatsRepository.GetAsync(osuPlayerId);
         var ret = new List<BaseStatsDTO?>();
 
         foreach (BaseStats stat in baseStats)
@@ -44,7 +44,7 @@ public class BaseStatsService(
 
     public async Task<BaseStatsDTO?> GetForPlayerAsync(BaseStats? currentStats, int id, int mode)
     {
-        currentStats ??= await _baseStatsRepository.GetForPlayerAsync(id, mode);
+        currentStats ??= await _baseStatsRepository.GetAsync(id, mode);
 
         if (currentStats == null)
         {
@@ -104,7 +104,7 @@ public class BaseStatsService(
             );
         }
 
-        return await _baseStatsRepository.BatchInsertAsync(toInsert);
+        return await _baseStatsRepository.InsertAsync(toInsert);
     }
 
     public async Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(
