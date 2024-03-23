@@ -55,6 +55,10 @@ public class ScreeningResultDTO
     /// </summary>
     public int? PlayerId { get; set; }
     /// <summary>
+    /// The username of the player, if found
+    /// </summary>
+    public string? Username { get; set; }
+    /// <summary>
     /// The osu! id of the player
     /// </summary>
     public long OsuPlayerId { get; set; }

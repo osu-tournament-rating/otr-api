@@ -25,6 +25,7 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
             resultCollection.Add(new ScreeningResultDTO
             {
                 PlayerId = playerInfo?.Id,
+                Username = playerInfo?.Username,
                 OsuPlayerId = osuId,
                 ScreeningResult = result,
                 ScreeningFailReason = failReason
