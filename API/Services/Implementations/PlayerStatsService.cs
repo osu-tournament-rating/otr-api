@@ -368,8 +368,8 @@ public class PlayerStatsService(
         DateTime dateMax
     )
     {
-        var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
-        IEnumerable<MatchRatingStats> ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax))
+        var matchStats = (await _matchStatsRepository.GetAsync(id, mode, dateMin, dateMax)).ToList();
+        IEnumerable<MatchRatingStats> ratingStats = (await _ratingStatsRepository.GetAsync(id, mode, dateMin, dateMax))
             .ToList()
             .SelectMany(x => x);
 

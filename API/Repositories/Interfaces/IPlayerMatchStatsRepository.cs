@@ -13,7 +13,7 @@ public interface IPlayerMatchStatsRepository
     /// <param name="dateMin"></param>
     /// <param name="dateMax"></param>
     /// <returns></returns>
-    Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(
+    Task<IEnumerable<PlayerMatchStats>> GetAsync(
         int playerId,
         int mode,
         DateTime dateMin,

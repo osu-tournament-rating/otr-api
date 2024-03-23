@@ -112,7 +112,7 @@ public class OsuTrackApiWorker(
     {
         foreach (OsuEnums.Mode mode in _modes)
         {
-            DateTime? oldestStatDate = await ratingStatsRepository.GetOldestForPlayerAsync(player.Id, (int)mode);
+            DateTime? oldestStatDate = await ratingStatsRepository.GetOldestAsync(player.Id, (int)mode);
 
             if (!oldestStatDate.HasValue)
             {
