@@ -96,7 +96,7 @@ public class LeaderboardService(
             );
         }
 
-        leaderboard.Leaderboard = leaderboardPlayerInfo;
+        leaderboard.Leaderboard = leaderboardPlayerInfo.OrderBy(x => x.GlobalRank);
         return leaderboard;
     }
 
