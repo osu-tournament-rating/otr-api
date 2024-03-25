@@ -4,11 +4,14 @@ namespace API.DTOs;
 /// A collection of booleans representing which tiers to filter.
 ///
 /// False = Default, no behavioral change
-/// True = Explicitly included
+/// True = Explicitly included in leaderboard results
 ///
-/// If everything is false *and* if everything is true, the leaderboard will return
-/// in its default state. If everything is false except for Bronze and Emerald,
-/// then only Bronze and Emerald players will show up in the leaderboard.
+/// If *all* tiers are set to false, or all tiers are set to true, the leaderboard will return
+/// as if no tier filters were applied.
+///
+/// For example, if Bronze and Emerald are true and everything else is false,
+/// then only Bronze and Emerald players will show up in the leaderboard
+/// (specifically, Bronze III-I and Emerald III-I)
 /// </summary>
 public class LeaderboardTierFilterDTO
 {
