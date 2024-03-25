@@ -1,7 +1,5 @@
-using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Threading.Tasks;
 using API.DTOs;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -27,15 +25,15 @@ public class LeaderboardFilterModelBinder : IModelBinder
             MaxWinrate = GetValue<double?>("MaxWinrate"),
             TierFilters = new LeaderboardTierFilterDTO
             {
-                FilterBronze = GetValue<bool?>("Bronze"),
-                FilterSilver = GetValue<bool?>("Silver"),
-                FilterGold = GetValue<bool?>("Gold"),
-                FilterPlatinum = GetValue<bool?>("Platinum"),
-                FilterEmerald = GetValue<bool?>("Emerald"),
-                FilterDiamond = GetValue<bool?>("Diamond"),
-                FilterMaster = GetValue<bool?>("Master"),
-                FilterGrandmaster = GetValue<bool?>("Grandmaster"),
-                FilterEliteGrandmaster = GetValue<bool?>("EliteGrandmaster"),
+                FilterBronze = GetValue<bool>("Bronze"),
+                FilterSilver = GetValue<bool>("Silver"),
+                FilterGold = GetValue<bool>("Gold"),
+                FilterPlatinum = GetValue<bool>("Platinum"),
+                FilterEmerald = GetValue<bool>("Emerald"),
+                FilterDiamond = GetValue<bool>("Diamond"),
+                FilterMaster = GetValue<bool>("Master"),
+                FilterGrandmaster = GetValue<bool>("Grandmaster"),
+                FilterEliteGrandmaster = GetValue<bool>("EliteGrandmaster"),
             }
         };
 
