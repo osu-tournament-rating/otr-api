@@ -296,4 +296,47 @@ public static class RatingUtils
 
     public static bool IsProvisional(double volatility, int matchesPlayed, int tournamentsPlayed) =>
         volatility >= 200.0 || matchesPlayed <= 8 || tournamentsPlayed <= 2;
+
+    public static bool IsEliteGrandmaster(string tier) =>
+        tier == GetTier(RatingEliteGrandmaster);
+
+    public static bool IsGrandmaster(string tier) =>
+        tier == GetTier(RatingGrandmasterIII) ||
+        tier == GetTier(RatingGrandmasterII) ||
+        tier == GetTier(RatingGrandmasterI);
+
+    public static bool IsMaster(string tier) =>
+        tier == GetTier(RatingMasterIII) ||
+        tier == GetTier(RatingMasterII) ||
+        tier == GetTier(RatingMasterI);
+
+    public static bool IsDiamond(string tier) =>
+        tier == GetTier(RatingDiamondIII) ||
+        tier == GetTier(RatingDiamondII) ||
+        tier == GetTier(RatingDiamondI);
+
+    public static bool IsEmerald(string tier) =>
+        tier == GetTier(RatingEmeraldIII) ||
+        tier == GetTier(RatingEmeraldII) ||
+        tier == GetTier(RatingEmeraldI);
+
+    public static bool IsPlatinum(string tier) =>
+        tier == GetTier(RatingPlatinumIII) ||
+        tier == GetTier(RatingPlatinumII) ||
+        tier == GetTier(RatingPlatinumI);
+
+    public static bool IsGold(string tier) =>
+        tier == GetTier(RatingGoldIII) ||
+        tier == GetTier(RatingGoldII) ||
+        tier == GetTier(RatingGoldI);
+
+    public static bool IsSilver(string tier) =>
+        tier == GetTier(RatingSilverIII) ||
+        tier == GetTier(RatingSilverII) ||
+        tier == GetTier(RatingSilverI);
+
+    public static bool IsBronze(string tier) =>
+        tier == GetTier(RatingBronzeIII) ||
+        tier == GetTier(RatingBronzeII) ||
+        tier == GetTier(RatingBronzeI);
 }

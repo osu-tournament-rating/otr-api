@@ -38,14 +38,9 @@ public static class SeededBaseStats
         var lb = new List<BaseStats>();
         LeaderboardTierFilterDTO? tiers = filter.TierFilters;
 
-        if (tiers == null)
+        if (tiers == null || !tiers.IsEngaged())
         {
             return GetSimpleLeaderboard();
-        }
-
-        if (tiers.IsInvalid())
-        {
-            throw new ArgumentException("The tier filter is invalid");
         }
 
         // Add all of the tiers that are true
