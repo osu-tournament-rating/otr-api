@@ -17,8 +17,29 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 {
     private readonly OtrContext _context = context;
 
-    public async Task<Tournament?> GetAsync(string name) =>
-        await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
+    private async Task<Tournament> GetAsync(string name)
+    {
+        List<Tournament> tournaments = await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name ?? string.Empty, name)).ToListAsync();
+
+        if (tournaments.Count > 1)
+        {
+            throw new Exception("More than one tournament was found.");
+        }
+
+        if (tournaments.Count == 0)
+        {
+            throw new Exception("No tournaments were found.");
+        }
+
+        return tournaments.First();
+    }
+
+    public async Task<IEnumerable<Tournament>> SearchAsync(string name)
+    {
+        //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
+        name = name.Replace("_", @"\_");
+        return await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\")).ToListAsync();
+    }
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
