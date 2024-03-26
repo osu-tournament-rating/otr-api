@@ -31,4 +31,32 @@ public class TournamentsController(ITournamentsService service) : Controller
 
         return Ok(res);
     }
+
+    [HttpGet("{id:int}")]
+    [Authorize(Roles = "admin, system")]
+    public async Task<IActionResult> GetAsync(int id)
+    {
+        TournamentDTO? tournament = await _service.GetAsync(id);
+
+        if (tournament == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(tournament);
+    }
+
+    [HttpGet("{id:int}/matches")]
+    [Authorize(Roles = "admin, system")]
+    public async Task<IActionResult> GetMatchesAsync(int id)
+    {
+        TournamentDTO? tournament = await _service.GetAsync(id);
+
+        if (tournament == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(tournament.Matches);
+    }
 }

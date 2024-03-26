@@ -24,4 +24,10 @@ public interface ITournamentsService
     /// <param name="playerId"></param>
     /// <returns></returns>
     Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
+    /// <summary>
+    /// Returns the associated tournament (with match data) if it exists.
+    /// </summary>
+    /// <param name="id">The tournament id</param>
+    /// <returns></returns>
+    Task<TournamentDTO?> GetAsync(int id);
 }
