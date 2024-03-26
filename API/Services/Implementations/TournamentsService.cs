@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Entities;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -24,7 +25,7 @@ public class TournamentsService(ITournamentsRepository repository, IMapper mappe
 
     public async Task<IEnumerable<TournamentDTO>> GetAllAsync()
     {
-        IEnumerable<Entities.Tournament> items = await _repository.GetAllAsync();
+        IEnumerable<Tournament> items = await _repository.GetAllAsync();
         items = items.OrderBy(x => x.Name);
 
         return _mapper.Map<IEnumerable<TournamentDTO>>(items);
@@ -36,4 +37,16 @@ public class TournamentsService(ITournamentsRepository repository, IMapper mappe
         DateTime? dateMin = null,
         DateTime? dateMax = null
     ) => await _repository.CountPlayedAsync(playerId, mode, dateMin, dateMax);
+
+    public async Task<TournamentDTO?> GetAsync(int id)
+    {
+        Tournament? tournament = await _repository.GetAsync(id);
+
+        if (tournament == null)
+        {
+            return null;
+        }
+
+        return _mapper.Map<TournamentDTO>(tournament);
+    }
 }

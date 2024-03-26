@@ -17,8 +17,23 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 {
     private readonly OtrContext _context = context;
 
-    public async Task<Tournament?> GetAsync(string name) =>
-        await _context.Tournaments.FirstOrDefaultAsync(x => x.Name.ToLower() == name.ToLower());
+    public override async Task<Tournament?> GetAsync(int id)
+    {
+        return await _context.Tournaments
+            .Include(x => x.Matches)
+            .ThenInclude(x => x.Games)
+            .ThenInclude(x => x.MatchScores)
+            .FirstOrDefaultAsync(x => x.Id == id);
+    }
+
+    public async Task<Tournament?> GetAsync(string name)
+    {
+        return await _context.Tournaments
+            .Include(x => x.Matches)
+            .ThenInclude(x => x.Games)
+            .ThenInclude(x => x.MatchScores)
+            .FirstOrDefaultAsync(x => EF.Functions.ILike(name, name));
+    }
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
@@ -167,7 +182,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
     private async Task<Tournament> UpdateExisting(TournamentWebSubmissionDTO wrapper)
     {
-        Tournament? existing = await GetAsync(wrapper.TournamentName) ?? throw new Exception("Tournament does not exist, this method assumes the tournament exists.");
+        Tournament existing = await GetAsync(wrapper.TournamentName) ?? throw new Exception("Tournament does not exist, this method assumes the tournament exists.");
         existing.Abbreviation = wrapper.Abbreviation;
         existing.ForumUrl = wrapper.ForumPost;
         existing.Mode = wrapper.Mode;
