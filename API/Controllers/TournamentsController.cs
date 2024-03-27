@@ -23,6 +23,8 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <summary>
     /// List all tournaments
     /// </summary>
+    /// <remarks>Will not include match data</remarks>
+    /// <response code="200">Returns all tournaments</response>
     [HttpGet]
     [Authorize(Roles = "admin, system")]
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
@@ -50,17 +52,22 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <param name="wrapper">Tournament submission data</param>
     /// <param name="verify">Optionally verify all included matches</param>
     /// <response code="401">If verify is true and the User does not have match verification privileges</response>
-    /// <response code="400">If a tournament matching the given name and mode already exists</response>
+    /// <response code="400">If a tournament matching the given name and mode already exists, or the given <see cref="wrapper"/> is malformed</response>
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
+    [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateAsync(
         [FromBody] TournamentWebSubmissionDTO wrapper,
         [FromQuery] bool verify = false
     )
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         // Determine verification source
         MatchVerificationSource? verificationSource = null;
         if (verify)
@@ -92,6 +99,8 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="200">Returns the tournament</response>
     [HttpGet("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(int id)
     {
         TournamentDTO? result = await _tournamentsService.GetAsync(id);
@@ -192,7 +201,6 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         // Use no location header for multiple creation
         return Created((string?)null, result);
     }
-
 
     /// <summary>
     /// List all matches from a tournament

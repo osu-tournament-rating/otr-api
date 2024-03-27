@@ -5,11 +5,16 @@ namespace API.DTOs;
 /// </summary>
 public class TournamentCreatedResultDTO : CreatedResultDTO
 {
-    /// <inheritdoc cref="TournamentDTO.Name"/>
-    public string Name { get; set; } = null!;
+    /// <summary>
+    /// The name of the tournament
+    /// </summary>
+    public required string Name { get; set; }
 
-    /// <inheritdoc cref="TournamentDTO.Abbreviation"/>
-    public string Abbreviation { get; set; } = null!;
+    /// <summary>
+    /// Acronym / shortened name of the tournament
+    /// <example>For osu! World Cup 2023, this value would be "OWC23"</example>
+    /// </summary>
+    public required string Abbreviation { get; set; }
 
     /// <summary>
     /// List of created matches

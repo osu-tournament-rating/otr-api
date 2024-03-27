@@ -10,7 +10,7 @@ public class MatchesWebSubmissionDTO
     /// <summary>
     /// The Id (primary key) of the submitting User
     /// </summary>
-    [Required]
+    [Range(0, int.MaxValue)]
     public int SubmitterId { get; set; }
 
     /// <summary>

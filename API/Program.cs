@@ -171,6 +171,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.OperationFilter<HttpResultsOperationFilter>();
+    options.SchemaGeneratorOptions.SupportNonNullableReferenceTypes = true;
     options.SwaggerDoc("v1", new OpenApiInfo()
     {
         Version = "v1",
