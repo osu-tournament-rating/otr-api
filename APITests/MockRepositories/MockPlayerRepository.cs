@@ -1,6 +1,5 @@
 using API.Entities;
 using API.Repositories.Interfaces;
-using APITests.SeedData;
 using Moq;
 
 namespace APITests.MockRepositories;

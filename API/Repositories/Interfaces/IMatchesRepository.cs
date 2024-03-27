@@ -11,6 +11,7 @@ public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
     Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds);
     Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches);
     Task<Match?> GetByMatchIdAsync(long matchId);
+    Task<IEnumerable<Match>> SearchAsync(string name);
     Task<IList<Match>> GetMatchesNeedingAutoCheckAsync();
     Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
     Task<Match?> GetFirstMatchNeedingAutoCheckAsync();
