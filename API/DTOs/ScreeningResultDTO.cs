@@ -70,6 +70,6 @@ public class ScreeningResultDTO
     /// If the user failed screening, the fail reason
     /// </summary>
     public ScreeningFailReason? ScreeningFailReason { get; set; }
-    public string? ResultMessage => ScreeningResult.ToString();
-    public string? FailReason => ScreeningFailReason.ToString();
+    public string? ScreeningResultMessage => ScreeningResult.ToString();
+    public string? ScreeningFailReasonMessage => ScreeningFailReason.ToString();
 }
