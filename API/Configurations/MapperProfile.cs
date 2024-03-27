@@ -12,6 +12,8 @@ public class MapperProfile : Profile
         CreateMap<Game, GameDTO>();
         CreateMap<GameWinRecord, GameWinRecordDTO>();
         CreateMap<Match, MatchDTO>().ForMember(x => x.Mode, opt => opt.MapFrom(x => x.Tournament.Mode));
+        CreateMap<Match, MatchCreatedResultDTO>()
+            .ForMember(x => x.Location, opt => opt.MapFrom(x => new Uri($"api/v1.0/Matches/{x.Id}")));
         CreateMap<Match, MatchHistory>()
             .ForMember(x => x.ReferenceId, opt => opt.MapFrom(x => x.Id))
             .ForMember(x => x.HistoryStartTime, opt => opt.MapFrom(x => x.Updated))
@@ -39,6 +41,8 @@ public class MapperProfile : Profile
         CreateMap<Player, PlayerRanksDTO>();
         CreateMap<Player, PlayerInfoDTO>();
         CreateMap<Tournament, TournamentDTO>();
+        CreateMap<Tournament, TournamentCreatedResultDTO>()
+            .ForMember(x => x.Location, opt => opt.MapFrom(x => new Uri($"api/v1.0/Tournaments/{x.Id}")));
         CreateMap<User, UserDTO>();
     }
 }

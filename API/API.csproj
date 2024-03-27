@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
+    <NoWarn>CS1591</NoWarn>
     <NoWarn>CS8981</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
@@ -8,6 +9,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <UserSecretsId>dad212ce-6224-4527-8e02-14264d5bf7e7</UserSecretsId>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />

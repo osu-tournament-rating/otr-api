@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using OsuSharp;
 using OsuSharp.Extensions;
 using Serilog;
@@ -77,6 +78,7 @@ builder
     .AddMvc()
     .AddApiExplorer(options =>
     {
+        // ReSharper disable once StringLiteralTypo
         options.GroupNameFormat = "'v'VVV";
         options.SubstituteApiVersionInUrl = true;
     });
@@ -165,9 +167,19 @@ builder
         });
     });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => { options.OperationFilter<HttpResultsOperationFilter>(); });
+builder.Services.AddSwaggerGen(options =>
+{
+    options.OperationFilter<HttpResultsOperationFilter>();
+    options.SwaggerDoc("v1", new OpenApiInfo()
+    {
+        Version = "v1",
+        Title = "osu! Tournament Rating API",
+        Description = "An API for interacting with the o!TR database",
+        TermsOfService = new Uri("https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/usage/limits/en.md")
+    });
+    options.IncludeXmlComments($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
+});
 
 builder.Services.AddSerilog(configuration =>
 {

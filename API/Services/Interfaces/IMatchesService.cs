@@ -6,15 +6,15 @@ namespace API.Services.Interfaces;
 public interface IMatchesService
 {
     /// <summary>
-    /// Create matches included in a submission. Assumes associated tournament has already been created
+    /// Creates matches
     /// </summary>
-    /// <param name="tournamentId">Id of the associated tournament</param>
+    /// <param name="tournamentId">Id of the parent tournament</param>
     /// <param name="submitterId">Id of the submitting user</param>
     /// <param name="matchIds">List of match ids</param>
     /// <param name="verify">Submitter is a match verifier</param>
     /// <param name="verificationSource">Source of verification (int representation of <see cref="MatchVerificationSource"/></param>
-    /// <returns></returns>
-    Task<IEnumerable<MatchDTO>> CreateAsync(
+    /// <returns>Location information for the created matches, or null if parent tournament does not exist</returns>
+    Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(
         int tournamentId,
         int submitterId,
         IEnumerable<long> matchIds,

@@ -1,60 +1,49 @@
 using API.DTOs;
+using API.Enums;
 
 namespace API.Services.Interfaces;
 
 public interface ITournamentsService
 {
     /// <summary>
-    /// Create a tournament from a web submission.
+    /// Creates a tournament from a <see cref="TournamentWebSubmissionDTO"/>.
     /// </summary>
-    /// <param name="wrapper">The user input required for this tournament</param>
-    /// <returns></returns>
-    Task<TournamentDTO> CreateAsync(TournamentWebSubmissionDTO wrapper);
+    /// <param name="wrapper">Submission data</param>
+    /// <param name="verify">Verify all included matches</param>
+    /// <param name="verificationSource">Source of verification (int representation of <see cref="MatchVerificationSource"/></param>
+    /// <returns>Location information for the created tournament</returns>
+    Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify, int? verificationSource);
 
     /// <summary>
-    /// Does a tournament with matching <paramref name="id"/> exist
+    /// Denotes a tournament with matching id exists
     /// </summary>
-    /// <param name="id">Tournament id</param>
-    /// <returns></returns>
     Task<bool> ExistsAsync(int id);
 
     /// <summary>
-    /// Does a tournament with matching <paramref name="name"/> and <paramref name="mode"/> exist
+    /// Denotes a tournament with matching name and mode exists
     /// </summary>
-    /// <param name="name">Tournament name</param>
-    /// <param name="mode">Tournament mode</param>
-    /// <returns></returns>
     Task<bool> ExistsAsync(string name, int mode);
 
     /// <summary>
-    /// Get all tournaments
+    /// Gets all tournaments
     /// </summary>
-    /// <returns></returns>
     Task<IEnumerable<TournamentDTO>> ListAsync();
 
     /// <summary>
-    /// Get a tournament by id, returns null if not found
+    /// Gets a tournament by id
     /// </summary>
     /// <param name="id">Primary key</param>
     /// <param name="eagerLoad">Whether to include child resources of the tournament</param>
-    /// <returns></returns>
+    /// <returns>The tournament, or null if not found</returns>
     Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true);
 
     /// <summary>
-    /// Get the number of tournaments played by the given player
+    /// Gets the number of tournaments played by the given player
     /// </summary>
-    /// <param name="playerId"></param>
-    /// <param name="mode"></param>
-    /// <param name="dateMin"></param>
-    /// <param name="dateMax"></param>
-    /// <returns></returns>
     Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
 
     /// <summary>
-    /// Updates a tournament entity from a wrapper
+    /// Updates a tournament entity with values from a <see cref="TournamentDTO"/>
     /// </summary>
-    /// <param name="wrapper">Provided values</param>
-    /// <param name="id">Id (primary key) of the target tournament</param>
-    /// <returns></returns>
     Task<TournamentDTO?> UpdateAsync(int id, TournamentDTO wrapper);
 }

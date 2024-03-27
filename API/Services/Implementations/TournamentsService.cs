@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Entities;
+using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -11,8 +12,12 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
     private readonly ITournamentsRepository _tournamentsRepository = tournamentsRepository;
     private readonly IMapper _mapper = mapper;
 
-    public async Task<TournamentDTO> CreateAsync(TournamentWebSubmissionDTO wrapper)
+    public async Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify, int? verificationSource)
     {
+        MatchVerificationStatus verificationStatus = verify
+            ? MatchVerificationStatus.Verified
+            : MatchVerificationStatus.PendingVerification;
+
         Tournament tournament = await _tournamentsRepository.CreateAsync(new Tournament
         {
             Name = wrapper.TournamentName,
@@ -21,9 +26,19 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
             RankRangeLowerBound = wrapper.RankRangeLowerBound,
             Mode = wrapper.Mode,
             TeamSize = wrapper.TeamSize,
-            SubmitterUserId = wrapper.SubmitterId
+            SubmitterUserId = wrapper.SubmitterId,
+            Matches = wrapper.Ids.Select(matchId => new Match
+            {
+                MatchId = matchId,
+                VerificationStatus = (int)verificationStatus,
+                NeedsAutoCheck = true,
+                IsApiProcessed = false,
+                VerificationSource = verificationSource,
+                VerifierUserId = verify ? wrapper.SubmitterId : null,
+                SubmitterUserId = wrapper.SubmitterId
+            }).ToList()
         });
-        return _mapper.Map<TournamentDTO>(tournament);
+        return _mapper.Map<TournamentCreatedResultDTO>(tournament);
     }
 
     public async Task<bool> ExistsAsync(int id) => await _tournamentsRepository.ExistsAsync(id);

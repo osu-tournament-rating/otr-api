@@ -1,17 +1,35 @@
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+
 namespace API.DTOs;
 
-public class TournamentWebSubmissionDTO
+/// <summary>
+/// Represents data used to create a tournament
+/// </summary>
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+public class TournamentWebSubmissionDTO : MatchesWebSubmissionDTO
 {
+    /// <inheritdoc cref="TournamentDTO.Name"/>
+    [Required]
     public string TournamentName { get; set; } = null!;
-    public string Abbreviation { get; set; } = null!;
-    public string ForumPost { get; set; } = null!;
-    public int RankRangeLowerBound { get; set; }
-    public int TeamSize { get; set; }
-    public int Mode { get; set; }
-    public int SubmitterId { get; set; }
 
-    /// <summary>
-    /// List of tournament match ids.
-    /// </summary>
-    public IEnumerable<long> Ids { get; set; } = new List<long>();
+    /// <inheritdoc cref="TournamentDTO.Abbreviation"/>
+    [Required]
+    public string Abbreviation { get; set; } = null!;
+
+    /// <inheritdoc cref="TournamentDTO.ForumUrl"/>
+    [Required]
+    public string ForumPost { get; set; } = null!;
+
+    /// <inheritdoc cref="TournamentDTO.RankRangeLowerBound"/>
+    [Required]
+    public int RankRangeLowerBound { get; set; }
+
+    /// <inheritdoc cref="TournamentDTO.TeamSize"/>
+    [Required]
+    public int TeamSize { get; set; }
+
+    /// <inheritdoc cref="TournamentDTO.Mode"/>
+    [Required]
+    public int Mode { get; set; }
 }
