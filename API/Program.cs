@@ -21,8 +21,10 @@ using AutoMapper;
 using Dapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using OsuSharp;
 using OsuSharp.Extensions;
 using Serilog;
@@ -77,6 +79,7 @@ builder
     .AddMvc()
     .AddApiExplorer(options =>
     {
+        // ReSharper disable once StringLiteralTypo
         options.GroupNameFormat = "'v'VVV";
         options.SubstituteApiVersionInUrl = true;
     });
@@ -165,9 +168,20 @@ builder
         });
     });
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => { options.OperationFilter<HttpResultsOperationFilter>(); });
+builder.Services.AddSwaggerGen(options =>
+{
+    options.OperationFilter<HttpResultsOperationFilter>();
+    options.SchemaGeneratorOptions.SupportNonNullableReferenceTypes = true;
+    options.SwaggerDoc("v1", new OpenApiInfo()
+    {
+        Version = "v1",
+        Title = "osu! Tournament Rating API",
+        Description = "An API for interacting with the o!TR database",
+        TermsOfService = new Uri("https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/usage/limits/en.md")
+    });
+    options.IncludeXmlComments($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
+});
 
 builder.Services.AddSerilog(configuration =>
 {
@@ -206,14 +220,8 @@ builder.Services.AddSerilog(configuration =>
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-var configuration = new MapperConfiguration(cfg => { cfg.AddProfile<MapperProfile>(); });
-
-// only during development, validate your mappings; remove it before release
-#if DEBUG
-configuration.AssertConfigurationIsValid();
-#endif
-
-builder.Services.AddSingleton(configuration.CreateMapper());
+builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddLogging();
 
@@ -348,6 +356,10 @@ app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {
+    // only during development, validate your mappings
+    IMapper mapper = app.Services.GetRequiredService<IMapper>();
+    mapper.ConfigurationProvider.AssertConfigurationIsValid();
+
     app.MapControllers().AllowAnonymous();
 }
 else

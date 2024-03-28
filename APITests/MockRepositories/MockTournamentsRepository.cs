@@ -11,8 +11,8 @@ public class MockTournamentsRepository : Mock<ITournamentsRepository>
                 x.CountPlayedAsync(
                     It.IsAny<int>(),
                     It.IsAny<int>(),
-                    It.IsAny<DateTime?>(),
-                    It.IsAny<DateTime?>()
+                    It.IsAny<DateTime>(),
+                    It.IsAny<DateTime>()
                 )
             )
             .ReturnsAsync(3);

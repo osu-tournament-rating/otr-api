@@ -321,23 +321,17 @@ public class PlayerStatsService(
     {
         const int maxTournaments = 5;
 
-        IEnumerable<PlayerTournamentMatchCostDTO> bestPerformances = await _tournamentsRepository.GetPerformancesAsync(
-            maxTournaments,
-            playerId,
+        IEnumerable<PlayerTournamentMatchCostDTO> bestPerformances = await _tournamentsRepository.GetPerformancesAsync(playerId,
             mode,
             dateMin,
             dateMax,
-            true
-        );
+            maxTournaments, true);
 
-        IEnumerable<PlayerTournamentMatchCostDTO> worstPerformances = await _tournamentsRepository.GetPerformancesAsync(
-            maxTournaments,
-            playerId,
+        IEnumerable<PlayerTournamentMatchCostDTO> worstPerformances = await _tournamentsRepository.GetPerformancesAsync(playerId,
             mode,
             dateMin,
             dateMax,
-            false
-        );
+            maxTournaments, false);
 
         // Remove any best performances from worst performances
         // ReSharper disable PossibleMultipleEnumeration
@@ -346,7 +340,7 @@ public class PlayerStatsService(
             worstPerformances = worstPerformances.Where(x => x.TournamentId != performance.TournamentId);
         }
 
-        PlayerTournamentTeamSizeCountDTO counts = await _tournamentsRepository.GetPlayerTeamSizeStatsAsync(
+        PlayerTournamentTeamSizeCountDTO counts = await _tournamentsRepository.GetTeamSizeStatsAsync(
             playerId,
             mode,
             dateMin,

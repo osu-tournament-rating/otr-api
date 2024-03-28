@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using API.Entities.Interfaces;
 
 namespace API.Entities;
 
 [Table("tournaments")]
-public class Tournament
+public class Tournament : IEntity
 {
     [Column("id")]
     public int Id { get; set; }
