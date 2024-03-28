@@ -14,7 +14,7 @@ public class MatchDuplicateRepository(OtrContext context) : RepositoryBase<Match
     public async Task<IEnumerable<MatchDuplicate>> GetDuplicatesAsync(int matchId) =>
         await _context.MatchDuplicates.Where(x => x.SuspectedDuplicateOf == matchId).ToListAsync();
 
-    public async Task<IEnumerable<MatchDuplicate>> GetAllUnknownStatusAsync() =>
+    public async Task<IEnumerable<MatchDuplicate>> GetAllUnverifiedAsync() =>
         await _context.MatchDuplicates.Where(x => x.VerifiedAsDuplicate != true).ToListAsync();
 
     public override async Task<IEnumerable<MatchDuplicate>> GetAllAsync() =>

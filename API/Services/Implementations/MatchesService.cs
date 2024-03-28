@@ -116,7 +116,7 @@ public class MatchesService(
     public async Task<IEnumerable<MatchDuplicateCollectionDTO>> GetAllDuplicatesAsync()
     {
         var collections = new List<MatchDuplicateCollectionDTO>();
-        IEnumerable<IGrouping<int, MatchDuplicate>> duplicateGroups = (await _duplicateRepository.GetAllUnknownStatusAsync()).GroupBy(x =>
+        IEnumerable<IGrouping<int, MatchDuplicate>> duplicateGroups = (await _duplicateRepository.GetAllUnverifiedAsync()).GroupBy(x =>
             x.SuspectedDuplicateOf
         );
         foreach (IGrouping<int, MatchDuplicate> dupeGroup in duplicateGroups)

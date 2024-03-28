@@ -11,11 +11,11 @@ public interface IBaseStatsRepository : IRepository<BaseStats>
     /// </summary>
     /// <param name="playerId"></param>
     /// <returns></returns>
-    Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId);
+    Task<IEnumerable<BaseStats>> GetAsync(long osuPlayerId);
 
-    Task<BaseStats?> GetForPlayerAsync(int playerId, int mode);
-    Task<int> InsertOrUpdateForPlayerAsync(int playerId, BaseStats baseStats);
-    Task<int> BatchInsertAsync(IEnumerable<BaseStats> baseStats);
+    Task<BaseStats?> GetAsync(int playerId, int mode);
+    Task<int> UpsertAsync(int playerId, BaseStats baseStats);
+    Task<int> InsertAsync(IEnumerable<BaseStats> baseStats);
     Task TruncateAsync();
     Task<int> GetGlobalRankAsync(long osuPlayerId, int mode);
 

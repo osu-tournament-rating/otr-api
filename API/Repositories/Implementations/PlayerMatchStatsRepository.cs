@@ -14,7 +14,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
 {
     private readonly OtrContext _context = context;
 
-    public async Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(
+    public async Task<IEnumerable<PlayerMatchStats>> GetAsync(
         int playerId,
         int mode,
         DateTime dateMin,

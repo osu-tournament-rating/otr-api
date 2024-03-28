@@ -3,11 +3,21 @@ using API.Repositories.Interfaces;
 using APITests.SeedData.DTOs;
 using Moq;
 
-namespace APITests.MockRepositories;
+namespace APITests.Framework.MockRepositories;
 
-public class MockRatingStatsRepository : Mock<IMatchRatingStatsRepository>
+public class MockMatchRatingStatsRepository : Mock<IMatchRatingStatsRepository>
 {
-    public MockRatingStatsRepository SetupHighestGlobalRank()
+    public MockMatchRatingStatsRepository()
+    {
+        SetupAll();
+    }
+
+    public MockMatchRatingStatsRepository SetupAll() =>
+        SetupHighestGlobalRank()
+        .SetupHighestCountryRank()
+        .SetupGetRankChart();
+
+    public MockMatchRatingStatsRepository SetupHighestGlobalRank()
     {
         Setup(x =>
                 x.HighestGlobalRankAsync(
@@ -22,7 +32,7 @@ public class MockRatingStatsRepository : Mock<IMatchRatingStatsRepository>
         return this;
     }
 
-    public MockRatingStatsRepository SetupHighestCountryRank()
+    public MockMatchRatingStatsRepository SetupHighestCountryRank()
     {
         Setup(x =>
                 x.HighestCountryRankAsync(
@@ -37,7 +47,7 @@ public class MockRatingStatsRepository : Mock<IMatchRatingStatsRepository>
         return this;
     }
 
-    public MockRatingStatsRepository SetupGetRankChart()
+    public MockMatchRatingStatsRepository SetupGetRankChart()
     {
         Setup(x =>
                 x.GetRankChartAsync(

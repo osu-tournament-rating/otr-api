@@ -1,10 +1,23 @@
 using API.Repositories.Interfaces;
 using Moq;
 
-namespace APITests.MockRepositories;
+namespace APITests.Framework.MockRepositories;
 
 public class MockPlayerRepository : Mock<IPlayerRepository>
 {
+    public MockPlayerRepository()
+    {
+        SetupAll();
+    }
+
+    private void SetupAll()
+    {
+        SetupGetId();
+        SetupGetOsuId();
+        SetupGetUsername();
+        SetupGetCountry();
+    }
+
     public MockPlayerRepository SetupGetId()
     {
         Setup(x => x.GetIdAsync(It.IsAny<string>())).ReturnsAsync(440);

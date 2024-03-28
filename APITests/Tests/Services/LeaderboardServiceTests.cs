@@ -2,9 +2,9 @@ using API.DTOs;
 using API.Enums;
 using API.Services.Implementations;
 using API.Utilities;
-using APITests.MockRepositories;
+using APITests.Framework.MockRepositories;
 
-namespace APITests.Services;
+namespace APITests.Tests.Services;
 
 public class LeaderboardServiceTests
 {
@@ -21,17 +21,17 @@ public class LeaderboardServiceTests
 
         MockBaseStatsRepository baseStatsRepository = new MockBaseStatsRepository()
             .SetupLeaderboard()
-            .SetupLeaderboardCount()
+            .SetupLeaderboard()
             .SetupHighestMatches()
             .SetupHighestRating()
             .SetupHighestRank()
             .SetupGetForPlayerAsync();
 
-        MockMatchStatsRepository matchStatsRepository = new MockMatchStatsRepository()
+        MockPlayerMatchStatsRepository playerMatchStatsRepository = new MockPlayerMatchStatsRepository()
             .SetupGlobalWinrate()
             .SetupCountMatchesPlayed();
 
-        MockRatingStatsRepository ratingStatsRepository = new MockRatingStatsRepository()
+        MockMatchRatingStatsRepository matchRatingStatsRepository = new MockMatchRatingStatsRepository()
             .SetupHighestGlobalRank()
             .SetupHighestCountryRank()
             .SetupGetRankChart();
@@ -44,11 +44,11 @@ public class LeaderboardServiceTests
             null,
             null,
             null,
-            matchStatsRepository.Object,
+            playerMatchStatsRepository.Object,
             playerService,
             playerRepository.Object,
             null,
-            ratingStatsRepository.Object,
+            matchRatingStatsRepository.Object,
             null
         );
 
@@ -56,8 +56,8 @@ public class LeaderboardServiceTests
 
         var baseStatsService = new BaseStatsService(
             baseStatsRepository.Object,
-            matchStatsRepository.Object,
-            ratingStatsRepository.Object,
+            playerMatchStatsRepository.Object,
+            matchRatingStatsRepository.Object,
             playerRepository.Object,
             tournamentsService
         );
@@ -66,7 +66,7 @@ public class LeaderboardServiceTests
         _leaderboardService = new LeaderboardService(
             playerRepository.Object,
             baseStatsService,
-            ratingStatsRepository.Object,
+            matchRatingStatsRepository.Object,
             playerService,
             playerStatsService
         );

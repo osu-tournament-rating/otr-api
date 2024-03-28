@@ -1,7 +1,7 @@
 using API.Entities;
 using Newtonsoft.Json;
 
-namespace APITests.Osu;
+namespace APITests.Tests.Osu;
 
 public class MatchScoreTests
 {

@@ -1,7 +1,7 @@
 using API.DTOs;
 using API.Utilities;
 
-namespace APITests.Utilities;
+namespace APITests.Tests.Utilities;
 
 public class LeaderboardExtensionsTests
 {

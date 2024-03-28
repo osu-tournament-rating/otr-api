@@ -16,7 +16,7 @@ public interface IMatchRatingStatsRepository
     /// <param name="dateMin"></param>
     /// <param name="dateMax"></param>
     /// <returns></returns>
-    Task<IEnumerable<IEnumerable<MatchRatingStats>>> GetForPlayerAsync(
+    Task<IEnumerable<IEnumerable<MatchRatingStats>>> GetAsync(
         int playerId,
         int mode,
         DateTime? dateMin = null,
@@ -48,7 +48,7 @@ public interface IMatchRatingStatsRepository
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
-    Task<DateTime?> GetOldestForPlayerAsync(int playerId, int mode);
+    Task<DateTime?> GetOldestAsync(int playerId, int mode);
 
     Task<IEnumerable<MatchRatingStats>> TeammateRatingStatsAsync(
         int playerId,

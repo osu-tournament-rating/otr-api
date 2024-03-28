@@ -13,7 +13,7 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
 {
     private readonly OtrContext _context = context;
 
-    public async Task<IEnumerable<IEnumerable<MatchRatingStats>>> GetForPlayerAsync(
+    public async Task<IEnumerable<IEnumerable<MatchRatingStats>>> GetAsync(
         int playerId,
         int mode,
         DateTime? dateMin = null,
@@ -172,7 +172,7 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
             .MaxAsync();
     }
 
-    public async Task<DateTime?> GetOldestForPlayerAsync(int playerId, int mode) =>
+    public async Task<DateTime?> GetOldestAsync(int playerId, int mode) =>
         await _context
             .MatchRatingStats.Where(x =>
                 x.PlayerId == playerId && x.Match.Tournament.Mode == mode && x.Match.StartTime != null

@@ -68,4 +68,9 @@ public static class SeededGame
         game.MatchScores = SeededMatchScore.GetScoresForGame(game.Id, 4, 4, 0).ToList();
         return game;
     }
+
+    public static Game Get()
+    {
+        return Generate(123);
+    }
 }

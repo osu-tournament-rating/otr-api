@@ -6,7 +6,7 @@ using API.Osu.AutomationChecks;
 using API.Repositories.Interfaces;
 using Moq;
 
-namespace APITests.Osu;
+namespace APITests.Tests.Osu;
 
 [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method")]
 public class AutomationChecksTests
