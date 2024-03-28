@@ -60,7 +60,19 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return await _context.Players.AsNoTracking().ToListAsync();
     }
 
-    public async Task<Player?> GetAsync(string username) => await Search(username).FirstOrDefaultAsync();
+    public async Task<IEnumerable<Player>> SearchAsync(string username) => await SearchQuery(username, true).ToListAsync();
+
+    public async Task<Player?> GetAsync(string username)
+    {
+        List<Player> players = await SearchQuery(username, false).ToListAsync();
+
+        if (players.Count > 1)
+        {
+            throw new Exception("More than one player was found.");
+        }
+
+        return players.Count == 0 ? null : players.First();
+    }
 
     public async Task<Player> GetOrCreateAsync(long osuId)
     {
@@ -92,12 +104,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
             .WhereOsuId(osuId)
             .FirstOrDefaultAsync();
 
-        if (p == null)
-        {
-            return null;
-        }
-
-        return p;
+        return p ?? null;
     }
 
     public async Task<int?> GetIdAsync(long osuId) =>
@@ -150,28 +157,26 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
 
     public async Task<int?> GetIdAsync(string username)
     {
-        return await Search(username).Select(x => x.Id).FirstOrDefaultAsync();
+        return await SearchQuery(username, false).Select(x => x.Id).FirstOrDefaultAsync();
     }
 
     /// <summary>
     /// Helper method for searching by username consistently
     /// </summary>
     /// <param name="username">The username to search for</param>
+    /// <param name="partialMatch">Whether or not we want to check for partial name matches on lookup.</param>
     /// <returns>A query that filters players by the username provided</returns>
-    private IQueryable<Player> Search(string username)
+    private IQueryable<Player> SearchQuery(string username, bool partialMatch)
     {
-        if (username.Contains(' '))
+        //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
+        username = username.Replace("_", @"\_");
+
+        if (partialMatch)
         {
-            // Look for users with either ' ' or '_' in the name - osu only uses one (i.e. "Red Pixel" cannot coexist with "Red_Pixel")
-            return _context.Players.Where(p =>
-                p.Username != null
-                && (
-                    p.Username.ToLower() == username.ToLower()
-                    || p.Username.ToLower() == username.ToLower())
-            );
+            return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, $"%{username}%", @"\"));
         }
 
-        return _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower());
+        return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, username, @"\"));
     }
 
     // This is used by a scheduled task to automatically populate user info, such as username, country, etc.
