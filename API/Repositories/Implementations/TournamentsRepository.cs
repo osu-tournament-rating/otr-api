@@ -13,15 +13,8 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 {
     private readonly OtrContext _context = context;
 
-    public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false)
-    {
-        if (eagerLoad)
-        {
-            return await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id);
-        }
-
-        return await base.GetAsync(id);
-    }
+    public async Task<Tournament?> GetAsync(int id, bool full = false) =>
+        full ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
@@ -139,6 +132,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Beatmap)
-            .Include(e => e.SubmittedBy);
+            .Include(e => e.SubmittedBy)
+            .AsSplitQuery();
     }
 }

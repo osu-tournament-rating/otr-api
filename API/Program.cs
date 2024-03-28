@@ -21,6 +21,7 @@ using AutoMapper;
 using Dapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -219,14 +220,8 @@ builder.Services.AddSerilog(configuration =>
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-var configuration = new MapperConfiguration(cfg => { cfg.AddProfile<MapperProfile>(); });
-
-// only during development, validate your mappings; remove it before release
-#if DEBUG
-configuration.AssertConfigurationIsValid();
-#endif
-
-builder.Services.AddSingleton(configuration.CreateMapper());
+builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddLogging();
 
@@ -360,6 +355,10 @@ app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {
+    // only during development, validate your mappings
+    IMapper mapper = app.Services.GetRequiredService<IMapper>();
+    mapper.ConfigurationProvider.AssertConfigurationIsValid();
+
     app.MapControllers().AllowAnonymous();
 }
 else

@@ -3,7 +3,7 @@ namespace API.DTOs;
 /// <summary>
 /// Represents a newly created resource
 /// </summary>
-public class CreatedResultDTO
+public class CreatedResultBaseDTO
 {
     /// <summary>
     /// Id (primary key) of the resource

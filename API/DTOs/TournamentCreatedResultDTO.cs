@@ -1,10 +1,22 @@
+using API.Controllers;
+using API.DTOs.Interfaces;
+using Newtonsoft.Json;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a created tournament
 /// </summary>
-public class TournamentCreatedResultDTO : CreatedResultDTO
+public class TournamentCreatedResultDTO : CreatedResultBaseDTO, ICreatedResult
 {
+    [JsonIgnore]
+    public CreatedAtRouteValues CreatedAtRouteValues => new()
+    {
+        Action = nameof(TournamentsController.GetAsync),
+        Controller = nameof(TournamentsController),
+        RouteValues = new { id = Id }
+    };
+
     /// <summary>
     /// The name of the tournament
     /// </summary>

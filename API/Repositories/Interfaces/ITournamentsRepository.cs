@@ -9,16 +9,14 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Get a <see cref="Tournament"/> entity
     /// </summary>
     /// <param name="id">Primary key</param>
-    /// <param name="eagerLoad">Whether to include navigational properties</param>
-    /// <returns></returns>
-    Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
+    /// <param name="full">Whether to eagerly load navigational properties</param>
+    Task<Tournament?> GetAsync(int id, bool full = false);
 
     /// <summary>
     /// Returns true if an entity with the given name and mode exists
     /// </summary>
     /// <param name="name"></param>
     /// <param name="mode">Ruleset</param>
-    /// <returns></returns>
     public Task<bool> ExistsAsync(string name, int mode);
 
     /// <summary>
@@ -28,7 +26,6 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="mode">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
-    /// <returns></returns>
     public Task<PlayerTournamentTeamSizeCountDTO> GetTeamSizeStatsAsync(
         int playerId,
         int mode,
@@ -45,7 +42,6 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="dateMax">Date upper bound</param>
     /// <param name="count">Size of results</param>
     /// <param name="bestPerformances">Sort by best or worst performance</param>
-    /// <returns></returns>
     Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(int playerId,
         int mode,
         DateTime dateMin,
@@ -60,6 +56,5 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="mode">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
-    /// <returns></returns>
     Task<int> CountPlayedAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax);
 }
