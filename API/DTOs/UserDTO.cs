@@ -1,5 +1,9 @@
+using API.Entities;
+using AutoMapper;
+
 namespace API.DTOs;
 
+[AutoMap(typeof(User))]
 public class UserDTO
 {
     public int PlayerId { get; set; }

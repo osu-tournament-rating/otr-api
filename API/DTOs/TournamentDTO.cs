@@ -1,12 +1,15 @@
 // ReSharper disable CommentTypo
 
 using System.Diagnostics.CodeAnalysis;
+using API.Entities;
+using AutoMapper;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a tournament
 /// </summary>
+[AutoMap(typeof(Tournament))]
 public class TournamentDTO
 {
     public int Id { get; set; }

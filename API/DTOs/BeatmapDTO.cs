@@ -1,5 +1,9 @@
+using API.Entities;
+using AutoMapper;
+
 namespace API.DTOs;
 
+[AutoMap(typeof(Beatmap))]
 public class BeatmapDTO
 {
     public int Id { get; set; }

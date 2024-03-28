@@ -1,8 +1,12 @@
+using API.Entities;
+using AutoMapper;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Used for fetching and posting rating adjustments
 /// </summary>
+[AutoMap(typeof(RatingAdjustment))]
 public class RatingAdjustmentDTO
 {
     public int PlayerId { get; set; }

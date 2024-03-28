@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using AutoMapper.Configuration.Annotations;
 
 namespace API.Entities;
 
 public class MatchEntityBase
 {
+    [Ignore]
     [Key]
     [Column("id")]
     public int Id { get; set; }
