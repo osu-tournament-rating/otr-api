@@ -4,7 +4,6 @@ using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
-using AutoMapper;
 
 namespace API.Services.Implementations;
 

@@ -15,9 +15,12 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <summary>
     /// Returns true if an entity with the given name and mode exists
     /// </summary>
-    /// <param name="name"></param>
-    /// <param name="mode">Ruleset</param>
     public Task<bool> ExistsAsync(string name, int mode);
+
+    /// <summary>
+    /// Search for a tournament by name
+    /// </summary>
+    public Task<IEnumerable<Tournament>> SearchAsync(string name);
 
     /// <summary>
     /// Create team size statistics for a player

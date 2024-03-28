@@ -274,6 +274,7 @@ builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
 builder.Services.AddScoped<IUserService, UserService>();
 

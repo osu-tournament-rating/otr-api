@@ -19,6 +19,13 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
 
+    public async Task<IEnumerable<Tournament>> SearchAsync(string name)
+    {
+        //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
+        name = name.Replace("_", @"\_");
+        return await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\")).ToListAsync();
+    }
+
     public async Task<PlayerTournamentTeamSizeCountDTO> GetTeamSizeStatsAsync(
         int playerId,
         int mode,
