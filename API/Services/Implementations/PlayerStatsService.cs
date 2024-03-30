@@ -150,7 +150,7 @@ public class PlayerStatsService(
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        PlayerInfoDTO? playerInfo = await _playerService.GetAsync(playerId);
+        PlayerDTO? playerInfo = await _playerService.GetAsync(playerId);
         BaseStatsDTO? baseStats = await GetBaseStatsAsync(playerId, mode);
         AggregatePlayerMatchStatsDTO? matchStats = await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
         PlayerModStatsDTO modStats = await GetModStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);

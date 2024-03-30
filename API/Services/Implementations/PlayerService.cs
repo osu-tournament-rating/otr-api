@@ -50,7 +50,7 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
     public async Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync() =>
         await _playerRepository.GetCountryMappingAsync();
 
-    public async Task<PlayerInfoDTO?> GetVersatileAsync(string key)
+    public async Task<PlayerDTO?> GetVersatileAsync(string key)
     {
         if (!int.TryParse(key, out var value))
         {
@@ -58,7 +58,7 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
         }
 
         // Check for the player id
-        PlayerInfoDTO? result = await GetAsync(value);
+        PlayerDTO? result = await GetAsync(value);
 
         if (result != null)
         {
@@ -74,16 +74,16 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
         return await GetAsync(key);
     }
 
-    public async Task<PlayerInfoDTO?> GetAsync(int userId) =>
-        _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(userId));
+    public async Task<PlayerDTO?> GetAsync(int userId) =>
+        _mapper.Map<PlayerDTO?>(await _playerRepository.GetAsync(userId));
 
-    public async Task<PlayerInfoDTO?> GetAsync(long osuId)
+    public async Task<PlayerDTO?> GetAsync(long osuId)
     {
         var id = await GetIdAsync(osuId);
 
-        return id == null ? null : _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(id.Value));
+        return id == null ? null : _mapper.Map<PlayerDTO?>(await _playerRepository.GetAsync(id.Value));
     }
 
-    public async Task<PlayerInfoDTO?> GetAsync(string username) =>
-        _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(username));
+    public async Task<PlayerDTO?> GetAsync(string username) =>
+        _mapper.Map<PlayerDTO?>(await _playerRepository.GetAsync(username));
 }

@@ -2,49 +2,64 @@ using API.DTOs;
 using API.Services.Interfaces;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[EnableCors]
+[Authorize(Roles = "user, client")]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class PlayersController(IPlayerService playerService) : Controller
 {
     private readonly IPlayerService _playerService = playerService;
 
-    [HttpGet("all")]
+    /// <summary>
+    /// List all players
+    /// </summary>
+    /// <response code="200">Returns all players</response>
+    [HttpGet]
     [Authorize(Roles = "system")]
-    public async Task<IActionResult> GetAllAsync()
+    [ProducesResponseType<IEnumerable<PlayerDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListAsync()
     {
         IEnumerable<PlayerDTO> players = await _playerService.GetAllAsync();
         return Ok(players);
     }
 
+    /// <summary>
+    /// Get player info by versatile search
+    /// </summary>
+    /// <remarks>Get player info searching first by id, then osuId, then username</remarks>
+    /// <param name="key"></param>
+    /// <response code="404">If a player with matching key does not exist</response>
+    /// <response code="200">Returns player info</response>
     [HttpGet("{key}/info")]
-    [Authorize(Roles = "user, client")]
-    [EndpointSummary("Get player info by versatile search")]
-    [EndpointDescription("Get player info searching first by id, then osuId, then username")]
-    public async Task<ActionResult<PlayerInfoDTO?>> GetAsync(string key)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<PlayerDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetInfoAsync(string key)
     {
-        PlayerInfoDTO? info = await _playerService.GetVersatileAsync(key);
+        PlayerDTO? result = await _playerService.GetVersatileAsync(key);
 
-        if (info == null)
+        if (result == null)
         {
-            return NotFound($"User with key {key} does not exist");
+            return NotFound();
         }
 
-        return info;
+        return Ok(result);
     }
 
-    [HttpGet("ranks/all")]
-    [Authorize(Roles = "system")]
-    public async Task<ActionResult<IEnumerable<PlayerRanksDTO>>> GetAllRanksAsync()
+    /// <summary>
+    /// List all player ranks
+    /// </summary>
+    /// <response code="200">Returns all player ranks</response>
+    [HttpGet("ranks")]
+    [Authorize(Roles = "system, admin")]
+    [ProducesResponseType<IEnumerable<PlayerRanksDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAllRanksAsync()
     {
-        IEnumerable<PlayerRanksDTO> ranks = await _playerService.GetAllRanksAsync();
-        return Ok(ranks);
+        IEnumerable<PlayerRanksDTO> result = await _playerService.GetAllRanksAsync();
+        return Ok(result);
     }
 
     [HttpGet("id-mapping")]

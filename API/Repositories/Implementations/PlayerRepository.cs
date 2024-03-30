@@ -185,14 +185,14 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
             .Players.Where(p => p.Updated == null || (DateTime.UtcNow - p.Updated) > TimeSpan.FromDays(14))
             .ToListAsync();
 
-    public async Task<PlayerInfoDTO?> GetPlayerDTOByOsuIdAsync(
+    public async Task<PlayerDTO?> GetPlayerDTOByOsuIdAsync(
         long osuId,
         bool eagerLoad = false,
         OsuEnums.Mode mode = OsuEnums.Mode.Standard,
         int offsetDays = -1
     )
     {
-        PlayerInfoDTO? obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)mode, offsetDays));
+        PlayerDTO? obj = _mapper.Map<PlayerDTO?>(await GetAsync(osuId, eagerLoad, (int)mode, offsetDays));
 
         if (obj == null)
         {

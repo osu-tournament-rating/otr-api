@@ -33,8 +33,8 @@ public interface IPlayerService
     /// </summary>
     /// <param name="key">The dynamic key of the player to look for</param>
     /// <returns></returns>
-    Task<PlayerInfoDTO?> GetVersatileAsync(string key);
-    Task<PlayerInfoDTO?> GetAsync(int userId);
-    Task<PlayerInfoDTO?> GetAsync(long osuId);
-    Task<PlayerInfoDTO?> GetAsync(string username);
+    Task<PlayerDTO?> GetVersatileAsync(string key);
+    Task<PlayerDTO?> GetAsync(int userId);
+    Task<PlayerDTO?> GetAsync(long osuId);
+    Task<PlayerDTO?> GetAsync(string username);
 }
