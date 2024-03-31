@@ -19,13 +19,6 @@ public class MockPlayerRepository : Mock<IPlayerRepository>
         return this;
     }
 
-    public MockPlayerRepository SetupGetUsername()
-    {
-        Setup(x => x.GetUsernameAsync(It.IsAny<long>())).ReturnsAsync("FooBar");
-
-        return this;
-    }
-
     public MockPlayerRepository SetupGetCountry()
     {
         Setup(x => x.GetCountryAsync(It.IsAny<int>())).ReturnsAsync("US");

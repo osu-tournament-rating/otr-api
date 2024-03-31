@@ -2,7 +2,10 @@ using API.DTOs;
 using API.Services.Interfaces;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace API.Controllers;
 
@@ -19,7 +22,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     /// </summary>
     /// <response code="200">Returns all players</response>
     [HttpGet]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = "system, admin")]
     [ProducesResponseType<IEnumerable<PlayerDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAsync()
     {
@@ -28,16 +31,16 @@ public class PlayersController(IPlayerService playerService) : Controller
     }
 
     /// <summary>
-    /// Get player info by versatile search
+    /// Get a player by versatile search
     /// </summary>
-    /// <remarks>Get player info searching first by id, then osuId, then username</remarks>
-    /// <param name="key"></param>
+    /// <remarks>Get a player searching first by id, then osuId, then username</remarks>
+    /// <param name="key">The dynamic key of the player to look for</param>
     /// <response code="404">If a player with matching key does not exist</response>
-    /// <response code="200">Returns player info</response>
-    [HttpGet("{key}/info")]
+    /// <response code="200">Returns a player</response>
+    [HttpGet("{key}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<PlayerDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetInfoAsync(string key)
+    public async Task<IActionResult> GetAsync(string key)
     {
         PlayerDTO? result = await _playerService.GetVersatileAsync(key);
 
@@ -47,6 +50,45 @@ public class PlayersController(IPlayerService playerService) : Controller
         }
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Update a player
+    /// </summary>
+    /// <param name="id">Player id</param>
+    /// <param name="patch">JsonPatch data</param>
+    /// <response code="404">If a player matching the given id does not exist</response>
+    /// <response code="400">If JsonPatch data is malformed or there was an error updating player data</response>
+    /// <response code="200">Returns the updated player</response>
+    [HttpPatch("{id:int}")]
+    [Authorize(Roles = "system, admin")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<PlayerDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<PlayerDTO> patch)
+    {
+        PlayerDTO? target = await _playerService.GetAsync(id);
+
+        if (target is null)
+        {
+            return NotFound();
+        }
+
+        if (patch.Operations.Any(op => op.OperationType != OperationType.Replace))
+        {
+            return BadRequest();
+        }
+
+        patch.ApplyTo(target, ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        PlayerDTO? result = await _playerService.UpdateAsync(id, target);
+        return result == null
+            ? BadRequest()
+            : Ok(result);
     }
 
     /// <summary>
@@ -60,25 +102,5 @@ public class PlayersController(IPlayerService playerService) : Controller
     {
         IEnumerable<PlayerRanksDTO> result = await _playerService.GetAllRanksAsync();
         return Ok(result);
-    }
-
-    [HttpGet("id-mapping")]
-    [Authorize(Roles = "system")]
-    public async Task<ActionResult<IEnumerable<PlayerIdMappingDTO>>> GetIdMappingAsync()
-    {
-        IEnumerable<PlayerIdMappingDTO> mapping = await _playerService.GetIdMappingAsync();
-        return Ok(mapping);
-    }
-
-    [HttpGet("country-mapping")]
-    [Authorize(Roles = "system")]
-    [ProducesResponseType<IEnumerable<PlayerCountryMappingDTO>>(StatusCodes.Status200OK)]
-    [EndpointSummary(
-        "Returns a list of PlayerCountryMappingDTOs that have a player's id and their country tag."
-    )]
-    public async Task<IActionResult> GetCountryMappingAsync()
-    {
-        IEnumerable<PlayerCountryMappingDTO> mapping = await _playerService.GetCountryMappingAsync();
-        return Ok(mapping);
     }
 }

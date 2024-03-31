@@ -56,7 +56,7 @@ public class OsuTrackApiWorker(
                     IMatchRatingStatsRepository ratingStatsRepository =
                         scope.ServiceProvider.GetRequiredService<IMatchRatingStatsRepository>();
 
-                    var playersToUpdate = (await playerService.GetPlayersMissingRankAsync()).ToList();
+                    var playersToUpdate = (await playerService.GetMissingRankAsync()).ToList();
 
                     if (playersToUpdate.Count == 0)
                     {

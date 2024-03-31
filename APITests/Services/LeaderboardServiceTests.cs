@@ -16,7 +16,6 @@ public class LeaderboardServiceTests
             .SetupGetId()
             .SetupGetCountry()
             .SetupGetOsuId()
-            .SetupGetUsername()
             .SetupGetCountry();
 
         MockBaseStatsRepository baseStatsRepository = new MockBaseStatsRepository()
@@ -67,7 +66,6 @@ public class LeaderboardServiceTests
             playerRepository.Object,
             baseStatsService,
             ratingStatsRepository.Object,
-            playerService,
             playerStatsService
         );
     }

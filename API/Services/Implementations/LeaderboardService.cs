@@ -11,13 +11,11 @@ public class LeaderboardService(
     IPlayerRepository playerRepository,
     IBaseStatsService baseStatsService,
     IMatchRatingStatsRepository ratingStatsRepository,
-    IPlayerService playerService,
     IPlayerStatsService playerStatsService
     ) : ILeaderboardService
 {
     private readonly IBaseStatsService _baseStatsService = baseStatsService;
     private readonly IPlayerRepository _playerRepository = playerRepository;
-    private readonly IPlayerService _playerService = playerService;
     private readonly IPlayerStatsService _playerStatsService = playerStatsService;
     private readonly IMatchRatingStatsRepository _ratingStatsRepository = ratingStatsRepository;
 
@@ -45,16 +43,11 @@ public class LeaderboardService(
 
         if (authorizedPlayerId.HasValue)
         {
-            var playerId = await _playerService.GetIdAsync(authorizedPlayerId.Value);
-
-            if (playerId.HasValue)
-            {
-                leaderboard.PlayerChart = await GetPlayerChartAsync(
-                    authorizedPlayerId.Value,
-                    requestQuery.Mode,
-                    requestQuery.ChartType
-                );
-            }
+            leaderboard.PlayerChart = await GetPlayerChartAsync(
+                authorizedPlayerId.Value,
+                requestQuery.Mode,
+                requestQuery.ChartType
+            );
         }
 
         IEnumerable<BaseStatsDTO?> baseStats = await _baseStatsService.GetLeaderboardAsync(
