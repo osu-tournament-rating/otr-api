@@ -1,5 +1,4 @@
 using API.DTOs;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -55,7 +54,7 @@ public class PlayersController(IPlayerService playerService, IMatchesService mat
     }
 
     /// <summary>
-    /// Get a player's matches
+    /// Get a player's participated matches
     /// </summary>
     /// <remarks>Get a player's matches searching first by id, then osuId, then username</remarks>
     /// <param name="key">The dynamic key of the player to look for</param>
