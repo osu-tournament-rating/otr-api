@@ -17,29 +17,8 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
     public async Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync() =>
         _mapper.Map<IEnumerable<PlayerRanksDTO>>(await _playerRepository.GetAllAsync());
 
-    public async Task<PlayerDTO?> GetVersatileAsync(string key)
-    {
-        if (!int.TryParse(key, out var value))
-        {
-            return await GetAsync(key);
-        }
-
-        // Check for the player id
-        PlayerDTO? result = await GetAsync(value);
-
-        if (result != null)
-        {
-            return result;
-        }
-
-        // Check for the osu id
-        if (long.TryParse(key, out var longValue))
-        {
-            return await GetAsync(longValue);
-        }
-
-        return await GetAsync(key);
-    }
+    public async Task<PlayerDTO?> GetVersatileAsync(string key) =>
+        _mapper.Map<PlayerDTO?>(await _playerRepository.GetVersatileAsync(key));
 
     public async Task<PlayerDTO?> GetAsync(int id) =>
         _mapper.Map<PlayerDTO?>(await _playerRepository.GetAsync(id));

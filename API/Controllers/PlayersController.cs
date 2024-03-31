@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -13,9 +14,10 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [Authorize(Roles = "user, client")]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class PlayersController(IPlayerService playerService) : Controller
+public class PlayersController(IPlayerService playerService, IMatchesService matchesService) : Controller
 {
     private readonly IPlayerService _playerService = playerService;
+    private readonly IMatchesService _matchesService = matchesService;
 
     /// <summary>
     /// List all players
@@ -50,6 +52,39 @@ public class PlayersController(IPlayerService playerService) : Controller
         }
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Get a player's matches
+    /// </summary>
+    /// <remarks>Get a player's matches searching first by id, then osuId, then username</remarks>
+    /// <param name="key">The dynamic key of the player to look for</param>
+    /// <param name="mode">osu! ruleset</param>
+    /// <param name="dateMin">Filter from earliest date. If null, earliest possible date</param>
+    /// <param name="dateMax">Filter to latest date. If null, latest possible date</param>
+    /// <response code="404">If a player with matching key does not exist</response>
+    /// <response code="200">Returns a player's matches</response>
+    [HttpGet("{key}/matches")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<IEnumerable<MatchDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetMatchesAsync(
+        string key,
+        [FromQuery] int mode = 0,
+        [FromQuery] DateTime? dateMin = null,
+        [FromQuery] DateTime? dateMax = null
+    )
+    {
+        var osuId = (await _playerService.GetVersatileAsync(key))?.OsuId;
+
+        if (!osuId.HasValue)
+        {
+            return NotFound();
+        }
+
+        IEnumerable<MatchDTO> matches = await _matchesService.GetAllForPlayerAsync(osuId.Value, mode,
+            dateMin ?? DateTime.MinValue, dateMax ?? DateTime.MaxValue);
+
+        return Ok(matches);
     }
 
     /// <summary>

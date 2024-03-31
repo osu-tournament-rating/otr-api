@@ -20,6 +20,30 @@ public class PlayerRepository(OtrContext context) : RepositoryBase<Player>(conte
     public async Task<IEnumerable<Player>> SearchAsync(string username) =>
         await SearchQuery(username, true).ToListAsync();
 
+    public async Task<Player?> GetVersatileAsync(string key)
+    {
+        if (!int.TryParse(key, out var value))
+        {
+            return await GetAsync(key);
+        }
+
+        // Check for the player id
+        Player? result = await GetAsync(id: value);
+
+        if (result != null)
+        {
+            return result;
+        }
+
+        // Check for the osu id
+        if (long.TryParse(key, out var longValue))
+        {
+            return await GetAsync(longValue);
+        }
+
+        return await GetAsync(key);
+    }
+
     public async Task<Player?> GetAsync(string username) =>
         await SearchQuery(username, false).FirstOrDefaultAsync();
 

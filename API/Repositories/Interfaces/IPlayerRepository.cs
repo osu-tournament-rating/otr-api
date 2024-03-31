@@ -5,6 +5,19 @@ namespace API.Repositories.Interfaces;
 public interface IPlayerRepository : IRepository<Player>
 {
     /// <summary>
+    /// Gets a player by dynamically searching for the given key
+    /// </summary>
+    /// <remarks>
+    /// Searches via the following, in order of priority:
+    /// - Player id
+    /// - osu! id
+    /// - osu! username (case insensitive)
+    /// </remarks>
+    /// <param name="key">The dynamic key of the player to look for</param>
+    /// <returns>A player, or null if not found</returns>
+    Task<Player?> GetVersatileAsync(string key);
+
+    /// <summary>
     /// Gets a list of players for the given username
     /// </summary>
     /// <remarks>Username is case insensitive</remarks>

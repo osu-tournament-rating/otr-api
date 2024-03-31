@@ -136,12 +136,6 @@ public class MatchesController(IMatchesService matchesService, ITournamentsServi
         return Ok();
     }
 
-    // TODO: Should be /player/{osuId}/matches instead.
-    [HttpGet("player/{osuId:long}")]
-    [Authorize(Roles = "admin, system")]
-    public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatchesAsync(long osuId, int mode) =>
-        Ok(await _matchesService.GetAllForPlayerAsync(osuId, mode, DateTime.MinValue, DateTime.MaxValue));
-
     [HttpGet("{id:int}/osuid")]
     [Authorize(Roles = "system")]
     public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
