@@ -22,7 +22,7 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
 
     [HttpGet]
     [EndpointSummary("Get the currently logged in user")]
-    public async Task<Results<UnauthorizedHttpResult, NotFound, Ok<UserInfoDTO>>> GetAsync()
+    public async Task<Results<UnauthorizedHttpResult, NotFound, Ok<UserDTO>>> GetAsync()
     {
         var id = HttpContext.AuthorizedUserIdentity();
         if (!id.HasValue)
@@ -30,7 +30,7 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
             return TypedResults.Unauthorized();
         }
 
-        UserInfoDTO? user = await _userService.GetAsync(id.Value);
+        UserDTO? user = await _userService.GetAsync(id.Value);
         if (user?.OsuId == null)
         {
             return TypedResults.NotFound();

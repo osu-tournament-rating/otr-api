@@ -9,6 +9,7 @@ namespace API.Services.Implementations;
 public class OAuthClientService(IOAuthClientRepository repository, IMapper mapper) : IOAuthClientService
 {
     private readonly IOAuthClientRepository _repository = repository;
+
     public async Task<bool> ValidateAsync(int clientId, string clientSecret) => await _repository.ExistsAsync(clientId, clientSecret);
 
     public async Task<OAuthClientDTO?> GetAsync(int clientId)
@@ -43,8 +44,15 @@ public class OAuthClientService(IOAuthClientRepository repository, IMapper mappe
         };
     }
 
-    public async Task<bool> SecretInUse(string clientSecret) { return await _repository.SecretInUseAsync(clientSecret); }
+    public async Task<bool> SecretInUse(string clientSecret) =>
+        await _repository.SecretInUseAsync(clientSecret);
 
     public async Task<OAuthClientDTO?> SetRatelimitOverridesAsync(int clientId, RateLimitOverrides rateLimitOverrides) =>
         mapper.Map<OAuthClientDTO>(await _repository.SetRatelimitOverridesAsync(clientId, rateLimitOverrides));
+
+    public async Task<bool> ExistsAsync(int id, int userId) =>
+        await _repository.ExistsAsync(id, userId);
+
+    public async Task<bool> DeleteAsync(int id) =>
+        (await _repository.DeleteAsync(id)).HasValue;
 }
