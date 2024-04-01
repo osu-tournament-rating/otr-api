@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
+using API.Enums;
 using API.Services.Interfaces;
+using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -62,6 +64,47 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     }
 
     /// <summary>
+    /// Get a user's match submissions
+    /// </summary>
+    /// <param name="id">Id of the user</param>
+    /// <response code="404">If a user does not exist</response>
+    /// <response code="200">Returns a list of submissions</response>
+    [HttpGet("{id:int}/submissions")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<IEnumerable<MatchSubmissionStatusDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSubmissionsAsync(int id)
+    {
+        if (!await _userService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        return Ok(await _userService.GetSubmissionsAsync(id) ?? new List<MatchSubmissionStatusDTO>());
+    }
+
+    /// <summary>
+    /// Rejects a user's match submissions
+    /// </summary>
+    /// <param name="id">Id of the user</param>
+    /// <response code="404">If a user does not exist</response>
+    /// <response code="200">Denotes the operation was successful</response>
+    [HttpPost("{id:int}/submissions:reject")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RejectSubmissionsAsync(int id)
+    {
+        if (!await _userService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        var verifierId = HttpContext.AuthorizedUserIdentity();
+        return await _userService.RejectSubmissionsAsync(id, verifierId, (int)MatchVerificationSource.Admin)
+            ? BadRequest()
+            : Ok();
+    }
+
+    /// <summary>
     /// Get a user's OAuth clients
     /// </summary>
     /// <param name="id">Id of the user</param>
@@ -72,11 +115,12 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     [ProducesResponseType<IEnumerable<OAuthClientDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetClientsAsync(int id)
     {
-        IEnumerable<OAuthClientDTO>? result = await _userService.GetClientsAsync(id);
+        if (!await _userService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
 
-        return result == null
-            ? NotFound()
-            : Ok(result);
+        return Ok(await _userService.GetClientsAsync(id) ?? new List<OAuthClientDTO>());
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
-﻿using API.Repositories.Interfaces;
+﻿using API.Entities.Interfaces;
+using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
@@ -25,7 +26,25 @@ public class RepositoryBase<T> : IRepository<T>
 
     public virtual async Task<int> UpdateAsync(T entity)
     {
+        if (entity is IUpdateableEntity updateableEntity)
+        {
+            updateableEntity.Updated = DateTime.UtcNow;
+        }
         _context.Set<T>().Update(entity);
+        return await _context.SaveChangesAsync();
+    }
+
+    public virtual async Task<int> UpdateAsync(IEnumerable<T> entities)
+    {
+        foreach (T entity in entities)
+        {
+            if (entity is IUpdateableEntity updateableEntity)
+            {
+                updateableEntity.Updated = DateTime.UtcNow;
+            }
+            _context.Set<T>().Update(entity);
+        }
+
         return await _context.SaveChangesAsync();
     }
 

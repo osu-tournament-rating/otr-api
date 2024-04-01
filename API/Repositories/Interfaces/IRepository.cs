@@ -21,6 +21,11 @@ public interface IRepository<T>
     Task<int> UpdateAsync(T entity);
 
     /// <summary>
+    /// Updates a list of entities
+    /// </summary>
+    Task<int> UpdateAsync(IEnumerable<T> entities);
+
+    /// <summary>
     ///  Deletes an entity from the database by its ID. If successful, returns the primary key of the entity, otherwise null.
     /// </summary>
     Task<int?> DeleteAsync(int id);
