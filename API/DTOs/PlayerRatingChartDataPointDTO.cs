@@ -56,7 +56,7 @@ public class PlayerRatingChartDataPointDTO
     public double VolatilityChange => VolatilityAfter - VolatilityBefore;
 
     /// <summary>
-    /// Denotes the type of adjustment resulted from decay
+    /// Indicates whether this data point is from a rating change that occurred outside of a match (i.e. decay)
     /// </summary>
     public bool IsAdjustment { get; set; }
 
