@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Enums;
 using API.Services.Interfaces;
 
 namespace API.Services.Implementations;
@@ -6,7 +7,7 @@ namespace API.Services.Implementations;
 public class ScreeningService(IPlayerService playerService, IBaseStatsService baseStatsService, IPlayerStatsService
     playerStatsService) : IScreeningService
 {
-    public async Task<IEnumerable<PlayerScreeningResultDTO>> ScreenAsync(ScreeningRequestDTO screeningRequest)
+    public async Task<ScreeningResultDTO> ScreenAsync(ScreeningRequestDTO screeningRequest)
     {
         var idList = screeningRequest.OsuPlayerIds.ToList();
 
@@ -15,11 +16,26 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
             throw new Exception("Screening id list cannot be empty");
         }
 
+        var passed = 0;
+        var failed = 0;
+
         var resultCollection = new List<PlayerScreeningResultDTO>();
         foreach (var osuId in idList)
         {
             PlayerInfoDTO? playerInfo = await playerService.GetAsync(osuId);
             (ScreeningResult result, ScreeningFailReason? failReason) = await ScreenAsync(screeningRequest, playerInfo);
+
+            switch (result)
+            {
+                case ScreeningResult.Pass:
+                    passed++;
+                    break;
+                case ScreeningResult.Fail:
+                    failed++;
+                    break;
+                default:
+                    throw new Exception("This ScreeningResult is not handled!");
+            }
 
             resultCollection.Add(new PlayerScreeningResultDTO
             {
@@ -31,7 +47,14 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
             });
         }
 
-        return resultCollection;
+        var dto = new ScreeningResultDTO
+        {
+            PlayersPassed = passed,
+            PlayersFailed = failed,
+            ScreeningResults = resultCollection
+        };
+
+        return dto;
     }
 
     private async Task<(ScreeningResult result, ScreeningFailReason? failReason)> ScreenAsync(ScreeningRequestDTO screeningRequest,
