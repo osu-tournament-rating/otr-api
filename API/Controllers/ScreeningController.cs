@@ -14,18 +14,14 @@ public class ScreeningController(IScreeningService screeningService) : Controlle
     /// <summary>
     /// Screen a list of users based on the criteria as described in
     /// <see cref="ScreeningResultDTO"/>
-    ///
-    /// <remarks>
-    ///
-    /// This is a test remark
-    ///
-    /// </remarks>
     /// </summary>
-    /// <param name="screeningRequest"></param>
+    /// <param name="screeningRequest">The screening request</param>
     /// <returns></returns>
+    /// <response code="400">Errors encountered during validation</response>
+    /// <response code="200">The screening result</response>
     [HttpPost]
     [Authorize(Roles = "user, client")]
-    [ProducesResponseType(typeof(ScreeningResultDTO), StatusCodes.Status200OK)]
+    [ProducesResponseType<ScreeningResultDTO>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ScreenAsync([FromBody] ScreeningRequestDTO screeningRequest)
     {
