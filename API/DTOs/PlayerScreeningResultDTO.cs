@@ -60,7 +60,7 @@ public enum ScreeningFailReason
 /// <summary>
 /// Represents one player's screening result
 /// </summary>
-public class ScreeningResultDTO
+public class PlayerScreeningResultDTO
 {
     /// <summary>
     /// The id of the player, if found

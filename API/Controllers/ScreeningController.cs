@@ -13,7 +13,7 @@ public class ScreeningController(IScreeningService screeningService) : Controlle
 {
     /// <summary>
     /// Screen a list of users based on the criteria as described in
-    /// <see cref="ScreeningResultDTO"/>
+    /// <see cref="PlayerScreeningResultDTO"/>
     /// </summary>
     /// <param name="screeningRequest">The screening request</param>
     /// <returns></returns>
@@ -21,7 +21,7 @@ public class ScreeningController(IScreeningService screeningService) : Controlle
     /// <response code="200">The screening result</response>
     [HttpPost]
     [Authorize(Roles = "user, client")]
-    [ProducesResponseType<ScreeningResultDTO>(StatusCodes.Status200OK)]
+    [ProducesResponseType<PlayerScreeningResultDTO>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ScreenAsync([FromBody] ScreeningRequestDTO screeningRequest)
     {
@@ -33,7 +33,7 @@ public class ScreeningController(IScreeningService screeningService) : Controlle
         // Filter out duplicate ids
         screeningRequest.OsuPlayerIds = screeningRequest.OsuPlayerIds.Distinct();
 
-        IEnumerable<ScreeningResultDTO> results = await screeningService.ScreenAsync(screeningRequest);
+        IEnumerable<PlayerScreeningResultDTO> results = await screeningService.ScreenAsync(screeningRequest);
         return Ok(results);
     }
 }

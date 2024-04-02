@@ -6,9 +6,9 @@ public interface IScreeningService
 {
     /// <summary>
     /// Processes a <see cref="ScreeningRequestDTO"/>, providing a
-    /// <see cref="ScreeningResultDTO"/> for each osu! player id provided within
+    /// <see cref="PlayerScreeningResultDTO"/> for each osu! player id provided within
     /// </summary>
     /// <param name="screeningRequest">A screening request to process</param>
     /// <returns></returns>
-    Task<IEnumerable<ScreeningResultDTO>> ScreenAsync(ScreeningRequestDTO screeningRequest);
+    Task<IEnumerable<PlayerScreeningResultDTO>> ScreenAsync(ScreeningRequestDTO screeningRequest);
 }

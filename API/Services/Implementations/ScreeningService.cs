@@ -6,7 +6,7 @@ namespace API.Services.Implementations;
 public class ScreeningService(IPlayerService playerService, IBaseStatsService baseStatsService, IPlayerStatsService
     playerStatsService) : IScreeningService
 {
-    public async Task<IEnumerable<ScreeningResultDTO>> ScreenAsync(ScreeningRequestDTO screeningRequest)
+    public async Task<IEnumerable<PlayerScreeningResultDTO>> ScreenAsync(ScreeningRequestDTO screeningRequest)
     {
         var idList = screeningRequest.OsuPlayerIds.ToList();
 
@@ -15,13 +15,13 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
             throw new Exception("Screening id list cannot be empty");
         }
 
-        var resultCollection = new List<ScreeningResultDTO>();
+        var resultCollection = new List<PlayerScreeningResultDTO>();
         foreach (var osuId in idList)
         {
             PlayerInfoDTO? playerInfo = await playerService.GetAsync(osuId);
             (ScreeningResult result, ScreeningFailReason? failReason) = await ScreenAsync(screeningRequest, playerInfo);
 
-            resultCollection.Add(new ScreeningResultDTO
+            resultCollection.Add(new PlayerScreeningResultDTO
             {
                 PlayerId = playerInfo?.Id,
                 Username = playerInfo?.Username,
