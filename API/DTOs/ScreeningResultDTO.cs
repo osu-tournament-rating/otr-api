@@ -1,11 +1,23 @@
 namespace API.DTOs;
 
+/// <summary>
+/// Indicates whether a player passed or failed screening
+/// </summary>
 public enum ScreeningResult
 {
+    /// <summary>
+    /// The player passed screening
+    /// </summary>
     Pass,
+    /// <summary>
+    /// The player failed screening
+    /// </summary>
     Fail
 }
 
+/// <summary>
+/// Explains why the player failed screening
+/// </summary>
 [Flags]
 public enum ScreeningFailReason
 {
@@ -70,6 +82,12 @@ public class ScreeningResultDTO
     /// If the user failed screening, the fail reason
     /// </summary>
     public ScreeningFailReason? ScreeningFailReason { get; set; }
+    /// <summary>
+    /// The <see cref="ScreeningResult"/> in string form
+    /// </summary>
     public string? ScreeningResultMessage => ScreeningResult.ToString();
+    /// <summary>
+    /// The <see cref="ScreeningFailReason"/> in string form
+    /// </summary>
     public string? ScreeningFailReasonMessage => ScreeningFailReason.ToString();
 }
