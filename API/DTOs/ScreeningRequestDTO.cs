@@ -13,10 +13,9 @@ public class ScreeningRequestDTO
     /// <summary>
     /// The ruleset by which data will be referenced, required
     /// </summary>
-    [Required]
     [Range(0, 3, ErrorMessage = "Invalid ruleset (0 = osu!, " +
                                 "1 = osu!Taiko, 2 = osu!Catch, 3 = osu!Mania)")]
-    public int Ruleset { get; set; }
+    public required int Ruleset { get; set; }
     /// <summary>
     /// Players with a current rating below this value will be screened
     /// </summary>
@@ -52,6 +51,5 @@ public class ScreeningRequestDTO
     /// <summary>
     /// A list of osu! player ids that will be screened
     /// </summary>
-    [Required]
-    public IEnumerable<long> OsuPlayerIds { get; set; } = new List<long>();
+    public required IEnumerable<long> OsuPlayerIds { get; set; } = new List<long>();
 }
