@@ -5,10 +5,10 @@ namespace API.Services.Interfaces;
 public interface IScreeningService
 {
     /// <summary>
-    /// Processes a <see cref="ScreeningDTO"/>, providing a
+    /// Processes a <see cref="ScreeningRequestDTO"/>, providing a
     /// <see cref="ScreeningResultDTO"/> for each osu! player id provided within
     /// </summary>
     /// <param name="screeningRequest">A screening request to process</param>
     /// <returns></returns>
-    Task<IEnumerable<ScreeningResultDTO>> ScreenAsync(ScreeningDTO screeningRequest);
+    Task<IEnumerable<ScreeningResultDTO>> ScreenAsync(ScreeningRequestDTO screeningRequest);
 }

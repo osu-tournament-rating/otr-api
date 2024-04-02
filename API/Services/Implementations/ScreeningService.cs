@@ -1,13 +1,12 @@
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
 
 namespace API.Services.Implementations;
 
 public class ScreeningService(IPlayerService playerService, IBaseStatsService baseStatsService, IPlayerStatsService
     playerStatsService) : IScreeningService
 {
-    public async Task<IEnumerable<ScreeningResultDTO>> ScreenAsync(ScreeningDTO screeningRequest)
+    public async Task<IEnumerable<ScreeningResultDTO>> ScreenAsync(ScreeningRequestDTO screeningRequest)
     {
         var idList = screeningRequest.OsuPlayerIds.ToList();
 
@@ -35,7 +34,7 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
         return resultCollection;
     }
 
-    private async Task<(ScreeningResult result, ScreeningFailReason? failReason)> ScreenAsync(ScreeningDTO screeningRequest,
+    private async Task<(ScreeningResult result, ScreeningFailReason? failReason)> ScreenAsync(ScreeningRequestDTO screeningRequest,
         PlayerInfoDTO? playerInfo)
     {
         ScreeningResult result = ScreeningResult.Pass;
