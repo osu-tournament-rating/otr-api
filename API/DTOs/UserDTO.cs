@@ -28,15 +28,10 @@ public class UserDTO
     /// <summary>
     /// osu! country country code of the associated player
     /// </summary>
-    public string? OsuCountry { get; set; }
-
-    /// <summary>
-    /// Preferred osu! mode of the associated player
-    /// </summary>
-    public int? OsuPlayMode { get; set; }
+    public string? Country { get; set; }
 
     /// <summary>
     /// osu! username of the associated player
     /// </summary>
-    public string? OsuUsername { get; set; }
+    public string? Username { get; set; }
 }

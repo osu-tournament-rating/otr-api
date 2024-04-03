@@ -27,10 +27,9 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
             Id = user.Id,
             Scopes = user.Scopes,
             PlayerId = user.PlayerId,
-            OsuCountry = user.Player.Country,
-            OsuId = user.Player.OsuId,
-            OsuPlayMode = 0, // TODO: Set to user's preferred mode
-            OsuUsername = user.Player.Username
+            Country = user.Player.Country,
+            OsuId = user.Player.OsuId, // TODO: Set to user's preferred mode
+            Username = user.Player.Username
         };
     }
 
