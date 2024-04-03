@@ -155,6 +155,7 @@ csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
 
 # Suppress XML warning (For now)
+# These can be removed once all endpoints and service / repository methods have proper documentation
 dotnet_diagnostic.CS1570.severity = none
 dotnet_diagnostic.CS1572.severity = none
 dotnet_diagnostic.CS1573.severity = none
