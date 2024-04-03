@@ -46,6 +46,9 @@ public class MapperProfile : Profile
         CreateMap<Player, PlayerRanksDTO>();
         CreateMap<Player, PlayerInfoDTO>();
         CreateMap<Tournament, TournamentDTO>();
-        CreateMap<User, UserDTO>();
+        CreateMap<User, UserDTO>()
+            .ForMember(x => x.OsuId, opt => opt.MapFrom(y => y.Player.OsuId))
+            .ForMember(x => x.Country, opt => opt.MapFrom(y => y.Player.Country))
+            .ForMember(x => x.Username, opt => opt.MapFrom(y => y.Player.Username));
     }
 }

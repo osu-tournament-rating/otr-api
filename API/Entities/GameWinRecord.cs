@@ -7,7 +7,7 @@ namespace API.Entities;
 ///  A record of who won a game
 /// </summary>
 [Table("game_win_records")]
-public sealed class GameWinRecord
+public class GameWinRecord
 {
     [Key]
     [Column("id")]
@@ -29,5 +29,5 @@ public sealed class GameWinRecord
     public int LoserTeam { get; set; }
 
     [InverseProperty("WinRecord")]
-    public Game Game { get; set; } = null!;
+    public virtual Game Game { get; set; } = null!;
 }

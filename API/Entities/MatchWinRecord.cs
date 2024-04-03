@@ -1,13 +1,12 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-// ReSharper disable PropertyCanBeMadeInitOnly.Global
 namespace API.Entities;
 
 /// <summary>
 /// Represents a record of who played in a match and who won/lost.
 /// </summary>
 [Table("match_win_records")]
-public sealed class MatchWinRecord
+public class MatchWinRecord
 {
     [Column("id")]
     public int Id { get; set; }
@@ -38,5 +37,5 @@ public sealed class MatchWinRecord
     public Enums.MatchType? MatchType { get; set; }
 
     [InverseProperty("WinRecord")]
-    public Match Match { get; set; } = null!;
+    public virtual Match Match { get; set; } = null!;
 }

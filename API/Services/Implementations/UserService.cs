@@ -37,9 +37,10 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
         mapper.Map<IEnumerable<OAuthClientDTO>?>((await userRepository.GetAsync(id))?.Clients?.ToList());
 
     public async Task<IEnumerable<MatchSubmissionStatusDTO>?> GetSubmissionsAsync(int id) =>
-        mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>((await userRepository.GetAsync(id))?.SubmittedMatches);
+        mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>((await userRepository.GetAsync(id))?.SubmittedMatches?.ToList());
 
-    public async Task<bool> RejectSubmissionsAsync(int id, int? verifierId, int? verificationSource)
+    public async Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId,
+        MatchVerificationSource verificationSource)
     {
         IEnumerable<Match>? submissions = (await userRepository.GetAsync(id))?.SubmittedMatches?.ToList();
         if (submissions is null)
@@ -51,11 +52,11 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
         foreach (Match match in submissions)
         {
             match.VerificationStatus = (int)MatchVerificationStatus.Rejected;
-            match.VerifierUserId = verifierId;
-            match.VerificationSource = verificationSource;
+            match.VerifierUserId = rejecterUserId;
+            match.VerificationSource = (int)verificationSource;
         }
 
-        return await matchesRepository.UpdateAsync(submissions, verifierId) == submissions.Count();
+        return await matchesRepository.UpdateAsync(submissions, rejecterUserId) == submissions.Count();
     }
 
     public async Task<UserDTO?> UpdateScopesAsync(int id, IEnumerable<string> scopes)

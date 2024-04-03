@@ -108,8 +108,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
             return NotFound();
         }
 
-        var verifierId = HttpContext.AuthorizedUserIdentity();
-        return await userService.RejectSubmissionsAsync(id, verifierId, (int)MatchVerificationSource.Admin)
+        return await userService.RejectSubmissionsAsync(id, User.AuthorizedIdentity(), MatchVerificationSource.Admin)
             ? Ok()
             : BadRequest();
     }

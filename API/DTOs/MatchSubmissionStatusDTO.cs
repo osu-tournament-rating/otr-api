@@ -1,3 +1,5 @@
+using API.Enums;
+
 namespace API.DTOs;
 
 /// <summary>
@@ -23,7 +25,7 @@ public class MatchSubmissionStatusDTO
     /// <summary>
     /// Current verification status of the match
     /// </summary>
-    public int? VerificationStatus { get; set; }
+    public MatchVerificationStatus? VerificationStatus { get; set; }
 
     /// <summary>
     /// Date that the match was submitted
