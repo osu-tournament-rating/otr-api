@@ -84,6 +84,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// </summary>
     /// <param name="id">Id of the user</param>
     /// <response code="404">If a user does not exist</response>
+    /// <response code="400">If the operation was not successful</response>
     /// <response code="200">Denotes the operation was successful</response>
     [HttpPost("{id:int}/submissions:reject")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -97,8 +98,8 @@ public class UsersController(IUserService userService, IOAuthClientService clien
 
         var verifierId = HttpContext.AuthorizedUserIdentity();
         return await userService.RejectSubmissionsAsync(id, verifierId, (int)MatchVerificationSource.Admin)
-            ? BadRequest()
-            : Ok();
+            ? Ok()
+            : BadRequest();
     }
 
     /// <summary>
@@ -140,7 +141,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
         }
 
         return await clientService.DeleteAsync(clientId)
-            ? BadRequest()
-            : Ok();
+            ? Ok()
+            : BadRequest();
     }
 }
