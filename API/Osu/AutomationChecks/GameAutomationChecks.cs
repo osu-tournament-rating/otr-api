@@ -54,8 +54,8 @@ public static class GameAutomationChecks
             return satisfiesOneVersusOne;
         }
 
-        var countRed = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Red, Score: > AutomationChecksUtils.MINIMUM_SCORE });
-        var countBlue = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Blue, Score: > AutomationChecksUtils.MINIMUM_SCORE });
+        var countRed = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Red, Score: > AutomationChecksUtils.MinimumScore });
+        var countBlue = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Blue, Score: > AutomationChecksUtils.MinimumScore });
 
         if (countRed == 0 && countBlue == 0)
         {
@@ -80,7 +80,7 @@ public static class GameAutomationChecks
              * - Exactly 1 score is below the minimum
              * - The team sizes are off by exactly 1
              */
-            hasReferee = game.MatchScores.Count(s => s.Score <= AutomationChecksUtils.MINIMUM_SCORE) == 1 &&
+            hasReferee = game.MatchScores.Count(s => s.Score <= AutomationChecksUtils.MinimumScore) == 1 &&
                           Math.Abs(countRed - countBlue) == 1;
             if (!hasReferee)
             {
