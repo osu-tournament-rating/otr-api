@@ -78,10 +78,13 @@ public static class GameAutomationChecks
              * Requirements for referee to be valid and present:
              *
              * - Exactly 1 score is below the minimum
-             * - The team sizes are off by exactly 1
+             * - The team sizes are uneven by exactly +1
+             * (meaning, if red has 3 players, blue has 2, and vice versa,
+             * NOT a 2v1 after accounting for the ref)
              */
             hasReferee = game.MatchScores.Count(s => s.Score <= AutomationChecksUtils.MinimumScore) == 1 &&
-                          Math.Abs(countRed - countBlue) == 1;
+                          (countRed == teamSize + 1 || countBlue == teamSize + 1);
+
             if (!hasReferee)
             {
                 s_logger.Information(
