@@ -6,7 +6,7 @@ namespace API.DTOs;
 public class CreatedResultBaseDTO
 {
     /// <summary>
-    /// Id (primary key) of the resource
+    /// Id of the resource
     /// </summary>
     public int Id { get; set; }
 
