@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   app:
-    image: "otr-api-dev:latest"
+    image: "stagecodes/otr-api-dev:latest"
     ports:
       - "3700:8080"
     env_file:
@@ -35,6 +35,8 @@ services:
       - db.env
     ports:
       - "5432:5432"
+  # cache:
+  #   image: redis:latest
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter
     container_name: postgres-exporter
