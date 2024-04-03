@@ -1,5 +1,4 @@
 using API.DTOs;
-using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
@@ -46,50 +45,42 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// amount of matches being submitted, etc.).
     ///
     /// Assuming we have a good batch, we will mark all of the new items as "PENDING".
-    /// The API.Osu.Multiplayer.MultiplayerLobbyDataWorker service checks the database for pending links
+    /// If verify is true, they will be marked as "VERIFIED" immediately.
+    /// The MultiplayerLobbyDataWorker service checks the database for pending links
     /// periodically and processes them automatically.
     /// </remarks>
-    /// <param name="wrapper">Tournament submission data</param>
-    /// <param name="verify">Optionally verify all included matches</param>
+    /// <param name="tournamentSubmission">Tournament submission data</param>
+    /// <param name="verify">Optionally verify all included matches, assuming the user has permission to do so</param>
     /// <response code="401">If verify is true and the User does not have match verification privileges</response>
-    /// <response code="400">If a tournament matching the given name and mode already exists, or the given <see cref="wrapper"/> is malformed</response>
+    /// <response code="400">If a tournament matching the given name and mode already exists, or the given <see cref="tournamentSubmission"/> is malformed</response>
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
     [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateAsync(
-        [FromBody] TournamentWebSubmissionDTO wrapper,
-        [FromQuery] bool verify = false
-    )
+    public async Task<IActionResult> CreateAsync([FromBody] TournamentWebSubmissionDTO tournamentSubmission,
+        [FromQuery] bool verify = false)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        // Determine verification source
-        MatchVerificationSource? verificationSource = null;
-        if (verify)
+        if (verify && !User.CanVerifyMatches())
         {
-            if (!User.CanVerifyMatches())
-            {
-                return Unauthorized();
-            }
-
-            verificationSource = User.VerificationSource();
+            return Unauthorized();
         }
 
-        if (await _tournamentsService.ExistsAsync(wrapper.TournamentName, wrapper.Mode))
+        if (await _tournamentsService.ExistsAsync(tournamentSubmission.TournamentName, tournamentSubmission.Mode))
         {
             return BadRequest(
-                $"A tournament with name {wrapper.TournamentName} for mode {wrapper.Mode} already exists");
+                $"A tournament with name {tournamentSubmission.TournamentName} for mode {tournamentSubmission.Mode} already exists");
         }
 
         // Create tournament
         TournamentCreatedResultDTO result =
-            await _tournamentsService.CreateAsync(wrapper, verify, (int?)verificationSource);
-        return Created(result.Location, result);
+            await _tournamentsService.CreateAsync(tournamentSubmission, verify, (int?)User.VerificationSource());
+        return CreatedAtAction("Get", new { id = result.Id }, result);
     }
 
     /// <summary>
@@ -159,8 +150,8 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// Submit matches to an existing tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <param name="wrapper">Match submission data</param>
-    /// <param name="verify">Optionally verify all included matches</param>
+    /// <param name="matchesSubmission">Match submission data</param>
+    /// <param name="verify">Optionally verify all included matches, assuming the user has permission to do so</param>
     /// <response code="401">If verify is true and the User does not have match verification privileges</response>
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="201">Returns location information of the created matches</response>
@@ -168,29 +159,21 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<IEnumerable<MatchCreatedResultDTO>>(StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateMatchesAsync(
-        int id,
-        [FromBody] MatchesWebSubmissionDTO wrapper,
-        [FromQuery] bool verify = false
-    )
+    public async Task<IActionResult> CreateMatchesAsync(int id,
+        [FromBody] MatchesWebSubmissionDTO matchesSubmission,
+        [FromQuery] bool verify = false)
     {
-        MatchVerificationSource? verificationSource = null;
-        if (verify)
+        if (verify && !User.CanVerifyMatches())
         {
-            if (!User.CanVerifyMatches())
-            {
-                return Unauthorized();
-            }
-
-            verificationSource = User.VerificationSource();
+            return Unauthorized();
         }
 
         IEnumerable<MatchCreatedResultDTO>? result =
             await _matchesService.CreateAsync(
                 id,
-                wrapper.SubmitterId,
-                wrapper.Ids, verify,
-                (int?)verificationSource
+                matchesSubmission.SubmitterId,
+                matchesSubmission.Ids, verify,
+                (int?)User.VerificationSource()
             );
 
         if (result is null)
@@ -207,6 +190,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// </summary>
     /// <param name="id">Tournament id</param>
     /// <response code="404">If a tournament matching the given id does not exist</response>
+    /// <response code="200">Returns all matches from a tournament</response>
     [HttpGet("{id:int}/matches")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<IEnumerable<MatchDTO>>(StatusCodes.Status200OK)]
