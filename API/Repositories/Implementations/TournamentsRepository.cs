@@ -13,8 +13,8 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 {
     private readonly OtrContext _context = context;
 
-    public async Task<Tournament?> GetAsync(int id, bool full = false) =>
-        full ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
+    public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
+        eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);

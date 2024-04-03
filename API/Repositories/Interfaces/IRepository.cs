@@ -30,7 +30,7 @@ public interface IRepository<T>
     Task<int> UpdateAsync(T entity);
 
     /// <summary>
-    /// Deletes an entity from the database by its ID
+    /// Deletes an entity from the database by its primary key
     /// </summary>
     /// <returns>Primary key of the deleted entity, or null if unsuccessful</returns>
     Task<int?> DeleteAsync(int id);

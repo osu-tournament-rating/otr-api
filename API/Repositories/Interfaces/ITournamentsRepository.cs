@@ -9,11 +9,11 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Get a <see cref="Tournament"/> entity
     /// </summary>
     /// <param name="id">Primary key</param>
-    /// <param name="full">Whether to eagerly load navigational properties</param>
-    Task<Tournament?> GetAsync(int id, bool full = false);
+    /// <param name="eagerLoad">Whether to eagerly load navigational properties</param>
+    Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
 
     /// <summary>
-    /// Returns true if an entity with the given name and mode exists
+    /// Returns whether an entity with the given name and mode exists
     /// </summary>
     public Task<bool> ExistsAsync(string name, int mode);
 
@@ -25,7 +25,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <summary>
     /// Create team size statistics for a player
     /// </summary>
-    /// <param name="playerId">Id (primary key) of target player</param>
+    /// <param name="playerId">Id of target player</param>
     /// <param name="mode">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
@@ -55,7 +55,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <summary>
     /// Count number of tournaments played for a player
     /// </summary>
-    /// <param name="playerId">Id (primary key) of target player</param>
+    /// <param name="playerId">Id of target player</param>
     /// <param name="mode">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
