@@ -11,6 +11,8 @@ namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
+[Authorize(Roles = OtrClaims.User)]
+[Authorize(Roles = OtrClaims.Whitelist)]
 [Route("api/v{version:apiVersion}/[controller]")]
 [SuppressMessage("ReSharper", "RouteTemplates.ActionRoutePrefixCanBeExtractedToControllerRoute")]
 public class UsersController(IUserService userService, IOAuthClientService clientService) : Controller
@@ -22,7 +24,6 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <response code="404">If a user does not exist</response>
     /// <response code="200">Returns a user</response>
     [HttpGet("{id:int}")]
-    [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(int id)
@@ -40,15 +41,24 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <param name="id">Id of the user</param>
     /// <param name="scopes">List of scopes to assign to the user</param>
     /// <response code="404">If a user does not exist</response>
-    /// <response code="400">If the update was not successful</response>
+    /// <response code="400">If any of the given scopes are invalid, or the update was not successful</response>
     /// <response code="200">Returns an updated user</response>
     [HttpPatch("{id:int}/scopes")]
     [Authorize(Roles = OtrClaims.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> UpdateAsync(int id, [FromBody] List<string> scopes)
+    public async Task<IActionResult> UpdateScopesAsync(int id, [FromBody] List<string> scopes)
     {
+        scopes = scopes.Select(s => s.ToLower()).ToList();
+        foreach (var scope in scopes)
+        {
+            if (!OtrClaims.IsUserAssignableClaim(scope))
+            {
+                return BadRequest($"Given scope \"{scope}\" is invalid");
+            }
+        }
+
         if (!await userService.ExistsAsync(id))
         {
             return NotFound();
@@ -68,7 +78,6 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <response code="404">If a user does not exist</response>
     /// <response code="200">Returns a list of submissions</response>
     [HttpGet("{id:int}/submissions")]
-    [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<IEnumerable<MatchSubmissionStatusDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSubmissionsAsync(int id)
@@ -118,7 +127,6 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <response code="404">If a user does not exist</response>
     /// <response code="200">Returns a list of OAuth clients</response>
     [HttpGet("{id:int}/clients")]
-    [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<IEnumerable<OAuthClientDTO>>(StatusCodes.Status200OK)]
@@ -154,7 +162,6 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <response code="400">If the deletion was not successful</response>
     /// <response code="200">Denotes the deletion was successful</response>
     [HttpDelete("{id:int}/clients/{clientId:int}")]
-    [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

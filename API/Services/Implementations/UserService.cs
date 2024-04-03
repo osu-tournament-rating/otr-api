@@ -3,22 +3,19 @@ using API.Entities;
 using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using API.Utilities;
 using AutoMapper;
 
 namespace API.Services.Implementations;
 
 public class UserService(IUserRepository userRepository, IMatchesRepository matchesRepository, IMapper mapper) : IUserService
 {
-    private readonly IUserRepository _userRepository = userRepository;
-    private readonly IMatchesRepository _matchesRepository = matchesRepository;
-    private readonly IMapper _mapper = mapper;
-
     public async Task<bool> ExistsAsync(int id) =>
-        await _userRepository.ExistsAsync(id);
+        await userRepository.ExistsAsync(id);
 
     public async Task<UserDTO?> GetAsync(int id)
     {
-        User? user = await _userRepository.GetAsync(id);
+        User? user = await userRepository.GetAsync(id);
 
         if (user is null)
         {
@@ -38,14 +35,14 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
     }
 
     public async Task<IEnumerable<OAuthClientDTO>?> GetClientsAsync(int id) =>
-        _mapper.Map<IEnumerable<OAuthClientDTO>?>((await _userRepository.GetAsync(id))?.Clients?.ToList());
+        mapper.Map<IEnumerable<OAuthClientDTO>?>((await userRepository.GetAsync(id))?.Clients?.ToList());
 
     public async Task<IEnumerable<MatchSubmissionStatusDTO>?> GetSubmissionsAsync(int id) =>
-        _mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>((await _userRepository.GetAsync(id))?.SubmittedMatches);
+        mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>((await userRepository.GetAsync(id))?.SubmittedMatches);
 
     public async Task<bool> RejectSubmissionsAsync(int id, int? verifierId, int? verificationSource)
     {
-        IEnumerable<Match>? submissions = (await _userRepository.GetAsync(id))?.SubmittedMatches?.ToList();
+        IEnumerable<Match>? submissions = (await userRepository.GetAsync(id))?.SubmittedMatches?.ToList();
         if (submissions is null)
         {
             // Return in the affirmative if the user has no submissions
@@ -59,20 +56,27 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
             match.VerificationSource = verificationSource;
         }
 
-        return await _matchesRepository.UpdateAsync(submissions, verifierId) == submissions.Count();
+        return await matchesRepository.UpdateAsync(submissions, verifierId) == submissions.Count();
     }
 
     public async Task<UserDTO?> UpdateScopesAsync(int id, IEnumerable<string> scopes)
     {
-        User? user = await _userRepository.GetAsync(id);
+        User? user = await userRepository.GetAsync(id);
         if (user is null)
         {
             return null;
         }
 
-        user.Scopes = scopes.ToArray();
-        await _userRepository.UpdateAsync(user);
+        scopes = scopes.ToList();
+        // Ensure user scope is always present
+        if (!scopes.Contains(OtrClaims.User))
+        {
+            scopes = scopes.Append(OtrClaims.User);
+        }
 
-        return _mapper.Map<UserDTO>(user);
+        user.Scopes = scopes.ToArray();
+        await userRepository.UpdateAsync(user);
+
+        return mapper.Map<UserDTO>(user);
     }
 }
