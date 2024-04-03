@@ -13,7 +13,6 @@ scripts/inserts
 app.env
 db.env
 redis.env
-postgres_exporter.env
 
 .DS_Store
 *.DotSettings.user
