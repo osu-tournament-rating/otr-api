@@ -66,7 +66,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
             return BadRequest(ModelState);
         }
 
-        if (verify && !User.CanVerifyMatches())
+        if (verify && !User.IsMatchVerifier())
         {
             return Unauthorized();
         }
@@ -163,7 +163,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         [FromBody] MatchesWebSubmissionDTO matchesSubmission,
         [FromQuery] bool verify = false)
     {
-        if (verify && !User.CanVerifyMatches())
+        if (verify && !User.IsMatchVerifier())
         {
             return Unauthorized();
         }
