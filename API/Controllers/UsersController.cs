@@ -16,9 +16,6 @@ namespace API.Controllers;
 [SuppressMessage("ReSharper", "RouteTemplates.ActionRoutePrefixCanBeExtractedToControllerRoute")]
 public class UsersController(IUserService userService, IOAuthClientService clientService) : Controller
 {
-    private readonly IUserService _userService = userService;
-    private readonly IOAuthClientService _clientService = clientService;
-
     /// <summary>
     /// Get a user
     /// </summary>
@@ -30,7 +27,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(int id)
     {
-        UserDTO? result = await _userService.GetAsync(id);
+        UserDTO? result = await userService.GetAsync(id);
 
         return result == null
             ? NotFound()
@@ -51,12 +48,12 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] List<string> scopes)
     {
-        if (!await _userService.ExistsAsync(id))
+        if (!await userService.ExistsAsync(id))
         {
             return NotFound();
         }
 
-        UserDTO? result = await _userService.UpdateScopesAsync(id, scopes);
+        UserDTO? result = await userService.UpdateScopesAsync(id, scopes);
 
         return result == null
             ? BadRequest()
@@ -74,12 +71,12 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     [ProducesResponseType<IEnumerable<MatchSubmissionStatusDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSubmissionsAsync(int id)
     {
-        if (!await _userService.ExistsAsync(id))
+        if (!await userService.ExistsAsync(id))
         {
             return NotFound();
         }
 
-        return Ok(await _userService.GetSubmissionsAsync(id) ?? new List<MatchSubmissionStatusDTO>());
+        return Ok(await userService.GetSubmissionsAsync(id) ?? new List<MatchSubmissionStatusDTO>());
     }
 
     /// <summary>
@@ -93,13 +90,13 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RejectSubmissionsAsync(int id)
     {
-        if (!await _userService.ExistsAsync(id))
+        if (!await userService.ExistsAsync(id))
         {
             return NotFound();
         }
 
         var verifierId = HttpContext.AuthorizedUserIdentity();
-        return await _userService.RejectSubmissionsAsync(id, verifierId, (int)MatchVerificationSource.Admin)
+        return await userService.RejectSubmissionsAsync(id, verifierId, (int)MatchVerificationSource.Admin)
             ? BadRequest()
             : Ok();
     }
@@ -115,12 +112,12 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     [ProducesResponseType<IEnumerable<OAuthClientDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetClientsAsync(int id)
     {
-        if (!await _userService.ExistsAsync(id))
+        if (!await userService.ExistsAsync(id))
         {
             return NotFound();
         }
 
-        return Ok(await _userService.GetClientsAsync(id) ?? new List<OAuthClientDTO>());
+        return Ok(await userService.GetClientsAsync(id) ?? new List<OAuthClientDTO>());
     }
 
     /// <summary>
@@ -137,12 +134,12 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteClientAsync(int id, int clientId)
     {
-        if (!await _clientService.ExistsAsync(clientId, id))
+        if (!await clientService.ExistsAsync(clientId, id))
         {
             return NotFound();
         }
 
-        return await _clientService.DeleteAsync(clientId)
+        return await clientService.DeleteAsync(clientId)
             ? BadRequest()
             : Ok();
     }
