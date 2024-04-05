@@ -357,6 +357,7 @@ builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
 
 #endregion
 
