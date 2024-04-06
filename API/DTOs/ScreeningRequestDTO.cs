@@ -4,9 +4,8 @@ using API.Controllers;
 namespace API.DTOs;
 
 /// <summary>
-/// Used by the <see cref="ScreeningController"/> to
-/// determine what types of players are eligible/ineligible
-/// to play in a tournament that screens by criteria here.
+/// Represents a set of criteria used by the <see cref="ScreeningController"/>
+/// to determine player eligibility for a tournament
 /// </summary>
 public class ScreeningRequestDTO
 {
