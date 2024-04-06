@@ -16,9 +16,6 @@ namespace API.Controllers;
 [Authorize(Roles = "whitelist")]
 public class TournamentsController(ITournamentsService tournamentsService, IMatchesService matchesService) : Controller
 {
-    private readonly ITournamentsService _tournamentsService = tournamentsService;
-    private readonly IMatchesService _matchesService = matchesService;
-
     /// <summary>
     /// List all tournaments
     /// </summary>
@@ -29,7 +26,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAsync()
     {
-        IEnumerable<TournamentDTO> result = await _tournamentsService.ListAsync();
+        IEnumerable<TournamentDTO> result = await tournamentsService.ListAsync();
         return Ok(result);
     }
 
@@ -71,7 +68,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
             return Unauthorized();
         }
 
-        if (await _tournamentsService.ExistsAsync(tournamentSubmission.TournamentName, tournamentSubmission.Mode))
+        if (await tournamentsService.ExistsAsync(tournamentSubmission.TournamentName, tournamentSubmission.Mode))
         {
             return BadRequest(
                 $"A tournament with name {tournamentSubmission.TournamentName} for mode {tournamentSubmission.Mode} already exists");
@@ -79,7 +76,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
 
         // Create tournament
         TournamentCreatedResultDTO result =
-            await _tournamentsService.CreateAsync(tournamentSubmission, verify, (int?)User.VerificationSource());
+            await tournamentsService.CreateAsync(tournamentSubmission, verify, (int?)User.VerificationSource());
         return CreatedAtAction("Get", new { id = result.Id }, result);
     }
 
@@ -94,7 +91,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(int id)
     {
-        TournamentDTO? result = await _tournamentsService.GetAsync(id);
+        TournamentDTO? result = await tournamentsService.GetAsync(id);
         if (result is null)
         {
             return NotFound();
@@ -122,7 +119,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     )
     {
         // Ensure target tournament exists
-        TournamentDTO? tournament = await _tournamentsService.GetAsync(id);
+        TournamentDTO? tournament = await tournamentsService.GetAsync(id);
         if (tournament is null)
         {
             return NotFound();
@@ -142,7 +139,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         }
 
         // Apply patched values to entity
-        TournamentDTO? updatedTournament = await _tournamentsService.UpdateAsync(id, tournament);
+        TournamentDTO? updatedTournament = await tournamentsService.UpdateAsync(id, tournament);
         return Ok(updatedTournament!);
     }
 
@@ -169,7 +166,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         }
 
         IEnumerable<MatchCreatedResultDTO>? result =
-            await _matchesService.CreateAsync(
+            await matchesService.CreateAsync(
                 id,
                 matchesSubmission.SubmitterId,
                 matchesSubmission.Ids, verify,
@@ -196,7 +193,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     [ProducesResponseType<IEnumerable<MatchDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListMatchesAsync(int id)
     {
-        TournamentDTO? result = await _tournamentsService.GetAsync(id);
+        TournamentDTO? result = await tournamentsService.GetAsync(id);
         if (result is null)
         {
             return NotFound();
