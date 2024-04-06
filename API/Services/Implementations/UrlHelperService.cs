@@ -6,6 +6,11 @@ using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace API.Services.Implementations;
 
+/*
+This service directly reimplements the functionality of "AspNetCore.Mvc.ControllerBase.CreatedAtAction()"
+It would be possible to generate routes at the controller level using the mentioned method before returning,
+but it better fits our chosen flow to decouple this from the controllers and into a dedicated service
+*/
 public class UrlHelperService(IUrlHelperFactory urlHelperFactory, IActionContextAccessor actionContextAccessor) : IUrlHelperService
 {
     private readonly HttpRequest? _httpRequest = actionContextAccessor.ActionContext?.HttpContext.Request;
@@ -15,22 +20,6 @@ public class UrlHelperService(IUrlHelperFactory urlHelperFactory, IActionContext
         : null;
 
     private const string UnknownText = "unknown";
-
-    public string Action(string action, string controller, object routeValues)
-    {
-        if (_urlHelper is null || _httpRequest is null)
-        {
-            return UnknownText;
-        }
-
-        return _urlHelper.Action(
-            action,
-            controller,
-            routeValues,
-            _httpRequest.Scheme,
-            _httpRequest.Host.ToUriComponent()
-        ) ?? UnknownText;
-    }
 
     public string Action(CreatedAtRouteValues routeValues)
     {
