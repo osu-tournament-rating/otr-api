@@ -48,14 +48,12 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
             });
         }
 
-        var dto = new ScreeningResultDTO
+        return new ScreeningResultDTO
         {
             PlayersPassed = passed,
             PlayersFailed = failed,
             ScreeningResults = resultCollection
         };
-
-        return dto;
     }
 
     private async Task<(ScreeningResult result, ScreeningFailReason? failReason)> ScreenAsync(ScreeningRequestDTO screeningRequest,
