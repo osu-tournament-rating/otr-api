@@ -59,6 +59,7 @@ jobs:
         run: |
           echo "${{ secrets.PROD_APP_ENV }}" > app.env
           echo "${{ secrets.PROD_DB_ENV }}" > db.env
+          echo "${{ secrets.PROD_POSTGRES_EXPORTER }}" > postgres_exporter.env
       - name: Copy files to server
         uses: appleboy/scp-action@master
         with:
