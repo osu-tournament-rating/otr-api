@@ -66,7 +66,7 @@ jobs:
           host: ${{ secrets.PROD_SSH_HOST }}
           username: ${{ secrets.PROD_SSH_USER }}
           key: ${{ secrets.PROD_SSH_KEY }}
-          source: "app.env,db.env,docker-compose-prod.yml"
+          source: "app.env,db.env,postgres_exporter.env,docker-compose-prod.yml"
           target: "~/otr-api/"
       - name: Deploy
         uses: appleboy/ssh-action@master
