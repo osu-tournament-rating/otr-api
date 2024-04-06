@@ -18,7 +18,7 @@ public class PlayerScreeningResultDTO
     /// <summary>
     /// The osu! id of the player
     /// </summary>
-    public long OsuPlayerId { get; set; }
+    public long OsuId { get; set; }
     /// <summary>
     /// The screening result
     /// </summary>

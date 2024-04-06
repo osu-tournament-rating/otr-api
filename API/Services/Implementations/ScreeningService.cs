@@ -41,7 +41,7 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
             {
                 PlayerId = playerInfo?.Id,
                 Username = playerInfo?.Username,
-                OsuPlayerId = osuId,
+                OsuId = osuId,
                 ScreeningResult = result,
                 ScreeningFailReason = failReason
             });
