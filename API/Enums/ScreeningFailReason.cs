@@ -11,7 +11,7 @@ public enum ScreeningFailReason
     /// </summary>
     None = 0,
     /// <summary>
-    /// This player does not have a rating / profile in our system
+    /// The player does not have a rating / profile in the o!TR database
     /// </summary>
     NoData = 1 << 0,
     /// <summary>

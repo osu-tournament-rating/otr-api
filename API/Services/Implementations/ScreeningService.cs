@@ -59,25 +59,20 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
     private async Task<(ScreeningResult result, ScreeningFailReason? failReason)> ScreenAsync(ScreeningRequestDTO screeningRequest,
         PlayerInfoDTO? playerInfo)
     {
-        ScreeningResult result = ScreeningResult.Pass;
+        ScreeningResult result = ScreeningResult.Fail;
         ScreeningFailReason? failReason = ScreeningFailReason.None;
 
         if (playerInfo == null)
         {
-            result = ScreeningResult.Fail;
             failReason |= ScreeningFailReason.NoData;
 
             return (result, failReason);
         }
 
-
         BaseStatsDTO? baseStats = await baseStatsService.GetAsync(null, playerInfo.Id, screeningRequest.Ruleset);
-        var peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, screeningRequest.Ruleset);
-
 
         if (baseStats == null)
         {
-            result = ScreeningResult.Fail;
             failReason |= ScreeningFailReason.NoData;
 
             return (result, failReason);
@@ -85,38 +80,38 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
 
         if (baseStats.Rating < screeningRequest.MinRating)
         {
-            result = ScreeningResult.Fail;
             failReason |= ScreeningFailReason.MinRating;
         }
 
         if (baseStats.Rating > screeningRequest.MaxRating)
         {
-            result = ScreeningResult.Fail;
             failReason |= ScreeningFailReason.MaxRating;
         }
 
         if (!screeningRequest.AllowProvisional && baseStats.IsProvisional)
         {
-            result = ScreeningResult.Fail;
             failReason |= ScreeningFailReason.IsProvisional;
         }
 
         if (baseStats.MatchesPlayed < screeningRequest.MatchesPlayed)
         {
-            result = ScreeningResult.Fail;
             failReason |= ScreeningFailReason.NotEnoughMatches;
         }
 
         if (baseStats.TournamentsPlayed < screeningRequest.TournamentsPlayed)
         {
-            result = ScreeningResult.Fail;
             failReason |= ScreeningFailReason.NotEnoughTournaments;
         }
 
+        var peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, screeningRequest.Ruleset);
         if (peakRating > screeningRequest.PeakRating)
         {
-            result = ScreeningResult.Fail;
             failReason |= ScreeningFailReason.PeakRatingTooHigh;
+        }
+
+        if (failReason == ScreeningFailReason.None)
+        {
+            result = ScreeningResult.Pass;
         }
 
         return (result, failReason);

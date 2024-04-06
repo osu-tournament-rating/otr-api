@@ -17,7 +17,6 @@ public class ScreeningController(IScreeningService screeningService) : Controlle
     /// <see cref="ScreeningResultDTO"/>
     /// </summary>
     /// <param name="screeningRequest">The screening request</param>
-    /// <returns></returns>
     /// <response code="400">Errors encountered during validation</response>
     /// <response code="200">The screening result</response>
     [HttpPost]

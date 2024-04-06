@@ -6,11 +6,11 @@ namespace API.Enums;
 public enum ScreeningResult
 {
     /// <summary>
-    /// The player passed screening
+    /// Indicates the player passed screening
     /// </summary>
     Pass,
     /// <summary>
-    /// The player failed screening
+    /// Indicates the player failed screening
     /// </summary>
     Fail
 }

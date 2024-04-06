@@ -26,7 +26,7 @@ public class ScreeningRequestDTO
     [Range(100, int.MaxValue, ErrorMessage = "Minimum rating value is 100")]
     public int? MaxRating { get; set; }
     /// <summary>
-    /// Whether to consider players that currently have a provisional rating
+    /// Whether to screen players that currently have a provisional rating
     /// </summary>
     public bool AllowProvisional { get; set; } = true;
     /// <summary>
