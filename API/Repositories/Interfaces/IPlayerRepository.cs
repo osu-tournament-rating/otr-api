@@ -35,6 +35,13 @@ public interface IPlayerRepository : IRepository<Player>
     Task<IEnumerable<Player>> GetAsync(bool eagerLoad = false);
 
     /// <summary>
+    /// Returns a collection of players, one per provided osu! id
+    /// </summary>
+    /// <param name="osuIds">The osu! player ids</param>
+    /// <returns>One <see cref="Player"/> per osu! id match, null if no match found</returns>
+    Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds);
+
+    /// <summary>
     /// Returns the id of the player that has this osuId
     /// </summary>
     /// <param name="osuId"></param>
