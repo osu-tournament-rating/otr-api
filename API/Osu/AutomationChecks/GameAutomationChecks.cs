@@ -1,4 +1,5 @@
 using API.Entities;
+using API.Utilities;
 
 namespace API.Osu.AutomationChecks;
 
@@ -53,8 +54,8 @@ public static class GameAutomationChecks
             return satisfiesOneVersusOne;
         }
 
-        var countRed = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Red);
-        var countBlue = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Blue);
+        var countRed = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Red, Score: > AutomationChecksUtils.MinimumScore });
+        var countBlue = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Blue, Score: > AutomationChecksUtils.MinimumScore });
 
         if (countRed == 0 && countBlue == 0)
         {
@@ -73,10 +74,17 @@ public static class GameAutomationChecks
         var hasReferee = false;
         if (countRed != countBlue)
         {
-            // Check for any scores that equal 0. Likely a referee in the lobby.
-            // It's pretty unlikely that an actual player's score is 0, we
-            // simply have to assume it's a referee.
-            hasReferee = game.MatchScores.Any(score => score.Score == 0);
+            /*
+             * Requirements for referee to be valid and present:
+             *
+             * - Exactly 1 score is below the minimum
+             * - The team sizes are uneven by exactly +1
+             * (meaning, if red has 3 players, blue has 2, and vice versa,
+             * NOT a 2v1 after accounting for the ref)
+             */
+            hasReferee = game.MatchScores.Count(s => s.Score <= AutomationChecksUtils.MinimumScore) == 1 &&
+                          (countRed == teamSize + 1 || countBlue == teamSize + 1);
+
             if (!hasReferee)
             {
                 s_logger.Information(
