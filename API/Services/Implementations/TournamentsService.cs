@@ -7,13 +7,19 @@ using AutoMapper;
 
 namespace API.Services.Implementations;
 
-public class TournamentsService(ITournamentsRepository tournamentsRepository, IMapper mapper) : ITournamentsService
+public class TournamentsService(ITournamentsRepository tournamentsRepository, IMatchesRepository matchesRepository, IMapper mapper) : ITournamentsService
 {
     public async Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify, int? verificationSource)
     {
         MatchVerificationStatus verificationStatus = verify
             ? MatchVerificationStatus.Verified
             : MatchVerificationStatus.PendingVerification;
+
+        // Only create matches that dont already exist
+        IEnumerable<long> enumerableMatchIds = wrapper.Ids.ToList();
+        IEnumerable<long> existingMatchIds = (await matchesRepository.GetAsync(enumerableMatchIds))
+            .Select(m => m.MatchId)
+            .ToList();
 
         Tournament tournament = await tournamentsRepository.CreateAsync(new Tournament
         {
@@ -24,7 +30,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
             Mode = wrapper.Mode,
             TeamSize = wrapper.TeamSize,
             SubmitterUserId = wrapper.SubmitterId,
-            Matches = wrapper.Ids.Select(matchId => new Match
+            Matches = existingMatchIds.Select(matchId => new Match
             {
                 MatchId = matchId,
                 VerificationStatus = (int)verificationStatus,
