@@ -15,9 +15,9 @@ public class SearchService(
     public async Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey) =>
         new SearchResponseCollectionDTO
         {
-            Tournaments = (await SearchTournamentsByNameAsync(searchKey)).ToArray(),
-            Matches = (await SearchMatchesByNameAsync(searchKey)).ToArray(),
-            Players = (await SearchPlayersByNameAsync(searchKey)).ToArray()
+            Tournaments = (await SearchTournamentsByNameAsync(searchKey)).ToList(),
+            Matches = (await SearchMatchesByNameAsync(searchKey)).ToList(),
+            Players = (await SearchPlayersByNameAsync(searchKey)).ToList()
         };
 
     private async Task<IEnumerable<SearchResponseDTO>> SearchTournamentsByNameAsync(string tournamentName)
