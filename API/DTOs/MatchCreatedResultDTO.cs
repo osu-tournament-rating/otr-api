@@ -1,5 +1,5 @@
-using API.Controllers;
 using API.DTOs.Interfaces;
+using API.Utilities;
 using Newtonsoft.Json;
 
 namespace API.DTOs;
@@ -10,12 +10,7 @@ namespace API.DTOs;
 public class MatchCreatedResultDTO : CreatedResultBaseDTO, ICreatedResult
 {
     [JsonIgnore]
-    public CreatedAtRouteValues CreatedAtRouteValues => new()
-    {
-        Action = nameof(MatchesController.GetByIdAsync),
-        Controller = nameof(MatchesController),
-        RouteValues = new { id = Id }
-    };
+    public CreatedAtRouteValues CreatedAtRouteValues => CreatedAtRouteValuesHelper.GetMatch(Id);
 
     /// <summary>
     /// osu! match id

@@ -34,9 +34,12 @@ using OsuSharp.Extensions;
 using Serilog;
 using Serilog.Events;
 
+#region WebApplicationBuilder Configuration
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Configurations
+#region Configuration Bindings
+
 builder
     .Services.AddOptionsWithValidateOnStart<ConnectionStringsConfiguration>()
     .Bind(builder.Configuration.GetSection(ConnectionStringsConfiguration.Position))
@@ -62,7 +65,9 @@ builder
     .Bind(builder.Configuration.GetSection(RateLimitConfiguration.Position))
     .ValidateDataAnnotations();
 
-// Add services to the container.
+#endregion
+
+#region Controller Configuration
 
 builder
     .Services.AddControllers(options => { options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider()); })
@@ -73,22 +78,10 @@ builder
     })
     .AddNewtonsoftJson();
 
-builder
-    .Services.AddApiVersioning(options =>
-    {
-        options.ReportApiVersions = true;
-        options.DefaultApiVersion = new ApiVersion(1);
-        options.ApiVersionReader = new UrlSegmentApiVersionReader();
-    })
-    .AddMvc()
-    .AddApiExplorer(options =>
-    {
-        // ReSharper disable once StringLiteralTypo
-        options.GroupNameFormat = "'v'VVV";
-        options.SubstituteApiVersionInUrl = true;
-    });
+#endregion
 
-//Configure OpenTelemetry tracing
+#region OpenTelemetry Tracing Configuration
+
 builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
 {
     options.EnrichWithException = (activity, exception) =>
@@ -114,6 +107,10 @@ builder.Services.AddOpenTelemetry()
                 )
                 .CollectorConnection);
         }));
+
+#endregion
+
+#region Rate Limit Configuration
 
 builder
     .Services.AddRateLimiter(options =>
@@ -199,6 +196,25 @@ builder
         });
     });
 
+#endregion
+
+#region Swagger Configuration
+
+builder
+    .Services.AddApiVersioning(options =>
+    {
+        options.ReportApiVersions = true;
+        options.DefaultApiVersion = new ApiVersion(1);
+        options.ApiVersionReader = new UrlSegmentApiVersionReader();
+    })
+    .AddMvc()
+    .AddApiExplorer(options =>
+    {
+        // ReSharper disable once StringLiteralTypo
+        options.GroupNameFormat = "'v'VVV";
+        options.SubstituteApiVersionInUrl = true;
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -213,6 +229,10 @@ builder.Services.AddSwaggerGen(options =>
     });
     options.IncludeXmlComments($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
 });
+
+#endregion
+
+#region Logger Configuration
 
 builder.Services.AddSerilog(configuration =>
 {
@@ -249,73 +269,11 @@ builder.Services.AddSerilog(configuration =>
         );
 });
 
-DefaultTypeMap.MatchNamesWithUnderscores = true;
-
-builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
-
 builder.Services.AddLogging();
 
-// Hosted services
-builder.Services.AddHostedService<MatchDuplicateDataWorker>();
-builder.Services.AddHostedService<OsuPlayerDataWorker>();
-builder.Services.AddHostedService<OsuMatchDataWorker>();
-builder.Services.AddHostedService<OsuTrackApiWorker>();
+#endregion
 
-// Handlers
-builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
-
-// Database context
-builder.Services.AddDbContext<OtrContext>(o =>
-{
-    o.UseNpgsql(
-        builder
-            .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-                ConnectionStringsConfiguration.Position
-            )
-            .DefaultConnection
-    );
-});
-
-builder.Services.AddDistributedMemoryCache();
-
-// Repositories
-builder.Services.AddScoped<IApiMatchRepository, ApiMatchRepository>();
-builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
-builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
-builder.Services.AddScoped<IGamesRepository, GamesRepository>();
-builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
-builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
-builder.Services.AddScoped<IMatchDuplicateRepository, MatchDuplicateRepository>();
-builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
-builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
-builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
-builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
-builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
-builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
-builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
-builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-// Services
-builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
-builder.Services.AddScoped<IBeatmapService, BeatmapService>();
-builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
-builder.Services.AddScoped<IMatchesService, MatchesService>();
-builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
-builder.Services.AddScoped<IPlayerService, PlayerService>();
-builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
-builder.Services.AddScoped<ISearchService, SearchService>();
-builder.Services.AddScoped<ITournamentsService, TournamentsService>();
-builder.Services.AddScoped<IUserService, UserService>();
-
-builder.Services.AddOsuSharp(options =>
-{
-    OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
-    options.Configuration = new OsuClientConfiguration { ClientId = osuConfiguration.ClientId, ClientSecret = osuConfiguration.ClientSecret };
-});
-
-builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
+#region CORS Configuration
 
 builder.Services.AddCors(options =>
 {
@@ -331,16 +289,9 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
-builder.Host.ConfigureOsuSharp(
-    (_, options) =>
-    {
-        OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
-            OsuConfiguration.Position
-        );
+#endregion
 
-        options.Configuration = new OsuClientConfiguration { ClientId = osuConfiguration.ClientId, ClientSecret = osuConfiguration.ClientSecret };
-    }
-);
+#region Authentication Configuration
 
 builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -360,26 +311,128 @@ builder
         };
     });
 
+#endregion
+
+#region Dapper
+
+DefaultTypeMap.MatchNamesWithUnderscores = true;
+
+#endregion
+
+#region AutoMapper
+
+builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+#endregion
+
+#region Database Context
+
+builder.Services.AddDbContext<OtrContext>(o =>
+{
+    o.UseNpgsql(
+        builder
+            .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+                ConnectionStringsConfiguration.Position
+            )
+            .DefaultConnection
+    );
+});
+
+builder.Services.AddDistributedMemoryCache();
+
+#endregion
+
+#region Hosted Services
+
+builder.Services.AddHostedService<MatchDuplicateDataWorker>();
+builder.Services.AddHostedService<OsuPlayerDataWorker>();
+builder.Services.AddHostedService<OsuMatchDataWorker>();
+builder.Services.AddHostedService<OsuTrackApiWorker>();
+
+#endregion
+
+#region Handlers
+
+builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
+
+#endregion
+
+#region Repositories
+
+builder.Services.AddScoped<IApiMatchRepository, ApiMatchRepository>();
+builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
+builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
+builder.Services.AddScoped<IGamesRepository, GamesRepository>();
+builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
+builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
+builder.Services.AddScoped<IMatchDuplicateRepository, MatchDuplicateRepository>();
+builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
+builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
+builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
+builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
+builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
+builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
+builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+#endregion
+
+#region Services
+
+builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
+builder.Services.AddScoped<IBeatmapService, BeatmapService>();
+builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+builder.Services.AddScoped<IMatchesService, MatchesService>();
+builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
+builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<ITournamentsService, TournamentsService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
+
+#endregion
+
+#region osu! Api
+
+builder.Services.AddOsuSharp(options =>
+{
+    OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
+    options.Configuration = new OsuClientConfiguration { ClientId = osuConfiguration.ClientId, ClientSecret = osuConfiguration.ClientSecret };
+});
+
+builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
+
+builder.Host.ConfigureOsuSharp(
+    (_, options) =>
+    {
+        OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
+            OsuConfiguration.Position
+        );
+
+        options.Configuration = new OsuClientConfiguration { ClientId = osuConfiguration.ClientId, ClientSecret = osuConfiguration.ClientSecret };
+    }
+);
+
+#endregion
+
+#endregion
+
+#region WebApplication Configuration
+
 WebApplication app = builder.Build();
 
 // Set switch for Npgsql
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 app.UseHttpsRedirection();
 
 app.UseRouting(); // UseRouting must come first before UseCors
-
 app.UseCors(); // Placed after UseRouting and before UseAuthentication and UseAuthorization
 
 app.UseMiddleware<RequestLoggingMiddleware>();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -391,6 +444,8 @@ if (app.Environment.IsDevelopment())
     IMapper mapper = app.Services.GetRequiredService<IMapper>();
     mapper.ConfigurationProvider.AssertConfigurationIsValid();
 
+    app.UseSwagger();
+    app.UseSwaggerUI();
     app.MapControllers().AllowAnonymous();
 }
 else
@@ -400,7 +455,8 @@ else
 
 app.Logger.LogInformation("Running!");
 
-// Migrations
+#region Database Migrations
+
 using IServiceScope scope = app.Services.CreateScope();
 OtrContext context = scope.ServiceProvider.GetRequiredService<OtrContext>();
 
@@ -410,5 +466,9 @@ if (migrationsCount > 0)
     await context.Database.MigrateAsync();
     app.Logger.LogInformation("Applied {MigrationsCount} pending migration(s).", migrationsCount);
 }
+
+#endregion
+
+#endregion
 
 app.Run();

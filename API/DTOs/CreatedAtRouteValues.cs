@@ -7,13 +7,13 @@ namespace API.DTOs;
 /// </summary>
 public class CreatedAtRouteValues
 {
-    private string? _controller;
-    private string? _action;
+    private readonly string? _controller;
+    private readonly string? _action;
 
     /// <summary>
     /// Any route or query parameters that must be included in the URI
     /// </summary>
-    public object? RouteValues { get; set; }
+    public object? RouteValues { get; init; }
 
     /// <summary>
     /// The controller method that produces the resource
@@ -21,7 +21,7 @@ public class CreatedAtRouteValues
     public string? Action
     {
         get => _action?.Replace("Async", string.Empty);
-        set => _action = value;
+        init => _action = value;
     }
 
     /// <summary>
@@ -30,6 +30,6 @@ public class CreatedAtRouteValues
     public string? Controller
     {
         get => _controller?.Replace("Controller", string.Empty);
-        set => _controller = value;
+        init => _controller = value;
     }
 }
