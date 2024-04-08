@@ -38,7 +38,7 @@ public class SearchService(
         return matches.Select(match => new SearchResponseDTO
         {
             Type = "Match",
-            Text = match.MatchId.ToString(),
+            Text = match.Name ?? match.MatchId.ToString(),
             Url = urlHelperService.Action(CreatedAtRouteValuesHelper.GetMatch(match.Id))
         });
     }
