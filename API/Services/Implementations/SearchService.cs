@@ -12,19 +12,13 @@ public class SearchService(
     IUrlHelperService urlHelperService
     ) : ISearchService
 {
-    public async Task<SearchResponseCollectionDTO?> SearchByNameAsync(string searchKey)
-    {
-        var result = new SearchResponseCollectionDTO
+    public async Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey) =>
+        new SearchResponseCollectionDTO
         {
             Tournaments = (await SearchTournamentsByNameAsync(searchKey)).ToArray(),
             Matches = (await SearchMatchesByNameAsync(searchKey)).ToArray(),
             Players = (await SearchPlayersByNameAsync(searchKey)).ToArray()
         };
-
-        return result.Tournaments.Length == 0 && result.Matches.Length == 0 && result.Players.Length == 0
-            ? null
-            : result;
-    }
 
     private async Task<IEnumerable<SearchResponseDTO>> SearchTournamentsByNameAsync(string tournamentName)
     {
