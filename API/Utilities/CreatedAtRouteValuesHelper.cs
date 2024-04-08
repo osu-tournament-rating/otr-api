@@ -38,6 +38,6 @@ public static class CreatedAtRouteValuesHelper
         {
             Action = nameof(PlayersController.GetAsync),
             Controller = nameof(PlayersController),
-            RouteValues = new { id }
+            RouteValues = new { key = id.ToString() }
         };
 }
