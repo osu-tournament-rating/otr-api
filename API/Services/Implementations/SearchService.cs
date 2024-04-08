@@ -24,7 +24,7 @@ public class SearchService(ITournamentsRepository tournamentsRepository, IMatche
     private async Task<IEnumerable<SearchResponseDTO>> SearchMatchesByNameAsync(string matchName)
     {
         var matches = (await matchesRepository.SearchAsync(matchName)).ToList();
-        return matches.Select(match => new SearchResponseDTO { Type = "Match", Text = match.MatchId.ToString(), Url = $"/matches/{match.Id}" });
+        return matches.Select(match => new SearchResponseDTO { Type = "Match", Text = match.Name ?? match.MatchId.ToString(), Url = $"/matches/{match.Id}" });
     }
 
     private async Task<IEnumerable<SearchResponseDTO>> SearchPlayersByNameAsync(string username)
