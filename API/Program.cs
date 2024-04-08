@@ -80,9 +80,8 @@ builder
 
 #endregion
 
-#region Rate Limit Configuration
+#region OpenTelemetry Tracing Configuration
 
-//Configure OpenTelemetry tracing
 builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
 {
     options.EnrichWithException = (activity, exception) =>
@@ -108,6 +107,10 @@ builder.Services.AddOpenTelemetry()
                 )
                 .CollectorConnection);
         }));
+
+#endregion
+
+#region Rate Limit Configuration
 
 builder
     .Services.AddRateLimiter(options =>
