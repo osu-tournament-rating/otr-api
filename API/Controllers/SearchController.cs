@@ -22,8 +22,6 @@ public class SearchController(ISearchService service) : Controller
     /// <param name="searchKey">The string to match against names of tournaments, matches, and usernames</param>
     /// <response code="200">Returns a list of all possible tournaments, matches, and usernames for the given search key</response>
     [HttpGet]
-    [EndpointSummary("Allows for partial or full searching on the names of tournaments, matches and usernames.")]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<SearchResponseCollectionDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> SearchAsync([FromQuery] string searchKey)
     {
