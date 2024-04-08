@@ -48,7 +48,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// </remarks>
     /// <param name="tournamentSubmission">Tournament submission data</param>
     /// <param name="verify">Optionally verify all included matches, assuming the user has permission to do so</param>
-    /// <response code="401">
+    /// <response code="403">
     /// If verify is true and the User does not have match verification privileges
     /// If the authorized user's id does not match the given <see cref="tournamentSubmission.Id"/>
     /// </response>
@@ -59,7 +59,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
     [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateAsync([FromBody] TournamentWebSubmissionDTO tournamentSubmission,
         [FromQuery] bool verify = false)
@@ -73,12 +73,12 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         var userId = HttpContext.AuthorizedUserIdentity();
         if (userId is null || tournamentSubmission.SubmitterId != userId)
         {
-            return Unauthorized();
+            return Forbid();
         }
 
         if (verify && !User.IsMatchVerifier())
         {
-            return Unauthorized();
+            return Forbid();
         }
 
         if (await tournamentsService.ExistsAsync(tournamentSubmission.TournamentName, tournamentSubmission.Mode))
@@ -162,15 +162,15 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <param name="id">Tournament id</param>
     /// <param name="matchesSubmission">Match submission data</param>
     /// <param name="verify">Optionally verify all included matches, assuming the user has permission to do so</param>
-    /// <response code="401">If verify is true and the User does not have match verification privileges</response>
+    /// <response code="403">If verify is true and the User does not have match verification privileges</response>
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="400">If the creation of matches was unsuccessful</response>
     /// <response code="201">Returns location information of the created matches</response>
     [HttpPost("{id:int}/matches")]
     [Authorize(Roles = "admin")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<IEnumerable<MatchCreatedResultDTO>>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateMatchesAsync(int id,
         [FromBody] MatchesWebSubmissionDTO matchesSubmission,
@@ -183,7 +183,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
 
         if (verify && !User.IsMatchVerifier())
         {
-            return Unauthorized();
+            return Forbid();
         }
 
         IEnumerable<MatchCreatedResultDTO>? result =
@@ -194,10 +194,11 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
                 (int?)User.VerificationSource()
             );
 
-        // Use no location header for multiple creation
         return result is not null
+            // Use no location header for multiple creation (formatter does the casting here)
             ? Created((string?)null, result)
-            : BadRequest();
+            // Match creation only fails if the tournament does not exist, so NotFound() is proper
+            : NotFound();
     }
 
     /// <summary>
