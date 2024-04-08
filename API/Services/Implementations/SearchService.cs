@@ -12,13 +12,18 @@ public class SearchService(
     IUrlHelperService urlHelperService
     ) : ISearchService
 {
-    public async Task<List<SearchResponseDTO>> SearchByNameAsync(string searchKey)
+    public async Task<SearchResponseCollectionDTO?> SearchByNameAsync(string searchKey)
     {
-        var returnList = (await SearchTournamentsByNameAsync(searchKey)).ToList();
-        returnList.AddRange(await SearchMatchesByNameAsync(searchKey));
-        returnList.AddRange(await SearchPlayersByNameAsync(searchKey));
+        var result = new SearchResponseCollectionDTO
+        {
+            Tournaments = (await SearchTournamentsByNameAsync(searchKey)).ToArray(),
+            Matches = (await SearchMatchesByNameAsync(searchKey)).ToArray(),
+            Players = (await SearchPlayersByNameAsync(searchKey)).ToArray()
+        };
 
-        return returnList;
+        return result.Tournaments.Length == 0 && result.Matches.Length == 0 && result.Players.Length == 0
+            ? null
+            : result;
     }
 
     private async Task<IEnumerable<SearchResponseDTO>> SearchTournamentsByNameAsync(string tournamentName)
@@ -26,7 +31,6 @@ public class SearchService(
         var tournaments = (await tournamentsRepository.SearchAsync(tournamentName)).ToList();
         return tournaments.Select(tournament => new SearchResponseDTO
         {
-            Type = "Tournament",
             Text = tournament.Name,
             Url = urlHelperService.Action(CreatedAtRouteValuesHelper.GetTournament(tournament.Id))
         });
@@ -37,7 +41,6 @@ public class SearchService(
         var matches = (await matchesRepository.SearchAsync(matchName)).ToList();
         return matches.Select(match => new SearchResponseDTO
         {
-            Type = "Match",
             Text = match.Name ?? match.MatchId.ToString(),
             Url = urlHelperService.Action(CreatedAtRouteValuesHelper.GetMatch(match.Id))
         });
@@ -48,7 +51,6 @@ public class SearchService(
         var players = (await playerRepository.SearchAsync(username)).ToList();
         return players.Select(player => new SearchResponseDTO
         {
-            Type = "Player",
             Text = player.Username ?? "<Unknown>",
             Url = urlHelperService.Action(CreatedAtRouteValuesHelper.GetPlayer(player.Id)),
             Thumbnail = $"a.ppy.sh/{player.OsuId}"

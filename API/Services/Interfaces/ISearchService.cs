@@ -9,5 +9,5 @@ public interface ISearchService
     /// </summary>
     /// <remarks>Searching by name is always case-insensitive and partial match enabled</remarks>
     /// <returns>A list of all possible matching results</returns>
-    Task<List<SearchResponseDTO>> SearchByNameAsync(string searchKey);
+    Task<SearchResponseCollectionDTO?> SearchByNameAsync(string searchKey);
 }

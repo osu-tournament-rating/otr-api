@@ -25,10 +25,10 @@ public class SearchController(ISearchService service) : Controller
     [HttpGet]
     [EndpointSummary("Allows for partial or full searching on the names of tournaments, matches and usernames.")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<IEnumerable<SearchResponseDTO>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> SearchByNamesAsync([FromQuery] string searchKey)
+    [ProducesResponseType<SearchResponseCollectionDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> SearchAsync([FromQuery] string searchKey)
     {
-        List<SearchResponseDTO> response = await service.SearchByNameAsync(searchKey);
-        return response.Count == 0 ? NotFound() : Ok(response);
+        SearchResponseCollectionDTO? response = await service.SearchByNameAsync(searchKey);
+        return response is null ? NotFound() : Ok(response);
     }
 }
