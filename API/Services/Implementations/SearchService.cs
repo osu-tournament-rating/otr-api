@@ -12,23 +12,17 @@ public class SearchService(
     IUrlHelperService urlHelperService
     ) : ISearchService
 {
-    public async Task<List<SearchResponseDTO>> SearchByNameAsync(string? tournamentName, string? matchName, string? username)
+    public async Task<List<SearchResponseDTO>> SearchByNameAsync(string searchKey)
     {
-        var returnList = (await SearchTournamentsByNameAsync(tournamentName)).ToList();
-
-        returnList.AddRange(await SearchMatchesByNameAsync(matchName));
-        returnList.AddRange(await SearchPlayersByNameAsync(username));
+        var returnList = (await SearchTournamentsByNameAsync(searchKey)).ToList();
+        returnList.AddRange(await SearchMatchesByNameAsync(searchKey));
+        returnList.AddRange(await SearchPlayersByNameAsync(searchKey));
 
         return returnList;
     }
 
-    private async Task<IEnumerable<SearchResponseDTO>> SearchTournamentsByNameAsync(string? tournamentName)
+    private async Task<IEnumerable<SearchResponseDTO>> SearchTournamentsByNameAsync(string tournamentName)
     {
-        if (tournamentName is null)
-        {
-            return new List<SearchResponseDTO>();
-        }
-
         var tournaments = (await tournamentsRepository.SearchAsync(tournamentName)).ToList();
         return tournaments.Select(tournament => new SearchResponseDTO
         {
@@ -38,13 +32,8 @@ public class SearchService(
         });
     }
 
-    private async Task<IEnumerable<SearchResponseDTO>> SearchMatchesByNameAsync(string? matchName)
+    private async Task<IEnumerable<SearchResponseDTO>> SearchMatchesByNameAsync(string matchName)
     {
-        if (matchName is null)
-        {
-            return new List<SearchResponseDTO>();
-        }
-
         var matches = (await matchesRepository.SearchAsync(matchName)).ToList();
         return matches.Select(match => new SearchResponseDTO
         {
@@ -54,13 +43,8 @@ public class SearchService(
         });
     }
 
-    private async Task<IEnumerable<SearchResponseDTO>> SearchPlayersByNameAsync(string? username)
+    private async Task<IEnumerable<SearchResponseDTO>> SearchPlayersByNameAsync(string username)
     {
-        if (username is null)
-        {
-            return new List<SearchResponseDTO>();
-        }
-
         var players = (await playerRepository.SearchAsync(username)).ToList();
         return players.Select(player => new SearchResponseDTO
         {

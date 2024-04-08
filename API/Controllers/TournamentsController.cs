@@ -16,9 +16,6 @@ namespace API.Controllers;
 [Authorize(Roles = "whitelist")]
 public class TournamentsController(ITournamentsService tournamentsService, IMatchesService matchesService) : Controller
 {
-    private readonly ITournamentsService _tournamentsService = tournamentsService;
-    private readonly IMatchesService _matchesService = matchesService;
-
     /// <summary>
     /// List all tournaments
     /// </summary>
@@ -29,7 +26,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAsync()
     {
-        IEnumerable<TournamentDTO> result = await _tournamentsService.ListAsync();
+        IEnumerable<TournamentDTO> result = await tournamentsService.ListAsync();
         return Ok(result);
     }
 
@@ -51,12 +48,18 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// </remarks>
     /// <param name="tournamentSubmission">Tournament submission data</param>
     /// <param name="verify">Optionally verify all included matches, assuming the user has permission to do so</param>
-    /// <response code="401">If verify is true and the User does not have match verification privileges</response>
-    /// <response code="400">If a tournament matching the given name and mode already exists, or the given <see cref="tournamentSubmission"/> is malformed</response>
+    /// <response code="403">
+    /// If verify is true and the User does not have match verification privileges
+    /// If the authorized user's id does not match the given <see cref="tournamentSubmission.Id"/>
+    /// </response>
+    /// <response code="400">
+    /// If the given <see cref="tournamentSubmission"/> is malformed
+    /// If a tournament matching the given name and mode already exists
+    /// </response>
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
     [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateAsync([FromBody] TournamentWebSubmissionDTO tournamentSubmission,
         [FromQuery] bool verify = false)
@@ -66,12 +69,19 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
             return BadRequest(ModelState);
         }
 
-        if (verify && !User.IsMatchVerifier())
+        // Prevent users from submitting matches on another user's behalf
+        var userId = HttpContext.AuthorizedUserIdentity();
+        if (userId is null || tournamentSubmission.SubmitterId != userId)
         {
-            return Unauthorized();
+            return Forbid();
         }
 
-        if (await _tournamentsService.ExistsAsync(tournamentSubmission.TournamentName, tournamentSubmission.Mode))
+        if (verify && !User.IsMatchVerifier())
+        {
+            return Forbid();
+        }
+
+        if (await tournamentsService.ExistsAsync(tournamentSubmission.TournamentName, tournamentSubmission.Mode))
         {
             return BadRequest(
                 $"A tournament with name {tournamentSubmission.TournamentName} for mode {tournamentSubmission.Mode} already exists");
@@ -79,7 +89,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
 
         // Create tournament
         TournamentCreatedResultDTO result =
-            await _tournamentsService.CreateAsync(tournamentSubmission, verify, (int?)User.VerificationSource());
+            await tournamentsService.CreateAsync(tournamentSubmission, verify, (int?)User.VerificationSource());
         return CreatedAtAction("Get", new { id = result.Id }, result);
     }
 
@@ -94,7 +104,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(int id)
     {
-        TournamentDTO? result = await _tournamentsService.GetAsync(id);
+        TournamentDTO? result = await tournamentsService.GetAsync(id);
         if (result is null)
         {
             return NotFound();
@@ -122,7 +132,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     )
     {
         // Ensure target tournament exists
-        TournamentDTO? tournament = await _tournamentsService.GetAsync(id);
+        TournamentDTO? tournament = await tournamentsService.GetAsync(id);
         if (tournament is null)
         {
             return NotFound();
@@ -142,7 +152,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         }
 
         // Apply patched values to entity
-        TournamentDTO? updatedTournament = await _tournamentsService.UpdateAsync(id, tournament);
+        TournamentDTO? updatedTournament = await tournamentsService.UpdateAsync(id, tournament);
         return Ok(updatedTournament!);
     }
 
@@ -152,37 +162,43 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <param name="id">Tournament id</param>
     /// <param name="matchesSubmission">Match submission data</param>
     /// <param name="verify">Optionally verify all included matches, assuming the user has permission to do so</param>
-    /// <response code="401">If verify is true and the User does not have match verification privileges</response>
+    /// <response code="403">If verify is true and the User does not have match verification privileges</response>
     /// <response code="404">If a tournament matching the given id does not exist</response>
+    /// <response code="400">If the creation of matches was unsuccessful</response>
     /// <response code="201">Returns location information of the created matches</response>
     [HttpPost("{id:int}/matches")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Roles = "admin")]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<IEnumerable<MatchCreatedResultDTO>>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateMatchesAsync(int id,
         [FromBody] MatchesWebSubmissionDTO matchesSubmission,
         [FromQuery] bool verify = false)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         if (verify && !User.IsMatchVerifier())
         {
-            return Unauthorized();
+            return Forbid();
         }
 
         IEnumerable<MatchCreatedResultDTO>? result =
-            await _matchesService.CreateAsync(
+            await matchesService.CreateAsync(
                 id,
                 matchesSubmission.SubmitterId,
                 matchesSubmission.Ids, verify,
                 (int?)User.VerificationSource()
             );
 
-        if (result is null)
-        {
-            return NotFound();
-        }
-
-        // Use no location header for multiple creation
-        return Created((string?)null, result);
+        return result is not null
+            // Use no location header for multiple creation (formatter does the casting here)
+            ? Created((string?)null, result)
+            // Match creation only fails if the tournament does not exist, so NotFound() is proper
+            : NotFound();
     }
 
     /// <summary>
@@ -196,7 +212,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     [ProducesResponseType<IEnumerable<MatchDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListMatchesAsync(int id)
     {
-        TournamentDTO? result = await _tournamentsService.GetAsync(id);
+        TournamentDTO? result = await tournamentsService.GetAsync(id);
         if (result is null)
         {
             return NotFound();
