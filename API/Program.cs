@@ -23,6 +23,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
+using OpenTelemetry.Instrumentation.AspNetCore;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using OsuSharp;
 using OsuSharp.Extensions;
 using Serilog;
@@ -80,6 +84,33 @@ builder
         options.GroupNameFormat = "'v'VVV";
         options.SubstituteApiVersionInUrl = true;
     });
+
+//Configure OpenTelemetry tracing
+builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
+{
+    options.EnrichWithException = (activity, exception) =>
+    {
+        activity.SetTag("stackTrace", exception.StackTrace);
+        activity.SetTag("errorMessage", exception.Message);
+        activity.SetTag("innerException", exception.InnerException); //might not need
+        activity.SetTag("exceptionSource", exception.Source);
+    };
+});
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService(serviceName: builder.Environment.ApplicationName))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddNpgsql()
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri(builder
+                .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+                    ConnectionStringsConfiguration.Position
+                )
+                .CollectorConnection);
+        }));
 
 builder
     .Services.AddRateLimiter(options =>
