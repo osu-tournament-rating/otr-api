@@ -378,7 +378,7 @@ public class AutomationChecksTests
         {
             foreach (Game game in match.Games)
             {
-                Assert.True(GameAutomationChecks.PassesModeCheck(game));
+                Assert.True(GameAutomationChecks.PassesRulesetCheck(game));
             }
         });
     }
@@ -389,7 +389,7 @@ public class AutomationChecksTests
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.Mode = 5;
 
-        Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
+        Assert.False(GameAutomationChecks.PassesRulesetCheck(match.Games.First()));
     }
 
     [Fact]
@@ -398,7 +398,7 @@ public class AutomationChecksTests
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.Mode = 1;
 
-        Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
+        Assert.False(GameAutomationChecks.PassesRulesetCheck(match.Games.First()));
     }
 
     [Fact]
@@ -627,7 +627,7 @@ public class AutomationChecksTests
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().PlayMode = (int)OsuEnums.Mode.Catch;
 
-        Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
+        Assert.False(GameAutomationChecks.PassesRulesetCheck(match.Games.First()));
     }
 
     [Fact]

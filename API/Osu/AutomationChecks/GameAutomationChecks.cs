@@ -1,4 +1,5 @@
 using API.Entities;
+using API.Enums;
 using API.Utilities;
 
 namespace API.Osu.AutomationChecks;
@@ -10,11 +11,54 @@ public static class GameAutomationChecks
 
     public static bool PassesAutomationChecks(Game game) =>
         PassesScoringTypeCheck(game)
-        && PassesModeCheck(game)
+        && PassesRulesetCheck(game)
         && PassesTeamTypeCheck(game)
         && PassesTeamSizeCheck(game)
         && PassesModsCheck(game)
         && PassesScoreSanityCheck(game);
+
+    /// <summary>
+    /// Returns a <see cref="GameRejectionReason"/> which explains why a game
+    /// is rejected.
+    /// </summary>
+    /// <param name="game">A game containing match scores</param>
+    /// <returns>Null if the game passes automation checks, otherwise
+    /// a <see cref="GameRejectionReason"/></returns>
+    public static GameRejectionReason? IdentifyRejectionReason(Game game)
+    {
+        if (PassesAutomationChecks(game))
+        {
+            return null;
+        }
+
+        GameRejectionReason reason = 0;
+        if (!PassesScoringTypeCheck(game))
+        {
+            reason |= GameRejectionReason.InvalidScoringType;
+        }
+        if (!PassesRulesetCheck(game))
+        {
+            reason |= GameRejectionReason.InvalidRuleset;
+        }
+        if (!PassesTeamTypeCheck(game))
+        {
+            reason |= GameRejectionReason.InvalidTeamType;
+        }
+        if (!PassesTeamSizeCheck(game))
+        {
+            reason |= GameRejectionReason.TeamSizeMismatch;
+        }
+        if (!PassesModsCheck(game))
+        {
+            reason |= GameRejectionReason.InvalidMods;
+        }
+        if (!PassesScoreSanityCheck(game))
+        {
+            reason |= GameRejectionReason.NoScores;
+        }
+
+        return reason;
+    }
 
     public static bool PassesTeamSizeCheck(Game game)
     {
@@ -135,12 +179,12 @@ public static class GameAutomationChecks
         return redUnexpected || blueUnexpected;
     }
 
-    public static bool PassesModeCheck(Game game)
+    public static bool PassesRulesetCheck(Game game)
     {
         Tournament tournament = game.Match.Tournament;
-        var gameMode = tournament.Mode;
+        var tournamentRuleset = tournament.Mode;
 
-        if (gameMode is < 0 or > 3)
+        if (tournamentRuleset is < 0 or > 3)
         {
             s_logger.Information(
                 "{Prefix} Tournament {TournamentId} has an invalid game mode: {Mode}, can't verify game {GameId}",
@@ -153,41 +197,65 @@ public static class GameAutomationChecks
             return false;
         }
 
-        if (gameMode != game.PlayMode)
+        if (tournamentRuleset == game.PlayMode)
         {
-            s_logger.Information(
-                "{Prefix} Tournament {TournamentId} has a game mode that differs from game, can't verify game {GameId} [Tournament: Mode={TMode} | Game: Mode={GMode}",
-                LogPrefix,
-                tournament.Id,
-                game.GameId,
-                tournament.Mode,
-                game.PlayMode
-            );
-
-            return false;
+            return true;
         }
 
-        return true;
+        s_logger.Information(
+            "{Prefix} Tournament {TournamentId} has a game mode that differs from game, can't verify game {GameId} [Tournament: Mode={TMode} | Game: Mode={GMode}",
+            LogPrefix,
+            tournament.Id,
+            game.GameId,
+            tournament.Mode,
+            game.PlayMode
+        );
+
+        return false;
     }
 
     public static bool PassesScoringTypeCheck(Game game)
     {
-        if (game.ScoringType != (int)OsuEnums.ScoringType.ScoreV2)
+        if (game.ScoringType == (int)OsuEnums.ScoringType.ScoreV2)
         {
-            s_logger.Information(
-                "{Prefix} Match {MatchId} does not have a ScoreV2 scoring type, can't verify game {GameId}",
-                LogPrefix,
-                game.Match.MatchId,
-                game.GameId
-            );
+            return true;
+        }
+
+        s_logger.Information(
+            "{Prefix} Match {MatchId} does not have a ScoreV2 scoring type, can't verify game {GameId}",
+            LogPrefix,
+            game.Match.MatchId,
+            game.GameId
+        );
+        return false;
+
+    }
+
+    public static bool PassesModsCheck(Game game)
+    {
+        // If the game features invalid mods, it fails the check
+        if (AutomationConstants.UnallowedMods.Any(unallowedMod => game.ModsEnum.HasFlag(unallowedMod)))
+        {
             return false;
+        }
+
+        // If any of the scores feature invalid mods, the check fails as well.
+        foreach (MatchScore score in game.MatchScores)
+        {
+            if (score.EnabledModsEnum is null)
+            {
+                continue;
+            }
+
+            if (AutomationConstants.UnallowedMods.Any(unallowedMod =>
+                    score.EnabledModsEnum.Value.HasFlag(unallowedMod)))
+            {
+                return false;
+            }
         }
 
         return true;
     }
-
-    public static bool PassesModsCheck(Game game) =>
-        !AutomationConstants.UnallowedMods.Any(unallowedMod => game.ModsEnum.HasFlag(unallowedMod));
 
     public static bool PassesTeamTypeCheck(Game game)
     {
@@ -227,12 +295,13 @@ public static class GameAutomationChecks
 
     public static bool PassesScoreSanityCheck(Game game)
     {
-        if (game.MatchScores.Count == 0)
+        if (game.MatchScores.Count != 0)
         {
-            s_logger.Warning("Game {GameId} has no scores, can't verify", game.GameId);
-            return false;
+            return true;
         }
 
-        return true;
+        s_logger.Warning("Game {GameId} has no scores, can't verify", game.GameId);
+        return false;
+
     }
 }

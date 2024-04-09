@@ -158,9 +158,12 @@ public class OsuMatchDataWorker(
 
             if (!GameAutomationChecks.PassesAutomationChecks(game))
             {
+                GameRejectionReason? rejectionReason = GameAutomationChecks.IdentifyRejectionReason(game);
+
                 game.VerificationStatus = (int)GameVerificationStatus.Rejected;
-                game.RejectionReason = (int)GameRejectionReason.FailedAutomationChecks;
-                _logger.LogInformation("Game {Game} failed automation checks", game.GameId);
+                game.RejectionReason = (int)rejectionReason!;
+                _logger.LogInformation("Game {Game} failed automation checks with reason {Reason}",
+                    game.GameId, rejectionReason.ToString());
 
                 await gamesRepository.UpdateAsync(game);
             }
