@@ -288,7 +288,7 @@ public class AutomationChecksTests
                 new MatchScore
                 {
                     PlayerId = -1,
-                    Score = 500,
+                    Score = 500_000,
                     Team = (int)OsuEnums.Team.Red
                 }
             );
@@ -306,7 +306,7 @@ public class AutomationChecksTests
                 new MatchScore
                 {
                     PlayerId = -1,
-                    Score = 500,
+                    Score = 500_000,
                     Team = (int)OsuEnums.Team.Blue
                 }
             );
@@ -476,7 +476,7 @@ public class AutomationChecksTests
                 new MatchScore
                 {
                     PlayerId = -1,
-                    Score = 500,
+                    Score = 500_000,
                     Team = (int)OsuEnums.Team.NoTeam
                 }
             );
@@ -496,25 +496,25 @@ public class AutomationChecksTests
             new()
             {
                 PlayerId = -1,
-                Score = 500,
+                Score = 500_000,
                 Team = (int)OsuEnums.Team.NoTeam
             },
             new()
             {
                 PlayerId = -1,
-                Score = 500,
+                Score = 500_000,
                 Team = (int)OsuEnums.Team.NoTeam
             },
             new()
             {
                 PlayerId = -1,
-                Score = 500,
+                Score = 500_000,
                 Team = (int)OsuEnums.Team.NoTeam
             },
             new()
             {
                 PlayerId = -1,
-                Score = 500,
+                Score = 500_000,
                 Team = (int)OsuEnums.Team.NoTeam
             }
         };
@@ -598,13 +598,14 @@ public class AutomationChecksTests
     public void Game_FailsTeamSizeCheck_Unbalanced_Teams()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+
         match
             .Games.First()
             .MatchScores.Add(
                 new MatchScore
                 {
                     PlayerId = -1,
-                    Score = 500,
+                    Score = 500_000,
                     Team = (int)OsuEnums.Team.Red
                 }
             );

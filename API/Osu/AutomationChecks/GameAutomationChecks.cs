@@ -78,11 +78,15 @@ public static class GameAutomationChecks
             return false;
         }
 
-        if (teamSize == 1)
+        var teamVs = game.TeamTypeEnum == OsuEnums.TeamType.TeamVs;
+        if (teamSize == 1 && !teamVs)
         {
             var countPlayers = game.MatchScores.Count;
-            var refereePresent = game.MatchScores.Any(score => score.Score == 0);
-            var satisfiesOneVersusOne = refereePresent ? countPlayers == 3 : countPlayers == 2;
+            var refereePresent = game.MatchScores.Any(score => score.Score <= AutomationChecksUtils.MinimumScore);
+
+            var countAfterReferees = countPlayers - game.MatchScores.Count(score => score.Score <= AutomationChecksUtils.MinimumScore);
+
+            var satisfiesOneVersusOne = refereePresent ? countAfterReferees == 2 : countPlayers == 2;
             if (!satisfiesOneVersusOne)
             {
                 s_logger.Information(
@@ -98,13 +102,27 @@ public static class GameAutomationChecks
             return satisfiesOneVersusOne;
         }
 
+        // teamSize is greater than 1 or is TeamVS
+
         var countRed = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Red, Score: > AutomationChecksUtils.MinimumScore });
         var countBlue = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Blue, Score: > AutomationChecksUtils.MinimumScore });
+        var countNoTeam = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.NoTeam);
 
-        if (countRed == 0 && countBlue == 0)
+        if (countNoTeam > 0)
         {
-            // We likely have a situation where the team size is > 0, and the game is TeamVs,
-            // but the match itself is HeadToHead. This is a problem.
+            s_logger.Information(
+                "{Prefix} Match {MatchId} has scores with no team but is in TeamVS mode, can't verify game {GameId}",
+                LogPrefix,
+                game.Match.MatchId,
+                game.GameId
+            );
+
+            return false;
+        }
+
+        if (countRed == 0 || countBlue == 0)
+        {
+            // Situation where either no scores or valid, or there are only scores from one team, something isn't right.
             s_logger.Information(
                 "{Prefix} Match {MatchId} has no team size for red or blue, can't verify game {GameId} (likely a warmup)",
                 LogPrefix,
@@ -121,13 +139,12 @@ public static class GameAutomationChecks
             /*
              * Requirements for referee to be valid and present:
              *
-             * - Exactly 1 score is below the minimum
-             * - The team sizes are uneven by exactly +1
-             * (meaning, if red has 3 players, blue has 2, and vice versa,
-             * NOT a 2v1 after accounting for the ref)
+             * - After referees are filtered out, the teams are perfectly even.
              */
-            hasReferee = game.MatchScores.Count(s => s.Score <= AutomationChecksUtils.MinimumScore) == 1 &&
-                          (countRed == teamSize + 1 || countBlue == teamSize + 1);
+            var refCountRed = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Red, Score: <= AutomationChecksUtils.MinimumScore });
+            var refCountBlue = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Blue, Score: <= AutomationChecksUtils.MinimumScore });
+
+            hasReferee = (countRed - refCountRed) == (countBlue - refCountBlue);
 
             if (!hasReferee)
             {

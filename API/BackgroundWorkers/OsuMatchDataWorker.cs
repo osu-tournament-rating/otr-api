@@ -156,25 +156,28 @@ public class OsuMatchDataWorker(
                 }
             }
 
-            if (!GameAutomationChecks.PassesAutomationChecks(game))
-            {
-                GameRejectionReason? rejectionReason = GameAutomationChecks.IdentifyRejectionReason(game);
+            GameRejectionReason? rejectionReason = GameAutomationChecks.IdentifyRejectionReason(game);
 
+            if (rejectionReason is not null)
+            {
                 game.VerificationStatus = (int)GameVerificationStatus.Rejected;
-                game.RejectionReason = (int)rejectionReason!;
+                game.RejectionReason = (int)rejectionReason;
                 _logger.LogInformation("Game {Game} failed automation checks with reason {Reason}",
                     game.GameId, rejectionReason.ToString());
-
-                await gamesRepository.UpdateAsync(game);
             }
             else
             {
                 // Game has passed automation checks
-                game.VerificationStatus = (int)GameVerificationStatus.PreVerified;
+                game.RejectionReason = null;
                 if (match.VerificationStatus == (int)MatchVerificationStatus.Verified)
                 {
                     game.VerificationStatus = (int)GameVerificationStatus.Verified;
                 }
+                else
+                {
+                    game.VerificationStatus = (int)GameVerificationStatus.PreVerified;
+                }
+
 
                 _logger.LogDebug(
                     "Game {Game} passed automation checks and is marked as {Status}",
@@ -182,6 +185,8 @@ public class OsuMatchDataWorker(
                     (GameVerificationStatus)game.VerificationStatus
                 );
             }
+
+            await gamesRepository.UpdateAsync(game);
         }
 
         match.NeedsAutoCheck = false;
