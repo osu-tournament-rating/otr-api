@@ -339,7 +339,11 @@ builder.Services.AddDbContext<OtrContext>(o =>
     );
 });
 
-builder.Services.AddDistributedMemoryCache();
+builder.Services.AddStackExchangeRedisCache(o =>
+{
+    o.Configuration = builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection;
+    o.InstanceName = "redisOne";
+});
 
 #endregion
 
