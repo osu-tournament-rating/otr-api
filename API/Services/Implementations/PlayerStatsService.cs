@@ -273,10 +273,18 @@ public class PlayerStatsService(
 
     public async Task TruncateRatingAdjustmentsAsync() => await _ratingAdjustmentsRepository.TruncateAsync();
 
+    public async Task<double> GetPeakRatingAsync(int playerId, int mode, DateTime? dateMin = null,
+        DateTime? dateMax = null)
+    {
+        return (await _ratingStatsRepository.GetForPlayerAsync(playerId, mode, dateMin, dateMax))
+            .SelectMany(x => x)
+            .Max(x => x.RatingAfter);
+    }
+
     // Returns overall stats for the player, no need to filter by date.
     private async Task<BaseStatsDTO?> GetBaseStatsAsync(int playerId, int mode)
     {
-        BaseStatsDTO? dto = await _baseStatsService.GetForPlayerAsync(null, playerId, mode);
+        BaseStatsDTO? dto = await _baseStatsService.GetAsync(null, playerId, mode);
 
         if (dto == null)
         {
