@@ -19,6 +19,8 @@ services:
       - clickhouse
     environment:
       - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource
+    volumes:
+      - 'grafana_storage:/var/lib/grafana'
   prometheus:
     container_name: prometheus
     image: prom/prometheus
@@ -69,3 +71,4 @@ services:
         hard: 262144
 volumes:
   db_data:
+  grafana:

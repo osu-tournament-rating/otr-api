@@ -5,7 +5,7 @@ namespace API.DTOs;
 /// </summary>
 public class PlayerMatchStatsDTO
 {
-    public int PlayerId { get; set; }
+    public int Id { get; set; }
     public int MatchId { get; set; }
     public bool Won { get; set; }
     public int AverageScore { get; set; }
