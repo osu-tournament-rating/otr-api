@@ -20,13 +20,13 @@ public interface IPlayerRepository : IRepository<Player>
     /// <summary>
     /// Gets a list of players for the given username
     /// </summary>
-    /// <remarks>Username is case insensitive</remarks>
+    /// <remarks>Username is case insensitive and partially matched</remarks>
     Task<IEnumerable<Player>> SearchAsync(string username);
 
     /// <summary>
     /// Gets a player for the given username
     /// </summary>
-    /// <remarks>Username is case insensitive</remarks>
+    /// <remarks>Username is case insensitive and partially matched</remarks>
     /// <returns>A player, or null if not found</returns>
     Task<Player?> GetAsync(string username);
 
@@ -39,6 +39,7 @@ public interface IPlayerRepository : IRepository<Player>
     /// <summary>
     /// Gets a player for the given osu! id, or creates one if one doesn't exist
     /// </summary>
+    /// <returns>The found or created player</returns>
     Task<Player> GetOrCreateAsync(long osuId);
 
     /// <summary>
@@ -61,15 +62,15 @@ public interface IPlayerRepository : IRepository<Player>
     Task<long> GetOsuIdAsync(int id);
 
     /// <summary>
-    /// Fetches the username for the given player id
+    /// Gets the username of a player for the given id
     /// </summary>
-    /// <param name="id">The user id</param>
+    /// <returns>A username, or null if not found</returns>
     Task<string?> GetUsernameAsync(int id);
 
     /// <summary>
-    /// Returns the country of the player with the given player id, if available
+    /// Gets the country of a player for the given id
     /// </summary>
-    /// <param name="id"></param>
+    /// <returns>A country code, or null if not found</returns>
     Task<string?> GetCountryAsync(int id);
 
     /// <summary>
