@@ -1,5 +1,4 @@
 using API.DTOs;
-using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
@@ -15,52 +14,9 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class MatchesController(IMatchesService matchesService, ITournamentsService tournamentsService) : Controller
+public class MatchesController(IMatchesService matchesService) : Controller
 {
     private readonly IMatchesService _matchesService = matchesService;
-    private readonly ITournamentsService _tournamentsService = tournamentsService;
-
-    // TODO: Move to tournaments controller
-    [HttpPost("batch")]
-    [Authorize(Roles = "submit")]
-    public async Task<IActionResult> PostAsync([FromBody] TournamentWebSubmissionDTO wrapper,
-        [FromQuery]
-        bool verified = false)
-    {
-        /*
-         * FLOW:
-         *
-         * The user submits a tournament (containing metadata and links) to the front-end. They are looking to add new data
-         * to our database that will eventually count towards ratings.
-         *
-         * This post endpoint takes these links, validates them (i.e. checks for duplicates,
-         * whether the match titles align with osu! tournament naming conventions,
-         * amount of matches being submitted, etc.).
-         *
-         * Assuming we have a good batch, we will mark all of the new items as "PENDING".
-         * The API.Osu.Multiplayer.MultiplayerLobbyDataWorker service checks the database for pending links
-         * periodically and processes them automatically.
-         */
-
-        if (verified && !User.IsMatchVerifier())
-        {
-            return Unauthorized("You are not authorized to verify matches");
-        }
-
-        // Gather tournament information
-        if (!verified && await _tournamentsService.ExistsAsync(wrapper.TournamentName, wrapper.Mode))
-        {
-            return BadRequest($"Tournament {wrapper.TournamentName} already exists for this mode");
-        }
-
-        await _matchesService.BatchInsertOrUpdateAsync(
-            wrapper,
-            verified,
-            (int)MatchVerificationSource.MatchVerifier
-        );
-
-        return Ok();
-    }
 
     [HttpPost("checks/refresh")]
     [Authorize(Roles = "admin, system")]

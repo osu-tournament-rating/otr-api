@@ -5,11 +5,9 @@ namespace API.Services.Interfaces;
 public interface ISearchService
 {
     /// <summary>
-    /// Takes in a string query and lookups up matched tournaments, matches, or usernames. This search performs a partial match search.
+    /// Gets possible matching tournaments, matches, or usernames for the given search key
     /// </summary>
-    /// <param name="tournamentName"></param>
-    /// <param name="matchName"></param>
-    /// <param name="username"></param>
-    /// <returns></returns>
-    Task<List<SearchResponseDTO>> SearchByNameAsync(string? tournamentName, string? matchName, string? username);
+    /// <remarks>Searching by name is always case-insensitive and partial match enabled</remarks>
+    /// <returns>A list of all possible matching results</returns>
+    Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey);
 }
