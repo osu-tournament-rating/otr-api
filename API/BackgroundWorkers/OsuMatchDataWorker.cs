@@ -39,49 +39,65 @@ public class OsuMatchDataWorker(
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            using (IServiceScope scope = _serviceProvider.CreateScope())
+            using IServiceScope scope = _serviceProvider.CreateScope();
+
+            IMatchesRepository matchesRepository = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
+            IApiMatchRepository apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchRepository>();
+            IGamesRepository gamesRepository = scope.ServiceProvider.GetRequiredService<IGamesRepository>();
+            IMatchScoresRepository matchScoresRepository = scope.ServiceProvider.GetRequiredService<IMatchScoresRepository>();
+            OtrContext context = scope.ServiceProvider.GetRequiredService<OtrContext>();
+
+            Match? apiMatch = await matchesRepository.GetFirstMatchNeedingApiProcessingAsync();
+            IList<Match> autoCheckMatches = await matchesRepository.GetMatchesNeedingAutoCheckAsync(3500);
+
+            if (apiMatch == null && autoCheckMatches.Count == 0)
             {
-                IMatchesRepository matchesService = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
-                IApiMatchRepository apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchRepository>();
-                IGamesRepository gamesRepository = scope.ServiceProvider.GetRequiredService<IGamesRepository>();
-                IMatchScoresRepository matchScoresService = scope.ServiceProvider.GetRequiredService<IMatchScoresRepository>();
-
-                Match? apiMatch = await matchesService.GetFirstMatchNeedingApiProcessingAsync();
-                Match? autoCheckMatch = await matchesService.GetFirstMatchNeedingAutoCheckAsync();
-
-                if (apiMatch == null && autoCheckMatch == null)
-                {
-                    _logger.LogTrace(
-                        "No matches need processing, sleeping for {Interval} seconds",
-                        INTERVAL_SECONDS
-                    );
-                    await Task.Delay(TimeSpan.FromSeconds(INTERVAL_SECONDS), cancellationToken);
-                    continue;
-                }
-
-                if (apiMatch != null)
-                {
-                    await ProcessMatchesOsuApiAsync(apiMatch, matchesService, apiMatchService);
-                }
-
-                if (autoCheckMatch != null)
-                {
-                    await ProcessMatchesNeedingAutomatedChecksAsync(
-                        autoCheckMatch,
-                        matchesService,
-                        gamesRepository,
-                        matchScoresService
-                    );
-                }
+                _logger.LogTrace(
+                    "No matches need processing, sleeping for {Interval} seconds",
+                    INTERVAL_SECONDS
+                );
+                await Task.Delay(TimeSpan.FromSeconds(INTERVAL_SECONDS), cancellationToken);
+                continue;
             }
+
+            if (apiMatch != null)
+            {
+                await ProcessMatchesOsuApiAsync(apiMatch, matchesRepository, apiMatchService);
+            }
+
+            if (autoCheckMatches.Count <= 0)
+            {
+                continue;
+            }
+
+            foreach (Match match in autoCheckMatches)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                ProcessMatchNeedingAutomatedChecksAsync(
+                    match,
+                    gamesRepository
+                );
+            }
+
+            await context.SaveChangesAsync(cancellationToken);
         }
     }
 
-    private async Task ProcessMatchesNeedingAutomatedChecksAsync(
+    /// <summary>
+    /// Updates the match & navigation properties with the results of automated checks.
+    /// Does not call the database for updates
+    /// </summary>
+    /// <param name="match">The match to update</param>
+    /// <param name="matchesRepository"></param>
+    /// <param name="gamesRepository"></param>
+    /// <param name="matchScoresRepository"></param>
+    private void ProcessMatchNeedingAutomatedChecksAsync(
         Match match,
-        IMatchesRepository matchesRepository,
-        IGamesRepository gamesRepository,
-        IMatchScoresRepository matchScoresRepository
+        IGamesRepository gamesRepository
     )
     {
         _logger.LogInformation("Performing automated checks on match {Match}", match.MatchId);
@@ -131,7 +147,7 @@ public class OsuMatchDataWorker(
                     {
                         // Avoid unnecessary db calls
                         score.IsValid = false;
-                        await matchScoresRepository.UpdateAsync(score);
+                        // await matchScoresRepository.UpdateAsync(score);
                     }
 
                     _logger.LogDebug(
@@ -145,7 +161,7 @@ public class OsuMatchDataWorker(
                     if (score.IsValid != true)
                     {
                         score.IsValid = true;
-                        await matchScoresRepository.UpdateAsync(score);
+                        // await matchScoresRepository.UpdateAsync(score);
                     }
 
                     _logger.LogTrace(
@@ -186,12 +202,11 @@ public class OsuMatchDataWorker(
                 );
             }
 
-            await gamesRepository.UpdateAsync(game);
+            // await gamesRepository.UpdateAsync(game);
+            gamesRepository.MarkUpdated(game);
         }
 
         match.NeedsAutoCheck = false;
-        await matchesRepository.UpdateAsync(match);
-
         _logger.LogInformation("Match {Match} has completed automated checks", match.MatchId);
     }
 

@@ -128,13 +128,14 @@ public class MatchesRepository(
             .Include(x => x.Tournament)
             .FirstOrDefaultAsync(x => x.MatchId == matchId);
 
-    public async Task<IList<Match>> GetMatchesNeedingAutoCheckAsync() =>
+    public async Task<IList<Match>> GetMatchesNeedingAutoCheckAsync(int limit = 10000) =>
         // We only want api processed matches because the verification checks require the data from the API
         await _context
             .Matches.Include(x => x.Games)
             .ThenInclude(x => x.MatchScores)
             .Include(x => x.Tournament)
             .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
+            .Take(limit)
             .ToListAsync();
 
     public async Task<Match?> GetFirstMatchNeedingApiProcessingAsync() =>

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using API.Entities.Interfaces;
 using API.Enums;
 using API.Osu;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,7 @@ namespace API.Entities;
 
 [Table("games")]
 [Index("GameId", Name = "osugames_gameid", IsUnique = true)]
-public class Game
+public class Game : IUpdateableEntity
 {
     [Key]
     [Column("id")]

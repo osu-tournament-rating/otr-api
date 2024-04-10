@@ -1,4 +1,5 @@
-﻿using API.Repositories.Interfaces;
+﻿using API.Entities.Interfaces;
+using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
@@ -40,6 +41,12 @@ public class RepositoryBase<T> : IRepository<T>
         return await _context.SaveChangesAsync();
     }
 
+    public TUpdateable MarkUpdated<TUpdateable>(TUpdateable entity) where TUpdateable : IUpdateableEntity
+    {
+        entity.Updated = DateTime.UtcNow;
+        return entity;
+    }
+
     public virtual async Task<int?> DeleteAsync(int id)
     {
         T? entity = await _context.Set<T>().FindAsync(id);
@@ -62,4 +69,14 @@ public class RepositoryBase<T> : IRepository<T>
     }
 
     public virtual async Task<IEnumerable<T>> GetAllAsync() => await _context.Set<T>().ToListAsync();
+
+    public virtual async Task<int> BulkUpdateAsync(IEnumerable<T> entities)
+    {
+        foreach (T entity in entities)
+        {
+            _context.Set<T>().Update(entity);
+        }
+
+        return await _context.SaveChangesAsync();
+    }
 }

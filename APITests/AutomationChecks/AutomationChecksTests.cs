@@ -89,7 +89,7 @@ public class AutomationChecksTests
         match.Games = games;
 
         _matchesServiceMock
-            .Setup(x => x.GetMatchesNeedingAutoCheckAsync().Result)
+            .Setup(x => x.GetMatchesNeedingAutoCheckAsync(10000).Result)
             .Returns(new List<API.Entities.Match> { match });
     }
 

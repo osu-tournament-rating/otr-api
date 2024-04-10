@@ -12,7 +12,7 @@ public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
     Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches);
     Task<Match?> GetByMatchIdAsync(long matchId);
     Task<IEnumerable<Match>> SearchAsync(string name);
-    Task<IList<Match>> GetMatchesNeedingAutoCheckAsync();
+    Task<IList<Match>> GetMatchesNeedingAutoCheckAsync(int limit = 10000);
     Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
     Task<Match?> GetFirstMatchNeedingAutoCheckAsync();
     Task<IList<Match>> GetNeedApiProcessingAsync();

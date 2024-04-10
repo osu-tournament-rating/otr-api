@@ -1,4 +1,6 @@
-﻿namespace API.Repositories.Interfaces;
+﻿using API.Entities.Interfaces;
+
+namespace API.Repositories.Interfaces;
 
 public interface IRepository<T>
     where T : class
@@ -30,6 +32,15 @@ public interface IRepository<T>
     Task<int> UpdateAsync(T entity);
 
     /// <summary>
+    /// Updates an <see cref="IUpdateableEntity"/> without saving changes to the database.
+    /// Sets the <see cref="IUpdateableEntity.Updated"/> property to the current UTC time.
+    /// </summary>
+    /// <param name="entity">The entity to mark as updated</param>
+    /// <typeparam name="TUpdateable">An <see cref="IUpdateableEntity"/></typeparam>
+    /// <returns>The entity with the <see cref="IUpdateableEntity.Updated"/> property set to the current UTC time</returns>
+    TUpdateable MarkUpdated<TUpdateable>(TUpdateable entity) where TUpdateable : IUpdateableEntity;
+
+    /// <summary>
     /// Deletes an entity from the database by its primary key
     /// </summary>
     /// <returns>Primary key of the deleted entity, or null if unsuccessful</returns>
@@ -51,4 +62,10 @@ public interface IRepository<T>
     /// Returns all entities
     /// </summary>
     Task<IEnumerable<T>> GetAllAsync();
+    /// <summary>
+    /// Performs a bulk update operation on all entities
+    /// </summary>
+    /// <param name="entities"></param>
+    /// <returns></returns>
+    Task<int> BulkUpdateAsync(IEnumerable<T> entities);
 }
