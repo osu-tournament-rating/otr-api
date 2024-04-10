@@ -15,9 +15,6 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class PlayersController(IPlayerService playerService, IMatchesService matchesService) : Controller
 {
-    private readonly IPlayerService _playerService = playerService;
-    private readonly IMatchesService _matchesService = matchesService;
-
     /// <summary>
     /// List all players
     /// </summary>
@@ -27,7 +24,7 @@ public class PlayersController(IPlayerService playerService, IMatchesService mat
     [ProducesResponseType<IEnumerable<PlayerDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAsync()
     {
-        IEnumerable<PlayerDTO> players = await _playerService.GetAllAsync();
+        IEnumerable<PlayerDTO> players = await playerService.GetAllAsync();
         return Ok(players);
     }
 
@@ -43,7 +40,7 @@ public class PlayersController(IPlayerService playerService, IMatchesService mat
     [ProducesResponseType<PlayerDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(string key)
     {
-        PlayerDTO? result = await _playerService.GetVersatileAsync(key);
+        PlayerDTO? result = await playerService.GetVersatileAsync(key);
 
         if (result == null)
         {
@@ -56,7 +53,7 @@ public class PlayersController(IPlayerService playerService, IMatchesService mat
     /// <summary>
     /// Get a player's participated matches
     /// </summary>
-    /// <remarks>Get a player's matches searching first by id, then osuId, then username</remarks>
+    /// <remarks>Get a player's participated matches searching first by id, then osuId, then username</remarks>
     /// <param name="key">The dynamic key of the player to look for</param>
     /// <param name="mode">osu! ruleset</param>
     /// <param name="dateMin">Filter from earliest date. If null, earliest possible date</param>
@@ -73,14 +70,14 @@ public class PlayersController(IPlayerService playerService, IMatchesService mat
         [FromQuery] DateTime? dateMax = null
     )
     {
-        var osuId = (await _playerService.GetVersatileAsync(key))?.OsuId;
+        var osuId = (await playerService.GetVersatileAsync(key))?.OsuId;
 
         if (!osuId.HasValue)
         {
             return NotFound();
         }
 
-        IEnumerable<MatchDTO> matches = await _matchesService.GetAllForPlayerAsync(osuId.Value, mode,
+        IEnumerable<MatchDTO> matches = await matchesService.GetAllForPlayerAsync(osuId.Value, mode,
             dateMin ?? DateTime.MinValue, dateMax ?? DateTime.MaxValue);
 
         return Ok(matches);
@@ -92,7 +89,7 @@ public class PlayersController(IPlayerService playerService, IMatchesService mat
     /// <param name="id">Player id</param>
     /// <param name="patch">JsonPatch data</param>
     /// <response code="404">If a player matching the given id does not exist</response>
-    /// <response code="400">If JsonPatch data is malformed or there was an error updating player data</response>
+    /// <response code="400">If JsonPatch data is malformed or there was an error updating the player</response>
     /// <response code="200">Returns the updated player</response>
     [HttpPatch("{id:int}")]
     [Authorize(Roles = "system, admin")]
@@ -101,7 +98,7 @@ public class PlayersController(IPlayerService playerService, IMatchesService mat
     [ProducesResponseType<PlayerDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<PlayerDTO> patch)
     {
-        PlayerDTO? target = await _playerService.GetAsync(id);
+        PlayerDTO? target = await playerService.GetAsync(id);
 
         if (target is null)
         {
@@ -119,7 +116,7 @@ public class PlayersController(IPlayerService playerService, IMatchesService mat
             return BadRequest(ModelState);
         }
 
-        PlayerDTO? result = await _playerService.UpdateAsync(id, target);
+        PlayerDTO? result = await playerService.UpdateAsync(id, target);
         return result == null
             ? BadRequest()
             : Ok(result);
@@ -130,11 +127,11 @@ public class PlayersController(IPlayerService playerService, IMatchesService mat
     /// </summary>
     /// <response code="200">Returns all player ranks</response>
     [HttpGet("ranks")]
-    [Authorize(Roles = "system, admin")]
+    [Authorize(Roles = "system")]
     [ProducesResponseType<IEnumerable<PlayerRanksDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllRanksAsync()
     {
-        IEnumerable<PlayerRanksDTO> result = await _playerService.GetAllRanksAsync();
+        IEnumerable<PlayerRanksDTO> result = await playerService.GetAllRanksAsync();
         return Ok(result);
     }
 }
