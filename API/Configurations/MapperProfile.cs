@@ -46,7 +46,9 @@ public class MapperProfile : Profile
             );
 
         CreateMap<Player, PlayerDTO>();
-        CreateMap<Player, PlayerRanksDTO>();
+        CreateMap<Player, PlayerRanksDTO>()
+            .ForMember(x => x.EarliestStandardGlobalRank, opt => opt.MapFrom(x => x.EarliestOsuGlobalRank))
+            .ForMember(x => x.EarliestStandardGlobalRankDate, opt => opt.MapFrom(x => x.EarliestOsuGlobalRankDate));
         CreateMap<Tournament, TournamentDTO>();
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()
