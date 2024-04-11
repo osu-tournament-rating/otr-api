@@ -52,31 +52,56 @@ public class OsuPlayerDataWorker(
 
                 foreach (Player? player in playersToUpdate)
                 {
-                    // Fetch ranks for all 4 game modes and update accordingly.
+                    // Fetch data for the player's preferred mode
+                    OsuApiUser? defaultResult = await _apiService.GetUserAsync(
+                        player.OsuId, null, $"Identified player that needs to have ranks updated for default mode");
+
+                    if (defaultResult is null)
+                    {
+                        await playerService.UpdateAsync(player);
+                        _logger.LogWarning(
+                            "Failed to fetch data for player {PlayerId} in default mode, skipping (user is likely restricted)",
+                            player.OsuId
+                        );
+                        continue;
+                    }
+
+                    // Only need to be updated once
+                    player.Country = defaultResult.Country;
+                    player.Username = defaultResult.Username;
+                    player.PlayMode = (OsuEnums.Mode)(int)defaultResult.PlayMode;
+
+                    // Fetch data for the other 3 game modes and update accordingly
                     foreach (OsuEnums.Mode gameModeEnum in Enum.GetValues<OsuEnums.Mode>())
                     {
-                        OsuApiUser? apiResult = await _apiService.GetUserAsync(
-                            player.OsuId,
-                            gameModeEnum,
-                            $"Identified player that needs to have ranks updated for mode {gameModeEnum}"
-                        );
-                        if (apiResult == null)
+                        OsuApiUser? apiResult;
+                        if (gameModeEnum != player.PlayMode)
                         {
-                            player.Updated = DateTime.UtcNow;
-                            await playerService.UpdateAsync(player);
-                            _logger.LogWarning(
-                                "Failed to fetch data for player {PlayerId} in mode {GameMode}, skipping (user is likely restricted)",
+                            apiResult = await _apiService.GetUserAsync(
                                 player.OsuId,
-                                gameModeEnum
+                                gameModeEnum,
+                                $"Identified player that needs to have ranks updated for mode {gameModeEnum}"
                             );
-                            break;
+                            if (apiResult is null)
+                            {
+                                await playerService.UpdateAsync(player);
+                                _logger.LogWarning(
+                                    "Failed to fetch data for player {PlayerId} in mode {GameMode}, skipping (user is likely restricted)",
+                                    player.OsuId,
+                                    gameModeEnum
+                                );
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            apiResult = defaultResult;
                         }
 
                         switch (gameModeEnum)
                         {
                             case OsuEnums.Mode.Standard:
                                 player.RankStandard = apiResult.Rank;
-                                player.Username = apiResult.Username; // Only needs an update once
                                 break;
                             case OsuEnums.Mode.Taiko:
                                 player.RankTaiko = apiResult.Rank;
@@ -88,8 +113,6 @@ public class OsuPlayerDataWorker(
                                 player.RankMania = apiResult.Rank;
                                 break;
                         }
-
-                        player.Country = apiResult.Country;
                     }
 
                     await playerService.UpdateAsync(player);

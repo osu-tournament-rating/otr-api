@@ -19,6 +19,9 @@ public class OsuApiUser
 
     [JsonProperty("country")]
     public string Country { get; set; } = null!;
+
+    [JsonProperty("play_mode")]
+    public GameMode PlayMode { get; set; }
 }
 
 public class OsuApiService : IOsuApiService
@@ -127,11 +130,11 @@ public class OsuApiService : IOsuApiService
             beatmapId
         );
 
-    public async Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Mode mode, string reason) =>
+    public async Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Mode? mode, string reason) =>
         await ExecuteApiCallAsync(
             async () =>
             {
-                IGlobalUser response = await _v2Client.GetUserAsync(userId, (GameMode)(int)mode);
+                IGlobalUser response = await _v2Client.GetUserAsync(userId, (GameMode?)(int?)mode);
 
                 if (response.IsRestricted == true)
                 {
@@ -150,7 +153,8 @@ public class OsuApiService : IOsuApiService
                     Id = userId,
                     Username = response.Username,
                     Rank = (int?)response.Statistics.GlobalRank,
-                    Country = response.Country.Code
+                    Country = response.Country.Code,
+                    PlayMode = response.GameMode
                 };
             },
             userId
