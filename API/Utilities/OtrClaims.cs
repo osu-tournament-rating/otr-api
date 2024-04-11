@@ -62,7 +62,7 @@ public static class OtrClaims
     {
         return claim switch
         {
-            User => true,
+            // 'User' not included because we only encode that claim to the JWT
             Admin => true,
             Verifier => true,
             Submitter => true,
@@ -79,7 +79,7 @@ public static class OtrClaims
     {
         return claim switch
         {
-            Client => true,
+            // 'Client' not included because we only encode that claim to the JWT
             System => true,
             Whitelist => true,
             RateLimitOverrides => true,

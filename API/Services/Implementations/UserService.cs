@@ -67,13 +67,6 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
             return null;
         }
 
-        scopes = scopes.ToList();
-        // Ensure user scope is always present
-        if (!scopes.Contains(OtrClaims.User))
-        {
-            scopes = scopes.Append(OtrClaims.User);
-        }
-
         user.Scopes = scopes.ToArray();
         await userRepository.UpdateAsync(user);
 
