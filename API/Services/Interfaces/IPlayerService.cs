@@ -40,6 +40,17 @@ public interface IPlayerService
     Task<PlayerDTO?> GetAsync(long osuId);
 
     /// <summary>
+    /// Gets a list of players for the given list of osu! ids
+    /// </summary>
+    /// <param name="osuIds">The osu! player ids</param>
+    /// <returns>A list of <see cref="PlayerDTO"/>, one per provided osu! id.
+    /// If a provided osu! id does not belong to a player in the database,
+    /// the <see cref="PlayerDTO"/> will be returned in a default state,
+    /// except the <see cref="PlayerDTO.OsuId"/> value will be set
+    /// </returns>
+    Task<IEnumerable<PlayerDTO>> GetAsync(IEnumerable<long> osuIds);
+
+    /// <summary>
     /// Gets a player for the given osu! username
     /// </summary>
     /// <returns>A player, or null if not found</returns>

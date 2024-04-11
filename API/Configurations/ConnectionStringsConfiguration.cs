@@ -8,4 +8,7 @@ public class ConnectionStringsConfiguration
 
     [Required(ErrorMessage = "DefaultConnection is required!")]
     public string DefaultConnection { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "CollectorConnection is required!")]
+    public string CollectorConnection { get; set; } = string.Empty;
 }

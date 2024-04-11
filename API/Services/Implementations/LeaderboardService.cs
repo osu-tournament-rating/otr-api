@@ -171,7 +171,7 @@ public class LeaderboardService(
         LeaderboardChartType chartType
     )
     {
-        BaseStatsDTO? baseStats = await _baseStatsService.GetForPlayerAsync(null, playerId, mode);
+        BaseStatsDTO? baseStats = await _baseStatsService.GetAsync(null, playerId, mode);
 
         if (baseStats == null)
         {

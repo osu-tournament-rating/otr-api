@@ -154,6 +154,15 @@ csharp_space_between_method_declaration_parameter_list_parentheses = false
 csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
 
+# Suppress XML warning (For now)
+# These can be removed once all endpoints and service / repository methods have proper documentation
+dotnet_diagnostic.CS1570.severity = none
+dotnet_diagnostic.CS1572.severity = none
+dotnet_diagnostic.CS1573.severity = none
+dotnet_diagnostic.CS1574.severity = none
+dotnet_diagnostic.CS1587.severity = none
+dotnet_diagnostic.CS1591.severity = none
+
 # C++ Files
 [*.{cpp,h,in}]
 curly_bracket_next_line = true

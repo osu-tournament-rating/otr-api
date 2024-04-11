@@ -8,21 +8,65 @@ using AutoMapper;
 namespace API.Services.Implementations;
 
 public class MatchesService(
-    ILogger<MatchesService> logger,
     IMatchesRepository matchesRepository,
-    ITournamentsRepository tournamentsRepository,
     IMatchDuplicateRepository duplicateRepository,
+    ITournamentsRepository tournamentsRepository,
     IMapper mapper
-    ) : IMatchesService
+) : IMatchesService
 {
-    private readonly ILogger<MatchesService> _logger = logger;
     private readonly IMatchesRepository _matchesRepository = matchesRepository;
-    private readonly ITournamentsRepository _tournamentsRepository = tournamentsRepository;
     private readonly IMatchDuplicateRepository _duplicateRepository = duplicateRepository;
+    private readonly ITournamentsRepository _tournamentsRepository = tournamentsRepository;
     private readonly IMapper _mapper = mapper;
 
+    public async Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(
+        int tournamentId,
+        int submitterId,
+        IEnumerable<long> matchIds,
+        bool verify,
+        int? verificationSource
+    )
+    {
+        Tournament? tournament = await _tournamentsRepository.GetAsync(tournamentId);
+        if (tournament is null)
+        {
+            return null;
+        }
+
+        MatchVerificationStatus verificationStatus = verify
+            ? MatchVerificationStatus.Verified
+            : MatchVerificationStatus.PendingVerification;
+
+        // Only create matches that dont already exist
+        IEnumerable<long> enumerableMatchIds = matchIds.ToList();
+        IEnumerable<long> existingMatchIds = (await _matchesRepository.GetAsync(enumerableMatchIds))
+            .Select(m => m.MatchId)
+            .ToList();
+
+        // Create matches directly on the tournament because we can't access their ids until after the entity is updated
+        IEnumerable<long> createdMatchIds = enumerableMatchIds.Except(existingMatchIds).ToList();
+        foreach (var matchId in createdMatchIds)
+        {
+            tournament.Matches.Add(new Match
+            {
+                MatchId = matchId,
+                VerificationStatus = (int)verificationStatus,
+                NeedsAutoCheck = true,
+                IsApiProcessed = false,
+                VerificationSource = verificationSource,
+                VerifierUserId = verify ? submitterId : null,
+                SubmitterUserId = submitterId
+            });
+        }
+
+        await _tournamentsRepository.UpdateAsync(tournament);
+        IEnumerable<Match> createdMatches = tournament.Matches.Where(m => createdMatchIds.Contains(m.MatchId));
+
+        return _mapper.Map<IEnumerable<MatchCreatedResultDTO>>(createdMatches);
+    }
+
     public async Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true) =>
-        _mapper.Map<MatchDTO?>(await _matchesRepository.GetAsync(id, filterInvalid));
+            _mapper.Map<MatchDTO?>(await _matchesRepository.GetAsync(id, filterInvalid));
 
     public async Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(
         long osuPlayerId,
@@ -33,66 +77,6 @@ public class MatchesService(
     {
         IEnumerable<Match> matches = await _matchesRepository.GetPlayerMatchesAsync(osuPlayerId, mode, start, end);
         return _mapper.Map<IEnumerable<MatchDTO>>(matches);
-    }
-
-    public async Task BatchInsertOrUpdateAsync(
-        TournamentWebSubmissionDTO tournamentWebSubmissionDto,
-        bool verified,
-        int? verifier
-    )
-    {
-        var existingMatches = (await _matchesRepository.GetAsync(tournamentWebSubmissionDto.Ids)).ToList();
-        Tournament tournament = await _tournamentsRepository.CreateOrUpdateAsync(
-            tournamentWebSubmissionDto,
-            verified
-        );
-
-        // Update the matches that already exist, if we are verified
-        if (verified)
-        {
-            foreach (Match? match in existingMatches)
-            {
-                match.NeedsAutoCheck = true;
-                match.IsApiProcessed = false;
-                match.VerificationStatus = (int)MatchVerificationStatus.Verified;
-                match.VerificationSource = verifier;
-                match.VerifierUserId = tournamentWebSubmissionDto.SubmitterId;
-                match.TournamentId = tournament.Id;
-                match.SubmitterUserId = tournamentWebSubmissionDto.SubmitterId;
-
-                await _matchesRepository.UpdateAsync(match);
-            }
-        }
-
-        // Matches that don't exist yet
-        var newMatchIds = tournamentWebSubmissionDto
-            .Ids.Except(existingMatches.Select(x => x.MatchId))
-            .ToList();
-        MatchVerificationStatus verificationStatus = verified
-            ? MatchVerificationStatus.Verified
-            : MatchVerificationStatus.PendingVerification;
-
-        IEnumerable<Match> newMatches = newMatchIds.Select(id => new Match
-        {
-            MatchId = id,
-            VerificationStatus = (int)verificationStatus,
-            NeedsAutoCheck = true,
-            IsApiProcessed = false,
-            VerificationSource = verifier,
-            VerifierUserId = verified ? tournamentWebSubmissionDto.SubmitterId : null,
-            TournamentId = tournament.Id,
-            SubmitterUserId = tournamentWebSubmissionDto.SubmitterId
-        });
-
-        int? result = await _matchesRepository.BulkInsertAsync(newMatches);
-        if (result > 0)
-        {
-            _logger.LogInformation(
-                "Successfully inserted {Matches} new matches as {Status}",
-                result,
-                verificationStatus
-            );
-        }
     }
 
     public async Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync() =>

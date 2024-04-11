@@ -45,4 +45,32 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
         await _playerRepository.UpdateAsync(target);
         return _mapper.Map<PlayerDTO>(target);
     }
+
+    public async Task<IEnumerable<PlayerDTO>> GetAsync(IEnumerable<long> osuIds)
+    {
+        var idList = osuIds.ToList();
+        var players = (await _playerRepository.GetAsync(idList)).ToList();
+        var dtos = new List<PlayerDTO>();
+
+        // Iterate through the players, on null items create a default DTO but store the osuId.
+        // This tells the caller that we don't have info on a specific player.
+
+        for (var i = 0; i < players.Count; i++)
+        {
+            Player? curPlayer = players[i];
+            if (curPlayer is not null)
+            {
+                dtos.Add(_mapper.Map<PlayerDTO>(curPlayer));
+            }
+            else
+            {
+                dtos.Add(new PlayerDTO
+                {
+                    OsuId = idList.ElementAt(i)
+                });
+            }
+        }
+
+        return dtos;
+    }
 }

@@ -51,7 +51,7 @@ public class LeaderboardServiceTests
             null
         );
 
-        var tournamentsService = new TournamentsService(tournamentsRepository.Object, null);
+        var tournamentsService = new TournamentsService(tournamentsRepository.Object, null, null);
 
         var baseStatsService = new BaseStatsService(
             baseStatsRepository.Object,

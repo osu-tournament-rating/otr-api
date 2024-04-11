@@ -50,6 +50,9 @@ public class PlayerRepository(OtrContext context) : RepositoryBase<Player>(conte
     public async Task<Player?> GetAsync(long osuId) =>
         await _context.Players.FirstOrDefaultAsync(p => p.OsuId == osuId);
 
+    public async Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds) =>
+        await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
+
     public async Task<Player> GetOrCreateAsync(long osuId) =>
         await GetAsync(osuId) ?? await CreateAsync(new Player { OsuId = osuId });
 
@@ -86,7 +89,7 @@ public class PlayerRepository(OtrContext context) : RepositoryBase<Player>(conte
 
     public async Task<IEnumerable<Player>> GetOutdatedAsync() =>
         await _context
-            .Players.Where(p => p.Updated == null || (DateTime.UtcNow - p.Updated) > TimeSpan.FromDays(14))
+            .Players.Where(p => p.Updated == null || DateTime.UtcNow - p.Updated > TimeSpan.FromDays(14))
             .ToListAsync();
 
     /// <summary>
@@ -99,8 +102,12 @@ public class PlayerRepository(OtrContext context) : RepositoryBase<Player>(conte
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         username = username.Replace("_", @"\_");
-        var pattern = partialMatch ? $"%{username}%" : username;
 
-        return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, pattern, @"\"));
+        if (partialMatch)
+        {
+            return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, $"%{username}%", @"\"));
+        }
+
+        return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, username, @"\"));
     }
 }
