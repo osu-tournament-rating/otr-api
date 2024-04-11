@@ -1,7 +1,9 @@
+using API.Configurations;
 using API.Entities;
 using API.Osu;
 using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace API.BackgroundWorkers;
 
@@ -9,14 +11,11 @@ public class OsuPlayerDataWorker(
     ILogger<OsuPlayerDataWorker> logger,
     IOsuApiService apiService,
     IServiceProvider serviceProvider,
-    IConfiguration config
+    IOptions<OsuConfiguration> osuConfiguration
     ) : BackgroundService
 {
-    private readonly ILogger<OsuPlayerDataWorker> _logger = logger;
-    private readonly IOsuApiService _apiService = apiService;
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly bool _shouldUpdateUsersAutomatically = config.GetValue<bool>("Osu:AutoUpdateUsers");
-    private const int UPDATE_INTERVAL_SECONDS = 5;
+    private readonly bool _shouldUpdateUsersAutomatically = osuConfiguration.Value.AutoUpdateUsers;
+    private const int UpdateIntervalSeconds = 5;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) =>
         await BackgroundTask(stoppingToken);
@@ -25,11 +24,11 @@ public class OsuPlayerDataWorker(
     {
         if (!_shouldUpdateUsersAutomatically)
         {
-            _logger.LogInformation("Skipping osu! player data worker due to configuration");
+            logger.LogInformation("Skipping osu! player data worker due to configuration");
             return;
         }
 
-        _logger.LogInformation("Initialized osu! player data worker");
+        logger.LogInformation("Initialized osu! player data worker");
         while (!cancellationToken.IsCancellationRequested)
         {
             /**
@@ -39,63 +38,46 @@ public class OsuPlayerDataWorker(
              * since their last update. This process automatically fetches updated
              * information from the osu! API. This updates the player's rank and username.
              */
-            using (IServiceScope scope = _serviceProvider.CreateScope())
+            using (IServiceScope scope = serviceProvider.CreateScope())
             {
                 IPlayerRepository playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
                 var playersToUpdate = (await playerService.GetOutdatedAsync()).ToList();
 
                 if (playersToUpdate.Count == 0)
                 {
-                    await Task.Delay(UPDATE_INTERVAL_SECONDS * 1000, cancellationToken);
+                    await Task.Delay(UpdateIntervalSeconds * 1000, cancellationToken);
                     continue;
                 }
 
                 foreach (Player? player in playersToUpdate)
                 {
-                    // Fetch data for the player's preferred mode
-                    OsuApiUser? defaultResult = await _apiService.GetUserAsync(
-                        player.OsuId, null, $"Identified player that needs to have ranks updated for default mode");
-
-                    if (defaultResult is null)
-                    {
-                        await playerService.UpdateAsync(player);
-                        _logger.LogWarning(
-                            "Failed to fetch data for player {PlayerId} in default mode, skipping (user is likely restricted)",
-                            player.OsuId
-                        );
-                        continue;
-                    }
-
-                    // Only need to be updated once
-                    player.Country = defaultResult.Country;
-                    player.Username = defaultResult.Username;
-                    player.PlayMode = (OsuEnums.Mode)(int)defaultResult.PlayMode;
-
-                    // Fetch data for the other 3 game modes and update accordingly
+                    // Fetch data for all game modes and update accordingly
+                    var updatedOnce = false;
                     foreach (OsuEnums.Mode gameModeEnum in Enum.GetValues<OsuEnums.Mode>())
                     {
-                        OsuApiUser? apiResult;
-                        if (gameModeEnum != player.PlayMode)
+                        OsuApiUser? apiResult = await apiService.GetUserAsync(
+                            player.OsuId,
+                            gameModeEnum,
+                            $"Identified player that needs to have ranks updated for mode {gameModeEnum}"
+                        );
+                        if (apiResult is null)
                         {
-                            apiResult = await _apiService.GetUserAsync(
+                            await playerService.UpdateAsync(player);
+                            logger.LogWarning(
+                                "Failed to fetch data for player {PlayerId} in mode {GameMode}, skipping (user is likely restricted)",
                                 player.OsuId,
-                                gameModeEnum,
-                                $"Identified player that needs to have ranks updated for mode {gameModeEnum}"
+                                gameModeEnum
                             );
-                            if (apiResult is null)
-                            {
-                                await playerService.UpdateAsync(player);
-                                _logger.LogWarning(
-                                    "Failed to fetch data for player {PlayerId} in mode {GameMode}, skipping (user is likely restricted)",
-                                    player.OsuId,
-                                    gameModeEnum
-                                );
-                                break;
-                            }
+                            break;
                         }
-                        else
+
+                        if (!updatedOnce)
                         {
-                            apiResult = defaultResult;
+                            // Only need to be updated once
+                            player.Country = apiResult.Country;
+                            player.Username = apiResult.Username;
+                            player.PlayMode = (OsuEnums.Mode)(int)apiResult.PlayMode;
+                            updatedOnce = true;
                         }
 
                         switch (gameModeEnum)
