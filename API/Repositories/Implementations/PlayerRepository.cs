@@ -43,7 +43,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return players;
     }
 
-    public async Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds) =>
+    public async Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds) =>
         await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
     public async Task<IEnumerable<Player>> GetAsync(bool eagerLoad)
