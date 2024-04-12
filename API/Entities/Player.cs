@@ -15,9 +15,6 @@ public class Player
     [Column("osu_id")]
     public long OsuId { get; set; }
 
-    [Column("created", TypeName = "timestamp with time zone")]
-    public DateTime Created { get; set; }
-
     [Column("rank_standard")]
     public int? RankStandard { get; set; }
 
@@ -29,9 +26,6 @@ public class Player
 
     [Column("rank_mania")]
     public int? RankMania { get; set; }
-
-    [Column("updated", TypeName = "timestamp with time zone")]
-    public DateTime? Updated { get; set; }
 
     [Column("username")]
     [MaxLength(32)]
@@ -64,6 +58,10 @@ public class Player
 
     [Column("earliest_catch_global_rank_date")]
     public DateTime? EarliestCatchGlobalRankDate { get; set; }
+    [Column("created", TypeName = "timestamp with time zone")]
+    public DateTime Created { get; set; }
+    [Column("updated", TypeName = "timestamp with time zone")]
+    public DateTime? Updated { get; set; }
 
     [InverseProperty("Player")]
     public virtual IEnumerable<MatchRatingStats> MatchRatingStats { get; set; } = null!;
