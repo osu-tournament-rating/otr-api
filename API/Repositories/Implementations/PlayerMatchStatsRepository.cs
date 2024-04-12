@@ -1,5 +1,3 @@
-using System.Data;
-using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
@@ -7,7 +5,6 @@ using API.Enums;
 using API.Osu;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace API.Repositories.Implementations;
 
