@@ -39,6 +39,9 @@ public class OsuEnums
         Red = 2
     }
 
+    /// <summary>
+    /// Represents mod values
+    /// </summary>
     /// <copyright>
     /// ppy 2023 https://github.com/ppy/osu-api/wiki#mods
     /// </copyright>
@@ -55,11 +58,20 @@ public class OsuEnums
         DoubleTime = 64,
         Relax = 128,
         HalfTime = 256,
+        /// <remarks>
+        /// Only set along with DoubleTime. i.e: NC only gives 576
+        /// </remarks>
         Nightcore = 512, // Only set along with DoubleTime. i.e: NC only gives 576
         Flashlight = 1024,
         Autoplay = 2048,
         SpunOut = 4096,
+        /// <remarks>
+        /// Autopilot
+        /// </remarks>
         Relax2 = 8192, // Autopilot
+        /// <remarks>
+        /// Only set along with SuddenDeath. i.e: PF only gives 16416
+        /// </remarks>
         Perfect = 16384, // Only set along with SuddenDeath. i.e: PF only gives 16416
         Key4 = 32768,
         Key5 = 65536,
@@ -91,5 +103,22 @@ public class OsuEnums
             | SpunOut
             | KeyMod,
         ScoreIncreaseMods = Hidden | HardRock | DoubleTime | Flashlight | FadeIn
+    }
+
+    /// <summary>
+    /// Mod score multiplier values
+    /// </summary>
+    public struct ModScoreMultipliers
+    {
+        public const double NoMod = 1;
+        public const double Easy = 0.5;
+        public const double Hidden = 1.06;
+        public const double HardRock = 1.1;
+        public const double HalfTime = 0.3;
+        public const double DoubleTime = 1.12;
+        public const double Flashlight = 1.12;
+        public const double HiddenDoubleTime = 1.1872;
+        public const double HiddenHardRock = 1.166;
+        public const double HiddenEasy = 0.53;
     }
 }
