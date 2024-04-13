@@ -58,9 +58,9 @@ public class BaseStatsService(
         var rankProgress = new RankProgressDTO
         {
             CurrentTier = RatingUtils.GetTier(currentStats.Rating),
-            CurrentSubTier = RatingUtils.GetCurrentSubTier(currentStats.Rating),
-            RatingForNextTier = RatingUtils.GetRatingDeltaForNextTier(currentStats.Rating),
-            RatingForNextMajorTier = RatingUtils.GetRatingDeltaForNextMajorTier(currentStats.Rating),
+            CurrentSubTier = RatingUtils.GetSubTier(currentStats.Rating),
+            RatingForNextTier = RatingUtils.GetNextTierRatingDelta(currentStats.Rating),
+            RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(currentStats.Rating),
             NextMajorTier = RatingUtils.GetNextMajorTier(currentStats.Rating),
             SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(currentStats.Rating),
             MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(currentStats.Rating)

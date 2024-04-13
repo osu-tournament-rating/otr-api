@@ -201,7 +201,7 @@ public class RatingUtilsTests
         // Arrange
 
         // Act
-        var subTier = RatingUtils.GetCurrentSubTier(rating);
+        var subTier = RatingUtils.GetSubTier(rating);
 
         // Assert
         Assert.Equal(expectedSubTier, subTier);
@@ -235,11 +235,11 @@ public class RatingUtilsTests
     public void GetRatingDeltaForNextTier_ReturnsProperDelta(double rating, double offset)
     {
         // Arrange
-        var ratingNextTier = RatingUtils.GetRatingForNextTier(rating);
+        var ratingNextTier = RatingUtils.GetNextTierRating(rating);
         var expected = ratingNextTier - rating - offset;
 
         // Act
-        var delta = RatingUtils.GetRatingDeltaForNextTier(rating + offset);
+        var delta = RatingUtils.GetNextTierRatingDelta(rating + offset);
 
         // Assert
         Assert.Equal(expected, delta);
@@ -253,8 +253,8 @@ public class RatingUtilsTests
         const double aboveEliteGrandmaster = eliteGrandmaster + 1;
 
         // Act
-        var eliteGrandmasterDelta = RatingUtils.GetRatingForNextTier(eliteGrandmaster);
-        var aboveEliteGrandmasterDelta = RatingUtils.GetRatingForNextTier(aboveEliteGrandmaster);
+        var eliteGrandmasterDelta = RatingUtils.GetNextTierRating(eliteGrandmaster);
+        var aboveEliteGrandmasterDelta = RatingUtils.GetNextTierRating(aboveEliteGrandmaster);
 
         // Assert
         Assert.Multiple(() =>
@@ -295,7 +295,7 @@ public class RatingUtilsTests
         var belowRating = rating - 1;
 
         // Act
-        var nextTier = RatingUtils.GetRatingForNextTier(belowRating);
+        var nextTier = RatingUtils.GetNextTierRating(belowRating);
 
         // Assert
         Assert.Equal(rating, nextTier);
@@ -308,7 +308,7 @@ public class RatingUtilsTests
         const double rating = RatingUtils.RatingEliteGrandmaster;
 
         // Act
-        var nextTier = RatingUtils.GetRatingForNextTier(rating);
+        var nextTier = RatingUtils.GetNextTierRating(rating);
 
         // Assert
         Assert.Null(nextTier);
