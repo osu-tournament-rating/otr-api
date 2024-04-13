@@ -32,7 +32,8 @@ public interface IMatchesService
     Task<IEnumerable<int>> GetAllIdsAsync(bool onlyIncludeFiltered);
     Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId);
     Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true);
-    Task<MatchDTO> UpdateVerificationStatus(int id, int? verificationStatus);
+    Task<MatchDTO?> UpdateVerificationStatusAsync(int id, MatchVerificationStatus verificationStatus,
+        MatchVerificationSource verificationSource, string? info = null, int? verifierId = null);
     Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(
         long osuPlayerId,
         int mode,

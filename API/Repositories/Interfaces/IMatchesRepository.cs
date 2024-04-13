@@ -6,7 +6,7 @@ namespace API.Repositories.Interfaces;
 
 public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
 {
-    Task<Match> GetAsync(int id, bool filterInvalidMatches = true);
+    Task<Match?> GetAsync(int id, bool filterInvalidMatches = true);
     Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered);
     Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds);
     Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches);
@@ -16,12 +16,12 @@ public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
     Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
     Task<Match?> GetFirstMatchNeedingAutoCheckAsync();
     Task<IList<Match>> GetNeedApiProcessingAsync();
-    Task<Match> UpdateVerificationStatus(int id, int? verificationStatus);
-    Task<int> UpdateVerificationStatusAsync(
-        long matchId,
+    Task<Match?> UpdateVerificationStatusAsync(
+        int id,
         MatchVerificationStatus status,
         MatchVerificationSource source,
-        string? info = null
+        string? info = null,
+        int? verifierId = null
     );
     Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, int mode, DateTime before, DateTime after);
     Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime);

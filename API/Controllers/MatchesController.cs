@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
@@ -155,7 +156,19 @@ public class MatchesController(IMatchesService matchesService) : Controller
             return BadRequest(ModelState);
         }
 
-        MatchDTO updatedMatch = await _matchesService.UpdateVerificationStatus(id, match.VerificationStatus);
+        if (match.VerificationStatus is null)
+        {
+            return BadRequest();
+        }
+
+        var verifierId = HttpContext.AuthorizedUserIdentity();
+        MatchDTO? updatedMatch = await _matchesService.UpdateVerificationStatusAsync(
+            id,
+            (MatchVerificationStatus)match.VerificationStatus,
+            MatchVerificationSource.MatchVerifier,
+            "Updated manually by an admin",
+            verifierId
+            );
         return Ok(updatedMatch);
     }
 }
