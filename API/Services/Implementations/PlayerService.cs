@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Entities;
 using API.Osu;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
@@ -86,4 +87,32 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
 
     public async Task<PlayerInfoDTO?> GetAsync(string username) =>
         _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(username));
+
+    public async Task<IEnumerable<PlayerInfoDTO>> GetAsync(IEnumerable<long> osuIds)
+    {
+        var idList = osuIds.ToList();
+        var players = (await _playerRepository.GetAsync(idList)).ToList();
+        var dtos = new List<PlayerInfoDTO>();
+
+        // Iterate through the players, on null items create a default DTO but store the osuId.
+        // This tells the caller that we don't have info on a specific player.
+
+        for (var i = 0; i < players.Count; i++)
+        {
+            Player? curPlayer = players[i];
+            if (curPlayer is not null)
+            {
+                dtos.Add(_mapper.Map<PlayerInfoDTO>(curPlayer));
+            }
+            else
+            {
+                dtos.Add(new PlayerInfoDTO
+                {
+                    OsuId = idList.ElementAt(i)
+                });
+            }
+        }
+
+        return dtos;
+    }
 }
