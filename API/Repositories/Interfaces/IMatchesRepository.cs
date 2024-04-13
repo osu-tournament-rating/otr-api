@@ -16,6 +16,16 @@ public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
     Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
     Task<Match?> GetFirstMatchNeedingAutoCheckAsync();
     Task<IList<Match>> GetNeedApiProcessingAsync();
+
+    /// <summary>
+    /// Updates the verification status of a match for the given id
+    /// </summary>
+    /// <param name="id">Id of the match</param>
+    /// <param name="verificationStatus">New verification status to assign</param>
+    /// <param name="verificationSource">New verification source to assign</param>
+    /// <param name="info">Optional verification info</param>
+    /// <param name="verifierId">Optional user id to attribute the update to</param>
+    /// <returns>An updated match, or null if not found</returns>
     Task<Match?> UpdateVerificationStatusAsync(
         int id,
         MatchVerificationStatus status,
