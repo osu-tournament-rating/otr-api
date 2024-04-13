@@ -19,7 +19,6 @@ public class MatchesRepository(
     ) : HistoryRepositoryBase<Match, MatchHistory>(context, mapper), IMatchesRepository
 {
     private readonly OtrContext _context = context;
-    private readonly IMapper _mapper = mapper;
 
     public override async Task<Match?> GetAsync(int id) =>
         // Get the match with all associated data
@@ -44,19 +43,6 @@ public class MatchesRepository(
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         name = name.Replace("_", @"\_");
         return await MatchBaseQuery(true).Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\")).ToListAsync();
-    }
-
-    public async Task RefreshAutomationChecks(bool invalidOnly = true)
-    {
-        IQueryable<Match> query = _context.Matches.Where(x => x.NeedsAutoCheck == false && x.IsApiProcessed == true);
-
-        if (invalidOnly)
-        {
-            query = query.Where(x => x.VerificationStatus == (int)MatchVerificationStatus.Rejected);
-        }
-
-        await query.ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
-        logger.LogInformation("Refreshed automation checks for {Count} matches", await query.CountAsync());
     }
 
     public async Task<Match> GetAsync(int id, bool filterInvalidMatches = true) =>
@@ -109,16 +95,6 @@ public class MatchesRepository(
         return matches;
     }
 
-    public async Task<MatchDTO?> GetDTOByOsuMatchIdAsync(long osuMatchId) =>
-        _mapper.Map<MatchDTO?>(
-            await _context
-                .Matches.Include(x => x.Games)
-                .ThenInclude(g => g.Beatmap)
-                .Include(x => x.Games)
-                .ThenInclude(x => x.MatchScores)
-                .FirstOrDefaultAsync(x => x.MatchId == osuMatchId)
-        );
-
     public async Task<Match?> GetByMatchIdAsync(long matchId) =>
         await _context
             .Matches.Include(x => x.Games)
@@ -149,9 +125,6 @@ public class MatchesRepository(
             .ThenInclude(x => x.MatchScores)
             .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
             .FirstOrDefaultAsync();
-
-    public async Task<IList<Match>> GetNeedApiProcessingAsync() =>
-        await _context.Matches.Where(x => x.IsApiProcessed == false).ToListAsync();
 
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
         await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
@@ -296,38 +269,9 @@ public class MatchesRepository(
         return wins;
     }
 
-    public async Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime) =>
-        await _context
-            .MatchScores.WhereVerified()
-            .WhereOsuPlayerId(osuPlayerId)
-            .WhereMode(mode)
-            .After(fromTime)
-            .Include(x => x.Game)
-            .GroupBy(x => x.Game.MatchId)
-            .CountAsync();
-
-    public async Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime)
-    {
-        var played = await CountMatchesPlayedAsync(osuPlayerId, mode, fromTime);
-        var won = await CountMatchWinsAsync(osuPlayerId, mode, fromTime);
-
-        if (played == 0)
-        {
-            return 0;
-        }
-
-        return (double)won / played;
-    }
-
     public async Task UpdateAsApiProcessed(Match match)
     {
         match.IsApiProcessed = true;
-        await UpdateAsync(match);
-    }
-
-    public async Task UpdateAsAutoChecked(Match match)
-    {
-        match.NeedsAutoCheck = false;
         await UpdateAsync(match);
     }
 
@@ -452,21 +396,6 @@ public class MatchesRepository(
         }
 
         return ls;
-    }
-
-    public async Task MarkSuspectedDuplicatesAsync(Match root, IEnumerable<Match> duplicates)
-    {
-        var rootId = root.Id;
-        foreach (Match dupe in duplicates)
-        {
-            var duplicateXref = new MatchDuplicate
-            {
-                OsuMatchId = dupe.MatchId,
-                SuspectedDuplicateOf = rootId
-            };
-
-            await matchDuplicateRepository.CreateAsync(duplicateXref);
-        }
     }
 
     public async Task VerifyDuplicatesAsync(int matchRoot, int userId, bool confirmed)
