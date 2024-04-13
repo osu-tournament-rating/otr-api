@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    [Migration("20240411214420_Players_PlayMode")]
-    partial class Players_PlayMode
+    [Migration("20240413101253_Players_Ruleset")]
+    partial class Players_Ruleset
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -881,10 +881,6 @@ namespace API.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("osu_id");
 
-                    b.Property<int?>("PlayMode")
-                        .HasColumnType("integer")
-                        .HasColumnName("play_mode");
-
                     b.Property<int?>("RankCatch")
                         .HasColumnType("integer")
                         .HasColumnName("rank_catch");
@@ -900,6 +896,10 @@ namespace API.Migrations
                     b.Property<int?>("RankTaiko")
                         .HasColumnType("integer")
                         .HasColumnName("rank_taiko");
+
+                    b.Property<int?>("Ruleset")
+                        .HasColumnType("integer")
+                        .HasColumnName("default_ruleset");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")

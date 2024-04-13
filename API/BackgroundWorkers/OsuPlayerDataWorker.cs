@@ -76,7 +76,7 @@ public class OsuPlayerDataWorker(
                             // Only need to be updated once
                             player.Country = apiResult.Country;
                             player.Username = apiResult.Username;
-                            player.PlayMode = (OsuEnums.Mode)(int)apiResult.PlayMode;
+                            player.Ruleset = (OsuEnums.Mode)(int)apiResult.PlayMode;
                             updatedOnce = true;
                         }
 

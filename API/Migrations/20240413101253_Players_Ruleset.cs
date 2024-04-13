@@ -5,13 +5,13 @@
 namespace API.Migrations
 {
     /// <inheritdoc />
-    public partial class Players_PlayMode : Migration
+    public partial class Players_Ruleset : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
-                name: "play_mode",
+                name: "default_ruleset",
                 table: "players",
                 type: "integer",
                 nullable: true);
@@ -21,7 +21,7 @@ namespace API.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "play_mode",
+                name: "default_ruleset",
                 table: "players");
         }
     }
