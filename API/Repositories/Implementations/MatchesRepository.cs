@@ -19,8 +19,6 @@ public class MatchesRepository(
     ) : HistoryRepositoryBase<Match, MatchHistory>(context, mapper), IMatchesRepository
 {
     private readonly OtrContext _context = context;
-    private readonly IMatchDuplicateRepository _matchDuplicateRepository = matchDuplicateRepository;
-    private readonly ILogger<MatchesRepository> _logger = logger;
     private readonly IMapper _mapper = mapper;
 
     public override async Task<Match?> GetAsync(int id) =>
@@ -58,7 +56,7 @@ public class MatchesRepository(
         }
 
         await query.ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
-        _logger.LogInformation("Refreshed automation checks for {Count} matches", await query.CountAsync());
+        logger.LogInformation("Refreshed automation checks for {Count} matches", await query.CountAsync());
     }
 
     public async Task<Match> GetAsync(int id, bool filterInvalidMatches = true) =>
@@ -168,7 +166,7 @@ public class MatchesRepository(
         Match? match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
         if (match == null)
         {
-            _logger.LogWarning("Match {MatchId} not found (failed to update verification status)", matchId);
+            logger.LogWarning("Match {MatchId} not found (failed to update verification status)", matchId);
             return 0;
         }
 
@@ -176,7 +174,7 @@ public class MatchesRepository(
         match.VerificationSource = (int)source;
         match.VerificationInfo = info;
 
-        _logger.LogInformation(
+        logger.LogInformation(
             "Updated verification status of match {MatchId} to {Status} (source: {Source}, info: {Info})",
             matchId,
             status,
@@ -281,7 +279,7 @@ public class MatchesRepository(
                 }
                 catch (Exception e)
                 {
-                    _logger.LogWarning(
+                    logger.LogWarning(
                         e,
                         "Error occurred while calculating match wins for player {OsuId}",
                         osuPlayerId
@@ -379,7 +377,7 @@ public class MatchesRepository(
             throw new Exception("Root has no scores.");
         }
 
-        var duplicateReferences = (await _matchDuplicateRepository.GetDuplicatesAsync(matchRootId)).ToList();
+        var duplicateReferences = (await matchDuplicateRepository.GetDuplicatesAsync(matchRootId)).ToList();
         if (duplicateReferences.Count == 0)
         {
             throw new Exception("Match does not have any detected duplicates.");
@@ -428,7 +426,7 @@ public class MatchesRepository(
             // the ability to say "this match X was merged from Y, Z, etc."
             await DeleteAsync(duplicate.Id);
 
-            _logger.LogInformation(
+            logger.LogInformation(
                 "Updated {GamesCount} games in duplicate match {DuplicateId} to point to new root parent match {RootId}",
                 duplicate.Games.Count,
                 duplicate.Id,
@@ -467,19 +465,19 @@ public class MatchesRepository(
                 SuspectedDuplicateOf = rootId
             };
 
-            await _matchDuplicateRepository.CreateAsync(duplicateXref);
+            await matchDuplicateRepository.CreateAsync(duplicateXref);
         }
     }
 
     public async Task VerifyDuplicatesAsync(int matchRoot, int userId, bool confirmed)
     {
-        IEnumerable<MatchDuplicate> duplicates = await _matchDuplicateRepository.GetDuplicatesAsync(matchRoot);
+        IEnumerable<MatchDuplicate> duplicates = await matchDuplicateRepository.GetDuplicatesAsync(matchRoot);
         foreach (MatchDuplicate dupe in duplicates)
         {
             dupe.VerifiedBy = userId;
             dupe.VerifiedAsDuplicate = confirmed;
 
-            await _matchDuplicateRepository.UpdateAsync(dupe);
+            await matchDuplicateRepository.UpdateAsync(dupe);
         }
     }
 
