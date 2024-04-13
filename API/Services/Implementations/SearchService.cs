@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Entities;
 using API.Osu;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
@@ -45,15 +46,19 @@ public class SearchService(
     private async Task<IEnumerable<PlayerSearchResultDTO>> SearchPlayersByNameAsync(string username)
     {
         var players = (await playerRepository.SearchAsync(username)).ToList();
-        return players.Select(player => new PlayerSearchResultDTO
+        return players.Select(player =>
         {
-            Id = player.Id,
-            OsuId = player.OsuId,
             // TODO: Use Player.Ruleset for Rating and OsuGlobalRank
-            Rating = player.Ratings.FirstOrDefault(r => r.Mode == (int)OsuEnums.Mode.Standard)?.Rating,
-            OsuGlobalRank = player.RankStandard,
-            Username = player.Username,
-            Thumbnail = $"a.ppy.sh/{player.OsuId}"
+            BaseStats? rating = player.Ratings.FirstOrDefault(r => r.Mode == (int)OsuEnums.Mode.Standard);
+            return new PlayerSearchResultDTO
+            {
+                Id = player.Id,
+                OsuId = player.OsuId,
+                Rating = rating?.Rating,
+                GlobalRank = rating?.GlobalRank,
+                Username = player.Username,
+                Thumbnail = $"a.ppy.sh/{player.OsuId}"
+            };
         });
     }
 }

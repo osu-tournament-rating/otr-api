@@ -1,3 +1,5 @@
+using API.Utilities;
+
 namespace API.DTOs;
 
 /// <summary>
@@ -21,9 +23,14 @@ public class PlayerSearchResultDTO
     public double? Rating { get; set; }
 
     /// <summary>
-    /// osu! global rank of the player for the given ruleset
+    /// Current global rank of the player for the given ruleset
     /// </summary>
-    public int? OsuGlobalRank { get; set; }
+    public int? GlobalRank { get; set; }
+
+    /// <summary>
+    /// Current rating tier of the player for the given ruleset
+    /// </summary>
+    public string? RatingTier => Rating.HasValue ? RatingUtils.GetTier(Rating.Value) : null;
 
     /// <summary>
     /// osu! username of the player
