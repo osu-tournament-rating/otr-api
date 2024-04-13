@@ -43,7 +43,7 @@ public class Player
     public string? Country { get; set; }
 
     [Column("default_ruleset")]
-    public OsuEnums.Mode? Ruleset { get; set; }
+    public OsuEnums.Ruleset? Ruleset { get; set; }
 
     [Column("earliest_osu_global_rank")]
     public int? EarliestOsuGlobalRank { get; set; }

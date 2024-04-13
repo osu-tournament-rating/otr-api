@@ -53,7 +53,7 @@ public class OsuPlayerDataWorker(
                 {
                     // Fetch data for all game modes and update accordingly
                     var updatedOnce = false;
-                    foreach (OsuEnums.Mode gameModeEnum in Enum.GetValues<OsuEnums.Mode>())
+                    foreach (OsuEnums.Ruleset gameModeEnum in Enum.GetValues<OsuEnums.Ruleset>())
                     {
                         OsuApiUser? apiResult = await apiService.GetUserAsync(
                             player.OsuId,
@@ -76,22 +76,22 @@ public class OsuPlayerDataWorker(
                             // Only need to be updated once
                             player.Country = apiResult.Country;
                             player.Username = apiResult.Username;
-                            player.Ruleset = (OsuEnums.Mode)(int)apiResult.PlayMode;
+                            player.Ruleset = (OsuEnums.Ruleset)(int)apiResult.PlayMode;
                             updatedOnce = true;
                         }
 
                         switch (gameModeEnum)
                         {
-                            case OsuEnums.Mode.Standard:
+                            case OsuEnums.Ruleset.Standard:
                                 player.RankStandard = apiResult.Rank;
                                 break;
-                            case OsuEnums.Mode.Taiko:
+                            case OsuEnums.Ruleset.Taiko:
                                 player.RankTaiko = apiResult.Rank;
                                 break;
-                            case OsuEnums.Mode.Catch:
+                            case OsuEnums.Ruleset.Catch:
                                 player.RankCatch = apiResult.Rank;
                                 break;
-                            case OsuEnums.Mode.Mania:
+                            case OsuEnums.Ruleset.Mania:
                                 player.RankMania = apiResult.Rank;
                                 break;
                         }

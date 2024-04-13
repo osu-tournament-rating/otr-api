@@ -130,11 +130,11 @@ public class OsuApiService : IOsuApiService
             beatmapId
         );
 
-    public async Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Mode mode, string reason) =>
+    public async Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Ruleset ruleset, string reason) =>
         await ExecuteApiCallAsync(
             async () =>
             {
-                IGlobalUser response = await _v2Client.GetUserAsync(userId, (GameMode)(int)mode);
+                IGlobalUser response = await _v2Client.GetUserAsync(userId, (GameMode)(int)ruleset);
 
                 if (response.IsRestricted == true)
                 {

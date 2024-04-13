@@ -18,8 +18,8 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
     public async Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync() =>
         _mapper.Map<IEnumerable<PlayerRanksDTO>>(await _playerRepository.GetAllAsync());
 
-    public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode) =>
-        _mapper.Map<IEnumerable<PlayerRatingDTO>>(await _playerRepository.GetTopRatingsAsync(n, mode));
+    public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Ruleset ruleset) =>
+        _mapper.Map<IEnumerable<PlayerRatingDTO>>(await _playerRepository.GetTopRatingsAsync(n, ruleset));
 
     public async Task<string?> GetUsernameAsync(long osuId) =>
         await _playerRepository.GetUsernameAsync(osuId);
