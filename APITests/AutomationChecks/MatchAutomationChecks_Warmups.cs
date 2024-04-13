@@ -4,7 +4,7 @@ using API.Osu.AutomationChecks;
 using API.Osu.Multiplayer;
 using Newtonsoft.Json;
 
-namespace APITests.Osu;
+namespace APITests.AutomationChecks;
 
 public class MatchAutomationChecks_Warmups
 {

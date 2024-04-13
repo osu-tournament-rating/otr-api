@@ -13,48 +13,20 @@ public class UserService(IUserRepository repository) : IUserService
     {
         User? user = await _repository.GetAsync(id);
 
-        if (user == null)
+        if (user is null)
         {
             return null;
         }
 
         return new UserInfoDTO
         {
-            Id = user.PlayerId,
-            UserId = user.Id,
+            Id = user.Id,
+            Scopes = user.Scopes,
+            PlayerId = user.PlayerId,
             OsuCountry = user.Player.Country,
             OsuId = user.Player.OsuId,
             OsuPlayMode = 0, // TODO: Set to user's preferred mode
-            Username = user.Player.Username,
-            Roles = user.Scopes
+            OsuUsername = user.Player.Username
         };
     }
-
-    public async Task<UserInfoDTO?> GetForPlayerAsync(int playerId)
-    {
-        User? user = await _repository.GetForPlayerAsync(playerId);
-
-        if (user == null)
-        {
-            return null;
-        }
-
-        return new UserInfoDTO
-        {
-            Id = user.PlayerId,
-            UserId = user.Id,
-            OsuCountry = user.Player.Country,
-            OsuId = user.Player.OsuId,
-            OsuPlayMode = 0, // TODO: Set to user's preferred mode
-            Username = user.Player.Username,
-            Roles = user.Scopes
-        };
-    }
-
-    public async Task<User?> GetForPlayerAsync(long osuId) => await _repository.GetForPlayerAsync(osuId);
-
-    public async Task<User?> GetOrCreateSystemUserAsync() => await _repository.GetOrCreateSystemUserAsync();
-
-    public async Task<bool> HasRoleAsync(long osuId, string role) =>
-        await _repository.HasRoleAsync(osuId, role);
 }

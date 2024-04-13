@@ -6,7 +6,8 @@
     }
   },
   "ConnectionStrings": {
-    "DefaultConnection": ""
+    "DefaultConnection": "",
+    "CollectorConnection": ""
   },
   "Osu": {
     "ApiKey": "",
@@ -21,5 +22,9 @@
   },
   "Auth": {
     "ClientCallbackUrl": ""
+  },
+  "RateLimit": {
+    "PermitLimit": 30,
+    "Window": 60
   }
 }

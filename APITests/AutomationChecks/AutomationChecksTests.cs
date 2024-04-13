@@ -6,7 +6,7 @@ using API.Osu.AutomationChecks;
 using API.Repositories.Interfaces;
 using Moq;
 
-namespace APITests.Osu;
+namespace APITests.AutomationChecks;
 
 [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method")]
 public class AutomationChecksTests
@@ -310,6 +310,52 @@ public class AutomationChecksTests
                     Team = (int)OsuEnums.Team.Blue
                 }
             );
+
+        Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
+    }
+
+    [Fact]
+    public void Game_FailsTeamSizeCheck_WhenOneScoreIsZero()
+    {
+        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        match.Games.First().MatchScores.First().Score = 0;
+
+        Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
+    }
+
+    [Fact]
+    public void Game_FailsTeamSizeCheck_WhenFair2v2_And_ThreeScoresAreZero()
+    {
+        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        match.Tournament.TeamSize = 2;
+
+        match.Games.First().MatchScores = new List<MatchScore>
+        {
+            new()
+            {
+                PlayerId = -1,
+                Score = 0,
+                Team = (int)OsuEnums.Team.Red
+            },
+            new()
+            {
+                PlayerId = -1,
+                Score = 0,
+                Team = (int)OsuEnums.Team.Red
+            },
+            new()
+            {
+                PlayerId = -1,
+                Score = 0,
+                Team = (int)OsuEnums.Team.Blue
+            },
+            new()
+            {
+                PlayerId = -1,
+                Score = 250_000,
+                Team = (int)OsuEnums.Team.Blue
+            }
+        };
 
         Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
     }
@@ -688,91 +734,131 @@ public class AutomationChecksTests
     }
 
     [Fact]
-    public void Game_PassesSanity_WhenRefereeInLobby_TeamRed_2v2()
+    public void Game_PassesChecks_WhenRefereeInLobby_TeamRed_2v2()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.TeamSize = 2;
 
-        match
-            .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = 0,
-                    Score = 0,
-                    Team = (int)OsuEnums.Team.Red
-                }
-            );
+        match.Games.First().MatchScores = new List<MatchScore>()
+        {
+            new() // Referee
+            {
+                PlayerId = 0,
+                Score = 0,
+                Team = (int)OsuEnums.Team.Red
+            },
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)OsuEnums.Team.Red
+            },
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)OsuEnums.Team.Red
+            },
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)OsuEnums.Team.Blue
+            },
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)OsuEnums.Team.Blue
+            }
+        };
 
-        match
-            .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = 0,
-                    Score = 500_000,
-                    Team = (int)OsuEnums.Team.Red
-                }
-            );
-
-        match
-            .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = 0,
-                    Score = 500_000,
-                    Team = (int)OsuEnums.Team.Blue
-                }
-            );
-
-        Assert.True(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
         Assert.True(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
         Assert.True(GameAutomationChecks.PassesAutomationChecks(match.Games.First()));
     }
 
     [Fact]
-    public void Game_PassesSanity_WhenRefereeInLobby_TeamBlue_2v2()
+    public void Game_PassesChecks_WhenRefereeInLobby_TeamBlue_2v2()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.TeamSize = 2;
 
-        match
-            .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = 0,
-                    Score = 0,
-                    Team = (int)OsuEnums.Team.Blue
-                }
-            );
+        match.Games.First().MatchScores = new List<MatchScore>
+        {
+            new() // Referee
+            {
+                PlayerId = 0,
+                Score = 0,
+                Team = (int)OsuEnums.Team.Blue
+            },
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)OsuEnums.Team.Red
+            },
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)OsuEnums.Team.Red
+            },
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)OsuEnums.Team.Blue
+            },
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)OsuEnums.Team.Blue
+            }
+        };
 
-        match
-            .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = 0,
-                    Score = 500_000,
-                    Team = (int)OsuEnums.Team.Red
-                }
-            );
-
-        match
-            .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = 0,
-                    Score = 500_000,
-                    Team = (int)OsuEnums.Team.Blue
-                }
-            );
-
-        Assert.True(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
         Assert.True(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
         Assert.True(GameAutomationChecks.PassesAutomationChecks(match.Games.First()));
+    }
+
+    [Fact]
+    public void Game_FailsTeamSizeCheck_WhenOneZeroScore_CausesInvalid2v2()
+    {
+        // This test ensures that a player who earns 0 score is not
+        // accidentally flagged as a referee despite meeting a lot of the
+        // criteria
+        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        match.Tournament.TeamSize = 2;
+
+        match.Games.First().MatchScores = new List<MatchScore>
+        {
+            new() // Player on team red gets 0 score, NOT a referee
+            {
+                PlayerId = 0,
+                Score = 0,
+                Team = (int)OsuEnums.Team.Red
+            },
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)OsuEnums.Team.Red
+            },
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)OsuEnums.Team.Blue
+            },
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)OsuEnums.Team.Blue
+            }
+        };
+
+        Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
     }
 
     // Scores
