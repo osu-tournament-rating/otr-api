@@ -43,7 +43,8 @@ public class OsuEnums
     /// Represents mod values
     /// </summary>
     /// <copyright>
-    /// ppy 2023 https://github.com/ppy/osu-api/wiki#mods
+    /// ppy 2024 https://github.com/ppy/osu-api/wiki#mods
+    /// Last accessed April 2024
     /// </copyright>
     [Flags]
     public enum Mods
@@ -61,18 +62,18 @@ public class OsuEnums
         /// <remarks>
         /// Only set along with DoubleTime. i.e: NC only gives 576
         /// </remarks>
-        Nightcore = 512, // Only set along with DoubleTime. i.e: NC only gives 576
+        Nightcore = 512,
         Flashlight = 1024,
         Autoplay = 2048,
         SpunOut = 4096,
         /// <remarks>
         /// Autopilot
         /// </remarks>
-        Relax2 = 8192, // Autopilot
+        Relax2 = 8192,
         /// <remarks>
         /// Only set along with SuddenDeath. i.e: PF only gives 16416
         /// </remarks>
-        Perfect = 16384, // Only set along with SuddenDeath. i.e: PF only gives 16416
+        Perfect = 16384,
         Key4 = 32768,
         Key5 = 65536,
         Key6 = 131072,
