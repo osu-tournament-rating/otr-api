@@ -51,27 +51,6 @@ public class MatchesRepository(
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered) =>
         await MatchBaseQuery(onlyIncludeFiltered).Where(x => ids.Contains(x.Id)).ToListAsync();
 
-    private IQueryable<Match> MatchBaseQuery(bool filterInvalidMatches)
-    {
-        if (!filterInvalidMatches)
-        {
-            return _context
-                .Matches.Include(x => x.Games)
-                .ThenInclude(x => x.MatchScores)
-                .Include(x => x.Games)
-                .ThenInclude(x => x.Beatmap);
-        }
-
-        return _context
-            .Matches.WhereVerified()
-            .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
-            .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
-            .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
-            .ThenInclude(x => x.Beatmap)
-            .Where(x => x.Games.Count > 0)
-            .OrderBy(x => x.StartTime);
-    }
-
     public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches)
     {
         IQueryable<Match> query = _context.Matches.OrderBy(m => m.StartTime).AsQueryable();
@@ -171,102 +150,6 @@ public class MatchesRepository(
             .Before(before)
             .After(after)
             .ToListAsync();
-    }
-
-    public async Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime)
-    {
-        var wins = 0;
-        List<Match> matches = await _context
-            .Matches.WhereVerified()
-            .After(fromTime)
-            .Include(x => x.Games)
-            .ThenInclude(x => x.MatchScores)
-            .ThenInclude(x => x.Player)
-            .Where(x =>
-                x.Games.Any(y => y.PlayMode == mode && y.MatchScores.Any(z => z.Player.OsuId == osuPlayerId))
-            )
-            .ToListAsync();
-
-        foreach (Match? match in matches)
-        {
-            // For head to head (lobby size 2), calculate the winner based on score
-            var pointsPlayer = 0;
-            var pointsOpponent = 0;
-            var team = 0;
-            foreach (Game game in match.Games)
-            {
-                if (!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
-                {
-                    continue;
-                }
-
-                team = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Team;
-            }
-
-            foreach (Game game in match.Games)
-            {
-                try
-                {
-                    if (game.MatchScores.Count == 2)
-                    {
-                        // Assuming this is a 1v1...
-                        if (!game.MatchScores.Any(x => x.Player.OsuId == osuPlayerId))
-                        {
-                            continue;
-                        }
-
-                        var playerScore = game.MatchScores.First(x => x.Player.OsuId == osuPlayerId).Score;
-                        var opponentScore = game.MatchScores.First(x => x.Player.OsuId != osuPlayerId).Score;
-
-                        if (playerScore > opponentScore)
-                        {
-                            pointsPlayer++;
-                        }
-                        else
-                        {
-                            pointsOpponent++;
-                        }
-                    }
-                    else if (game.MatchScores.Count >= 4)
-                    {
-                        // Identify player team, sum the scores, then add points this way
-                        var playerTeam = team;
-                        var opponentTeam = game.MatchScores.FirstOrDefault(x => x.Team != playerTeam)?.Team;
-
-                        var playerTeamScores = game
-                            .MatchScores.Where(x => x.Team == playerTeam)
-                            .Sum(x => x.Score);
-                        var opponentTeamScores = game
-                            .MatchScores.Where(x => x.Team == opponentTeam)
-                            .Sum(x => x.Score);
-
-                        if (playerTeamScores > opponentTeamScores)
-                        {
-                            pointsPlayer++;
-                        }
-                        else
-                        {
-                            pointsOpponent++;
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    logger.LogWarning(
-                        e,
-                        "Error occurred while calculating match wins for player {OsuId}",
-                        osuPlayerId
-                    );
-                }
-            }
-
-            if (pointsPlayer > pointsOpponent)
-            {
-                wins++;
-            }
-        }
-
-        return wins;
     }
 
     public async Task UpdateAsApiProcessed(Match match)
@@ -379,25 +262,6 @@ public class MatchesRepository(
         }
     }
 
-    private async Task<IEnumerable<Match>> GetMatchesFromDuplicatesAsync(
-        IEnumerable<MatchDuplicate> duplicates
-    )
-    {
-        var ls = new List<Match>();
-        foreach (MatchDuplicate dupe in duplicates)
-        {
-            Match? match = await GetByMatchIdAsync(dupe.OsuMatchId);
-            if (match == null)
-            {
-                continue;
-            }
-
-            ls.Add(match);
-        }
-
-        return ls;
-    }
-
     public async Task VerifyDuplicatesAsync(int matchRoot, int userId, bool confirmed)
     {
         IEnumerable<MatchDuplicate> duplicates = await matchDuplicateRepository.GetDuplicatesAsync(matchRoot);
@@ -456,5 +320,45 @@ public class MatchesRepository(
             .ToList();
 
         return duplicatesById.Concat(duplicatesByName);
+    }
+
+    private async Task<IEnumerable<Match>> GetMatchesFromDuplicatesAsync(
+        IEnumerable<MatchDuplicate> duplicates
+    )
+    {
+        var ls = new List<Match>();
+        foreach (MatchDuplicate dupe in duplicates)
+        {
+            Match? match = await GetByMatchIdAsync(dupe.OsuMatchId);
+            if (match == null)
+            {
+                continue;
+            }
+
+            ls.Add(match);
+        }
+
+        return ls;
+    }
+
+    private IQueryable<Match> MatchBaseQuery(bool filterInvalidMatches)
+    {
+        if (!filterInvalidMatches)
+        {
+            return _context
+                .Matches.Include(x => x.Games)
+                .ThenInclude(x => x.MatchScores)
+                .Include(x => x.Games)
+                .ThenInclude(x => x.Beatmap);
+        }
+
+        return _context
+            .Matches.WhereVerified()
+            .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
+            .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
+            .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
+            .ThenInclude(x => x.Beatmap)
+            .Where(x => x.Games.Count > 0)
+            .OrderBy(x => x.StartTime);
     }
 }
