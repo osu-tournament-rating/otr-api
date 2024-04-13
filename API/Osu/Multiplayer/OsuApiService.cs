@@ -6,22 +6,35 @@ using OsuSharp.Interfaces;
 
 namespace API.Osu.Multiplayer;
 
+/// <summary>
+/// Represents a user obtained from the osu! api
+/// </summary>
 public class OsuApiUser
 {
-    [JsonProperty("user_id")]
-    public long Id { get; set; }
+    /// <summary>
+    /// Id of the user
+    /// </summary>
+    public long Id { get; init; }
 
-    [JsonProperty("username")]
-    public string? Username { get; set; }
+    /// <summary>
+    /// Username of the user
+    /// </summary>
+    public string? Username { get; init; }
 
-    [JsonProperty("pp_rank")]
-    public int? Rank { get; set; }
+    /// <summary>
+    /// Rank of the user for the given ruleset
+    /// </summary>
+    public int? Rank { get; init; }
 
-    [JsonProperty("country")]
-    public string Country { get; set; } = null!;
+    /// <summary>
+    /// Country code of the user
+    /// </summary>
+    public string Country { get; init; } = null!;
 
-    [JsonProperty("ruleset")]
-    public OsuEnums.Ruleset Ruleset { get; set; }
+    /// <summary>
+    /// Default ruleset of the user
+    /// </summary>
+    public OsuEnums.Ruleset Ruleset { get; init; }
 }
 
 public class OsuApiService : IOsuApiService
