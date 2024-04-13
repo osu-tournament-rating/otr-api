@@ -20,8 +20,8 @@ public class OsuApiUser
     [JsonProperty("country")]
     public string Country { get; set; } = null!;
 
-    [JsonProperty("play_mode")]
-    public GameMode PlayMode { get; set; }
+    [JsonProperty("ruleset")]
+    public OsuEnums.Ruleset Ruleset { get; set; }
 }
 
 public class OsuApiService : IOsuApiService
@@ -134,7 +134,7 @@ public class OsuApiService : IOsuApiService
         await ExecuteApiCallAsync(
             async () =>
             {
-                IGlobalUser response = await _v2Client.GetUserAsync(userId, (GameMode)(int)ruleset);
+                IGlobalUser response = await _v2Client.GetUserAsync(userId, (GameMode)ruleset);
 
                 if (response.IsRestricted == true)
                 {
@@ -154,7 +154,7 @@ public class OsuApiService : IOsuApiService
                     Username = response.Username,
                     Rank = (int?)response.Statistics.GlobalRank,
                     Country = response.Country.Code,
-                    PlayMode = response.GameMode
+                    Ruleset = (OsuEnums.Ruleset)response.GameMode
                 };
             },
             userId
