@@ -85,7 +85,7 @@ public class RatingUtilsTests
     [InlineData(50, 5, 2)]
     [InlineData(82, 20, 2)]
     [InlineData(82, 20, 1)]
-    public void ProvisionalFlag_IsTrue_WhenProvisional(
+    public void IsProvisional_IsTrue_WhenAnyCriteriaMet(
         double volatility,
         int matchesPlayed,
         int tournamentsPlayed
@@ -104,7 +104,7 @@ public class RatingUtilsTests
     [InlineData(199.9, 10, 3)]
     [InlineData(50, 20, 4)]
     [InlineData(21, 40, 3)]
-    public void ProvisionalFlag_IsFalse_WhenNotProvisional(
+    public void IsProvisional_IsFalse_WhenCriteriaNotMet(
         double volatility,
         int matchesPlayed,
         int tournamentsPlayed
@@ -120,7 +120,6 @@ public class RatingUtilsTests
     }
 
     [Theory]
-    [InlineData(RatingUtils.RatingBronzeIII - 5)] // Only null case
     [InlineData(RatingUtils.RatingBronzeIII)]
     [InlineData(RatingUtils.RatingBronzeII)]
     [InlineData(RatingUtils.RatingBronzeI)]
@@ -146,7 +145,7 @@ public class RatingUtilsTests
     [InlineData(RatingUtils.RatingGrandmasterII)]
     [InlineData(RatingUtils.RatingGrandmasterI)]
     [InlineData(RatingUtils.RatingEliteGrandmaster)]
-    public void GetPreviousTier_ReturnsProperPreviousTier(double rating)
+    public void GetRatingForPreviousTier_ReturnsProperRating(double rating)
     {
         // Arrange
         var aboveRating = rating + 1;
@@ -155,15 +154,20 @@ public class RatingUtilsTests
         var prevTier = RatingUtils.GetRatingForPreviousTier(aboveRating);
 
         // Assert
-        // Ratings below Bronze 3 have no previous tier
-        if (rating < RatingUtils.RatingBronzeIII)
-        {
-            Assert.Null(prevTier);
-        }
-        else
-        {
-            Assert.Equal(rating, prevTier);
-        }
+        Assert.Equal(rating, prevTier);
+    }
+
+    [Fact]
+    public void GetRatingForPreviousTier_ReturnsNull_Below_BronzeThree()
+    {
+        // Arrange
+        const double belowBronzeThree = RatingUtils.RatingBronzeIII - 1;
+
+        // Act
+        var prevTier = RatingUtils.GetRatingForPreviousTier(belowBronzeThree);
+
+        // Assert
+        Assert.Null(prevTier);
     }
 
     [Theory]
@@ -192,7 +196,7 @@ public class RatingUtilsTests
     [InlineData(RatingUtils.RatingGrandmasterII, 2)]
     [InlineData(RatingUtils.RatingGrandmasterI, 1)]
     [InlineData(RatingUtils.RatingEliteGrandmaster, null)]
-    public void GetSubTier_ReturnsSubTier_GivenCurrentTier(double rating, int? expectedSubTier)
+    public void GetSubTier_ReturnsProperSubTier(double rating, int? expectedSubTier)
     {
         // Arrange
 
@@ -228,8 +232,7 @@ public class RatingUtilsTests
     [InlineData(RatingUtils.RatingGrandmasterIII, 5)]
     [InlineData(RatingUtils.RatingGrandmasterII, 5)]
     [InlineData(RatingUtils.RatingGrandmasterI, 5)]
-    [InlineData(RatingUtils.RatingEliteGrandmaster, 5)]
-    public void GetRatingDelta_ReturnsProperDelta(double rating, double offset)
+    public void GetRatingDeltaForNextTier_ReturnsProperDelta(double rating, double offset)
     {
         // Arrange
         var ratingNextTier = RatingUtils.GetRatingForNextTier(rating);
@@ -239,58 +242,75 @@ public class RatingUtilsTests
         var delta = RatingUtils.GetRatingDeltaForNextTier(rating + offset);
 
         // Assert
-        // Elite Grandmaster and higher have zero delta as there is no higher tier
-        if (rating >= RatingUtils.RatingEliteGrandmaster)
+        Assert.Equal(expected, delta);
+    }
+
+    [Fact]
+    public void GetRatingDeltaForNextTier_ReturnsNull_AtAndAbove_EliteGrandmaster()
+    {
+        // Arrange
+        const double eliteGrandmaster = RatingUtils.RatingEliteGrandmaster;
+        const double aboveEliteGrandmaster = eliteGrandmaster + 1;
+
+        // Act
+        var eliteGrandmasterDelta = RatingUtils.GetRatingForNextTier(eliteGrandmaster);
+        var aboveEliteGrandmasterDelta = RatingUtils.GetRatingForNextTier(aboveEliteGrandmaster);
+
+        // Assert
+        Assert.Multiple(() =>
         {
-            Assert.Multiple(() =>
-            {
-                Assert.Equal(0, delta);
-                Assert.Null(ratingNextTier);
-            });
-        }
-        else
-        {
-            Assert.Equal(expected, delta);
-        }
+            Assert.Null(eliteGrandmasterDelta);
+            Assert.Null(aboveEliteGrandmasterDelta);
+        });
     }
 
     [Theory]
-    [InlineData(RatingUtils.RatingBronzeIII, RatingUtils.RatingBronzeII)]
-    [InlineData(RatingUtils.RatingBronzeII, RatingUtils.RatingBronzeI)]
-    [InlineData(RatingUtils.RatingBronzeI, RatingUtils.RatingSilverIII)]
-    [InlineData(RatingUtils.RatingSilverIII, RatingUtils.RatingSilverII)]
-    [InlineData(RatingUtils.RatingSilverII, RatingUtils.RatingSilverI)]
-    [InlineData(RatingUtils.RatingSilverI, RatingUtils.RatingGoldIII)]
-    [InlineData(RatingUtils.RatingGoldIII, RatingUtils.RatingGoldII)]
-    [InlineData(RatingUtils.RatingGoldII, RatingUtils.RatingGoldI)]
-    [InlineData(RatingUtils.RatingGoldI, RatingUtils.RatingPlatinumIII)]
-    [InlineData(RatingUtils.RatingPlatinumIII, RatingUtils.RatingPlatinumII)]
-    [InlineData(RatingUtils.RatingPlatinumII, RatingUtils.RatingPlatinumI)]
-    [InlineData(RatingUtils.RatingPlatinumI, RatingUtils.RatingEmeraldIII)]
-    [InlineData(RatingUtils.RatingEmeraldIII, RatingUtils.RatingEmeraldII)]
-    [InlineData(RatingUtils.RatingEmeraldII, RatingUtils.RatingEmeraldI)]
-    [InlineData(RatingUtils.RatingEmeraldI, RatingUtils.RatingDiamondIII)]
-    [InlineData(RatingUtils.RatingDiamondIII, RatingUtils.RatingDiamondII)]
-    [InlineData(RatingUtils.RatingDiamondII, RatingUtils.RatingDiamondI)]
-    [InlineData(RatingUtils.RatingDiamondI, RatingUtils.RatingMasterIII)]
-    [InlineData(RatingUtils.RatingMasterIII, RatingUtils.RatingMasterII)]
-    [InlineData(RatingUtils.RatingMasterII, RatingUtils.RatingMasterI)]
-    [InlineData(RatingUtils.RatingMasterI, RatingUtils.RatingGrandmasterIII)]
-    [InlineData(RatingUtils.RatingGrandmasterIII, RatingUtils.RatingGrandmasterII)]
-    [InlineData(RatingUtils.RatingGrandmasterII, RatingUtils.RatingGrandmasterI)]
-    [InlineData(RatingUtils.RatingGrandmasterI, RatingUtils.RatingEliteGrandmaster)]
-    [InlineData(RatingUtils.RatingEliteGrandmaster, null)]
-    public void GetRatingForNextTier_ReturnsRatingForNextTier_GivenCurrentRating(
-        double rating,
-        double? expectedNextTier
-    )
+    [InlineData(RatingUtils.RatingBronzeII)]
+    [InlineData(RatingUtils.RatingBronzeI)]
+    [InlineData(RatingUtils.RatingSilverIII)]
+    [InlineData(RatingUtils.RatingSilverII)]
+    [InlineData(RatingUtils.RatingSilverI)]
+    [InlineData(RatingUtils.RatingGoldIII)]
+    [InlineData(RatingUtils.RatingGoldII)]
+    [InlineData(RatingUtils.RatingGoldI)]
+    [InlineData(RatingUtils.RatingPlatinumIII)]
+    [InlineData(RatingUtils.RatingPlatinumII)]
+    [InlineData(RatingUtils.RatingPlatinumI)]
+    [InlineData(RatingUtils.RatingEmeraldIII)]
+    [InlineData(RatingUtils.RatingEmeraldII)]
+    [InlineData(RatingUtils.RatingEmeraldI)]
+    [InlineData(RatingUtils.RatingDiamondIII)]
+    [InlineData(RatingUtils.RatingDiamondII)]
+    [InlineData(RatingUtils.RatingDiamondI)]
+    [InlineData(RatingUtils.RatingMasterIII)]
+    [InlineData(RatingUtils.RatingMasterII)]
+    [InlineData(RatingUtils.RatingMasterI)]
+    [InlineData(RatingUtils.RatingGrandmasterIII)]
+    [InlineData(RatingUtils.RatingGrandmasterII)]
+    [InlineData(RatingUtils.RatingGrandmasterI)]
+    [InlineData(RatingUtils.RatingEliteGrandmaster)]
+    public void GetRatingForNextTier_ReturnsProperRating(double rating)
     {
         // Arrange
+        var belowRating = rating - 1;
+
+        // Act
+        var nextTier = RatingUtils.GetRatingForNextTier(belowRating);
+
+        // Assert
+        Assert.Equal(rating, nextTier);
+    }
+
+    [Fact]
+    public void GetRatingForNextTier_ReturnsNullFor_EliteGrandmaster()
+    {
+        // Arrange
+        const double rating = RatingUtils.RatingEliteGrandmaster;
 
         // Act
         var nextTier = RatingUtils.GetRatingForNextTier(rating);
 
         // Assert
-        Assert.Equal(expectedNextTier, nextTier);
+        Assert.Null(nextTier);
     }
 }
