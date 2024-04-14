@@ -13,10 +13,7 @@ public class OsuMatchDataWorker(
     IConfiguration configuration
     ) : BackgroundService
 {
-    private const int INTERVAL_SECONDS = 5;
-    private readonly IOsuApiService _apiService = apiService;
-    private readonly ILogger<OsuMatchDataWorker> _logger = logger;
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
+    private const int IntervalSeconds = 5;
     private readonly bool _allowDataFetching = configuration.GetValue<bool>("Osu:AllowDataFetching");
 
     /// <summary>
@@ -31,15 +28,15 @@ public class OsuMatchDataWorker(
     {
         if (!_allowDataFetching)
         {
-            _logger.LogInformation("Skipping osu! match data worker due to configuration");
+            logger.LogInformation("Skipping osu! match data worker due to configuration");
             return;
         }
 
-        _logger.LogInformation("Initialized osu! match data worker");
+        logger.LogInformation("Initialized osu! match data worker");
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            using IServiceScope scope = _serviceProvider.CreateScope();
+            using IServiceScope scope = serviceProvider.CreateScope();
 
             IMatchesRepository matchesRepository = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
             IApiMatchRepository apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchRepository>();
@@ -52,11 +49,11 @@ public class OsuMatchDataWorker(
 
             if (apiMatch == null && autoCheckMatches.Count == 0)
             {
-                _logger.LogTrace(
+                logger.LogTrace(
                     "No matches need processing, sleeping for {Interval} seconds",
-                    INTERVAL_SECONDS
+                    IntervalSeconds
                 );
-                await Task.Delay(TimeSpan.FromSeconds(INTERVAL_SECONDS), cancellationToken);
+                await Task.Delay(TimeSpan.FromSeconds(IntervalSeconds), cancellationToken);
                 continue;
             }
 
@@ -100,7 +97,7 @@ public class OsuMatchDataWorker(
         IGamesRepository gamesRepository
     )
     {
-        _logger.LogInformation("Performing automated checks on match {Match}", match.MatchId);
+        logger.LogInformation("Performing automated checks on match {Match}", match.MatchId);
         // Match verification checks
         if (!MatchAutomationChecks.PassesAllChecks(match))
         {
@@ -109,26 +106,21 @@ public class OsuMatchDataWorker(
             match.VerificationInfo = "Failed automation checks";
 
             match.NeedsAutoCheck = false;
-            _logger.LogInformation("Match {Match} failed automation checks", match.MatchId);
+            logger.LogInformation("Match {Match} failed automation checks", match.MatchId);
         }
         else
         {
-            if (match.VerificationStatus == (int)MatchVerificationStatus.Rejected)
+            if (match.VerifiedBy != null)
             {
-                // The match was previously rejected, but is now rectified of this status.
-
-                if (match.VerifiedBy != null)
-                {
-                    match.VerificationStatus = (int)MatchVerificationStatus.Verified;
-                }
-                else
-                {
-                    match.VerificationStatus = (int)MatchVerificationStatus.PreVerified;
-                }
-
-                match.VerificationSource = (int)MatchVerificationSource.System;
-                match.VerificationInfo = null;
+                match.VerificationStatus = (int)MatchVerificationStatus.Verified;
             }
+            else
+            {
+                match.VerificationStatus = (int)MatchVerificationStatus.PreVerified;
+            }
+
+            match.VerificationSource = (int)MatchVerificationSource.System;
+            match.VerificationInfo = null;
         }
 
         // Game verification checks
@@ -150,7 +142,7 @@ public class OsuMatchDataWorker(
                         // await matchScoresRepository.UpdateAsync(score);
                     }
 
-                    _logger.LogDebug(
+                    logger.LogDebug(
                         "Score [Player: {Player} | Game: {Game}] failed automation checks",
                         score.PlayerId,
                         game.GameId
@@ -164,7 +156,7 @@ public class OsuMatchDataWorker(
                         // await matchScoresRepository.UpdateAsync(score);
                     }
 
-                    _logger.LogTrace(
+                    logger.LogTrace(
                         "Score [Player: {Player} | Game: {Game}] passed automation checks",
                         score.PlayerId,
                         game.GameId
@@ -178,7 +170,7 @@ public class OsuMatchDataWorker(
             {
                 game.VerificationStatus = (int)GameVerificationStatus.Rejected;
                 game.RejectionReason = (int)rejectionReason;
-                _logger.LogInformation("Game {Game} failed automation checks with reason {Reason}",
+                logger.LogInformation("Game {Game} failed automation checks with reason {Reason}",
                     game.GameId, rejectionReason.ToString());
             }
             else
@@ -195,7 +187,7 @@ public class OsuMatchDataWorker(
                 }
 
 
-                _logger.LogDebug(
+                logger.LogDebug(
                     "Game {Game} passed automation checks and is marked as {Status}",
                     game.GameId,
                     (GameVerificationStatus)game.VerificationStatus
@@ -207,7 +199,7 @@ public class OsuMatchDataWorker(
         }
 
         match.NeedsAutoCheck = false;
-        _logger.LogInformation("Match {Match} has completed automated checks", match.MatchId);
+        logger.LogInformation("Match {Match} has completed automated checks", match.MatchId);
     }
 
     private async Task ProcessMatchesOsuApiAsync(
@@ -224,7 +216,7 @@ public class OsuMatchDataWorker(
 
             if (updatedEntity == null)
             {
-                _logger.LogWarning(
+                logger.LogWarning(
                     "Failed to process match {MatchId} because result from ApiMatchService processing was null",
                     match.MatchId
                 );
@@ -232,7 +224,7 @@ public class OsuMatchDataWorker(
         }
         catch (Exception e)
         {
-            _logger.LogError(
+            logger.LogError(
                 "Failed to automatically process match {MatchId}: {Message}",
                 match.MatchId,
                 e.Message
@@ -246,28 +238,30 @@ public class OsuMatchDataWorker(
         IMatchesRepository matchesRepository
     )
     {
-        OsuApiMatchData? osuMatch = await _apiService.GetMatchAsync(
+        OsuApiMatchData? osuMatch = await apiService.GetMatchAsync(
             osuMatchId,
             $"{osuMatchId} was identified as a match that needs to be processed"
         );
-        if (osuMatch == null)
+        if (osuMatch != null)
         {
-            Match? existingEntity = await matchesRepository.GetByMatchIdAsync(osuMatchId);
-            if (existingEntity != null)
-            {
-                await matchesRepository.UpdateVerificationStatusAsync(
-                    osuMatchId,
-                    MatchVerificationStatus.Failure,
-                    MatchVerificationSource.System,
-                    "Failed to fetch match from osu! API"
-                );
+            return await apiMatchRepository.CreateFromApiMatchAsync(osuMatch);
+        }
 
-                await matchesRepository.UpdateAsApiProcessed(existingEntity);
-            }
-
+        Match? existingEntity = await matchesRepository.GetByMatchIdAsync(osuMatchId);
+        if (existingEntity == null)
+        {
             return null;
         }
 
-        return await apiMatchRepository.CreateFromApiMatchAsync(osuMatch);
+        await matchesRepository.UpdateVerificationStatusAsync(
+            osuMatchId,
+            MatchVerificationStatus.Failure,
+            MatchVerificationSource.System,
+            "Failed to fetch match from osu! API"
+        );
+
+        await matchesRepository.UpdateAsApiProcessed(existingEntity);
+
+        return null;
     }
 }
