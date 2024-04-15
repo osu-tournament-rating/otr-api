@@ -19,7 +19,7 @@ public static class RatingUtils
      * Sub Tier - One of three "sub-divisions" for a major tier (i.e. SilverI, SilverII, SilverIII)
      */
 
-    // Bronze: 0 - 300
+    // Bronze: 100 - 300
     public const double RatingBronzeIII = 100;
     public const double RatingBronzeII = 165;
     public const double RatingBronzeI = 235;
@@ -226,11 +226,9 @@ public static class RatingUtils
     /// <summary>
     /// Gets the rating threshold of the previous tier for the given rating
     /// </summary>
-    /// <remarks>Will return zero for given ratings less than <see cref="RatingBronzeIII"/></remarks>
     public static double GetPreviousTierRating(double rating) =>
         rating switch
         {
-            < RatingBronzeIII => 0,
             < RatingBronzeII => RatingBronzeIII,
             < RatingBronzeI => RatingBronzeII,
             < RatingSilverIII => RatingBronzeI,
@@ -315,11 +313,9 @@ public static class RatingUtils
     /// <summary>
     /// Gets the rating threshold of the major tier for the given rating
     /// </summary>
-    /// <remarks>Will return 0 for given ratings less than <see cref="RatingBronzeIII"/></remarks>
     public static double GetMajorTierRating(double rating) =>
         rating switch
         {
-            < RatingBronzeIII => 0,
             < RatingSilverIII => RatingBronzeIII,
             < RatingGoldIII => RatingSilverIII,
             < RatingPlatinumIII => RatingGoldIII,
@@ -328,8 +324,7 @@ public static class RatingUtils
             < RatingMasterIII => RatingDiamondIII,
             < RatingGrandmasterIII => RatingMasterIII,
             < RatingEliteGrandmaster => RatingGrandmasterIII,
-            >= RatingEliteGrandmaster => RatingEliteGrandmaster,
-            _ => 0
+            _ => RatingEliteGrandmaster
         };
 
     /// <summary>

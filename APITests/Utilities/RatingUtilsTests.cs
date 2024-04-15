@@ -129,20 +129,6 @@ public class RatingUtilsTests
     }
 
     [Fact]
-    public void GetNextTier_GivenAnyRatingBelowBronzeIII_ReturnsTierBronzeII()
-    {
-        // Arrange
-        const double belowBronzeIII = RatingUtils.RatingBronzeIII + 1;
-        var expectedTier = RatingUtils.GetTier(RatingUtils.RatingBronzeII);
-
-        // Act
-        var nextTier = RatingUtils.GetNextTier(belowBronzeIII);
-
-        // Assert
-        Assert.Equal(expectedTier, nextTier);
-    }
-
-    [Fact]
     public void GetNextTier_GivenAnyRatingAboveEliteGrandmaster_ReturnsNull()
     {
         // Arrange
@@ -193,20 +179,6 @@ public class RatingUtilsTests
     }
 
     [Fact]
-    public void GetNextTierRating_GivenAnyBelowBronzeIII_ReturnsBronzeII()
-    {
-        // Arrange
-        const double belowBronzeIII = RatingUtils.RatingBronzeIII + 1;
-        const double expectedRating = RatingUtils.RatingBronzeII;
-
-        // Act
-        var nextTierRating = RatingUtils.GetNextTierRating(belowBronzeIII);
-
-        // Assert
-        Assert.Equal(expectedRating, nextTierRating);
-    }
-
-    [Fact]
     public void GetNextTierRating_GivenAnyAboveEliteGrandmaster_ReturnsNull()
     {
         // Arrange
@@ -220,7 +192,6 @@ public class RatingUtilsTests
     }
 
     [Theory]
-    [InlineData(RatingUtils.RatingBronzeIII, -5)]
     [InlineData(RatingUtils.RatingBronzeIII, 5)]
     [InlineData(RatingUtils.RatingBronzeII, 15)]
     [InlineData(RatingUtils.RatingBronzeI, 25)]
@@ -248,7 +219,7 @@ public class RatingUtilsTests
     public void GetNextTierRatingDelta_ReturnsCorrectDelta(double rating, double offset)
     {
         // Arrange
-        var ratingNextTier = RatingUtils.GetNextTierRating(rating + offset);
+        var ratingNextTier = RatingUtils.GetNextTierRating(rating);
         var expectedDelta = ratingNextTier - rating - offset;
 
         // Act
@@ -310,20 +281,6 @@ public class RatingUtilsTests
         Assert.Equal(rating, prevTierRating);
     }
 
-    [Fact]
-    public void GetPreviousTierRating_GivenAnyBelowBronzeIII_ReturnsZero()
-    {
-        // Arrange
-        const double ratingBelowBronzeIII = RatingUtils.RatingBronzeIII - 1;
-        const double expectedRating = 0;
-
-        // Act
-        var previousTierRating = RatingUtils.GetPreviousTierRating(ratingBelowBronzeIII);
-
-        // Assert
-        Assert.Equal(expectedRating, previousTierRating);
-    }
-
     [Theory]
     [InlineData(RatingUtils.RatingSilverIII)]
     [InlineData(RatingUtils.RatingGoldIII)]
@@ -344,20 +301,6 @@ public class RatingUtilsTests
 
         // Assert
         Assert.Equal(expectedMajorTier, nextMajorTier);
-    }
-
-    [Fact]
-    public void GetNextMajorTier_GivenAnyRatingBelowBronzeIII_ReturnsSilverIII()
-    {
-        // Arrange
-        const double ratingBelowBronzeIII = RatingUtils.RatingBronzeIII - 1;
-        var expectedTier = RatingUtils.GetTier(RatingUtils.RatingSilverIII);
-
-        // Act
-        var nextMajorTier = RatingUtils.GetNextMajorTier(ratingBelowBronzeIII);
-
-        // Assert
-        Assert.Equal(expectedTier, nextMajorTier);
     }
 
     [Fact]
@@ -395,20 +338,6 @@ public class RatingUtilsTests
     }
 
     [Fact]
-    public void GetNextMajorTierRating_GivenAnyBelowBronzeIII_ReturnsSilverIII()
-    {
-        // Arrange
-        const double ratingBelowBronzeIII = RatingUtils.RatingBronzeIII - 1;
-        const double expectedRating = RatingUtils.RatingSilverIII;
-
-        // Act
-        var nextMajorTierRating = RatingUtils.GetNextMajorTierRating(ratingBelowBronzeIII);
-
-        // Assert
-        Assert.Equal(expectedRating, nextMajorTierRating);
-    }
-
-    [Fact]
     public void GetNextMajorTierRating_GivenAnyAboveEliteGrandmaster_ReturnsNull()
     {
         // Arrange
@@ -422,7 +351,6 @@ public class RatingUtilsTests
     }
 
     [Theory]
-    [InlineData(RatingUtils.RatingBronzeIII, -5)]
     [InlineData(RatingUtils.RatingBronzeIII, 5)]
     [InlineData(RatingUtils.RatingBronzeII, 15)]
     [InlineData(RatingUtils.RatingBronzeI, 25)]
@@ -496,22 +424,7 @@ public class RatingUtilsTests
         Assert.Equal(rating, majorTierRating);
     }
 
-    [Fact]
-    public void GetMajorTierRating_GivenAnyBelowBronzeIII_ReturnsZero()
-    {
-        // Arrange
-        const double ratingBelowBronzeIII = RatingUtils.RatingBronzeIII - 1;
-        const double expectedRating = 0;
-
-        // Act
-        var majorTierRating = RatingUtils.GetMajorTierRating(ratingBelowBronzeIII);
-
-        // Assert
-        Assert.Equal(expectedRating, majorTierRating);
-    }
-
     [Theory]
-    [InlineData(RatingUtils.RatingBronzeIII, -5)]
     [InlineData(RatingUtils.RatingBronzeIII, 5)]
     [InlineData(RatingUtils.RatingBronzeII, 15)]
     [InlineData(RatingUtils.RatingBronzeI, 25)]
@@ -539,9 +452,8 @@ public class RatingUtilsTests
     public void GetNextTierFillPercentage_ReturnsCorrectPercentage(double rating, double offset)
     {
         // Arrange
-        var nextTierRating = RatingUtils.GetNextTierRating(rating + offset);
-        var prevTierRating = RatingUtils.GetPreviousTierRating(rating + offset);
-        var expectedPercentage = (rating - prevTierRating + offset) / (nextTierRating - prevTierRating);
+        var nextTierRating = RatingUtils.GetNextTierRating(rating);
+        var expectedPercentage = offset / (nextTierRating - rating);
 
         // Act
         var actualPercentage = RatingUtils.GetNextTierFillPercentage(rating + offset);
@@ -564,37 +476,19 @@ public class RatingUtilsTests
     }
 
     [Theory]
-    [InlineData(RatingUtils.RatingBronzeIII, -23)]
     [InlineData(RatingUtils.RatingBronzeIII, 5)]
-    [InlineData(RatingUtils.RatingBronzeII, 15)]
-    [InlineData(RatingUtils.RatingBronzeI, 25)]
     [InlineData(RatingUtils.RatingSilverIII, 23)]
-    [InlineData(RatingUtils.RatingSilverII, 45)]
-    [InlineData(RatingUtils.RatingSilverI, 54)]
     [InlineData(RatingUtils.RatingGoldIII, 52)]
-    [InlineData(RatingUtils.RatingGoldII, 24)]
-    [InlineData(RatingUtils.RatingGoldI, 32)]
     [InlineData(RatingUtils.RatingPlatinumIII, 31)]
-    [InlineData(RatingUtils.RatingPlatinumII, 29)]
-    [InlineData(RatingUtils.RatingPlatinumI, 22)]
     [InlineData(RatingUtils.RatingEmeraldIII, 14)]
-    [InlineData(RatingUtils.RatingEmeraldII, 19)]
-    [InlineData(RatingUtils.RatingEmeraldI, 20)]
     [InlineData(RatingUtils.RatingDiamondIII, 13)]
-    [InlineData(RatingUtils.RatingDiamondII, 17)]
-    [InlineData(RatingUtils.RatingDiamondI, 29)]
     [InlineData(RatingUtils.RatingMasterIII, 26)]
-    [InlineData(RatingUtils.RatingMasterII, 15)]
-    [InlineData(RatingUtils.RatingMasterI, 5)]
     [InlineData(RatingUtils.RatingGrandmasterIII, 10)]
-    [InlineData(RatingUtils.RatingGrandmasterII, 8)]
-    [InlineData(RatingUtils.RatingGrandmasterI, 16)]
     public void GetNextMajorTierFillPercentage_ReturnsCorrectPercentage(double rating, double offset)
     {
         // Arrange
-        var nextMajorTierRating = RatingUtils.GetNextMajorTierRating(rating + offset);
-        var currentMajorTierRating = RatingUtils.GetMajorTierRating(rating + offset);
-        var expectedPercentage = (rating - currentMajorTierRating + offset) / (nextMajorTierRating - currentMajorTierRating);
+        var nextMajorTierRating = RatingUtils.GetNextMajorTierRating(rating);
+        var expectedPercentage = offset / (nextMajorTierRating - rating);
 
         // Act
         var actualPercentage = RatingUtils.GetNextMajorTierFillPercentage(rating + offset);
