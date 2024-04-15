@@ -87,6 +87,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return await CreateAsync(new Player { OsuId = osuId });
     }
 
+    // TODO: Refactor param "mode" to use OsuEnums.Ruleset
     public async Task<Player?> GetAsync(long osuId, bool eagerLoad, int mode = 0, int offsetDays = -1)
     {
         if (!eagerLoad)
@@ -98,7 +99,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
 
         Player? p = await _context
             .Players.Include(x =>
-                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == mode)
+                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == (OsuEnums.Ruleset)mode)
             )
             .ThenInclude(x => x.Game)
             .ThenInclude(x => x.Match)

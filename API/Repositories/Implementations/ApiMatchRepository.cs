@@ -282,10 +282,10 @@ public class ApiMatchRepository(
             StartTime = osuApiGame.StartTime,
             EndTime = osuApiGame.EndTime,
             BeatmapId = beatmapIdResult,
-            PlayMode = (int)osuApiGame.Ruleset,
-            ScoringType = (int)osuApiGame.ScoringType,
-            TeamType = (int)osuApiGame.TeamType,
-            Mods = (int)osuApiGame.Mods
+            PlayMode = osuApiGame.Ruleset,
+            ScoringType = osuApiGame.ScoringType,
+            TeamType = osuApiGame.TeamType,
+            Mods = osuApiGame.Mods
         };
 
         Game persisted = await _gamesRepository.CreateAsync(dbGame);
