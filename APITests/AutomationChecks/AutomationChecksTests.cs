@@ -45,14 +45,14 @@ public class AutomationChecksTests
             new()
             {
                 BeatmapId = 1,
-                PlayMode = 0,
+                PlayMode = OsuEnums.Ruleset.Standard,
                 StartTime = new DateTime(2023, 1, 1, 0, 0, 0),
                 EndTime = new DateTime(2023, 1, 1, 0, 1, 0),
                 GameId = 1,
                 MatchId = 1,
                 ScoringType = (int)OsuEnums.ScoringType.ScoreV2,
                 TeamType = (int)OsuEnums.TeamType.TeamVs,
-                Mods = (int)(OsuEnums.Mods.NoFail | OsuEnums.Mods.DoubleTime),
+                Mods = OsuEnums.Mods.NoFail | OsuEnums.Mods.DoubleTime,
                 Match = match
             }
         };
@@ -103,7 +103,7 @@ public class AutomationChecksTests
 
         Game firstGame = match.Games.First();
         Assert.NotNull(firstGame);
-        Assert.Equal((int)(OsuEnums.Mods.NoFail | OsuEnums.Mods.DoubleTime), firstGame.Mods);
+        Assert.Equal(OsuEnums.Mods.NoFail | OsuEnums.Mods.DoubleTime, firstGame.Mods);
 
         MatchScore firstMatchScore = firstGame.MatchScores.First();
         Assert.NotNull(firstMatchScore);
@@ -616,7 +616,7 @@ public class AutomationChecksTests
     public void Game_FailsModsCheck()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().Mods = (int)OsuEnums.Mods.Relax;
+        match.Games.First().Mods = OsuEnums.Mods.Relax;
 
         Assert.False(GameAutomationChecks.PassesModsCheck(match.Games.First()));
     }
@@ -625,7 +625,7 @@ public class AutomationChecksTests
     public void Game_FailsModeCheck()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().PlayMode = (int)OsuEnums.Ruleset.Catch;
+        match.Games.First().PlayMode = OsuEnums.Ruleset.Catch;
 
         Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
     }
