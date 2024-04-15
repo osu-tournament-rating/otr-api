@@ -19,6 +19,7 @@ public class MatchesService(
     private readonly ITournamentsRepository _tournamentsRepository = tournamentsRepository;
     private readonly IMapper _mapper = mapper;
 
+    // TODO: Refactor to use enums for param "verificationSource"
     public async Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(
         int tournamentId,
         int submitterId,
@@ -53,7 +54,7 @@ public class MatchesService(
                 VerificationStatus = (int)verificationStatus,
                 NeedsAutoCheck = true,
                 IsApiProcessed = false,
-                VerificationSource = verificationSource,
+                VerificationSource = (MatchVerificationSource?)verificationSource,
                 VerifierUserId = verify ? submitterId : null,
                 SubmitterUserId = submitterId
             });

@@ -89,7 +89,7 @@ public class OsuMatchDataWorker(
         if (!MatchAutomationChecks.PassesAllChecks(match))
         {
             match.VerificationStatus = (int)MatchVerificationStatus.Rejected;
-            match.VerificationSource = (int)MatchVerificationSource.System;
+            match.VerificationSource = MatchVerificationSource.System;
             match.VerificationInfo = "Failed automation checks";
 
             match.NeedsAutoCheck = false;
@@ -110,7 +110,7 @@ public class OsuMatchDataWorker(
                     match.VerificationStatus = (int)MatchVerificationStatus.PreVerified;
                 }
 
-                match.VerificationSource = (int)MatchVerificationSource.System;
+                match.VerificationSource = MatchVerificationSource.System;
                 match.VerificationInfo = null;
             }
         }

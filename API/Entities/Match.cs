@@ -72,20 +72,6 @@ public class Match : MatchEntityBase, IUpdateableEntity
     public virtual MatchWinRecord WinRecord { get; set; } = new();
 
     [NotMapped]
-    public MatchVerificationSource? VerificationSourceEnum
-    {
-        get
-        {
-            if (VerificationSource != null)
-            {
-                return (MatchVerificationSource)VerificationSource;
-            }
-
-            return null;
-        }
-    }
-
-    [NotMapped]
     public MatchVerificationStatus? VerificationStatusEnum
     {
         get

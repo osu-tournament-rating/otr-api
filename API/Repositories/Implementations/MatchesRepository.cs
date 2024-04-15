@@ -123,7 +123,7 @@ public class MatchesRepository(
         }
 
         match.VerificationStatus = (int)status;
-        match.VerificationSource = (int)source;
+        match.VerificationSource = source;
         match.VerificationInfo = info;
 
         logger.LogInformation(

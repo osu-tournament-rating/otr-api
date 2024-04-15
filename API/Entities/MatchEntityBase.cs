@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using API.Enums;
 
 namespace API.Entities;
 
@@ -50,7 +51,7 @@ public class MatchEntityBase
     /// The type of source that verified the match
     /// </summary>
     [Column("verification_source")]
-    public int? VerificationSource { get; set; }
+    public MatchVerificationSource? VerificationSource { get; set; }
 
     /// <summary>
     /// The verification status of the match
