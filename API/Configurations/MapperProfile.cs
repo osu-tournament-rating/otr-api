@@ -56,6 +56,7 @@ public class MapperProfile : Profile
         CreateMap<User, UserDTO>()
             .ForMember(x => x.OsuId, opt => opt.MapFrom(y => y.Player.OsuId))
             .ForMember(x => x.Country, opt => opt.MapFrom(y => y.Player.Country))
-            .ForMember(x => x.Username, opt => opt.MapFrom(y => y.Player.Username));
+            .ForMember(x => x.Username, opt => opt.MapFrom(y => y.Player.Username))
+            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Player.Ruleset));
     }
 }

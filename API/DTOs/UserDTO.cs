@@ -1,3 +1,5 @@
+using API.Osu;
+
 namespace API.DTOs;
 
 /// <summary>
@@ -34,4 +36,9 @@ public class UserDTO
     /// osu! username of the associated player
     /// </summary>
     public string? Username { get; set; }
+
+    /// <summary>
+    /// Preferred ruleset of the associated player
+    /// </summary>
+    public OsuEnums.Ruleset? Ruleset { get; set; }
 }

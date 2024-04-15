@@ -3,7 +3,6 @@ using API.Entities;
 using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
-using API.Utilities;
 using AutoMapper;
 
 namespace API.Services.Implementations;
@@ -13,25 +12,8 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
     public async Task<bool> ExistsAsync(int id) =>
         await userRepository.ExistsAsync(id);
 
-    public async Task<UserDTO?> GetAsync(int id)
-    {
-        User? user = await userRepository.GetAsync(id);
-
-        if (user is null)
-        {
-            return null;
-        }
-
-        return new UserDTO
-        {
-            Id = user.Id,
-            Scopes = user.Scopes,
-            PlayerId = user.PlayerId,
-            Country = user.Player.Country,
-            OsuId = user.Player.OsuId, // TODO: Set to user's preferred mode
-            Username = user.Player.Username
-        };
-    }
+    public async Task<UserDTO?> GetAsync(int id) =>
+        mapper.Map<UserDTO?>(await userRepository.GetAsync(id));
 
     public async Task<IEnumerable<OAuthClientDTO>?> GetClientsAsync(int id) =>
         mapper.Map<IEnumerable<OAuthClientDTO>?>((await userRepository.GetAsync(id))?.Clients?.ToList());
