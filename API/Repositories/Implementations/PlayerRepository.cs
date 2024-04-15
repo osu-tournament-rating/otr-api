@@ -60,7 +60,10 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return await _context.Players.AsNoTracking().ToListAsync();
     }
 
-    public async Task<IEnumerable<Player>> SearchAsync(string username) => await SearchQuery(username, true).ToListAsync();
+    public async Task<IEnumerable<Player>> SearchAsync(string username) =>
+        await SearchQuery(username, true)
+            .Include(p => p.Ratings)
+            .ToListAsync();
 
     public async Task<Player?> GetAsync(string username)
     {
