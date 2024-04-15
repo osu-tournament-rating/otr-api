@@ -62,8 +62,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
 
     public async Task<IEnumerable<Player>> SearchAsync(string username) =>
         await SearchQuery(username, true)
-            // TODO: Compare BaseStats.Mode to Player.Ruleset
-            .Include(p => p.Ratings.Where(r => r.Mode == (int)OsuEnums.Mode.Standard))
+            .Include(p => p.Ratings)
             .ToListAsync();
 
     public async Task<Player?> GetAsync(string username)

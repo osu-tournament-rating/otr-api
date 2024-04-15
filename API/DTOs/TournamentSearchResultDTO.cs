@@ -15,7 +15,7 @@ public class TournamentSearchResultDTO
     /// <summary>
     /// Ruleset of the tournament
     /// </summary>
-    public OsuEnums.Mode Ruleset { get; set; }
+    public OsuEnums.Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Expected team size of the tournament

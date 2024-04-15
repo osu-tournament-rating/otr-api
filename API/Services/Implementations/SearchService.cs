@@ -3,17 +3,19 @@ using API.Entities;
 using API.Osu;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using AutoMapper;
 
 namespace API.Services.Implementations;
 
 public class SearchService(
     ITournamentsRepository tournamentsRepository,
     IMatchesRepository matchesRepository,
-    IPlayerRepository playerRepository
+    IPlayerRepository playerRepository,
+    IMapper mapper
     ) : ISearchService
 {
     public async Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey) =>
-        new SearchResponseCollectionDTO
+        new()
         {
             Tournaments = (await SearchTournamentsByNameAsync(searchKey)).ToList(),
             Matches = (await SearchMatchesByNameAsync(searchKey)).ToList(),
@@ -22,25 +24,14 @@ public class SearchService(
 
     private async Task<IEnumerable<TournamentSearchResultDTO>> SearchTournamentsByNameAsync(string tournamentName)
     {
-        var tournaments = (await tournamentsRepository.SearchAsync(tournamentName)).ToList();
-        return tournaments.Select(tournament => new TournamentSearchResultDTO
-        {
-            Id = tournament.Id,
-            Ruleset = (OsuEnums.Mode)tournament.Mode,
-            TeamSize = tournament.TeamSize,
-            Name = tournament.Name,
-        });
+        IEnumerable<Tournament> tournaments = await tournamentsRepository.SearchAsync(tournamentName);
+        return tournaments.Select(mapper.Map<TournamentSearchResultDTO>);
     }
 
     private async Task<IEnumerable<MatchSearchResultDTO>> SearchMatchesByNameAsync(string matchName)
     {
         var matches = (await matchesRepository.SearchAsync(matchName)).ToList();
-        return matches.Select(match => new MatchSearchResultDTO
-        {
-            Id = match.Id,
-            MatchId = match.MatchId,
-            Name = match.Name
-        });
+        return matches.Select(mapper.Map<MatchSearchResultDTO>);
     }
 
     private async Task<IEnumerable<PlayerSearchResultDTO>> SearchPlayersByNameAsync(string username)
@@ -48,8 +39,8 @@ public class SearchService(
         var players = (await playerRepository.SearchAsync(username)).ToList();
         return players.Select(player =>
         {
-            // TODO: Use Player.Ruleset for Rating and OsuGlobalRank
-            BaseStats? rating = player.Ratings.FirstOrDefault(r => r.Mode == (int)OsuEnums.Mode.Standard);
+            BaseStats? rating = player.Ratings
+                .FirstOrDefault(r => r.Mode == (int)(player.Ruleset ?? OsuEnums.Ruleset.Standard));
             return new PlayerSearchResultDTO
             {
                 Id = player.Id,
