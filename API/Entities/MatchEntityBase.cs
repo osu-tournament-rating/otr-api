@@ -5,6 +5,7 @@ using API.Enums;
 
 namespace API.Entities;
 
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class MatchEntityBase
 {
     /// <summary>
@@ -51,6 +52,7 @@ public class MatchEntityBase
     /// The type of source that verified the match
     /// </summary>
     [Column("verification_source")]
+    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
     public MatchVerificationSource? VerificationSource { get; set; }
 
     /// <summary>

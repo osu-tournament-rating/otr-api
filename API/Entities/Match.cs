@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
+// ReSharper disable StringLiteralTypo
 
 namespace API.Entities;
 
@@ -9,7 +10,6 @@ namespace API.Entities;
 /// Represents a tournament match
 /// </summary>
 [Table("matches")]
-// ReSharper disable once StringLiteralTypo
 [Index("MatchId", Name = "osumatches_matchid", IsUnique = true)]
 [SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]

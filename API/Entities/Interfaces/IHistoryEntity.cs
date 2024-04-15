@@ -8,20 +8,24 @@ public interface IHistoryEntity : IEntity
     /// Id of the original record
     /// </summary>
     public int? ReferenceId { get; set; }
+
     /// <summary>
     /// The type of action taken on the original record, maps to <see cref="HistoryActionType"/>
     /// </summary>
     public int HistoryAction { get; set; }
+
     /// <summary>
     /// Date that the original data became available
     /// </summary>
     public DateTime? HistoryStartTime { get; set; }
+
     /// <summary>
-    /// Date that the original data was changed / deleted
+    /// Date that the original data was updated
     /// </summary>
     public DateTime HistoryEndTime { get; set; }
+
     /// <summary>
-    /// User id of the user that took action on the record
+    /// Id of the user that took action on the record
     /// </summary>
     public int? ModifierId { get; set; }
 }
