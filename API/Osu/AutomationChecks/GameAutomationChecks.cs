@@ -173,7 +173,7 @@ public static class GameAutomationChecks
 
     public static bool PassesScoringTypeCheck(Game game)
     {
-        if (game.ScoringType != (int)OsuEnums.ScoringType.ScoreV2)
+        if (game.ScoringType != OsuEnums.ScoringType.ScoreV2)
         {
             s_logger.Information(
                 "{Prefix} Match {MatchId} does not have a ScoreV2 scoring type, can't verify game {GameId}",

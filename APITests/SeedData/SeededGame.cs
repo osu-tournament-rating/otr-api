@@ -28,7 +28,7 @@ public static class SeededGame
             MatchId = matchId,
             BeatmapId = 24245,
             PlayMode = OsuEnums.Ruleset.Standard,
-            ScoringType = 3,
+            ScoringType = OsuEnums.ScoringType.ScoreV2,
             TeamType = 0,
             Mods = OsuEnums.Mods.None,
             PostModSr = 6.36389,

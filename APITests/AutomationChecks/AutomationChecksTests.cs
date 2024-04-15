@@ -50,7 +50,7 @@ public class AutomationChecksTests
                 EndTime = new DateTime(2023, 1, 1, 0, 1, 0),
                 GameId = 1,
                 MatchId = 1,
-                ScoringType = (int)OsuEnums.ScoringType.ScoreV2,
+                ScoringType = OsuEnums.ScoringType.ScoreV2,
                 TeamType = (int)OsuEnums.TeamType.TeamVs,
                 Mods = OsuEnums.Mods.NoFail | OsuEnums.Mods.DoubleTime,
                 Match = match
@@ -405,7 +405,7 @@ public class AutomationChecksTests
     public void Game_FailsScoringCheck_WhenComboScoring()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().ScoringType = (int)OsuEnums.ScoringType.Combo;
+        match.Games.First().ScoringType = OsuEnums.ScoringType.Combo;
 
         Assert.False(GameAutomationChecks.PassesScoringTypeCheck(match.Games.First()));
     }
@@ -551,7 +551,7 @@ public class AutomationChecksTests
         {
             foreach (OsuEnums.ScoringType scoringType in badScoringTypes)
             {
-                match.Games.First().ScoringType = (int)scoringType;
+                match.Games.First().ScoringType = scoringType;
                 Assert.False(GameAutomationChecks.PassesScoringTypeCheck(match.Games.First()));
             }
         });
@@ -634,7 +634,7 @@ public class AutomationChecksTests
     public void Game_FailsScoringTypeCheck()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().ScoringType = (int)OsuEnums.ScoringType.Combo;
+        match.Games.First().ScoringType = OsuEnums.ScoringType.Combo;
 
         Assert.False(GameAutomationChecks.PassesScoringTypeCheck(match.Games.First()));
     }

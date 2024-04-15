@@ -49,7 +49,7 @@ public class Game : IUpdateableEntity
     /// The scoring type used for the game
     /// </summary>
     [Column("scoring_type")]
-    public int ScoringType { get; set; }
+    public OsuEnums.ScoringType ScoringType { get; set; }
 
     /// <summary>
     /// The team type used for the game
@@ -136,12 +136,6 @@ public class Game : IUpdateableEntity
     /// </summary>
     [InverseProperty("Game")]
     public virtual GameWinRecord WinRecord { get; set; } = null!;
-
-    [NotMapped]
-    public OsuEnums.Ruleset RulesetEnum => (OsuEnums.Ruleset)PlayMode;
-
-    [NotMapped]
-    public OsuEnums.ScoringType ScoringTypeEnum => (OsuEnums.ScoringType)ScoringType;
 
     [NotMapped]
     public OsuEnums.TeamType TeamTypeEnum => (OsuEnums.TeamType)TeamType;

@@ -283,7 +283,7 @@ public class ApiMatchRepository(
             EndTime = osuApiGame.EndTime,
             BeatmapId = beatmapIdResult,
             PlayMode = osuApiGame.Ruleset,
-            ScoringType = (int)osuApiGame.ScoringType,
+            ScoringType = osuApiGame.ScoringType,
             TeamType = (int)osuApiGame.TeamType,
             Mods = osuApiGame.Mods
         };
