@@ -279,7 +279,7 @@ public static class RatingUtils
     /// <summary>
     /// Gets the rating threshold of the next major tier for the given rating
     /// </summary>
-    /// <remarks>Will return null for given ratings greater than or equal to <see cref="RatingEliteGrandmaster"/></remarks>
+    /// <remarks>Will return null for given ratings greater than <see cref="RatingEliteGrandmaster"/></remarks>
     public static double? GetNextMajorTierRating(double rating) =>
         rating switch
         {
@@ -355,7 +355,7 @@ public static class RatingUtils
     /// Gets a percentage representing the progress to the next major tier for the given rating
     /// </summary>
     /// <remarks>
-    /// Will return null for given ratings greater than or equal to <see cref="RatingEliteGrandmaster"/>
+    /// Will return null for given ratings greater than <see cref="RatingEliteGrandmaster"/>
     /// </remarks>
     public static double? GetNextMajorTierFillPercentage(double rating)
     {
