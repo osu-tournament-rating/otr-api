@@ -51,7 +51,7 @@ public class AutomationChecksTests
                 GameId = 1,
                 MatchId = 1,
                 ScoringType = OsuEnums.ScoringType.ScoreV2,
-                TeamType = (int)OsuEnums.TeamType.TeamVs,
+                TeamType = OsuEnums.TeamType.TeamVs,
                 Mods = OsuEnums.Mods.NoFail | OsuEnums.Mods.DoubleTime,
                 Match = match
             }
@@ -414,11 +414,11 @@ public class AutomationChecksTests
     public void Game_FailsTeamTypeCheck_WhenTagTeamMode()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().TeamType = (int)OsuEnums.TeamType.TagTeamVs;
+        match.Games.First().TeamType = OsuEnums.TeamType.TagTeamVs;
 
         Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
 
-        match.Games.First().TeamType = (int)OsuEnums.TeamType.TagCoop;
+        match.Games.First().TeamType = OsuEnums.TeamType.TagCoop;
         Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
     }
 
@@ -426,7 +426,7 @@ public class AutomationChecksTests
     public void Game_FailsTeamTypeCheck_WhenHeadToHead_And_TournamentSizeNotOne()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().TeamType = (int)OsuEnums.TeamType.HeadToHead;
+        match.Games.First().TeamType = OsuEnums.TeamType.HeadToHead;
         match.Tournament.TeamSize = 4;
 
         Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
@@ -436,7 +436,7 @@ public class AutomationChecksTests
     public void Game_PassesTeamTypeCheck_WhenHeadToHead_And_TournamentSizeIsOne()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().TeamType = (int)OsuEnums.TeamType.HeadToHead;
+        match.Games.First().TeamType = OsuEnums.TeamType.HeadToHead;
         match.Tournament.TeamSize = 1;
 
         Assert.True(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
@@ -643,11 +643,11 @@ public class AutomationChecksTests
     public void Game_FailsTeamTypeCheck()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().TeamType = (int)OsuEnums.TeamType.TagCoop;
+        match.Games.First().TeamType = OsuEnums.TeamType.TagCoop;
 
         Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
 
-        match.Games.First().TeamType = (int)OsuEnums.TeamType.TagTeamVs;
+        match.Games.First().TeamType = OsuEnums.TeamType.TagTeamVs;
         Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
     }
 
@@ -656,7 +656,7 @@ public class AutomationChecksTests
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         Game game = match.Games.First();
-        game.TeamType = (int)OsuEnums.TeamType.HeadToHead;
+        game.TeamType = OsuEnums.TeamType.HeadToHead;
 
         game.Match.Tournament.TeamSize = 4;
         Assert.False(GameAutomationChecks.PassesTeamTypeCheck(game));
@@ -669,7 +669,7 @@ public class AutomationChecksTests
     public void Game_FailsTeamTypeCheck_HeadToHead_When_TeamSize_Is_2()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().TeamType = (int)OsuEnums.TeamType.HeadToHead;
+        match.Games.First().TeamType = OsuEnums.TeamType.HeadToHead;
         match.Tournament.TeamSize = 2;
 
         Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));

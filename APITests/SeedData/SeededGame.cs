@@ -29,7 +29,7 @@ public static class SeededGame
             BeatmapId = 24245,
             PlayMode = OsuEnums.Ruleset.Standard,
             ScoringType = OsuEnums.ScoringType.ScoreV2,
-            TeamType = 0,
+            TeamType = OsuEnums.TeamType.HeadToHead,
             Mods = OsuEnums.Mods.None,
             PostModSr = 6.36389,
             GameId = 502333236,

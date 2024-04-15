@@ -192,8 +192,7 @@ public static class GameAutomationChecks
 
     public static bool PassesTeamTypeCheck(Game game)
     {
-        OsuEnums.TeamType teamType = game.TeamTypeEnum;
-        if (teamType is OsuEnums.TeamType.TagTeamVs or OsuEnums.TeamType.TagCoop)
+        if (game.TeamType is OsuEnums.TeamType.TagTeamVs or OsuEnums.TeamType.TagCoop)
         {
             s_logger.Information(
                 "{Prefix} Match {MatchId} has a tag team type, can't verify game {GameId}",
@@ -205,7 +204,7 @@ public static class GameAutomationChecks
         }
 
         // Ensure team size is valid
-        if (teamType == OsuEnums.TeamType.HeadToHead)
+        if (game.TeamType == OsuEnums.TeamType.HeadToHead)
         {
             if (game.Match.Tournament.TeamSize != 1)
             {

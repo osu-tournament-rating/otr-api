@@ -52,10 +52,10 @@ public static class QueryExtensions
             );
 
     public static IQueryable<Game> WhereTeamVs(this IQueryable<Game> query) =>
-        query.AsQueryable().Where(x => x.TeamType == (int)OsuEnums.TeamType.TeamVs);
+        query.AsQueryable().Where(x => x.TeamType == OsuEnums.TeamType.TeamVs);
 
     public static IQueryable<Game> WhereHeadToHead(this IQueryable<Game> query) =>
-        query.AsQueryable().Where(x => x.TeamType == (int)OsuEnums.TeamType.HeadToHead);
+        query.AsQueryable().Where(x => x.TeamType == OsuEnums.TeamType.HeadToHead);
 
     public static IQueryable<Game> After(this IQueryable<Game> query, DateTime after) =>
         query.AsQueryable().Where(x => x.StartTime > after);
@@ -104,10 +104,10 @@ public static class QueryExtensions
     /// <param name="query"></param>
     /// <returns></returns>
     public static IQueryable<MatchScore> WhereHeadToHead(this IQueryable<MatchScore> query) =>
-        query.AsQueryable().Where(x => x.Game.TeamType == (int)OsuEnums.TeamType.HeadToHead);
+        query.AsQueryable().Where(x => x.Game.TeamType == OsuEnums.TeamType.HeadToHead);
 
     public static IQueryable<MatchScore> WhereNotHeadToHead(this IQueryable<MatchScore> query) =>
-        query.AsQueryable().Where(x => x.Game.TeamType != (int)OsuEnums.TeamType.HeadToHead);
+        query.AsQueryable().Where(x => x.Game.TeamType != OsuEnums.TeamType.HeadToHead);
 
     /// <summary>
     ///  Selects all TeamVs match scores
@@ -115,7 +115,7 @@ public static class QueryExtensions
     /// <param name="query"></param>
     /// <returns></returns>
     public static IQueryable<MatchScore> WhereTeamVs(this IQueryable<MatchScore> query) =>
-        query.AsQueryable().Where(x => x.Game.TeamType == (int)OsuEnums.TeamType.TeamVs);
+        query.AsQueryable().Where(x => x.Game.TeamType == OsuEnums.TeamType.TeamVs);
 
     /// <summary>
     ///  Selects all match scores, other than the provided player's, that are on the opposite team as the provided player.
@@ -146,7 +146,7 @@ public static class QueryExtensions
             .Where(x =>
                 x.Game.MatchScores.Any(y => y.Player.OsuId == osuPlayerId)
                 && x.Player.OsuId != osuPlayerId
-                && x.Game.TeamType != (int)OsuEnums.TeamType.HeadToHead
+                && x.Game.TeamType != OsuEnums.TeamType.HeadToHead
                 && x.Team == x.Game.MatchScores.First(y => y.Player.OsuId == osuPlayerId).Team
             );
 

@@ -55,7 +55,7 @@ public class Game : IUpdateableEntity
     /// The team type used for the game
     /// </summary>
     [Column("team_type")]
-    public int TeamType { get; set; }
+    public OsuEnums.TeamType TeamType { get; set; }
 
     /// <summary>
     /// The mods enabled for the game
@@ -136,7 +136,4 @@ public class Game : IUpdateableEntity
     /// </summary>
     [InverseProperty("Game")]
     public virtual GameWinRecord WinRecord { get; set; } = null!;
-
-    [NotMapped]
-    public OsuEnums.TeamType TeamTypeEnum => (OsuEnums.TeamType)TeamType;
 }
