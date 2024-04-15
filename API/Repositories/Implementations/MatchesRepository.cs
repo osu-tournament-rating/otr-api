@@ -110,7 +110,7 @@ public class MatchesRepository(
         Match? match = await GetAsync(id);
         if (match is null)
         {
-            logger.LogWarning("Match {MatchId} not found (failed to update verification status)", matchId);
+            logger.LogWarning("Match {id} not found (failed to update verification status)", id);
             return null;
         }
 
