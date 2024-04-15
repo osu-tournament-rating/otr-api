@@ -1,7 +1,13 @@
 namespace API.Osu;
 
-public class OsuEnums
+/// <summary>
+/// A collection of enums and flags that directly represent their osu! counterparts
+/// </summary>
+public static class OsuEnums
 {
+    /// <summary>
+    /// The scoring method used for a game
+    /// </summary>
     public enum ScoringType
     {
         Score = 0,
@@ -11,9 +17,9 @@ public class OsuEnums
     }
 
     /// <summary>
-    /// The mode the match was played in.
+    /// The four osu! play modes
     /// </summary>
-    public enum Mode
+    public enum Ruleset
     {
         Standard = 0,
         Taiko = 1,
@@ -32,6 +38,9 @@ public class OsuEnums
         TagTeamVs = 3
     }
 
+    /// <summary>
+    /// The team a player was on for a game or match
+    /// </summary>
     public enum Team
     {
         NoTeam = 0,
@@ -39,8 +48,12 @@ public class OsuEnums
         Red = 2
     }
 
+    /// <summary>
+    /// Represents mod values
+    /// </summary>
     /// <copyright>
-    /// ppy 2023 https://github.com/ppy/osu-api/wiki#mods
+    /// ppy 2024 https://github.com/ppy/osu-api/wiki#mods
+    /// Last accessed April 2024
     /// </copyright>
     [Flags]
     public enum Mods
@@ -55,12 +68,21 @@ public class OsuEnums
         DoubleTime = 64,
         Relax = 128,
         HalfTime = 256,
-        Nightcore = 512, // Only set along with DoubleTime. i.e: NC only gives 576
+        /// <remarks>
+        /// Only set along with DoubleTime. i.e: NC only gives 576
+        /// </remarks>
+        Nightcore = 512,
         Flashlight = 1024,
         Autoplay = 2048,
         SpunOut = 4096,
-        Relax2 = 8192, // Autopilot
-        Perfect = 16384, // Only set along with SuddenDeath. i.e: PF only gives 16416
+        /// <remarks>
+        /// Autopilot
+        /// </remarks>
+        Relax2 = 8192,
+        /// <remarks>
+        /// Only set along with SuddenDeath. i.e: PF only gives 16416
+        /// </remarks>
+        Perfect = 16384,
         Key4 = 32768,
         Key5 = 65536,
         Key6 = 131072,
@@ -91,5 +113,22 @@ public class OsuEnums
             | SpunOut
             | KeyMod,
         ScoreIncreaseMods = Hidden | HardRock | DoubleTime | Flashlight | FadeIn
+    }
+
+    /// <summary>
+    /// Mod score multiplier values
+    /// </summary>
+    public struct ModScoreMultipliers
+    {
+        public const double NoMod = 1;
+        public const double Easy = 0.5;
+        public const double Hidden = 1.06;
+        public const double HardRock = 1.1;
+        public const double HalfTime = 0.3;
+        public const double DoubleTime = 1.12;
+        public const double Flashlight = 1.12;
+        public const double HiddenDoubleTime = 1.1872;
+        public const double HiddenHardRock = 1.166;
+        public const double HiddenEasy = 0.53;
     }
 }

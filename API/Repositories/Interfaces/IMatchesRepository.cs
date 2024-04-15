@@ -15,7 +15,6 @@ public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
     Task<IList<Match>> GetMatchesNeedingAutoCheckAsync();
     Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
     Task<Match?> GetFirstMatchNeedingAutoCheckAsync();
-    Task<IList<Match>> GetNeedApiProcessingAsync();
 
     /// <summary>
     /// Updates the verification status of a match for the given id
@@ -34,11 +33,7 @@ public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
         int? verifierId = null
     );
     Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, int mode, DateTime before, DateTime after);
-    Task<int> CountMatchWinsAsync(long osuPlayerId, int mode, DateTime fromTime);
-    Task<int> CountMatchesPlayedAsync(long osuPlayerId, int mode, DateTime fromTime);
-    Task<double> GetWinRateAsync(long osuPlayerId, int mode, DateTime fromTime);
     Task UpdateAsApiProcessed(Match match);
-    Task UpdateAsAutoChecked(Match match);
     Task SetRequireAutoCheckAsync(bool invalidOnly = true);
     Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync();
 
@@ -60,15 +55,6 @@ public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
     /// </exception>
     /// <returns></returns>
     Task MergeDuplicatesAsync(int matchRootId);
-
-    /// <summary>
-    ///  Marks all of the matches in the duplicates list as duplicates of the root.
-    ///  This does NOT merge the duplicates, it simply marks them for manual review.
-    /// </summary>
-    /// <param name="root"></param>
-    /// <param name="duplicates"></param>
-    /// <returns></returns>
-    Task MarkSuspectedDuplicatesAsync(Match root, IEnumerable<Match> duplicates);
 
     Task VerifyDuplicatesAsync(int matchRoot, int userId, bool confirmed);
 

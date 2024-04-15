@@ -74,7 +74,7 @@ public class Game
     public OsuEnums.Mods ModsEnum => (OsuEnums.Mods)Mods;
 
     [NotMapped]
-    public OsuEnums.Mode PlayModeEnum => (OsuEnums.Mode)PlayMode;
+    public OsuEnums.Ruleset RulesetEnum => (OsuEnums.Ruleset)PlayMode;
 
     [NotMapped]
     public OsuEnums.ScoringType ScoringTypeEnum => (OsuEnums.ScoringType)ScoringType;
