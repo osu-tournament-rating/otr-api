@@ -84,7 +84,7 @@ public class Game : IUpdateableEntity
     /// The reason the game was rejected from verification
     /// </summary>
     [Column("rejection_reason")]
-    public int? RejectionReason { get; set; }
+    public GameRejectionReason? RejectionReason { get; set; }
 
     /// <summary>
     /// Date the entity was created
@@ -144,8 +144,4 @@ public class Game : IUpdateableEntity
 
     [NotMapped]
     public OsuEnums.TeamType TeamTypeEnum => (OsuEnums.TeamType)TeamType;
-
-    [NotMapped]
-    public GameRejectionReason? RejectionReasonEnum =>
-        RejectionReason.HasValue ? (GameRejectionReason)RejectionReason : null;
 }

@@ -159,7 +159,7 @@ public class OsuMatchDataWorker(
             if (!GameAutomationChecks.PassesAutomationChecks(game))
             {
                 game.VerificationStatus = GameVerificationStatus.Rejected;
-                game.RejectionReason = (int)GameRejectionReason.FailedAutomationChecks;
+                game.RejectionReason = GameRejectionReason.FailedAutomationChecks;
                 _logger.LogInformation("Game {Game} failed automation checks", game.GameId);
 
                 await gamesRepository.UpdateAsync(game);
