@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using API.Osu;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Entities;
@@ -40,6 +41,9 @@ public class Player
     [Column("country")]
     [MaxLength(4)]
     public string? Country { get; set; }
+
+    [Column("default_ruleset")]
+    public OsuEnums.Ruleset? Ruleset { get; set; }
 
     [Column("earliest_osu_global_rank")]
     public int? EarliestOsuGlobalRank { get; set; }
