@@ -57,7 +57,7 @@ public class MatchEntityBase
     /// The verification status of the match
     /// </summary>
     [Column("verification_status")]
-    public int? VerificationStatus { get; set; }
+    public MatchVerificationStatus? VerificationStatus { get; set; }
 
     /// <summary>
     /// The id of the user that verified the match

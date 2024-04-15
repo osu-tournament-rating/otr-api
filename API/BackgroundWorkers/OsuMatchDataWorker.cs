@@ -88,7 +88,7 @@ public class OsuMatchDataWorker(
         // Match verification checks
         if (!MatchAutomationChecks.PassesAllChecks(match))
         {
-            match.VerificationStatus = (int)MatchVerificationStatus.Rejected;
+            match.VerificationStatus = MatchVerificationStatus.Rejected;
             match.VerificationSource = MatchVerificationSource.System;
             match.VerificationInfo = "Failed automation checks";
 
@@ -97,17 +97,17 @@ public class OsuMatchDataWorker(
         }
         else
         {
-            if (match.VerificationStatus == (int)MatchVerificationStatus.Rejected)
+            if (match.VerificationStatus == MatchVerificationStatus.Rejected)
             {
                 // The match was previously rejected, but is now rectified of this status.
 
                 if (match.VerifiedBy != null)
                 {
-                    match.VerificationStatus = (int)MatchVerificationStatus.Verified;
+                    match.VerificationStatus = MatchVerificationStatus.Verified;
                 }
                 else
                 {
-                    match.VerificationStatus = (int)MatchVerificationStatus.PreVerified;
+                    match.VerificationStatus = MatchVerificationStatus.PreVerified;
                 }
 
                 match.VerificationSource = MatchVerificationSource.System;
@@ -168,7 +168,7 @@ public class OsuMatchDataWorker(
             {
                 // Game has passed automation checks
                 game.VerificationStatus = (int)GameVerificationStatus.PreVerified;
-                if (match.VerificationStatus == (int)MatchVerificationStatus.Verified)
+                if (match.VerificationStatus == MatchVerificationStatus.Verified)
                 {
                     game.VerificationStatus = (int)GameVerificationStatus.Verified;
                 }

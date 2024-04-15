@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using API.Entities.Interfaces;
-using API.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Entities;
@@ -70,18 +69,4 @@ public class Match : MatchEntityBase, IUpdateableEntity
     /// </summary>
     [InverseProperty("Match")]
     public virtual MatchWinRecord WinRecord { get; set; } = new();
-
-    [NotMapped]
-    public MatchVerificationStatus? VerificationStatusEnum
-    {
-        get
-        {
-            if (VerificationStatus != null)
-            {
-                return (MatchVerificationStatus)VerificationStatus;
-            }
-
-            return null;
-        }
-    }
 }

@@ -34,7 +34,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
             Matches = existingMatchIds.Select(matchId => new Match
             {
                 MatchId = matchId,
-                VerificationStatus = (int)verificationStatus,
+                VerificationStatus = verificationStatus,
                 NeedsAutoCheck = true,
                 IsApiProcessed = false,
                 VerificationSource = (MatchVerificationSource?)verificationSource,

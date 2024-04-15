@@ -51,7 +51,7 @@ public class MatchesService(
             tournament.Matches.Add(new Match
             {
                 MatchId = matchId,
-                VerificationStatus = (int)verificationStatus,
+                VerificationStatus = verificationStatus,
                 NeedsAutoCheck = true,
                 IsApiProcessed = false,
                 VerificationSource = (MatchVerificationSource?)verificationSource,
