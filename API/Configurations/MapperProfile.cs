@@ -26,6 +26,7 @@ public class MapperProfile : Profile
         CreateMap<Match, MatchCreatedResultDTO>()
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
+        CreateMap<Match, MatchSearchResultDTO>();
         CreateMap<MatchScore, MatchScoreDTO>().ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
         CreateMap<OAuthClient, OAuthClientDTO>()
             .ForMember(x => x.ClientId, opt => opt.MapFrom(y => y.Id))
@@ -58,5 +59,7 @@ public class MapperProfile : Profile
             .ForMember(x => x.Country, opt => opt.MapFrom(y => y.Player.Country))
             .ForMember(x => x.Username, opt => opt.MapFrom(y => y.Player.Username))
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Player.Ruleset));
+        CreateMap<Tournament, TournamentSearchResultDTO>()
+            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Mode));
     }
 }
