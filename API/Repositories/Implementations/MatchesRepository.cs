@@ -59,11 +59,11 @@ public class MatchesRepository(
         {
             query = _context
                 .Matches.Include(x =>
-                    x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified)
+                    x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified)
                 )
                 .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
                 .Include(x =>
-                    x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified)
+                    x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified)
                 )
                 .ThenInclude(x => x.Beatmap)
                 .Where(x => x.Games.Count > 0);
@@ -354,9 +354,9 @@ public class MatchesRepository(
 
         return _context
             .Matches.WhereVerified()
-            .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
+            .Include(x => x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified))
             .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
-            .Include(x => x.Games.Where(y => y.VerificationStatus == (int)GameVerificationStatus.Verified))
+            .Include(x => x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified))
             .ThenInclude(x => x.Beatmap)
             .Where(x => x.Games.Count > 0)
             .OrderBy(x => x.StartTime);

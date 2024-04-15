@@ -78,7 +78,7 @@ public class Game : IUpdateableEntity
     /// The verification status of the game
     /// </summary>
     [Column("verification_status")]
-    public int? VerificationStatus { get; set; }
+    public GameVerificationStatus? VerificationStatus { get; set; }
 
     /// <summary>
     /// The reason the game was rejected from verification
@@ -144,10 +144,6 @@ public class Game : IUpdateableEntity
 
     [NotMapped]
     public OsuEnums.TeamType TeamTypeEnum => (OsuEnums.TeamType)TeamType;
-
-    [NotMapped]
-    public GameVerificationStatus? VerificationStatusEnum =>
-        VerificationStatus.HasValue ? (GameVerificationStatus)VerificationStatus : null;
 
     [NotMapped]
     public GameRejectionReason? RejectionReasonEnum =>
