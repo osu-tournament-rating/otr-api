@@ -625,7 +625,7 @@ public class AutomationChecksTests
     public void Game_FailsModeCheck()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().PlayMode = (int)OsuEnums.Mode.Catch;
+        match.Games.First().PlayMode = (int)OsuEnums.Ruleset.Catch;
 
         Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
     }

@@ -1,7 +1,13 @@
 namespace API.Osu;
 
-public class OsuEnums
+/// <summary>
+/// A collection of enums and flags that directly represent their osu! counterparts
+/// </summary>
+public static class OsuEnums
 {
+    /// <summary>
+    /// The scoring method used for a game
+    /// </summary>
     public enum ScoringType
     {
         Score = 0,
@@ -11,9 +17,9 @@ public class OsuEnums
     }
 
     /// <summary>
-    /// The mode the match was played in.
+    /// The four osu! play modes
     /// </summary>
-    public enum Mode
+    public enum Ruleset
     {
         Standard = 0,
         Taiko = 1,
@@ -32,6 +38,9 @@ public class OsuEnums
         TagTeamVs = 3
     }
 
+    /// <summary>
+    /// The team a player was on for a game or match
+    /// </summary>
     public enum Team
     {
         NoTeam = 0,

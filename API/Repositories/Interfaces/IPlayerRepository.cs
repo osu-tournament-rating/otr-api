@@ -12,6 +12,7 @@ public interface IPlayerRepository : IRepository<Player>
     /// <param name="username"></param>
     /// <returns></returns>
     Task<IEnumerable<Player>> SearchAsync(string username);
+
     /// <summary>
     /// Returns a player, if available, that matches the given username. Case insensitive
     /// </summary>
@@ -81,8 +82,8 @@ public interface IPlayerRepository : IRepository<Player>
     /// for the given mode.
     /// </summary>
     /// <param name="n">The number of items to return</param>
-    /// <param name="mode">The mode to get the ratings from</param>
-    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode);
+    /// <param name="ruleset">The mode to get the ratings from</param>
+    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Ruleset ruleset);
 
     /// <summary>
     /// Fetches the username for the given osu id, if available
