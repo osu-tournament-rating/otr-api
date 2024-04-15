@@ -33,7 +33,7 @@ public class MatchesRepository(
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         name = name.Replace("_", @"\_");
-        return await MatchBaseQuery(true).Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\")).ToListAsync();
+        return await _context.Matches.WhereVerified().Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\")).ToListAsync();
     }
 
     public async Task<Match?> GetAsync(int id, bool filterInvalidMatches = true) =>
