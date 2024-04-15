@@ -60,7 +60,7 @@ public class Game : IUpdateableEntity
     /// The mods enabled for the game
     /// </summary>
     [Column("mods")]
-    public int Mods { get; set; }
+    public OsuEnums.Mods Mods { get; set; }
 
     /// <summary>
     /// Star rating of the played beatmap after applying mods
@@ -135,9 +135,6 @@ public class Game : IUpdateableEntity
     /// </summary>
     [InverseProperty("Game")]
     public virtual GameWinRecord WinRecord { get; set; } = null!;
-
-    [NotMapped]
-    public OsuEnums.Mods ModsEnum => (OsuEnums.Mods)Mods;
 
     [NotMapped]
     public OsuEnums.Ruleset RulesetEnum => (OsuEnums.Ruleset)PlayMode;

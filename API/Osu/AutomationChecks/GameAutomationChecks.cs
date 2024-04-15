@@ -187,7 +187,7 @@ public static class GameAutomationChecks
     }
 
     public static bool PassesModsCheck(Game game) =>
-        !AutomationConstants.UnallowedMods.Any(unallowedMod => game.ModsEnum.HasFlag(unallowedMod));
+        !AutomationConstants.UnallowedMods.Any(unallowedMod => game.Mods.HasFlag(unallowedMod));
 
     public static bool PassesTeamTypeCheck(Game game)
     {

@@ -285,7 +285,7 @@ public class ApiMatchRepository(
             PlayMode = (int)osuApiGame.Ruleset,
             ScoringType = (int)osuApiGame.ScoringType,
             TeamType = (int)osuApiGame.TeamType,
-            Mods = (int)osuApiGame.Mods
+            Mods = osuApiGame.Mods
         };
 
         Game persisted = await _gamesRepository.CreateAsync(dbGame);

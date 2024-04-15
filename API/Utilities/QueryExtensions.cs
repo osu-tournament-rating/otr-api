@@ -74,10 +74,10 @@ public static class QueryExtensions
         return query
             .AsQueryable()
             .Where(x =>
-                (x.Game.Mods != 0 && x.Game.Mods == (int)enabledMods)
+                (x.Game.Mods != OsuEnums.Mods.None && x.Game.Mods == enabledMods)
                 || // Not using NF
                 (x.EnabledMods != null && x.EnabledMods.Value == (int)enabledMods)
-                || (x.Game.Mods != 0 && x.Game.Mods == (int)(enabledMods | OsuEnums.Mods.NoFail))
+                || (x.Game.Mods != OsuEnums.Mods.None && x.Game.Mods == (enabledMods | OsuEnums.Mods.NoFail))
                 || // Using NF
                 (x.EnabledMods != null && x.EnabledMods.Value == (int)(enabledMods | OsuEnums.Mods.NoFail))
             );
