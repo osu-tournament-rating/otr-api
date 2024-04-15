@@ -141,7 +141,7 @@ public static class GameAutomationChecks
         Tournament tournament = game.Match.Tournament;
         var gameMode = (OsuEnums.Ruleset)tournament.Mode;
 
-        if (Enum.GetValues<OsuEnums.Ruleset>().Contains(gameMode))
+        if (!Enum.GetValues<OsuEnums.Ruleset>().Contains(gameMode))
         {
             s_logger.Information(
                 "{Prefix} Tournament {TournamentId} has an invalid ruleset: {Mode}, can't verify game {GameId}",
