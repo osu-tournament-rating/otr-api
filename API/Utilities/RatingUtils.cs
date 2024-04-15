@@ -19,39 +19,39 @@ public static class RatingUtils
      * Sub Tier - One of three "sub-divisions" for a major tier (i.e. SilverI, SilverII, SilverIII)
      */
 
-    // Bronze: 0 - 299
+    // Bronze: 0 - 300
     public const double RatingBronzeIII = 100;
     public const double RatingBronzeII = 165;
     public const double RatingBronzeI = 235;
-    // Silver: 300 - 499
+    // Silver: 300 - 500
     public const double RatingSilverIII = 300;
     public const double RatingSilverII = 365;
     public const double RatingSilverI = 430;
-    // Gold: 500 - 699
+    // Gold: 500 - 700
     public const double RatingGoldIII = 500;
     public const double RatingGoldII = 570;
     public const double RatingGoldI = 625;
-    // Platinum: 700 - 899
+    // Platinum: 700 - 900
     public const double RatingPlatinumIII = 700;
     public const double RatingPlatinumII = 770;
     public const double RatingPlatinumI = 825;
-    // Emerald: 900 - 1199
+    // Emerald: 900 - 1200
     public const double RatingEmeraldIII = 900;
     public const double RatingEmeraldII = 1000;
     public const double RatingEmeraldI = 1100;
-    // Diamond: 1200 - 1499
+    // Diamond: 1200 - 1500
     public const double RatingDiamondIII = 1200;
     public const double RatingDiamondII = 1300;
     public const double RatingDiamondI = 1400;
-    // Master: 1500 - 1899
+    // Master: 1500 - 1900
     public const double RatingMasterIII = 1500;
     public const double RatingMasterII = 1625;
     public const double RatingMasterI = 1750;
-    // Grandmaster: 1900 - 2499
+    // Grandmaster: 1900 - 2500
     public const double RatingGrandmasterIII = 1900;
     public const double RatingGrandmasterII = 2100;
     public const double RatingGrandmasterI = 2300;
-    // Elite Grandmaster: 2500+
+    // Elite Grandmaster: 2501+
     public const double RatingEliteGrandmaster = 2500;
 
     /// <summary>
@@ -124,7 +124,8 @@ public static class RatingUtils
     /// <summary>
     /// Gets the string representation of the next tier for the given rating
     /// </summary>
-    public static string GetNextTier(double rating) =>
+    /// <remarks>Will return null for given ratings greater than <see cref="RatingEliteGrandmaster"/></remarks>
+    public static string? GetNextTier(double rating) =>
         rating switch
         {
             < RatingBronzeII => GetTier(RatingBronzeII),
@@ -151,13 +152,13 @@ public static class RatingUtils
             < RatingGrandmasterII => GetTier(RatingGrandmasterII),
             < RatingGrandmasterI => GetTier(RatingGrandmasterI),
             < RatingEliteGrandmaster => GetTier(RatingEliteGrandmaster),
-            _ => GetTier(RatingEliteGrandmaster)
+            _ => null
         };
 
     /// <summary>
     /// Gets the rating threshold of the next tier for the given rating
     /// </summary>
-    /// <remarks>Will return null for given ratings greater than or equal to <see cref="RatingEliteGrandmaster"/></remarks>
+    /// <remarks>Will return null for given ratings greater than <see cref="RatingEliteGrandmaster"/></remarks>
     public static double? GetNextTierRating(double rating) =>
         rating switch
         {
@@ -191,7 +192,7 @@ public static class RatingUtils
     /// <summary>
     /// Gets the difference in rating of the next tier for the given rating
     /// </summary>
-    /// <remarks>Will return 0 for given ratings greater than or equal to <see cref="RatingEliteGrandmaster"/></remarks>
+    /// <remarks>Will return 0 for given ratings greater than <see cref="RatingEliteGrandmaster"/></remarks>
     public static double GetNextTierRatingDelta(double rating) =>
         rating switch
         {
@@ -225,11 +226,11 @@ public static class RatingUtils
     /// <summary>
     /// Gets the rating threshold of the previous tier for the given rating
     /// </summary>
-    /// <remarks>Will return null for given ratings less than or equal to <see cref="RatingBronzeIII"/></remarks>
-    public static double? GetRatingForPreviousTier(double rating) =>
+    /// <remarks>Will return zero for given ratings less than <see cref="RatingBronzeIII"/></remarks>
+    public static double GetPreviousTierRating(double rating) =>
         rating switch
         {
-            < RatingBronzeIII => null,
+            < RatingBronzeIII => 0,
             < RatingBronzeII => RatingBronzeIII,
             < RatingBronzeI => RatingBronzeII,
             < RatingSilverIII => RatingBronzeI,
@@ -260,7 +261,7 @@ public static class RatingUtils
     /// <summary>
     /// Gets the string representation of the next major tier for the given rating
     /// </summary>
-    /// <remarks>Will return null for given ratings greater than or equal to <see cref="RatingEliteGrandmaster"/></remarks>
+    /// <remarks>Will return null for given ratings greater than <see cref="RatingEliteGrandmaster"/></remarks>
     public static string? GetNextMajorTier(double rating) =>
         rating switch
         {
@@ -296,7 +297,7 @@ public static class RatingUtils
     /// <summary>
     /// Gets the difference in rating of the next major tier for the given rating
     /// </summary>
-    /// <remarks>Will return 0 for given ratings greater than or equal to <see cref="RatingEliteGrandmaster"/></remarks>
+    /// <remarks>Will return 0 for given ratings greater than <see cref="RatingEliteGrandmaster"/></remarks>
     public static double GetNextMajorTierRatingDelta(double rating) =>
         rating switch
         {
@@ -314,11 +315,12 @@ public static class RatingUtils
     /// <summary>
     /// Gets the rating threshold of the major tier for the given rating
     /// </summary>
-    /// <remarks>Will return null for given ratings less than or equal to <see cref="RatingBronzeIII"/></remarks>
-    public static double? GetMajorTierRating(double rating) =>
+    /// <remarks>Will return 0 for given ratings less than <see cref="RatingBronzeIII"/></remarks>
+    public static double GetMajorTierRating(double rating) =>
         rating switch
         {
-            < RatingBronzeI => null,
+            < RatingBronzeIII => 0,
+            < RatingSilverIII => RatingBronzeIII,
             < RatingGoldIII => RatingSilverIII,
             < RatingPlatinumIII => RatingGoldIII,
             < RatingEmeraldIII => RatingPlatinumIII,
@@ -327,46 +329,44 @@ public static class RatingUtils
             < RatingGrandmasterIII => RatingMasterIII,
             < RatingEliteGrandmaster => RatingGrandmasterIII,
             >= RatingEliteGrandmaster => RatingEliteGrandmaster,
-            _ => null
+            _ => 0
         };
 
     /// <summary>
-    /// Gets a percentage representing the progress to the next sub-tier for the given rating
+    /// Gets a number representing the percentage of progress to the next sub-tier for the given rating
     /// </summary>
     /// <remarks>
-    /// Will return null for given ratings less than or equal to <see cref="RatingBronzeIII"/>
-    /// or given ratings greater than or equal to <see cref="RatingEliteGrandmaster"/>
+    /// Will return null for given ratings greater than <see cref="RatingEliteGrandmaster"/>
     /// </remarks>
-    public static double? GetSubTierFillPercentage(double rating)
+    public static double? GetNextTierFillPercentage(double rating)
     {
-        var minRating = GetRatingForPreviousTier(rating);
+        var minRating = GetPreviousTierRating(rating);
         var maxRating = GetNextTierRating(rating);
 
-        if (minRating == null || maxRating == null)
+        if (maxRating is null)
         {
             return null;
         }
 
-        return (rating - minRating.Value) / (maxRating - minRating.Value);
+        return (rating - minRating) / (maxRating - minRating);
     }
 
     /// <summary>
     /// Gets a percentage representing the progress to the next major tier for the given rating
     /// </summary>
     /// <remarks>
-    /// Will return null for given ratings less than or equal to <see cref="RatingBronzeIII"/>
-    /// or given ratings greater than or equal to <see cref="RatingEliteGrandmaster"/>
+    /// Will return null for given ratings greater than or equal to <see cref="RatingEliteGrandmaster"/>
     /// </remarks>
-    public static double? GetMajorTierFillPercentage(double rating)
+    public static double? GetNextMajorTierFillPercentage(double rating)
     {
         var minRating = GetMajorTierRating(rating);
         var maxRating = GetNextMajorTierRating(rating);
-        if (minRating == null || maxRating == 0)
+        if (maxRating is null)
         {
             return null;
         }
 
-        return (rating - minRating.Value) / (maxRating - minRating.Value);
+        return (rating - minRating) / (maxRating.Value - minRating);
     }
 
     /// <summary>

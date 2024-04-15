@@ -62,8 +62,8 @@ public class BaseStatsService(
             RatingForNextTier = RatingUtils.GetNextTierRatingDelta(currentStats.Rating),
             RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(currentStats.Rating),
             NextMajorTier = RatingUtils.GetNextMajorTier(currentStats.Rating),
-            SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(currentStats.Rating),
-            MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(currentStats.Rating)
+            SubTierFillPercentage = RatingUtils.GetNextTierFillPercentage(currentStats.Rating),
+            MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(currentStats.Rating)
         };
 
         return new BaseStatsDTO

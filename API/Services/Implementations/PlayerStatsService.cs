@@ -306,8 +306,8 @@ public class PlayerStatsService(
             RatingForNextTier = RatingUtils.GetNextTierRatingDelta(dto.Rating),
             RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(dto.Rating),
             NextMajorTier = RatingUtils.GetNextMajorTier(dto.Rating),
-            SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(dto.Rating),
-            MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(dto.Rating)
+            SubTierFillPercentage = RatingUtils.GetNextTierFillPercentage(dto.Rating),
+            MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(dto.Rating)
         };
 
         return dto;
