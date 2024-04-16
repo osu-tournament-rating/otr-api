@@ -1,9 +1,27 @@
 using API.DTOs;
+using API.Enums;
 
 namespace API.Services.Interfaces;
 
 public interface IMatchesService
 {
+    /// <summary>
+    /// Creates matches
+    /// </summary>
+    /// <param name="tournamentId">Id of the parent tournament</param>
+    /// <param name="submitterId">Id of the submitting user</param>
+    /// <param name="matchIds">List of match ids</param>
+    /// <param name="verify">Submitter is a match verifier</param>
+    /// <param name="verificationSource">Source of verification (int representation of <see cref="MatchVerificationSource"/></param>
+    /// <returns>Location information for the created matches, or null if parent tournament does not exist</returns>
+    Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(
+        int tournamentId,
+        int submitterId,
+        IEnumerable<long> matchIds,
+        bool verify,
+        int? verificationSource
+    );
+
     /// <summary>
     /// Marks matches as needing automated checks
     /// </summary>
@@ -14,25 +32,23 @@ public interface IMatchesService
     Task<IEnumerable<int>> GetAllIdsAsync(bool onlyIncludeFiltered);
     Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId);
     Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true);
-    Task<MatchDTO> UpdateVerificationStatus(int id, int? verificationStatus);
+
+    /// <summary>
+    /// Updates the verification status of a match for the given id
+    /// </summary>
+    /// <param name="id">Id of the match</param>
+    /// <param name="verificationStatus">New verification status to assign</param>
+    /// <param name="verificationSource">New verification source to assign</param>
+    /// <param name="info">Optional verification info</param>
+    /// <param name="verifierId">Optional user id to attribute the update to</param>
+    /// <returns>An updated match, or null if not found</returns>
+    Task<MatchDTO?> UpdateVerificationStatusAsync(int id, MatchVerificationStatus verificationStatus,
+        MatchVerificationSource verificationSource, string? info = null, int? verifierId = null);
     Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(
         long osuPlayerId,
         int mode,
         DateTime start,
         DateTime end
-    );
-
-    /// <summary>
-    /// Inserts or updates based on user input. Only updates if verified is true.
-    /// </summary>
-    /// <param name="tournamentWebSubmissionDto"></param>
-    /// <param name="verified">Whether to mark the matches inserted as verified. Also allows overwriting of existing values.</param>
-    /// <param name="verifier">The entity who verified the matches (int representation of <see cref="MatchVerificationSource")/></param>
-    /// <returns></returns>
-    Task BatchInsertOrUpdateAsync(
-        TournamentWebSubmissionDTO tournamentWebSubmissionDto,
-        bool verified,
-        int? verifier
     );
 
     /// <summary>

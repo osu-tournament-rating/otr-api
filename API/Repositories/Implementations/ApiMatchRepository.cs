@@ -125,7 +125,7 @@ public class ApiMatchRepository(
 
         foreach (var beatmapId in beatmapIds)
         {
-            Beatmap? existingBeatmap = await _beatmapRepository.GetByOsuIdAsync(beatmapId);
+            Beatmap? existingBeatmap = await _beatmapRepository.GetAsync(beatmapId);
             if (existingBeatmap == null)
             {
                 Beatmap? beatmap = await _osuApiService.GetBeatmapAsync(
@@ -241,7 +241,7 @@ public class ApiMatchRepository(
         var persisted = new List<Game>();
         foreach (OsuApiGame game in osuMatchGames)
         {
-            var beatmapIdResult = await _beatmapRepository.GetIdByBeatmapIdAsync(game.BeatmapId);
+            var beatmapIdResult = await _beatmapRepository.GetIdAsync(game.BeatmapId);
 
             Game? existingGame = await _context.Games.FirstOrDefaultAsync(g => g.GameId == game.GameId);
 
@@ -282,10 +282,10 @@ public class ApiMatchRepository(
             StartTime = osuApiGame.StartTime,
             EndTime = osuApiGame.EndTime,
             BeatmapId = beatmapIdResult,
-            PlayMode = (int)osuApiGame.PlayMode,
-            ScoringType = (int)osuApiGame.ScoringType,
-            TeamType = (int)osuApiGame.TeamType,
-            Mods = (int)osuApiGame.Mods
+            PlayMode = osuApiGame.Ruleset,
+            ScoringType = osuApiGame.ScoringType,
+            TeamType = osuApiGame.TeamType,
+            Mods = osuApiGame.Mods
         };
 
         Game persisted = await _gamesRepository.CreateAsync(dbGame);

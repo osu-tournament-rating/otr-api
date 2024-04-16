@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Entities;
+using API.Utilities;
 using AutoMapper;
 
 namespace API.Configurations;
@@ -11,7 +12,8 @@ public class MapperProfile : Profile
         CreateMap<Beatmap, BeatmapDTO>();
         CreateMap<Game, GameDTO>();
         CreateMap<GameWinRecord, GameWinRecordDTO>();
-        CreateMap<Match, MatchDTO>().ForMember(x => x.Mode, opt => opt.MapFrom(x => x.Tournament.Mode));
+        CreateMap<Match, MatchDTO>()
+            .ForMember(x => x.Mode, opt => opt.MapFrom(x => x.Tournament.Mode));
         CreateMap<Match, MatchHistory>()
             .ForMember(x => x.ReferenceId, opt => opt.MapFrom(x => x.Id))
             .ForMember(x => x.HistoryStartTime, opt => opt.MapFrom(x => x.Updated))
@@ -20,7 +22,15 @@ public class MapperProfile : Profile
             .ForMember(x => x.HistoryEndTime, opt => opt.Ignore())
             .ForMember(x => x.ModifierId, opt => opt.Ignore())
             .ForMember(x => x.ReferenceMatch, opt => opt.Ignore());
+        CreateMap<Match, MatchCreatedResultDTO>()
+            .MapAsCreatedResult()
+            .AfterMap<GenerateLocationUriAction>();
+        CreateMap<Match, MatchSearchResultDTO>();
         CreateMap<MatchScore, MatchScoreDTO>().ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
+        CreateMap<OAuthClient, OAuthClientDTO>()
+            .ForMember(x => x.ClientId, opt => opt.MapFrom(y => y.Id))
+            .ForMember(x => x.ClientSecret, opt => opt.MapFrom(y => y.Secret));
+
         CreateMap<RatingAdjustment, RatingAdjustmentDTO>();
         CreateMap<MatchRatingStats, MatchRatingStatsDTO>()
             .ForMember(
@@ -35,10 +45,16 @@ public class MapperProfile : Profile
                         TournamentName = x.Match.Tournament.Name
                     })
             );
+
         CreateMap<Player, PlayerDTO>();
         CreateMap<Player, PlayerRanksDTO>();
         CreateMap<Player, PlayerInfoDTO>();
         CreateMap<Tournament, TournamentDTO>();
+        CreateMap<Tournament, TournamentCreatedResultDTO>()
+            .MapAsCreatedResult()
+            .AfterMap<GenerateLocationUriAction>();
+        CreateMap<Tournament, TournamentSearchResultDTO>()
+            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Mode));
         CreateMap<User, UserDTO>();
     }
 }

@@ -894,6 +894,10 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("rank_taiko");
 
+                    b.Property<int?>("Ruleset")
+                        .HasColumnType("integer")
+                        .HasColumnName("default_ruleset");
+
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
@@ -1297,6 +1301,32 @@ namespace API.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.OwnsOne("API.Entities.RateLimitOverrides", "RateLimitOverrides", b1 =>
+                        {
+                            b1.Property<int>("OAuthClientId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int?>("PermitLimit")
+                                .HasColumnType("integer")
+                                .HasColumnName("permit_limit");
+
+                            b1.Property<int?>("Window")
+                                .HasColumnType("integer")
+                                .HasColumnName("window");
+
+                            b1.HasKey("OAuthClientId");
+
+                            b1.ToTable("oauth_clients");
+
+                            b1.ToJson("rate_limit_overrides");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OAuthClientId");
+                        });
+
+                    b.Navigation("RateLimitOverrides")
+                        .IsRequired();
+
                     b.Navigation("User");
                 });
 
@@ -1347,7 +1377,33 @@ namespace API.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .HasConstraintName("Users___fkplayerid");
 
+                    b.OwnsOne("API.Entities.RateLimitOverrides", "RateLimitOverrides", b1 =>
+                        {
+                            b1.Property<int>("UserId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int?>("PermitLimit")
+                                .HasColumnType("integer")
+                                .HasColumnName("permit_limit");
+
+                            b1.Property<int?>("Window")
+                                .HasColumnType("integer")
+                                .HasColumnName("window");
+
+                            b1.HasKey("UserId");
+
+                            b1.ToTable("users");
+
+                            b1.ToJson("rate_limit_overrides");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserId");
+                        });
+
                     b.Navigation("Player");
+
+                    b.Navigation("RateLimitOverrides")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("API.Entities.Beatmap", b =>

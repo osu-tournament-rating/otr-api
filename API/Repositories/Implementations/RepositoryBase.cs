@@ -15,7 +15,18 @@ public class RepositoryBase<T> : IRepository<T>
 
     public virtual async Task<T> CreateAsync(T entity)
     {
-        T? created = (await _context.Set<T>().AddAsync(entity)).Entity ?? throw new Exception($"Failed to create {nameof(T)} entity");
+        T created = (await _context.Set<T>().AddAsync(entity)).Entity;
+        await _context.SaveChangesAsync();
+
+        return created;
+    }
+
+    public virtual async Task<IEnumerable<T>> CreateAsync(IEnumerable<T> entities)
+    {
+        IEnumerable<Task<T>> entityTasks = entities
+            .Select(async e => (await _context.Set<T>().AddAsync(e)).Entity)
+            .ToList();
+        T[] created = await Task.WhenAll(entityTasks);
         await _context.SaveChangesAsync();
 
         return created;
