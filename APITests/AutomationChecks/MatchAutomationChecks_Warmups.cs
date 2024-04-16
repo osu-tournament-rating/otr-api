@@ -1,6 +1,7 @@
 using API.Entities;
 using API.Osu;
 using API.Osu.AutomationChecks;
+using API.Osu.Enums;
 using API.Osu.Multiplayer;
 using Newtonsoft.Json;
 
@@ -59,7 +60,7 @@ public class MatchAutomationChecks_Warmups
                     {
                         Team = (int)score.Team,
                         Score = score.PlayerScore,
-                        EnabledMods = (int)(score.EnabledMods ?? OsuEnums.Mods.None),
+                        EnabledMods = (int)(score.EnabledMods ?? Mods.None),
                         Game = toAdd
                     }
                 );

@@ -1,5 +1,5 @@
+using API.Osu.Enums;
 using Newtonsoft.Json;
-using static API.Osu.OsuEnums;
 
 #pragma warning disable CS0472
 

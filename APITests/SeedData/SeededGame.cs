@@ -1,6 +1,7 @@
 using API.Entities;
 using API.Enums;
 using API.Osu;
+using API.Osu.Enums;
 
 namespace APITests.SeedData;
 
@@ -27,10 +28,10 @@ public static class SeededGame
             Id = s_rand.Next(),
             MatchId = matchId,
             BeatmapId = 24245,
-            Ruleset = OsuEnums.Ruleset.Standard,
-            ScoringType = OsuEnums.ScoringType.ScoreV2,
-            TeamType = OsuEnums.TeamType.HeadToHead,
-            Mods = OsuEnums.Mods.None,
+            Ruleset = Ruleset.Standard,
+            ScoringType = ScoringType.ScoreV2,
+            TeamType = TeamType.HeadToHead,
+            Mods = Mods.None,
             PostModSr = 6.36389,
             GameId = 502333236,
             VerificationStatus = GameVerificationStatus.Rejected,

@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Entities;
 using API.Osu;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ public class MatchScoresRepository(OtrContext context) : RepositoryBase<MatchSco
 {
     private readonly OtrContext _context = context;
 
-    public async Task<int> AverageTeammateScoreAsync(long osuPlayerId, OsuEnums.Ruleset ruleset, DateTime fromTime)
+    public async Task<int> AverageTeammateScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
     {
         List<long> teammateScores = await _context
             .MatchScores.WhereVerified()
@@ -25,7 +26,7 @@ public class MatchScoresRepository(OtrContext context) : RepositoryBase<MatchSco
         return (int)teammateScores.Average();
     }
 
-    public async Task<int> AverageOpponentScoreAsync(long osuPlayerId, OsuEnums.Ruleset ruleset, DateTime fromTime)
+    public async Task<int> AverageOpponentScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
     {
         List<long> oppScoresHeadToHead = await _context
             .MatchScores.WhereVerified()
@@ -51,7 +52,7 @@ public class MatchScoresRepository(OtrContext context) : RepositoryBase<MatchSco
 
     public async Task<int> AverageModScoreAsync(
         int playerId,
-        OsuEnums.Ruleset ruleset,
+        Ruleset ruleset,
         int mods,
         DateTime dateMin,
         DateTime dateMax)
@@ -60,7 +61,7 @@ public class MatchScoresRepository(OtrContext context) : RepositoryBase<MatchSco
             await _context
                 .MatchScores.WhereVerified()
                 .WhereRuleset(ruleset)
-                .WhereMods((OsuEnums.Mods)mods)
+                .WhereMods((Mods)mods)
                 .WherePlayerId(playerId)
                 .WhereDateRange(dateMin, dateMax)
                 .Select(x => x.Score)
@@ -70,7 +71,7 @@ public class MatchScoresRepository(OtrContext context) : RepositoryBase<MatchSco
 
     public async Task<int> CountModScoresAsync(
         int playerId,
-        OsuEnums.Ruleset ruleset,
+        Ruleset ruleset,
         int mods,
         DateTime dateMin,
         DateTime dateMax)
@@ -78,7 +79,7 @@ public class MatchScoresRepository(OtrContext context) : RepositoryBase<MatchSco
         return await _context
             .MatchScores.WhereVerified()
             .WhereRuleset(ruleset)
-            .WhereMods((OsuEnums.Mods)mods)
+            .WhereMods((Mods)mods)
             .WherePlayerId(playerId)
             .WhereDateRange(dateMin, dateMax)
             .CountAsync();

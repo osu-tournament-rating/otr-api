@@ -3,6 +3,7 @@ using API.DTOs;
 using API.Entities;
 using API.Enums;
 using API.Osu;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -87,12 +88,12 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .Select(ms => new
             {
                 // Match score mods populated for free mod, else game (lobby) mods
-                ModType = (OsuEnums.Mods?)ms.EnabledMods ?? ms.Game.Mods,
+                ModType = (Mods?)ms.EnabledMods ?? ms.Game.Mods,
                 ms.Score,
                 PlayerWon = ms.Game.WinRecord.Winners.Contains(playerId)
             })
             // Group by mods
-            .GroupBy(g => g.ModType & ~OsuEnums.Mods.NoFail)
+            .GroupBy(g => g.ModType & ~Mods.NoFail)
             // Calculate win rate and average (normalized) score
             .Select(g => new
             {
@@ -106,16 +107,16 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
                         ? (double)g.Count(x => x.PlayerWon) / g.Count()
                         : 0,
                     NormalizedAverageScore = Math.Round(g.Average(x => x.Score / (
-                        g.Key == OsuEnums.Mods.Easy ? OsuEnums.ModScoreMultipliers.Easy :
-                        g.Key == OsuEnums.Mods.Hidden ? OsuEnums.ModScoreMultipliers.Hidden :
-                        g.Key == OsuEnums.Mods.HardRock ? OsuEnums.ModScoreMultipliers.HardRock :
-                        g.Key == OsuEnums.Mods.HalfTime ? OsuEnums.ModScoreMultipliers.HalfTime :
-                        g.Key == OsuEnums.Mods.DoubleTime ? OsuEnums.ModScoreMultipliers.DoubleTime :
-                        g.Key == OsuEnums.Mods.Flashlight ? OsuEnums.ModScoreMultipliers.Flashlight :
-                        g.Key == (OsuEnums.Mods.Hidden | OsuEnums.Mods.DoubleTime) ? OsuEnums.ModScoreMultipliers.HiddenDoubleTime :
-                        g.Key == (OsuEnums.Mods.Hidden | OsuEnums.Mods.HardRock) ? OsuEnums.ModScoreMultipliers.HiddenHardRock :
-                        g.Key == (OsuEnums.Mods.Hidden | OsuEnums.Mods.Easy) ? OsuEnums.ModScoreMultipliers.HiddenEasy :
-                        OsuEnums.ModScoreMultipliers.NoMod
+                        g.Key == Mods.Easy ? ModScoreMultipliers.Easy :
+                        g.Key == Mods.Hidden ? ModScoreMultipliers.Hidden :
+                        g.Key == Mods.HardRock ? ModScoreMultipliers.HardRock :
+                        g.Key == Mods.HalfTime ? ModScoreMultipliers.HalfTime :
+                        g.Key == Mods.DoubleTime ? ModScoreMultipliers.DoubleTime :
+                        g.Key == Mods.Flashlight ? ModScoreMultipliers.Flashlight :
+                        g.Key == (Mods.Hidden | Mods.DoubleTime) ? ModScoreMultipliers.HiddenDoubleTime :
+                        g.Key == (Mods.Hidden | Mods.HardRock) ? ModScoreMultipliers.HiddenHardRock :
+                        g.Key == (Mods.Hidden | Mods.Easy) ? ModScoreMultipliers.HiddenEasy :
+                        ModScoreMultipliers.NoMod
                         )))
                 }
             })
@@ -129,34 +130,34 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
             switch (obj.ModType)
             {
-                case OsuEnums.Mods.None:
+                case Mods.None:
                     playerModStats.PlayedNM = obj.Stats;
                     break;
-                case OsuEnums.Mods.DoubleTime:
+                case Mods.DoubleTime:
                     playerModStats.PlayedDT = obj.Stats;
                     break;
-                case OsuEnums.Mods.HardRock:
+                case Mods.HardRock:
                     playerModStats.PlayedHR = obj.Stats;
                     break;
-                case OsuEnums.Mods.Hidden:
+                case Mods.Hidden:
                     playerModStats.PlayedHD = obj.Stats;
                     break;
-                case OsuEnums.Mods.Easy:
+                case Mods.Easy:
                     playerModStats.PlayedEZ = obj.Stats;
                     break;
-                case OsuEnums.Mods.Flashlight:
+                case Mods.Flashlight:
                     playerModStats.PlayedFL = obj.Stats;
                     break;
-                case OsuEnums.Mods.HalfTime:
+                case Mods.HalfTime:
                     playerModStats.PlayedHT = obj.Stats;
                     break;
-                case OsuEnums.Mods.Hidden | OsuEnums.Mods.DoubleTime:
+                case Mods.Hidden | Mods.DoubleTime:
                     playerModStats.PlayedHDDT = obj.Stats;
                     break;
-                case OsuEnums.Mods.Hidden | OsuEnums.Mods.HardRock:
+                case Mods.Hidden | Mods.HardRock:
                     playerModStats.PlayedHDHR = obj.Stats;
                     break;
-                case OsuEnums.Mods.Hidden | OsuEnums.Mods.Easy:
+                case Mods.Hidden | Mods.Easy:
                     playerModStats.PlayedHDEZ = obj.Stats;
                     break;
             }

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Osu;
+using API.Osu.Enums;
 
 namespace API.DTOs;
 
@@ -16,22 +17,22 @@ public class GameDTO
     /// <summary>
     /// The ruleset for the game
     /// </summary>
-    public OsuEnums.Ruleset Ruleset { get; set; }
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// The scoring type used for the game
     /// </summary>
-    public OsuEnums.ScoringType ScoringType { get; set; }
+    public ScoringType ScoringType { get; set; }
 
     /// <summary>
     /// The team type used for the game
     /// </summary>
-    public OsuEnums.TeamType TeamType { get; set; }
+    public TeamType TeamType { get; set; }
 
     /// <summary>
     /// The mods enabled for the game
     /// </summary>
-    public OsuEnums.Mods Mods { get; set; }
+    public Mods Mods { get; set; }
 
     /// <summary>
     /// osu! id of the game

@@ -1,4 +1,5 @@
 using API.Osu;
+using API.Osu.Enums;
 
 namespace API.DTOs;
 
@@ -15,7 +16,7 @@ public class TournamentSearchResultDTO
     /// <summary>
     /// Ruleset of the tournament
     /// </summary>
-    public OsuEnums.Ruleset Ruleset { get; set; }
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Expected team size of the tournament

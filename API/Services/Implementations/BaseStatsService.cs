@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Entities;
 using API.Enums;
 using API.Osu;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
@@ -97,7 +98,7 @@ public class BaseStatsService(
                     MatchCostAverage = item.MatchCostAverage,
                     Rating = item.Rating,
                     Volatility = item.Volatility,
-                    Mode = (OsuEnums.Ruleset)item.Mode,
+                    Mode = (Ruleset)item.Mode,
                     Percentile = item.Percentile,
                     GlobalRank = item.GlobalRank,
                     CountryRank = item.CountryRank

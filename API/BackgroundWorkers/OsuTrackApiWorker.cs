@@ -1,6 +1,7 @@
 using System.Text;
 using API.Entities;
 using API.Osu;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using Newtonsoft.Json;
 
@@ -21,12 +22,12 @@ public class OsuTrackApiWorker(
     private DateTime _ratelimitReset = DateTime.UtcNow;
     private int _ratelimitTracker;
     private readonly bool _allowDataFetching = configuration.GetValue<bool>("Osu:AutoUpdateUsers");
-    private readonly OsuEnums.Ruleset[] _modes =
+    private readonly Ruleset[] _modes =
     [
-        OsuEnums.Ruleset.Standard,
-        OsuEnums.Ruleset.Taiko,
-        OsuEnums.Ruleset.Catch,
-        OsuEnums.Ruleset.Mania
+        Ruleset.Standard,
+        Ruleset.Taiko,
+        Ruleset.Catch,
+        Ruleset.Mania
     ];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -110,7 +111,7 @@ public class OsuTrackApiWorker(
         CancellationToken stoppingToken
     )
     {
-        foreach (OsuEnums.Ruleset mode in _modes)
+        foreach (Ruleset mode in _modes)
         {
             DateTime? oldestStatDate = await ratingStatsRepository.GetOldestForPlayerAsync(player.Id, (int)mode);
 
@@ -151,19 +152,19 @@ public class OsuTrackApiWorker(
                 OsuTrackHistoryStats relevant = stats[0]; // The response is ordered by date.
                 switch (mode)
                 {
-                    case OsuEnums.Ruleset.Standard:
+                    case Ruleset.Standard:
                         player.EarliestOsuGlobalRank = relevant.Rank;
                         player.EarliestOsuGlobalRankDate = relevant.Timestamp;
                         break;
-                    case OsuEnums.Ruleset.Taiko:
+                    case Ruleset.Taiko:
                         player.EarliestTaikoGlobalRank = relevant.Rank;
                         player.EarliestTaikoGlobalRankDate = relevant.Timestamp;
                         break;
-                    case OsuEnums.Ruleset.Catch:
+                    case Ruleset.Catch:
                         player.EarliestCatchGlobalRank = relevant.Rank;
                         player.EarliestCatchGlobalRankDate = relevant.Timestamp;
                         break;
-                    case OsuEnums.Ruleset.Mania:
+                    case Ruleset.Mania:
                         player.EarliestManiaGlobalRank = relevant.Rank;
                         player.EarliestManiaGlobalRankDate = relevant.Timestamp;
                         break;
@@ -192,7 +193,7 @@ public class OsuTrackApiWorker(
     private async Task<string> FetchOsuTrackRankAsync(
         Player player,
         HttpClient client,
-        OsuEnums.Ruleset ruleset,
+        Ruleset ruleset,
         DateTime oldestStatDate,
         CancellationToken stoppingToken
     )
@@ -256,7 +257,7 @@ public class OsuTrackApiWorker(
         return _ratelimitTracker >= API_RATELIMIT;
     }
 
-    private static string FormedUrl(long osuPlayerId, OsuEnums.Ruleset ruleset, DateTime from, DateTime? to = null) =>
+    private static string FormedUrl(long osuPlayerId, Ruleset ruleset, DateTime from, DateTime? to = null) =>
         new StringBuilder(URL_BASE)
             .Append("/stats_history")
             .Append($"?user={osuPlayerId}")

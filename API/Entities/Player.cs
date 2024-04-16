@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using API.Osu;
+using API.Osu.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Entities;
@@ -84,7 +85,7 @@ public class Player
     /// Preferred ruleset of the player
     /// </summary>
     [Column("default_ruleset")]
-    public OsuEnums.Ruleset? Ruleset { get; set; }
+    public Ruleset? Ruleset { get; set; }
 
     /// <summary>
     /// Earliest known standard rank available for the player after they started playing tournaments

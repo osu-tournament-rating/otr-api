@@ -1,13 +1,15 @@
+using API.Osu.Enums;
+
 namespace API.Osu.AutomationChecks;
 
 public static class AutomationConstants
 {
-    public static readonly OsuEnums.Mods[] UnallowedMods =
+    public static readonly Mods[] UnallowedMods =
     [
-        OsuEnums.Mods.SuddenDeath,
-        OsuEnums.Mods.Perfect,
-        OsuEnums.Mods.Relax,
-        OsuEnums.Mods.Relax2, // Autopilot
-        OsuEnums.Mods.SpunOut,
+        Mods.SuddenDeath,
+        Mods.Perfect,
+        Mods.Relax,
+        Mods.Relax2, // Autopilot
+        Mods.SpunOut,
     ];
 }

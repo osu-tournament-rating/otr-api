@@ -3,6 +3,7 @@ using API.DTOs;
 using API.Entities;
 using API.Enums;
 using API.Osu;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -29,7 +30,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
     }
 
     public async Task<BaseStats?> GetForPlayerAsync(int playerId, int mode) =>
-        await _context.BaseStats.Where(x => x.PlayerId == playerId && x.Mode == (OsuEnums.Ruleset)mode).FirstOrDefaultAsync();
+        await _context.BaseStats.Where(x => x.PlayerId == playerId && x.Mode == (Ruleset)mode).FirstOrDefaultAsync();
 
     public override async Task<int> UpdateAsync(BaseStats entity)
     {
@@ -89,7 +90,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
     {
         var globalIndex = (
             await _context
-                .BaseStats.WhereRuleset((OsuEnums.Ruleset)mode)
+                .BaseStats.WhereRuleset((Ruleset)mode)
                 .OrderByRatingDescending()
                 .Select(x => x.Player.OsuId)
                 .ToListAsync()
@@ -144,7 +145,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         {
             return await _context
                 .BaseStats.AsNoTracking()
-                .Where(x => x.Player.Country == country && x.Mode == (OsuEnums.Ruleset)mode)
+                .Where(x => x.Player.Country == country && x.Mode == (Ruleset)mode)
                 .Select(x => x.CountryRank)
                 .DefaultIfEmpty()
                 .MaxAsync();
@@ -152,7 +153,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
 
         return await _context
             .BaseStats.AsNoTracking()
-            .WhereRuleset((OsuEnums.Ruleset)mode)
+            .WhereRuleset((Ruleset)mode)
             .Select(x => x.GlobalRank)
             .DefaultIfEmpty()
             .MaxAsync();
@@ -164,7 +165,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         {
             return await _context
                 .BaseStats.AsNoTracking()
-                .Where(x => x.Player.Country == country && x.Mode == (OsuEnums.Ruleset)mode)
+                .Where(x => x.Player.Country == country && x.Mode == (Ruleset)mode)
                 .Select(x => x.Rating)
                 .DefaultIfEmpty()
                 .MaxAsync();
@@ -172,7 +173,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
 
         return await _context
             .BaseStats.AsNoTracking()
-            .Where(x => x.Mode == (OsuEnums.Ruleset)mode)
+            .Where(x => x.Mode == (Ruleset)mode)
             .Select(x => x.Rating)
             .DefaultIfEmpty()
             .MaxAsync();
@@ -203,7 +204,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
     public async Task<IDictionary<int, int>> GetHistogramAsync(int mode)
     {
         // Determine the maximum rating as a double
-        var maxRating = await _context.BaseStats.Where(x => x.Mode == (OsuEnums.Ruleset)mode).MaxAsync(x => x.Rating);
+        var maxRating = await _context.BaseStats.Where(x => x.Mode == (Ruleset)mode).MaxAsync(x => x.Rating);
 
         // Round up maxRating to the nearest multiple of 25
         var maxBucket = (int)(Math.Ceiling(maxRating / 25) * 25);
@@ -214,7 +215,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         // Adjust the GroupBy to correctly bucket the rating of 100
         Dictionary<int, int> dbHistogram = await _context
             .BaseStats.AsNoTracking()
-            .Where(x => x.Mode == (OsuEnums.Ruleset)mode && x.Rating >= 100)
+            .Where(x => x.Mode == (Ruleset)mode && x.Rating >= 100)
             .GroupBy(x => (int)(x.Rating / 25) * 25)
             .Select(g => new { Bucket = g.Key == 0 ? 100 : g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.Bucket, g => g.Count);
@@ -240,7 +241,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
                 .WhereNotHeadToHead()
                 .WhereTeammate(osuPlayerId)
                 .SelectMany(x => x.Player.Ratings)
-                .Where(rating => rating.Mode == (OsuEnums.Ruleset)mode)
+                .Where(rating => rating.Mode == (Ruleset)mode)
                 .AverageAsync(rating => (double?)rating.Rating) ?? 0.0;
 
         return (int)averageRating;
@@ -253,7 +254,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         int? playerId
     )
     {
-        IQueryable<BaseStats> baseQuery = _context.BaseStats.WhereRuleset((OsuEnums.Ruleset)mode);
+        IQueryable<BaseStats> baseQuery = _context.BaseStats.WhereRuleset((Ruleset)mode);
 
         if (chartType == LeaderboardChartType.Country && playerId.HasValue)
         {
