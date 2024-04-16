@@ -45,7 +45,7 @@ public class AutomationChecksTests
             new()
             {
                 BeatmapId = 1,
-                PlayMode = OsuEnums.Ruleset.Standard,
+                Ruleset = OsuEnums.Ruleset.Standard,
                 StartTime = new DateTime(2023, 1, 1, 0, 0, 0),
                 EndTime = new DateTime(2023, 1, 1, 0, 1, 0),
                 GameId = 1,
@@ -625,7 +625,7 @@ public class AutomationChecksTests
     public void Game_FailsModeCheck()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().PlayMode = OsuEnums.Ruleset.Catch;
+        match.Games.First().Ruleset = OsuEnums.Ruleset.Catch;
 
         Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
     }

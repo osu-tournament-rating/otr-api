@@ -27,7 +27,7 @@ public static class SeededGame
             Id = s_rand.Next(),
             MatchId = matchId,
             BeatmapId = 24245,
-            PlayMode = OsuEnums.Ruleset.Standard,
+            Ruleset = OsuEnums.Ruleset.Standard,
             ScoringType = OsuEnums.ScoringType.ScoreV2,
             TeamType = OsuEnums.TeamType.HeadToHead,
             Mods = OsuEnums.Mods.None,
