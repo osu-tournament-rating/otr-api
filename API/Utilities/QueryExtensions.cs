@@ -157,15 +157,10 @@ public static class QueryExtensions
     ) => query.AsQueryable().Where(x => x.Game.StartTime > dateMin && x.Game.StartTime < dateMax);
 
     /// <summary>
-    ///  Selects all MatchScores for a given playMode (e.g. mania)
+    /// Selects all MatchScores for a given ruleset (e.g. mania)
     /// </summary>
-    /// <param name="query"></param>
-    /// <param name="mode"></param>
-    /// <returns></returns>
-    // TODO: Refactor param "mode" to use OsuEnums.Ruleset
-    // TODO: Refactor to "WhereRuleset"
-    public static IQueryable<MatchScore> WhereMode(this IQueryable<MatchScore> query, int mode) =>
-        query.AsQueryable().Where(x => x.Game.Ruleset == (OsuEnums.Ruleset)mode);
+    public static IQueryable<MatchScore> WhereRuleset(this IQueryable<MatchScore> query, OsuEnums.Ruleset ruleset) =>
+        query.AsQueryable().Where(x => x.Game.Ruleset == ruleset);
 
     public static IQueryable<MatchScore> WhereOsuPlayerId(
         this IQueryable<MatchScore> query,
