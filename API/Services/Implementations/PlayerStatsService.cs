@@ -175,16 +175,17 @@ public class PlayerStatsService(
             dateMax.Value
         );
 
-        return new PlayerStatsDTO(
-            playerInfo,
-            baseStats,
-            matchStats,
-            modStats,
-            tournamentStats,
-            ratingChart,
-            frequentTeammates,
-            frequentOpponents
-        );
+        return new PlayerStatsDTO
+        {
+            PlayerInfo = playerInfo,
+            BaseStats = baseStats,
+            MatchStats = matchStats,
+            ModStats = modStats,
+            TournamentStats = tournamentStats,
+            RatingChart = ratingChart,
+            FrequentTeammates = frequentTeammates,
+            FrequentOpponents = frequentOpponents
+        };
     }
 
     public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody)
