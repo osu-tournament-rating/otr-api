@@ -96,7 +96,7 @@ public class LeaderboardService(
             );
         }
 
-        leaderboard.Leaderboard = leaderboardPlayerInfo;
+        leaderboard.Leaderboard = leaderboardPlayerInfo.OrderBy(x => x.GlobalRank);
         return leaderboard;
     }
 
@@ -178,7 +178,7 @@ public class LeaderboardService(
         LeaderboardChartType chartType
     )
     {
-        BaseStatsDTO? baseStats = await _baseStatsService.GetForPlayerAsync(null, playerId, mode);
+        BaseStatsDTO? baseStats = await _baseStatsService.GetAsync(null, playerId, mode);
 
         if (baseStats == null)
         {

@@ -1,33 +1,44 @@
 using API.DTOs;
-using API.Entities;
 using API.Services.Interfaces;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[EnableCors]
-[Authorize(Roles = "system")] // Internal access only at this time
+[Authorize(Roles = "system, admin")] // Internal access only at this time
 [Route("api/v{version:apiVersion}/[controller]")]
 public class BeatmapsController(IBeatmapService beatmapService) : Controller
 {
     private readonly IBeatmapService _beatmapService = beatmapService;
 
-    [HttpGet("all")]
-    public async Task<ActionResult<IEnumerable<Beatmap>>> GetAllAsync() =>
-        Ok(await _beatmapService.GetAllAsync());
+    /// <summary>
+    /// List all beatmaps
+    /// </summary>
+    /// <response code="200">Returns all beatmaps</response>
+    [HttpGet]
+    [ProducesResponseType<IEnumerable<BeatmapDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListAsync() =>
+        Ok(await _beatmapService.ListAsync());
 
-    [HttpGet("{beatmapId:long}")]
-    public async Task<ActionResult<Beatmap>> GetByOsuBeatmapIdAsync(long beatmapId)
+    /// <summary>
+    /// Get a beatmap by versatile search
+    /// </summary>
+    /// <remarks>Get a beatmap searching first by id, then by osu! beatmap id</remarks>
+    /// <param name="key">Search key</param>
+    /// <response code="404">If a beatmap for the search key does not exist</response>
+    /// <response code="200">Returns a beatmap</response>
+    [HttpGet("{key:long}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<BeatmapDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAsync(long key)
     {
-        BeatmapDTO? beatmap = await _beatmapService.GetAsync(beatmapId);
+        BeatmapDTO? beatmap = await _beatmapService.GetVersatileAsync(key);
         if (beatmap == null)
         {
-            return NotFound("No matching beatmapId in the database.");
+            return NotFound();
         }
 
         return Ok(beatmap);

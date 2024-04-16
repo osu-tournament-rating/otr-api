@@ -1,4 +1,5 @@
 using API.Entities;
+using API.Utilities;
 
 namespace API.Osu.AutomationChecks;
 
@@ -53,8 +54,8 @@ public static class GameAutomationChecks
             return satisfiesOneVersusOne;
         }
 
-        var countRed = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Red);
-        var countBlue = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.Blue);
+        var countRed = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Red, Score: > AutomationChecksUtils.MinimumScore });
+        var countBlue = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Blue, Score: > AutomationChecksUtils.MinimumScore });
 
         if (countRed == 0 && countBlue == 0)
         {
@@ -73,10 +74,17 @@ public static class GameAutomationChecks
         var hasReferee = false;
         if (countRed != countBlue)
         {
-            // Check for any scores that equal 0. Likely a referee in the lobby.
-            // It's pretty unlikely that an actual player's score is 0, we
-            // simply have to assume it's a referee.
-            hasReferee = game.MatchScores.Any(score => score.Score == 0);
+            /*
+             * Requirements for referee to be valid and present:
+             *
+             * - Exactly 1 score is below the minimum
+             * - The team sizes are uneven by exactly +1
+             * (meaning, if red has 3 players, blue has 2, and vice versa,
+             * NOT a 2v1 after accounting for the ref)
+             */
+            hasReferee = game.MatchScores.Count(s => s.Score <= AutomationChecksUtils.MinimumScore) == 1 &&
+                          (countRed == teamSize + 1 || countBlue == teamSize + 1);
+
             if (!hasReferee)
             {
                 s_logger.Information(
@@ -127,15 +135,16 @@ public static class GameAutomationChecks
         return redUnexpected || blueUnexpected;
     }
 
+    // TODO: Refactor to "PassesRulesetCheck"
     public static bool PassesModeCheck(Game game)
     {
         Tournament tournament = game.Match.Tournament;
-        var gameMode = tournament.Mode;
+        var gameMode = (OsuEnums.Ruleset)tournament.Mode;
 
-        if (gameMode is < 0 or > 3)
+        if (!Enum.GetValues<OsuEnums.Ruleset>().Contains(gameMode))
         {
             s_logger.Information(
-                "{Prefix} Tournament {TournamentId} has an invalid game mode: {Mode}, can't verify game {GameId}",
+                "{Prefix} Tournament {TournamentId} has an invalid ruleset: {Mode}, can't verify game {GameId}",
                 LogPrefix,
                 tournament.Id,
                 tournament.Mode,
@@ -148,7 +157,7 @@ public static class GameAutomationChecks
         if (gameMode != game.PlayMode)
         {
             s_logger.Information(
-                "{Prefix} Tournament {TournamentId} has a game mode that differs from game, can't verify game {GameId} [Tournament: Mode={TMode} | Game: Mode={GMode}",
+                "{Prefix} Tournament {TournamentId} has a ruleset that differs from game, can't verify game {GameId} [Tournament: Ruleset={TMode} | Game: Ruleset={GMode}",
                 LogPrefix,
                 tournament.Id,
                 game.GameId,
@@ -164,7 +173,7 @@ public static class GameAutomationChecks
 
     public static bool PassesScoringTypeCheck(Game game)
     {
-        if (game.ScoringType != (int)OsuEnums.ScoringType.ScoreV2)
+        if (game.ScoringType != OsuEnums.ScoringType.ScoreV2)
         {
             s_logger.Information(
                 "{Prefix} Match {MatchId} does not have a ScoreV2 scoring type, can't verify game {GameId}",
@@ -179,12 +188,11 @@ public static class GameAutomationChecks
     }
 
     public static bool PassesModsCheck(Game game) =>
-        !AutomationConstants.UnallowedMods.Any(unallowedMod => game.ModsEnum.HasFlag(unallowedMod));
+        !AutomationConstants.UnallowedMods.Any(unallowedMod => game.Mods.HasFlag(unallowedMod));
 
     public static bool PassesTeamTypeCheck(Game game)
     {
-        OsuEnums.TeamType teamType = game.TeamTypeEnum;
-        if (teamType is OsuEnums.TeamType.TagTeamVs or OsuEnums.TeamType.TagCoop)
+        if (game.TeamType is OsuEnums.TeamType.TagTeamVs or OsuEnums.TeamType.TagCoop)
         {
             s_logger.Information(
                 "{Prefix} Match {MatchId} has a tag team type, can't verify game {GameId}",
@@ -196,7 +204,7 @@ public static class GameAutomationChecks
         }
 
         // Ensure team size is valid
-        if (teamType == OsuEnums.TeamType.HeadToHead)
+        if (game.TeamType == OsuEnums.TeamType.HeadToHead)
         {
             if (game.Match.Tournament.TeamSize != 1)
             {

@@ -43,7 +43,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return players;
     }
 
-    public async Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds) =>
+    public async Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds) =>
         await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
     public async Task<IEnumerable<Player>> GetAsync(bool eagerLoad)
@@ -60,7 +60,22 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return await _context.Players.AsNoTracking().ToListAsync();
     }
 
-    public async Task<Player?> GetAsync(string username) => await Search(username).FirstOrDefaultAsync();
+    public async Task<IEnumerable<Player>> SearchAsync(string username) =>
+        await SearchQuery(username, true)
+            .Include(p => p.Ratings)
+            .ToListAsync();
+
+    public async Task<Player?> GetAsync(string username)
+    {
+        List<Player> players = await SearchQuery(username, false).ToListAsync();
+
+        if (players.Count > 1)
+        {
+            throw new Exception("More than one player was found.");
+        }
+
+        return players.Count == 0 ? null : players.First();
+    }
 
     public async Task<Player> GetOrCreateAsync(long osuId)
     {
@@ -72,6 +87,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return await CreateAsync(new Player { OsuId = osuId });
     }
 
+    // TODO: Refactor param "mode" to use OsuEnums.Ruleset
     public async Task<Player?> GetAsync(long osuId, bool eagerLoad, int mode = 0, int offsetDays = -1)
     {
         if (!eagerLoad)
@@ -83,7 +99,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
 
         Player? p = await _context
             .Players.Include(x =>
-                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == mode)
+                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == (OsuEnums.Ruleset)mode)
             )
             .ThenInclude(x => x.Game)
             .ThenInclude(x => x.Match)
@@ -92,12 +108,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
             .WhereOsuId(osuId)
             .FirstOrDefaultAsync();
 
-        if (p == null)
-        {
-            return null;
-        }
-
-        return p;
+        return p ?? null;
     }
 
     public async Task<int?> GetIdAsync(long osuId) =>
@@ -106,10 +117,10 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
     public async Task<long> GetOsuIdAsync(int id) =>
         await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
 
-    public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode) => await (
+    public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Ruleset ruleset) => await (
             from p in _context.Players
             join r in _context.BaseStats on p.Id equals r.PlayerId
-            where r.Mode == (int)mode
+            where r.Mode == (int)ruleset
             orderby r.Rating descending
             select new PlayerRatingDTO
             {
@@ -150,28 +161,26 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
 
     public async Task<int?> GetIdAsync(string username)
     {
-        return await Search(username).Select(x => x.Id).FirstOrDefaultAsync();
+        return await SearchQuery(username, false).Select(x => x.Id).FirstOrDefaultAsync();
     }
 
     /// <summary>
     /// Helper method for searching by username consistently
     /// </summary>
     /// <param name="username">The username to search for</param>
+    /// <param name="partialMatch">Whether or not we want to check for partial name matches on lookup.</param>
     /// <returns>A query that filters players by the username provided</returns>
-    private IQueryable<Player> Search(string username)
+    private IQueryable<Player> SearchQuery(string username, bool partialMatch)
     {
-        if (username.Contains(' '))
+        //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
+        username = username.Replace("_", @"\_");
+
+        if (partialMatch)
         {
-            // Look for users with either ' ' or '_' in the name - osu only uses one (i.e. "Red Pixel" cannot coexist with "Red_Pixel")
-            return _context.Players.Where(p =>
-                p.Username != null
-                && (
-                    p.Username.ToLower() == username.ToLower()
-                    || p.Username.ToLower() == username.ToLower())
-            );
+            return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, $"%{username}%", @"\"));
         }
 
-        return _context.Players.Where(p => p.Username != null && p.Username.ToLower() == username.ToLower());
+        return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, username, @"\"));
     }
 
     // This is used by a scheduled task to automatically populate user info, such as username, country, etc.
@@ -183,11 +192,11 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
     public async Task<PlayerInfoDTO?> GetPlayerDTOByOsuIdAsync(
         long osuId,
         bool eagerLoad = false,
-        OsuEnums.Mode mode = OsuEnums.Mode.Standard,
+        OsuEnums.Ruleset ruleset = OsuEnums.Ruleset.Standard,
         int offsetDays = -1
     )
     {
-        PlayerInfoDTO? obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)mode, offsetDays));
+        PlayerInfoDTO? obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)ruleset, offsetDays));
 
         if (obj == null)
         {

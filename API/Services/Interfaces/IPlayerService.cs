@@ -7,7 +7,7 @@ public interface IPlayerService
 {
     Task<IEnumerable<PlayerDTO>> GetAllAsync();
     Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync();
-    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode);
+    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Ruleset ruleset);
     Task<string?> GetUsernameAsync(long osuId);
     Task<int?> GetIdAsync(long osuId);
     Task<int?> GetIdAsync(int userId);
@@ -37,4 +37,13 @@ public interface IPlayerService
     Task<PlayerInfoDTO?> GetAsync(int userId);
     Task<PlayerInfoDTO?> GetAsync(long osuId);
     Task<PlayerInfoDTO?> GetAsync(string username);
+    /// <summary>
+    /// Gets player information for a list of osu! ids
+    /// </summary>
+    /// <param name="osuIds">The osu! player ids</param>
+    /// <returns>A list of <see cref="PlayerInfoDTO"/>, one per provided osu! id.
+    /// If a provided osu! id does not belong to a player in the database,
+    /// the <see cref="PlayerInfoDTO"/> will be returned in a default state,
+    /// except the <see cref="PlayerInfoDTO.OsuId"/> value will be set</returns>
+    Task<IEnumerable<PlayerInfoDTO>> GetAsync(IEnumerable<long> osuIds);
 }

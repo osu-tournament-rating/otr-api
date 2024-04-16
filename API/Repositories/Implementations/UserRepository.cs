@@ -7,44 +7,22 @@ namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class UserRepository(ILogger<UserRepository> logger, OtrContext context) : RepositoryBase<User>(context), IUserRepository
+public class UserRepository(OtrContext context) : RepositoryBase<User>(context), IUserRepository
 {
-    private readonly ILogger<UserRepository> _logger = logger;
     private readonly OtrContext _context = context;
 
-    public override async Task<User?> GetAsync(int id)
-    {
-        return await _context.Users.Include(x => x.Player).FirstOrDefaultAsync(u => u.Id == id);
-    }
+    public override async Task<User?> GetAsync(int id) =>
+        await UserBaseQuery().FirstOrDefaultAsync(u => u.Id == id);
 
-    public async Task<User?> GetForPlayerAsync(int playerId)
-    {
-        return await _context.Users.Include(x => x.Player).FirstOrDefaultAsync(u => u.PlayerId == playerId);
-    }
+    public async Task<User?> GetByPlayerIdAsync(int playerId) =>
+        await UserBaseQuery().FirstOrDefaultAsync(u => u.PlayerId == playerId);
 
-    public async Task<User?> GetForPlayerAsync(long osuId) =>
-        await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Player.OsuId == osuId);
-
-    public async Task<User?> GetOrCreateSystemUserAsync()
+    public async Task<User> GetByPlayerIdOrCreateAsync(int playerId)
     {
-        User? sysUser = await _context.Users.FirstOrDefaultAsync(u => u.Scopes.Contains("System"));
-        if (sysUser == null)
+        User? user = await GetByPlayerIdAsync(playerId);
+        if (user is not null)
         {
-            return await CreateAsync(new User { Scopes = ["System"] });
-        }
-        return sysUser;
-    }
-
-    public async Task<bool> HasRoleAsync(long osuId, string role)
-    {
-        return await _context.Users.AnyAsync(u => u.Player.OsuId == osuId && u.Scopes.Contains(role));
-    }
-
-    public async Task<User> GetOrCreateAsync(int playerId)
-    {
-        if (await _context.Users.AnyAsync(x => x.PlayerId == playerId))
-        {
-            return await _context.Users.FirstAsync(x => x.PlayerId == playerId);
+            return user;
         }
 
         return await CreateAsync(
@@ -57,4 +35,8 @@ public class UserRepository(ILogger<UserRepository> logger, OtrContext context) 
             }
         );
     }
+
+    private IQueryable<User> UserBaseQuery() =>
+        _context.Users
+            .Include(x => x.Player);
 }

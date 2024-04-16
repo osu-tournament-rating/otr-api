@@ -65,7 +65,7 @@ public class OsuApiGame
     ///  Standard = 0, Taiko = 1, CTB = 2, o!m = 3
     /// </summary>
     [JsonProperty("play_mode")]
-    public Mode PlayMode { get; set; }
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     ///  Couldn't find

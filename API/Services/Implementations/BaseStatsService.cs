@@ -21,7 +21,7 @@ public class BaseStatsService(
     private readonly ITournamentsService _tournamentsService = tournamentsService;
     private readonly IMatchRatingStatsRepository _ratingStatsRepository = ratingStatsRepository;
 
-    public async Task<IEnumerable<BaseStatsDTO?>> GetForPlayerAsync(long osuPlayerId)
+    public async Task<IEnumerable<BaseStatsDTO?>> GetAsync(long osuPlayerId)
     {
         var id = await _playerRepository.GetIdAsync(osuPlayerId);
 
@@ -36,39 +36,39 @@ public class BaseStatsService(
         foreach (BaseStats stat in baseStats)
         {
             // One per mode
-            ret.Add(await GetForPlayerAsync(stat, id.Value, stat.Mode));
+            ret.Add(await GetAsync(stat, id.Value, stat.Mode));
         }
 
         return ret;
     }
 
-    public async Task<BaseStatsDTO?> GetForPlayerAsync(BaseStats? currentStats, int id, int mode)
+    public async Task<BaseStatsDTO?> GetAsync(BaseStats? currentStats, int playerId, int mode)
     {
-        currentStats ??= await _baseStatsRepository.GetForPlayerAsync(id, mode);
+        currentStats ??= await _baseStatsRepository.GetForPlayerAsync(playerId, mode);
 
         if (currentStats == null)
         {
             return null;
         }
 
-        var matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(id, mode);
-        var winRate = await _matchStatsRepository.GlobalWinrateAsync(id, mode);
-        var highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(id, mode);
-        var tournamentsPlayed = await _tournamentsService.CountPlayedAsync(id, mode);
+        var matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(playerId, mode);
+        var winRate = await _matchStatsRepository.GlobalWinrateAsync(playerId, mode);
+        var highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(playerId, mode);
+        var tournamentsPlayed = await _tournamentsService.CountPlayedAsync(playerId, mode);
         var rankProgress = new RankProgressDTO
         {
             CurrentTier = RatingUtils.GetTier(currentStats.Rating),
-            CurrentSubTier = RatingUtils.GetCurrentSubTier(currentStats.Rating),
-            RatingForNextTier = RatingUtils.GetRatingDeltaForNextTier(currentStats.Rating),
-            RatingForNextMajorTier = RatingUtils.GetRatingDeltaForNextMajorTier(currentStats.Rating),
+            CurrentSubTier = RatingUtils.GetSubTier(currentStats.Rating),
+            RatingForNextTier = RatingUtils.GetNextTierRatingDelta(currentStats.Rating),
+            RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(currentStats.Rating),
             NextMajorTier = RatingUtils.GetNextMajorTier(currentStats.Rating),
-            SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(currentStats.Rating),
-            MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(currentStats.Rating)
+            SubTierFillPercentage = RatingUtils.GetNextTierFillPercentage(currentStats.Rating),
+            MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(currentStats.Rating)
         };
 
         return new BaseStatsDTO
         {
-            PlayerId = id,
+            PlayerId = playerId,
             AverageMatchCost = currentStats.MatchCostAverage,
             CountryRank = currentStats.CountryRank,
             GlobalRank = currentStats.GlobalRank,
@@ -129,7 +129,7 @@ public class BaseStatsService(
 
         foreach (BaseStats baseStat in baseStats)
         {
-            leaderboard.Add(await GetForPlayerAsync(baseStat, baseStat.PlayerId, mode));
+            leaderboard.Add(await GetAsync(baseStat, baseStat.PlayerId, mode));
         }
 
         return leaderboard;

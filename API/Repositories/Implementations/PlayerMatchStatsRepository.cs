@@ -1,10 +1,10 @@
-using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
+using API.Enums;
+using API.Osu;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace API.Repositories.Implementations;
 
@@ -75,148 +75,94 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         DateTime dateMax
     )
     {
-        using (System.Data.Common.DbCommand command = _context.Database.GetDbConnection().CreateCommand())
-        {
-            const string sql = """
-                -- Potential results:
-                -- NM, EZ, HD, HR, HDHR, DT, HDDT, FL, HDEZ
-                WITH ModCombinations AS (
-                    SELECT
-                        p.id as pid,
-                        p.username as puser,
-                        CASE
-                            WHEN (COALESCE(ms.enabled_mods, 0) & 1024) > 0 OR (g.mods & 1024) > 0 THEN 'FL'
-                            WHEN (COALESCE(ms.enabled_mods, 0) & 256) > 0 OR (g.mods & 256) > 0 THEN 'HT'
-                            WHEN (COALESCE(ms.enabled_mods, 0) & 72) = 72 OR (g.mods & 72) = 72 THEN 'HDDT'
-                            WHEN (COALESCE(ms.enabled_mods, 0) & 64) > 0 OR (g.mods & 64) > 0 THEN 'DT'
-                            WHEN (COALESCE(ms.enabled_mods, 0) & 24) = 24 OR (g.mods & 24) = 24 THEN 'HDHR'
-                            WHEN (COALESCE(ms.enabled_mods, 0) & 16) > 0 OR (g.mods & 16) > 0 THEN 'HR'
-                            WHEN (COALESCE(ms.enabled_mods, 0) & 10) = 10 OR (g.mods & 10) = 10 THEN 'EZHD'
-                            WHEN (COALESCE(ms.enabled_mods, 0) & 8) > 0 OR (g.mods & 8) > 0 THEN 'HD'
-                            WHEN (COALESCE(ms.enabled_mods, 0) & 2) > 0 OR (g.mods & 2) > 0 THEN 'EZ'
-                            ELSE 'NM'
-                            END AS ModType,
-                        ms.score AS Score,
-                        (SELECT ARRAY[p.id] <@ gwr.winners AS player_won)
-                    FROM match_scores ms
-                             JOIN public.games g ON ms.game_id = g.id
-                             JOIN players p ON ms.player_id = p.id
-                             JOIN game_win_records gwr ON gwr.game_id = g.id
-                             JOIN matches m ON g.match_id = m.id
-                             JOIN tournaments t ON t.id = m.tournament_id
-                    WHERE p.id = @playerId AND g.verification_status = 0 AND m.verification_status = 0 AND t.mode = @mode AND m.start_time >= @dateMin AND m.start_time <= @dateMax
-                ),
-                     NormalizedScores AS (
-                         SELECT
-                             pid,
-                             puser,
-                             ModType,
-                             AVG(Score / CASE
-                                             WHEN ModType = 'FL' THEN 1.12
-                                             WHEN ModType = 'HT' THEN 0.3
-                                             WHEN ModType = 'HDDT' THEN 1.1872
-                                             WHEN ModType = 'DT' THEN 1.12
-                                             WHEN ModType = 'HDHR' THEN 1.166
-                                             WHEN ModType = 'HR' THEN 1.1
-                                             WHEN ModType = 'EZHD' THEN 0.53
-                                             WHEN ModType = 'HD' THEN 1.06
-                                             WHEN ModType = 'EZ' THEN 0.5
-                                             ELSE 1
-                                 END) AS NormalizedAverageScore
-                         FROM ModCombinations
-                         GROUP BY pid, puser, ModType
-                     ),
-                     ModStats AS (
-                         SELECT
-                             pid,
-                             puser,
-                             ModType,
-                             COUNT(*) AS GamesPlayed,
-                             COUNT(CASE WHEN player_won THEN 1 END) AS GamesWon
-                         FROM ModCombinations
-                         GROUP BY pid, puser, ModType
-                     )
-                SELECT
-                    ns.pid,
-                    ns.puser,
-                    ns.ModType,
-                    ns.NormalizedAverageScore,
-                    ms.GamesPlayed,
-                    ms.GamesWon,
-                    CASE WHEN ms.GamesPlayed > 0 THEN ROUND(ms.GamesWon::NUMERIC / ms.GamesPlayed, 5) ELSE 0 END AS WinRate
-                FROM NormalizedScores ns
-                         JOIN ModStats ms ON ns.pid = ms.pid AND ns.puser = ms.puser AND ns.ModType = ms.ModType;
-                """;
-
-            command.CommandType = CommandType.Text;
-            command.CommandText = sql;
-
-            command.Parameters.Add(new NpgsqlParameter<int>("playerId", playerId));
-            command.Parameters.Add(new NpgsqlParameter<int>("mode", mode));
-            command.Parameters.Add(new NpgsqlParameter<DateTime>("dateMin", dateMin));
-            command.Parameters.Add(new NpgsqlParameter<DateTime>("dateMax", dateMax));
-
-            await _context.Database.OpenConnectionAsync();
-
-            using (System.Data.Common.DbDataReader result = await command.ExecuteReaderAsync())
+        var modStats = await _context.MatchScores
+            // Filter for player, verified, mode, date range
+            .Where(ms =>
+                ms.PlayerId == playerId
+                && ms.Game.Match.VerificationStatus == (int)MatchVerificationStatus.Verified
+                && ms.Game.Match.Tournament.Mode == mode
+                && ms.Game.Match.StartTime >= dateMin
+                && ms.Game.Match.EndTime <= dateMax)
+            // Determine mods, score, and if game was won
+            .Select(ms => new
             {
-                var pms = new PlayerModStatsDTO();
-                while (await result.ReadAsync())
+                // Match score mods populated for free mod, else game (lobby) mods
+                ModType = (OsuEnums.Mods?)ms.EnabledMods ?? ms.Game.Mods,
+                ms.Score,
+                PlayerWon = ms.Game.WinRecord.Winners.Contains(playerId)
+            })
+            // Group by mods
+            .GroupBy(g => g.ModType & ~OsuEnums.Mods.NoFail)
+            // Calculate win rate and average (normalized) score
+            .Select(g => new
+            {
+                ModType = g.Key,
+                Stats = new ModStatsDTO
                 {
-                    var modType = await result.GetFieldValueAsync<string>("modtype");
-                    var gamesPlayed = await result.GetFieldValueAsync<int>("gamesplayed");
-                    var gamesWon = await result.GetFieldValueAsync<int>("gameswon");
-                    var winrate = await result.GetFieldValueAsync<double>("winrate");
-                    var normalizedAverageScore = await result.GetFieldValueAsync<double>(
-                        "normalizedaveragescore"
-                    );
-
-                    var dto = new ModStatsDTO
-                    {
-                        GamesPlayed = gamesPlayed,
-                        GamesWon = gamesWon,
-                        Winrate = winrate,
-                        NormalizedAverageScore = normalizedAverageScore
-                    };
-
-                    switch (modType)
-                    {
-                        case "NM":
-                            pms.PlayedNM = dto;
-                            break;
-                        case "EZ":
-                            pms.PlayedEZ = dto;
-                            break;
-                        case "HT":
-                            pms.PlayedHT = dto;
-                            break;
-                        case "HD":
-                            pms.PlayedHD = dto;
-                            break;
-                        case "HR":
-                            pms.PlayedHR = dto;
-                            break;
-                        case "FL":
-                            pms.PlayedFL = dto;
-                            break;
-                        case "DT":
-                            pms.PlayedDT = dto;
-                            break;
-                        case "HDHR":
-                            pms.PlayedHDHR = dto;
-                            break;
-                        case "HDDT":
-                            pms.PlayedHDDT = dto;
-                            break;
-                        case "HDEZ":
-                            pms.PlayedHDEZ = dto;
-                            break;
-                    }
+                    GamesPlayed = g.Count(),
+                    GamesWon = g.Count(x => x.PlayerWon),
+                    // Avoid div by zero
+                    Winrate = g.Any()
+                        ? (double)g.Count(x => x.PlayerWon) / g.Count()
+                        : 0,
+                    NormalizedAverageScore = Math.Round(g.Average(x => x.Score / (
+                        g.Key == OsuEnums.Mods.Easy ? OsuEnums.ModScoreMultipliers.Easy :
+                        g.Key == OsuEnums.Mods.Hidden ? OsuEnums.ModScoreMultipliers.Hidden :
+                        g.Key == OsuEnums.Mods.HardRock ? OsuEnums.ModScoreMultipliers.HardRock :
+                        g.Key == OsuEnums.Mods.HalfTime ? OsuEnums.ModScoreMultipliers.HalfTime :
+                        g.Key == OsuEnums.Mods.DoubleTime ? OsuEnums.ModScoreMultipliers.DoubleTime :
+                        g.Key == OsuEnums.Mods.Flashlight ? OsuEnums.ModScoreMultipliers.Flashlight :
+                        g.Key == (OsuEnums.Mods.Hidden | OsuEnums.Mods.DoubleTime) ? OsuEnums.ModScoreMultipliers.HiddenDoubleTime :
+                        g.Key == (OsuEnums.Mods.Hidden | OsuEnums.Mods.HardRock) ? OsuEnums.ModScoreMultipliers.HiddenHardRock :
+                        g.Key == (OsuEnums.Mods.Hidden | OsuEnums.Mods.Easy) ? OsuEnums.ModScoreMultipliers.HiddenEasy :
+                        OsuEnums.ModScoreMultipliers.NoMod
+                        )))
                 }
+            })
+            .ToListAsync();
 
-                return pms;
+        // Combine mod stats into a PlayerModStatsDTO
+        PlayerModStatsDTO playerModStats = new();
+        foreach (var obj in modStats)
+        {
+            // Suppression: DTO only stores mods in the switch
+            // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+            switch (obj.ModType)
+            {
+                case OsuEnums.Mods.None:
+                    playerModStats.PlayedNM = obj.Stats;
+                    break;
+                case OsuEnums.Mods.DoubleTime:
+                    playerModStats.PlayedDT = obj.Stats;
+                    break;
+                case OsuEnums.Mods.HardRock:
+                    playerModStats.PlayedHR = obj.Stats;
+                    break;
+                case OsuEnums.Mods.Hidden:
+                    playerModStats.PlayedHD = obj.Stats;
+                    break;
+                case OsuEnums.Mods.Easy:
+                    playerModStats.PlayedEZ = obj.Stats;
+                    break;
+                case OsuEnums.Mods.Flashlight:
+                    playerModStats.PlayedFL = obj.Stats;
+                    break;
+                case OsuEnums.Mods.HalfTime:
+                    playerModStats.PlayedHT = obj.Stats;
+                    break;
+                case OsuEnums.Mods.Hidden | OsuEnums.Mods.DoubleTime:
+                    playerModStats.PlayedHDDT = obj.Stats;
+                    break;
+                case OsuEnums.Mods.Hidden | OsuEnums.Mods.HardRock:
+                    playerModStats.PlayedHDHR = obj.Stats;
+                    break;
+                case OsuEnums.Mods.Hidden | OsuEnums.Mods.Easy:
+                    playerModStats.PlayedHDEZ = obj.Stats;
+                    break;
             }
         }
+
+        return playerModStats;
     }
 
     public async Task InsertAsync(IEnumerable<PlayerMatchStats> items)
