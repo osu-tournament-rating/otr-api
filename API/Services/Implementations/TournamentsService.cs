@@ -9,6 +9,7 @@ namespace API.Services.Implementations;
 
 public class TournamentsService(ITournamentsRepository tournamentsRepository, IMatchesRepository matchesRepository, IMapper mapper) : ITournamentsService
 {
+    // TODO: Refactor to use enum for param "verificationSource"
     public async Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify, int? verificationSource)
     {
         MatchVerificationStatus verificationStatus = verify
@@ -33,10 +34,10 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
             Matches = existingMatchIds.Select(matchId => new Match
             {
                 MatchId = matchId,
-                VerificationStatus = (int)verificationStatus,
+                VerificationStatus = verificationStatus,
                 NeedsAutoCheck = true,
                 IsApiProcessed = false,
-                VerificationSource = verificationSource,
+                VerificationSource = (MatchVerificationSource?)verificationSource,
                 VerifierUserId = verify ? wrapper.SubmitterId : null,
                 SubmitterUserId = wrapper.SubmitterId
             }).ToList()

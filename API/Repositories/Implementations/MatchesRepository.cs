@@ -114,8 +114,8 @@ public class MatchesRepository(
             return null;
         }
 
-        match.VerificationStatus = (int)status;
-        match.VerificationSource = (int)source;
+        match.VerificationStatus = status;
+        match.VerificationSource = source;
         match.VerificationInfo = info;
 
         logger.LogInformation(
@@ -167,8 +167,8 @@ public class MatchesRepository(
         {
             await _context
                 .Matches.Where(x =>
-                    x.VerificationStatus != (int)MatchVerificationStatus.Verified
-                    && x.VerificationStatus != (int)MatchVerificationStatus.PreVerified
+                    x.VerificationStatus != MatchVerificationStatus.Verified
+                    && x.VerificationStatus != MatchVerificationStatus.PreVerified
                 )
                 .ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
         }
