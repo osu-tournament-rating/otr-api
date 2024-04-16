@@ -233,7 +233,7 @@ public class OsuMatchDataWorker(
             if (existingEntity != null)
             {
                 await matchesRepository.UpdateVerificationStatusAsync(
-                    osuMatchId,
+                    existingEntity.Id,
                     MatchVerificationStatus.Failure,
                     MatchVerificationSource.System,
                     "Failed to fetch match from osu! API"

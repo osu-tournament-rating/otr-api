@@ -29,15 +29,6 @@ public class MatchesRepository(
             .ThenInclude(x => x.Beatmap)
             .FirstOrDefaultAsync(x => x.Id == id);
 
-    public async Task<Match> UpdateVerificationStatus(int id, int? verificationStatus)
-    {
-        Match existing = await GetAsync(id, false) ?? throw new Exception("Match does not exist, this method assumes the match exists.");
-        existing.VerificationStatus = verificationStatus;
-
-        await UpdateAsync(existing);
-        return existing;
-    }
-
     public async Task<IEnumerable<Match>> SearchAsync(string name)
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
@@ -45,7 +36,7 @@ public class MatchesRepository(
         return await _context.Matches.WhereVerified().Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\")).ToListAsync();
     }
 
-    public async Task<Match> GetAsync(int id, bool filterInvalidMatches = true) =>
+    public async Task<Match?> GetAsync(int id, bool filterInvalidMatches = true) =>
         await MatchBaseQuery(filterInvalidMatches).FirstAsync(x => x.Id == id);
 
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered) =>
@@ -108,18 +99,19 @@ public class MatchesRepository(
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
         await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
 
-    public async Task<int> UpdateVerificationStatusAsync(
-        long matchId,
+    public async Task<Match?> UpdateVerificationStatusAsync(
+        int id,
         MatchVerificationStatus status,
         MatchVerificationSource source,
-        string? info = null
+        string? info = null,
+        int? verifierId = null
     )
     {
-        Match? match = await _context.Matches.FirstOrDefaultAsync(x => x.MatchId == matchId);
-        if (match == null)
+        Match? match = await GetAsync(id);
+        if (match is null)
         {
-            logger.LogWarning("Match {MatchId} not found (failed to update verification status)", matchId);
-            return 0;
+            logger.LogWarning("Match {id} not found (failed to update verification status)", id);
+            return null;
         }
 
         match.VerificationStatus = (int)status;
@@ -128,12 +120,23 @@ public class MatchesRepository(
 
         logger.LogInformation(
             "Updated verification status of match {MatchId} to {Status} (source: {Source}, info: {Info})",
-            matchId,
+            id,
             status,
             source,
             info
         );
-        return await _context.SaveChangesAsync();
+
+        // TODO: nullable "verifierId" can be passed for this without checking once #228 is merged
+        if (verifierId.HasValue)
+        {
+            await UpdateAsync(match, verifierId.Value);
+        }
+        else
+        {
+            await UpdateAsync(match);
+        }
+
+        return match;
     }
 
     public async Task<IEnumerable<Match>> GetPlayerMatchesAsync(
