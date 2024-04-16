@@ -276,16 +276,18 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
             baseQuery = baseQuery.Where(x => x.Player.Country == playerCountry);
         }
 
-        if (filter != null)
+        if (filter == null)
         {
-            baseQuery = FilterByRank(mode, baseQuery, filter.MinRank, filter.MaxRank);
-            baseQuery = FilterByRating(baseQuery, filter.MinRating, filter.MaxRating);
-            baseQuery = FilterByMatchesPlayed(baseQuery, filter.MinMatches, filter.MaxMatches);
+            return baseQuery;
+        }
 
-            if (filter.TierFilters.IsEngaged())
-            {
-                baseQuery = FilterByTier(baseQuery, filter.TierFilters!);
-            }
+        baseQuery = FilterByRank(mode, baseQuery, filter.MinRank, filter.MaxRank);
+        baseQuery = FilterByRating(baseQuery, filter.MinRating, filter.MaxRating);
+        baseQuery = FilterByMatchesPlayed(baseQuery, filter.MinMatches, filter.MaxMatches);
+
+        if (filter.TierFilters.IsEngaged())
+        {
+            baseQuery = FilterByTier(baseQuery, filter.TierFilters!);
         }
 
         return baseQuery;
