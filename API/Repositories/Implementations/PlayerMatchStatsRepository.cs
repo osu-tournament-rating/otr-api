@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
-using API.Osu;
 using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;

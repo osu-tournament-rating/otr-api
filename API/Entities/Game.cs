@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using API.Entities.Interfaces;
 using API.Enums;
-using API.Osu;
 using API.Osu.Enums;
 using Microsoft.EntityFrameworkCore;
 // ReSharper disable StringLiteralTypo

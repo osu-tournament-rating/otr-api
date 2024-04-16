@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Entities;
 using API.Enums;
-using API.Osu;
 using API.Osu.AutomationChecks;
 using API.Osu.Enums;
 using API.Repositories.Interfaces;

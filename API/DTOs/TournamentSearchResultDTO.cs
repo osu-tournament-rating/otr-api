@@ -1,4 +1,3 @@
-using API.Osu;
 using API.Osu.Enums;
 
 namespace API.DTOs;

@@ -1,6 +1,5 @@
 using API.Configurations;
 using API.Entities;
-using API.Osu;
 using API.Osu.Enums;
 using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;

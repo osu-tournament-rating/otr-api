@@ -1,5 +1,4 @@
 using API.Entities;
-using API.Osu;
 using API.Osu.AutomationChecks;
 using API.Osu.Enums;
 using API.Osu.Multiplayer;

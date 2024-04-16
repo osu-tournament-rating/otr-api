@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using API.Osu;
 using API.Osu.Enums;
 
 namespace API.DTOs;

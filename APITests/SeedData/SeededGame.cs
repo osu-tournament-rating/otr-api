@@ -1,6 +1,5 @@
 using API.Entities;
 using API.Enums;
-using API.Osu;
 using API.Osu.Enums;
 
 namespace APITests.SeedData;
