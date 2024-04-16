@@ -179,8 +179,8 @@ public static class QueryExtensions
         query.AsQueryable().Where(x => x.Game.StartTime > after);
 
     // Rating
-    public static IQueryable<BaseStats> WhereMode(this IQueryable<BaseStats> query, int mode) =>
-        query.AsQueryable().Where(x => x.Mode == mode);
+    public static IQueryable<BaseStats> WhereRuleset(this IQueryable<BaseStats> query, OsuEnums.Ruleset ruleset) =>
+        query.AsQueryable().Where(x => x.Mode == ruleset);
 
     public static IQueryable<BaseStats> WhereOsuPlayerId(
         this IQueryable<BaseStats> query,
