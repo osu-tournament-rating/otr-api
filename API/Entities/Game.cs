@@ -41,8 +41,7 @@ public class Game : IUpdateableEntity
     /// <summary>
     /// The ruleset for the game
     /// </summary>
-    // TODO: Refactor to "Ruleset"
-    [Column("play_mode")]
+    [Column("ruleset")]
     public OsuEnums.Ruleset Ruleset { get; set; }
 
     /// <summary>
