@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Enums;
+using API.Osu;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
@@ -36,7 +37,7 @@ public class BaseStatsService(
         foreach (BaseStats stat in baseStats)
         {
             // One per mode
-            ret.Add(await GetAsync(stat, id.Value, stat.Mode));
+            ret.Add(await GetAsync(stat, id.Value, (int)stat.Mode));
         }
 
         return ret;
@@ -96,7 +97,7 @@ public class BaseStatsService(
                     MatchCostAverage = item.MatchCostAverage,
                     Rating = item.Rating,
                     Volatility = item.Volatility,
-                    Mode = item.Mode,
+                    Mode = (OsuEnums.Ruleset)item.Mode,
                     Percentile = item.Percentile,
                     GlobalRank = item.GlobalRank,
                     CountryRank = item.CountryRank
