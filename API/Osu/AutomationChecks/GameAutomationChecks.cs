@@ -154,7 +154,7 @@ public static class GameAutomationChecks
             return false;
         }
 
-        if (gameMode != game.PlayMode)
+        if (gameMode != game.Ruleset)
         {
             s_logger.Information(
                 "{Prefix} Tournament {TournamentId} has a ruleset that differs from game, can't verify game {GameId} [Tournament: Ruleset={TMode} | Game: Ruleset={GMode}",
@@ -162,7 +162,7 @@ public static class GameAutomationChecks
                 tournament.Id,
                 game.GameId,
                 tournament.Mode,
-                game.PlayMode
+                game.Ruleset
             );
 
             return false;

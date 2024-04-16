@@ -165,7 +165,7 @@ public static class QueryExtensions
     // TODO: Refactor param "mode" to use OsuEnums.Ruleset
     // TODO: Refactor to "WhereRuleset"
     public static IQueryable<MatchScore> WhereMode(this IQueryable<MatchScore> query, int mode) =>
-        query.AsQueryable().Where(x => x.Game.PlayMode == (OsuEnums.Ruleset)mode);
+        query.AsQueryable().Where(x => x.Game.Ruleset == (OsuEnums.Ruleset)mode);
 
     public static IQueryable<MatchScore> WhereOsuPlayerId(
         this IQueryable<MatchScore> query,

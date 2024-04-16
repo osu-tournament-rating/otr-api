@@ -43,7 +43,7 @@ public class Game : IUpdateableEntity
     /// </summary>
     // TODO: Refactor to "Ruleset"
     [Column("play_mode")]
-    public OsuEnums.Ruleset PlayMode { get; set; }
+    public OsuEnums.Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// The scoring type used for the game
