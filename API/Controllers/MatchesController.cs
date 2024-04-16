@@ -1,18 +1,17 @@
 using API.DTOs;
+using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-// ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class MatchesController(IMatchesService matchesService) : Controller
 {
@@ -125,39 +124,51 @@ public class MatchesController(IMatchesService matchesService) : Controller
         return Ok(mapping);
     }
 
-    [HttpPatch("verification-status/{id:int}")]
+    /// <summary>
+    /// Update the verification status of a match
+    /// </summary>
+    /// <param name="id">Match id</param>
+    /// <param name="patch">JsonPatch data</param>
+    /// <response code="404">If a match matching the given id does not exist</response>
+    /// <response code="400">If JsonPatch data is malformed</response>
+    /// <response code="200">Returns the updated match</response>
+    [HttpPatch("{id:int}/verification-status")]
     [Authorize(Roles = "admin")]
-    [EndpointSummary(
-        "Takes in json patch for verification status, and returns the patched object. The object being patched is a MatchDTO."
-    )]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> EditVerificationStatus(int id,
-        [FromBody]
-        JsonPatchDocument<MatchDTO> patch)
+    public async Task<IActionResult> UpdateVerificationStatusAsync(int id, [FromBody] JsonPatchDocument<MatchDTO> patch)
     {
         MatchDTO? match = await _matchesService.GetAsync(id, false);
-
         if (match is null)
         {
-            return NotFound($"Match with id {id} does not exist");
+            return NotFound();
         }
 
-        //Ensure request is only attempting to perform a replace operation.
-        if (patch.Operations.Any(op => op.op != "replace"))
+        if (!patch.IsReplaceOnly())
         {
-            return BadRequest("This endpoint can only perform replace operations.");
+            return BadRequest();
         }
 
         patch.ApplyTo(match, ModelState);
-
         if (!TryValidateModel(match))
         {
             return BadRequest(ModelState);
         }
 
-        MatchDTO updatedMatch = await _matchesService.UpdateVerificationStatus(id, match.VerificationStatus);
+        if (match.VerificationStatus is null)
+        {
+            return BadRequest();
+        }
 
+        var verifierId = HttpContext.AuthorizedUserIdentity();
+        MatchDTO? updatedMatch = await _matchesService.UpdateVerificationStatusAsync(
+            id,
+            (MatchVerificationStatus)match.VerificationStatus,
+            MatchVerificationSource.MatchVerifier,
+            "Updated manually by an admin",
+            verifierId
+            );
         return Ok(updatedMatch);
     }
 }

@@ -16,7 +16,7 @@ public static class QueryExtensions
         query
             .AsQueryable()
             .Where(x =>
-                x.VerificationStatus == (int)MatchVerificationStatus.Verified
+                x.VerificationStatus == MatchVerificationStatus.Verified
                 && x.IsApiProcessed == true
                 && x.NeedsAutoCheck == false
             );
@@ -52,10 +52,10 @@ public static class QueryExtensions
             );
 
     public static IQueryable<Game> WhereTeamVs(this IQueryable<Game> query) =>
-        query.AsQueryable().Where(x => x.TeamType == (int)OsuEnums.TeamType.TeamVs);
+        query.AsQueryable().Where(x => x.TeamType == OsuEnums.TeamType.TeamVs);
 
     public static IQueryable<Game> WhereHeadToHead(this IQueryable<Game> query) =>
-        query.AsQueryable().Where(x => x.TeamType == (int)OsuEnums.TeamType.HeadToHead);
+        query.AsQueryable().Where(x => x.TeamType == OsuEnums.TeamType.HeadToHead);
 
     public static IQueryable<Game> After(this IQueryable<Game> query, DateTime after) =>
         query.AsQueryable().Where(x => x.StartTime > after);
@@ -74,10 +74,10 @@ public static class QueryExtensions
         return query
             .AsQueryable()
             .Where(x =>
-                (x.Game.Mods != 0 && x.Game.Mods == (int)enabledMods)
+                (x.Game.Mods != OsuEnums.Mods.None && x.Game.Mods == enabledMods)
                 || // Not using NF
                 (x.EnabledMods != null && x.EnabledMods.Value == (int)enabledMods)
-                || (x.Game.Mods != 0 && x.Game.Mods == (int)(enabledMods | OsuEnums.Mods.NoFail))
+                || (x.Game.Mods != OsuEnums.Mods.None && x.Game.Mods == (enabledMods | OsuEnums.Mods.NoFail))
                 || // Using NF
                 (x.EnabledMods != null && x.EnabledMods.Value == (int)(enabledMods | OsuEnums.Mods.NoFail))
             );
@@ -94,7 +94,7 @@ public static class QueryExtensions
             .AsQueryable()
             .Where(x =>
                 x.IsValid != false
-                && x.Game.Match.VerificationStatus == (int)MatchVerificationStatus.Verified
+                && x.Game.Match.VerificationStatus == MatchVerificationStatus.Verified
                 && x.Game.VerificationStatus == (int)GameVerificationStatus.Verified
             );
 
@@ -104,10 +104,10 @@ public static class QueryExtensions
     /// <param name="query"></param>
     /// <returns></returns>
     public static IQueryable<MatchScore> WhereHeadToHead(this IQueryable<MatchScore> query) =>
-        query.AsQueryable().Where(x => x.Game.TeamType == (int)OsuEnums.TeamType.HeadToHead);
+        query.AsQueryable().Where(x => x.Game.TeamType == OsuEnums.TeamType.HeadToHead);
 
     public static IQueryable<MatchScore> WhereNotHeadToHead(this IQueryable<MatchScore> query) =>
-        query.AsQueryable().Where(x => x.Game.TeamType != (int)OsuEnums.TeamType.HeadToHead);
+        query.AsQueryable().Where(x => x.Game.TeamType != OsuEnums.TeamType.HeadToHead);
 
     /// <summary>
     ///  Selects all TeamVs match scores
@@ -115,7 +115,7 @@ public static class QueryExtensions
     /// <param name="query"></param>
     /// <returns></returns>
     public static IQueryable<MatchScore> WhereTeamVs(this IQueryable<MatchScore> query) =>
-        query.AsQueryable().Where(x => x.Game.TeamType == (int)OsuEnums.TeamType.TeamVs);
+        query.AsQueryable().Where(x => x.Game.TeamType == OsuEnums.TeamType.TeamVs);
 
     /// <summary>
     ///  Selects all match scores, other than the provided player's, that are on the opposite team as the provided player.
@@ -146,7 +146,7 @@ public static class QueryExtensions
             .Where(x =>
                 x.Game.MatchScores.Any(y => y.Player.OsuId == osuPlayerId)
                 && x.Player.OsuId != osuPlayerId
-                && x.Game.TeamType != (int)OsuEnums.TeamType.HeadToHead
+                && x.Game.TeamType != OsuEnums.TeamType.HeadToHead
                 && x.Team == x.Game.MatchScores.First(y => y.Player.OsuId == osuPlayerId).Team
             );
 
@@ -157,13 +157,10 @@ public static class QueryExtensions
     ) => query.AsQueryable().Where(x => x.Game.StartTime > dateMin && x.Game.StartTime < dateMax);
 
     /// <summary>
-    ///  Selects all MatchScores for a given playMode (e.g. mania)
+    /// Selects all MatchScores for a given ruleset (e.g. mania)
     /// </summary>
-    /// <param name="query"></param>
-    /// <param name="mode"></param>
-    /// <returns></returns>
-    public static IQueryable<MatchScore> WhereMode(this IQueryable<MatchScore> query, int mode) =>
-        query.AsQueryable().Where(x => x.Game.PlayMode == mode);
+    public static IQueryable<MatchScore> WhereRuleset(this IQueryable<MatchScore> query, OsuEnums.Ruleset ruleset) =>
+        query.AsQueryable().Where(x => x.Game.Ruleset == ruleset);
 
     public static IQueryable<MatchScore> WhereOsuPlayerId(
         this IQueryable<MatchScore> query,
@@ -177,8 +174,8 @@ public static class QueryExtensions
         query.AsQueryable().Where(x => x.Game.StartTime > after);
 
     // Rating
-    public static IQueryable<BaseStats> WhereMode(this IQueryable<BaseStats> query, int mode) =>
-        query.AsQueryable().Where(x => x.Mode == mode);
+    public static IQueryable<BaseStats> WhereRuleset(this IQueryable<BaseStats> query, OsuEnums.Ruleset ruleset) =>
+        query.AsQueryable().Where(x => x.Mode == ruleset);
 
     public static IQueryable<BaseStats> WhereOsuPlayerId(
         this IQueryable<BaseStats> query,

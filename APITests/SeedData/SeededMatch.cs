@@ -1,4 +1,5 @@
 using API.Entities;
+using API.Enums;
 
 namespace APITests.SeedData;
 
@@ -30,8 +31,8 @@ public static class SeededMatch
             Updated = new DateTime(2023, 11, 04),
             EndTime = new DateTime(2022, 01, 23),
             VerificationInfo = null,
-            VerificationSource = 0,
-            VerificationStatus = 0,
+            VerificationSource = MatchVerificationSource.System,
+            VerificationStatus = MatchVerificationStatus.Verified,
             SubmitterUserId = 21,
             VerifierUserId = null,
             TournamentId = tournamentId,

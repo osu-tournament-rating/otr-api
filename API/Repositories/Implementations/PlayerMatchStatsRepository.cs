@@ -79,7 +79,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             // Filter for player, verified, mode, date range
             .Where(ms =>
                 ms.PlayerId == playerId
-                && ms.Game.Match.VerificationStatus == (int)MatchVerificationStatus.Verified
+                && ms.Game.Match.VerificationStatus == MatchVerificationStatus.Verified
                 && ms.Game.Match.Tournament.Mode == mode
                 && ms.Game.Match.StartTime >= dateMin
                 && ms.Game.Match.EndTime <= dateMax)
@@ -87,7 +87,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .Select(ms => new
             {
                 // Match score mods populated for free mod, else game (lobby) mods
-                ModType = (OsuEnums.Mods?)ms.EnabledMods ?? (OsuEnums.Mods)ms.Game.Mods,
+                ModType = (OsuEnums.Mods?)ms.EnabledMods ?? ms.Game.Mods,
                 ms.Score,
                 PlayerWon = ms.Game.WinRecord.Winners.Contains(playerId)
             })

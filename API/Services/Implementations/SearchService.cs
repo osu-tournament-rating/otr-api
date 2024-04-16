@@ -40,7 +40,7 @@ public class SearchService(
         return players.Select(player =>
         {
             BaseStats? rating = player.Ratings
-                .FirstOrDefault(r => r.Mode == (int)(player.Ruleset ?? OsuEnums.Ruleset.Standard));
+                .FirstOrDefault(r => r.Mode == (player.Ruleset ?? OsuEnums.Ruleset.Standard));
             return new PlayerSearchResultDTO
             {
                 Id = player.Id,
