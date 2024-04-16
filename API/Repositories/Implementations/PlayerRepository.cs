@@ -99,7 +99,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
 
         Player? p = await _context
             .Players.Include(x =>
-                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == (OsuEnums.Ruleset)mode)
+                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.Ruleset == (OsuEnums.Ruleset)mode)
             )
             .ThenInclude(x => x.Game)
             .ThenInclude(x => x.Match)
