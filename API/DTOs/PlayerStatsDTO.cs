@@ -33,15 +33,15 @@ public class PlayerStatsDTO
     /// <summary>
     /// List of frequencies of the player's teammates
     /// </summary>
-    public IEnumerable<PlayerFrequencyDTO> FrequentTeammates { get; init; }
+    public IEnumerable<PlayerFrequencyDTO> FrequentTeammates { get; init; } = new List<PlayerFrequencyDTO>();
 
     /// <summary>
     /// List of frequencies of the player's opponents
     /// </summary>
-    public IEnumerable<PlayerFrequencyDTO> FrequentOpponents { get; init; }
+    public IEnumerable<PlayerFrequencyDTO> FrequentOpponents { get; init; } = new List<PlayerFrequencyDTO>();
 
     /// <summary>
     /// Rating chart for the player
     /// </summary>
-    public PlayerRatingChartDTO RatingChart { get; init; }
+    public PlayerRatingChartDTO RatingChart { get; init; } = new();
 }
