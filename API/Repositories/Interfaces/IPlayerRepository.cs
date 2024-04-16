@@ -12,6 +12,7 @@ public interface IPlayerRepository : IRepository<Player>
     /// <param name="username"></param>
     /// <returns></returns>
     Task<IEnumerable<Player>> SearchAsync(string username);
+
     /// <summary>
     /// Returns a player, if available, that matches the given username. Case insensitive
     /// </summary>

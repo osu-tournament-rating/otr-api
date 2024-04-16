@@ -87,7 +87,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .Select(ms => new
             {
                 // Match score mods populated for free mod, else game (lobby) mods
-                ModType = (OsuEnums.Mods?)ms.EnabledMods ?? (OsuEnums.Mods)ms.Game.Mods,
+                ModType = (OsuEnums.Mods?)ms.EnabledMods ?? ms.Game.Mods,
                 ms.Score,
                 PlayerWon = ms.Game.WinRecord.Winners.Contains(playerId)
             })

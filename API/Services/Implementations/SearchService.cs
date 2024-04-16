@@ -1,7 +1,9 @@
 using API.DTOs;
+using API.Entities;
+using API.Osu;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
-using API.Utilities;
+using AutoMapper;
 
 namespace API.Services.Implementations;
 
@@ -9,45 +11,45 @@ public class SearchService(
     ITournamentsRepository tournamentsRepository,
     IMatchesRepository matchesRepository,
     IPlayerRepository playerRepository,
-    IUrlHelperService urlHelperService
+    IMapper mapper
     ) : ISearchService
 {
     public async Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey) =>
-        new SearchResponseCollectionDTO
+        new()
         {
             Tournaments = (await SearchTournamentsByNameAsync(searchKey)).ToList(),
             Matches = (await SearchMatchesByNameAsync(searchKey)).ToList(),
             Players = (await SearchPlayersByNameAsync(searchKey)).ToList()
         };
 
-    private async Task<IEnumerable<SearchResponseDTO>> SearchTournamentsByNameAsync(string tournamentName)
+    private async Task<IEnumerable<TournamentSearchResultDTO>> SearchTournamentsByNameAsync(string tournamentName)
     {
-        var tournaments = (await tournamentsRepository.SearchAsync(tournamentName)).ToList();
-        return tournaments.Select(tournament => new SearchResponseDTO
-        {
-            Text = tournament.Name,
-            Url = urlHelperService.Action(CreatedAtRouteValuesHelper.GetTournament(tournament.Id))
-        });
+        IEnumerable<Tournament> tournaments = await tournamentsRepository.SearchAsync(tournamentName);
+        return tournaments.Select(mapper.Map<TournamentSearchResultDTO>);
     }
 
-    private async Task<IEnumerable<SearchResponseDTO>> SearchMatchesByNameAsync(string matchName)
+    private async Task<IEnumerable<MatchSearchResultDTO>> SearchMatchesByNameAsync(string matchName)
     {
         var matches = (await matchesRepository.SearchAsync(matchName)).ToList();
-        return matches.Select(match => new SearchResponseDTO
-        {
-            Text = match.Name ?? match.MatchId.ToString(),
-            Url = urlHelperService.Action(CreatedAtRouteValuesHelper.GetMatch(match.Id))
-        });
+        return matches.Select(mapper.Map<MatchSearchResultDTO>);
     }
 
-    private async Task<IEnumerable<SearchResponseDTO>> SearchPlayersByNameAsync(string username)
+    private async Task<IEnumerable<PlayerSearchResultDTO>> SearchPlayersByNameAsync(string username)
     {
         var players = (await playerRepository.SearchAsync(username)).ToList();
-        return players.Select(player => new SearchResponseDTO
+        return players.Select(player =>
         {
-            Text = player.Username ?? "<Unknown>",
-            Url = urlHelperService.Action(CreatedAtRouteValuesHelper.GetPlayer(player.Id)),
-            Thumbnail = $"a.ppy.sh/{player.OsuId}"
+            BaseStats? rating = player.Ratings
+                .FirstOrDefault(r => r.Mode == (player.Ruleset ?? OsuEnums.Ruleset.Standard));
+            return new PlayerSearchResultDTO
+            {
+                Id = player.Id,
+                OsuId = player.OsuId,
+                Rating = rating?.Rating,
+                GlobalRank = rating?.GlobalRank,
+                Username = player.Username,
+                Thumbnail = $"a.ppy.sh/{player.OsuId}"
+            };
         });
     }
 }

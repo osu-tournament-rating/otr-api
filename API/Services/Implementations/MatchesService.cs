@@ -160,9 +160,11 @@ public class MatchesService(
         return _mapper.Map<MatchDTO?>(match);
     }
 
-    public async Task<MatchDTO> UpdateVerificationStatus(int id, int? verificationStatus)
-    {
-        Match match = await _matchesRepository.UpdateVerificationStatus(id, verificationStatus);
-        return _mapper.Map<MatchDTO>(match);
-    }
+    public async Task<MatchDTO?> UpdateVerificationStatusAsync(int id,
+        MatchVerificationStatus verificationStatus,
+        MatchVerificationSource verificationSource,
+        string? info = null,
+        int? verifierId = null) =>
+        _mapper.Map<MatchDTO?>(await _matchesRepository
+            .UpdateVerificationStatusAsync(id, verificationStatus, verificationSource, info, verifierId));
 }

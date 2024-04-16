@@ -60,7 +60,10 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return await _context.Players.AsNoTracking().ToListAsync();
     }
 
-    public async Task<IEnumerable<Player>> SearchAsync(string username) => await SearchQuery(username, true).ToListAsync();
+    public async Task<IEnumerable<Player>> SearchAsync(string username) =>
+        await SearchQuery(username, true)
+            .Include(p => p.Ratings)
+            .ToListAsync();
 
     public async Task<Player?> GetAsync(string username)
     {
@@ -84,6 +87,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return await CreateAsync(new Player { OsuId = osuId });
     }
 
+    // TODO: Refactor param "mode" to use OsuEnums.Ruleset
     public async Task<Player?> GetAsync(long osuId, bool eagerLoad, int mode = 0, int offsetDays = -1)
     {
         if (!eagerLoad)
@@ -95,11 +99,11 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
 
         Player? p = await _context
             .Players.Include(x =>
-                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == mode)
+                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.Ruleset == (OsuEnums.Ruleset)mode)
             )
             .ThenInclude(x => x.Game)
             .ThenInclude(x => x.Match)
-            .Include(x => x.Ratings.Where(y => y.Mode == mode))
+            .Include(x => x.Ratings.Where(y => y.Mode == (OsuEnums.Ruleset)mode))
             .Include(x => x.User)
             .WhereOsuId(osuId)
             .FirstOrDefaultAsync();
@@ -116,7 +120,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
     public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Ruleset ruleset) => await (
             from p in _context.Players
             join r in _context.BaseStats on p.Id equals r.PlayerId
-            where r.Mode == (int)ruleset
+            where r.Mode == ruleset
             orderby r.Rating descending
             select new PlayerRatingDTO
             {
