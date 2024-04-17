@@ -43,7 +43,7 @@ public class MatchesRepository(
         await MatchBaseQuery(onlyIncludeFiltered).Where(x => ids.Contains(x.Id)).ToListAsync();
 
     public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches) =>
-        return await MatchBaseQuery(filterInvalidMatches).Select(x => x.Id).ToListAsync();
+        await MatchBaseQuery(filterInvalidMatches).Select(x => x.Id).ToListAsync();
 
     public async Task<Match?> GetByMatchIdAsync(long matchId) =>
         await _context
