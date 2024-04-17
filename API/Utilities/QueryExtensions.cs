@@ -16,7 +16,7 @@ public static class QueryExtensions
         query
             .AsQueryable()
             .Where(x =>
-                x.VerificationStatus == (int)MatchVerificationStatus.Verified
+                x.VerificationStatus == MatchVerificationStatus.Verified
                 && x.IsApiProcessed == true
                 && x.NeedsAutoCheck == false
             );
@@ -94,7 +94,7 @@ public static class QueryExtensions
             .AsQueryable()
             .Where(x =>
                 x.IsValid != false
-                && x.Game.Match.VerificationStatus == (int)MatchVerificationStatus.Verified
+                && x.Game.Match.VerificationStatus == MatchVerificationStatus.Verified
                 && x.Game.VerificationStatus == (int)GameVerificationStatus.Verified
             );
 
