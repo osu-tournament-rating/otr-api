@@ -14,7 +14,7 @@ public enum TeamType
     /// <summary>
     /// Free for all (Tag format)
     /// </summary>
-    /// <remarks>All players play tag-team on the same beatmap</remarks>
+    /// <remarks>All players play tag on the same beatmap</remarks>
     TagCoop = 1,
 
     /// <summary>
