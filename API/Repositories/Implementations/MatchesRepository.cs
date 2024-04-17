@@ -42,11 +42,8 @@ public class MatchesRepository(
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered) =>
         await MatchBaseQuery(onlyIncludeFiltered).Where(x => ids.Contains(x.Id)).ToListAsync();
 
-    public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches)
-    {
-        IQueryable<Match> query = MatchBaseQuery(filterInvalidMatches);
-        return await query.Select(x => x.Id).ToListAsync();
-    }
+    public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches) =>
+        return await MatchBaseQuery(filterInvalidMatches).Select(x => x.Id).ToListAsync();
 
     public async Task<Match?> GetByMatchIdAsync(long matchId) =>
         await _context
