@@ -99,8 +99,8 @@ public class OsuMatchDataWorker(
         // Match verification checks
         if (!MatchAutomationChecks.PassesAllChecks(match))
         {
-            match.VerificationStatus = (int)MatchVerificationStatus.Rejected;
-            match.VerificationSource = (int)MatchVerificationSource.System;
+            match.VerificationStatus = MatchVerificationStatus.Rejected;
+            match.VerificationSource = MatchVerificationSource.System;
             match.VerificationInfo = "Failed automation checks";
 
             match.NeedsAutoCheck = false;
@@ -108,16 +108,8 @@ public class OsuMatchDataWorker(
         }
         else
         {
-            if (match.VerifiedBy is not null)
-            {
-                match.VerificationStatus = (int)MatchVerificationStatus.Verified;
-            }
-            else
-            {
-                match.VerificationStatus = (int)MatchVerificationStatus.PreVerified;
-            }
-
-            match.VerificationSource = (int)MatchVerificationSource.System;
+            match.VerificationStatus = match.VerifiedBy is not null ? MatchVerificationStatus.Verified : MatchVerificationStatus.PreVerified;
+            match.VerificationSource = MatchVerificationSource.System;
             match.VerificationInfo = null;
         }
 
@@ -137,7 +129,6 @@ public class OsuMatchDataWorker(
                     {
                         // Avoid unnecessary db calls
                         score.IsValid = false;
-                        // await matchScoresRepository.UpdateAsync(score);
                     }
 
                     logger.LogDebug(
@@ -151,7 +142,6 @@ public class OsuMatchDataWorker(
                     if (score.IsValid != true)
                     {
                         score.IsValid = true;
-                        // await matchScoresRepository.UpdateAsync(score);
                     }
 
                     logger.LogTrace(
@@ -166,8 +156,8 @@ public class OsuMatchDataWorker(
 
             if (rejectionReason is not null)
             {
-                game.VerificationStatus = (int)GameVerificationStatus.Rejected;
-                game.RejectionReason = (int)rejectionReason;
+                game.VerificationStatus = GameVerificationStatus.Rejected;
+                game.RejectionReason = rejectionReason;
                 logger.LogInformation("Game {Game} failed automation checks with reason {Reason}",
                     game.GameId, rejectionReason.ToString());
             }
@@ -175,24 +165,15 @@ public class OsuMatchDataWorker(
             {
                 // Game has passed automation checks
                 game.RejectionReason = null;
-                if (match.VerificationStatus == (int)MatchVerificationStatus.Verified)
-                {
-                    game.VerificationStatus = (int)GameVerificationStatus.Verified;
-                }
-                else
-                {
-                    game.VerificationStatus = (int)GameVerificationStatus.PreVerified;
-                }
-
+                game.VerificationStatus = match.VerificationStatus == MatchVerificationStatus.Verified ? GameVerificationStatus.Verified : GameVerificationStatus.PreVerified;
 
                 logger.LogDebug(
                     "Game {Game} passed automation checks and is marked as {Status}",
                     game.GameId,
-                    (GameVerificationStatus)game.VerificationStatus
+                    game.VerificationStatus.ToString()
                 );
             }
 
-            // await gamesRepository.UpdateAsync(game);
             gamesRepository.MarkUpdated(game);
         }
 
@@ -252,7 +233,7 @@ public class OsuMatchDataWorker(
         }
 
         await matchesRepository.UpdateVerificationStatusAsync(
-            osuMatchId,
+            existingEntity.Id,
             MatchVerificationStatus.Failure,
             MatchVerificationSource.System,
             "Failed to fetch match from osu! API"

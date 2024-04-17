@@ -1,6 +1,6 @@
 using API.DTOs;
 using API.Entities;
-using API.Osu;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -18,7 +18,7 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
     public async Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync() =>
         _mapper.Map<IEnumerable<PlayerRanksDTO>>(await _playerRepository.GetAllAsync());
 
-    public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Ruleset ruleset) =>
+    public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset) =>
         _mapper.Map<IEnumerable<PlayerRatingDTO>>(await _playerRepository.GetTopRatingsAsync(n, ruleset));
 
     public async Task<string?> GetUsernameAsync(long osuId) =>

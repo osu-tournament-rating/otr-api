@@ -1,4 +1,5 @@
 using API.Configurations;
+using API.Osu.Enums;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OsuSharp.Domain;
@@ -34,7 +35,7 @@ public class OsuApiUser
     /// <summary>
     /// Default ruleset of the user
     /// </summary>
-    public OsuEnums.Ruleset Ruleset { get; init; }
+    public Ruleset Ruleset { get; init; }
 }
 
 public class OsuApiService : IOsuApiService
@@ -143,7 +144,7 @@ public class OsuApiService : IOsuApiService
             beatmapId
         );
 
-    public async Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Ruleset ruleset, string reason) =>
+    public async Task<OsuApiUser?> GetUserAsync(long userId, Ruleset ruleset, string reason) =>
         await ExecuteApiCallAsync(
             async () =>
             {
@@ -167,7 +168,7 @@ public class OsuApiService : IOsuApiService
                     Username = response.Username,
                     Rank = (int?)response.Statistics.GlobalRank,
                     Country = response.Country.Code,
-                    Ruleset = (OsuEnums.Ruleset)response.GameMode
+                    Ruleset = (Ruleset)response.GameMode
                 };
             },
             userId

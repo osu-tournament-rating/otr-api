@@ -1,5 +1,6 @@
 using API.Entities;
 using API.Enums;
+using API.Osu.Enums;
 using API.Utilities;
 
 namespace API.Osu.AutomationChecks;
@@ -78,7 +79,7 @@ public static class GameAutomationChecks
             return false;
         }
 
-        var teamVs = game.TeamTypeEnum == OsuEnums.TeamType.TeamVs;
+        var teamVs = game.TeamType == TeamType.TeamVs;
         if (teamSize == 1 && !teamVs)
         {
             var countPlayers = game.MatchScores.Count;
@@ -104,9 +105,9 @@ public static class GameAutomationChecks
 
         // teamSize is greater than 1 or is TeamVS
 
-        var countRed = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Red, Score: > AutomationChecksUtils.MinimumScore });
-        var countBlue = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Blue, Score: > AutomationChecksUtils.MinimumScore });
-        var countNoTeam = game.MatchScores.Count(s => s.Team == (int)OsuEnums.Team.NoTeam);
+        var countRed = game.MatchScores.Count(s => s is { Team: (int)Team.Red, Score: > AutomationChecksUtils.MinimumScore });
+        var countBlue = game.MatchScores.Count(s => s is { Team: (int)Team.Blue, Score: > AutomationChecksUtils.MinimumScore });
+        var countNoTeam = game.MatchScores.Count(s => s.Team == (int)Team.NoTeam);
 
         if (countNoTeam > 0)
         {
@@ -141,8 +142,8 @@ public static class GameAutomationChecks
              *
              * - After referees are filtered out, the teams are perfectly even.
              */
-            var refCountRed = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Red, Score: <= AutomationChecksUtils.MinimumScore });
-            var refCountBlue = game.MatchScores.Count(s => s is { Team: (int)OsuEnums.Team.Blue, Score: <= AutomationChecksUtils.MinimumScore });
+            var refCountRed = game.MatchScores.Count(s => s is { Team: (int)Team.Red, Score: <= AutomationChecksUtils.MinimumScore });
+            var refCountBlue = game.MatchScores.Count(s => s is { Team: (int)Team.Blue, Score: <= AutomationChecksUtils.MinimumScore });
 
             hasReferee = (countRed - refCountRed) == (countBlue - refCountBlue);
 
@@ -161,23 +162,23 @@ public static class GameAutomationChecks
             }
         }
 
-        if (IsMismatchedTeamSize(countRed, countBlue, tournament.TeamSize, hasReferee))
+        if (!IsMismatchedTeamSize(countRed, countBlue, tournament.TeamSize, hasReferee))
         {
-            s_logger.Information(
-                "{Prefix} Match {MatchId} has an unexpected team configuration: [Expected: {Expected}] [Red: {Red} | Blue: {Blue}], can't verify game {GameId} (Referee present: {HasReferee})",
-                LogPrefix,
-                game.Match.MatchId,
-                tournament.TeamSize,
-                countRed,
-                countBlue,
-                game.GameId,
-                hasReferee
-            );
-
-            return false;
+            return true;
         }
 
-        return true;
+        s_logger.Information(
+            "{Prefix} Match {MatchId} has an unexpected team configuration: [Expected: {Expected}] [Red: {Red} | Blue: {Blue}], can't verify game {GameId} (Referee present: {HasReferee})",
+            LogPrefix,
+            game.Match.MatchId,
+            tournament.TeamSize,
+            countRed,
+            countBlue,
+            game.GameId,
+            hasReferee
+        );
+
+        return false;
     }
 
     private static bool IsMismatchedTeamSize(int red, int blue, int expectedSize, bool hasReferee)
@@ -199,12 +200,12 @@ public static class GameAutomationChecks
     public static bool PassesRulesetCheck(Game game)
     {
         Tournament tournament = game.Match.Tournament;
-        var tournamentRuleset = tournament.Mode;
+        var tournamentRuleset = (Ruleset)tournament.Mode;
 
-        if (tournamentRuleset is < 0 or > 3)
+        if (!Enum.GetValues<Ruleset>().Contains(tournamentRuleset))
         {
             s_logger.Information(
-                "{Prefix} Tournament {TournamentId} has an invalid game mode: {Mode}, can't verify game {GameId}",
+                "{Prefix} Tournament {TournamentId} has an invalid ruleset: {Mode}, can't verify game {GameId}",
                 LogPrefix,
                 tournament.Id,
                 tournament.Mode,
@@ -214,7 +215,7 @@ public static class GameAutomationChecks
             return false;
         }
 
-        if (tournamentRuleset == game.PlayMode)
+        if (tournamentRuleset == game.Ruleset)
         {
             return true;
         }
@@ -225,7 +226,7 @@ public static class GameAutomationChecks
             tournament.Id,
             game.GameId,
             tournament.Mode,
-            game.PlayMode
+            game.Ruleset
         );
 
         return false;
@@ -233,7 +234,7 @@ public static class GameAutomationChecks
 
     public static bool PassesScoringTypeCheck(Game game)
     {
-        if (game.ScoringType == (int)OsuEnums.ScoringType.ScoreV2)
+        if (game.ScoringType == ScoringType.ScoreV2)
         {
             return true;
         }
@@ -251,7 +252,7 @@ public static class GameAutomationChecks
     public static bool PassesModsCheck(Game game)
     {
         // If the game features invalid mods, it fails the check
-        if (AutomationConstants.UnallowedMods.Any(unallowedMod => game.ModsEnum.HasFlag(unallowedMod)))
+        if (AutomationConstants.UnallowedMods.Any(unallowedMod => game.Mods.HasFlag(unallowedMod)))
         {
             return false;
         }
@@ -276,38 +277,33 @@ public static class GameAutomationChecks
 
     public static bool PassesTeamTypeCheck(Game game)
     {
-        OsuEnums.TeamType teamType = game.TeamTypeEnum;
-        if (teamType is OsuEnums.TeamType.TagTeamVs or OsuEnums.TeamType.TagCoop)
+        switch (game.TeamType)
         {
-            s_logger.Information(
-                "{Prefix} Match {MatchId} has a tag team type, can't verify game {GameId}",
-                LogPrefix,
-                game.Match.MatchId,
-                game.GameId
-            );
-            return false;
-        }
-
-        // Ensure team size is valid
-        if (teamType == OsuEnums.TeamType.HeadToHead)
-        {
-            if (game.Match.Tournament.TeamSize != 1)
-            {
+            case TeamType.TagTeamVs or TeamType.TagCoop:
                 s_logger.Information(
-                    "{Prefix} Match {MatchId} has a HeadToHead team type, but team size is not 1, can't verify game {GameId}",
+                    "{Prefix} Match {MatchId} has a tag team type, can't verify game {GameId}",
                     LogPrefix,
                     game.Match.MatchId,
                     game.GameId
                 );
-
                 return false;
-            }
+            case TeamType.TeamVs:
+                return true;
+        }
 
+        if (game.TeamType is TeamType.HeadToHead && game.Match.Tournament.TeamSize == 1)
+        {
             return true;
         }
 
-        // TeamVs can be used for any team size
-        return true;
+        s_logger.Information(
+            "{Prefix} Match {MatchId} has a HeadToHead team type, but team size is not 1, can't verify game {GameId}",
+            LogPrefix,
+            game.Match.MatchId,
+            game.GameId
+        );
+
+        return false;
     }
 
     public static bool PassesScoreSanityCheck(Game game)
@@ -319,6 +315,5 @@ public static class GameAutomationChecks
 
         s_logger.Warning("Game {GameId} has no scores, can't verify", game.GameId);
         return false;
-
     }
 }

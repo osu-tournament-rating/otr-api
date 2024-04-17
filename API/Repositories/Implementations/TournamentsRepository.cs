@@ -68,7 +68,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
                 // Calc average match cost
                 MatchCost = t.Matches
                     // Filter invalid matches (Above filter uses Any, so invalid matches can still be included)
-                    .Where(m => m.VerificationStatus == (int)MatchVerificationStatus.Verified)
+                    .Where(m => m.VerificationStatus == MatchVerificationStatus.Verified)
                     // Filter for ratings belonging to target player
                     .SelectMany(m => m.RatingStats)
                     .Where(mrs => mrs.PlayerId == playerId)
@@ -124,7 +124,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
                     m.StartTime >= dateMin
                     && m.StartTime <= dateMax
                     // Verified
-                    && m.VerificationStatus == (int)MatchVerificationStatus.Verified
+                    && m.VerificationStatus == MatchVerificationStatus.Verified
                     // Participated in by player
                     && m.RatingStats.Any(stat => stat.PlayerId == playerId)
                 ));

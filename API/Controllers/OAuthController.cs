@@ -1,12 +1,9 @@
 using API.DTOs;
-using API.Entities;
 using API.Handlers.Interfaces;
-using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;

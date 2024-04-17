@@ -175,16 +175,17 @@ public class PlayerStatsService(
             dateMax.Value
         );
 
-        return new PlayerStatsDTO(
-            playerInfo,
-            baseStats,
-            matchStats,
-            modStats,
-            tournamentStats,
-            ratingChart,
-            frequentTeammates,
-            frequentOpponents
-        );
+        return new PlayerStatsDTO
+        {
+            PlayerInfo = playerInfo,
+            GeneralStats = baseStats,
+            MatchStats = matchStats,
+            ModStats = modStats,
+            TournamentStats = tournamentStats,
+            RatingChart = ratingChart,
+            FrequentTeammates = frequentTeammates,
+            FrequentOpponents = frequentOpponents
+        };
     }
 
     public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody)
@@ -302,12 +303,12 @@ public class PlayerStatsService(
         dto.RankProgress = new RankProgressDTO
         {
             CurrentTier = RatingUtils.GetTier(dto.Rating),
-            CurrentSubTier = RatingUtils.GetCurrentSubTier(dto.Rating),
-            RatingForNextTier = RatingUtils.GetRatingDeltaForNextTier(dto.Rating),
-            RatingForNextMajorTier = RatingUtils.GetRatingDeltaForNextMajorTier(dto.Rating),
+            CurrentSubTier = RatingUtils.GetSubTier(dto.Rating),
+            RatingForNextTier = RatingUtils.GetNextTierRatingDelta(dto.Rating),
+            RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(dto.Rating),
             NextMajorTier = RatingUtils.GetNextMajorTier(dto.Rating),
-            SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(dto.Rating),
-            MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(dto.Rating)
+            SubTierFillPercentage = RatingUtils.GetNextTierFillPercentage(dto.Rating),
+            MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(dto.Rating)
         };
 
         return dto;

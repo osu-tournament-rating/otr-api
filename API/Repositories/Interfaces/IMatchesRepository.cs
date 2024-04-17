@@ -6,7 +6,7 @@ namespace API.Repositories.Interfaces;
 
 public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
 {
-    Task<Match> GetAsync(int id, bool filterInvalidMatches = true);
+    Task<Match?> GetAsync(int id, bool filterInvalidMatches = true);
     Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered);
     Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds);
     Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches);
@@ -15,12 +15,22 @@ public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
     Task<IList<Match>> GetMatchesNeedingAutoCheckAsync(int limit = 10000);
     Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
     Task<Match?> GetFirstMatchNeedingAutoCheckAsync();
-    Task<Match> UpdateVerificationStatus(int id, int? verificationStatus);
-    Task<int> UpdateVerificationStatusAsync(
-        long matchId,
+
+    /// <summary>
+    /// Updates the verification status of a match for the given id
+    /// </summary>
+    /// <param name="id">Id of the match</param>
+    /// <param name="verificationStatus">New verification status to assign</param>
+    /// <param name="verificationSource">New verification source to assign</param>
+    /// <param name="info">Optional verification info</param>
+    /// <param name="verifierId">Optional user id to attribute the update to</param>
+    /// <returns>An updated match, or null if not found</returns>
+    Task<Match?> UpdateVerificationStatusAsync(
+        int id,
         MatchVerificationStatus status,
         MatchVerificationSource source,
-        string? info = null
+        string? info = null,
+        int? verifierId = null
     );
     Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, int mode, DateTime before, DateTime after);
     Task UpdateAsApiProcessed(Match match);

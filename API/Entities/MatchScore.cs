@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using API.Entities.Interfaces;
-using API.Osu;
+using API.Osu.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Entities;
@@ -70,13 +69,13 @@ public class MatchScore
     public virtual Player Player { get; set; } = null!;
 
     [NotMapped]
-    public OsuEnums.Mods? EnabledModsEnum
+    public Mods? EnabledModsEnum
     {
         get
         {
             if (EnabledMods != null)
             {
-                return (OsuEnums.Mods)EnabledMods;
+                return (Mods)EnabledMods;
             }
 
             return null;

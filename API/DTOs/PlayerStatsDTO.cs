@@ -3,54 +3,45 @@ namespace API.DTOs;
 /// <summary>
 /// Represents a collection of statistics for a player
 /// </summary>
-public class PlayerStatsDTO(
-    PlayerInfoDTO? playerInfo,
-    BaseStatsDTO? generalStats,
-    AggregatePlayerMatchStatsDTO? matchStats,
-    PlayerModStatsDTO? modStats,
-    PlayerTournamentStatsDTO? tournamentStats,
-    PlayerRatingChartDTO ratingChart,
-    IEnumerable<PlayerFrequencyDTO> frequentTeammates,
-    IEnumerable<PlayerFrequencyDTO> frequentOpponents
-    )
+public class PlayerStatsDTO
 {
     /// <summary>
     /// Player info
     /// </summary>
-    public PlayerInfoDTO? PlayerInfo { get; set; } = playerInfo;
+    public PlayerInfoDTO? PlayerInfo { get; init; }
 
     /// <summary>
-    /// General stats for the player
+    /// Base stats for the player
     /// </summary>
-    public BaseStatsDTO? GeneralStats { get; } = generalStats;
+    public BaseStatsDTO? GeneralStats { get; init; }
 
     /// <summary>
     /// Match stats for the player
     /// </summary>
-    public AggregatePlayerMatchStatsDTO? MatchStats { get; } = matchStats;
+    public AggregatePlayerMatchStatsDTO? MatchStats { get; init; }
 
     /// <summary>
     /// Mod stats for the player
     /// </summary>
-    public PlayerModStatsDTO? ModStats { get; } = modStats;
+    public PlayerModStatsDTO? ModStats { get; init; }
 
     /// <summary>
     /// Tournament participation and performance stats for the player
     /// </summary>
-    public PlayerTournamentStatsDTO? TournamentStats { get; } = tournamentStats;
+    public PlayerTournamentStatsDTO? TournamentStats { get; init; }
 
     /// <summary>
     /// List of frequencies of the player's teammates
     /// </summary>
-    public IEnumerable<PlayerFrequencyDTO> FrequentTeammates { get; } = frequentTeammates;
+    public IEnumerable<PlayerFrequencyDTO> FrequentTeammates { get; init; } = new List<PlayerFrequencyDTO>();
 
     /// <summary>
     /// List of frequencies of the player's opponents
     /// </summary>
-    public IEnumerable<PlayerFrequencyDTO> FrequentOpponents { get; } = frequentOpponents;
+    public IEnumerable<PlayerFrequencyDTO> FrequentOpponents { get; init; } = new List<PlayerFrequencyDTO>();
 
     /// <summary>
     /// Rating chart for the player
     /// </summary>
-    public PlayerRatingChartDTO RatingChart { get; } = ratingChart;
+    public PlayerRatingChartDTO RatingChart { get; init; } = new();
 }

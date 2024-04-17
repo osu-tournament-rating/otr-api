@@ -1,6 +1,6 @@
 using API.Configurations;
 using API.Entities;
-using API.Osu;
+using API.Osu.Enums;
 using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
 using Microsoft.Extensions.Options;
@@ -53,7 +53,7 @@ public class OsuPlayerDataWorker(
                 {
                     // Fetch data for all rulesets and update accordingly
                     var updatedOnce = false;
-                    foreach (OsuEnums.Ruleset ruleset in Enum.GetValues<OsuEnums.Ruleset>())
+                    foreach (Ruleset ruleset in Enum.GetValues<Ruleset>())
                     {
                         OsuApiUser? apiResult = await apiService.GetUserAsync(
                             player.OsuId,
@@ -84,10 +84,10 @@ public class OsuPlayerDataWorker(
                         // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
                         switch (ruleset)
                         {
-                            case OsuEnums.Ruleset.Standard: player.RankStandard = apiResult.Rank; break;
-                            case OsuEnums.Ruleset.Taiko: player.RankTaiko = apiResult.Rank; break;
-                            case OsuEnums.Ruleset.Catch: player.RankCatch = apiResult.Rank; break;
-                            case OsuEnums.Ruleset.Mania: player.RankMania = apiResult.Rank; break;
+                            case Ruleset.Standard: player.RankStandard = apiResult.Rank; break;
+                            case Ruleset.Taiko: player.RankTaiko = apiResult.Rank; break;
+                            case Ruleset.Catch: player.RankCatch = apiResult.Rank; break;
+                            case Ruleset.Mania: player.RankMania = apiResult.Rank; break;
                         }
                     }
 

@@ -1,4 +1,6 @@
 using API.Entities;
+using API.Enums;
+using API.Osu.Enums;
 
 namespace APITests.SeedData;
 
@@ -25,14 +27,14 @@ public static class SeededGame
             Id = s_rand.Next(),
             MatchId = matchId,
             BeatmapId = 24245,
-            PlayMode = 0,
-            ScoringType = 3,
-            TeamType = 0,
-            Mods = 0,
+            Ruleset = Ruleset.Standard,
+            ScoringType = ScoringType.ScoreV2,
+            TeamType = TeamType.HeadToHead,
+            Mods = Mods.None,
             PostModSr = 6.36389,
             GameId = 502333236,
-            VerificationStatus = 2,
-            RejectionReason = 0,
+            VerificationStatus = GameVerificationStatus.PreVerified,
+            RejectionReason = null,
             Created = new DateTime(2023, 09, 14),
             StartTime = new DateTime(2023, 03, 10),
             EndTime = new DateTime(2023, 03, 10),

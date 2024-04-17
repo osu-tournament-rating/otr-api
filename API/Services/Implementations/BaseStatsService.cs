@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Enums;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
@@ -36,7 +37,7 @@ public class BaseStatsService(
         foreach (BaseStats stat in baseStats)
         {
             // One per mode
-            ret.Add(await GetAsync(stat, id.Value, stat.Mode));
+            ret.Add(await GetAsync(stat, id.Value, (int)stat.Mode));
         }
 
         return ret;
@@ -58,12 +59,12 @@ public class BaseStatsService(
         var rankProgress = new RankProgressDTO
         {
             CurrentTier = RatingUtils.GetTier(currentStats.Rating),
-            CurrentSubTier = RatingUtils.GetCurrentSubTier(currentStats.Rating),
-            RatingForNextTier = RatingUtils.GetRatingDeltaForNextTier(currentStats.Rating),
-            RatingForNextMajorTier = RatingUtils.GetRatingDeltaForNextMajorTier(currentStats.Rating),
+            CurrentSubTier = RatingUtils.GetSubTier(currentStats.Rating),
+            RatingForNextTier = RatingUtils.GetNextTierRatingDelta(currentStats.Rating),
+            RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(currentStats.Rating),
             NextMajorTier = RatingUtils.GetNextMajorTier(currentStats.Rating),
-            SubTierFillPercentage = RatingUtils.GetSubTierFillPercentage(currentStats.Rating),
-            MajorTierFillPercentage = RatingUtils.GetMajorTierFillPercentage(currentStats.Rating)
+            SubTierFillPercentage = RatingUtils.GetNextTierFillPercentage(currentStats.Rating),
+            MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(currentStats.Rating)
         };
 
         return new BaseStatsDTO
@@ -96,7 +97,7 @@ public class BaseStatsService(
                     MatchCostAverage = item.MatchCostAverage,
                     Rating = item.Rating,
                     Volatility = item.Volatility,
-                    Mode = item.Mode,
+                    Mode = (Ruleset)item.Mode,
                     Percentile = item.Percentile,
                     GlobalRank = item.GlobalRank,
                     CountryRank = item.CountryRank

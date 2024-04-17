@@ -71,4 +71,4 @@ services:
         hard: 262144
 volumes:
   db_data:
-  grafana:
+  grafana_storage:
