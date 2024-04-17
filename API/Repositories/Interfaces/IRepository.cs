@@ -62,10 +62,11 @@ public interface IRepository<T>
     /// Returns all entities
     /// </summary>
     Task<IEnumerable<T>> GetAllAsync();
+
     /// <summary>
     /// Performs a bulk update operation on all entities
     /// </summary>
     /// <param name="entities"></param>
     /// <returns></returns>
-    Task<int> BulkUpdateAsync(IEnumerable<T> entities);
+    Task<int> UpdateAsync(IEnumerable<T> entities);
 }

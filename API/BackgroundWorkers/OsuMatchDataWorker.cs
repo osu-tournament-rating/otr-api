@@ -47,7 +47,7 @@ public class OsuMatchDataWorker(
             Match? apiMatch = await matchesRepository.GetFirstMatchNeedingApiProcessingAsync();
             IList<Match> autoCheckMatches = await matchesRepository.GetMatchesNeedingAutoCheckAsync(3500);
 
-            if (apiMatch == null && autoCheckMatches.Count == 0)
+            if (apiMatch is null && autoCheckMatches.Count == 0)
             {
                 logger.LogTrace(
                     "No matches need processing, sleeping for {Interval} seconds",
@@ -57,12 +57,12 @@ public class OsuMatchDataWorker(
                 continue;
             }
 
-            if (apiMatch != null)
+            if (apiMatch is not null)
             {
                 await ProcessMatchesOsuApiAsync(apiMatch, matchesRepository, apiMatchService);
             }
 
-            if (autoCheckMatches.Count <= 0)
+            if (autoCheckMatches.Count == 0)
             {
                 continue;
             }
@@ -89,9 +89,7 @@ public class OsuMatchDataWorker(
     /// Does not call the database for updates
     /// </summary>
     /// <param name="match">The match to update</param>
-    /// <param name="matchesRepository"></param>
-    /// <param name="gamesRepository"></param>
-    /// <param name="matchScoresRepository"></param>
+    /// <param name="gamesRepository">Games repository</param>
     private void ProcessMatchNeedingAutomatedChecksAsync(
         Match match,
         IGamesRepository gamesRepository
@@ -110,7 +108,7 @@ public class OsuMatchDataWorker(
         }
         else
         {
-            if (match.VerifiedBy != null)
+            if (match.VerifiedBy is not null)
             {
                 match.VerificationStatus = (int)MatchVerificationStatus.Verified;
             }
@@ -242,15 +240,15 @@ public class OsuMatchDataWorker(
             osuMatchId,
             $"{osuMatchId} was identified as a match that needs to be processed"
         );
-        if (osuMatch != null)
+        if (osuMatch is not null)
         {
             return await apiMatchRepository.CreateFromApiMatchAsync(osuMatch);
         }
 
         Match? existingEntity = await matchesRepository.GetByMatchIdAsync(osuMatchId);
-        if (existingEntity == null)
+        if (existingEntity is null)
         {
-            return null;
+            return existingEntity;
         }
 
         await matchesRepository.UpdateVerificationStatusAsync(
@@ -261,7 +259,6 @@ public class OsuMatchDataWorker(
         );
 
         await matchesRepository.UpdateAsApiProcessed(existingEntity);
-
-        return null;
+        return existingEntity;
     }
 }

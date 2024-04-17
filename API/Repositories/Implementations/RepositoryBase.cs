@@ -70,7 +70,7 @@ public class RepositoryBase<T> : IRepository<T>
 
     public virtual async Task<IEnumerable<T>> GetAllAsync() => await _context.Set<T>().ToListAsync();
 
-    public virtual async Task<int> BulkUpdateAsync(IEnumerable<T> entities)
+    public virtual async Task<int> UpdateAsync(IEnumerable<T> entities)
     {
         foreach (T entity in entities)
         {
