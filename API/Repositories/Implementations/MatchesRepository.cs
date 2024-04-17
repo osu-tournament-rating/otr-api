@@ -42,28 +42,8 @@ public class MatchesRepository(
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered) =>
         await MatchBaseQuery(onlyIncludeFiltered).Where(x => ids.Contains(x.Id)).ToListAsync();
 
-    public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches)
-    {
-        IQueryable<Match> query = _context.Matches.OrderBy(m => m.StartTime).AsQueryable();
-
-        if (filterInvalidMatches)
-        {
-            query = _context
-                .Matches.Include(x =>
-                    x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified)
-                )
-                .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
-                .Include(x =>
-                    x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified)
-                )
-                .ThenInclude(x => x.Beatmap)
-                .Where(x => x.Games.Count > 0);
-        }
-
-        List<int> matches = await query.Select(x => x.Id).ToListAsync();
-
-        return matches;
-    }
+    public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches) =>
+        await MatchBaseQuery(filterInvalidMatches).Select(x => x.Id).ToListAsync();
 
     public async Task<Match?> GetByMatchIdAsync(long matchId) =>
         await _context

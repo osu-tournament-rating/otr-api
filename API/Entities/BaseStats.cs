@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using API.Osu;
+using API.Osu.Enums;
 
 namespace API.Entities;
 
@@ -31,7 +31,7 @@ public class BaseStats
     /// The ruleset the base stat was generated for
     /// </summary>
     [Column("mode")]
-    public OsuEnums.Ruleset Mode { get; set; }
+    public Ruleset Mode { get; set; }
 
     /// <summary>
     /// The rating of the player for the given ruleset

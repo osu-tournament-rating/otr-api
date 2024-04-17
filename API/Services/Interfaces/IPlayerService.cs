@@ -1,5 +1,5 @@
 using API.DTOs;
-using API.Osu;
+using API.Osu.Enums;
 
 namespace API.Services.Interfaces;
 
@@ -7,7 +7,7 @@ public interface IPlayerService
 {
     Task<IEnumerable<PlayerDTO>> GetAllAsync();
     Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync();
-    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Ruleset ruleset);
+    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset);
     Task<string?> GetUsernameAsync(long osuId);
     Task<int?> GetIdAsync(long osuId);
     Task<int?> GetIdAsync(int userId);
