@@ -1,4 +1,5 @@
 using API.Osu;
+using API.Osu.Enums;
 
 namespace API.DTOs;
 
@@ -40,5 +41,5 @@ public class UserDTO
     /// <summary>
     /// Preferred ruleset of the associated player
     /// </summary>
-    public OsuEnums.Ruleset? Ruleset { get; set; }
+    public Ruleset? Ruleset { get; set; }
 }
