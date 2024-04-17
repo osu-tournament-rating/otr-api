@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using API.Entities.Interfaces;
 using API.Enums;
-using API.Osu;
+using API.Osu.Enums;
 using Microsoft.EntityFrameworkCore;
 // ReSharper disable StringLiteralTypo
 
@@ -42,25 +42,25 @@ public class Game : IUpdateableEntity
     /// The ruleset for the game
     /// </summary>
     [Column("ruleset")]
-    public OsuEnums.Ruleset Ruleset { get; set; }
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// The scoring type used for the game
     /// </summary>
     [Column("scoring_type")]
-    public OsuEnums.ScoringType ScoringType { get; set; }
+    public ScoringType ScoringType { get; set; }
 
     /// <summary>
     /// The team type used for the game
     /// </summary>
     [Column("team_type")]
-    public OsuEnums.TeamType TeamType { get; set; }
+    public TeamType TeamType { get; set; }
 
     /// <summary>
     /// The mods enabled for the game
     /// </summary>
     [Column("mods")]
-    public OsuEnums.Mods Mods { get; set; }
+    public Mods Mods { get; set; }
 
     /// <summary>
     /// Star rating of the played beatmap after applying mods
