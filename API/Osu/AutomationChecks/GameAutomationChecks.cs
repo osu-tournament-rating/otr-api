@@ -1,4 +1,5 @@
 using API.Entities;
+using API.Enums;
 using API.Osu.Enums;
 using API.Utilities;
 
@@ -11,11 +12,54 @@ public static class GameAutomationChecks
 
     public static bool PassesAutomationChecks(Game game) =>
         PassesScoringTypeCheck(game)
-        && PassesModeCheck(game)
+        && PassesRulesetCheck(game)
         && PassesTeamTypeCheck(game)
         && PassesTeamSizeCheck(game)
         && PassesModsCheck(game)
         && PassesScoreSanityCheck(game);
+
+    /// <summary>
+    /// Returns a <see cref="GameRejectionReason"/> which explains why a game
+    /// is rejected.
+    /// </summary>
+    /// <param name="game">A game containing match scores</param>
+    /// <returns>Null if the game passes automation checks, otherwise
+    /// a <see cref="GameRejectionReason"/></returns>
+    public static GameRejectionReason? IdentifyRejectionReason(Game game)
+    {
+        if (PassesAutomationChecks(game))
+        {
+            return null;
+        }
+
+        GameRejectionReason reason = 0;
+        if (!PassesScoringTypeCheck(game))
+        {
+            reason |= GameRejectionReason.InvalidScoringType;
+        }
+        if (!PassesRulesetCheck(game))
+        {
+            reason |= GameRejectionReason.InvalidRuleset;
+        }
+        if (!PassesTeamTypeCheck(game))
+        {
+            reason |= GameRejectionReason.InvalidTeamType;
+        }
+        if (!PassesTeamSizeCheck(game))
+        {
+            reason |= GameRejectionReason.TeamSizeMismatch;
+        }
+        if (!PassesModsCheck(game))
+        {
+            reason |= GameRejectionReason.InvalidMods;
+        }
+        if (!PassesScoreSanityCheck(game))
+        {
+            reason |= GameRejectionReason.NoScores;
+        }
+
+        return reason;
+    }
 
     public static bool PassesTeamSizeCheck(Game game)
     {
@@ -35,11 +79,15 @@ public static class GameAutomationChecks
             return false;
         }
 
-        if (teamSize == 1)
+        var teamVs = game.TeamType == TeamType.TeamVs;
+        if (teamSize == 1 && !teamVs)
         {
             var countPlayers = game.MatchScores.Count;
-            var refereePresent = game.MatchScores.Any(score => score.Score == 0);
-            var satisfiesOneVersusOne = refereePresent ? countPlayers == 3 : countPlayers == 2;
+            var refereePresent = game.MatchScores.Any(score => score.Score <= AutomationChecksUtils.MinimumScore);
+
+            var countAfterReferees = countPlayers - game.MatchScores.Count(score => score.Score <= AutomationChecksUtils.MinimumScore);
+
+            var satisfiesOneVersusOne = refereePresent ? countAfterReferees == 2 : countPlayers == 2;
             if (!satisfiesOneVersusOne)
             {
                 s_logger.Information(
@@ -55,13 +103,27 @@ public static class GameAutomationChecks
             return satisfiesOneVersusOne;
         }
 
+        // teamSize is greater than 1 or is TeamVS
+
         var countRed = game.MatchScores.Count(s => s is { Team: (int)Team.Red, Score: > AutomationChecksUtils.MinimumScore });
         var countBlue = game.MatchScores.Count(s => s is { Team: (int)Team.Blue, Score: > AutomationChecksUtils.MinimumScore });
+        var countNoTeam = game.MatchScores.Count(s => s.Team == (int)Team.NoTeam);
 
-        if (countRed == 0 && countBlue == 0)
+        if (countNoTeam > 0)
         {
-            // We likely have a situation where the team size is > 0, and the game is TeamVs,
-            // but the match itself is HeadToHead. This is a problem.
+            s_logger.Information(
+                "{Prefix} Match {MatchId} has scores with no team but is in TeamVS mode, can't verify game {GameId}",
+                LogPrefix,
+                game.Match.MatchId,
+                game.GameId
+            );
+
+            return false;
+        }
+
+        if (countRed == 0 || countBlue == 0)
+        {
+            // Situation where either no scores or valid, or there are only scores from one team, something isn't right.
             s_logger.Information(
                 "{Prefix} Match {MatchId} has no team size for red or blue, can't verify game {GameId} (likely a warmup)",
                 LogPrefix,
@@ -78,13 +140,12 @@ public static class GameAutomationChecks
             /*
              * Requirements for referee to be valid and present:
              *
-             * - Exactly 1 score is below the minimum
-             * - The team sizes are uneven by exactly +1
-             * (meaning, if red has 3 players, blue has 2, and vice versa,
-             * NOT a 2v1 after accounting for the ref)
+             * - After referees are filtered out, the teams are perfectly even.
              */
-            hasReferee = game.MatchScores.Count(s => s.Score <= AutomationChecksUtils.MinimumScore) == 1 &&
-                          (countRed == teamSize + 1 || countBlue == teamSize + 1);
+            var refCountRed = game.MatchScores.Count(s => s is { Team: (int)Team.Red, Score: <= AutomationChecksUtils.MinimumScore });
+            var refCountBlue = game.MatchScores.Count(s => s is { Team: (int)Team.Blue, Score: <= AutomationChecksUtils.MinimumScore });
+
+            hasReferee = (countRed - refCountRed) == (countBlue - refCountBlue);
 
             if (!hasReferee)
             {
@@ -101,23 +162,23 @@ public static class GameAutomationChecks
             }
         }
 
-        if (IsMismatchedTeamSize(countRed, countBlue, tournament.TeamSize, hasReferee))
+        if (!IsMismatchedTeamSize(countRed, countBlue, tournament.TeamSize, hasReferee))
         {
-            s_logger.Information(
-                "{Prefix} Match {MatchId} has an unexpected team configuration: [Expected: {Expected}] [Red: {Red} | Blue: {Blue}], can't verify game {GameId} (Referee present: {HasReferee})",
-                LogPrefix,
-                game.Match.MatchId,
-                tournament.TeamSize,
-                countRed,
-                countBlue,
-                game.GameId,
-                hasReferee
-            );
-
-            return false;
+            return true;
         }
 
-        return true;
+        s_logger.Information(
+            "{Prefix} Match {MatchId} has an unexpected team configuration: [Expected: {Expected}] [Red: {Red} | Blue: {Blue}], can't verify game {GameId} (Referee present: {HasReferee})",
+            LogPrefix,
+            game.Match.MatchId,
+            tournament.TeamSize,
+            countRed,
+            countBlue,
+            game.GameId,
+            hasReferee
+        );
+
+        return false;
     }
 
     private static bool IsMismatchedTeamSize(int red, int blue, int expectedSize, bool hasReferee)
@@ -136,13 +197,12 @@ public static class GameAutomationChecks
         return redUnexpected || blueUnexpected;
     }
 
-    // TODO: Refactor to "PassesRulesetCheck"
-    public static bool PassesModeCheck(Game game)
+    public static bool PassesRulesetCheck(Game game)
     {
         Tournament tournament = game.Match.Tournament;
-        var gameMode = (Ruleset)tournament.Mode;
+        var tournamentRuleset = (Ruleset)tournament.Mode;
 
-        if (!Enum.GetValues<Ruleset>().Contains(gameMode))
+        if (!Enum.GetValues<Ruleset>().Contains(tournamentRuleset))
         {
             s_logger.Information(
                 "{Prefix} Tournament {TournamentId} has an invalid ruleset: {Mode}, can't verify game {GameId}",
@@ -155,85 +215,105 @@ public static class GameAutomationChecks
             return false;
         }
 
-        if (gameMode != game.Ruleset)
+        if (tournamentRuleset == game.Ruleset)
         {
-            s_logger.Information(
-                "{Prefix} Tournament {TournamentId} has a ruleset that differs from game, can't verify game {GameId} [Tournament: Ruleset={TMode} | Game: Ruleset={GMode}",
-                LogPrefix,
-                tournament.Id,
-                game.GameId,
-                tournament.Mode,
-                game.Ruleset
-            );
-
-            return false;
+            return true;
         }
 
-        return true;
+        s_logger.Information(
+            "{Prefix} Tournament {TournamentId} has a game mode that differs from game, can't verify game {GameId} [Tournament: Mode={TMode} | Game: Mode={GMode}",
+            LogPrefix,
+            tournament.Id,
+            game.GameId,
+            tournament.Mode,
+            game.Ruleset
+        );
+
+        return false;
     }
 
     public static bool PassesScoringTypeCheck(Game game)
     {
-        if (game.ScoringType != ScoringType.ScoreV2)
+        if (game.ScoringType == ScoringType.ScoreV2)
         {
-            s_logger.Information(
-                "{Prefix} Match {MatchId} does not have a ScoreV2 scoring type, can't verify game {GameId}",
-                LogPrefix,
-                game.Match.MatchId,
-                game.GameId
-            );
+            return true;
+        }
+
+        s_logger.Information(
+            "{Prefix} Match {MatchId} does not have a ScoreV2 scoring type, can't verify game {GameId}",
+            LogPrefix,
+            game.Match.MatchId,
+            game.GameId
+        );
+        return false;
+
+    }
+
+    public static bool PassesModsCheck(Game game)
+    {
+        // If the game features invalid mods, it fails the check
+        if (AutomationConstants.UnallowedMods.Any(unallowedMod => game.Mods.HasFlag(unallowedMod)))
+        {
             return false;
+        }
+
+        // If any of the scores feature invalid mods, the check fails as well.
+        foreach (MatchScore score in game.MatchScores)
+        {
+            if (score.EnabledModsEnum is null)
+            {
+                continue;
+            }
+
+            if (AutomationConstants.UnallowedMods.Any(unallowedMod =>
+                    score.EnabledModsEnum.Value.HasFlag(unallowedMod)))
+            {
+                return false;
+            }
         }
 
         return true;
     }
 
-    public static bool PassesModsCheck(Game game) =>
-        !AutomationConstants.UnallowedMods.Any(unallowedMod => game.Mods.HasFlag(unallowedMod));
-
     public static bool PassesTeamTypeCheck(Game game)
     {
-        if (game.TeamType is TeamType.TagTeamVs or TeamType.TagCoop)
+        switch (game.TeamType)
         {
-            s_logger.Information(
-                "{Prefix} Match {MatchId} has a tag team type, can't verify game {GameId}",
-                LogPrefix,
-                game.Match.MatchId,
-                game.GameId
-            );
-            return false;
-        }
-
-        // Ensure team size is valid
-        if (game.TeamType == TeamType.HeadToHead)
-        {
-            if (game.Match.Tournament.TeamSize != 1)
-            {
+            case TeamType.TagTeamVs or TeamType.TagCoop:
                 s_logger.Information(
-                    "{Prefix} Match {MatchId} has a HeadToHead team type, but team size is not 1, can't verify game {GameId}",
+                    "{Prefix} Match {MatchId} has a tag team type, can't verify game {GameId}",
                     LogPrefix,
                     game.Match.MatchId,
                     game.GameId
                 );
-
                 return false;
-            }
+            case TeamType.TeamVs:
+                return true;
+        }
 
+        if (game.TeamType is TeamType.HeadToHead && game.Match.Tournament.TeamSize == 1)
+        {
             return true;
         }
 
-        // TeamVs can be used for any team size
-        return true;
+        s_logger.Information(
+            "{Prefix} Match {MatchId} has a HeadToHead team type, but team size is not 1, can't verify game {GameId}",
+            LogPrefix,
+            game.Match.MatchId,
+            game.GameId
+        );
+
+        return false;
     }
 
     public static bool PassesScoreSanityCheck(Game game)
     {
-        if (game.MatchScores.Count == 0)
+        if (game.MatchScores.Count != 0)
         {
-            s_logger.Warning("Game {GameId} has no scores, can't verify", game.GameId);
-            return false;
+            return true;
         }
 
-        return true;
+        s_logger.Warning("Game {GameId} has no scores, can't verify", game.GameId);
+        return false;
     }
 }

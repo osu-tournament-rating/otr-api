@@ -12,11 +12,11 @@ namespace API.Entities;
 /// <summary>
 /// Represents a single game (osu! map) played in a tournament match
 /// </summary>
-[Table("games")]
-[Index("GameId", Name = "osugames_gameid", IsUnique = true)]
 [SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
+[Table("games")]
+[Index("GameId", Name = "osugames_gameid", IsUnique = true)]
 public class Game : IUpdateableEntity
 {
     /// <summary>

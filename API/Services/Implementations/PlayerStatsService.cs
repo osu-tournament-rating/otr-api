@@ -178,7 +178,7 @@ public class PlayerStatsService(
         return new PlayerStatsDTO
         {
             PlayerInfo = playerInfo,
-            BaseStats = baseStats,
+            GeneralStats = baseStats,
             MatchStats = matchStats,
             ModStats = modStats,
             TournamentStats = tournamentStats,
