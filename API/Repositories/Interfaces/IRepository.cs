@@ -1,4 +1,6 @@
-﻿namespace API.Repositories.Interfaces;
+﻿using API.Entities.Interfaces;
+
+namespace API.Repositories.Interfaces;
 
 public interface IRepository<T>
     where T : class
@@ -28,6 +30,15 @@ public interface IRepository<T>
     /// </summary>
     /// <returns>Number of rows affected</returns>
     Task<int> UpdateAsync(T entity);
+
+    /// <summary>
+    /// Updates an <see cref="IUpdateableEntity"/> without saving changes to the database.
+    /// Sets the <see cref="IUpdateableEntity.Updated"/> property to the current UTC time.
+    /// </summary>
+    /// <param name="entity">The entity to mark as updated</param>
+    /// <typeparam name="TUpdateable">An <see cref="IUpdateableEntity"/></typeparam>
+    /// <returns>The entity with the <see cref="IUpdateableEntity.Updated"/> property set to the current UTC time</returns>
+    TUpdateable MarkUpdated<TUpdateable>(TUpdateable entity) where TUpdateable : IUpdateableEntity;
 
     /// <summary>
     /// Updates a list of entities

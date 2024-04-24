@@ -40,8 +40,13 @@ public class RepositoryBase<T> : IRepository<T>
         if (entity is IUpdateableEntity updateableEntity)
         {
             updateableEntity.Updated = DateTime.UtcNow;
+            _context.Set<T>().Update((T)updateableEntity);
         }
-        _context.Set<T>().Update(entity);
+        else
+        {
+            _context.Set<T>().Update(entity);
+        }
+
         return await _context.SaveChangesAsync();
     }
 
@@ -52,11 +57,21 @@ public class RepositoryBase<T> : IRepository<T>
             if (entity is IUpdateableEntity updateableEntity)
             {
                 updateableEntity.Updated = DateTime.UtcNow;
+                _context.Set<T>().Update((T)updateableEntity);
             }
-            _context.Set<T>().Update(entity);
+            else
+            {
+                _context.Set<T>().Update(entity);
+            }
         }
 
         return await _context.SaveChangesAsync();
+    }
+
+    public TUpdateable MarkUpdated<TUpdateable>(TUpdateable entity) where TUpdateable : IUpdateableEntity
+    {
+        entity.Updated = DateTime.UtcNow;
+        return entity;
     }
 
     public virtual async Task<int?> DeleteAsync(int id)

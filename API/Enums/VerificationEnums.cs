@@ -57,7 +57,7 @@ public enum GameVerificationStatus
     Verified = 0,
 
     /// <summary>
-    /// Game passed all automation checks
+    /// Game passed all automation checks, still needs human verification
     /// </summary>
     PreVerified = 1,
 
@@ -67,20 +67,35 @@ public enum GameVerificationStatus
     Rejected = 2
 }
 
+/// <summary>
+/// Denotes why a game failed automation checks or is rejected
+/// </summary>
+[Flags]
 public enum GameRejectionReason
 {
     /// <summary>
-    /// Game was rejected because it was a warmup according to automated checks
+    /// There is an uneven number of players in the lobby (e.g. 2v3),
+    /// or a 1v1 is expected but it's a 1v2, etc.
     /// </summary>
-    FailedAutomationChecks = 0,
-
+    TeamSizeMismatch = 1 << 0,
     /// <summary>
-    /// Manually flagged as a warmup
+    /// The ruleset of this game is not what is expected
     /// </summary>
-    Warmup = 1,
-
+    InvalidRuleset = 1 << 1,
     /// <summary>
-    /// This match appears to be a non-competitive match (perhaps there was a cheater or something else)
+    /// The game was played in something other than ScoreV2
     /// </summary>
-    NotCompetitive = 2
+    InvalidScoringType = 1 << 2,
+    /// <summary>
+    /// The game features invalid mods, or features scores with invalid mods
+    /// </summary>
+    InvalidMods = 1 << 3,
+    /// <summary>
+    /// The game has a different team type than expected.
+    /// </summary>
+    InvalidTeamType = 1 << 4,
+    /// <summary>
+    /// The game has no scores
+    /// </summary>
+    NoScores = 1 << 5
 }

@@ -89,7 +89,7 @@ public class AutomationChecksTests
         match.Games = games;
 
         _matchesServiceMock
-            .Setup(x => x.GetMatchesNeedingAutoCheckAsync().Result)
+            .Setup(x => x.GetMatchesNeedingAutoCheckAsync(10000).Result)
             .Returns(new List<API.Entities.Match> { match });
     }
 
@@ -288,7 +288,7 @@ public class AutomationChecksTests
                 new MatchScore
                 {
                     PlayerId = -1,
-                    Score = 500,
+                    Score = 500_000,
                     Team = (int)Team.Red
                 }
             );
@@ -306,7 +306,7 @@ public class AutomationChecksTests
                 new MatchScore
                 {
                     PlayerId = -1,
-                    Score = 500,
+                    Score = 500_000,
                     Team = (int)Team.Blue
                 }
             );
@@ -378,7 +378,7 @@ public class AutomationChecksTests
         {
             foreach (Game game in match.Games)
             {
-                Assert.True(GameAutomationChecks.PassesModeCheck(game));
+                Assert.True(GameAutomationChecks.PassesRulesetCheck(game));
             }
         });
     }
@@ -389,7 +389,7 @@ public class AutomationChecksTests
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.Mode = 5;
 
-        Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
+        Assert.False(GameAutomationChecks.PassesRulesetCheck(match.Games.First()));
     }
 
     [Fact]
@@ -398,7 +398,7 @@ public class AutomationChecksTests
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.Mode = 1;
 
-        Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
+        Assert.False(GameAutomationChecks.PassesRulesetCheck(match.Games.First()));
     }
 
     [Fact]
@@ -476,7 +476,7 @@ public class AutomationChecksTests
                 new MatchScore
                 {
                     PlayerId = -1,
-                    Score = 500,
+                    Score = 500_000,
                     Team = (int)Team.NoTeam
                 }
             );
@@ -496,25 +496,25 @@ public class AutomationChecksTests
             new()
             {
                 PlayerId = -1,
-                Score = 500,
+                Score = 500_000,
                 Team = (int)Team.NoTeam
             },
             new()
             {
                 PlayerId = -1,
-                Score = 500,
+                Score = 500_000,
                 Team = (int)Team.NoTeam
             },
             new()
             {
                 PlayerId = -1,
-                Score = 500,
+                Score = 500_000,
                 Team = (int)Team.NoTeam
             },
             new()
             {
                 PlayerId = -1,
-                Score = 500,
+                Score = 500_000,
                 Team = (int)Team.NoTeam
             }
         };
@@ -598,13 +598,14 @@ public class AutomationChecksTests
     public void Game_FailsTeamSizeCheck_Unbalanced_Teams()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+
         match
             .Games.First()
             .MatchScores.Add(
                 new MatchScore
                 {
                     PlayerId = -1,
-                    Score = 500,
+                    Score = 500_000,
                     Team = (int)Team.Red
                 }
             );
@@ -627,7 +628,7 @@ public class AutomationChecksTests
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().Ruleset = Ruleset.Catch;
 
-        Assert.False(GameAutomationChecks.PassesModeCheck(match.Games.First()));
+        Assert.False(GameAutomationChecks.PassesRulesetCheck(match.Games.First()));
     }
 
     [Fact]
