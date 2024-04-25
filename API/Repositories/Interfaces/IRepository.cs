@@ -41,6 +41,11 @@ public interface IRepository<T>
     TUpdateable MarkUpdated<TUpdateable>(TUpdateable entity) where TUpdateable : IUpdateableEntity;
 
     /// <summary>
+    /// Updates a list of entities
+    /// </summary>
+    Task<int> UpdateAsync(IEnumerable<T> entities);
+
+    /// <summary>
     /// Deletes an entity from the database by its primary key
     /// </summary>
     /// <returns>Primary key of the deleted entity, or null if unsuccessful</returns>
@@ -62,11 +67,4 @@ public interface IRepository<T>
     /// Returns all entities
     /// </summary>
     Task<IEnumerable<T>> GetAllAsync();
-
-    /// <summary>
-    /// Performs a bulk update operation on all entities
-    /// </summary>
-    /// <param name="entities"></param>
-    /// <returns></returns>
-    Task<int> UpdateAsync(IEnumerable<T> entities);
 }

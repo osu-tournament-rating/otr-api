@@ -27,31 +27,34 @@ public class HistoryRepositoryBase<TEntity, THistory>
 
     public override async Task<int> UpdateAsync(TEntity entity)
     {
-        await CreateHistoryAsync(entity.Id, HistoryActionType.Update);
-        if (entity is IUpdateableEntity updateableEntity)
-        {
-            updateableEntity.Updated = DateTime.UtcNow;
-        }
-        return await base.UpdateAsync(entity);
+        return await UpdateAsync(entity, null);
+    }
+
+    public override async Task<int> UpdateAsync(IEnumerable<TEntity> entities)
+    {
+        return await UpdateAsync(entities, null);
     }
 
     public override async Task<int?> DeleteAsync(int id)
     {
-        await CreateHistoryAsync(id, HistoryActionType.Delete);
-        return await base.DeleteAsync(id);
+        return await DeleteAsync(id, null);
     }
 
-    public async Task<int> UpdateAsync(TEntity entity, int modifierId)
+    public async Task<int> UpdateAsync(TEntity entity, int? modifierId)
     {
         await CreateHistoryAsync(entity.Id, HistoryActionType.Update, modifierId);
-        if (entity is IUpdateableEntity updateableEntity)
-        {
-            updateableEntity.Updated = DateTime.UtcNow;
-        }
         return await base.UpdateAsync(entity);
     }
 
-    public async Task<int?> DeleteAsync(int id, int modifierId)
+    public async Task<int> UpdateAsync(IEnumerable<TEntity> entities, int? modifierId)
+    {
+        IEnumerable<TEntity> enumerable = entities as TEntity[] ?? entities.ToArray();
+        await CreateHistoryAsync(enumerable.Select(x => x.Id), HistoryActionType.Update, modifierId);
+
+        return await base.UpdateAsync(enumerable);
+    }
+
+    public async Task<int?> DeleteAsync(int id, int? modifierId)
     {
         await CreateHistoryAsync(id, HistoryActionType.Delete, modifierId);
         return await base.DeleteAsync(id);
@@ -60,12 +63,15 @@ public class HistoryRepositoryBase<TEntity, THistory>
     private async Task<TEntity?> GetNoTrackingAsync(int id) =>
         await _context.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
 
-    private async Task<THistory?> CreateHistoryAsync(int id, HistoryActionType action, int? modifierId = null)
+    private async Task<IEnumerable<TEntity>> GetNoTrackingAsync(IEnumerable<int> ids) =>
+        await _context.Set<TEntity>().AsNoTracking().Where(x => ids.Contains(x.Id)).ToListAsync();
+
+    private async Task CreateHistoryAsync(int id, HistoryActionType action, int? modifierId = null)
     {
         TEntity? origEntity = await GetNoTrackingAsync(id);
         if (origEntity == null)
         {
-            return null;
+            return;
         }
 
         THistory record = _mapper.Map<THistory>(origEntity);
@@ -73,9 +79,21 @@ public class HistoryRepositoryBase<TEntity, THistory>
         // Modifications made automatically (without user intervention) have an Id of null
         record.ModifierId = modifierId;
 
-        THistory created = (await _context.Set<THistory>().AddAsync(record)).Entity;
+        await _context.Set<THistory>().AddAsync(record);
         await _context.SaveChangesAsync();
+    }
 
-        return created;
+    private async Task CreateHistoryAsync(IEnumerable<int> ids, HistoryActionType action,
+        int? modifierId = null)
+    {
+        foreach (TEntity origEntity in await GetNoTrackingAsync(ids))
+        {
+            THistory record = _mapper.Map<THistory>(origEntity);
+            record.HistoryAction = (int)action;
+            // Modifications made automatically (without user intervention) have an Id of null
+            record.ModifierId = modifierId;
+            await _context.Set<THistory>().AddAsync(record);
+        }
+        await _context.SaveChangesAsync();
     }
 }

@@ -26,7 +26,7 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<UserInfoDTO>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync()
     {
         var id = HttpContext.AuthorizedUserIdentity();
@@ -35,7 +35,7 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
             return Unauthorized();
         }
 
-        UserInfoDTO? user = await _userService.GetAsync(id.Value);
+        UserDTO? user = await _userService.GetAsync(id.Value);
         if (user?.OsuId == null)
         {
             return NotFound();

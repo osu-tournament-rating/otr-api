@@ -2,6 +2,9 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace API.Utilities;
 
+// TODO: Remove this class and refactor in favor of ClaimsPrincipleExtensions.AuthorizedIdentity()
+// All methods here only use the ClaimsPrinciple of the HttpContext
+// We also have no current use for the distinction of client and user identities
 public static class HttpContextExtensions
 {
     /// <summary>
