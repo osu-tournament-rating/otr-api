@@ -13,7 +13,7 @@ public class PlayerStatsDTO
     /// <summary>
     /// Base stats for the player
     /// </summary>
-    public BaseStatsDTO? GeneralStats { get; init; }
+    public BaseStatsDTO? BaseStats { get; init; }
 
     /// <summary>
     /// Match stats for the player
