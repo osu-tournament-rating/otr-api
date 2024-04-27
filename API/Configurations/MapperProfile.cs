@@ -14,6 +14,7 @@ public class MapperProfile : Profile
         CreateMap<GameWinRecord, GameWinRecordDTO>();
         CreateMap<Match, MatchDTO>()
             .ForMember(x => x.Mode, opt => opt.MapFrom(x => x.Tournament.Mode));
+        CreateMap<Match, MatchSubmissionStatusDTO>();
         CreateMap<Match, MatchHistory>()
             .ForMember(x => x.ReferenceId, opt => opt.MapFrom(x => x.Id))
             .ForMember(x => x.HistoryStartTime, opt => opt.MapFrom(x => x.Updated))
@@ -53,8 +54,12 @@ public class MapperProfile : Profile
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
+        CreateMap<User, UserDTO>()
+            .ForMember(x => x.OsuId, opt => opt.MapFrom(y => y.Player.OsuId))
+            .ForMember(x => x.Country, opt => opt.MapFrom(y => y.Player.Country))
+            .ForMember(x => x.Username, opt => opt.MapFrom(y => y.Player.Username))
+            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Player.Ruleset));
         CreateMap<Tournament, TournamentSearchResultDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Mode));
-        CreateMap<User, UserDTO>();
     }
 }

@@ -58,5 +58,5 @@ public class MatchDuplicate
     public int? VerifiedBy { get; set; }
 
     [InverseProperty("VerifiedDuplicates")]
-    public User? Verifier { get; set; }
+    public virtual User? Verifier { get; set; }
 }

@@ -17,7 +17,7 @@ public class PlayerStatsService(
     IRatingAdjustmentsRepository ratingAdjustmentsRepository,
     IMatchRatingStatsRepository ratingStatsRepository,
     ITournamentsRepository tournamentsRepository
-    ) : IPlayerStatsService
+) : IPlayerStatsService
 {
     private readonly IBaseStatsService _baseStatsService = baseStatsService;
     private readonly IGameWinRecordsRepository _gameWinRecordsRepository = gameWinRecordsRepository;
@@ -152,9 +152,11 @@ public class PlayerStatsService(
 
         PlayerInfoDTO? playerInfo = await _playerService.GetAsync(playerId);
         BaseStatsDTO? baseStats = await GetBaseStatsAsync(playerId, mode);
-        AggregatePlayerMatchStatsDTO? matchStats = await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+        AggregatePlayerMatchStatsDTO? matchStats =
+            await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
         PlayerModStatsDTO modStats = await GetModStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
-        PlayerTournamentStatsDTO tournamentStats = await GetTournamentStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+        PlayerTournamentStatsDTO tournamentStats =
+            await GetTournamentStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
         PlayerRatingChartDTO ratingChart = await _ratingStatsRepository.GetRatingChartAsync(
             playerId,
             mode,
@@ -175,16 +177,17 @@ public class PlayerStatsService(
             dateMax.Value
         );
 
-        return new PlayerStatsDTO(
-            playerInfo,
-            baseStats,
-            matchStats,
-            modStats,
-            tournamentStats,
-            ratingChart,
-            frequentTeammates,
-            frequentOpponents
-        );
+        return new PlayerStatsDTO
+        {
+            PlayerInfo = playerInfo,
+            BaseStats = baseStats,
+            MatchStats = matchStats,
+            ModStats = modStats,
+            TournamentStats = tournamentStats,
+            RatingChart = ratingChart,
+            FrequentTeammates = frequentTeammates,
+            FrequentOpponents = frequentOpponents
+        };
     }
 
     public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody)
@@ -329,13 +332,15 @@ public class PlayerStatsService(
     {
         const int maxTournaments = 5;
 
-        IEnumerable<PlayerTournamentMatchCostDTO> bestPerformances = await _tournamentsRepository.GetPerformancesAsync(playerId,
+        IEnumerable<PlayerTournamentMatchCostDTO> bestPerformances = await _tournamentsRepository.GetPerformancesAsync(
+            playerId,
             mode,
             dateMin,
             dateMax,
             maxTournaments, true);
 
-        IEnumerable<PlayerTournamentMatchCostDTO> worstPerformances = await _tournamentsRepository.GetPerformancesAsync(playerId,
+        IEnumerable<PlayerTournamentMatchCostDTO> worstPerformances = await _tournamentsRepository.GetPerformancesAsync(
+            playerId,
             mode,
             dateMin,
             dateMax,
@@ -370,7 +375,8 @@ public class PlayerStatsService(
     )
     {
         var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
-        IEnumerable<MatchRatingStats> ratingStats = (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax))
+        IEnumerable<MatchRatingStats> ratingStats =
+            (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax))
             .ToList()
             .SelectMany(x => x);
 

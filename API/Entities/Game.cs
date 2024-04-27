@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using API.Entities.Interfaces;
 using API.Enums;
-using API.Osu;
+using API.Osu.Enums;
 using Microsoft.EntityFrameworkCore;
 // ReSharper disable StringLiteralTypo
 
@@ -12,11 +12,11 @@ namespace API.Entities;
 /// <summary>
 /// Represents a single game (osu! map) played in a tournament match
 /// </summary>
-[Table("games")]
-[Index("GameId", Name = "osugames_gameid", IsUnique = true)]
 [SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
+[Table("games")]
+[Index("GameId", Name = "osugames_gameid", IsUnique = true)]
 public class Game : IUpdateableEntity
 {
     /// <summary>
@@ -41,27 +41,26 @@ public class Game : IUpdateableEntity
     /// <summary>
     /// The ruleset for the game
     /// </summary>
-    // TODO: Refactor to "Ruleset"
-    [Column("play_mode")]
-    public OsuEnums.Ruleset PlayMode { get; set; }
+    [Column("ruleset")]
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// The scoring type used for the game
     /// </summary>
     [Column("scoring_type")]
-    public OsuEnums.ScoringType ScoringType { get; set; }
+    public ScoringType ScoringType { get; set; }
 
     /// <summary>
     /// The team type used for the game
     /// </summary>
     [Column("team_type")]
-    public OsuEnums.TeamType TeamType { get; set; }
+    public TeamType TeamType { get; set; }
 
     /// <summary>
     /// The mods enabled for the game
     /// </summary>
     [Column("mods")]
-    public OsuEnums.Mods Mods { get; set; }
+    public Mods Mods { get; set; }
 
     /// <summary>
     /// Star rating of the played beatmap after applying mods

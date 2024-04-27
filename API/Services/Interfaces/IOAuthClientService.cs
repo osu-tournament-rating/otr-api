@@ -6,7 +6,7 @@ namespace API.Services.Interfaces;
 public interface IOAuthClientService
 {
     /// <summary>
-    ///     Checks whether the given clientId and clientSecret match a valid client.
+    /// Checks whether the given clientId and clientSecret match a valid client.
     /// </summary>
     /// <param name="clientId">The id of the client</param>
     /// <param name="clientSecret">The client secret</param>
@@ -41,4 +41,15 @@ public interface IOAuthClientService
     /// <returns>A valid <see cref="OAuthClientDTO"/> with the current state of the client,
     /// null if any errors are encountered.</returns>
     Task<OAuthClientDTO?> SetRatelimitOverridesAsync(int clientId, RateLimitOverrides rateLimitOverrides);
+
+    /// <summary>
+    /// Denotes a client exists for the given id and is owned by userId
+    /// </summary>
+    Task<bool> ExistsAsync(int id, int userId);
+
+    /// <summary>
+    /// Deletes a client
+    /// </summary>
+    /// <returns>True if successful</returns>
+    Task<bool> DeleteAsync(int id);
 }

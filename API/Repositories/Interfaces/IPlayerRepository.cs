@@ -1,6 +1,6 @@
 using API.DTOs;
 using API.Entities;
-using API.Osu;
+using API.Osu.Enums;
 
 namespace API.Repositories.Interfaces;
 
@@ -83,7 +83,7 @@ public interface IPlayerRepository : IRepository<Player>
     /// </summary>
     /// <param name="n">The number of items to return</param>
     /// <param name="ruleset">The mode to get the ratings from</param>
-    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Ruleset ruleset);
+    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset);
 
     /// <summary>
     /// Fetches the username for the given osu id, if available

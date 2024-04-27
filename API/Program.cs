@@ -166,7 +166,7 @@ builder
 
             // Try to parse rate limit override claim
             var overrideClaimValue = principal.Claims
-                .FirstOrDefault(c => c.Type == OtrClaimTypes.RateLimitOverrides)?.Value;
+                .FirstOrDefault(c => c.Type == OtrClaims.RateLimitOverrides)?.Value;
             RateLimitOverrides? overrides = null;
             if (!string.IsNullOrEmpty(overrideClaimValue))
             {
