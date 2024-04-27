@@ -40,10 +40,15 @@ public class User
 
     [InverseProperty("User")]
     public virtual ICollection<OAuthClient>? Clients { get; set; }
+
+    [InverseProperty("SubmittedBy")]
     public virtual ICollection<Match>? SubmittedMatches { get; set; }
+
+    [InverseProperty("SubmittedBy")]
     public virtual ICollection<Tournament>? SubmittedTournaments { get; set; }
 
     // Assuming the user has permission to verify, the matches they do verify will be here
+    [InverseProperty("VerifiedBy")]
     public virtual ICollection<Match>? VerifiedMatches { get; set; }
 
     [InverseProperty("Verifier")]

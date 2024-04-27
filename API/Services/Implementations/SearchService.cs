@@ -1,6 +1,6 @@
 using API.DTOs;
 using API.Entities;
-using API.Osu;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -40,7 +40,7 @@ public class SearchService(
         return players.Select(player =>
         {
             BaseStats? rating = player.Ratings
-                .FirstOrDefault(r => r.Mode == (int)(player.Ruleset ?? OsuEnums.Ruleset.Standard));
+                .FirstOrDefault(r => r.Mode == (player.Ruleset ?? Ruleset.Standard));
             return new PlayerSearchResultDTO
             {
                 Id = player.Id,

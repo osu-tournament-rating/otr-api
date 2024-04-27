@@ -1,32 +1,57 @@
 using API.DTOs;
 using API.Entities;
+using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using AutoMapper;
 
 namespace API.Services.Implementations;
 
-public class UserService(IUserRepository repository) : IUserService
+public class UserService(IUserRepository userRepository, IMatchesRepository matchesRepository, IMapper mapper) : IUserService
 {
-    private readonly IUserRepository _repository = repository;
+    public async Task<bool> ExistsAsync(int id) =>
+        await userRepository.ExistsAsync(id);
 
-    public async Task<UserInfoDTO?> GetAsync(int id)
+    public async Task<UserDTO?> GetAsync(int id) =>
+        mapper.Map<UserDTO?>(await userRepository.GetAsync(id));
+
+    public async Task<IEnumerable<OAuthClientDTO>?> GetClientsAsync(int id) =>
+        mapper.Map<IEnumerable<OAuthClientDTO>?>((await userRepository.GetAsync(id))?.Clients?.ToList());
+
+    public async Task<IEnumerable<MatchSubmissionStatusDTO>?> GetSubmissionsAsync(int id) =>
+        mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>((await userRepository.GetAsync(id))?.SubmittedMatches?.ToList());
+
+    public async Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId,
+        MatchVerificationSource verificationSource)
     {
-        User? user = await _repository.GetAsync(id);
+        IEnumerable<Match>? submissions = (await userRepository.GetAsync(id))?.SubmittedMatches?.ToList();
+        if (submissions is null)
+        {
+            // Return in the affirmative if the user has no submissions
+            return true;
+        }
 
+        foreach (Match match in submissions)
+        {
+            match.VerificationStatus = MatchVerificationStatus.Rejected;
+            match.VerifierUserId = rejecterUserId;
+            match.VerificationSource = verificationSource;
+        }
+
+        return await matchesRepository.UpdateAsync(submissions, rejecterUserId) == submissions.Count();
+    }
+
+    public async Task<UserDTO?> UpdateScopesAsync(int id, IEnumerable<string> scopes)
+    {
+        User? user = await userRepository.GetAsync(id);
         if (user is null)
         {
             return null;
         }
 
-        return new UserInfoDTO
-        {
-            Id = user.Id,
-            Scopes = user.Scopes,
-            PlayerId = user.PlayerId,
-            OsuCountry = user.Player.Country,
-            OsuId = user.Player.OsuId,
-            OsuPlayMode = 0, // TODO: Set to user's preferred mode
-            OsuUsername = user.Player.Username
-        };
+        user.Scopes = scopes.ToArray();
+        await userRepository.UpdateAsync(user);
+
+        return mapper.Map<UserDTO>(user);
     }
 }

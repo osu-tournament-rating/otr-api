@@ -188,7 +188,7 @@ public class OAuthHandler(
         {
             claims = [.. claims,
                 new Claim(
-                    OtrClaimTypes.RateLimitOverrides,
+                    OtrClaims.RateLimitOverrides,
                     serializedOverrides
                 )
             ];
@@ -216,7 +216,7 @@ public class OAuthHandler(
         {
             claims = [.. claims,
                 new Claim(
-                OtrClaimTypes.RateLimitOverrides,
+                OtrClaims.RateLimitOverrides,
                 serializedOverrides
                 )
             ];

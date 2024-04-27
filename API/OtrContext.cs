@@ -33,7 +33,9 @@ public partial class OtrContext(
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseNpgsql(_configuration.Value.DefaultConnection);
+        optionsBuilder
+            .UseLazyLoadingProxies()
+            .UseNpgsql(_configuration.Value.DefaultConnection);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
