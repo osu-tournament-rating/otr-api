@@ -299,7 +299,7 @@ public class PlayerStatsService(
         var highestRank = await _ratingStatsRepository.HighestGlobalRankAsync(playerId, mode);
 
         dto.MatchesPlayed = matchesPlayed;
-        dto.Winrate = winRate;
+        dto.WinRate = winRate;
         dto.HighestGlobalRank = highestRank;
 
         dto.RankProgress = new RankProgressDTO

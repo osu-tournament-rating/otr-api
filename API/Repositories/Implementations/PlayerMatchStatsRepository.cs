@@ -102,7 +102,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
                     GamesPlayed = g.Count(),
                     GamesWon = g.Count(x => x.PlayerWon),
                     // Avoid div by zero
-                    Winrate = g.Any()
+                    WinRate = g.Any()
                         ? (double)g.Count(x => x.PlayerWon) / g.Count()
                         : 0,
                     NormalizedAverageScore = Math.Round(g.Average(x => x.Score / (
