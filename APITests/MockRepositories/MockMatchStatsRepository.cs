@@ -20,7 +20,7 @@ public class MockMatchStatsRepository : Mock<IPlayerMatchStatsRepository>
         return this;
     }
 
-    public MockMatchStatsRepository SetupGlobalWinrate()
+    public MockMatchStatsRepository SetupGlobalWinRate()
     {
         Setup(x =>
                 x.GlobalWinrateAsync(
