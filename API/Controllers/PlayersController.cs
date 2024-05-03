@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -16,7 +17,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     private readonly IPlayerService _playerService = playerService;
 
     [HttpGet("all")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> GetAllAsync()
     {
         IEnumerable<PlayerDTO> players = await _playerService.GetAllAsync();
@@ -24,7 +25,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     }
 
     [HttpGet("{key}/info")]
-    [Authorize(Roles = "user, client")]
+    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [EndpointSummary("Get player info by versatile search")]
     [EndpointDescription("Get player info searching first by id, then osuId, then username")]
     public async Task<ActionResult<PlayerInfoDTO?>> GetAsync(string key)
@@ -40,7 +41,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     }
 
     [HttpGet("ranks/all")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<ActionResult<IEnumerable<PlayerRanksDTO>>> GetAllRanksAsync()
     {
         IEnumerable<PlayerRanksDTO> ranks = await _playerService.GetAllRanksAsync();
@@ -48,7 +49,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     }
 
     [HttpGet("id-mapping")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<ActionResult<IEnumerable<PlayerIdMappingDTO>>> GetIdMappingAsync()
     {
         IEnumerable<PlayerIdMappingDTO> mapping = await _playerService.GetIdMappingAsync();
@@ -56,7 +57,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     }
 
     [HttpGet("country-mapping")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     [ProducesResponseType<IEnumerable<PlayerCountryMappingDTO>>(StatusCodes.Status200OK)]
     [EndpointSummary(
         "Returns a list of PlayerCountryMappingDTOs that have a player's id and their country tag."
