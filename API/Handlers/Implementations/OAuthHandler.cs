@@ -56,7 +56,7 @@ public class OAuthHandler(
         // Because this user is logging in with osu!, we can
         // issue a new refresh token.
         var accessToken = GenerateAccessToken(user);
-        var refreshToken = GenerateRefreshToken(user.Id.ToString(), _jwtConfiguration.Value.Audience, "user");
+        var refreshToken = GenerateRefreshToken(user.Id.ToString(), _jwtConfiguration.Value.Audience, OtrClaims.User);
 
         _logger.LogDebug(
             "Authorized user with id {Id}, access expires in {seconds}",
@@ -181,7 +181,7 @@ public class OAuthHandler(
     /// <returns></returns>
     private string GenerateAccessToken(OAuthClient client)
     {
-        client.Scopes = [.. client.Scopes, "client"];
+        client.Scopes = [.. client.Scopes, OtrClaims.Client];
         IEnumerable<Claim> claims = client.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
         var serializedOverrides = RateLimitOverridesSerializer.Serialize(client.RateLimitOverrides);
         if (!string.IsNullOrEmpty(serializedOverrides))
@@ -209,7 +209,7 @@ public class OAuthHandler(
     /// <returns></returns>
     private string GenerateAccessToken(User user)
     {
-        user.Scopes = [.. user.Scopes, "user"];
+        user.Scopes = [.. user.Scopes, OtrClaims.User];
         IEnumerable<Claim> claims = user.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
         var serializedOverrides = RateLimitOverridesSerializer.Serialize(user.RateLimitOverrides);
         if (!string.IsNullOrEmpty(serializedOverrides))
@@ -285,7 +285,7 @@ public class OAuthHandler(
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.Value.Key));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        if (role != "user" && role != "client")
+        if (role != OtrClaims.User && role != OtrClaims.Client)
         {
             throw new ArgumentException("Role must be either 'user' or 'client'");
         }

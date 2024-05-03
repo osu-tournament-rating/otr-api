@@ -1,14 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace API.Utilities;
-
-// TODO: Refactor all uses of the below strings to use OtrClaims
-// Suppression can be removed once this is done
 
 /// <summary>
 /// String values that represent valid claims for authorized users
 /// </summary>
-[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public static class OtrClaims
 {
     /// <summary>
