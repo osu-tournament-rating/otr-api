@@ -6,14 +6,6 @@ namespace API.Services.Interfaces;
 public interface IOAuthClientService
 {
     /// <summary>
-    /// Checks whether the given clientId and clientSecret match a valid client.
-    /// </summary>
-    /// <param name="clientId">The id of the client</param>
-    /// <param name="clientSecret">The client secret</param>
-    /// <returns>true if the clientId and clientSecret are in the database, false otherwise.</returns>
-    Task<bool> ValidateAsync(int clientId, string clientSecret);
-
-    /// <summary>
     /// Gets an OAuthClient that matches the given client id, if it exists.
     /// </summary>
     Task<OAuthClientDTO?> GetAsync(int clientId);

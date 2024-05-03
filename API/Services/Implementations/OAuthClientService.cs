@@ -10,8 +10,6 @@ public class OAuthClientService(IOAuthClientRepository repository, IMapper mappe
 {
     private readonly IOAuthClientRepository _repository = repository;
 
-    public async Task<bool> ValidateAsync(int clientId, string clientSecret) => await _repository.ExistsAsync(clientId, clientSecret);
-
     public async Task<OAuthClientDTO?> GetAsync(int clientId)
     {
         OAuthClient? client = await _repository.GetAsync(clientId);
