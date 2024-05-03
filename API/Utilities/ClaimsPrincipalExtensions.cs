@@ -34,6 +34,12 @@ public static class ClaimsPrincipalExtensions
         IsInRole(claimsPrincipal, "verifier");
 
     /// <summary>
+    /// Denotes the principle as having the whitelist role
+    /// </summary>
+    public static bool IsWhitelisted(this ClaimsPrincipal claimsPrincipal) =>
+        IsInRole(claimsPrincipal, OtrClaims.Whitelist);
+
+    /// <summary>
     /// Returns the appropriate <see cref="MatchVerificationSource"/> enum for the principle
     /// </summary>
     public static MatchVerificationSource? VerificationSource(this ClaimsPrincipal claimsPrincipal) =>

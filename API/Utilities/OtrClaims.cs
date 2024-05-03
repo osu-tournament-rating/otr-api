@@ -46,7 +46,7 @@ public static class OtrClaims
     public const string Submitter = "submit";
 
     /// <summary>
-    /// Claim granted to users and clients to restrict access during
+    /// Claim granted to users and clients to restrict api access
     /// </summary>
     public const string Whitelist = "whitelist";
 
