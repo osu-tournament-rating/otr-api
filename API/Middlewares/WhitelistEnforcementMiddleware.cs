@@ -17,7 +17,8 @@ public class WhitelistEnforcementMiddleware(RequestDelegate next)
             return;
         }
 
-        if (!context.User.IsWhitelisted() || !context.User.IsAdmin() || !context.User.IsSystem())
+        // Allow whitelisted and privileged requests
+        if (!context.User.IsWhitelisted() && !context.User.IsAdmin() && !context.User.IsSystem())
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
         }
