@@ -28,7 +28,7 @@ public class OAuthHandler(
     IUserRepository userRepository
     ) : IOAuthHandler
 {
-    private const int ACCESS_DURATION_SECONDS = 3600;
+    private const int AccessDurationSeconds = 3600;
 
     public async Task<OAuthResponseDTO?> AuthorizeAsync(string osuAuthCode)
     {
@@ -36,7 +36,7 @@ public class OAuthHandler(
 
         if (string.IsNullOrEmpty(osuAuthCode))
         {
-            logger.LogDebug("osuAuthToken null or empty, cannot authorize");
+            logger.LogDebug("osuAuthCode null or empty, cannot authorize");
             return null;
         }
 
@@ -52,14 +52,14 @@ public class OAuthHandler(
         logger.LogDebug(
             "Authorized user with id {Id}, access expires in {seconds}",
             user.Id,
-            ACCESS_DURATION_SECONDS
+            AccessDurationSeconds
         );
 
         return new OAuthResponseDTO
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            AccessExpiration = ACCESS_DURATION_SECONDS
+            AccessExpiration = AccessDurationSeconds
         };
     }
 
@@ -82,7 +82,7 @@ public class OAuthHandler(
         {
             AccessToken = GenerateAccessToken(client),
             RefreshToken = GenerateRefreshToken(clientId.ToString(), jwtConfiguration.Value.Audience, "client"),
-            AccessExpiration = ACCESS_DURATION_SECONDS
+            AccessExpiration = AccessDurationSeconds
         };
     }
 
@@ -149,7 +149,7 @@ public class OAuthHandler(
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            AccessExpiration = ACCESS_DURATION_SECONDS
+            AccessExpiration = AccessDurationSeconds
         };
     }
 
@@ -189,7 +189,7 @@ public class OAuthHandler(
             client.Id.ToString(),
             jwtConfiguration.Value.Audience,
             claims,
-            ACCESS_DURATION_SECONDS
+            AccessDurationSeconds
         );
     }
 
@@ -217,7 +217,7 @@ public class OAuthHandler(
             user.Id.ToString(),
             jwtConfiguration.Value.Audience,
             claims,
-            ACCESS_DURATION_SECONDS
+            AccessDurationSeconds
         );
     }
 
