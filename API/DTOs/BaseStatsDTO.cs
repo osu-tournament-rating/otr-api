@@ -40,7 +40,7 @@ public class BaseStatsDTO
     /// <summary>
     /// Current match win rate
     /// </summary>
-    public double Winrate { get; set; }
+    public double WinRate { get; set; }
 
     /// <summary>
     /// Highest o!tr global ranking
