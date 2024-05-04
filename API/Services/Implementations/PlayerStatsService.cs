@@ -272,6 +272,7 @@ public class PlayerStatsService(
         await _matchStatsRepository.TruncateAsync();
         await _ratingStatsRepository.TruncateAsync();
         await _matchWinRecordRepository.TruncateAsync();
+        await _ratingAdjustmentsRepository.TruncateAsync();
     }
 
     public async Task TruncateRatingAdjustmentsAsync() => await _ratingAdjustmentsRepository.TruncateAsync();

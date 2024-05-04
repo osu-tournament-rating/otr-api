@@ -63,14 +63,6 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
         return Ok();
     }
 
-    [HttpDelete("ratingadjustments")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> TruncateAdjustmentsAsync()
-    {
-        await _playerStatsService.TruncateRatingAdjustmentsAsync();
-        return Ok();
-    }
-
     [HttpPost("matchstats")]
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerMatchStatsDTO> postBody)
