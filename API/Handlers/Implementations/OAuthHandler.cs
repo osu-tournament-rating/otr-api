@@ -162,7 +162,7 @@ public class OAuthHandler(
     /// <remarks>Handles the encoding of rate limit overrides</remarks>
     private string GenerateAccessToken(OAuthClient client)
     {
-        client.Scopes = [.. client.Scopes, "client"];
+        client.Scopes = [.. client.Scopes, OtrClaims.Client];
         IEnumerable<Claim> claims = client.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
         var serializedOverrides = RateLimitOverridesSerializer.Serialize(client.RateLimitOverrides);
         if (!string.IsNullOrEmpty(serializedOverrides))
@@ -187,7 +187,7 @@ public class OAuthHandler(
     /// <remarks>Handles the encoding of rate limit overrides</remarks>
     private string GenerateAccessToken(User user)
     {
-        user.Scopes = [.. user.Scopes, "user"];
+        user.Scopes = [.. user.Scopes, OtrClaims.User];
         IEnumerable<Claim> claims = user.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
         var serializedOverrides = RateLimitOverridesSerializer.Serialize(user.RateLimitOverrides);
         if (!string.IsNullOrEmpty(serializedOverrides))
@@ -258,7 +258,7 @@ public class OAuthHandler(
     /// <returns>A new refresh token</returns>
     private string GenerateRefreshToken(string issuer, string role)
     {
-        if (role != "user" && role != "client")
+        if (role != OtrClaims.User && role != OtrClaims.Client)
         {
             throw new ArgumentException("Role must be either 'user' or 'client'");
         }

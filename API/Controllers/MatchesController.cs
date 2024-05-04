@@ -18,7 +18,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     private readonly IMatchesService _matchesService = matchesService;
 
     [HttpPost("checks/refresh")]
-    [Authorize(Roles = "admin, system")]
+    [Authorize(Roles = $"{OtrClaims.Admin}, {OtrClaims.System}")]
     [EndpointSummary(
         "Sets all matches as requiring automation checks. Should be run if " + "automation checks are altered."
     )]
@@ -30,7 +30,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     [HttpGet("ids")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     [EndpointSummary("Returns all verified match ids")]
     public async Task<ActionResult<IEnumerable<int>>> GetAllAsync()
     {
@@ -39,7 +39,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     [HttpGet("{id:int}")]
-    [Authorize(Roles = "user, client")]
+    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
     {
         MatchDTO? match = await _matchesService.GetAsync(id);
@@ -53,7 +53,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     [HttpPost("convert")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     [EndpointSummary("Converts a list of match ids to MatchDTO objects")]
     [EndpointDescription(
         "This is a useful way to fetch a list of matches without starving the " + "program of memory. This is used by the rating processor to fetch matches"
@@ -65,12 +65,12 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     [HttpGet("duplicates")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = OtrClaims.Admin)]
     [EndpointSummary("Retrieves all known duplicate groups")]
     public async Task<IActionResult> GetDuplicatesAsync() => Ok(await _matchesService.GetAllDuplicatesAsync());
 
     [HttpPost("duplicate")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = OtrClaims.Admin)]
     [EndpointSummary("Mark a match as a confirmed or denied duplicate of the root")]
     public async Task<IActionResult> MarkDuplicatesAsync([FromQuery] int rootId,
         [FromQuery]
@@ -93,12 +93,12 @@ public class MatchesController(IMatchesService matchesService) : Controller
 
     // TODO: Should be /player/{osuId}/matches instead.
     [HttpGet("player/{osuId:long}")]
-    [Authorize(Roles = "admin, system")]
+    [Authorize(Roles = $"{OtrClaims.Admin}, {OtrClaims.System}")]
     public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatchesAsync(long osuId, int mode) =>
         Ok(await _matchesService.GetAllForPlayerAsync(osuId, mode, DateTime.MinValue, DateTime.MaxValue));
 
     [HttpGet("{id:int}/osuid")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
     {
         MatchDTO? match = await _matchesService.GetByOsuIdAsync(id);
@@ -117,7 +117,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     [HttpGet("id-mapping")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> GetIdMappingAsync()
     {
         IEnumerable<MatchIdMappingDTO> mapping = await _matchesService.GetIdMappingAsync();
@@ -133,7 +133,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     /// <response code="400">If JsonPatch data is malformed</response>
     /// <response code="200">Returns the updated match</response>
     [HttpPatch("{id:int}/verification-status")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = OtrClaims.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]

@@ -12,7 +12,6 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Authorize(Roles = OtrClaims.User)]
-[Authorize(Roles = OtrClaims.Whitelist)]
 [Route("api/v{version:apiVersion}/[controller]")]
 [SuppressMessage("ReSharper", "RouteTemplates.ActionRoutePrefixCanBeExtractedToControllerRoute")]
 public class UsersController(IUserService userService, IOAuthClientService clientService) : Controller
