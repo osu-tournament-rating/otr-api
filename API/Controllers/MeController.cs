@@ -13,9 +13,6 @@ namespace API.Controllers;
 [Authorize(Roles = OtrClaims.User)]
 public class MeController(IUserService userService, IPlayerStatsService playerStatsService) : Controller
 {
-    private readonly IUserService _userService = userService;
-    private readonly IPlayerStatsService _playerStatsService = playerStatsService;
-
     /// <summary>
     /// Get the currently logged in user
     /// </summary>
@@ -34,7 +31,7 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
             return Unauthorized();
         }
 
-        UserDTO? user = await _userService.GetAsync(id.Value);
+        UserDTO? user = await userService.GetAsync(id.Value);
         if (user?.OsuId == null)
         {
             return NotFound();
@@ -69,13 +66,13 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
             return Unauthorized();
         }
 
-        var playerId = (await _userService.GetAsync(userId.Value))?.PlayerId;
+        var playerId = (await userService.GetAsync(userId.Value))?.PlayerId;
         if (!playerId.HasValue)
         {
             return NotFound();
         }
 
-        PlayerStatsDTO result = await _playerStatsService.GetAsync(
+        PlayerStatsDTO result = await playerStatsService.GetAsync(
             playerId.Value,
             null,
             mode,
