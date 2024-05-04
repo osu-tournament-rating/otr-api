@@ -17,13 +17,11 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
     /// Get the currently logged in user
     /// </summary>
     /// <response code="401">If the requester is not properly authenticated</response>
-    /// <response code="404">If a user does not exist</response>
-    /// <response code="200">Returns the currently logged in user</response>
+    /// <response code="302">Redirects to <see cref="UsersController.GetAsync"/></response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAsync()
+    [ProducesResponseType(StatusCodes.Status302Found)]
+    public IActionResult Get()
     {
         var id = HttpContext.AuthorizedUserIdentity();
         if (!id.HasValue)
@@ -31,13 +29,7 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
             return Unauthorized();
         }
 
-        UserDTO? user = await userService.GetAsync(id.Value);
-        if (user?.OsuId == null)
-        {
-            return NotFound();
-        }
-
-        return Ok(user);
+        return RedirectToAction("Get", "Users", new { id });
     }
 
     /// <summary>
