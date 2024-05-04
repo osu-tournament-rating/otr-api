@@ -1,15 +1,14 @@
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsService baseStatsService) : Controller
 {
@@ -17,7 +16,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     private readonly IPlayerStatsService _playerStatsService = playerStatsService;
 
     [HttpGet("{playerId:int}")]
-    [Authorize(Roles = "user, client")]
+    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     public async Task<ActionResult<PlayerStatsDTO>> GetAsync(
         int playerId,
         [FromQuery] int? comparerId,
@@ -34,7 +33,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
         );
 
     [HttpGet("{username}")]
-    [Authorize(Roles = "user, client")]
+    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     public async Task<ActionResult<PlayerStatsDTO?>> GetAsync(
         string username,
         [FromQuery] int? comparerId,
@@ -51,13 +50,13 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
         );
 
     [HttpGet("histogram")]
-    [Authorize(Roles = "user, client")]
+    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     public async Task<ActionResult<IDictionary<int, int>>> GetRatingHistogramAsync(
         [FromQuery] int mode = 0
     ) => Ok(await _baseStatsService.GetHistogramAsync(mode));
 
     [HttpPost("ratingadjustments")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<RatingAdjustmentDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -65,7 +64,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     }
 
     [HttpPost("matchstats")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerMatchStatsDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -73,7 +72,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     }
 
     [HttpPost("ratingstats")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchRatingStatsDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -81,7 +80,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     }
 
     [HttpPost("basestats")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<BaseStatsPostDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -89,7 +88,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     }
 
     [HttpPost("gamewinrecords")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<GameWinRecordDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -97,7 +96,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     }
 
     [HttpPost("matchwinrecords")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchWinRecordDTO> postBody)
     {
         await _playerStatsService.BatchInsertAsync(postBody);
@@ -105,7 +104,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     }
 
     [HttpDelete]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> TruncateAsync()
     {
         await _playerStatsService.TruncateAsync();

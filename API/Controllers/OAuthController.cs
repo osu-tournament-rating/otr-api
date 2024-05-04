@@ -45,7 +45,7 @@ public class OAuthController(IOAuthHandler oAuthHandler) : Controller
     }
 
     [HttpPost("client")]
-    [Authorize(Roles = "user")]
+    [Authorize(Roles = OtrClaims.User)]
     [EndpointDescription("Create a new OAuth client")]
     public async Task<Results<UnauthorizedHttpResult, Ok<OAuthClientDTO>>> CreateClientAsync()
     {
