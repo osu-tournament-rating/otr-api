@@ -63,7 +63,7 @@ public class MeController(IUserService userService) : Controller
             return NotFound();
         }
 
-        return RedirectToAction("GetByUsername", "Stats", new
+        return RedirectToAction("Get", "Stats", new
         {
             id = playerId,
             mode,
