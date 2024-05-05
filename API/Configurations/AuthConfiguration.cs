@@ -8,4 +8,6 @@ public class AuthConfiguration
 
     [Required(ErrorMessage = "ClientCallbackUrl is required!")]
     public string ClientCallbackUrl { get; set; } = string.Empty;
+
+    public bool EnforceWhitelist { get; set; }
 }

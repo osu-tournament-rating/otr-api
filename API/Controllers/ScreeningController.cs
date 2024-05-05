@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,7 @@ public class ScreeningController(IScreeningService screeningService) : Controlle
     /// <response code="400">Errors encountered during validation</response>
     /// <response code="200">The screening result</response>
     [HttpPost]
-    [Authorize(Roles = "user, client")]
+    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ScreeningResultDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ScreenAsync([FromBody] ScreeningRequestDTO screeningRequest)

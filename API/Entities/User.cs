@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using API.Entities.Interfaces;
 
 namespace API.Entities;
 
 [Table("users")]
-public class User
+public class User : IUpdateableEntity
 {
     [Key]
     [Column("id")]

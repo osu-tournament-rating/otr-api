@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,8 +9,7 @@ namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[Authorize(Roles = "user")]
-[Authorize(Roles = "whitelist")]
+[Authorize(Roles = OtrClaims.User)]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class SearchController(ISearchService service) : Controller
 {
