@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[Authorize(Roles = "system, admin")] // Internal access only at this time
+[Authorize(Roles = $"{OtrClaims.System}, {OtrClaims.Admin}")] // Internal access only at this time
 [Route("api/v{version:apiVersion}/[controller]")]
 public class BeatmapsController(IBeatmapService beatmapService) : Controller
 {

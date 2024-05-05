@@ -28,7 +28,7 @@ public class LeaderboardServiceTests
             .SetupGetForPlayerAsync();
 
         MockMatchStatsRepository matchStatsRepository = new MockMatchStatsRepository()
-            .SetupGlobalWinrate()
+            .SetupGlobalWinRate()
             .SetupCountMatchesPlayed();
 
         MockRatingStatsRepository ratingStatsRepository = new MockRatingStatsRepository()

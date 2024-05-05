@@ -10,8 +10,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "user")]
-[Authorize(Roles = "whitelist")]
+[Authorize(Roles = OtrClaims.User)]
 public class MeController(IUserService userService, IPlayerStatsService playerStatsService) : Controller
 {
     private readonly IUserService _userService = userService;

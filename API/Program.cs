@@ -9,6 +9,7 @@ using API.Configurations;
 using API.Entities;
 using API.Handlers.Implementations;
 using API.Handlers.Interfaces;
+using API.Middlewares;
 using API.ModelBinders.Providers;
 using API.Osu.Multiplayer;
 using API.Repositories.Implementations;
@@ -21,8 +22,10 @@ using AutoMapper;
 using Dapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
@@ -307,7 +310,7 @@ builder
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidAudience = jwtConfiguration.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.Key)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.Key))
         };
     });
 
@@ -434,7 +437,15 @@ app.UseRouting(); // UseRouting must come first before UseCors
 app.UseCors(); // Placed after UseRouting and before UseAuthentication and UseAuthorization
 
 app.UseMiddleware<RequestLoggingMiddleware>();
+
 app.UseAuthentication();
+
+IOptions<AuthConfiguration> authConfiguration = app.Services.GetRequiredService<IOptions<AuthConfiguration>>();
+if (authConfiguration.Value.EnforceWhitelist)
+{
+    app.UseMiddleware<WhitelistEnforcementMiddleware>();
+}
+
 app.UseAuthorization();
 
 app.UseRateLimiter();

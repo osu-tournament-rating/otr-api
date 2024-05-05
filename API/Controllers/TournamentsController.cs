@@ -12,8 +12,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "user")]
-[Authorize(Roles = "whitelist")]
+[Authorize(Roles = OtrClaims.User)]
 public class TournamentsController(ITournamentsService tournamentsService, IMatchesService matchesService) : Controller
 {
     /// <summary>
@@ -22,7 +21,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <remarks>Will not include match data</remarks>
     /// <response code="200">Returns all tournaments</response>
     [HttpGet]
-    [Authorize(Roles = "admin, system")]
+    [Authorize(Roles = OtrClaims.System)]
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAsync()
     {
@@ -121,7 +120,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <response code="400">If JsonPatch data is malformed</response>
     /// <response code="200">Returns the patched tournament</response>
     [HttpPatch("{id:int}")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = OtrClaims.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
@@ -167,7 +166,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <response code="400">If the creation of matches was unsuccessful</response>
     /// <response code="201">Returns location information of the created matches</response>
     [HttpPost("{id:int}/matches")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = OtrClaims.Admin)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]

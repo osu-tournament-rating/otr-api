@@ -23,7 +23,8 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         name = name.Replace("_", @"\_");
-        return await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\")).ToListAsync();
+        return await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\")
+        || EF.Functions.ILike(x.Abbreviation, $"%{name}%", @"\")).ToListAsync();
     }
 
     public async Task<PlayerTournamentTeamSizeCountDTO> GetTeamSizeStatsAsync(

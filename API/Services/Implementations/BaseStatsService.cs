@@ -78,7 +78,7 @@ public class BaseStatsService(
             Percentile = currentStats.Percentile,
             Rating = currentStats.Rating,
             Volatility = currentStats.Volatility,
-            Winrate = winRate,
+            WinRate = winRate,
             HighestGlobalRank = highestGlobalRank,
             TournamentsPlayed = tournamentsPlayed,
             RankProgress = rankProgress

@@ -38,12 +38,12 @@ public class LeaderboardFilterDTO
     /// <summary>
     /// Ranges from 0.00-1.00
     /// </summary>
-    public double? MinWinrate { get; set; }
+    public double? MinWinRate { get; set; }
 
     /// <summary>
     /// Ranges from 0.00-1.00
     /// </summary>
-    public double? MaxWinrate { get; set; }
+    public double? MaxWinRate { get; set; }
 
     /// <summary>
     /// A collection of optional filters for tiers
