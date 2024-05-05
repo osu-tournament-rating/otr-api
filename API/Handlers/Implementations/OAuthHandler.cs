@@ -241,7 +241,7 @@ public class OAuthHandler(
 
         tokenDescriptor.SigningCredentials = credentials;
         tokenDescriptor.Audience = jwtConfiguration.Value.Audience;
-        tokenDescriptor.Claims.Add("instance", Guid.NewGuid().ToString());
+        tokenDescriptor.Claims = new Dictionary<string, object> { { "instance", Guid.NewGuid().ToString() } };
 
         var tokenHandler = new JwtSecurityTokenHandler();
         return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
