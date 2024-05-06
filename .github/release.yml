@@ -1,0 +1,17 @@
+changelog:
+  categories:
+    - title: Breaking Changes ⚠️
+      labels:
+        - 'api:breaking-change'
+    - title: New Features ✅
+      labels:
+        - 'type:feature'
+    - title: Code Quality 👨‍💻
+      labels:
+        - 'type:code-quality'
+    - title: Bug Fixes 🔧
+      labels:
+        - 'bug'
+    - title: Misc. Fixes 🚧
+      labels:
+        - '*'
