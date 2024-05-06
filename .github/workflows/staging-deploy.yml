@@ -2,7 +2,7 @@ name: .NET CI/CD
 
 on:
   push:
-    branches: [ staging ]
+    branches: [ master ]
 
 jobs:
   build_test:
@@ -47,6 +47,7 @@ jobs:
           docker push stagecodes/otr-api-staging
 
   deploy:
+    environment: Staging
     needs: publish
     runs-on: ubuntu-latest
     steps:
@@ -56,23 +57,23 @@ jobs:
           ref: staging
       - name: Create .env files
         run: |
-          echo "${{ secrets.STAGING_APP_ENV }}" > app.env
-          echo "${{ secrets.STAGING_DB_ENV }}" > db.env
-          echo "${{ secrets.STAGING_POSTGRES_EXPORTER }}" > postgres_exporter.env
+          echo "${{ secrets.APP_ENV }}" > app.env
+          echo "${{ secrets.DB_ENV }}" > db.env
+          echo "${{ secrets.POSTGRES_EXPORTER_ENV }}" > postgres_exporter.env
       - name: Copy files to server
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.STAGING_SSH_HOST }}
-          username: ${{ secrets.STAGING_SSH_USER }}
-          key: ${{ secrets.STAGING_SSH_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
           source: "app.env,db.env,postgres_exporter.env,docker-compose-staging.yml,otel-collector-config.yml,prometheus.yml"
           target: "~/otr-api/"
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.STAGING_SSH_HOST }}
-          username: ${{ secrets.STAGING_SSH_USER }}
-          key: ${{ secrets.STAGING_SSH_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
             cd ~/otr-api
             docker compose -f docker-compose-staging.yml pull

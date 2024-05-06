@@ -1,8 +1,7 @@
 name: .NET CI/CD
 
 on:
-  push:
-    branches: [ master ]
+  tags: [v*]
 
 jobs:
   build_test:
@@ -47,9 +46,9 @@ jobs:
           docker push stagecodes/otr-api-prod
 
   deploy:
+    environment: Production
     needs: publish
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -57,23 +56,23 @@ jobs:
           ref: master
       - name: Create .env files
         run: |
-          echo "${{ secrets.PROD_APP_ENV }}" > app.env
-          echo "${{ secrets.PROD_DB_ENV }}" > db.env
-          echo "${{ secrets.PROD_POSTGRES_EXPORTER }}" > postgres_exporter.env
+          echo "${{ secrets.APP_ENV }}" > app.env
+          echo "${{ secrets.DB_ENV }}" > db.env
+          echo "${{ secrets.POSTGRES_EXPORTER_ENV }}" > postgres_exporter.env
       - name: Copy files to server
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.PROD_SSH_HOST }}
-          username: ${{ secrets.PROD_SSH_USER }}
-          key: ${{ secrets.PROD_SSH_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
           source: "app.env,db.env,postgres_exporter.env,docker-compose-prod.yml,otel-collector-config.yml,prometheus.yml"
           target: "~/otr-api/"
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.PROD_SSH_HOST }}
-          username: ${{ secrets.PROD_SSH_USER }}
-          key: ${{ secrets.PROD_SSH_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
             cd ~/otr-api
             docker compose -f docker-compose-prod.yml pull
