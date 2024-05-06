@@ -1,7 +1,9 @@
 name: .NET CI/CD
 
 on:
-  tags: [v*]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build_test:
