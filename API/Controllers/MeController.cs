@@ -10,8 +10,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "user")]
-[Authorize(Roles = "whitelist")]
+[Authorize(Roles = OtrClaims.User)]
 public class MeController(IUserService userService, IPlayerStatsService playerStatsService) : Controller
 {
     private readonly IUserService _userService = userService;
@@ -26,7 +25,7 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<UserInfoDTO>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync()
     {
         var id = HttpContext.AuthorizedUserIdentity();
@@ -35,7 +34,7 @@ public class MeController(IUserService userService, IPlayerStatsService playerSt
             return Unauthorized();
         }
 
-        UserInfoDTO? user = await _userService.GetAsync(id.Value);
+        UserDTO? user = await _userService.GetAsync(id.Value);
         if (user?.OsuId == null)
         {
             return NotFound();

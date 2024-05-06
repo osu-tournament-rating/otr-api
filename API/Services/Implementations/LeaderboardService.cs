@@ -89,7 +89,7 @@ public class LeaderboardService(
                     Name = name ?? "<Unknown>",
                     Rating = baseStat.Rating,
                     Tier = baseStat.RankProgress.CurrentTier,
-                    WinRate = baseStat.Winrate,
+                    WinRate = baseStat.WinRate,
                     Mode = baseStat.Mode,
                     Country = country
                 }
@@ -150,25 +150,25 @@ public class LeaderboardService(
             );
         }
 
-        if (query.Filter.MinWinrate < 0 || query.Filter.MinWinrate > query.Filter.MaxWinrate)
+        if (query.Filter.MinWinRate < 0 || query.Filter.MinWinRate > query.Filter.MaxWinRate)
         {
             throw new ArgumentException(
                 "MinWinrate must be greater than 0 and less than or equal to MaxWinrate",
-                nameof(query.Filter.MinWinrate)
+                nameof(query.Filter.MinWinRate)
             );
         }
 
-        if (query.Filter.MaxWinrate < 0 || query.Filter.MaxWinrate < query.Filter.MinWinrate)
+        if (query.Filter.MaxWinRate < 0 || query.Filter.MaxWinRate < query.Filter.MinWinRate)
         {
             throw new ArgumentException(
                 "MaxWinrate must be greater than 0 and greater than or equal to MinWinrate",
-                nameof(query.Filter.MaxWinrate)
+                nameof(query.Filter.MaxWinRate)
             );
         }
 
-        if (query.Filter.MinWinrate > 1 || query.Filter.MaxWinrate > 1)
+        if (query.Filter.MinWinRate > 1 || query.Filter.MaxWinRate > 1)
         {
-            throw new ArgumentException("Winrate must be between 0 and 1", nameof(query.Filter.MinWinrate));
+            throw new ArgumentException("Winrate must be between 0 and 1", nameof(query.Filter.MinWinRate));
         }
     }
 
@@ -178,7 +178,7 @@ public class LeaderboardService(
         LeaderboardChartType chartType
     )
     {
-        BaseStatsDTO? baseStats = await _baseStatsService.GetForPlayerAsync(null, playerId, mode);
+        BaseStatsDTO? baseStats = await _baseStatsService.GetAsync(null, playerId, mode);
 
         if (baseStats == null)
         {
@@ -210,7 +210,7 @@ public class LeaderboardService(
             Percentile = baseStats.Percentile,
             Rating = baseStats.Rating,
             Matches = baseStats.MatchesPlayed,
-            Winrate = baseStats.Winrate,
+            WinRate = baseStats.WinRate,
             RankChart = rankChart
         };
     }

@@ -10,7 +10,9 @@ namespace API.Repositories.Implementations;
 public class OAuthClientRepository(OtrContext context) : RepositoryBase<OAuthClient>(context), IOAuthClientRepository
 {
     private readonly OtrContext _context = context;
-    public async Task<bool> SecretInUseAsync(string clientSecret) { return await _context.OAuthClients.AnyAsync(x => x.Secret == clientSecret); }
+
+    public async Task<bool> SecretInUseAsync(string clientSecret) =>
+        await _context.OAuthClients.AnyAsync(x => x.Secret == clientSecret);
 
     public async Task<bool> ExistsAsync(int clientId, string clientSecret)
     {
@@ -20,6 +22,9 @@ public class OAuthClientRepository(OtrContext context) : RepositoryBase<OAuthCli
 
         return match != null;
     }
+
+    public async Task<bool> ExistsAsync(int id, int userId) =>
+        await _context.OAuthClients.AnyAsync(c => c.Id == id && c.UserId == userId);
 
     public async Task<OAuthClient?> SetRatelimitOverridesAsync(int clientId, RateLimitOverrides rateLimitOverrides)
     {
@@ -31,9 +36,7 @@ public class OAuthClientRepository(OtrContext context) : RepositoryBase<OAuthCli
         }
 
         match.RateLimitOverrides = rateLimitOverrides;
-        _context.OAuthClients.Update(match);
-
-        await _context.SaveChangesAsync();
+        await UpdateAsync(match);
         return match;
     }
 }

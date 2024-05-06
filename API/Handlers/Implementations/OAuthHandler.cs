@@ -28,70 +28,59 @@ public class OAuthHandler(
     IUserRepository userRepository
     ) : IOAuthHandler
 {
-    private readonly ILogger<OAuthHandler> _logger = logger;
-    private readonly IOAuthClientService _clientService = clientService;
-    private readonly IOAuthClientRepository _clientRepository = clientRepository;
-    private readonly IOsuClient _osuClient = osuClient;
-    private readonly IOptions<JwtConfiguration> _jwtConfiguration = jwtConfiguration;
-    private readonly IOptions<AuthConfiguration> _authConfiguration = authConfiguration;
-    private readonly IPlayerRepository _playerRepository = playerRepository;
-    private readonly IUserRepository _userRepository = userRepository;
-
-    private const int ACCESS_DURATION_SECONDS = 3600;
+    private const int AccessDurationSeconds = 3600;
+    private const int RefreshDurationSeconds = 1_209_600;
 
     public async Task<OAuthResponseDTO?> AuthorizeAsync(string osuAuthCode)
     {
-        _logger.LogDebug("Attempting authorization via osuAuthToken");
+        logger.LogDebug("Attempting authorization via osuAuthToken");
 
         if (string.IsNullOrEmpty(osuAuthCode))
         {
-            _logger.LogDebug("osuAuthToken null or empty, cannot authorize");
+            logger.LogDebug("osuAuthCode null or empty, cannot authorize");
             return null;
         }
 
         IGlobalUser osuUser = await AuthorizeOsuUserAsync(osuAuthCode);
-        Player player = await _playerRepository.GetOrCreateAsync(osuUser.Id);
+        Player player = await playerRepository.GetOrCreateAsync(osuUser.Id);
         User user = await AuthenticateUserAsync(player.Id);
 
-        // Because this user is logging in with osu!, we can
-        // issue a new refresh token.
-        var accessToken = GenerateAccessToken(user);
-        var refreshToken = GenerateRefreshToken(user.Id.ToString(), _jwtConfiguration.Value.Audience, "user");
-
-        _logger.LogDebug(
+        logger.LogDebug(
             "Authorized user with id {Id}, access expires in {seconds}",
             user.Id,
-            ACCESS_DURATION_SECONDS
+            AccessDurationSeconds
         );
 
         return new OAuthResponseDTO
         {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            AccessExpiration = ACCESS_DURATION_SECONDS
+            AccessToken = GenerateAccessToken(user),
+            RefreshToken = GenerateRefreshToken(user.Id.ToString(), "user"),
+            AccessExpiration = AccessDurationSeconds
         };
     }
 
     public async Task<OAuthResponseDTO?> AuthorizeAsync(int clientId, string clientSecret)
     {
-        var validClient = await _clientService.ValidateAsync(clientId, clientSecret);
-        if (!validClient)
+        logger.LogDebug("Attempting authorization via client credentials");
+
+        // Get the client and validate secret
+        OAuthClient? client = await clientRepository.GetAsync(clientId);
+        if (client is null || client.Secret != clientSecret)
         {
             return null;
         }
 
-        OAuthClient? client = await _clientRepository.GetAsync(clientId);
-        if (client == null)
-        {
-            // Very unlikely, but possible
-            return null;
-        }
+        logger.LogDebug(
+            "Authorized client with id {Id}, access expires in {seconds}",
+            clientId,
+            AccessDurationSeconds
+        );
 
         return new OAuthResponseDTO
         {
             AccessToken = GenerateAccessToken(client),
-            RefreshToken = GenerateRefreshToken(clientId.ToString(), _jwtConfiguration.Value.Audience, "client"),
-            AccessExpiration = ACCESS_DURATION_SECONDS
+            RefreshToken = GenerateRefreshToken(clientId.ToString(), "client"),
+            AccessExpiration = AccessDurationSeconds
         };
     }
 
@@ -104,50 +93,43 @@ public class OAuthHandler(
             return null;
         }
 
-        var refreshIssuer = decryptedRefresh.Issuer;
-
-        // The ids of the access token and refresh token align. Validate the user's information
-        if (!int.TryParse(refreshIssuer, out var issuerId))
+        if (!int.TryParse(decryptedRefresh.Issuer, out var issuerId))
         {
-            _logger.LogWarning("Failed to decrypt refresh token issuer into an integer (id)");
+            logger.LogWarning("Failed to decrypt refresh token issuer into an integer (id)");
             return null;
         }
 
-        // Check the role of the issuer
+        // Validate the issuer is a user or client
         var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(decryptedRefresh.Claims));
         if (!claimsPrincipal.IsUser() && !claimsPrincipal.IsClient())
         {
-            _logger.LogWarning("Refresh token does not have the user or client role.");
+            logger.LogWarning("Refresh token does not have the user or client role.");
             return null;
         }
-
         if (claimsPrincipal.IsUser() && claimsPrincipal.IsClient())
         {
-            _logger.LogError("Refresh token cannot have both user and client roles.");
+            logger.LogError("Refresh token cannot have both user and client roles.");
             return null;
         }
 
-        // If the issuer is a user, validate the user id.
-        // If the issuer is a client, validate the client id.
-
         var accessToken = string.Empty;
-
+        // Generate new access token
         if (claimsPrincipal.IsUser())
         {
-            User? user = await _userRepository.GetAsync(issuerId);
+            User? user = await userRepository.GetAsync(issuerId);
             if (user == null)
             {
-                _logger.LogWarning("Decrypted refresh token issuer is not a valid user");
+                logger.LogWarning("Decrypted refresh token issuer is not a valid user");
                 return null;
             }
             accessToken = GenerateAccessToken(user);
         }
         else if (claimsPrincipal.IsClient())
         {
-            OAuthClient? client = await _clientRepository.GetAsync(issuerId);
+            OAuthClient? client = await clientRepository.GetAsync(issuerId);
             if (client == null)
             {
-                _logger.LogWarning("Decrypted refresh token issuer is not a valid client");
+                logger.LogWarning("Decrypted refresh token issuer is not a valid client");
                 return null;
             }
             accessToken = GenerateAccessToken(client);
@@ -158,7 +140,7 @@ public class OAuthHandler(
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            AccessExpiration = ACCESS_DURATION_SECONDS
+            AccessExpiration = AccessDurationSeconds
         };
     }
 
@@ -166,29 +148,28 @@ public class OAuthHandler(
     {
         var secret = GenerateClientSecret();
 
-        while (await _clientService.SecretInUse(secret))
+        while (await clientService.SecretInUse(secret))
         {
             secret = GenerateClientSecret();
         }
 
-        return await _clientService.CreateAsync(userId, secret, scopes);
+        return await clientService.CreateAsync(userId, secret, scopes);
     }
 
     /// <summary>
     /// Wrapper for generating a JSON Web Token (JWT) for a given client
     /// </summary>
-    /// <param name="client"></param>
-    /// <returns></returns>
+    /// <remarks>Handles the encoding of rate limit overrides</remarks>
     private string GenerateAccessToken(OAuthClient client)
     {
-        client.Scopes = [.. client.Scopes, "client"];
+        client.Scopes = [.. client.Scopes, OtrClaims.Client];
         IEnumerable<Claim> claims = client.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
         var serializedOverrides = RateLimitOverridesSerializer.Serialize(client.RateLimitOverrides);
         if (!string.IsNullOrEmpty(serializedOverrides))
         {
             claims = [.. claims,
                 new Claim(
-                    OtrClaimTypes.RateLimitOverrides,
+                    OtrClaims.RateLimitOverrides,
                     serializedOverrides
                 )
             ];
@@ -196,27 +177,24 @@ public class OAuthHandler(
 
         return GenerateAccessToken(
             client.Id.ToString(),
-            _jwtConfiguration.Value.Audience,
-            claims,
-            ACCESS_DURATION_SECONDS
+            claims
         );
     }
 
     /// <summary>
     /// Wrapper for generating a JSON Web Token (JWT) for a given user
     /// </summary>
-    /// <param name="user"></param>
-    /// <returns></returns>
+    /// <remarks>Handles the encoding of rate limit overrides</remarks>
     private string GenerateAccessToken(User user)
     {
-        user.Scopes = [.. user.Scopes, "user"];
+        user.Scopes = [.. user.Scopes, OtrClaims.User];
         IEnumerable<Claim> claims = user.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
         var serializedOverrides = RateLimitOverridesSerializer.Serialize(user.RateLimitOverrides);
         if (!string.IsNullOrEmpty(serializedOverrides))
         {
             claims = [.. claims,
                 new Claim(
-                OtrClaimTypes.RateLimitOverrides,
+                OtrClaims.RateLimitOverrides,
                 serializedOverrides
                 )
             ];
@@ -224,93 +202,81 @@ public class OAuthHandler(
 
         return GenerateAccessToken(
             user.Id.ToString(),
-            _jwtConfiguration.Value.Audience,
-            claims,
-            ACCESS_DURATION_SECONDS
+            claims
         );
     }
 
     /// <summary>
-    /// Generates a JSON Web Token (JWT) for a given user id and set of roles (claims).
-    /// Encodes the identity, claims, and expiration into the JWT. This JWT acts as
-    /// the OAuth2 access token.
+    /// Generates a JSON Web Token (JWT) for a given issuer and set of roles (claims) to act as the OAuth2 access token.
     /// </summary>
-    /// <param name="issuer">The id of the user or client who generated this token</param>
-    /// <param name="audience">The intended recipient of the JWT. This should be an environment variable.</param>
+    /// <param name="issuer">The id of the user or client this token is generated for</param>
     /// <param name="claims">The claims used to form the <see cref="ClaimsIdentity"/></param>
-    /// <param name="expiration">Token expiration in seconds</param>
-    /// <returns></returns>
-    private string GenerateAccessToken(string issuer, string audience, IEnumerable<Claim> claims, int expiration)
+    private string GenerateAccessToken(string issuer, IEnumerable<Claim> claims)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.Value.Key));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-        // Add randomness to each token with a unique GUID
-        claims = [.. claims, new Claim("instance", Guid.NewGuid().ToString())];
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
             IssuedAt = DateTime.UtcNow,
-            Expires = DateTime.UtcNow.AddSeconds(expiration),
-            Issuer = issuer,
-            Audience = audience,
-            SigningCredentials = credentials
+            Expires = DateTime.UtcNow.AddSeconds(AccessDurationSeconds),
+            Issuer = issuer
         };
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+        return WriteToken(tokenDescriptor);
     }
 
-    private static JwtSecurityToken ReadToken(string token)
+    /// <summary>
+    /// Deserializes a string into a <see cref="JwtSecurityToken"/>
+    /// </summary>
+    private static JwtSecurityToken ReadToken(string token) =>
+        new JwtSecurityTokenHandler().ReadJwtToken(token);
+
+    /// <summary>
+    /// Serializes a token descriptor into a string
+    /// </summary>
+    /// <remarks>Adds a unique GUID to each token to ensure randomness</remarks>
+    private string WriteToken(SecurityTokenDescriptor tokenDescriptor)
     {
-        return new JwtSecurityTokenHandler().ReadJwtToken(token);
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.Value.Key));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        tokenDescriptor.SigningCredentials = credentials;
+        tokenDescriptor.Audience = jwtConfiguration.Value.Audience;
+        tokenDescriptor.Claims = new Dictionary<string, object> { { "instance", Guid.NewGuid().ToString() } };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
     }
 
     /// <summary>
     /// Generates a JSON Web Token (JWT) for a given issuer to act as an OAuth2 refresh token.
     /// </summary>
-    /// <param name="issuer">The id of the user or client who generated this token</param>
-    /// <param name="audience">The issuer of the JWT. This should be an environment variable.</param>
-    /// <param name="role">The role that applies to the JWT. For a refresh token, this should only be 'user' or 'client'
-    /// depending on what type of entity generated this token.</param>
-    /// <param name="expirationSeconds">The expiration in seconds</param>
-    /// <returns></returns>
-    private string GenerateRefreshToken(
-        string issuer,
-        string audience,
-        string role,
-        int expirationSeconds = 1_209_600
-    )
+    /// <param name="issuer">The id of the user or client this token is generated for</param>
+    /// <param name="role">
+    /// The role value to encode to the JWT. This value needs to be either <see cref="OtrClaims.User"/>
+    /// or <see cref="OtrClaims.Client"/> depending on what type of entity this token is generated for
+    /// </param>
+    /// <returns>A new refresh token</returns>
+    private string GenerateRefreshToken(string issuer, string role)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.Value.Key));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-        if (role != "user" && role != "client")
+        if (role != OtrClaims.User && role != OtrClaims.Client)
         {
             throw new ArgumentException("Role must be either 'user' or 'client'");
         }
 
-        Claim[] claims = [new Claim(ClaimTypes.Role, role), new Claim("instance", Guid.NewGuid().ToString())];
-
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(claims),
+            Subject = new ClaimsIdentity([new Claim(ClaimTypes.Role, role)]),
             IssuedAt = DateTime.UtcNow,
-            Expires = DateTime.UtcNow.AddSeconds(expirationSeconds),
-            Issuer = issuer,
-            Audience = audience,
-            SigningCredentials = credentials
+            Expires = DateTime.UtcNow.AddSeconds(RefreshDurationSeconds),
+            Issuer = issuer
         };
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+        return WriteToken(tokenDescriptor);
     }
 
     /// <summary>
     /// Generates a new alpha-numeric client secret (size 50 chars)
     /// </summary>
-    /// <returns></returns>
     private static string GenerateClientSecret()
     {
         const int length = 50;
@@ -320,23 +286,27 @@ public class OAuthHandler(
         return new string(Enumerable.Repeat(chars, length).Select(s => s[r.Next(s.Length)]).ToArray());
     }
 
+    /// <summary>
+    /// Uses OsuSharp to authorize the current user via osu! API v2
+    /// </summary>
+    /// <param name="osuCode">The authorization code for the user</param>
+    /// <returns>The authorized user</returns>
     private async Task<IGlobalUser> AuthorizeOsuUserAsync(string osuCode)
     {
-        // Use OsuSharp to authorize via osu! API v2
-        await _osuClient.GetAccessTokenFromCodeAsync(osuCode, _authConfiguration.Value.ClientCallbackUrl);
-        return await _osuClient.GetCurrentUserAsync();
+        await osuClient.GetAccessTokenFromCodeAsync(osuCode, authConfiguration.Value.ClientCallbackUrl);
+        return await osuClient.GetCurrentUserAsync();
     }
 
+    /// <summary>
+    /// Gets and "logs in" the user for the given player id
+    /// </summary>
     private async Task<User> AuthenticateUserAsync(int playerId)
     {
-        // Double db call, kind of inefficient
-        User user = await _userRepository.GetByPlayerIdOrCreateAsync(playerId);
+        User user = await userRepository.GetByPlayerIdOrCreateAsync(playerId);
 
         user.LastLogin = DateTime.UtcNow;
-        user.Updated = DateTime.UtcNow;
-        user.PlayerId = playerId;
+        await userRepository.UpdateAsync(user);
 
-        await _userRepository.UpdateAsync(user);
         return user;
     }
 }

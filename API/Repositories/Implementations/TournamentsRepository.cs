@@ -23,7 +23,8 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         name = name.Replace("_", @"\_");
-        return await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\")).ToListAsync();
+        return await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\")
+        || EF.Functions.ILike(x.Abbreviation, $"%{name}%", @"\")).ToListAsync();
     }
 
     public async Task<PlayerTournamentTeamSizeCountDTO> GetTeamSizeStatsAsync(
@@ -68,7 +69,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
                 // Calc average match cost
                 MatchCost = t.Matches
                     // Filter invalid matches (Above filter uses Any, so invalid matches can still be included)
-                    .Where(m => m.VerificationStatus == (int)MatchVerificationStatus.Verified)
+                    .Where(m => m.VerificationStatus == MatchVerificationStatus.Verified)
                     // Filter for ratings belonging to target player
                     .SelectMany(m => m.RatingStats)
                     .Where(mrs => mrs.PlayerId == playerId)
@@ -124,7 +125,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
                     m.StartTime >= dateMin
                     && m.StartTime <= dateMax
                     // Verified
-                    && m.VerificationStatus == (int)MatchVerificationStatus.Verified
+                    && m.VerificationStatus == MatchVerificationStatus.Verified
                     // Participated in by player
                     && m.RatingStats.Any(stat => stat.PlayerId == playerId)
                 ));

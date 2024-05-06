@@ -1,95 +1,94 @@
+using API.Configurations;
 using API.Entities;
-using API.Osu;
+using API.Osu.Enums;
 using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace API.BackgroundWorkers;
 
+/// <summary>
+/// Worker tasked with updating <see cref="Player"/>s with current information from the osu! api
+/// </summary>
 public class OsuPlayerDataWorker(
     ILogger<OsuPlayerDataWorker> logger,
     IOsuApiService apiService,
     IServiceProvider serviceProvider,
-    IConfiguration config
+    IOptions<OsuConfiguration> osuConfiguration
     ) : BackgroundService
 {
-    private readonly ILogger<OsuPlayerDataWorker> _logger = logger;
-    private readonly IOsuApiService _apiService = apiService;
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly bool _shouldUpdateUsersAutomatically = config.GetValue<bool>("Osu:AutoUpdateUsers");
-    private const int UPDATE_INTERVAL_SECONDS = 5;
+    private const int UpdateIntervalSeconds = 5;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) =>
         await BackgroundTask(stoppingToken);
 
     private async Task BackgroundTask(CancellationToken cancellationToken)
     {
-        if (!_shouldUpdateUsersAutomatically)
+        if (!osuConfiguration.Value.AutoUpdateUsers)
         {
-            _logger.LogInformation("Skipping osu! player data worker due to configuration");
+            logger.LogInformation("Skipping osu! player data worker due to configuration");
             return;
         }
 
-        _logger.LogInformation("Initialized osu! player data worker");
+        logger.LogInformation("Initialized osu! player data worker");
         while (!cancellationToken.IsCancellationRequested)
         {
             /**
-             * Create service scope, get the player service, and get the first pending player.
-             *
              * Players are marked out of date after a certain amount of time has passed
              * since their last update. This process automatically fetches updated
-             * information from the osu! API. This updates the player's rank and username.
+             * information from the osu! API. This updates the player's ranks, username, and ruleset.
              */
-            using (IServiceScope scope = _serviceProvider.CreateScope())
+            using (IServiceScope scope = serviceProvider.CreateScope())
             {
                 IPlayerRepository playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
                 var playersToUpdate = (await playerService.GetOutdatedAsync()).ToList();
 
                 if (playersToUpdate.Count == 0)
                 {
-                    await Task.Delay(UPDATE_INTERVAL_SECONDS * 1000, cancellationToken);
+                    await Task.Delay(UpdateIntervalSeconds * 1000, cancellationToken);
                     continue;
                 }
 
-                foreach (Player? player in playersToUpdate)
+                foreach (Player player in playersToUpdate)
                 {
-                    // Fetch ranks for all 4 game modes and update accordingly.
-                    foreach (OsuEnums.Mode gameModeEnum in Enum.GetValues<OsuEnums.Mode>())
+                    // Fetch data for all rulesets and update accordingly
+                    var updatedOnce = false;
+                    foreach (Ruleset ruleset in Enum.GetValues<Ruleset>())
                     {
-                        OsuApiUser? apiResult = await _apiService.GetUserAsync(
+                        OsuApiUser? apiResult = await apiService.GetUserAsync(
                             player.OsuId,
-                            gameModeEnum,
-                            $"Identified player that needs to have ranks updated for mode {gameModeEnum}"
+                            ruleset,
+                            $"Identified player that needs to have ranks updated for mode {ruleset}"
                         );
-                        if (apiResult == null)
+                        if (apiResult is null)
                         {
-                            player.Updated = DateTime.UtcNow;
                             await playerService.UpdateAsync(player);
-                            _logger.LogWarning(
+                            logger.LogWarning(
                                 "Failed to fetch data for player {PlayerId} in mode {GameMode}, skipping (user is likely restricted)",
                                 player.OsuId,
-                                gameModeEnum
+                                ruleset
                             );
                             break;
                         }
 
-                        switch (gameModeEnum)
+                        if (!updatedOnce)
                         {
-                            case OsuEnums.Mode.Standard:
-                                player.RankStandard = apiResult.Rank;
-                                player.Username = apiResult.Username; // Only needs an update once
-                                break;
-                            case OsuEnums.Mode.Taiko:
-                                player.RankTaiko = apiResult.Rank;
-                                break;
-                            case OsuEnums.Mode.Catch:
-                                player.RankCatch = apiResult.Rank;
-                                break;
-                            case OsuEnums.Mode.Mania:
-                                player.RankMania = apiResult.Rank;
-                                break;
+                            // Only need to be updated once
+                            player.Country = apiResult.Country;
+                            player.Username = apiResult.Username;
+                            player.Ruleset = apiResult.Ruleset;
+                            updatedOnce = true;
                         }
 
-                        player.Country = apiResult.Country;
+                        // Suppression: Four ruleset values are the only possible cases
+                        // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+                        switch (ruleset)
+                        {
+                            case Ruleset.Standard: player.RankStandard = apiResult.Rank; break;
+                            case Ruleset.Taiko: player.RankTaiko = apiResult.Rank; break;
+                            case Ruleset.Catch: player.RankCatch = apiResult.Rank; break;
+                            case Ruleset.Mania: player.RankMania = apiResult.Rank; break;
+                        }
                     }
 
                     await playerService.UpdateAsync(player);

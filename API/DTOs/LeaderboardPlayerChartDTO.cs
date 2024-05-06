@@ -11,7 +11,7 @@ public class LeaderboardPlayerChartDTO
     public double Percentile { get; set; }
     public double Rating { get; set; }
     public int Matches { get; set; }
-    public double Winrate { get; set; }
+    public double WinRate { get; set; }
     public int HighestRank { get; set; }
     public string Tier => RatingUtils.GetTier(Rating);
     public PlayerRankChartDTO RankChart { get; set; } = new();

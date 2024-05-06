@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
-using API.Osu;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Utilities;
 using AutoMapper;
@@ -43,7 +43,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return players;
     }
 
-    public async Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds) =>
+    public async Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds) =>
         await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
     public async Task<IEnumerable<Player>> GetAsync(bool eagerLoad)
@@ -60,7 +60,10 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return await _context.Players.AsNoTracking().ToListAsync();
     }
 
-    public async Task<IEnumerable<Player>> SearchAsync(string username) => await SearchQuery(username, true).ToListAsync();
+    public async Task<IEnumerable<Player>> SearchAsync(string username) =>
+        await SearchQuery(username, true)
+            .Include(p => p.Ratings)
+            .ToListAsync();
 
     public async Task<Player?> GetAsync(string username)
     {
@@ -84,6 +87,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
         return await CreateAsync(new Player { OsuId = osuId });
     }
 
+    // TODO: Refactor param "mode" to use OsuEnums.Ruleset
     public async Task<Player?> GetAsync(long osuId, bool eagerLoad, int mode = 0, int offsetDays = -1)
     {
         if (!eagerLoad)
@@ -95,11 +99,11 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
 
         Player? p = await _context
             .Players.Include(x =>
-                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.PlayMode == mode)
+                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.Ruleset == (Ruleset)mode)
             )
             .ThenInclude(x => x.Game)
             .ThenInclude(x => x.Match)
-            .Include(x => x.Ratings.Where(y => y.Mode == mode))
+            .Include(x => x.Ratings.Where(y => y.Mode == (Ruleset)mode))
             .Include(x => x.User)
             .WhereOsuId(osuId)
             .FirstOrDefaultAsync();
@@ -113,10 +117,10 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
     public async Task<long> GetOsuIdAsync(int id) =>
         await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
 
-    public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode) => await (
+    public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset) => await (
             from p in _context.Players
             join r in _context.BaseStats on p.Id equals r.PlayerId
-            where r.Mode == (int)mode
+            where r.Mode == ruleset
             orderby r.Rating descending
             select new PlayerRatingDTO
             {
@@ -188,11 +192,11 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
     public async Task<PlayerInfoDTO?> GetPlayerDTOByOsuIdAsync(
         long osuId,
         bool eagerLoad = false,
-        OsuEnums.Mode mode = OsuEnums.Mode.Standard,
+        Ruleset ruleset = Ruleset.Standard,
         int offsetDays = -1
     )
     {
-        PlayerInfoDTO? obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)mode, offsetDays));
+        PlayerInfoDTO? obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)ruleset, offsetDays));
 
         if (obj == null)
         {

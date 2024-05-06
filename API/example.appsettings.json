@@ -21,7 +21,8 @@
     "Audience": ""
   },
   "Auth": {
-    "ClientCallbackUrl": ""
+    "ClientCallbackUrl": "",
+    "EnforceWhitelist": false
   },
   "RateLimit": {
     "PermitLimit": 30,

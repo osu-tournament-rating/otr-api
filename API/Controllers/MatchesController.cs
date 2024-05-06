@@ -1,25 +1,24 @@
 using API.DTOs;
+using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-// ReSharper disable PossibleMultipleEnumeration
 namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class MatchesController(IMatchesService matchesService) : Controller
 {
     private readonly IMatchesService _matchesService = matchesService;
 
     [HttpPost("checks/refresh")]
-    [Authorize(Roles = "admin, system")]
+    [Authorize(Roles = $"{OtrClaims.Admin}, {OtrClaims.System}")]
     [EndpointSummary(
         "Sets all matches as requiring automation checks. Should be run if " + "automation checks are altered."
     )]
@@ -31,7 +30,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     [HttpGet("ids")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     [EndpointSummary("Returns all verified match ids")]
     public async Task<ActionResult<IEnumerable<int>>> GetAllAsync()
     {
@@ -40,7 +39,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     [HttpGet("{id:int}")]
-    [Authorize(Roles = "user, client")]
+    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
     {
         MatchDTO? match = await _matchesService.GetAsync(id);
@@ -54,7 +53,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     [HttpPost("convert")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     [EndpointSummary("Converts a list of match ids to MatchDTO objects")]
     [EndpointDescription(
         "This is a useful way to fetch a list of matches without starving the " + "program of memory. This is used by the rating processor to fetch matches"
@@ -66,12 +65,12 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     [HttpGet("duplicates")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = OtrClaims.Admin)]
     [EndpointSummary("Retrieves all known duplicate groups")]
     public async Task<IActionResult> GetDuplicatesAsync() => Ok(await _matchesService.GetAllDuplicatesAsync());
 
     [HttpPost("duplicate")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = OtrClaims.Admin)]
     [EndpointSummary("Mark a match as a confirmed or denied duplicate of the root")]
     public async Task<IActionResult> MarkDuplicatesAsync([FromQuery] int rootId,
         [FromQuery]
@@ -94,12 +93,12 @@ public class MatchesController(IMatchesService matchesService) : Controller
 
     // TODO: Should be /player/{osuId}/matches instead.
     [HttpGet("player/{osuId:long}")]
-    [Authorize(Roles = "admin, system")]
+    [Authorize(Roles = $"{OtrClaims.Admin}, {OtrClaims.System}")]
     public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatchesAsync(long osuId, int mode) =>
         Ok(await _matchesService.GetAllForPlayerAsync(osuId, mode, DateTime.MinValue, DateTime.MaxValue));
 
     [HttpGet("{id:int}/osuid")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
     {
         MatchDTO? match = await _matchesService.GetByOsuIdAsync(id);
@@ -118,46 +117,58 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     [HttpGet("id-mapping")]
-    [Authorize(Roles = "system")]
+    [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> GetIdMappingAsync()
     {
         IEnumerable<MatchIdMappingDTO> mapping = await _matchesService.GetIdMappingAsync();
         return Ok(mapping);
     }
 
-    [HttpPatch("verification-status/{id:int}")]
-    [Authorize(Roles = "admin")]
-    [EndpointSummary(
-        "Takes in json patch for verification status, and returns the patched object. The object being patched is a MatchDTO."
-    )]
+    /// <summary>
+    /// Update the verification status of a match
+    /// </summary>
+    /// <param name="id">Match id</param>
+    /// <param name="patch">JsonPatch data</param>
+    /// <response code="404">If a match matching the given id does not exist</response>
+    /// <response code="400">If JsonPatch data is malformed</response>
+    /// <response code="200">Returns the updated match</response>
+    [HttpPatch("{id:int}/verification-status")]
+    [Authorize(Roles = OtrClaims.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> EditVerificationStatus(int id,
-        [FromBody]
-        JsonPatchDocument<MatchDTO> patch)
+    public async Task<IActionResult> UpdateVerificationStatusAsync(int id, [FromBody] JsonPatchDocument<MatchDTO> patch)
     {
         MatchDTO? match = await _matchesService.GetAsync(id, false);
-
         if (match is null)
         {
-            return NotFound($"Match with id {id} does not exist");
+            return NotFound();
         }
 
-        //Ensure request is only attempting to perform a replace operation.
-        if (patch.Operations.Any(op => op.op != "replace"))
+        if (!patch.IsReplaceOnly())
         {
-            return BadRequest("This endpoint can only perform replace operations.");
+            return BadRequest();
         }
 
         patch.ApplyTo(match, ModelState);
-
         if (!TryValidateModel(match))
         {
             return BadRequest(ModelState);
         }
 
-        MatchDTO updatedMatch = await _matchesService.UpdateVerificationStatus(id, match.VerificationStatus);
+        if (match.VerificationStatus is null)
+        {
+            return BadRequest();
+        }
 
+        var verifierId = HttpContext.AuthorizedUserIdentity();
+        MatchDTO? updatedMatch = await _matchesService.UpdateVerificationStatusAsync(
+            id,
+            (MatchVerificationStatus)match.VerificationStatus,
+            MatchVerificationSource.MatchVerifier,
+            "Updated manually by an admin",
+            verifierId
+            );
         return Ok(updatedMatch);
     }
 }

@@ -9,6 +9,7 @@ services:
     depends_on:
       - db
       # - cache
+    restart: always
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -19,13 +20,17 @@ services:
       - clickhouse
     environment:
       - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource
+    volumes:
+      - 'grafana_storage:/var/lib/grafana'
+    restart: always
   prometheus:
     container_name: prometheus
     image: prom/prometheus
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: always
   db:
     container_name: db
     image: postgres:latest
@@ -35,8 +40,9 @@ services:
       - db.env
     ports:
       - "5432:5432"
-  # cache:
-  #   image: redis:latest
+    # cache:
+    #   image: redis:latest
+    restart: always
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter
     container_name: postgres-exporter
@@ -47,6 +53,7 @@ services:
     links:
       - db
       - prometheus
+    restart: always
   collector:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: collector
@@ -57,6 +64,7 @@ services:
       - ./otel-collector-config.yml:/etc/collector.yml:ro
     depends_on:
       - clickhouse
+    restart: always
   clickhouse:
     image: clickhouse/clickhouse-server:head
     container_name: clickhouse
@@ -67,5 +75,7 @@ services:
       nofile:
         soft: 262144
         hard: 262144
+    restart: always
 volumes:
   db_data:
+  grafana_storage:

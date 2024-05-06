@@ -1,6 +1,6 @@
 using API.DTOs;
 using API.Entities;
-using API.Osu;
+using API.Osu.Enums;
 
 namespace API.Repositories.Interfaces;
 
@@ -12,6 +12,7 @@ public interface IPlayerRepository : IRepository<Player>
     /// <param name="username"></param>
     /// <returns></returns>
     Task<IEnumerable<Player>> SearchAsync(string username);
+
     /// <summary>
     /// Returns a player, if available, that matches the given username. Case insensitive
     /// </summary>
@@ -33,6 +34,13 @@ public interface IPlayerRepository : IRepository<Player>
     /// <param name="eagerLoad">Whether to also load related fields (i.e. player matches)</param>
     /// <returns></returns>
     Task<IEnumerable<Player>> GetAsync(bool eagerLoad = false);
+
+    /// <summary>
+    /// Returns a collection of players, one per provided osu! id
+    /// </summary>
+    /// <param name="osuIds">The osu! player ids</param>
+    /// <returns>One <see cref="Player"/> per osu! id match, null if no match found</returns>
+    Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds);
 
     /// <summary>
     /// Returns the id of the player that has this osuId
@@ -74,8 +82,8 @@ public interface IPlayerRepository : IRepository<Player>
     /// for the given mode.
     /// </summary>
     /// <param name="n">The number of items to return</param>
-    /// <param name="mode">The mode to get the ratings from</param>
-    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, OsuEnums.Mode mode);
+    /// <param name="ruleset">The mode to get the ratings from</param>
+    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset);
 
     /// <summary>
     /// Fetches the username for the given osu id, if available

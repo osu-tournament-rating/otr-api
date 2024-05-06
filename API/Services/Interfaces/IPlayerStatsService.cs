@@ -59,4 +59,14 @@ public interface IPlayerStatsService
     Task TruncateAsync();
 
     Task TruncateRatingAdjustmentsAsync();
+
+    /// <summary>
+    /// Returns the peak rating of a player for a given mode and date range.
+    /// </summary>
+    /// <param name="playerId">The player id</param>
+    /// <param name="mode">The osu! ruleset</param>
+    /// <param name="dateMin">The minimum of the date range</param>
+    /// <param name="dateMax">The maximum of the date range</param>
+    /// <returns></returns>
+    Task<double> GetPeakRatingAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
 }

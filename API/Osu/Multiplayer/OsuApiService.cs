@@ -1,4 +1,5 @@
 using API.Configurations;
+using API.Osu.Enums;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OsuSharp.Domain;
@@ -6,19 +7,35 @@ using OsuSharp.Interfaces;
 
 namespace API.Osu.Multiplayer;
 
+/// <summary>
+/// Represents a user obtained from the osu! api
+/// </summary>
 public class OsuApiUser
 {
-    [JsonProperty("user_id")]
-    public long Id { get; set; }
+    /// <summary>
+    /// Id of the user
+    /// </summary>
+    public long Id { get; init; }
 
-    [JsonProperty("username")]
-    public string? Username { get; set; }
+    /// <summary>
+    /// Username of the user
+    /// </summary>
+    public string? Username { get; init; }
 
-    [JsonProperty("pp_rank")]
-    public int? Rank { get; set; }
+    /// <summary>
+    /// Rank of the user for the given ruleset
+    /// </summary>
+    public int? Rank { get; init; }
 
-    [JsonProperty("country")]
-    public string Country { get; set; } = null!;
+    /// <summary>
+    /// Country code of the user
+    /// </summary>
+    public string Country { get; init; } = null!;
+
+    /// <summary>
+    /// Default ruleset of the user
+    /// </summary>
+    public Ruleset Ruleset { get; init; }
 }
 
 public class OsuApiService : IOsuApiService
@@ -127,11 +144,11 @@ public class OsuApiService : IOsuApiService
             beatmapId
         );
 
-    public async Task<OsuApiUser?> GetUserAsync(long userId, OsuEnums.Mode mode, string reason) =>
+    public async Task<OsuApiUser?> GetUserAsync(long userId, Ruleset ruleset, string reason) =>
         await ExecuteApiCallAsync(
             async () =>
             {
-                IGlobalUser response = await _v2Client.GetUserAsync(userId, (GameMode)(int)mode);
+                IGlobalUser response = await _v2Client.GetUserAsync(userId, (GameMode)ruleset);
 
                 if (response.IsRestricted == true)
                 {
@@ -150,7 +167,8 @@ public class OsuApiService : IOsuApiService
                     Id = userId,
                     Username = response.Username,
                     Rank = (int?)response.Statistics.GlobalRank,
-                    Country = response.Country.Code
+                    Country = response.Country.Code,
+                    Ruleset = (Ruleset)response.GameMode
                 };
             },
             userId

@@ -239,10 +239,6 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("mods");
 
-                    b.Property<int>("PlayMode")
-                        .HasColumnType("integer")
-                        .HasColumnName("play_mode");
-
                     b.Property<double>("PostModSr")
                         .HasColumnType("double precision")
                         .HasColumnName("post_mod_sr");
@@ -250,6 +246,10 @@ namespace API.Migrations
                     b.Property<int?>("RejectionReason")
                         .HasColumnType("integer")
                         .HasColumnName("rejection_reason");
+
+                    b.Property<int>("Ruleset")
+                        .HasColumnType("integer")
+                        .HasColumnName("ruleset");
 
                     b.Property<int>("ScoringType")
                         .HasColumnType("integer")
@@ -893,6 +893,10 @@ namespace API.Migrations
                     b.Property<int?>("RankTaiko")
                         .HasColumnType("integer")
                         .HasColumnName("rank_taiko");
+
+                    b.Property<int?>("Ruleset")
+                        .HasColumnType("integer")
+                        .HasColumnName("default_ruleset");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")

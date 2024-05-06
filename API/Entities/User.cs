@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using API.Entities.Interfaces;
 
 namespace API.Entities;
 
 [Table("users")]
-public class User
+public class User : IUpdateableEntity
 {
     [Key]
     [Column("id")]
@@ -40,10 +41,15 @@ public class User
 
     [InverseProperty("User")]
     public virtual ICollection<OAuthClient>? Clients { get; set; }
+
+    [InverseProperty("SubmittedBy")]
     public virtual ICollection<Match>? SubmittedMatches { get; set; }
+
+    [InverseProperty("SubmittedBy")]
     public virtual ICollection<Tournament>? SubmittedTournaments { get; set; }
 
     // Assuming the user has permission to verify, the matches they do verify will be here
+    [InverseProperty("VerifiedBy")]
     public virtual ICollection<Match>? VerifiedMatches { get; set; }
 
     [InverseProperty("Verifier")]

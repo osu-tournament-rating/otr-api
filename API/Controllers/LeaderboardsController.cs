@@ -12,8 +12,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [EnableCors]
-[Authorize(Roles = "user")]
-[Authorize(Roles = "whitelist")]
+[Authorize(Roles = OtrClaims.User)]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class LeaderboardsController(ILeaderboardService leaderboardService) : Controller
 {
