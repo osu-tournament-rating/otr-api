@@ -19,10 +19,10 @@ using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
 using AutoMapper;
+using CachingFramework.Redis;
 using Dapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -342,11 +342,9 @@ builder.Services.AddDbContext<OtrContext>(o =>
     );
 });
 
-builder.Services.AddStackExchangeRedisCache(o =>
-{
-    o.Configuration = builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection;
-    o.InstanceName = "redisOne";
-});
+builder.Services.AddSingleton(
+    new RedisContext(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection)
+);
 
 #endregion
 
