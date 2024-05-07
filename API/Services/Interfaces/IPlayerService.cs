@@ -5,6 +5,11 @@ namespace API.Services.Interfaces;
 
 public interface IPlayerService
 {
+    /// <summary>
+    /// Denotes whether a player for the given id exists
+    /// </summary>
+    Task<bool> ExistsAsync(int id);
+
     Task<IEnumerable<PlayerDTO>> GetAllAsync();
     Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync();
     Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset);

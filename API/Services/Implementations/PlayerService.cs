@@ -12,6 +12,9 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
     private readonly IMapper _mapper = mapper;
     private readonly IPlayerRepository _playerRepository = playerRepository;
 
+    public async Task<bool> ExistsAsync(int id) =>
+        await _playerRepository.ExistsAsync(id);
+
     public async Task<IEnumerable<PlayerDTO>> GetAllAsync() =>
         _mapper.Map<IEnumerable<PlayerDTO>>(await _playerRepository.GetAsync());
 
