@@ -19,7 +19,6 @@ using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
 using AutoMapper;
-using CachingFramework.Redis;
 using Dapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -342,8 +341,8 @@ builder.Services.AddDbContext<OtrContext>(o =>
     );
 });
 
-builder.Services.AddSingleton(
-    new RedisContext(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection)
+builder.Services.AddSingleton<ICacheHandler>(
+    new CacheHandler(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection)
 );
 
 #endregion

@@ -1,8 +1,10 @@
 using API.DTOs;
 using API.Entities;
+using API.Handlers.Interfaces;
 using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using API.Utilities;
 using AutoMapper;
 
 namespace API.Services.Implementations;
@@ -11,6 +13,7 @@ public class SearchService(
     ITournamentsRepository tournamentsRepository,
     IMatchesRepository matchesRepository,
     IPlayerRepository playerRepository,
+    ICacheHandler cacheHandler,
     IMapper mapper
     ) : ISearchService
 {
@@ -24,14 +27,34 @@ public class SearchService(
 
     private async Task<IEnumerable<TournamentSearchResultDTO>> SearchTournamentsByNameAsync(string tournamentName)
     {
-        IEnumerable<Tournament> tournaments = await tournamentsRepository.SearchAsync(tournamentName);
-        return tournaments.Select(mapper.Map<TournamentSearchResultDTO>);
+        IEnumerable<TournamentSearchResultDTO>? result =
+            cacheHandler.Cache.GetObject<IEnumerable<TournamentSearchResultDTO>>(CacheUtils.TournamentSearchKey(tournamentName));
+
+        if (result is not null)
+        {
+            return result;
+        }
+
+        result = mapper.Map<IEnumerable<TournamentSearchResultDTO>>(await tournamentsRepository.SearchAsync(tournamentName)).ToList();
+        cacheHandler.SetTournamentSearchResult(result, tournamentName);
+
+        return result;
     }
 
     private async Task<IEnumerable<MatchSearchResultDTO>> SearchMatchesByNameAsync(string matchName)
     {
-        var matches = (await matchesRepository.SearchAsync(matchName)).ToList();
-        return matches.Select(mapper.Map<MatchSearchResultDTO>);
+        IEnumerable<MatchSearchResultDTO>? result =
+            cacheHandler.Cache.GetObject<IEnumerable<MatchSearchResultDTO>>(CacheUtils.MatchSearchKey(matchName));
+
+        if (result is not null)
+        {
+            return result;
+        }
+
+        result = mapper.Map<IEnumerable<MatchSearchResultDTO>>(await matchesRepository.SearchAsync(matchName)).ToList();
+        cacheHandler.SetMatchSearchResult(result, matchName);
+
+        return result;
     }
 
     private async Task<IEnumerable<PlayerSearchResultDTO>> SearchPlayersByNameAsync(string username)

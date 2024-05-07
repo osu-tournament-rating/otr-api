@@ -29,11 +29,21 @@ public class MatchesRepository(
             .ThenInclude(x => x.Beatmap)
             .FirstOrDefaultAsync(x => x.Id == id);
 
-    public async Task<IEnumerable<Match>> SearchAsync(string name)
+    public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name)
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         name = name.Replace("_", @"\_");
-        return await _context.Matches.WhereVerified().Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\")).ToListAsync();
+        return await _context.Matches
+            .WhereVerified()
+            .Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\"))
+            .Select(m => new MatchSearchResultDTO()
+            {
+                Id = m.Id,
+                MatchId = m.MatchId,
+                Name = m.Name
+            })
+            .Take(100)
+            .ToListAsync();
     }
 
     public async Task<Match?> GetAsync(int id, bool filterInvalidMatches = true) =>
