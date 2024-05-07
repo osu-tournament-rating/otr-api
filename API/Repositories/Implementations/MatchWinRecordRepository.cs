@@ -20,10 +20,10 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
             var record = new MatchWinRecord
             {
                 MatchId = item.MatchId,
-                TeamBlue = item.TeamBlue,
-                TeamRed = item.TeamRed,
-                BluePoints = item.BluePoints,
-                RedPoints = item.RedPoints,
+                LoserRoster = item.TeamBlue,
+                WinnerRoster = item.TeamRed,
+                LoserPoints = item.BluePoints,
+                WinnerPoints = item.RedPoints,
                 WinnerTeam = item.WinnerTeam,
                 LoserTeam = item.LoserTeam,
                 MatchType = (Enums.MatchType?)item.MatchType
@@ -51,7 +51,7 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
                 x.Match.Tournament.Mode == mode
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
-                && x.TeamRed.Contains(playerId)
+                && x.WinnerRoster.Contains(playerId)
             )
             .ToListAsync();
 
@@ -60,14 +60,14 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
                 x.Match.Tournament.Mode == mode
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
-                && x.TeamBlue.Contains(playerId)
+                && x.LoserRoster.Contains(playerId)
             )
             .ToListAsync();
 
         // Produce an ordered list of player ids and their frequency of being a teammate with the player in question
         return redTeams
             .Concat(blueTeams)
-            .SelectMany(x => x.TeamRed.Concat(x.TeamBlue))
+            .SelectMany(x => x.WinnerRoster.Concat(x.LoserRoster))
             .Where(x => x != playerId)
             .GroupBy(x => x)
             .OrderByDescending(x => x.Count())
@@ -91,8 +91,8 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
     {
         List<MatchWinRecord> matchData = await _context
             .MatchWinRecords.Where(x =>
-                (!x.TeamRed.Contains(playerId) && x.TeamBlue.Contains(playerId))
-                || (!x.TeamBlue.Contains(playerId) && x.TeamRed.Contains(playerId))
+                (!x.WinnerRoster.Contains(playerId) && x.LoserRoster.Contains(playerId))
+                || (!x.LoserRoster.Contains(playerId) && x.WinnerRoster.Contains(playerId))
             )
             .Where(x =>
                 x.Match.Tournament.Mode == mode
@@ -102,9 +102,9 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
             .ToListAsync();
 
         IEnumerable<int> filteredData = matchData
-            .Where(x => x.TeamRed.Contains(playerId))
-            .SelectMany(x => x.TeamBlue)
-            .Concat(matchData.Where(x => x.TeamBlue.Contains(playerId)).SelectMany(x => x.TeamRed));
+            .Where(x => x.WinnerRoster.Contains(playerId))
+            .SelectMany(x => x.LoserRoster)
+            .Concat(matchData.Where(x => x.LoserRoster.Contains(playerId)).SelectMany(x => x.WinnerRoster));
 
         return filteredData
             .GroupBy(x => x)

@@ -14,18 +14,17 @@ public class MatchWinRecord
     [Column("match_id")]
     public int MatchId { get; set; }
 
-    // Team arrays can represent individual players in individual matches (head to head)
-    [Column("team_blue")]
-    public int[] TeamBlue { get; set; } = [];
+    [Column("loser_roster")]
+    public int[] LoserRoster { get; set; } = [];
 
-    [Column("team_red")]
-    public int[] TeamRed { get; set; } = [];
+    [Column("winner_roster")]
+    public int[] WinnerRoster { get; set; } = [];
 
-    [Column("blue_points")]
-    public int BluePoints { get; set; }
+    [Column("winner_points")]
+    public int WinnerPoints { get; set; }
 
-    [Column("red_points")]
-    public int RedPoints { get; set; }
+    [Column("loser_points")]
+    public int LoserPoints { get; set; }
 
     [Column("winner_team")]
     public int? WinnerTeam { get; set; }
