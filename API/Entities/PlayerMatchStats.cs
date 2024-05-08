@@ -23,7 +23,7 @@ public class PlayerMatchStats
     public bool Won { get; set; }
 
     [Column("average_score")]
-    public int AverageScore { get; set; }
+    public double AverageScore { get; set; }
 
     [Column("average_misses")]
     public double AverageMisses { get; set; }
