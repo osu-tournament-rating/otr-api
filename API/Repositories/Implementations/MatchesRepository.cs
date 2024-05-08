@@ -34,6 +34,7 @@ public class MatchesRepository(
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         name = name.Replace("_", @"\_");
         return await _context.Matches
+            .AsNoTracking()
             .WhereVerified()
             .Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\"))
             .Select(m => new MatchSearchResultDTO()
@@ -42,7 +43,7 @@ public class MatchesRepository(
                 MatchId = m.MatchId,
                 Name = m.Name
             })
-            .Take(100)
+            .Take(30)
             .ToListAsync();
     }
 

@@ -13,8 +13,7 @@ public class SearchService(
     ITournamentsRepository tournamentsRepository,
     IMatchesRepository matchesRepository,
     IPlayerRepository playerRepository,
-    ICacheHandler cacheHandler,
-    IMapper mapper
+    ICacheHandler cacheHandler
     ) : ISearchService
 {
     public async Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey) =>
@@ -35,7 +34,7 @@ public class SearchService(
             return result;
         }
 
-        result = mapper.Map<IEnumerable<TournamentSearchResultDTO>>(await tournamentsRepository.SearchAsync(tournamentName)).ToList();
+        result = (await tournamentsRepository.SearchAsync(tournamentName)).ToList();
         cacheHandler.SetTournamentSearchResult(result, tournamentName);
 
         return result;
@@ -51,7 +50,7 @@ public class SearchService(
             return result;
         }
 
-        result = mapper.Map<IEnumerable<MatchSearchResultDTO>>(await matchesRepository.SearchAsync(matchName)).ToList();
+        result = (await matchesRepository.SearchAsync(matchName)).ToList();
         cacheHandler.SetMatchSearchResult(result, matchName);
 
         return result;
@@ -59,20 +58,32 @@ public class SearchService(
 
     private async Task<IEnumerable<PlayerSearchResultDTO>> SearchPlayersByNameAsync(string username)
     {
-        var players = (await playerRepository.SearchAsync(username)).ToList();
-        return players.Select(player =>
+        IEnumerable<PlayerSearchResultDTO>? result =
+            cacheHandler.Cache.GetObject<IEnumerable<PlayerSearchResultDTO>>(CacheUtils.PlayerSearchKey(username));
+
+        if (result is not null)
         {
-            BaseStats? rating = player.Ratings
-                .FirstOrDefault(r => r.Mode == (player.Ruleset ?? Ruleset.Standard));
-            return new PlayerSearchResultDTO
+            return result;
+        }
+
+        result = (await playerRepository.SearchAsync(username))
+            .Select(player =>
             {
-                Id = player.Id,
-                OsuId = player.OsuId,
-                Rating = rating?.Rating,
-                GlobalRank = rating?.GlobalRank,
-                Username = player.Username,
-                Thumbnail = $"a.ppy.sh/{player.OsuId}"
-            };
-        });
+                BaseStats? stats = player.Ratings
+                    .FirstOrDefault(r => r.Mode == (player.Ruleset ?? Ruleset.Standard));
+                return new PlayerSearchResultDTO
+                {
+                    Id = player.Id,
+                    OsuId = player.OsuId,
+                    Rating = stats?.Rating,
+                    GlobalRank = stats?.GlobalRank,
+                    Username = player.Username,
+                    Thumbnail = $"a.ppy.sh/{player.OsuId}"
+                };
+            })
+            .ToList();
+        cacheHandler.SetPlayerSearchResult(result, username);
+
+        return result;
     }
 }
