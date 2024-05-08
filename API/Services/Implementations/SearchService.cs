@@ -5,7 +5,6 @@ using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
-using AutoMapper;
 
 namespace API.Services.Implementations;
 
@@ -27,7 +26,7 @@ public class SearchService(
     private async Task<IEnumerable<TournamentSearchResultDTO>> SearchTournamentsByNameAsync(string tournamentName)
     {
         IEnumerable<TournamentSearchResultDTO>? result =
-            cacheHandler.Cache.GetObject<IEnumerable<TournamentSearchResultDTO>>(CacheUtils.TournamentSearchKey(tournamentName));
+            await cacheHandler.Cache.GetObjectAsync<IEnumerable<TournamentSearchResultDTO>>(CacheUtils.TournamentSearchKey(tournamentName));
 
         if (result is not null)
         {
@@ -35,7 +34,7 @@ public class SearchService(
         }
 
         result = (await tournamentsRepository.SearchAsync(tournamentName)).ToList();
-        cacheHandler.SetTournamentSearchResult(result, tournamentName);
+        await cacheHandler.SetTournamentSearchResultAsync(result, tournamentName);
 
         return result;
     }
@@ -43,7 +42,7 @@ public class SearchService(
     private async Task<IEnumerable<MatchSearchResultDTO>> SearchMatchesByNameAsync(string matchName)
     {
         IEnumerable<MatchSearchResultDTO>? result =
-            cacheHandler.Cache.GetObject<IEnumerable<MatchSearchResultDTO>>(CacheUtils.MatchSearchKey(matchName));
+            await cacheHandler.Cache.GetObjectAsync<IEnumerable<MatchSearchResultDTO>>(CacheUtils.MatchSearchKey(matchName));
 
         if (result is not null)
         {
@@ -51,7 +50,7 @@ public class SearchService(
         }
 
         result = (await matchesRepository.SearchAsync(matchName)).ToList();
-        cacheHandler.SetMatchSearchResult(result, matchName);
+        await cacheHandler.SetMatchSearchResultAsync(result, matchName);
 
         return result;
     }
@@ -59,7 +58,7 @@ public class SearchService(
     private async Task<IEnumerable<PlayerSearchResultDTO>> SearchPlayersByNameAsync(string username)
     {
         IEnumerable<PlayerSearchResultDTO>? result =
-            cacheHandler.Cache.GetObject<IEnumerable<PlayerSearchResultDTO>>(CacheUtils.PlayerSearchKey(username));
+            await cacheHandler.Cache.GetObjectAsync<IEnumerable<PlayerSearchResultDTO>>(CacheUtils.PlayerSearchKey(username));
 
         if (result is not null)
         {
@@ -82,7 +81,7 @@ public class SearchService(
                 };
             })
             .ToList();
-        cacheHandler.SetPlayerSearchResult(result, username);
+        await cacheHandler.SetPlayerSearchResultAsync(result, username);
 
         return result;
     }

@@ -9,24 +9,24 @@ public class CacheHandler(string configuration) : RedisContext(configuration), I
 {
     private const int SearchResultTimeMins = 30;
 
-    public void SetTournamentSearchResult(IEnumerable<TournamentSearchResultDTO> result, string query) =>
-        Cache.SetObject(
+    public async Task SetTournamentSearchResultAsync(IEnumerable<TournamentSearchResultDTO> result, string query) =>
+        await Cache.SetObjectAsync(
             CacheUtils.TournamentSearchKey(query),
             result,
             [CacheUtils.TournamentSearchTag],
             TimeSpan.FromMinutes(SearchResultTimeMins)
         );
 
-    public void SetMatchSearchResult(IEnumerable<MatchSearchResultDTO> result, string query) =>
-        Cache.SetObject(
+    public async Task SetMatchSearchResultAsync(IEnumerable<MatchSearchResultDTO> result, string query) =>
+        await Cache.SetObjectAsync(
             CacheUtils.MatchSearchKey(query),
             result,
             [CacheUtils.MatchSearchTag],
             TimeSpan.FromMinutes(SearchResultTimeMins)
         );
 
-    public void SetPlayerSearchResult(IEnumerable<PlayerSearchResultDTO> result, string query) =>
-        Cache.SetObject(
+    public async Task SetPlayerSearchResultAsync(IEnumerable<PlayerSearchResultDTO> result, string query) =>
+        await Cache.SetObjectAsync(
             CacheUtils.PlayerSearchKey(query),
             result,
             [CacheUtils.PlayerSearchTag],
