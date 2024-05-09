@@ -7,14 +7,14 @@ namespace API.Handlers.Implementations;
 
 public class CacheHandler(string configuration) : RedisContext(configuration), ICacheHandler
 {
-    private const int SearchResultTimeMins = 30;
+    private const int SearchResultLifetimeMinutes = 30;
 
     public async Task SetTournamentSearchResultAsync(IEnumerable<TournamentSearchResultDTO> result, string query) =>
         await Cache.SetObjectAsync(
             CacheUtils.TournamentSearchKey(query),
             result,
             [CacheUtils.TournamentSearchTag],
-            TimeSpan.FromMinutes(SearchResultTimeMins)
+            TimeSpan.FromMinutes(SearchResultLifetimeMinutes)
         );
 
     public async Task SetMatchSearchResultAsync(IEnumerable<MatchSearchResultDTO> result, string query) =>
@@ -22,7 +22,7 @@ public class CacheHandler(string configuration) : RedisContext(configuration), I
             CacheUtils.MatchSearchKey(query),
             result,
             [CacheUtils.MatchSearchTag],
-            TimeSpan.FromMinutes(SearchResultTimeMins)
+            TimeSpan.FromMinutes(SearchResultLifetimeMinutes)
         );
 
     public async Task SetPlayerSearchResultAsync(IEnumerable<PlayerSearchResultDTO> result, string query) =>
@@ -30,6 +30,6 @@ public class CacheHandler(string configuration) : RedisContext(configuration), I
             CacheUtils.PlayerSearchKey(query),
             result,
             [CacheUtils.PlayerSearchTag],
-            TimeSpan.FromMinutes(SearchResultTimeMins)
+            TimeSpan.FromMinutes(SearchResultLifetimeMinutes)
         );
 }
