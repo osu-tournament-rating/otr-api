@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +12,6 @@ namespace API.Repositories.Implementations;
 public class MatchWinRecordRepository(OtrContext context, IPlayerRepository playerRepository) : RepositoryBase<MatchWinRecord>(context), IMatchWinRecordRepository
 {
     private readonly OtrContext _context = context;
-    private readonly IPlayerRepository _playerRepository = playerRepository;
 
     public async Task BatchInsertAsync(IEnumerable<MatchWinRecordDTO> postBody)
     {
@@ -24,8 +24,8 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
                 WinnerRoster = item.TeamRed,
                 LoserPoints = item.BluePoints,
                 WinnerPoints = item.RedPoints,
-                WinnerTeam = item.WinnerTeam,
-                LoserTeam = item.LoserTeam,
+                WinnerTeam = (Team?)item.WinnerTeam,
+                LoserTeam = (Team?)item.LoserTeam,
                 MatchType = (Enums.MatchType?)item.MatchType
             };
 
@@ -76,8 +76,8 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
             {
                 PlayerId = x.Key,
                 Frequency = x.Count(),
-                OsuId = _playerRepository.GetOsuIdAsync(x.Key).GetAwaiter().GetResult(),
-                Username = _playerRepository.GetUsernameAsync(x.Key).GetAwaiter().GetResult()
+                OsuId = playerRepository.GetOsuIdAsync(x.Key).GetAwaiter().GetResult(),
+                Username = playerRepository.GetUsernameAsync(x.Key).GetAwaiter().GetResult()
             });
     }
 
@@ -114,8 +114,8 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
             {
                 PlayerId = x.Key,
                 Frequency = x.Count(),
-                OsuId = _playerRepository.GetOsuIdAsync(x.Key).GetAwaiter().GetResult(),
-                Username = _playerRepository.GetUsernameAsync(x.Key).GetAwaiter().GetResult()
+                OsuId = playerRepository.GetOsuIdAsync(x.Key).GetAwaiter().GetResult(),
+                Username = playerRepository.GetUsernameAsync(x.Key).GetAwaiter().GetResult()
             });
     }
 }
