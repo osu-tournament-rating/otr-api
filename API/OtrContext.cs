@@ -34,7 +34,6 @@ public partial class OtrContext(
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
         optionsBuilder
-            .UseLazyLoadingProxies()
             .UseNpgsql(_configuration.Value.DefaultConnection);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
