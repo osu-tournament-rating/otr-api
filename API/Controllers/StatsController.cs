@@ -10,38 +10,58 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsService baseStatsService) : Controller
+public class StatsController(
+    IPlayerStatsService playerStatsService,
+    IBaseStatsService baseStatsService,
+    IPlayerService playerService
+    ) : Controller
 {
-    private readonly IBaseStatsService _baseStatsService = baseStatsService;
-    private readonly IPlayerStatsService _playerStatsService = playerStatsService;
-
-    [HttpGet("{playerId:int}")]
+    /// <summary>
+    /// Get a player's stats
+    /// </summary>
+    /// <remarks>Not specifying a date range will return all player stats</remarks>
+    /// <param name="id">Id of the player</param>
+    /// <param name="comparerId">Id of a player to compare stats with the target player</param>
+    /// <param name="mode">osu! ruleset. If null, osu! Standard is used</param>
+    /// <param name="dateMin">Filter from earliest date. If null, earliest possible date</param>
+    /// <param name="dateMax">Filter to latest date. If null, latest possible date</param>
+    /// <response code="404">If a player does not exist</response>
+    /// <response code="200">Returns a player's stats</response>
+    [HttpGet("{id:int}")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
-    public async Task<ActionResult<PlayerStatsDTO>> GetAsync(
-        int playerId,
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<PlayerStatsDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAsync(
+        int id,
         [FromQuery] int? comparerId,
         [FromQuery] int mode = 0,
         [FromQuery] DateTime? dateMin = null,
-        [FromQuery] DateTime? dateMax = null
-    ) =>
-        await _playerStatsService.GetAsync(
-            playerId,
+        [FromQuery] DateTime? dateMax = null)
+    {
+        if (!await playerService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        return Ok(await playerStatsService.GetAsync(
+            id,
             comparerId,
             mode,
             dateMin ?? DateTime.MinValue,
-            dateMax ?? DateTime.UtcNow
-        );
+            dateMax ?? DateTime.MaxValue
+        ));
+    }
 
     [HttpGet("{username}")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
-    public async Task<ActionResult<PlayerStatsDTO?>> GetAsync(
+    public async Task<ActionResult<PlayerStatsDTO?>> GetByUsernameAsync(
         string username,
         [FromQuery] int? comparerId,
         [FromQuery] int mode = 0,
         [FromQuery] DateTime? dateMin = null,
         [FromQuery] DateTime? dateMax = null
     ) =>
-        await _playerStatsService.GetAsync(
+        await playerStatsService.GetAsync(
             username,
             comparerId,
             mode,
@@ -53,13 +73,13 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     public async Task<ActionResult<IDictionary<int, int>>> GetRatingHistogramAsync(
         [FromQuery] int mode = 0
-    ) => Ok(await _baseStatsService.GetHistogramAsync(mode));
+    ) => Ok(await baseStatsService.GetHistogramAsync(mode));
 
     [HttpPost("ratingadjustments")]
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<RatingAdjustmentDTO> postBody)
     {
-        await _playerStatsService.BatchInsertAsync(postBody);
+        await playerStatsService.BatchInsertAsync(postBody);
         return Ok();
     }
 
@@ -67,7 +87,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerMatchStatsDTO> postBody)
     {
-        await _playerStatsService.BatchInsertAsync(postBody);
+        await playerStatsService.BatchInsertAsync(postBody);
         return Ok();
     }
 
@@ -75,7 +95,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchRatingStatsDTO> postBody)
     {
-        await _playerStatsService.BatchInsertAsync(postBody);
+        await playerStatsService.BatchInsertAsync(postBody);
         return Ok();
     }
 
@@ -83,7 +103,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<BaseStatsPostDTO> postBody)
     {
-        await _playerStatsService.BatchInsertAsync(postBody);
+        await playerStatsService.BatchInsertAsync(postBody);
         return Ok();
     }
 
@@ -91,7 +111,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<GameWinRecordDTO> postBody)
     {
-        await _playerStatsService.BatchInsertAsync(postBody);
+        await playerStatsService.BatchInsertAsync(postBody);
         return Ok();
     }
 
@@ -99,7 +119,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchWinRecordDTO> postBody)
     {
-        await _playerStatsService.BatchInsertAsync(postBody);
+        await playerStatsService.BatchInsertAsync(postBody);
         return Ok();
     }
 
@@ -107,7 +127,7 @@ public class StatsController(IPlayerStatsService playerStatsService, IBaseStatsS
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> TruncateAsync()
     {
-        await _playerStatsService.TruncateAsync();
+        await playerStatsService.TruncateAsync();
         return Ok();
     }
 }

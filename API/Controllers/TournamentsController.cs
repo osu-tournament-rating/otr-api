@@ -12,7 +12,6 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = OtrClaims.User)]
 public class TournamentsController(ITournamentsService tournamentsService, IMatchesService matchesService) : Controller
 {
     /// <summary>
@@ -57,6 +56,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// </response>
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
+    [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
@@ -99,6 +99,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="200">Returns the tournament</response>
     [HttpGet("{id:int}")]
+    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(int id)
@@ -207,6 +208,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="200">Returns all matches from a tournament</response>
     [HttpGet("{id:int}/matches")]
+    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<IEnumerable<MatchDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListMatchesAsync(int id)
