@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
+using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
 using API.Utilities;
 using AutoMapper;
@@ -15,8 +16,9 @@ public class MatchesRepository(
     ILogger<MatchesRepository> logger,
     IMapper mapper,
     OtrContext context,
-    IMatchDuplicateRepository matchDuplicateRepository
-    ) : HistoryRepositoryBase<Match, MatchHistory>(context, mapper), IMatchesRepository
+    IMatchDuplicateRepository matchDuplicateRepository,
+    ICacheHandler cacheHandler
+    ) : HistoryRepositoryBase<Match, MatchHistory>(context, mapper), IMatchesRepository, IUsesCache
 {
     private readonly OtrContext _context = context;
 
@@ -28,6 +30,11 @@ public class MatchesRepository(
             .Include(x => x.Games)
             .ThenInclude(x => x.Beatmap)
             .FirstOrDefaultAsync(x => x.Id == id);
+
+    public async Task InvalidateCacheEntriesAsync()
+    {
+        await cacheHandler.OnMatchUpdateAsync();
+    }
 
     public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name)
     {

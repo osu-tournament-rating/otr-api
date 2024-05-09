@@ -40,9 +40,31 @@ public class CacheHandler(string configuration) : RedisContext(configuration), I
         await InvalidateTournamentSearchResultsAsync();
     }
 
+    public async Task OnMatchUpdateAsync()
+    {
+        await InvalidateMatchSearchResultsAsync();
+    }
+
+    public async Task OnPlayerUpdateAsync()
+    {
+        await InvalidatePlayerSearchResultsAsync();
+    }
+
     /// <summary>
     /// Invalidates all tournament search results
     /// </summary>
     private async Task InvalidateTournamentSearchResultsAsync() =>
         await Cache.InvalidateKeysByTagAsync([CacheUtils.TournamentSearchTag]);
+
+    /// <summary>
+    /// Invalidates all match search results
+    /// </summary>
+    private async Task InvalidateMatchSearchResultsAsync() =>
+        await Cache.InvalidateKeysByTagAsync([CacheUtils.MatchSearchTag]);
+
+    /// <summary>
+    /// Invalidates all player search results
+    /// </summary>
+    private async Task InvalidatePlayerSearchResultsAsync() =>
+        await Cache.InvalidateKeysByTagAsync([CacheUtils.PlayerSearchTag]);
 }

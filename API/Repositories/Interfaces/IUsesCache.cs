@@ -8,5 +8,5 @@ public interface IUsesCache
     /// <summary>
     /// Invalidates related cache entities
     /// </summary>
-    Task InvalidateEntriesAsync();
+    Task InvalidateCacheEntriesAsync();
 }

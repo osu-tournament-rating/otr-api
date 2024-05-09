@@ -24,4 +24,14 @@ public interface ICacheHandler : IContext
     /// Invalidates all cached objects with lifetimes that depend on tournament CRUD actions
     /// </summary>
     Task OnTournamentUpdateAsync();
+
+    /// <summary>
+    /// Invalidates all cached objects with lifetimes that depend on match CRUD actions
+    /// </summary>
+    Task OnMatchUpdateAsync();
+
+    /// <summary>
+    /// Invalidates all cached objects with lifetimes that depend on player CRUD actions
+    /// </summary>
+    Task OnPlayerUpdateAsync();
 }

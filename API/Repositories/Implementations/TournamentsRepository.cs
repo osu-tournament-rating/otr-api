@@ -15,7 +15,7 @@ public class TournamentsRepository(OtrContext context, ICacheHandler cacheHandle
 {
     private readonly OtrContext _context = context;
 
-    public async Task InvalidateEntriesAsync()
+    public async Task InvalidateCacheEntriesAsync()
     {
         await cacheHandler.OnTournamentUpdateAsync();
     }

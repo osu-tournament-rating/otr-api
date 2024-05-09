@@ -110,7 +110,7 @@ public class RepositoryBase<T> : IRepository<T>
     {
         if (this is IUsesCache repository)
         {
-            await repository.InvalidateEntriesAsync();
+            await repository.InvalidateCacheEntriesAsync();
         }
     }
 }
