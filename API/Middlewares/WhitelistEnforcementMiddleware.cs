@@ -6,7 +6,7 @@ namespace API.Middlewares;
 /// <summary>
 /// Middleware that enforces all requesting ClaimsPrinciples contain the whitelist claim
 /// </summary>
-public class WhitelistEnforcementMiddleware(RequestDelegate next)
+public class WhitelistEnforcementMiddleware(RequestDelegate next, ILogger<WhitelistEnforcementMiddleware> logger)
 {
     public async Task Invoke(HttpContext context)
     {
@@ -18,13 +18,13 @@ public class WhitelistEnforcementMiddleware(RequestDelegate next)
         }
 
         // Allow whitelisted and privileged requests
-        if (!context.User.IsWhitelisted() && !context.User.IsAdmin() && !context.User.IsSystem())
-        {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        }
-        else
+        if (context.User.IsWhitelisted() || context.User.IsAdmin() || context.User.IsSystem())
         {
             await next(context);
+            return;
         }
+
+        logger.LogInformation("Rejecting client with identity {id} for whitelist violation", context.User.AuthorizedIdentity());
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
     }
 }
