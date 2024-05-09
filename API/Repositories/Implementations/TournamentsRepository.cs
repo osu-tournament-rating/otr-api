@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
+using API.Handlers.Interfaces;
 using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +11,14 @@ namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class TournamentsRepository(OtrContext context) : RepositoryBase<Tournament>(context), ITournamentsRepository
+public class TournamentsRepository(OtrContext context, ICacheHandler cacheHandler) : RepositoryBase<Tournament>(context), ITournamentsRepository, IUsesCache
 {
     private readonly OtrContext _context = context;
+
+    public async Task InvalidateEntriesAsync()
+    {
+        await cacheHandler.OnTournamentUpdateAsync();
+    }
 
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
         eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);

@@ -19,4 +19,9 @@ public interface ICacheHandler : IContext
     /// Adds a list of player search results to the cache, indexed by the given query
     /// </summary>
     Task SetPlayerSearchResultAsync(IEnumerable<PlayerSearchResultDTO> result, string query);
+
+    /// <summary>
+    /// Invalidates all cached objects with lifetimes that depend on tournament CRUD actions
+    /// </summary>
+    Task OnTournamentUpdateAsync();
 }
