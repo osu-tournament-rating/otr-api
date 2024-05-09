@@ -34,4 +34,9 @@ public interface ICacheHandler : IContext
     /// Invalidates all cached objects with lifetimes that depend on player CRUD actions
     /// </summary>
     Task OnPlayerUpdateAsync();
+
+    /// <summary>
+    /// Invalidates all cached objects with lifetimes that depend on base stats CRUD actions
+    /// </summary>
+    Task OnBaseStatsUpdateAsync();
 }

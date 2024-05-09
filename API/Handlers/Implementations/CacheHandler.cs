@@ -50,6 +50,11 @@ public class CacheHandler(string configuration) : RedisContext(configuration), I
         await InvalidatePlayerSearchResultsAsync();
     }
 
+    public async Task OnBaseStatsUpdateAsync()
+    {
+        await InvalidatePlayerSearchResultsAsync();
+    }
+
     /// <summary>
     /// Invalidates all tournament search results
     /// </summary>
