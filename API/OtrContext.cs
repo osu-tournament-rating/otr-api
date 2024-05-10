@@ -31,6 +31,7 @@ public partial class OtrContext(
     public virtual DbSet<RatingAdjustment> RatingAdjustments { get; set; }
     public virtual DbSet<Tournament> Tournaments { get; set; }
     public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<UserSettings> UserSettings { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
         optionsBuilder

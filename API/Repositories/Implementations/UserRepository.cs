@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Entities;
-using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +7,20 @@ namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class UserRepository(OtrContext context, IPlayerRepository playerRepository) : RepositoryBase<User>(context), IUserRepository
+public class UserRepository(OtrContext context, IUserSettingsRepository userSettingsRepository) : RepositoryBase<User>(context), IUserRepository
 {
     private readonly OtrContext _context = context;
+
+    public override async Task<User> CreateAsync(User entity)
+    {
+        if (!entity.PlayerId.HasValue)
+        {
+            throw new NullReferenceException("Attempting to create a User entity without a PlayerId");
+        }
+
+        entity.Settings = await userSettingsRepository.GenerateDefaultAsync(entity.PlayerId.Value);
+        return await base.CreateAsync(entity);
+    }
 
     public override async Task<User?> GetAsync(int id) =>
         await UserBaseQuery().FirstOrDefaultAsync(u => u.Id == id);
@@ -26,18 +36,13 @@ public class UserRepository(OtrContext context, IPlayerRepository playerReposito
             return user;
         }
 
-        Player? player = await playerRepository.GetAsync(playerId);
         return await CreateAsync(
             new User
             {
                 PlayerId = playerId,
                 Created = DateTime.UtcNow,
                 LastLogin = DateTime.UtcNow,
-                Scopes = [],
-                Settings = new UserSettings()
-                {
-                    DefaultRuleset = player?.Ruleset ?? Ruleset.Standard
-                }
+                Scopes = []
             }
         );
     }
