@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Entities;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +8,7 @@ namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class UserRepository(OtrContext context) : RepositoryBase<User>(context), IUserRepository
+public class UserRepository(OtrContext context, IPlayerRepository playerRepository) : RepositoryBase<User>(context), IUserRepository
 {
     private readonly OtrContext _context = context;
 
@@ -25,13 +26,18 @@ public class UserRepository(OtrContext context) : RepositoryBase<User>(context),
             return user;
         }
 
+        Player? player = await playerRepository.GetAsync(playerId);
         return await CreateAsync(
             new User
             {
                 PlayerId = playerId,
                 Created = DateTime.UtcNow,
                 LastLogin = DateTime.UtcNow,
-                Scopes = []
+                Scopes = [],
+                Settings = new UserSettings()
+                {
+                    DefaultRuleset = player?.Ruleset ?? Ruleset.Standard
+                }
             }
         );
     }
