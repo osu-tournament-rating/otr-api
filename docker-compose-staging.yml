@@ -47,6 +47,8 @@ services:
     ports:
       - "6379:6379"
     restart: always
+    volumes:
+      - redis:/data
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter
     container_name: postgres-exporter
@@ -83,3 +85,4 @@ services:
 volumes:
   db_data:
   grafana_storage:
+  redis:
