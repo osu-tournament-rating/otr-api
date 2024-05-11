@@ -4,6 +4,9 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API;
+using API.Authorization;
+using API.Authorization.Handlers;
+using API.Authorization.Requirements;
 using API.BackgroundWorkers;
 using API.Configurations;
 using API.Entities;
@@ -313,6 +316,19 @@ builder
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.Key))
         };
     });
+
+#endregion
+
+#region Authorization Configuration
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(AuthorizationPolicies.AccessUserResources, policy =>
+        policy
+            .RequireAuthenticatedUser()
+            .AddRequirements(new AccessUserResourcesRequirement(allowSelf: true))
+    );
+
+builder.Services.AddSingleton<IAuthorizationHandler, AccessUserResourcesAuthorizationHandler>();
 
 #endregion
 
