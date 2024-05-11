@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using API.Authorization;
 using API.DTOs;
 using API.Enums;
 using API.Services.Interfaces;
@@ -11,7 +12,6 @@ namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[Authorize(Roles = OtrClaims.User)]
 [Route("api/v{version:apiVersion}/[controller]")]
 [SuppressMessage("ReSharper", "RouteTemplates.ActionRoutePrefixCanBeExtractedToControllerRoute")]
 public class UsersController(IUserService userService, IOAuthClientService clientService) : Controller
@@ -23,6 +23,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <response code="404">If a user does not exist</response>
     /// <response code="200">Returns a user</response>
     [HttpGet("{id:int}")]
+    [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(int id)
@@ -77,6 +78,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <response code="404">If a user does not exist</response>
     /// <response code="200">Returns a list of submissions</response>
     [HttpGet("{id:int}/submissions")]
+    [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<IEnumerable<MatchSubmissionStatusDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSubmissionsAsync(int id)
@@ -119,23 +121,14 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// All users have access to clients that they own. Admin users have access to clients from any user.
     /// </remarks>
     /// <param name="id">Id of the user</param>
-    /// <response code="401">
-    /// If the requester is not logged in, or the requester id is not matching the given id and is not an admin
-    /// </response>
     /// <response code="404">If a user does not exist</response>
     /// <response code="200">Returns a list of OAuth clients</response>
     [HttpGet("{id:int}/clients")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<IEnumerable<OAuthClientDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetClientsAsync(int id)
     {
-        var userId = User.AuthorizedIdentity();
-        if (!userId.HasValue || (userId.Value != id && !User.IsAdmin()))
-        {
-            return Unauthorized();
-        }
-
         if (!await userService.ExistsAsync(id))
         {
             return NotFound();
@@ -153,25 +146,16 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// </remarks>
     /// <param name="id">Id of the user</param>
     /// <param name="clientId">Id of the OAuth client</param>
-    /// <response code="401">
-    /// If the requester is not logged in, or the requester id is not matching the given id and is not an admin
-    /// </response>
     /// <response code="404">If a user or client does not exist</response>
     /// <response code="400">If the deletion was not successful</response>
     /// <response code="200">Denotes the deletion was successful</response>
     [HttpDelete("{id:int}/clients/{clientId:int}")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteClientAsync(int id, int clientId)
     {
-        var userId = User.AuthorizedIdentity();
-        if (!userId.HasValue || (userId.Value != id && !User.IsAdmin()))
-        {
-            return Unauthorized();
-        }
-
         if (!await clientService.ExistsAsync(clientId, id))
         {
             return NotFound();
