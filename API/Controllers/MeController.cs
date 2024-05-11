@@ -9,7 +9,6 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = OtrClaims.User)]
 public class MeController(IUserService userService) : Controller
 {
     /// <summary>
@@ -18,6 +17,7 @@ public class MeController(IUserService userService) : Controller
     /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="302">Redirects to `GET` `/users/{id}`</response>
     [HttpGet]
+    [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public IActionResult Get()
@@ -42,6 +42,7 @@ public class MeController(IUserService userService) : Controller
     /// <response code="404">If a user's player entry does not exist</response>
     /// <response code="302">Redirects to `GET` `/stats/{id}`</response>
     [HttpGet("stats")]
+    [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status302Found)]
