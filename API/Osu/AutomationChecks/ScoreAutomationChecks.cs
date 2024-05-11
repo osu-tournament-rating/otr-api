@@ -19,5 +19,5 @@ public static class ScoreAutomationChecks
         );
     }
 
-    public static bool PassesValueCheck(MatchScore score) => score.Score > 0;
+    public static bool PassesValueCheck(MatchScore score) => score.Score > 1000;
 }
