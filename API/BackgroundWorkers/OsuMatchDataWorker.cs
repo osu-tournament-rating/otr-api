@@ -232,14 +232,33 @@ public class OsuMatchDataWorker(
             return existingEntity;
         }
 
-        await matchesRepository.UpdateVerificationStatusAsync(
-            existingEntity.Id,
-            MatchVerificationStatus.Failure,
-            MatchVerificationSource.System,
-            "Failed to fetch match from osu! API"
-        );
+        try
+        {
+            await matchesRepository.UpdateVerificationStatusAsync(
+                existingEntity.Id,
+                MatchVerificationStatus.Failure,
+                MatchVerificationSource.System,
+                "Failed to fetch match from osu! API"
+            );
 
-        await matchesRepository.UpdateAsApiProcessed(existingEntity);
-        return existingEntity;
+            await matchesRepository.UpdateAsApiProcessed(existingEntity);
+            return existingEntity;
+        }
+        catch (Exception e)
+        {
+            // Something has seriously gone wrong.
+            // It'll be marked as API processed, then it will get run for
+            // automated checks. This exception gets thrown for bad
+            // match links / invalid data. In testing, items caught here
+            // will get handled by the automated checks just fine.
+            await matchesRepository.UpdateAsApiProcessed(existingEntity);
+            logger.LogError(
+                "Failed to update match {MatchId} as processed: {Message}",
+                existingEntity.MatchId,
+                e.Message
+            );
+
+            return existingEntity;
+        }
     }
 }
