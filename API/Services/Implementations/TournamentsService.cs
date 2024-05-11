@@ -31,16 +31,18 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
             Mode = wrapper.Mode,
             TeamSize = wrapper.TeamSize,
             SubmitterUserId = wrapper.SubmitterId,
-            Matches = existingMatchIds.Select(matchId => new Match
-            {
-                MatchId = matchId,
-                VerificationStatus = verificationStatus,
-                NeedsAutoCheck = true,
-                IsApiProcessed = false,
-                VerificationSource = (MatchVerificationSource?)verificationSource,
-                VerifierUserId = verify ? wrapper.SubmitterId : null,
-                SubmitterUserId = wrapper.SubmitterId
-            }).ToList()
+            Matches = enumerableMatchIds
+                .Except(existingMatchIds)
+                .Select(matchId => new Match
+                {
+                    MatchId = matchId,
+                    VerificationStatus = verificationStatus,
+                    NeedsAutoCheck = true,
+                    IsApiProcessed = false,
+                    VerificationSource = (MatchVerificationSource?)verificationSource,
+                    VerifierUserId = verify ? wrapper.SubmitterId : null,
+                    SubmitterUserId = wrapper.SubmitterId
+                }).ToList()
         });
         return mapper.Map<TournamentCreatedResultDTO>(tournament);
     }

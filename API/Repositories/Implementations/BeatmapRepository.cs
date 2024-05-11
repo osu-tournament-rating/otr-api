@@ -11,8 +11,6 @@ public class BeatmapRepository(OtrContext context) : RepositoryBase<Beatmap>(con
 {
     private readonly OtrContext _context = context;
 
-    public override async Task<IEnumerable<Beatmap>> GetAllAsync() => await _context.Beatmaps.ToListAsync();
-
     public async Task<Beatmap?> GetAsync(long beatmapId) =>
         await _context.Beatmaps.FirstOrDefaultAsync(x => x.BeatmapId == beatmapId);
 

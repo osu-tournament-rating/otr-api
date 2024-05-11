@@ -56,6 +56,16 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
         );
     }
 
+    public async Task<IEnumerable<OAuthClient>> GetClientsAsync(int id) =>
+        (await _context.Users
+            .Include(u => u.Clients)
+            .FirstOrDefaultAsync(u => u.Id == id))?.Clients ?? new List<OAuthClient>();
+
+    public async Task<IEnumerable<Match>> GetSubmissionsAsync(int id) =>
+        (await _context.Users
+            .Include(u => u.SubmittedMatches)
+            .FirstOrDefaultAsync(u => u.Id == id))?.SubmittedMatches ?? new List<Match>();
+
     private IQueryable<User> UserBaseQuery() =>
         _context.Users
             .Include(x => x.Player);

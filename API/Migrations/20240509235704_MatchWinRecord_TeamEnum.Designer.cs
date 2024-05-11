@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240509235704_MatchWinRecord_TeamEnum")]
+    partial class MatchWinRecord_TeamEnum
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1155,48 +1158,6 @@ namespace API.Migrations
                     b.ToTable("users");
                 });
 
-            modelBuilder.Entity("API.Entities.UserSettings", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int?>("DefaultRuleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("default_ruleset");
-
-                    b.Property<bool>("DefaultRulesetIsControlled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("default_ruleset_controlled");
-
-                    b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("user_settings_pk");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("user_settings");
-                });
-
             modelBuilder.Entity("API.Entities.BaseStats", b =>
                 {
                     b.HasOne("API.Entities.Player", "Player")
@@ -1448,17 +1409,6 @@ namespace API.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("API.Entities.UserSettings", b =>
-                {
-                    b.HasOne("API.Entities.User", "User")
-                        .WithOne("Settings")
-                        .HasForeignKey("API.Entities.UserSettings", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("API.Entities.Beatmap", b =>
                 {
                     b.Navigation("Games");
@@ -1507,9 +1457,6 @@ namespace API.Migrations
             modelBuilder.Entity("API.Entities.User", b =>
                 {
                     b.Navigation("Clients");
-
-                    b.Navigation("Settings")
-                        .IsRequired();
 
                     b.Navigation("SubmittedMatches");
 

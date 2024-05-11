@@ -11,7 +11,17 @@ public interface IUserRepository : IRepository<User>
     Task<User?> GetByPlayerIdAsync(int playerId, bool loadSettings = false);
 
     /// <summary>
-    /// Gets user for the given player id, or create if one doesn't exist
+    /// Gets a user for the given player id, or create if one doesn't exist
     /// </summary>
     Task<User> GetByPlayerIdOrCreateAsync(int playerId);
+
+    /// <summary>
+    /// Gets a list of OAuth clients owned by the user for the given id
+    /// </summary>
+    Task<IEnumerable<OAuthClient>> GetClientsAsync(int id);
+
+    /// <summary>
+    /// Gets a list of matches submitted by the user for the given id
+    /// </summary>
+    Task<IEnumerable<Match>> GetSubmissionsAsync(int id);
 }

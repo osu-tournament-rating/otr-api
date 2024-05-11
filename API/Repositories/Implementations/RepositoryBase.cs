@@ -95,5 +95,5 @@ public class RepositoryBase<T> : IRepository<T>
         return await _context.SaveChangesAsync();
     }
 
-    public virtual async Task<IEnumerable<T>> GetAllAsync() => await _context.Set<T>().ToListAsync();
+    public virtual async Task<IEnumerable<T>> GetAllAsync() => await _context.Set<T>().AsNoTracking().ToListAsync();
 }
