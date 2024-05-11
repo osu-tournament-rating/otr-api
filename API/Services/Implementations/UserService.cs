@@ -16,10 +16,10 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
         mapper.Map<UserDTO?>(await userRepository.GetAsync(id));
 
     public async Task<IEnumerable<OAuthClientDTO>?> GetClientsAsync(int id) =>
-        mapper.Map<IEnumerable<OAuthClientDTO>?>((await userRepository.GetAsync(id))?.Clients?.ToList());
+        mapper.Map<IEnumerable<OAuthClientDTO>?>(await userRepository.GetClientsAsync(id));
 
     public async Task<IEnumerable<MatchSubmissionStatusDTO>?> GetSubmissionsAsync(int id) =>
-        mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>((await userRepository.GetAsync(id))?.SubmittedMatches?.ToList());
+        mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>(await userRepository.GetSubmissionsAsync(id));
 
     public async Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId,
         MatchVerificationSource verificationSource)

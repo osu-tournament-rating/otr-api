@@ -34,7 +34,6 @@ public partial class OtrContext(
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
         optionsBuilder
-            .UseLazyLoadingProxies()
             .UseNpgsql(_configuration.Value.DefaultConnection);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -237,8 +236,8 @@ public partial class OtrContext(
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("match_win_records_matches_id_fk");
 
-            entity.HasIndex(e => e.TeamBlue);
-            entity.HasIndex(e => e.TeamRed);
+            entity.HasIndex(e => e.LoserRoster);
+            entity.HasIndex(e => e.WinnerRoster);
         });
 
         modelBuilder.Entity<OAuthClient>(entity =>

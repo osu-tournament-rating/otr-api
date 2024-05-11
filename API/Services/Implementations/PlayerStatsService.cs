@@ -198,7 +198,7 @@ public class PlayerStatsService(
         {
             var stats = new PlayerMatchStats
             {
-                PlayerId = item.Id,
+                PlayerId = item.PlayerId,
                 MatchId = item.MatchId,
                 Won = item.Won,
                 AverageScore = item.AverageScore,
