@@ -23,10 +23,19 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
     }
 
     public override async Task<User?> GetAsync(int id) =>
-        await UserBaseQuery().FirstOrDefaultAsync(u => u.Id == id);
+        await UserBaseQuery()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == id);
 
-    public async Task<User?> GetByPlayerIdAsync(int playerId) =>
-        await UserBaseQuery().FirstOrDefaultAsync(u => u.PlayerId == playerId);
+    public async Task<User?> GetByPlayerIdAsync(int playerId, bool loadSettings = false)
+    {
+        IQueryable<User> query = _context.Users.AsNoTracking();
+        query = loadSettings
+            ? query.Include(u => u.Settings)
+            : query;
+
+        return await query.FirstOrDefaultAsync(u => u.PlayerId == playerId);
+    }
 
     public async Task<User> GetByPlayerIdOrCreateAsync(int playerId)
     {

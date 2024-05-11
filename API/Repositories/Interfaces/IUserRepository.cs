@@ -8,7 +8,7 @@ public interface IUserRepository : IRepository<User>
     /// Gets a user for the given player id
     /// </summary>
     /// <returns>A user, or null if not found</returns>
-    Task<User?> GetByPlayerIdAsync(int playerId);
+    Task<User?> GetByPlayerIdAsync(int playerId, bool loadSettings = false);
 
     /// <summary>
     /// Gets user for the given player id, or create if one doesn't exist
