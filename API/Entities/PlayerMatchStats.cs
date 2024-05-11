@@ -1,4 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
+// ReSharper disable ClassWithVirtualMembersNeverInherited.Global
+// ReSharper disable EntityFramework.ModelValidation.CircularDependency
 
 namespace API.Entities;
 
@@ -23,7 +26,7 @@ public class PlayerMatchStats
     public bool Won { get; set; }
 
     [Column("average_score")]
-    public int AverageScore { get; set; }
+    public double AverageScore { get; set; }
 
     [Column("average_misses")]
     public double AverageMisses { get; set; }

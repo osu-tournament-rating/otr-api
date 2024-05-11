@@ -14,13 +14,11 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class PlayersController(IPlayerService playerService) : Controller
 {
-    private readonly IPlayerService _playerService = playerService;
-
     [HttpGet("all")]
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> GetAllAsync()
     {
-        IEnumerable<PlayerDTO> players = await _playerService.GetAllAsync();
+        IEnumerable<PlayerDTO> players = await playerService.GetAllAsync();
         return Ok(players);
     }
 
@@ -30,7 +28,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     [EndpointDescription("Get player info searching first by id, then osuId, then username")]
     public async Task<ActionResult<PlayerInfoDTO?>> GetAsync(string key)
     {
-        PlayerInfoDTO? info = await _playerService.GetVersatileAsync(key);
+        PlayerInfoDTO? info = await playerService.GetVersatileAsync(key);
 
         if (info == null)
         {
@@ -44,7 +42,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     [Authorize(Roles = OtrClaims.System)]
     public async Task<ActionResult<IEnumerable<PlayerRanksDTO>>> GetAllRanksAsync()
     {
-        IEnumerable<PlayerRanksDTO> ranks = await _playerService.GetAllRanksAsync();
+        IEnumerable<PlayerRanksDTO> ranks = await playerService.GetAllRanksAsync();
         return Ok(ranks);
     }
 
@@ -52,7 +50,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     [Authorize(Roles = OtrClaims.System)]
     public async Task<ActionResult<IEnumerable<PlayerIdMappingDTO>>> GetIdMappingAsync()
     {
-        IEnumerable<PlayerIdMappingDTO> mapping = await _playerService.GetIdMappingAsync();
+        IEnumerable<PlayerIdMappingDTO> mapping = await playerService.GetIdMappingAsync();
         return Ok(mapping);
     }
 
@@ -64,7 +62,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     )]
     public async Task<IActionResult> GetCountryMappingAsync()
     {
-        IEnumerable<PlayerCountryMappingDTO> mapping = await _playerService.GetCountryMappingAsync();
+        IEnumerable<PlayerCountryMappingDTO> mapping = await playerService.GetCountryMappingAsync();
         return Ok(mapping);
     }
 }

@@ -40,7 +40,9 @@ public class MatchesRepository(
         await MatchBaseQuery(filterInvalidMatches).FirstAsync(x => x.Id == id);
 
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered) =>
-        await MatchBaseQuery(onlyIncludeFiltered).Where(x => ids.Contains(x.Id)).ToListAsync();
+        await MatchBaseQuery(onlyIncludeFiltered)
+            .AsNoTracking()
+            .Where(x => ids.Contains(x.Id)).ToListAsync();
 
     public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches) =>
         await MatchBaseQuery(filterInvalidMatches).Select(x => x.Id).ToListAsync();
@@ -342,7 +344,7 @@ public class MatchesRepository(
             .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
             .Include(x => x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified))
             .ThenInclude(x => x.Beatmap)
-            .Where(x => x.Games.Count > 0)
+            .Where(x => x.Games.Any(y => y.VerificationStatus == GameVerificationStatus.Verified && y.MatchScores.Any(z => z.IsValid == true)))
             .OrderBy(x => x.StartTime);
     }
 }
