@@ -1,4 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
+// ReSharper disable ClassWithVirtualMembersNeverInherited.Global
+// ReSharper disable EntityFramework.ModelValidation.CircularDependency
 
 namespace API.Entities;
 

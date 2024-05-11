@@ -1,8 +1,11 @@
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a player's match stats
 /// </summary>
+// ReSharper disable once ClassNeverInstantiated.Global
 public class PlayerMatchStatsDTO
 {
     /// <summary>
