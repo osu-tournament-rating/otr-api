@@ -25,7 +25,7 @@ namespace API.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
+            migrationBuilder.Sql("TRUNCATE TABLE user_settings");
         }
     }
 }
