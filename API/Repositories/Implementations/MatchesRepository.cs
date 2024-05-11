@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
+using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
 using API.Utilities;
 using AutoMapper;
@@ -15,8 +16,9 @@ public class MatchesRepository(
     ILogger<MatchesRepository> logger,
     IMapper mapper,
     OtrContext context,
-    IMatchDuplicateRepository matchDuplicateRepository
-    ) : HistoryRepositoryBase<Match, MatchHistory>(context, mapper), IMatchesRepository
+    IMatchDuplicateRepository matchDuplicateRepository,
+    ICacheHandler cacheHandler
+    ) : HistoryRepositoryBase<Match, MatchHistory>(context, mapper), IMatchesRepository, IUsesCache
 {
     private readonly OtrContext _context = context;
 
@@ -29,11 +31,27 @@ public class MatchesRepository(
             .ThenInclude(x => x.Beatmap)
             .FirstOrDefaultAsync(x => x.Id == id);
 
-    public async Task<IEnumerable<Match>> SearchAsync(string name)
+    public async Task InvalidateCacheEntriesAsync()
+    {
+        await cacheHandler.OnMatchUpdateAsync();
+    }
+
+    public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name)
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         name = name.Replace("_", @"\_");
-        return await _context.Matches.WhereVerified().Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\")).ToListAsync();
+        return await _context.Matches
+            .AsNoTracking()
+            .WhereVerified()
+            .Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\"))
+            .Select(m => new MatchSearchResultDTO()
+            {
+                Id = m.Id,
+                MatchId = m.MatchId,
+                Name = m.Name
+            })
+            .Take(30)
+            .ToListAsync();
     }
 
     public async Task<Match?> GetAsync(int id, bool filterInvalidMatches = true) =>

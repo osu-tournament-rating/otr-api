@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
+using API.Handlers.Interfaces;
 using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Utilities;
@@ -11,10 +12,16 @@ namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRepository) : RepositoryBase<BaseStats>(context), IBaseStatsRepository
+public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRepository, ICacheHandler cacheHandler) : RepositoryBase<BaseStats>(context), IBaseStatsRepository, IUsesCache
 {
     private readonly OtrContext _context = context;
     private readonly IPlayerRepository _playerRepository = playerRepository;
+    private readonly ICacheHandler _cacheHandler = cacheHandler;
+
+    public async Task InvalidateCacheEntriesAsync()
+    {
+        await _cacheHandler.OnBaseStatsUpdateAsync();
+    }
 
     public async Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId)
     {

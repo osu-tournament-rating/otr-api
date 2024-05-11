@@ -20,7 +20,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <summary>
     /// Search for a tournament by name
     /// </summary>
-    public Task<IEnumerable<Tournament>> SearchAsync(string name);
+    public Task<IEnumerable<TournamentSearchResultDTO>> SearchAsync(string name);
 
     /// <summary>
     /// Create team size statistics for a player

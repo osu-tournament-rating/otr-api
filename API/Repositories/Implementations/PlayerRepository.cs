@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
+using API.Handlers.Interfaces;
 using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Utilities;
@@ -11,21 +12,15 @@ namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBase<Player>(context), IPlayerRepository
+public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler cacheHandler) : RepositoryBase<Player>(context), IPlayerRepository, IUsesCache
 {
     private readonly OtrContext _context = context;
     private readonly IMapper _mapper = mapper;
+    private readonly ICacheHandler _cacheHandler = cacheHandler;
 
-    public override async Task<int> UpdateAsync(Player player)
+    public async Task InvalidateCacheEntriesAsync()
     {
-        player.Updated = DateTime.UtcNow;
-        return await base.UpdateAsync(player);
-    }
-
-    public override async Task<Player> CreateAsync(Player player)
-    {
-        player.Created = DateTime.UtcNow;
-        return await base.CreateAsync(player);
+        await _cacheHandler.OnPlayerUpdateAsync();
     }
 
     public async Task<IEnumerable<Player>> GetPlayersMissingRankAsync()
@@ -63,6 +58,8 @@ public class PlayerRepository(OtrContext context, IMapper mapper) : RepositoryBa
     public async Task<IEnumerable<Player>> SearchAsync(string username) =>
         await SearchQuery(username, true)
             .Include(p => p.Ratings)
+            .AsNoTracking()
+            .Take(30)
             .ToListAsync();
 
     public async Task<Player?> GetAsync(string username)

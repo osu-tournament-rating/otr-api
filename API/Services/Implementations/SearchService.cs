@@ -1,9 +1,10 @@
 using API.DTOs;
 using API.Entities;
+using API.Handlers.Interfaces;
 using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
-using AutoMapper;
+using API.Utilities;
 
 namespace API.Services.Implementations;
 
@@ -11,7 +12,7 @@ public class SearchService(
     ITournamentsRepository tournamentsRepository,
     IMatchesRepository matchesRepository,
     IPlayerRepository playerRepository,
-    IMapper mapper
+    ICacheHandler cacheHandler
     ) : ISearchService
 {
     public async Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey) =>
@@ -24,32 +25,64 @@ public class SearchService(
 
     private async Task<IEnumerable<TournamentSearchResultDTO>> SearchTournamentsByNameAsync(string tournamentName)
     {
-        IEnumerable<Tournament> tournaments = await tournamentsRepository.SearchAsync(tournamentName);
-        return tournaments.Select(mapper.Map<TournamentSearchResultDTO>);
+        IEnumerable<TournamentSearchResultDTO>? result =
+            await cacheHandler.Cache.GetObjectAsync<IEnumerable<TournamentSearchResultDTO>>(CacheUtils.TournamentSearchKey(tournamentName));
+
+        if (result is not null)
+        {
+            return result;
+        }
+
+        result = (await tournamentsRepository.SearchAsync(tournamentName)).ToList();
+        await cacheHandler.SetTournamentSearchResultAsync(result, tournamentName);
+
+        return result;
     }
 
     private async Task<IEnumerable<MatchSearchResultDTO>> SearchMatchesByNameAsync(string matchName)
     {
-        var matches = (await matchesRepository.SearchAsync(matchName)).ToList();
-        return matches.Select(mapper.Map<MatchSearchResultDTO>);
+        IEnumerable<MatchSearchResultDTO>? result =
+            await cacheHandler.Cache.GetObjectAsync<IEnumerable<MatchSearchResultDTO>>(CacheUtils.MatchSearchKey(matchName));
+
+        if (result is not null)
+        {
+            return result;
+        }
+
+        result = (await matchesRepository.SearchAsync(matchName)).ToList();
+        await cacheHandler.SetMatchSearchResultAsync(result, matchName);
+
+        return result;
     }
 
     private async Task<IEnumerable<PlayerSearchResultDTO>> SearchPlayersByNameAsync(string username)
     {
-        var players = (await playerRepository.SearchAsync(username)).ToList();
-        return players.Select(player =>
+        IEnumerable<PlayerSearchResultDTO>? result =
+            await cacheHandler.Cache.GetObjectAsync<IEnumerable<PlayerSearchResultDTO>>(CacheUtils.PlayerSearchKey(username));
+
+        if (result is not null)
         {
-            BaseStats? rating = player.Ratings
-                .FirstOrDefault(r => r.Mode == (player.Ruleset ?? Ruleset.Standard));
-            return new PlayerSearchResultDTO
+            return result;
+        }
+
+        result = (await playerRepository.SearchAsync(username))
+            .Select(player =>
             {
-                Id = player.Id,
-                OsuId = player.OsuId,
-                Rating = rating?.Rating,
-                GlobalRank = rating?.GlobalRank,
-                Username = player.Username,
-                Thumbnail = $"a.ppy.sh/{player.OsuId}"
-            };
-        });
+                BaseStats? stats = player.Ratings
+                    .FirstOrDefault(r => r.Mode == (player.Ruleset ?? Ruleset.Standard));
+                return new PlayerSearchResultDTO
+                {
+                    Id = player.Id,
+                    OsuId = player.OsuId,
+                    Rating = stats?.Rating,
+                    GlobalRank = stats?.GlobalRank,
+                    Username = player.Username,
+                    Thumbnail = $"a.ppy.sh/{player.OsuId}"
+                };
+            })
+            .ToList();
+        await cacheHandler.SetPlayerSearchResultAsync(result, username);
+
+        return result;
     }
 }
