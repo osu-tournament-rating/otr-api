@@ -29,7 +29,6 @@ public interface IMatchesService
     /// <returns></returns>
     Task RefreshAutomationChecks(bool invalidOnly = true);
 
-    Task<IEnumerable<int>> GetAllIdsAsync(bool onlyIncludeFiltered);
     Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId);
     Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true);
 
@@ -50,19 +49,6 @@ public interface IMatchesService
         DateTime start,
         DateTime end
     );
-
-    /// <summary>
-    /// A unique mapping of osu! match ids to our internal ids.
-    /// </summary>
-    /// <returns></returns>
-    Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync();
-
-    /// <summary>
-    /// Converts a list of match ids to match id objects
-    /// </summary>
-    /// <param name="ids"></param>
-    /// <returns></returns>
-    Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids);
 
     /// <summary>
     ///  Full flow for one-way operation of marking a match as duplicate, reassinging the

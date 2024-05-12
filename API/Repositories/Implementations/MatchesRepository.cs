@@ -57,14 +57,6 @@ public class MatchesRepository(
     public async Task<Match?> GetAsync(int id, bool filterInvalidMatches = true) =>
         await MatchBaseQuery(filterInvalidMatches).FirstAsync(x => x.Id == id);
 
-    public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered) =>
-        await MatchBaseQuery(onlyIncludeFiltered)
-            .AsNoTracking()
-            .Where(x => ids.Contains(x.Id)).ToListAsync();
-
-    public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches) =>
-        await MatchBaseQuery(filterInvalidMatches).Select(x => x.Id).ToListAsync();
-
     public async Task<Match?> GetByMatchIdAsync(long matchId) =>
         await _context
             .Matches.Include(x => x.Games)
@@ -87,14 +79,6 @@ public class MatchesRepository(
             .Matches.Include(x => x.Games)
             .ThenInclude(x => x.MatchScores)
             .Where(x => x.IsApiProcessed == false)
-            .FirstOrDefaultAsync();
-
-    public async Task<Match?> GetFirstMatchNeedingAutoCheckAsync() =>
-        await _context
-            .Matches.Include(x => x.Tournament)
-            .Include(x => x.Games)
-            .ThenInclude(x => x.MatchScores)
-            .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
             .FirstOrDefaultAsync();
 
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
@@ -178,15 +162,6 @@ public class MatchesRepository(
             // Applies to all matches
             await _context.Matches.ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
         }
-    }
-
-    public async Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync()
-    {
-        return await _context
-            .Matches.AsNoTracking()
-            .OrderBy(x => x.Id)
-            .Select(x => new MatchIdMappingDTO { Id = x.Id, OsuMatchId = x.MatchId })
-            .ToListAsync();
     }
 
     public async Task MergeDuplicatesAsync(int matchRootId)
