@@ -79,7 +79,7 @@ public class MeController(IUserService userService) : Controller
     /// </summary>
     /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="307">Redirects to `PATCH` `/users/{id}/settings/ruleset`</response>
-    [HttpPatch("settings/ruleset")]
+    [HttpPost("settings/ruleset")]
     [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
