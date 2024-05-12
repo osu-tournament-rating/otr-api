@@ -23,9 +23,7 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
     }
 
     public override async Task<User?> GetAsync(int id) =>
-        await UserBaseQuery()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == id);
+        await UserBaseQuery().FirstOrDefaultAsync(u => u.Id == id);
 
     public async Task<User?> GetByPlayerIdAsync(int playerId, bool loadSettings = false)
     {

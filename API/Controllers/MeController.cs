@@ -78,11 +78,11 @@ public class MeController(IUserService userService) : Controller
     /// Update the ruleset for the currently logged in user
     /// </summary>
     /// <response code="401">If the requester is not properly authenticated</response>
-    /// <response code="302">Redirects to `PATCH` `/users/{id}/settings/ruleset`</response>
+    /// <response code="307">Redirects to `PATCH` `/users/{id}/settings/ruleset`</response>
     [HttpPatch("settings/ruleset")]
     [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
     public IActionResult UpdateRuleset([FromBody] Ruleset ruleset)
     {
         var userId = HttpContext.AuthorizedUserIdentity();
@@ -91,18 +91,18 @@ public class MeController(IUserService userService) : Controller
             return Unauthorized();
         }
 
-        return RedirectToAction("UpdateRuleset", "Users", new { id = userId, ruleset });
+        return RedirectToActionPreserveMethod("UpdateRuleset", "Users", new { id = userId, ruleset });
     }
 
     /// <summary>
     /// Sync the ruleset of the currently logged in user to their osu! ruleset
     /// </summary>
     /// <response code="401">If the requester is not properly authenticated</response>
-    /// <response code="302">Redirects to `PATCH` `/users/{id}/settings/ruleset:sync`</response>
+    /// <response code="307">Redirects to `PATCH` `/users/{id}/settings/ruleset:sync`</response>
     [HttpPost("settings/ruleset:sync")]
     [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
     public IActionResult SyncRuleset()
     {
         var userId = HttpContext.AuthorizedUserIdentity();
@@ -111,6 +111,6 @@ public class MeController(IUserService userService) : Controller
             return Unauthorized();
         }
 
-        return RedirectToAction("SyncRuleset", "Users", new { id = userId });
+        return RedirectToActionPreserveMethod("SyncRuleset", "Users", new { id = userId });
     }
 }

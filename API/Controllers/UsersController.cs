@@ -193,7 +193,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// </summary>
     /// <response code="404">If a user does not exist</response>
     /// <response code="200">If the operation was successful</response>
-    [HttpPatch("{id:int}/settings/ruleset:sync")]
+    [HttpPost("{id:int}/settings/ruleset:sync")]
     [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status200OK)]

@@ -27,14 +27,14 @@ public class UserSettingsService(IUserSettingsRepository userSettingsRepository,
     {
         User? user = await userRepository.GetAsync(userId);
 
-        if (user?.Settings is null)
+        if (user is null)
         {
             return false;
         }
 
         user.Settings.DefaultRuleset = user.Player.Ruleset ?? Ruleset.Standard;
         user.Settings.DefaultRulesetIsControlled = false;
-        await userSettingsRepository.UpdateAsync(user.Settings);
+        await userRepository.UpdateAsync(user);
 
         return true;
     }
