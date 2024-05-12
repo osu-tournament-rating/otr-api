@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using API.Enums;
 using API.Osu.Enums;
 
 namespace API.DTOs;
@@ -5,6 +7,7 @@ namespace API.DTOs;
 /// <summary>
 /// Represents a played match
 /// </summary>
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class MatchDTO
 {
     /// <summary>
@@ -40,10 +43,11 @@ public class MatchDTO
     /// <summary>
     /// Current verification status of the match
     /// </summary>
-    public int? VerificationStatus { get; set; }
+    public MatchVerificationStatus? VerificationStatus { get; set; }
 
     /// <summary>
     /// List of games played during the match
     /// </summary>
+    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public ICollection<GameDTO> Games { get; set; } = new List<GameDTO>();
 }
