@@ -78,7 +78,7 @@ public class MeController(IUserService userService) : Controller
     /// Update the ruleset for the currently logged in user
     /// </summary>
     /// <response code="401">If the requester is not properly authenticated</response>
-    /// <response code="307">Redirects to `PATCH` `/users/{id}/settings/ruleset`</response>
+    /// <response code="307">Redirects to `POST` `/users/{id}/settings/ruleset`</response>
     [HttpPost("settings/ruleset")]
     [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -98,7 +98,7 @@ public class MeController(IUserService userService) : Controller
     /// Sync the ruleset of the currently logged in user to their osu! ruleset
     /// </summary>
     /// <response code="401">If the requester is not properly authenticated</response>
-    /// <response code="307">Redirects to `PATCH` `/users/{id}/settings/ruleset:sync`</response>
+    /// <response code="307">Redirects to `POST` `/users/{id}/settings/ruleset:sync`</response>
     [HttpPost("settings/ruleset:sync")]
     [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
