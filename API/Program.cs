@@ -358,7 +358,10 @@ builder.Services.AddDbContext<OtrContext>(o =>
     );
 });
 
-builder.Services.AddDistributedMemoryCache();
+// The Redis cache is registered as a singleton because it is meant to be re-used across instances
+builder.Services.AddSingleton<ICacheHandler>(
+    new CacheHandler(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection)
+);
 
 #endregion
 

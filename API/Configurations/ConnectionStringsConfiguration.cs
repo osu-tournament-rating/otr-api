@@ -11,4 +11,7 @@ public class ConnectionStringsConfiguration
 
     [Required(ErrorMessage = "CollectorConnection is required!")]
     public string CollectorConnection { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "RedisConnection is required!")]
+    public string RedisConnection { get; set; } = string.Empty;
 }

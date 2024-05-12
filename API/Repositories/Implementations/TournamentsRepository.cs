@@ -2,6 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
+using API.Handlers.Interfaces;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,9 +11,14 @@ namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class TournamentsRepository(OtrContext context) : RepositoryBase<Tournament>(context), ITournamentsRepository
+public class TournamentsRepository(OtrContext context, ICacheHandler cacheHandler) : RepositoryBase<Tournament>(context), ITournamentsRepository, IUsesCache
 {
     private readonly OtrContext _context = context;
+
+    public async Task InvalidateCacheEntriesAsync()
+    {
+        await cacheHandler.OnTournamentUpdateAsync();
+    }
 
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
         eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
@@ -19,12 +26,25 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
 
-    public async Task<IEnumerable<Tournament>> SearchAsync(string name)
+    public async Task<IEnumerable<TournamentSearchResultDTO>> SearchAsync(string name)
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         name = name.Replace("_", @"\_");
-        return await _context.Tournaments.Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\")
-        || EF.Functions.ILike(x.Abbreviation, $"%{name}%", @"\")).ToListAsync();
+        return await _context.Tournaments
+            .AsNoTracking()
+            .Where(x =>
+                EF.Functions.ILike(x.Name, $"%{name}%", @"\")
+                || EF.Functions.ILike(x.Abbreviation, $"%{name}%", @"\")
+            )
+            .Select(t => new TournamentSearchResultDTO()
+            {
+                Id = t.Id,
+                Ruleset = (Ruleset)t.Mode,
+                TeamSize = t.TeamSize,
+                Name = t.Name
+            })
+            .Take(30)
+            .ToListAsync();
     }
 
     public async Task<PlayerTournamentTeamSizeCountDTO> GetTeamSizeStatsAsync(

@@ -7,7 +7,8 @@
   },
   "ConnectionStrings": {
     "DefaultConnection": "",
-    "CollectorConnection": ""
+    "CollectorConnection": "",
+    "RedisConnection": ""
   },
   "Osu": {
     "ApiKey": "",
