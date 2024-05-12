@@ -23,6 +23,15 @@ public interface IMatchesService
     );
 
     /// <summary>
+    /// Gets a paged list of matches
+    /// </summary>
+    /// <remarks>Matches are ordered by primary key</remarks>
+    /// <param name="limit">Amount of matches to return. Functions as the "page size"</param>
+    /// <param name="page">Which block of matches to return</param>
+    /// <param name="filterUnverified">If unverified matches should be excluded from the results</param>
+    Task<PagedResultDTO<MatchDTO>> GetAsync(int limit, int page, bool filterUnverified = true);
+
+    /// <summary>
     /// Marks matches as needing automated checks
     /// </summary>
     /// <param name="invalidOnly">If true, this method only applies to matches that are not Verified or PreVerified</param>

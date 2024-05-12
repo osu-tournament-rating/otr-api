@@ -1,3 +1,4 @@
+using API.Controllers;
 using API.DTOs;
 using API.Entities;
 using API.Enums;
@@ -11,6 +12,7 @@ public class MatchesService(
     IMatchesRepository matchesRepository,
     IMatchDuplicateRepository duplicateRepository,
     ITournamentsRepository tournamentsRepository,
+    IUrlHelperService urlHelperService,
     IMapper mapper
 ) : IMatchesService
 {
@@ -59,6 +61,34 @@ public class MatchesService(
         IEnumerable<Match> createdMatches = tournament.Matches.Where(m => createdMatchIds.Contains(m.MatchId));
 
         return mapper.Map<IEnumerable<MatchCreatedResultDTO>>(createdMatches);
+    }
+
+    public async Task<PagedResultDTO<MatchDTO>> GetAsync(int limit, int page, bool filterUnverified = true)
+    {
+        IEnumerable<Match> result = await matchesRepository.GetAsync(limit, page, filterUnverified);
+        var count = result.Count();
+
+        return new PagedResultDTO<MatchDTO>()
+        {
+            Next = count == limit
+                ? urlHelperService.Action(new CreatedAtRouteValues()
+                {
+                    Controller = nameof(MatchesController),
+                    Action = nameof(MatchesController.ListAsync),
+                    RouteValues = new { limit, page = page + 1, filterUnverified }
+                })
+                : null,
+            Previous = page > 1
+                ? urlHelperService.Action(new CreatedAtRouteValues()
+                {
+                    Controller = nameof(MatchesController),
+                    Action = nameof(MatchesController.ListAsync),
+                    RouteValues = new { limit, page = page - 1, filterUnverified }
+                })
+                : null,
+            Count = count,
+            Results = mapper.Map<IEnumerable<MatchDTO>>(result).ToList()
+        };
     }
 
     public async Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true) =>

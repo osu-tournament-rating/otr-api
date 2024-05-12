@@ -7,6 +7,19 @@ namespace API.Repositories.Interfaces;
 public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
 {
     Task<Match?> GetAsync(int id, bool filterInvalidMatches = true);
+
+    /// <summary>
+    /// Gets a paged list of matches
+    /// </summary>
+    /// <remarks>
+    /// Matches are ordered by primary key. All navigational properties required for <see cref="MatchDTO"/> are included
+    /// </remarks>
+    /// <param name="limit">Amount of matches to return. Functions as the "page size"</param>
+    /// <param name="page">Which block of matches to return</param>
+    /// <param name="filterUnverified">If unverified matches should be excluded from the results</param>
+    /// <returns>A list of matches of size <paramref name="limit"/> indexed by <paramref name="page"/></returns>
+    Task<IEnumerable<Match>> GetAsync(int limit, int page, bool filterUnverified = true);
+
     Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds);
     Task<Match?> GetByMatchIdAsync(long matchId);
     Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name);

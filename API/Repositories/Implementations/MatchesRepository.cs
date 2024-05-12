@@ -36,6 +36,27 @@ public class MatchesRepository(
         await cacheHandler.OnMatchUpdateAsync();
     }
 
+    public async Task<IEnumerable<Match>> GetAsync(int limit, int page, bool filterUnverified = true)
+    {
+        IQueryable<Match> query = filterUnverified
+            ? _context.Matches.AsNoTracking().WhereVerified()
+            : _context.Matches.AsNoTracking();
+
+        return await query
+            // Include all MatchDTO navigational properties
+            .Include(m => m.Tournament)
+            .Include(m => m.Games)
+            .ThenInclude(g => g.Beatmap)
+            .Include(m => m.Games)
+            .ThenInclude(g => g.MatchScores)
+            .OrderBy(m => m.Id)
+            // Set index to start of desired page
+            .Skip(limit * page)
+            // Take only next n entities
+            .Take(limit)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name)
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.

@@ -15,6 +15,49 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class MatchesController(IMatchesService matchesService) : Controller
 {
+    /// <summary>
+    /// Gets all matches
+    /// </summary>
+    /// <remarks>
+    /// Results are ordered by id and support pagination. All match data is included.
+    /// </remarks>
+    /// <param name="limit">
+    /// Controls the number of matches to return. Functions as a "page size".
+    /// Default: 100 Constraints: Minimum 1, Maximum 5000
+    /// </param>
+    /// <param name="page">
+    /// Controls which block of size <paramref name="limit"/> to return.
+    /// Default: 1, Constraints: Minimum 1
+    /// </param>
+    /// <param name="filterUnverified">
+    /// If unverified matches should be excluded from results
+    /// Default: True, Constraints: Requires admin or system permission if false
+    /// </param>
+    /// <response code="400">If query parameters violate constraints</response>
+    /// <response code="200">Returns the desired page of matches</response>
+    [HttpGet]
+    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<PagedResultDTO<MatchDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListAsync(
+        [FromQuery] int limit = 100,
+        [FromQuery] int page = 1,
+        [FromQuery] bool filterUnverified = true
+    )
+    {
+        if (limit < 1 || limit > 5000 || page < 1)
+        {
+            return BadRequest();
+        }
+
+        if (!filterUnverified && !(User.IsAdmin() || User.IsSystem()))
+        {
+            return BadRequest();
+        }
+
+        return Ok(await matchesService.GetAsync(limit, page, filterUnverified));
+    }
+
     [HttpPost("checks/refresh")]
     [Authorize(Roles = $"{OtrClaims.Admin}, {OtrClaims.System}")]
     [EndpointSummary(
