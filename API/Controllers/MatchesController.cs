@@ -15,8 +15,6 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class MatchesController(IMatchesService matchesService) : Controller
 {
-    private readonly IMatchesService _matchesService = matchesService;
-
     [HttpPost("checks/refresh")]
     [Authorize(Roles = $"{OtrClaims.Admin}, {OtrClaims.System}")]
     [EndpointSummary(
@@ -25,24 +23,15 @@ public class MatchesController(IMatchesService matchesService) : Controller
     public async Task<IActionResult> RefreshAutomationChecksAsync()
     {
         // Marks all matches as needing automation checks
-        await _matchesService.RefreshAutomationChecks(false);
+        await matchesService.RefreshAutomationChecks(false);
         return Ok();
-    }
-
-    [HttpGet("ids")]
-    [Authorize(Roles = OtrClaims.System)]
-    [EndpointSummary("Returns all verified match ids")]
-    public async Task<ActionResult<IEnumerable<int>>> GetAllAsync()
-    {
-        IEnumerable<int> matches = await _matchesService.GetAllIdsAsync(true);
-        return Ok(matches);
     }
 
     [HttpGet("{id:int}")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
     {
-        MatchDTO? match = await _matchesService.GetAsync(id);
+        MatchDTO? match = await matchesService.GetAsync(id);
 
         if (match == null)
         {
@@ -52,22 +41,10 @@ public class MatchesController(IMatchesService matchesService) : Controller
         return Ok(match);
     }
 
-    [HttpPost("convert")]
-    [Authorize(Roles = OtrClaims.System)]
-    [EndpointSummary("Converts a list of match ids to MatchDTO objects")]
-    [EndpointDescription(
-        "This is a useful way to fetch a list of matches without starving the " + "program of memory. This is used by the rating processor to fetch matches"
-    )]
-    public async Task<ActionResult<IEnumerable<MatchDTO>>> ConvertAsync([FromBody] IEnumerable<int> ids)
-    {
-        IEnumerable<MatchDTO> matches = await _matchesService.ConvertAsync(ids);
-        return Ok(matches);
-    }
-
     [HttpGet("duplicates")]
     [Authorize(Roles = OtrClaims.Admin)]
     [EndpointSummary("Retrieves all known duplicate groups")]
-    public async Task<IActionResult> GetDuplicatesAsync() => Ok(await _matchesService.GetAllDuplicatesAsync());
+    public async Task<IActionResult> GetDuplicatesAsync() => Ok(await matchesService.GetAllDuplicatesAsync());
 
     [HttpPost("duplicate")]
     [Authorize(Roles = OtrClaims.Admin)]
@@ -87,7 +64,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
             return Unauthorized("You lack permissions to perform this action.");
         }
 
-        await _matchesService.VerifyDuplicatesAsync(loggedInUser.Value, rootId, confirmedDuplicate);
+        await matchesService.VerifyDuplicatesAsync(loggedInUser.Value, rootId, confirmedDuplicate);
         return Ok();
     }
 
@@ -95,13 +72,13 @@ public class MatchesController(IMatchesService matchesService) : Controller
     [HttpGet("player/{osuId:long}")]
     [Authorize(Roles = $"{OtrClaims.Admin}, {OtrClaims.System}")]
     public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatchesAsync(long osuId, int mode) =>
-        Ok(await _matchesService.GetAllForPlayerAsync(osuId, mode, DateTime.MinValue, DateTime.MaxValue));
+        Ok(await matchesService.GetAllForPlayerAsync(osuId, mode, DateTime.MinValue, DateTime.MaxValue));
 
     [HttpGet("{id:int}/osuid")]
     [Authorize(Roles = OtrClaims.System)]
     public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
     {
-        MatchDTO? match = await _matchesService.GetByOsuIdAsync(id);
+        MatchDTO? match = await matchesService.GetByOsuIdAsync(id);
         if (match == null)
         {
             return NotFound($"Match with id {id} does not exist");
@@ -114,14 +91,6 @@ public class MatchesController(IMatchesService matchesService) : Controller
         }
 
         return NotFound($"Match with id {id} does not exist");
-    }
-
-    [HttpGet("id-mapping")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> GetIdMappingAsync()
-    {
-        IEnumerable<MatchIdMappingDTO> mapping = await _matchesService.GetIdMappingAsync();
-        return Ok(mapping);
     }
 
     /// <summary>
@@ -139,7 +108,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateVerificationStatusAsync(int id, [FromBody] JsonPatchDocument<MatchDTO> patch)
     {
-        MatchDTO? match = await _matchesService.GetAsync(id, false);
+        MatchDTO? match = await matchesService.GetAsync(id, false);
         if (match is null)
         {
             return NotFound();
@@ -162,7 +131,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
         }
 
         var verifierId = HttpContext.AuthorizedUserIdentity();
-        MatchDTO? updatedMatch = await _matchesService.UpdateVerificationStatusAsync(
+        MatchDTO? updatedMatch = await matchesService.UpdateVerificationStatusAsync(
             id,
             (MatchVerificationStatus)match.VerificationStatus,
             MatchVerificationSource.MatchVerifier,
