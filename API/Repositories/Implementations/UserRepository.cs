@@ -68,5 +68,6 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
 
     private IQueryable<User> UserBaseQuery() =>
         _context.Users
+            .Include(x => x.Settings)
             .Include(x => x.Player);
 }

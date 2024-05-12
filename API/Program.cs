@@ -413,6 +413,7 @@ builder.Services.AddScoped<IScreeningService, ScreeningService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
+builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 
 #endregion
 

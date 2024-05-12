@@ -5,6 +5,11 @@ namespace API.Repositories.Interfaces;
 public interface IUserSettingsRepository : IRepository<UserSettings>
 {
     /// <summary>
+    /// Gets settings for the given user id
+    /// </summary>
+    Task<UserSettings?> GetByUserIdAsync(int userId);
+
+    /// <summary>
     /// Generates default settings for a user using values from the associated player with the given playerId
     /// </summary>
     /// <remarks>

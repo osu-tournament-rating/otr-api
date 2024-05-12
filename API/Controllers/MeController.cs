@@ -1,3 +1,4 @@
+using API.Osu.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
@@ -71,5 +72,45 @@ public class MeController(IUserService userService) : Controller
             dateMin,
             dateMax
         });
+    }
+
+    /// <summary>
+    /// Update the ruleset for the currently logged in user
+    /// </summary>
+    /// <response code="401">If the requester is not properly authenticated</response>
+    /// <response code="302">Redirects to `PATCH` `/users/{id}/settings/ruleset`</response>
+    [HttpPatch("settings/ruleset")]
+    [Authorize(Roles = OtrClaims.User)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status302Found)]
+    public IActionResult UpdateRuleset([FromBody] Ruleset ruleset)
+    {
+        var userId = HttpContext.AuthorizedUserIdentity();
+        if (!userId.HasValue)
+        {
+            return Unauthorized();
+        }
+
+        return RedirectToAction("UpdateRuleset", "Users", new { id = userId, ruleset });
+    }
+
+    /// <summary>
+    /// Sync the ruleset of the currently logged in user to their osu! ruleset
+    /// </summary>
+    /// <response code="401">If the requester is not properly authenticated</response>
+    /// <response code="302">Redirects to `PATCH` `/users/{id}/settings/ruleset:sync`</response>
+    [HttpPost("settings/ruleset:sync")]
+    [Authorize(Roles = OtrClaims.User)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status302Found)]
+    public IActionResult SyncRuleset()
+    {
+        var userId = HttpContext.AuthorizedUserIdentity();
+        if (!userId.HasValue)
+        {
+            return Unauthorized();
+        }
+
+        return RedirectToAction("SyncRuleset", "Users", new { id = userId });
     }
 }
