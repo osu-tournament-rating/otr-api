@@ -38,18 +38,23 @@ public class MatchesController(IMatchesService matchesService) : Controller
         return Ok(matches);
     }
 
+    /// <summary>
+    /// Get a match
+    /// </summary>
+    /// <param name="id">Match id</param>
+    /// <response code="404">If a match does not exist for the given id</response>
+    /// <response code="200">Returns a match</response>
     [HttpGet("{id:int}")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
-    public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAsync(int id)
     {
         MatchDTO? match = await _matchesService.GetAsync(id);
 
-        if (match == null)
-        {
-            return NotFound($"Failed to locate match {id}");
-        }
-
-        return Ok(match);
+        return match is null
+            ? NotFound()
+            : Ok(match);
     }
 
     [HttpPost("convert")]
