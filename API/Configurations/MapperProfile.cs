@@ -28,9 +28,12 @@ public class MapperProfile : Profile
             .AfterMap<GenerateLocationUriAction>();
         CreateMap<Match, MatchSearchResultDTO>();
         CreateMap<MatchScore, MatchScoreDTO>().ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
+
         CreateMap<OAuthClient, OAuthClientDTO>()
+            .ForMember(x => x.ClientId, opt => opt.MapFrom(y => y.Id));
+        CreateMap<OAuthClient, OAuthClientCreatedDTO>()
             .ForMember(x => x.ClientId, opt => opt.MapFrom(y => y.Id))
-            .ForMember(x => x.ClientSecret, opt => opt.MapFrom(y => y.Secret));
+            .ForMember(x => x.ClientSecret, opt => opt.Ignore());
 
         CreateMap<RatingAdjustment, RatingAdjustmentDTO>();
         CreateMap<MatchRatingStats, MatchRatingStatsDTO>()

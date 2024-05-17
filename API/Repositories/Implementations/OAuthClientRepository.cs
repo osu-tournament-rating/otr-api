@@ -1,15 +1,24 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Entities;
 using API.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class OAuthClientRepository(OtrContext context) : RepositoryBase<OAuthClient>(context), IOAuthClientRepository
+public class OAuthClientRepository(OtrContext context, IPasswordHasher<OAuthClient> passwordHasher) : RepositoryBase<OAuthClient>(context), IOAuthClientRepository
 {
     private readonly OtrContext _context = context;
+
+    public override async Task<OAuthClient> CreateAsync(OAuthClient entity)
+    {
+        var hashedSecret = passwordHasher.HashPassword(entity, entity.Secret);
+        entity.Secret = hashedSecret;
+
+        return await base.CreateAsync(entity);
+    }
 
     public async Task<bool> SecretInUseAsync(string clientSecret) =>
         await _context.OAuthClients.AnyAsync(x => x.Secret == clientSecret);

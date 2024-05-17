@@ -53,12 +53,16 @@ public class OAuthController(IOAuthHandler oAuthHandler) : Controller
     /// <summary>
     /// Create a new OAuth client
     /// </summary>
-    /// <response code="201">If the user is not properly authenticated</response>
-    /// <response code="200">Returns created client credentials</response>
+    /// <remarks>
+    /// Client secret is only returned from creation.
+    /// The user will have to reset the secret if they lose access.
+    /// </remarks>
+    /// <response code="401">If the user is not properly authenticated</response>
+    /// <response code="201">Returns created client credentials</response>
     [HttpPost("client")]
     [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType<OAuthClientDTO>(StatusCodes.Status200OK)]
+    [ProducesResponseType<OAuthClientCreatedDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateClientAsync()
     {
         var userId = User.AuthorizedIdentity();
@@ -67,9 +71,9 @@ public class OAuthController(IOAuthHandler oAuthHandler) : Controller
             return Unauthorized();
         }
 
-        OAuthClientDTO result = await oAuthHandler.CreateClientAsync(userId.Value);
+        OAuthClientCreatedDTO result = await oAuthHandler.CreateClientAsync(userId.Value);
 
-        return Ok(result);
+        return CreatedAtAction("GetClients", "Users", new { id = userId }, result);
     }
 
     /// <summary>

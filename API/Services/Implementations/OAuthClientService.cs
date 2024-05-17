@@ -21,25 +21,21 @@ public class OAuthClientService(IOAuthClientRepository repository, IMapper mappe
         return new OAuthClientDTO
         {
             ClientId = clientId,
-            ClientSecret = client.Secret,
             Scopes = client.Scopes,
             RateLimitOverrides = client.RateLimitOverrides
         };
     }
 
-    public async Task<OAuthClientDTO> CreateAsync(int userId, string secret, params string[] scopes)
+    public async Task<OAuthClientCreatedDTO> CreateAsync(int userId, string secret, params string[] scopes)
     {
         var client = new OAuthClient { Scopes = scopes, Secret = secret, UserId = userId };
 
         OAuthClient newClient = await _repository.CreateAsync(client);
 
-        return new OAuthClientDTO
-        {
-            ClientId = newClient.Id,
-            ClientSecret = newClient.Secret,
-            Scopes = newClient.Scopes,
-            RateLimitOverrides = newClient.RateLimitOverrides
-        };
+        OAuthClientCreatedDTO dto = mapper.Map<OAuthClientCreatedDTO>(newClient);
+        dto.ClientSecret = secret;
+
+        return dto;
     }
 
     public async Task<bool> SecretInUse(string clientSecret) =>

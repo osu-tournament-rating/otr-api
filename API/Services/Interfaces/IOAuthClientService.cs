@@ -16,7 +16,7 @@ public interface IOAuthClientService
     /// <param name="userId">The id of the user that owns this client</param>
     /// <param name="secret">The client secret</param>
     /// <param name="scopes">The scopes this client has access to</param>
-    Task<OAuthClientDTO> CreateAsync(int userId, string secret, params string[] scopes);
+    Task<OAuthClientCreatedDTO> CreateAsync(int userId, string secret, params string[] scopes);
 
     /// <summary>
     /// Returns true if there already exists a client with this secret.

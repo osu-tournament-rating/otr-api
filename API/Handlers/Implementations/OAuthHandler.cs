@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -8,6 +9,7 @@ using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OsuSharp.Interfaces;
@@ -21,11 +23,12 @@ public class OAuthHandler(
     ILogger<OAuthHandler> logger,
     IOAuthClientService clientService,
     IOAuthClientRepository clientRepository,
-    IOsuClient osuClient,
-    IOptions<JwtConfiguration> jwtConfiguration,
-    IOptions<AuthConfiguration> authConfiguration,
     IPlayerRepository playerRepository,
-    IUserRepository userRepository
+    IUserRepository userRepository,
+    IOsuClient osuClient,
+    IPasswordHasher<OAuthClient> clientSecretHasher,
+    IOptions<JwtConfiguration> jwtConfiguration,
+    IOptions<AuthConfiguration> authConfiguration
     ) : IOAuthHandler
 {
     private const int AccessDurationSeconds = 3600;
@@ -54,7 +57,7 @@ public class OAuthHandler(
         return new OAuthResponseDTO
         {
             AccessToken = GenerateAccessToken(user),
-            RefreshToken = GenerateRefreshToken(user.Id.ToString(), "user"),
+            RefreshToken = GenerateRefreshToken(user.Id.ToString(), OtrClaims.User),
             AccessExpiration = AccessDurationSeconds
         };
     }
@@ -63,9 +66,15 @@ public class OAuthHandler(
     {
         logger.LogDebug("Attempting authorization via client credentials");
 
-        // Get the client and validate secret
         OAuthClient? client = await clientRepository.GetAsync(clientId);
-        if (client is null || client.Secret != clientSecret)
+        if (client is null)
+        {
+            return null;
+        }
+
+        // Validate secret
+        PasswordVerificationResult result = clientSecretHasher.VerifyHashedPassword(client, client.Secret, clientSecret);
+        if (result != PasswordVerificationResult.Success)
         {
             return null;
         }
@@ -79,7 +88,7 @@ public class OAuthHandler(
         return new OAuthResponseDTO
         {
             AccessToken = GenerateAccessToken(client),
-            RefreshToken = GenerateRefreshToken(clientId.ToString(), "client"),
+            RefreshToken = GenerateRefreshToken(clientId.ToString(), OtrClaims.Client),
             AccessExpiration = AccessDurationSeconds
         };
     }
@@ -144,7 +153,7 @@ public class OAuthHandler(
         };
     }
 
-    public async Task<OAuthClientDTO> CreateClientAsync(int userId, params string[] scopes)
+    public async Task<OAuthClientCreatedDTO> CreateClientAsync(int userId, params string[] scopes)
     {
         var secret = GenerateClientSecret();
 
@@ -277,6 +286,7 @@ public class OAuthHandler(
     /// <summary>
     /// Generates a new alpha-numeric client secret (size 50 chars)
     /// </summary>
+    [SuppressMessage("ReSharper", "StringLiteralTypo")]
     private static string GenerateClientSecret()
     {
         const int length = 50;
