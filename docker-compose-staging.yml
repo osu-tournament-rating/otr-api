@@ -1,8 +1,8 @@
 version: '3.8'
 services:
   app:
-    image: "testimage"
-    container_name: testname
+    image: "stagecodes/otr-api-staging:latest"
+    container_name: api
     ports:
       - "3700:8080"
     env_file:
@@ -51,16 +51,16 @@ services:
     volumes:
       - redis:/data
   postgres-exporter:
-   image: prometheuscommunity/postgres-exporter
-   container_name: postgres-exporter
-   ports:
-     - "9187:9187"
-   env_file:
-     - ./postgres_exporter.env
-   links:
-     - db
-     - prometheus
-   restart: always
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres-exporter
+    ports:
+      - "9187:9187"
+    env_file:
+      - ./postgres_exporter.env
+    links:
+      - db
+      - prometheus
+    restart: always
   collector:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: collector
