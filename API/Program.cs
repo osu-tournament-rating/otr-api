@@ -33,6 +33,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using OpenTelemetry.Instrumentation.AspNetCore;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OsuSharp;
@@ -76,7 +77,10 @@ builder
 #region Controller Configuration
 
 builder
-    .Services.AddControllers(options => { options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider()); })
+    .Services.AddControllers(options =>
+    {
+        options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
+    })
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
@@ -86,7 +90,7 @@ builder
 
 #endregion
 
-#region OpenTelemetry Tracing Configuration
+#region OpenTelemetry Tracing/Metrics Configuration
 
 builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
 {
@@ -99,108 +103,128 @@ builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
     };
 });
 
-builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource
-        .AddService(serviceName: builder.Environment.ApplicationName))
-    .WithTracing(tracing => tracing
-        .AddAspNetCoreInstrumentation()
-        .AddNpgsql()
-        .AddOtlpExporter(options =>
-        {
-            options.Endpoint = new Uri(builder
-                .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-                    ConnectionStringsConfiguration.Position
-                )
-                .CollectorConnection);
-        }));
+builder
+    .Services.AddOpenTelemetry()
+    .ConfigureResource(resource =>
+        resource.AddService(serviceName: builder.Environment.ApplicationName)
+    )
+    .WithTracing(tracing =>
+        tracing
+            .AddAspNetCoreInstrumentation()
+            .AddNpgsql()
+            .AddOtlpExporter(options =>
+            {
+                options.Endpoint = new Uri(
+                    builder
+                        .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+                            ConnectionStringsConfiguration.Position
+                        )
+                        .CollectorConnection
+                );
+            })
+    )
+    .WithMetrics(b =>
+        b.AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddProcessInstrumentation()
+            .AddPrometheusExporter(o => o.DisableTotalNameSuffixForCounters = true)
+    );
+;
 
 #endregion
 
 #region Rate Limit Configuration
 
-builder
-    .Services.AddRateLimiter(options =>
+builder.Services.AddRateLimiter(options =>
+{
+    RateLimitConfiguration rateLimitConfiguration =
+        builder.Configuration.BindAndValidate<RateLimitConfiguration>(
+            RateLimitConfiguration.Position
+        );
+
+    var anonymousRateLimiterOptions = new FixedWindowRateLimiterOptions()
     {
-        RateLimitConfiguration rateLimitConfiguration = builder.Configuration.BindAndValidate<RateLimitConfiguration>(
-            RateLimitConfiguration.Position);
+        PermitLimit = 30,
+        Window = TimeSpan.FromSeconds(60),
+        QueueLimit = 0
+    };
 
-        var anonymousRateLimiterOptions = new FixedWindowRateLimiterOptions()
+    // Configure response for rate limited clients
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        const string readMore =
+            "Read more about our rate limits at https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/limits/en.md";
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
         {
-            PermitLimit = 30,
-            Window = TimeSpan.FromSeconds(60),
-            QueueLimit = 0
-        };
-
-        // Configure response for rate limited clients
-        options.OnRejected = async (context, token) =>
+            await context.HttpContext.Response.WriteAsync(
+                $"Too many requests. Please try again after {retryAfter.TotalSeconds} second(s). "
+                    + readMore,
+                token
+            );
+        }
+        else
         {
-            context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-            const string readMore =
-                "Read more about our rate limits at https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/limits/en.md";
-            if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
-            {
-                await context.HttpContext.Response.WriteAsync(
-                    $"Too many requests. Please try again after {retryAfter.TotalSeconds} second(s). " + readMore,
-                    token
-                );
-            }
-            else
-            {
-                await context.HttpContext.Response.WriteAsync(
-                    "Too many requests. Please try again later. " + readMore, token);
-            }
-        };
+            await context.HttpContext.Response.WriteAsync(
+                "Too many requests. Please try again later. " + readMore,
+                token
+            );
+        }
+    };
 
-        options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        // Try to get access token
+        var accessToken = context
+            .Features.Get<IAuthenticateResultFeature>()
+            ?.AuthenticateResult?.Properties?.GetTokenValue("access_token")
+            ?.ToString();
+
+        // Shared partition for anonymous users
+        if (string.IsNullOrEmpty(accessToken))
         {
-            // Try to get access token
-            var accessToken =
-                context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult?.Properties
-                    ?.GetTokenValue("access_token")?.ToString();
+            return RateLimitPartition.GetFixedWindowLimiter(
+                "anonymous",
+                _ => anonymousRateLimiterOptions
+            );
+        }
 
-            // Shared partition for anonymous users
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                return RateLimitPartition.GetFixedWindowLimiter(
-                    "anonymous",
-                    _ => anonymousRateLimiterOptions
-                );
-            }
+        JwtSecurityToken jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(jwtToken.Claims));
 
-            JwtSecurityToken jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
-            var principal = new ClaimsPrincipal(new ClaimsIdentity(jwtToken.Claims));
+        // Try to parse rate limit override claim
+        var overrideClaimValue = principal
+            .Claims.FirstOrDefault(c => c.Type == OtrClaims.RateLimitOverrides)
+            ?.Value;
+        RateLimitOverrides? overrides = null;
+        if (!string.IsNullOrEmpty(overrideClaimValue))
+        {
+            overrides = RateLimitOverridesSerializer.Deserialize(overrideClaimValue);
+        }
 
-            // Try to parse rate limit override claim
-            var overrideClaimValue = principal.Claims
-                .FirstOrDefault(c => c.Type == OtrClaims.RateLimitOverrides)?.Value;
-            RateLimitOverrides? overrides = null;
-            if (!string.IsNullOrEmpty(overrideClaimValue))
-            {
-                overrides = RateLimitOverridesSerializer.Deserialize(overrideClaimValue);
-            }
+        // Differentiate between client and users, as they can have the same id
+        var prefix = principal.IsUser() ? "user" : "client";
 
-            // Differentiate between client and users, as they can have the same id
-            var prefix = principal.IsUser() ? "user" : "client";
-
-            // Partition for each unique user / client
-            if (overrides is null)
-            {
-                return RateLimitPartition.GetFixedWindowLimiter(
-                    $"{prefix}_{jwtToken.Issuer}",
-                    _ => anonymousRateLimiterOptions
-                );
-            }
+        // Partition for each unique user / client
+        if (overrides is null)
+        {
             return RateLimitPartition.GetFixedWindowLimiter(
                 $"{prefix}_{jwtToken.Issuer}",
-                _ => new FixedWindowRateLimiterOptions()
-                {
-                    PermitLimit = overrides.PermitLimit ?? rateLimitConfiguration.PermitLimit,
-                    Window = TimeSpan.FromSeconds(overrides.Window ?? rateLimitConfiguration.Window),
-                    QueueLimit = 0
-                }
+                _ => anonymousRateLimiterOptions
             );
-        });
+        }
+        return RateLimitPartition.GetFixedWindowLimiter(
+            $"{prefix}_{jwtToken.Issuer}",
+            _ => new FixedWindowRateLimiterOptions()
+            {
+                PermitLimit = overrides.PermitLimit ?? rateLimitConfiguration.PermitLimit,
+                Window = TimeSpan.FromSeconds(overrides.Window ?? rateLimitConfiguration.Window),
+                QueueLimit = 0
+            }
+        );
     });
+});
 
 #endregion
 
@@ -226,13 +250,18 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.OperationFilter<HttpResultsOperationFilter>();
     options.SchemaGeneratorOptions.SupportNonNullableReferenceTypes = true;
-    options.SwaggerDoc("v1", new OpenApiInfo()
-    {
-        Version = "v1",
-        Title = "osu! Tournament Rating API",
-        Description = "An API for interacting with the o!TR database",
-        TermsOfService = new Uri("https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/usage/limits/en.md")
-    });
+    options.SwaggerDoc(
+        "v1",
+        new OpenApiInfo()
+        {
+            Version = "v1",
+            Title = "osu! Tournament Rating API",
+            Description = "An API for interacting with the o!TR database",
+            TermsOfService = new Uri(
+                "https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/usage/limits/en.md"
+            )
+        }
+    );
     options.IncludeXmlComments($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
 });
 
@@ -243,10 +272,10 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddSerilog(configuration =>
 {
     var connString = builder
-                     .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-                         ConnectionStringsConfiguration.Position
-                     )
-                     .DefaultConnection;
+        .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+            ConnectionStringsConfiguration.Position
+        )
+        .DefaultConnection;
 
 #if DEBUG
     configuration.MinimumLevel.Debug();
@@ -256,7 +285,10 @@ builder.Services.AddSerilog(configuration =>
 
     configuration
         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-        .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+        .MinimumLevel.Override(
+            "Microsoft.EntityFrameworkCore.Database.Command",
+            LogEventLevel.Warning
+        )
         .MinimumLevel.Override("OsuSharp", LogEventLevel.Fatal)
         .Enrich.FromLogContext()
         .WriteTo.Console(
@@ -303,8 +335,9 @@ builder
     .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        JwtConfiguration jwtConfiguration =
-            builder.Configuration.BindAndValidate<JwtConfiguration>(JwtConfiguration.Position);
+        JwtConfiguration jwtConfiguration = builder.Configuration.BindAndValidate<JwtConfiguration>(
+            JwtConfiguration.Position
+        );
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -313,7 +346,9 @@ builder
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidAudience = jwtConfiguration.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.Key))
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtConfiguration.Key)
+            )
         };
     });
 
@@ -321,11 +356,14 @@ builder
 
 #region Authorization Configuration
 
-builder.Services.AddAuthorizationBuilder()
-    .AddPolicy(AuthorizationPolicies.AccessUserResources, policy =>
-        policy
-            .RequireAuthenticatedUser()
-            .AddRequirements(new AccessUserResourcesRequirement(allowSelf: true))
+builder
+    .Services.AddAuthorizationBuilder()
+    .AddPolicy(
+        AuthorizationPolicies.AccessUserResources,
+        policy =>
+            policy
+                .RequireAuthenticatedUser()
+                .AddRequirements(new AccessUserResourcesRequirement(allowSelf: true))
     );
 
 builder.Services.AddSingleton<IAuthorizationHandler, AccessUserResourcesAuthorizationHandler>();
@@ -360,7 +398,13 @@ builder.Services.AddDbContext<OtrContext>(o =>
 
 // The Redis cache is registered as a singleton because it is meant to be re-used across instances
 builder.Services.AddSingleton<ICacheHandler>(
-    new CacheHandler(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection)
+    new CacheHandler(
+        builder
+            .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+                ConnectionStringsConfiguration.Position
+            )
+            .RedisConnection
+    )
 );
 
 #endregion
@@ -422,8 +466,14 @@ builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
 
 builder.Services.AddOsuSharp(options =>
 {
-    OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
-    options.Configuration = new OsuClientConfiguration { ClientId = osuConfiguration.ClientId, ClientSecret = osuConfiguration.ClientSecret };
+    OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
+        OsuConfiguration.Position
+    );
+    options.Configuration = new OsuClientConfiguration
+    {
+        ClientId = osuConfiguration.ClientId,
+        ClientSecret = osuConfiguration.ClientSecret
+    };
 });
 
 builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
@@ -435,7 +485,11 @@ builder.Host.ConfigureOsuSharp(
             OsuConfiguration.Position
         );
 
-        options.Configuration = new OsuClientConfiguration { ClientId = osuConfiguration.ClientId, ClientSecret = osuConfiguration.ClientSecret };
+        options.Configuration = new OsuClientConfiguration
+        {
+            ClientId = osuConfiguration.ClientId,
+            ClientSecret = osuConfiguration.ClientSecret
+        };
     }
 );
 
@@ -450,6 +504,8 @@ WebApplication app = builder.Build();
 // Set switch for Npgsql
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
 app.UseHttpsRedirection();
 
 app.UseRouting(); // UseRouting must come first before UseCors
@@ -459,7 +515,9 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.UseAuthentication();
 
-IOptions<AuthConfiguration> authConfiguration = app.Services.GetRequiredService<IOptions<AuthConfiguration>>();
+IOptions<AuthConfiguration> authConfiguration = app.Services.GetRequiredService<
+    IOptions<AuthConfiguration>
+>();
 if (authConfiguration.Value.EnforceWhitelist)
 {
     app.UseMiddleware<WhitelistEnforcementMiddleware>();
