@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Handlers.Interfaces;
+using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +12,7 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [AllowAnonymous]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class OAuthController(IOAuthHandler oAuthHandler) : Controller
+public class OAuthController(IOAuthHandler oAuthHandler, IOAuthClientService oAuthClientService) : Controller
 {
     /// <summary>
     /// Authorize using an osu! authorization code
@@ -58,11 +59,11 @@ public class OAuthController(IOAuthHandler oAuthHandler) : Controller
     /// The user will have to reset the secret if they lose access.
     /// </remarks>
     /// <response code="401">If the user is not properly authenticated</response>
-    /// <response code="201">Returns created client credentials</response>
+    /// <response code="200">Returns created client credentials</response>
     [HttpPost("client")]
     [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType<OAuthClientCreatedDTO>(StatusCodes.Status201Created)]
+    [ProducesResponseType<OAuthClientCreatedDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateClientAsync()
     {
         var userId = User.AuthorizedIdentity();
@@ -71,9 +72,9 @@ public class OAuthController(IOAuthHandler oAuthHandler) : Controller
             return Unauthorized();
         }
 
-        OAuthClientCreatedDTO result = await oAuthHandler.CreateClientAsync(userId.Value);
+        OAuthClientCreatedDTO result = await oAuthClientService.CreateAsync(userId.Value);
 
-        return CreatedAtAction("GetClients", "Users", new { id = userId }, result);
+        return Ok(result);
     }
 
     /// <summary>

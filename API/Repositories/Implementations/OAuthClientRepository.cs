@@ -20,18 +20,6 @@ public class OAuthClientRepository(OtrContext context, IPasswordHasher<OAuthClie
         return await base.CreateAsync(entity);
     }
 
-    public async Task<bool> SecretInUseAsync(string clientSecret) =>
-        await _context.OAuthClients.AnyAsync(x => x.Secret == clientSecret);
-
-    public async Task<bool> ExistsAsync(int clientId, string clientSecret)
-    {
-        OAuthClient? match = await _context.OAuthClients.FirstOrDefaultAsync(x =>
-            x.Id == clientId && x.Secret == clientSecret
-        );
-
-        return match != null;
-    }
-
     public async Task<bool> ExistsAsync(int id, int userId) =>
         await _context.OAuthClients.AnyAsync(c => c.Id == id && c.UserId == userId);
 
@@ -47,5 +35,15 @@ public class OAuthClientRepository(OtrContext context, IPasswordHasher<OAuthClie
         match.RateLimitOverrides = rateLimitOverrides;
         await UpdateAsync(match);
         return match;
+    }
+
+    [SuppressMessage("ReSharper", "StringLiteralTypo")]
+    public string GenerateClientSecret()
+    {
+        const int length = 50;
+        const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+        var r = new Random();
+        return new string(Enumerable.Repeat(chars, length).Select(s => s[r.Next(s.Length)]).ToArray());
     }
 }

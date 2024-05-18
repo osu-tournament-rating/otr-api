@@ -21,7 +21,6 @@ namespace API.Handlers.Implementations;
 /// </summary>
 public class OAuthHandler(
     ILogger<OAuthHandler> logger,
-    IOAuthClientService clientService,
     IOAuthClientRepository clientRepository,
     IPlayerRepository playerRepository,
     IUserRepository userRepository,
@@ -153,18 +152,6 @@ public class OAuthHandler(
         };
     }
 
-    public async Task<OAuthClientCreatedDTO> CreateClientAsync(int userId, params string[] scopes)
-    {
-        var secret = GenerateClientSecret();
-
-        while (await clientService.SecretInUse(secret))
-        {
-            secret = GenerateClientSecret();
-        }
-
-        return await clientService.CreateAsync(userId, secret, scopes);
-    }
-
     /// <summary>
     /// Wrapper for generating a JSON Web Token (JWT) for a given client
     /// </summary>
@@ -281,19 +268,6 @@ public class OAuthHandler(
         };
 
         return WriteToken(tokenDescriptor);
-    }
-
-    /// <summary>
-    /// Generates a new alpha-numeric client secret (size 50 chars)
-    /// </summary>
-    [SuppressMessage("ReSharper", "StringLiteralTypo")]
-    private static string GenerateClientSecret()
-    {
-        const int length = 50;
-        const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-        var r = new Random();
-        return new string(Enumerable.Repeat(chars, length).Select(s => s[r.Next(s.Length)]).ToArray());
     }
 
     /// <summary>

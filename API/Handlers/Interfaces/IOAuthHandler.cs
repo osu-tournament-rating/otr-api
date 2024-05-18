@@ -33,12 +33,4 @@ public interface IOAuthHandler
     /// Access credentials containing a new access token, or null if the given refresh token is invalid
     /// </returns>
     Task<OAuthResponseDTO?> RefreshAsync(string refreshToken);
-
-    /// <summary>
-    /// Creates a new OAuth client for a user
-    /// </summary>
-    /// <param name="userId">The id of the user who owns this client</param>
-    /// <param name="scopes">The scopes to assign to the client</param>
-    /// <returns>Client credentials for the new client</returns>
-    Task<OAuthClientCreatedDTO> CreateClientAsync(int userId, params string[] scopes);
 }

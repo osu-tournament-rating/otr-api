@@ -141,14 +141,14 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// Delete a user's OAuth client
     /// </summary>
     /// <remarks>
-    /// All users have access to delete clients that they own. Admin users have access
-    /// to delete clients from any user.
+    /// All users have access to delete clients that they own.
+    /// Admin users have access to clients from any user.
     /// </remarks>
     /// <param name="id">Id of the user</param>
     /// <param name="clientId">Id of the OAuth client</param>
     /// <response code="404">If a user or client does not exist</response>
     /// <response code="400">If the deletion was not successful</response>
-    /// <response code="200">Denotes the deletion was successful</response>
+    /// <response code="200">If the deletion was successful</response>
     [HttpDelete("{id:int}/clients/{clientId:int}")]
     [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -164,5 +164,36 @@ public class UsersController(IUserService userService, IOAuthClientService clien
         return await clientService.DeleteAsync(clientId)
             ? Ok()
             : BadRequest();
+    }
+
+    /// <summary>
+    /// Reset the secret of a user's OAuth client
+    /// </summary>
+    /// <remarks>
+    /// All users have access to reset secrets of clients that they own.
+    /// Admin users have access to clients from any user.
+    /// </remarks>
+    /// <param name="id">Id of the user</param>
+    /// <param name="clientId">Id of the OAuth client</param>
+    /// <response code="404">If a user or client does not exist</response>
+    /// <response code="400">If the secret reset was not successful</response>
+    /// <response code="200">Returns new client credentials if the secret reset was successful</response>
+    [HttpPost("{id:int}/clients/{clientId:int}/secret:reset")]
+    [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<OAuthClientCreatedDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ResetClientSecretAsync(int id, int clientId)
+    {
+        if (!await clientService.ExistsAsync(clientId, id))
+        {
+            return NotFound();
+        }
+
+        OAuthClientCreatedDTO? result = await clientService.ResetSecretAsync(clientId);
+
+        return result is not null
+            ? Ok(result)
+            : NotFound();
     }
 }
