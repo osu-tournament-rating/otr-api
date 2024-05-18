@@ -41,17 +41,15 @@ public class MatchesRepository(
     [SuppressMessage("ReSharper.DPA", "DPA0007: Large number of DB records")]
     public async Task<IEnumerable<Match>> GetAsync(int limit, int page, bool filterUnverified = true)
     {
-        IQueryable<Match> query = filterUnverified
-            ? _context.Matches.AsNoTracking().WhereVerified()
-            : _context.Matches.AsNoTracking();
+        IQueryable<Match> query = MatchBaseQuery(filterUnverified);
 
         return await query
             // Include all MatchDTO navigational properties
             .Include(m => m.Tournament)
-            .Include(m => m.Games)
+            .Include(m => m.Games.Where(x => x.VerificationStatus == GameVerificationStatus.Verified))
             .ThenInclude(g => g.Beatmap)
             .Include(m => m.Games)
-            .ThenInclude(g => g.MatchScores)
+            .ThenInclude(g => g.MatchScores.Where(x => x.IsValid == true))
             .OrderBy(m => m.Id)
             // Set index to start of desired page
             .Skip(limit * page)
@@ -361,7 +359,6 @@ public class MatchesRepository(
             .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
             .Include(x => x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified))
             .ThenInclude(x => x.Beatmap)
-            .Where(x => x.Games.Any(y => y.VerificationStatus == GameVerificationStatus.Verified && y.MatchScores.Any(z => z.IsValid == true)))
             .OrderBy(x => x.StartTime);
     }
 }

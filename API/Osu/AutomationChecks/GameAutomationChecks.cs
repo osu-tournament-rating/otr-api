@@ -221,11 +221,11 @@ public static class GameAutomationChecks
         }
 
         s_logger.Information(
-            "{Prefix} Tournament {TournamentId} has a game mode that differs from game, can't verify game {GameId} [Tournament: Mode={TMode} | Game: Mode={GMode}",
+            "{Prefix} Tournament {TournamentId} has a game mode that differs from game, can't verify game {GameId} [Tournament: Mode={TMode} | Game: Mode={GMode}]",
             LogPrefix,
             tournament.Id,
             game.GameId,
-            tournament.Mode,
+            (Ruleset)tournament.Mode,
             game.Ruleset
         );
 
