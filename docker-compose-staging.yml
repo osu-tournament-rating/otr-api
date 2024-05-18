@@ -40,7 +40,7 @@ services:
     env_file:
       - db.env
     ports:
-      - "5500:5432"
+      - "5432:5432"
     restart: always
   redis:
     container_name: redis
