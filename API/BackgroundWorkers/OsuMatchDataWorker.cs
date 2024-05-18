@@ -123,18 +123,11 @@ public class OsuMatchDataWorker(
             {
                 if (!ScoreAutomationChecks.PassesAutomationChecks(score))
                 {
-                    if (score.IsValid != false)
-                    {
-                        // Avoid unnecessary db calls
-                        score.IsValid = false;
-                    }
+                    score.IsValid = false;
                 }
                 else
                 {
-                    if (score.IsValid != true)
-                    {
-                        score.IsValid = true;
-                    }
+                    score.IsValid = true;
                 }
             }
 
