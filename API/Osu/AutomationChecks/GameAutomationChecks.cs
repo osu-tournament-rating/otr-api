@@ -96,8 +96,8 @@ public static class GameAutomationChecks
             return satisfiesOneVersusOne;
         }
 
-        var countRed = validScores.Count(s => s is { Team: (int)Team.Red });
-        var countBlue = validScores.Count(s => s is { Team: (int)Team.Blue });
+        var countRed = validScores.Count(s => s.Team == (int)Team.Red);
+        var countBlue = validScores.Count(s => s.Team == (int)Team.Blue);
 
         if (countRed == 0 || countBlue == 0)
         {

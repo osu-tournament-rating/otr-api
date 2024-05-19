@@ -121,14 +121,7 @@ public class OsuMatchDataWorker(
             // Score verification checks
             foreach (MatchScore score in game.MatchScores)
             {
-                if (!ScoreAutomationChecks.PassesAutomationChecks(score))
-                {
-                    score.IsValid = false;
-                }
-                else
-                {
-                    score.IsValid = true;
-                }
+                score.IsValid = ScoreAutomationChecks.PassesAutomationChecks(score);
             }
 
             GameRejectionReason? rejectionReason = GameAutomationChecks.IdentifyRejectionReason(game);

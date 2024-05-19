@@ -34,11 +34,8 @@ public class MatchesRepository(
     // Suppression: This query will inherently produce a large number of records by including
     // games and match scores. The query itself is almost as efficient as possible (as far as we know)
     [SuppressMessage("ReSharper.DPA", "DPA0007: Large number of DB records")]
-    public async Task<IEnumerable<Match>> GetAsync(int limit, int page, bool filterUnverified = true)
-    {
-        IQueryable<Match> query = MatchBaseQuery(filterUnverified);
-
-        return await query
+    public async Task<IEnumerable<Match>> GetAsync(int limit, int page, bool filterUnverified = true) =>
+        await MatchBaseQuery(filterUnverified)
             // Include all MatchDTO navigational properties
             .Include(m => m.Tournament)
             .OrderBy(m => m.Id)
@@ -47,7 +44,6 @@ public class MatchesRepository(
             // Take only next n entities
             .Take(limit)
             .ToListAsync();
-    }
 
     public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name)
     {
@@ -341,8 +337,7 @@ public class MatchesRepository(
                 .Matches.Include(x => x.Games)
                 .ThenInclude(x => x.MatchScores)
                 .Include(x => x.Games)
-                .ThenInclude(x => x.Beatmap)
-                .OrderBy(x => x.StartTime);
+                .ThenInclude(x => x.Beatmap);
         }
 
         return _context
@@ -350,7 +345,6 @@ public class MatchesRepository(
             .Include(x => x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified))
             .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
             .Include(x => x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified))
-            .ThenInclude(x => x.Beatmap)
-            .OrderBy(x => x.StartTime);
+            .ThenInclude(x => x.Beatmap);
     }
 }
