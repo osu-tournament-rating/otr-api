@@ -24,12 +24,7 @@ public class MatchesRepository(
 
     public override async Task<Match?> GetAsync(int id) =>
         // Get the match with all associated data
-        await _context
-            .Matches.Include(x => x.Games)
-            .ThenInclude(x => x.MatchScores)
-            .Include(x => x.Games)
-            .ThenInclude(x => x.Beatmap)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        await MatchBaseQuery(false).FirstOrDefaultAsync(x => x.Id == id);
 
     public async Task InvalidateCacheEntriesAsync()
     {
@@ -46,10 +41,6 @@ public class MatchesRepository(
         return await query
             // Include all MatchDTO navigational properties
             .Include(m => m.Tournament)
-            .Include(m => m.Games.Where(x => x.VerificationStatus == GameVerificationStatus.Verified))
-            .ThenInclude(g => g.Beatmap)
-            .Include(m => m.Games)
-            .ThenInclude(g => g.MatchScores.Where(x => x.IsValid == true))
             .OrderBy(m => m.Id)
             // Set index to start of desired page
             .Skip(limit * page)
@@ -350,7 +341,8 @@ public class MatchesRepository(
                 .Matches.Include(x => x.Games)
                 .ThenInclude(x => x.MatchScores)
                 .Include(x => x.Games)
-                .ThenInclude(x => x.Beatmap);
+                .ThenInclude(x => x.Beatmap)
+                .OrderBy(x => x.StartTime);
         }
 
         return _context
