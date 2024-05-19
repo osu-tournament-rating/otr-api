@@ -253,6 +253,9 @@ public partial class OtrContext(
                     rlo.Property(p => p.PermitLimit).HasDefaultValue(null);
                     rlo.Property(p => p.Window).HasDefaultValue(null);
                 });
+
+            entity.Property(x => x.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
             entity
                 .HasOne(e => e.User)
                 .WithMany(e => e.Clients)

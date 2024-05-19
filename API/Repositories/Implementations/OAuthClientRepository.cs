@@ -1,26 +1,23 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Entities;
 using API.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class OAuthClientRepository(OtrContext context) : RepositoryBase<OAuthClient>(context), IOAuthClientRepository
+public class OAuthClientRepository(OtrContext context, IPasswordHasher<OAuthClient> passwordHasher) : RepositoryBase<OAuthClient>(context), IOAuthClientRepository
 {
     private readonly OtrContext _context = context;
 
-    public async Task<bool> SecretInUseAsync(string clientSecret) =>
-        await _context.OAuthClients.AnyAsync(x => x.Secret == clientSecret);
-
-    public async Task<bool> ExistsAsync(int clientId, string clientSecret)
+    public override async Task<OAuthClient> CreateAsync(OAuthClient entity)
     {
-        OAuthClient? match = await _context.OAuthClients.FirstOrDefaultAsync(x =>
-            x.Id == clientId && x.Secret == clientSecret
-        );
+        var hashedSecret = passwordHasher.HashPassword(entity, entity.Secret);
+        entity.Secret = hashedSecret;
 
-        return match != null;
+        return await base.CreateAsync(entity);
     }
 
     public async Task<bool> ExistsAsync(int id, int userId) =>
@@ -38,5 +35,15 @@ public class OAuthClientRepository(OtrContext context) : RepositoryBase<OAuthCli
         match.RateLimitOverrides = rateLimitOverrides;
         await UpdateAsync(match);
         return match;
+    }
+
+    [SuppressMessage("ReSharper", "StringLiteralTypo")]
+    public string GenerateClientSecret()
+    {
+        const int length = 50;
+        const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+        var r = new Random();
+        return new string(Enumerable.Repeat(chars, length).Select(s => s[r.Next(s.Length)]).ToArray());
     }
 }
