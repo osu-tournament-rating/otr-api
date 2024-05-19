@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Entities;
 using API.Handlers.Interfaces;
-using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -81,49 +80,11 @@ public class PlayerRepository(OtrContext context, ICacheHandler cacheHandler) : 
         return await CreateAsync(new Player { OsuId = osuId });
     }
 
-    // TODO: Refactor param "mode" to use OsuEnums.Ruleset
-    public async Task<Player?> GetAsync(long osuId, bool eagerLoad, int mode = 0, int offsetDays = -1)
-    {
-        if (!eagerLoad)
-        {
-            return await _context.Players.WhereOsuId(osuId).FirstOrDefaultAsync();
-        }
-
-        DateTime time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
-
-        Player? p = await _context
-            .Players.Include(x =>
-                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.Ruleset == (Ruleset)mode)
-            )
-            .ThenInclude(x => x.Game)
-            .ThenInclude(x => x.Match)
-            .Include(x => x.Ratings.Where(y => y.Mode == (Ruleset)mode))
-            .Include(x => x.User)
-            .WhereOsuId(osuId)
-            .FirstOrDefaultAsync();
-
-        return p ?? null;
-    }
-
     public async Task<int?> GetIdAsync(long osuId) =>
         await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
 
     public async Task<long> GetOsuIdAsync(int id) =>
         await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
-
-    public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset) => await (
-            from p in _context.Players
-            join r in _context.BaseStats on p.Id equals r.PlayerId
-            where r.Mode == ruleset
-            orderby r.Rating descending
-            select new PlayerRatingDTO
-            {
-                OsuId = p.OsuId,
-                Username = p.Username ?? "User" + p.Id,
-                Mu = r.Rating,
-                Sigma = r.Volatility
-            }
-        ).Take(n).ToListAsync();
 
     public async Task<string?> GetUsernameAsync(long osuId) =>
         await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
