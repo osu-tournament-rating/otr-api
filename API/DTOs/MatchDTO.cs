@@ -1,15 +1,53 @@
+using System.Diagnostics.CodeAnalysis;
+using API.Enums;
+using API.Osu.Enums;
+
 namespace API.DTOs;
 
+/// <summary>
+/// Represents a played match
+/// </summary>
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class MatchDTO
 {
+    /// <summary>
+    /// Id of the match
+    /// </summary>
     public int Id { get; set; }
+
+    /// <summary>
+    /// osu! id of the match
+    /// </summary>
     public long MatchId { get; set; }
+
+    /// <summary>
+    /// Title of the lobby
+    /// </summary>
     public string? Name { get; set; }
 
-    // The mode of the tournament the match belongs to - useful in rating processor
-    public int Mode { get; set; }
+    /// <summary>
+    /// Ruleset of the match
+    /// </summary>
+    public Ruleset Ruleset { get; set; }
+
+    /// <summary>
+    /// Start time of the match
+    /// </summary>
     public DateTime? StartTime { get; set; }
+
+    /// <summary>
+    /// End time of the match
+    /// </summary>
     public DateTime? EndTime { get; set; }
-    public int? VerificationStatus { get; set; }
+
+    /// <summary>
+    /// Current verification status of the match
+    /// </summary>
+    public MatchVerificationStatus? VerificationStatus { get; set; }
+
+    /// <summary>
+    /// List of games played during the match
+    /// </summary>
+    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public ICollection<GameDTO> Games { get; set; } = new List<GameDTO>();
 }

@@ -23,13 +23,21 @@ public interface IMatchesService
     );
 
     /// <summary>
+    /// Gets a paged list of matches
+    /// </summary>
+    /// <remarks>Matches are ordered by primary key</remarks>
+    /// <param name="limit">Amount of matches to return. Functions as the "page size"</param>
+    /// <param name="page">Which block of matches to return</param>
+    /// <param name="filterUnverified">If unverified matches should be excluded from the results</param>
+    Task<PagedResultDTO<MatchDTO>> GetAsync(int limit, int page, bool filterUnverified = true);
+
+    /// <summary>
     /// Marks matches as needing automated checks
     /// </summary>
     /// <param name="invalidOnly">If true, this method only applies to matches that are not Verified or PreVerified</param>
     /// <returns></returns>
     Task RefreshAutomationChecks(bool invalidOnly = true);
 
-    Task<IEnumerable<int>> GetAllIdsAsync(bool onlyIncludeFiltered);
     Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId);
     Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true);
 
@@ -50,19 +58,6 @@ public interface IMatchesService
         DateTime start,
         DateTime end
     );
-
-    /// <summary>
-    /// A unique mapping of osu! match ids to our internal ids.
-    /// </summary>
-    /// <returns></returns>
-    Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync();
-
-    /// <summary>
-    /// Converts a list of match ids to match id objects
-    /// </summary>
-    /// <param name="ids"></param>
-    /// <returns></returns>
-    Task<IEnumerable<MatchDTO>> ConvertAsync(IEnumerable<int> ids);
 
     /// <summary>
     ///  Full flow for one-way operation of marking a match as duplicate, reassinging the

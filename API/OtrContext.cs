@@ -31,6 +31,7 @@ public partial class OtrContext(
     public virtual DbSet<RatingAdjustment> RatingAdjustments { get; set; }
     public virtual DbSet<Tournament> Tournaments { get; set; }
     public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<UserSettings> UserSettings { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
         optionsBuilder
@@ -362,6 +363,27 @@ public partial class OtrContext(
                 .WithOne(e => e.Verifier)
                 .HasForeignKey(e => e.VerifiedBy)
                 .IsRequired(false);
+
+            entity
+                .HasOne(e => e.Settings)
+                .WithOne(s => s.User)
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<UserSettings>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("user_settings_pk");
+            entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.Property(e => e.DefaultRulesetIsControlled).IsRequired().HasDefaultValue(false);
+
+            entity
+                .HasOne(e => e.User)
+                .WithOne(u => u.Settings)
+                .IsRequired();
         });
 
         OnModelCreatingPartial(modelBuilder);
