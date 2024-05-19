@@ -21,12 +21,6 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
     public async Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync() =>
         _mapper.Map<IEnumerable<PlayerRanksDTO>>(await _playerRepository.GetAllAsync());
 
-    public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset) =>
-        _mapper.Map<IEnumerable<PlayerRatingDTO>>(await _playerRepository.GetTopRatingsAsync(n, ruleset));
-
-    public async Task<string?> GetUsernameAsync(long osuId) =>
-        await _playerRepository.GetUsernameAsync(osuId);
-
     public async Task<int?> GetIdAsync(long osuId)
     {
         return await _playerRepository.GetIdAsync(osuId);
@@ -37,17 +31,6 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
         return await _playerRepository.GetIdAsync(userId);
     }
 
-    public async Task<long?> GetOsuIdAsync(int id)
-    {
-        var result = await _playerRepository.GetOsuIdAsync(id);
-        if (result == default)
-        {
-            return null;
-        }
-
-        return result;
-    }
-
     public async Task<IEnumerable<PlayerIdMappingDTO>> GetIdMappingAsync() =>
         await _playerRepository.GetIdMappingAsync();
 
@@ -56,23 +39,23 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
 
     public async Task<PlayerInfoDTO?> GetVersatileAsync(string key)
     {
-        if (!int.TryParse(key, out var value))
-        {
-            return await GetAsync(key);
-        }
+        PlayerInfoDTO? result = null;
 
-        // Check for the player id
-        PlayerInfoDTO? result = await GetAsync(value);
-
-        if (result != null)
-        {
-            return result;
-        }
-
-        // Check for the osu id
         if (long.TryParse(key, out var longValue))
         {
-            return await GetAsync(longValue);
+            // Check for user id
+            if (int.TryParse(key, out var value))
+            {
+                result = await GetAsync(value);
+            }
+
+            // Check for the osu id
+            result ??= await GetAsync(longValue);
+        }
+
+        if (result is not null)
+        {
+            return result;
         }
 
         return await GetAsync(key);

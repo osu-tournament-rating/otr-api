@@ -5,22 +5,19 @@ using API.Handlers.Interfaces;
 using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Utilities;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler cacheHandler) : RepositoryBase<Player>(context), IPlayerRepository, IUsesCache
+public class PlayerRepository(OtrContext context, ICacheHandler cacheHandler) : RepositoryBase<Player>(context), IPlayerRepository, IUsesCache
 {
     private readonly OtrContext _context = context;
-    private readonly IMapper _mapper = mapper;
-    private readonly ICacheHandler _cacheHandler = cacheHandler;
 
     public async Task InvalidateCacheEntriesAsync()
     {
-        await _cacheHandler.OnPlayerUpdateAsync();
+        await cacheHandler.OnPlayerUpdateAsync();
     }
 
     public async Task<IEnumerable<Player>> GetPlayersMissingRankAsync()
@@ -185,21 +182,4 @@ public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler 
         await _context
             .Players.Where(p => p.Updated == null || (DateTime.UtcNow - p.Updated) > TimeSpan.FromDays(14))
             .ToListAsync();
-
-    public async Task<PlayerInfoDTO?> GetPlayerDTOByOsuIdAsync(
-        long osuId,
-        bool eagerLoad = false,
-        Ruleset ruleset = Ruleset.Standard,
-        int offsetDays = -1
-    )
-    {
-        PlayerInfoDTO? obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)ruleset, offsetDays));
-
-        if (obj == null)
-        {
-            return obj;
-        }
-
-        return obj;
-    }
 }

@@ -11,12 +11,10 @@ public interface IPlayerService
     Task<bool> ExistsAsync(int id);
 
     Task<IEnumerable<PlayerDTO>> GetAllAsync();
+
     Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync();
-    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset);
-    Task<string?> GetUsernameAsync(long osuId);
-    Task<int?> GetIdAsync(long osuId);
+
     Task<int?> GetIdAsync(int userId);
-    Task<long?> GetOsuIdAsync(int id);
 
     /// <summary>
     /// A unique mapping of osu! user ids to our internal ids.
@@ -39,9 +37,13 @@ public interface IPlayerService
     /// <param name="key">The dynamic key of the player to look for</param>
     /// <returns></returns>
     Task<PlayerInfoDTO?> GetVersatileAsync(string key);
+
     Task<PlayerInfoDTO?> GetAsync(int userId);
+
     Task<PlayerInfoDTO?> GetAsync(long osuId);
+
     Task<PlayerInfoDTO?> GetAsync(string username);
+
     /// <summary>
     /// Gets player information for a list of osu! ids
     /// </summary>
