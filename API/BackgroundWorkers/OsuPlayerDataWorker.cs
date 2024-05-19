@@ -40,8 +40,10 @@ public class OsuPlayerDataWorker(
              */
             using (IServiceScope scope = serviceProvider.CreateScope())
             {
-                IPlayerRepository playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
-                var playersToUpdate = (await playerService.GetOutdatedAsync()).ToList();
+                IPlayerRepository playerRepository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+                IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
+                var playersToUpdate = (await playerRepository.GetOutdatedAsync()).ToList();
 
                 if (playersToUpdate.Count == 0)
                 {
@@ -60,9 +62,9 @@ public class OsuPlayerDataWorker(
                             ruleset,
                             $"Identified player that needs to have ranks updated for mode {ruleset}"
                         );
+
                         if (apiResult is null)
                         {
-                            await playerService.UpdateAsync(player);
                             logger.LogWarning(
                                 "Failed to fetch data for player {PlayerId} in mode {GameMode}, skipping (user is likely restricted)",
                                 player.OsuId,
@@ -77,6 +79,12 @@ public class OsuPlayerDataWorker(
                             player.Country = apiResult.Country;
                             player.Username = apiResult.Username;
                             player.Ruleset = apiResult.Ruleset;
+                            User? user = await userRepository.GetByPlayerIdAsync(player.Id, true);
+                            if (user?.Settings is not null && !user.Settings.DefaultRulesetIsControlled)
+                            {
+                                user.Settings.DefaultRuleset = apiResult.Ruleset;
+                                await userRepository.UpdateAsync(user);
+                            }
                             updatedOnce = true;
                         }
 
@@ -91,7 +99,7 @@ public class OsuPlayerDataWorker(
                         }
                     }
 
-                    await playerService.UpdateAsync(player);
+                    await playerRepository.UpdateAsync(player);
                 }
             }
         }
