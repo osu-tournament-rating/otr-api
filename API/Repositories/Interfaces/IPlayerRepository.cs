@@ -6,7 +6,7 @@ namespace API.Repositories.Interfaces;
 public interface IPlayerRepository : IRepository<Player>
 {
     /// <summary>
-    /// Returns a list of players for the given username
+    /// Gets a list of players for the given username
     /// </summary>
     /// <remarks>Search uses partial matching, case insensitive</remarks>
     /// <returns>Maximum 30 records</returns>
@@ -22,11 +22,10 @@ public interface IPlayerRepository : IRepository<Player>
     /// <summary>
     /// Gets a player for the given osu id, or creates one if one does not exist
     /// </summary>
-    /// <param name="osuId">The osu id of the player</param>
     Task<Player> GetOrCreateAsync(long osuId);
 
     /// <summary>
-    /// Returns all players
+    /// Gets all players
     /// </summary>
     /// <param name="eagerLoad">Whether to also load related fields (i.e. player matches)</param>
     Task<IEnumerable<Player>> GetAsync(bool eagerLoad = false);
@@ -35,6 +34,12 @@ public interface IPlayerRepository : IRepository<Player>
     /// Gets a list of players for the given osu ids
     /// </summary>
     Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds);
+
+    /// <summary>
+    /// Gets a player for the given osu id
+    /// </summary>
+    /// <returns>A player, or null if not found</returns>
+    Task<Player?> GetByOsuIdAsync(long osuId);
 
     /// <summary>
     /// Gets the id of a player for the given osu id
@@ -84,12 +89,12 @@ public interface IPlayerRepository : IRepository<Player>
     Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync();
 
     /// <summary>
-    /// Returns the player id for the given user id
+    /// Gets the id of a player for the given user id
     /// </summary>
     Task<int> GetIdAsync(int userId);
 
     /// <summary>
-    /// Returns the country of the player with the given player id, if available
+    /// Gets the country of a player for the given player id
     /// </summary>
     Task<string?> GetCountryAsync(int playerId);
 }

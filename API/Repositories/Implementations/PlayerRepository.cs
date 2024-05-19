@@ -37,6 +37,9 @@ public class PlayerRepository(OtrContext context, ICacheHandler cacheHandler) : 
     public async Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds) =>
         await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
+    public async Task<Player?> GetByOsuIdAsync(long osuId) =>
+        await _context.Players.AsNoTracking().FirstOrDefaultAsync(p => p.OsuId == osuId);
+
     public async Task<IEnumerable<Player>> GetAsync(bool eagerLoad)
     {
         if (eagerLoad)
