@@ -7,14 +7,24 @@ namespace API.Repositories.Interfaces;
 public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
 {
     Task<Match?> GetAsync(int id, bool filterInvalidMatches = true);
-    Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered);
+
+    /// <summary>
+    /// Gets a paged list of matches
+    /// </summary>
+    /// <remarks>
+    /// Matches are ordered by primary key. All navigational properties required for <see cref="MatchDTO"/> are included
+    /// </remarks>
+    /// <param name="limit">Amount of matches to return. Functions as the "page size"</param>
+    /// <param name="page">Which block of matches to return</param>
+    /// <param name="filterUnverified">If unverified matches should be excluded from the results</param>
+    /// <returns>A list of matches of size <paramref name="limit"/> indexed by <paramref name="page"/></returns>
+    Task<IEnumerable<Match>> GetAsync(int limit, int page, bool filterUnverified = true);
+
     Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds);
-    Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches);
     Task<Match?> GetByMatchIdAsync(long matchId);
     Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name);
     Task<IList<Match>> GetMatchesNeedingAutoCheckAsync(int limit = 10000);
     Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
-    Task<Match?> GetFirstMatchNeedingAutoCheckAsync();
 
     /// <summary>
     /// Updates the verification status of a match for the given id
@@ -35,7 +45,6 @@ public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
     Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, int mode, DateTime before, DateTime after);
     Task UpdateAsApiProcessed(Match match);
     Task SetRequireAutoCheckAsync(bool invalidOnly = true);
-    Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync();
 
     /// <summary>
     ///  Marks all duplicate matches of the <see cref="matchRootId" /> as duplicates. All game and score data from all of the

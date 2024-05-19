@@ -36,6 +36,30 @@ public class MatchesRepository(
         await cacheHandler.OnMatchUpdateAsync();
     }
 
+    // Suppression: This query will inherently produce a large number of records by including
+    // games and match scores. The query itself is almost as efficient as possible (as far as we know)
+    [SuppressMessage("ReSharper.DPA", "DPA0007: Large number of DB records")]
+    public async Task<IEnumerable<Match>> GetAsync(int limit, int page, bool filterUnverified = true)
+    {
+        IQueryable<Match> query = filterUnverified
+            ? _context.Matches.AsNoTracking().WhereVerified()
+            : _context.Matches.AsNoTracking();
+
+        return await query
+            // Include all MatchDTO navigational properties
+            .Include(m => m.Tournament)
+            .Include(m => m.Games)
+            .ThenInclude(g => g.Beatmap)
+            .Include(m => m.Games)
+            .ThenInclude(g => g.MatchScores)
+            .OrderBy(m => m.Id)
+            // Set index to start of desired page
+            .Skip(limit * page)
+            // Take only next n entities
+            .Take(limit)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name)
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
@@ -56,14 +80,6 @@ public class MatchesRepository(
 
     public async Task<Match?> GetAsync(int id, bool filterInvalidMatches = true) =>
         await MatchBaseQuery(filterInvalidMatches).FirstOrDefaultAsync(x => x.Id == id);
-
-    public async Task<IEnumerable<Match>> GetAsync(IEnumerable<int> ids, bool onlyIncludeFiltered) =>
-        await MatchBaseQuery(onlyIncludeFiltered)
-            .AsNoTracking()
-            .Where(x => ids.Contains(x.Id)).ToListAsync();
-
-    public async Task<IEnumerable<int>> GetAllAsync(bool filterInvalidMatches) =>
-        await MatchBaseQuery(filterInvalidMatches).Select(x => x.Id).ToListAsync();
 
     public async Task<Match?> GetByMatchIdAsync(long matchId) =>
         await _context
@@ -87,14 +103,6 @@ public class MatchesRepository(
             .Matches.Include(x => x.Games)
             .ThenInclude(x => x.MatchScores)
             .Where(x => x.IsApiProcessed == false)
-            .FirstOrDefaultAsync();
-
-    public async Task<Match?> GetFirstMatchNeedingAutoCheckAsync() =>
-        await _context
-            .Matches.Include(x => x.Tournament)
-            .Include(x => x.Games)
-            .ThenInclude(x => x.MatchScores)
-            .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
             .FirstOrDefaultAsync();
 
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
@@ -178,15 +186,6 @@ public class MatchesRepository(
             // Applies to all matches
             await _context.Matches.ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
         }
-    }
-
-    public async Task<IEnumerable<MatchIdMappingDTO>> GetIdMappingAsync()
-    {
-        return await _context
-            .Matches.AsNoTracking()
-            .OrderBy(x => x.Id)
-            .Select(x => new MatchIdMappingDTO { Id = x.Id, OsuMatchId = x.MatchId })
-            .ToListAsync();
     }
 
     public async Task MergeDuplicatesAsync(int matchRootId)

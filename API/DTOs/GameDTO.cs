@@ -6,6 +6,7 @@ namespace API.DTOs;
 /// <summary>
 /// Represents a single game (osu! beatmap) played in a match
 /// </summary>
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class GameDTO
 {
     /// <summary>
