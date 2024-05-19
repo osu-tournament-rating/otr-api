@@ -7,15 +7,33 @@ namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class UserRepository(OtrContext context) : RepositoryBase<User>(context), IUserRepository
+public class UserRepository(OtrContext context, IUserSettingsRepository userSettingsRepository) : RepositoryBase<User>(context), IUserRepository
 {
     private readonly OtrContext _context = context;
+
+    public override async Task<User> CreateAsync(User entity)
+    {
+        if (!entity.PlayerId.HasValue)
+        {
+            throw new NullReferenceException("Attempted to create a User entity with a null PlayerId");
+        }
+
+        entity.Settings = await userSettingsRepository.GenerateDefaultAsync(entity.PlayerId.Value);
+        return await base.CreateAsync(entity);
+    }
 
     public override async Task<User?> GetAsync(int id) =>
         await UserBaseQuery().FirstOrDefaultAsync(u => u.Id == id);
 
-    public async Task<User?> GetByPlayerIdAsync(int playerId) =>
-        await UserBaseQuery().FirstOrDefaultAsync(u => u.PlayerId == playerId);
+    public async Task<User?> GetByPlayerIdAsync(int playerId, bool loadSettings = false)
+    {
+        IQueryable<User> query = _context.Users.AsNoTracking();
+        query = loadSettings
+            ? query.Include(u => u.Settings)
+            : query;
+
+        return await query.FirstOrDefaultAsync(u => u.PlayerId == playerId);
+    }
 
     public async Task<User> GetByPlayerIdOrCreateAsync(int playerId)
     {
@@ -48,5 +66,6 @@ public class UserRepository(OtrContext context) : RepositoryBase<User>(context),
 
     private IQueryable<User> UserBaseQuery() =>
         _context.Users
+            .Include(x => x.Settings)
             .Include(x => x.Player);
 }

@@ -68,7 +68,7 @@ public class MatchesRepository(
     }
 
     public async Task<Match?> GetAsync(int id, bool filterInvalidMatches = true) =>
-        await MatchBaseQuery(filterInvalidMatches).FirstAsync(x => x.Id == id);
+        await MatchBaseQuery(filterInvalidMatches).FirstOrDefaultAsync(x => x.Id == id);
 
     public async Task<Match?> GetByMatchIdAsync(long matchId) =>
         await _context

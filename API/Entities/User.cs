@@ -54,4 +54,7 @@ public class User : IUpdateableEntity
 
     [InverseProperty("Verifier")]
     public virtual ICollection<MatchDuplicate>? VerifiedDuplicates { get; set; }
+
+    [InverseProperty("User")]
+    public UserSettings Settings { get; set; } = null!;
 }
