@@ -18,6 +18,15 @@ exporters:
       max_interval: 30s
       max_elapsed_time: 300s
 
+  prometheus:
+    endpoint: 0.0.0.0:8889
+
+connectors:
+  spanmetrics:
+    histogram:
+      explicit:
+        buckets: [ 5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1000ms ]
+
 processors:
   batch:
     timeout: 5s
@@ -28,4 +37,8 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging, clickhouse]
+      exporters: [logging, clickhouse, spanmetrics]
+
+    metrics:
+      receivers: [spanmetrics]
+      exporters: [prometheus]

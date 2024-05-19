@@ -3,6 +3,7 @@ using System;
 using API;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240510053046_Populate_User_Settings")]
+    partial class Populate_User_Settings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -743,14 +746,9 @@ namespace API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("LoserPoints")
+                    b.Property<int>("BluePoints")
                         .HasColumnType("integer")
-                        .HasColumnName("loser_points");
-
-                    b.Property<int[]>("LoserRoster")
-                        .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("loser_roster");
+                        .HasColumnName("blue_points");
 
                     b.Property<int?>("LoserTeam")
                         .HasColumnType("integer")
@@ -764,14 +762,19 @@ namespace API.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("match_type");
 
-                    b.Property<int>("WinnerPoints")
+                    b.Property<int>("RedPoints")
                         .HasColumnType("integer")
-                        .HasColumnName("winner_points");
+                        .HasColumnName("red_points");
 
-                    b.Property<int[]>("WinnerRoster")
+                    b.Property<int[]>("TeamBlue")
                         .IsRequired()
                         .HasColumnType("integer[]")
-                        .HasColumnName("winner_roster");
+                        .HasColumnName("team_blue");
+
+                    b.Property<int[]>("TeamRed")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("team_red");
 
                     b.Property<int?>("WinnerTeam")
                         .HasColumnType("integer")
@@ -780,12 +783,12 @@ namespace API.Migrations
                     b.HasKey("Id")
                         .HasName("match_win_records_pk");
 
-                    b.HasIndex("LoserRoster");
-
                     b.HasIndex("MatchId")
                         .IsUnique();
 
-                    b.HasIndex("WinnerRoster");
+                    b.HasIndex("TeamBlue");
+
+                    b.HasIndex("TeamRed");
 
                     b.ToTable("match_win_records");
                 });
@@ -940,8 +943,8 @@ namespace API.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("average_placement");
 
-                    b.Property<double>("AverageScore")
-                        .HasColumnType("double precision")
+                    b.Property<int>("AverageScore")
+                        .HasColumnType("integer")
                         .HasColumnName("average_score");
 
                     b.Property<int>("GamesLost")

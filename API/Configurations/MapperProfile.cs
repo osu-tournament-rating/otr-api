@@ -57,8 +57,10 @@ public class MapperProfile : Profile
         CreateMap<User, UserDTO>()
             .ForMember(x => x.OsuId, opt => opt.MapFrom(y => y.Player.OsuId))
             .ForMember(x => x.Country, opt => opt.MapFrom(y => y.Player.Country))
-            .ForMember(x => x.Username, opt => opt.MapFrom(y => y.Player.Username))
-            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Player.Ruleset));
+            .ForMember(x => x.Username, opt => opt.MapFrom(y => y.Player.Username));
+        CreateMap<UserSettings, UserSettingsDTO>()
+            .ForMember(x => x.Ruleset, opt => opt.MapFrom(us => us.DefaultRuleset))
+            .ForMember(x => x.RulesetIsControlled, opt => opt.MapFrom(us => us.DefaultRulesetIsControlled));
         CreateMap<Tournament, TournamentSearchResultDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Mode));
     }

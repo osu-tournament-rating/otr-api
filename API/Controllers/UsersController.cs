@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using API.Authorization;
 using API.DTOs;
 using API.Enums;
+using API.Osu.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
@@ -14,7 +15,7 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
 [SuppressMessage("ReSharper", "RouteTemplates.ActionRoutePrefixCanBeExtractedToControllerRoute")]
-public class UsersController(IUserService userService, IOAuthClientService clientService) : Controller
+public class UsersController(IUserService userService, IOAuthClientService clientService, IUserSettingsService userSettingsService) : Controller
 {
     /// <summary>
     /// Get a user
@@ -162,6 +163,48 @@ public class UsersController(IUserService userService, IOAuthClientService clien
         }
 
         return await clientService.DeleteAsync(clientId)
+            ? Ok()
+            : BadRequest();
+    }
+
+    /// <summary>
+    /// Update the ruleset for a user
+    /// </summary>
+    /// <response code="404">If a user does not exist</response>
+    /// <response code="200">If the operation was successful</response>
+    [HttpPost("{id:int}/settings/ruleset")]
+    [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateRulesetAsync(int id, [FromBody] Ruleset ruleset)
+    {
+        if (!await userService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        return await userSettingsService.UpdateRulesetAsync(id, ruleset)
+            ? Ok()
+            : BadRequest();
+    }
+
+    /// <summary>
+    /// Sync the ruleset of a user with their osu! ruleset
+    /// </summary>
+    /// <response code="404">If a user does not exist</response>
+    /// <response code="200">If the operation was successful</response>
+    [HttpPost("{id:int}/settings/ruleset:sync")]
+    [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> SyncRulesetAsync(int id)
+    {
+        if (!await userService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        return await userSettingsService.SyncRulesetAsync(id)
             ? Ok()
             : BadRequest();
     }

@@ -2,6 +2,7 @@ version: '3.8'
 services:
   app:
     image: "stagecodes/otr-api-prod:latest"
+    container_name: api
     ports:
       - "3700:8080"
     env_file:

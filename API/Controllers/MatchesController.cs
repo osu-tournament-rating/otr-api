@@ -72,16 +72,15 @@ public class MatchesController(IMatchesService matchesService) : Controller
 
     [HttpGet("{id:int}")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
-    public async Task<ActionResult<MatchDTO>> GetByIdAsync(int id)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAsync(int id)
     {
         MatchDTO? match = await matchesService.GetAsync(id);
 
-        if (match == null)
-        {
-            return NotFound($"Failed to locate match {id}");
-        }
-
-        return Ok(match);
+        return match is null
+            ? NotFound()
+            : Ok(match);
     }
 
     [HttpGet("duplicates")]
