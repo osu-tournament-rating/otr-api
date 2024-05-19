@@ -7,10 +7,10 @@ namespace API.DTOs;
 public class MatchWinRecordDTO
 {
     public int MatchId { get; set; }
-    public int[] TeamBlue { get; set; } = [];
-    public int[] TeamRed { get; set; } = [];
-    public int BluePoints { get; set; }
-    public int RedPoints { get; set; }
+    public int[] LoserRoster { get; set; } = [];
+    public int[] WinnerRoster { get; set; } = [];
+    public int LoserPoints { get; set; }
+    public int WinnerPoints { get; set; }
     public int? WinnerTeam { get; set; }
     public int? LoserTeam { get; set; }
     public int? MatchType { get; set; }
