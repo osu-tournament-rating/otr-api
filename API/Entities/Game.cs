@@ -134,5 +134,5 @@ public class Game : IUpdateableEntity
     /// The win record for the game
     /// </summary>
     [InverseProperty("Game")]
-    public virtual GameWinRecord WinRecord { get; set; } = null!;
+    public virtual GameWinRecord? WinRecord { get; set; }
 }

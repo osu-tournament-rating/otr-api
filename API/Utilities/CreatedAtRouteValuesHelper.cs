@@ -25,7 +25,7 @@ public static class CreatedAtRouteValuesHelper
     public static CreatedAtRouteValues GetMatch(int id) =>
         new()
         {
-            Action = nameof(MatchesController.GetByIdAsync),
+            Action = nameof(MatchesController.GetAsync),
             Controller = nameof(MatchesController),
             RouteValues = new { id }
         };
