@@ -15,7 +15,7 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
     {
         if (!entity.PlayerId.HasValue)
         {
-            throw new NullReferenceException("Attempting to create a User entity without a PlayerId");
+            throw new NullReferenceException("Attempted to create a User entity with a null PlayerId");
         }
 
         entity.Settings = await userSettingsRepository.GenerateDefaultAsync(entity.PlayerId.Value);

@@ -27,7 +27,7 @@ public class UserSettingsService(IUserSettingsRepository userSettingsRepository,
     {
         User? user = await userRepository.GetAsync(userId);
 
-        if (user is null)
+        if (user?.Settings is null)
         {
             return false;
         }
