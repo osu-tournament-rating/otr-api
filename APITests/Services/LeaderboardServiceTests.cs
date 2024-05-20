@@ -45,10 +45,10 @@ public class LeaderboardServiceTests
             null,
             null,
             matchStatsRepository.Object,
-            playerService,
             playerRepository.Object,
             null,
             ratingStatsRepository.Object,
+            null,
             null
         );
 

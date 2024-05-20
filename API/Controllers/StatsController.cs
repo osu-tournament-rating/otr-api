@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Osu.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
@@ -12,62 +13,47 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class StatsController(
     IPlayerStatsService playerStatsService,
-    IBaseStatsService baseStatsService,
-    IPlayerService playerService
+    IBaseStatsService baseStatsService
     ) : Controller
 {
     /// <summary>
     /// Get a player's stats
     /// </summary>
-    /// <remarks>Not specifying a date range will return all player stats</remarks>
-    /// <param name="id">Id of the player</param>
-    /// <param name="comparerId">Id of a player to compare stats with the target player</param>
-    /// <param name="mode">osu! ruleset. If null, osu! Standard is used</param>
-    /// <param name="dateMin">Filter from earliest date. If null, earliest possible date</param>
-    /// <param name="dateMax">Filter to latest date. If null, latest possible date</param>
+    /// <remarks>
+    /// Gets player by versatile search.
+    /// If no ruleset is provided, the player's default is used. <see cref="Ruleset.Standard"/> is used as a fallback.
+    /// If a ruleset is provided but the player has no data for it, all optional fields of the response will be null.
+    /// <see cref="PlayerStatsDTO.PlayerInfo"/> will always be populated as long as a player is found.
+    /// If no date range is provided, gets all stats without considering date
+    /// </remarks>
+    /// <param name="key">Key used in versatile search</param>
+    /// <param name="ruleset">Ruleset to filter for</param>
+    /// <param name="dateMin">Filter from earliest date</param>
+    /// <param name="dateMax">Filter to latest date</param>
     /// <response code="404">If a player does not exist</response>
     /// <response code="200">Returns a player's stats</response>
-    [HttpGet("{id:int}")]
+    [HttpGet("{key}")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<PlayerStatsDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(
-        int id,
-        [FromQuery] int? comparerId,
-        [FromQuery] int mode = 0,
-        [FromQuery] DateTime? dateMin = null,
-        [FromQuery] DateTime? dateMax = null)
-    {
-        if (!await playerService.ExistsAsync(id))
-        {
-            return NotFound();
-        }
-
-        return Ok(await playerStatsService.GetAsync(
-            id,
-            comparerId,
-            mode,
-            dateMin ?? DateTime.MinValue,
-            dateMax ?? DateTime.MaxValue
-        ));
-    }
-
-    [HttpGet("{username}")]
-    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
-    public async Task<ActionResult<PlayerStatsDTO?>> GetByUsernameAsync(
-        string username,
-        [FromQuery] int? comparerId,
-        [FromQuery] int mode = 0,
+        string key,
+        [FromQuery] Ruleset? ruleset = null,
         [FromQuery] DateTime? dateMin = null,
         [FromQuery] DateTime? dateMax = null
-    ) =>
-        await playerStatsService.GetAsync(
-            username,
-            comparerId,
-            mode,
+    )
+    {
+        PlayerStatsDTO? result = await playerStatsService.GetAsync(
+            key,
+            ruleset,
             dateMin ?? DateTime.MinValue,
-            dateMax ?? DateTime.UtcNow
+            dateMax ?? DateTime.MaxValue
         );
+
+        return result is null
+            ? NotFound()
+            : Ok(result);
+    }
 
     [HttpGet("histogram")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
