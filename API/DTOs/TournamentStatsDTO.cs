@@ -1,8 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents statistics for a player regarding tournament participation and performance
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class PlayerTournamentStatsDTO
 {
     /// <summary>
@@ -13,12 +16,12 @@ public class PlayerTournamentStatsDTO
     /// <summary>
     /// List of best tournament performances for the player
     /// </summary>
-    public IEnumerable<PlayerTournamentMatchCostDTO> BestPerformances { get; set; } =
+    public IEnumerable<PlayerTournamentMatchCostDTO> BestPerformances { get; init; } =
         new List<PlayerTournamentMatchCostDTO>();
 
     /// <summary>
-    /// List of worst tournament performances for the player
+    /// List of recent tournament performances for the player
     /// </summary>
-    public IEnumerable<PlayerTournamentMatchCostDTO> WorstPerformances { get; set; } =
+    public IEnumerable<PlayerTournamentMatchCostDTO> RecentPerformances { get; init; } =
         new List<PlayerTournamentMatchCostDTO>();
 }

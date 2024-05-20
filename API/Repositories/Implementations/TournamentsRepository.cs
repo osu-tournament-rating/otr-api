@@ -71,18 +71,19 @@ public class TournamentsRepository(OtrContext context, ICacheHandler cacheHandle
     }
 
     public async Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax,
-        int count,
-        bool bestPerformances)
+        int limit = 5,
+        bool bestPerformances = false)
     {
         IQueryable<PlayerTournamentMatchCostDTO> query =
-            QueryForParticipation(playerId, mode, dateMin, dateMax)
+            QueryForParticipation(playerId, (int)ruleset, dateMin, dateMax)
+            .OrderByDescending(t => t.Matches.Max(m => m.EndTime))
             .Select(t => new PlayerTournamentMatchCostDTO()
             {
                 PlayerId = playerId,
-                Mode = mode,
+                Mode = (int)ruleset,
                 TournamentId = t.Id,
                 TournamentName = t.Name,
                 TournamentAcronym = t.Abbreviation,
@@ -96,12 +97,12 @@ public class TournamentsRepository(OtrContext context, ICacheHandler cacheHandle
                     .Average(mrs => mrs.MatchCost)
             });
 
-        // Sort
-        query = bestPerformances
-            ? query.OrderByDescending(d => d.MatchCost)
-            : query.OrderBy(d => d.MatchCost);
+        if (bestPerformances)
+        {
+            query = query.OrderByDescending(p => p.MatchCost);
+        }
 
-        return await query.Take(count).ToListAsync();
+        return await query.Take(limit).ToListAsync();
     }
 
     public async Task<int> CountPlayedAsync(

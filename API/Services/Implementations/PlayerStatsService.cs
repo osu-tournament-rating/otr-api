@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Enums;
+using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
@@ -335,24 +336,19 @@ public class PlayerStatsService(
 
         IEnumerable<PlayerTournamentMatchCostDTO> bestPerformances = await _tournamentsRepository.GetPerformancesAsync(
             playerId,
-            mode,
+            (Ruleset)mode,
             dateMin,
             dateMax,
-            maxTournaments, true);
+            maxTournaments,
+            true
+        );
 
-        IEnumerable<PlayerTournamentMatchCostDTO> worstPerformances = await _tournamentsRepository.GetPerformancesAsync(
+        IEnumerable<PlayerTournamentMatchCostDTO> recentPerformances = await _tournamentsRepository.GetPerformancesAsync(
             playerId,
-            mode,
+            (Ruleset)mode,
             dateMin,
-            dateMax,
-            maxTournaments, false);
-
-        // Remove any best performances from worst performances
-        // ReSharper disable PossibleMultipleEnumeration
-        foreach (PlayerTournamentMatchCostDTO performance in bestPerformances)
-        {
-            worstPerformances = worstPerformances.Where(x => x.TournamentId != performance.TournamentId);
-        }
+            dateMax
+        );
 
         PlayerTournamentTeamSizeCountDTO counts = await _tournamentsRepository.GetTeamSizeStatsAsync(
             playerId,
@@ -360,11 +356,12 @@ public class PlayerStatsService(
             dateMin,
             dateMax
         );
+
         return new PlayerTournamentStatsDTO
         {
             TeamSizeCounts = counts,
             BestPerformances = bestPerformances,
-            WorstPerformances = worstPerformances
+            RecentPerformances = recentPerformances
         };
     }
 
@@ -378,8 +375,8 @@ public class PlayerStatsService(
         var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
         IEnumerable<MatchRatingStats> ratingStats =
             (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax))
-            .ToList()
-            .SelectMany(x => x);
+            .SelectMany(x => x)
+            .ToList();
 
         if (matchStats.Count == 0)
         {

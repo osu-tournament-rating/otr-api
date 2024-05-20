@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Entities;
+using API.Osu.Enums;
 
 namespace API.Repositories.Interfaces;
 
@@ -37,20 +38,22 @@ public interface ITournamentsRepository : IRepository<Tournament>
     );
 
     /// <summary>
-    /// Returns a list of best or worst tournament performances for a player
+    /// Returns a list of tournament performances ordered by recent date
     /// </summary>
     /// <param name="playerId">Id (primary key) of target player</param>
-    /// <param name="mode">Ruleset</param>
+    /// <param name="ruleset">Ruleset to filter for</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
-    /// <param name="count">Size of results</param>
-    /// <param name="bestPerformances">Sort by best or worst performance</param>
-    Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(int playerId,
-        int mode,
+    /// <param name="limit">Number of performances</param>
+    /// <param name="bestPerformances">If true, sorts results descending by average match cost</param>
+    Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(
+        int playerId,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax,
-        int count,
-        bool bestPerformances);
+        int limit = 5,
+        bool bestPerformances = false
+    );
 
     /// <summary>
     /// Count number of tournaments played for a player
