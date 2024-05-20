@@ -54,29 +54,8 @@ public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) :
     public async Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync() =>
         await _playerRepository.GetCountryMappingAsync();
 
-    public async Task<PlayerInfoDTO?> GetVersatileAsync(string key)
-    {
-        if (!int.TryParse(key, out var value))
-        {
-            return await GetAsync(key);
-        }
-
-        // Check for the player id
-        PlayerInfoDTO? result = await GetAsync(value);
-
-        if (result != null)
-        {
-            return result;
-        }
-
-        // Check for the osu id
-        if (long.TryParse(key, out var longValue))
-        {
-            return await GetAsync(longValue);
-        }
-
-        return await GetAsync(key);
-    }
+    public async Task<PlayerInfoDTO?> GetVersatileAsync(string key) =>
+        _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetVersatileAsync(key, false));
 
     public async Task<PlayerInfoDTO?> GetAsync(int userId) =>
         _mapper.Map<PlayerInfoDTO?>(await _playerRepository.GetAsync(userId));

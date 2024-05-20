@@ -11,6 +11,25 @@ public static class QueryExtensions
     public static IQueryable<Player> WhereOsuId(this IQueryable<Player> query, long osuId) =>
         query.AsQueryable().Where(x => x.OsuId == osuId);
 
+    /// <summary>
+    /// Filters a query for players with the given username
+    /// </summary>
+    public static IQueryable<Player> WhereUsername(this IQueryable<Player> query, string username, bool partialMatch)
+    {
+        //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
+        username = username.Replace("_", @"\_");
+        var pattern = partialMatch
+            ? $"%{username}%"
+            : username;
+
+        return query
+            .AsQueryable()
+            .Where(p =>
+                p.Username != null
+                && EF.Functions.ILike(p.Username ?? string.Empty, pattern, @"\")
+            );
+    }
+
     // Match
     public static IQueryable<Match> WhereVerified(this IQueryable<Match> query) =>
         query
