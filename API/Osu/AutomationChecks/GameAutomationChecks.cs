@@ -64,6 +64,7 @@ public static class GameAutomationChecks
     public static bool PassesTeamSizeCheck(Game game)
     {
         Tournament tournament = game.Match.Tournament;
+        var validScores = game.MatchScores.Where(x => x.IsValid == true).ToList();
 
         int? teamSize = tournament.TeamSize;
         if (teamSize is < 1 or > 8)
@@ -79,122 +80,70 @@ public static class GameAutomationChecks
             return false;
         }
 
-        var teamVs = game.TeamType == TeamType.TeamVs;
-        if (teamSize == 1 && !teamVs)
+        if (teamSize == 1)
         {
-            var countPlayers = game.MatchScores.Count;
-            var refereePresent = game.MatchScores.Any(score => score.Score <= AutomationChecksUtils.MinimumScore);
-
-            var countAfterReferees = countPlayers - game.MatchScores.Count(score => score.Score <= AutomationChecksUtils.MinimumScore);
-
-            var satisfiesOneVersusOne = refereePresent ? countAfterReferees == 2 : countPlayers == 2;
+            var satisfiesOneVersusOne = validScores.Count == 2;
             if (!satisfiesOneVersusOne)
             {
                 s_logger.Information(
-                    "{Prefix} Match {MatchId} has a team size of 1, but does not satisfy the 1v1 checks, can't verify game {GameId} [had {CountPlayers} players | Referee: {Ref}]",
+                    "{Prefix} Match {MatchId} has a team size of 1, but does not satisfy the 1v1 checks, can't verify game {GameId}",
                     LogPrefix,
                     game.Match.MatchId,
-                    game.GameId,
-                    countPlayers,
-                    refereePresent
+                    game.GameId
                 );
             }
 
             return satisfiesOneVersusOne;
         }
 
-        // teamSize is greater than 1 or is TeamVS
-
-        var countRed = game.MatchScores.Count(s => s is { Team: (int)Team.Red, Score: > AutomationChecksUtils.MinimumScore });
-        var countBlue = game.MatchScores.Count(s => s is { Team: (int)Team.Blue, Score: > AutomationChecksUtils.MinimumScore });
-        var countNoTeam = game.MatchScores.Count(s => s.Team == (int)Team.NoTeam);
-
-        if (countNoTeam > 0)
-        {
-            s_logger.Information(
-                "{Prefix} Match {MatchId} has scores with no team but is in TeamVS mode, can't verify game {GameId}",
-                LogPrefix,
-                game.Match.MatchId,
-                game.GameId
-            );
-
-            return false;
-        }
+        var countRed = validScores.Count(s => s.Team == (int)Team.Red);
+        var countBlue = validScores.Count(s => s.Team == (int)Team.Blue);
 
         if (countRed == 0 || countBlue == 0)
         {
             // Situation where either no scores or valid, or there are only scores from one team, something isn't right.
             s_logger.Information(
-                "{Prefix} Match {MatchId} has no team size for red or blue, can't verify game {GameId} (likely a warmup)",
+                "{Prefix} Match {MatchId} has no team size for red or blue, can't verify game {GameId} (likely a warmup) [Red: {Red} | Blue: {Blue}]",
                 LogPrefix,
                 game.Match.MatchId,
+                game.GameId,
+                countRed,
+                countBlue
+            );
+
+            return false;
+        }
+
+        if (countRed != countBlue)
+        {
+            // We don't need to worry about referees here as they have already been marked as invalid in the scores list.
+            s_logger.Information(
+                "{Prefix} Match {MatchId} has a mismatched team size: [Red: {Red} | Blue: {Blue}], can't verify game {GameId}",
+                LogPrefix,
+                game.Match.MatchId,
+                countRed,
+                countBlue,
                 game.GameId
             );
 
             return false;
         }
 
-        var hasReferee = false;
-        if (countRed != countBlue)
+        if (countRed != teamSize || countBlue != teamSize)
         {
-            /*
-             * Requirements for referee to be valid and present:
-             *
-             * - After referees are filtered out, the teams are perfectly even.
-             */
-            var refCountRed = game.MatchScores.Count(s => s is { Team: (int)Team.Red, Score: <= AutomationChecksUtils.MinimumScore });
-            var refCountBlue = game.MatchScores.Count(s => s is { Team: (int)Team.Blue, Score: <= AutomationChecksUtils.MinimumScore });
+            s_logger.Information(
+                "{Prefix} Match {MatchId} has a mismatched team size: [Red: {Red} | Blue: {Blue}], can't verify game {GameId}",
+                LogPrefix,
+                game.Match.MatchId,
+                countRed,
+                countBlue,
+                game.GameId
+            );
 
-            hasReferee = (countRed - refCountRed) == (countBlue - refCountBlue);
-
-            if (!hasReferee)
-            {
-                s_logger.Information(
-                    "{Prefix} Match {MatchId} has a mismatched team size: [Red: {Red} | Blue: {Blue}], can't verify game {GameId}",
-                    LogPrefix,
-                    game.Match.MatchId,
-                    countRed,
-                    countBlue,
-                    game.GameId
-                );
-
-                return false;
-            }
+            return false;
         }
 
-        if (!IsMismatchedTeamSize(countRed, countBlue, tournament.TeamSize, hasReferee))
-        {
-            return true;
-        }
-
-        s_logger.Information(
-            "{Prefix} Match {MatchId} has an unexpected team configuration: [Expected: {Expected}] [Red: {Red} | Blue: {Blue}], can't verify game {GameId} (Referee present: {HasReferee})",
-            LogPrefix,
-            game.Match.MatchId,
-            tournament.TeamSize,
-            countRed,
-            countBlue,
-            game.GameId,
-            hasReferee
-        );
-
-        return false;
-    }
-
-    private static bool IsMismatchedTeamSize(int red, int blue, int expectedSize, bool hasReferee)
-    {
-        // If the ref is present, the team sizes can be off by exactly one.
-        if (hasReferee)
-        {
-            // Should always equal 1 if the ref is present.
-            // If not, the team sizes are definitely mismatched.
-            return Math.Abs(red - blue) != 1;
-        }
-
-        var redUnexpected = red != expectedSize;
-        var blueUnexpected = blue != expectedSize;
-
-        return redUnexpected || blueUnexpected;
+        return true;
     }
 
     public static bool PassesRulesetCheck(Game game)
@@ -221,12 +170,12 @@ public static class GameAutomationChecks
         }
 
         s_logger.Information(
-            "{Prefix} Tournament {TournamentId} has a game mode that differs from game, can't verify game {GameId} [Tournament: Mode={TMode} | Game: Mode={GMode}",
+            "{Prefix} Tournament {TournamentId} has a game mode that differs from game, can't verify game {GameId} [Tournament: Ruleset={TMode} | Game: Ruleset={GMode}]",
             LogPrefix,
             tournament.Id,
             game.GameId,
-            tournament.Mode,
-            game.Ruleset
+            (Ruleset)tournament.Mode,
+            game.Ruleset.ToString()
         );
 
         return false;

@@ -69,7 +69,8 @@ public class AutomationChecksTests
                 MaxCombo = 620,
                 Score = 489984,
                 Team = (int)Team.Red,
-                Game = games.First()
+                Game = games.First(),
+                IsValid = true
             },
             new()
             {
@@ -81,7 +82,8 @@ public class AutomationChecksTests
                 MaxCombo = 545,
                 Score = 400720,
                 Team = (int)Team.Blue,
-                Game = games.First()
+                Game = games.First(),
+                IsValid = true
             }
         };
 
@@ -284,14 +286,27 @@ public class AutomationChecksTests
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match
             .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = -1,
-                    Score = 500_000,
-                    Team = (int)Team.Red
-                }
-            );
+            .MatchScores = new List<MatchScore>
+        {
+            new()
+            {
+                PlayerId = 1,
+                Score = 500_000,
+                Team = (int)Team.Red
+            },
+            new()
+            {
+                PlayerId = 2,
+                Score = 500_000,
+                Team = (int)Team.Red
+            },
+            new()
+            {
+                PlayerId = 3,
+                Score = 500_000,
+                Team = (int)Team.Blue
+            }
+        };
 
         Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
     }
@@ -302,14 +317,27 @@ public class AutomationChecksTests
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match
             .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = -1,
-                    Score = 500_000,
-                    Team = (int)Team.Blue
-                }
-            );
+            .MatchScores = new List<MatchScore>
+        {
+            new()
+            {
+                PlayerId = 1,
+                Score = 500_000,
+                Team = (int)Team.Blue
+            },
+            new()
+            {
+                PlayerId = 2,
+                Score = 500_000,
+                Team = (int)Team.Blue
+            },
+            new()
+            {
+                PlayerId = 3,
+                Score = 500_000,
+                Team = (int)Team.Red
+            }
+        };
 
         Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
     }
@@ -318,7 +346,33 @@ public class AutomationChecksTests
     public void Game_FailsTeamSizeCheck_WhenOneScoreIsZero()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Games.First().MatchScores.First().Score = 0;
+        match.Games.First().MatchScores = new List<MatchScore>
+        {
+            new()
+            {
+                PlayerId = 1,
+                Score = 0,
+                Team = (int)Team.Red
+            },
+            new()
+            {
+                PlayerId = 2,
+                Score = 250_000,
+                Team = (int)Team.Red
+            },
+            new()
+            {
+                PlayerId = 3,
+                Score = 250_000,
+                Team = (int)Team.Blue
+            },
+            new()
+            {
+                PlayerId = 4,
+                Score = 250_000,
+                Team = (int)Team.Blue
+            }
+        };
 
         Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
     }
@@ -470,16 +524,38 @@ public class AutomationChecksTests
     public void Game_FailsTeamSizeCheck_WithAnyNoTeam()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+
+        match.Tournament.TeamSize = 2;
+
         match
             .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = -1,
-                    Score = 500_000,
-                    Team = (int)Team.NoTeam
-                }
-            );
+            .MatchScores = new List<MatchScore>
+        {
+            new()
+            {
+                PlayerId = 1,
+                Score = 500_000,
+                Team = (int)Team.NoTeam
+            },
+            new()
+            {
+                PlayerId = 2,
+                Score = 500_000,
+                Team = (int)Team.Red
+            },
+            new()
+            {
+                PlayerId = 3,
+                Score = 500_000,
+                Team = (int)Team.Blue
+            },
+            new()
+            {
+                PlayerId = 4,
+                Score = 500_000,
+                Team = (int)Team.NoTeam
+            }
+        };
 
         Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
     }
@@ -600,15 +676,30 @@ public class AutomationChecksTests
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         match
-            .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = -1,
-                    Score = 500_000,
-                    Team = (int)Team.Red
-                }
-            );
+            .Games.First().MatchScores = new List<MatchScore>
+        {
+            new()
+            {
+                PlayerId = 0,
+                Score = 100000,
+                Team = (int)Team.Red,
+                IsValid = true
+            },
+            new()
+            {
+                PlayerId = 1,
+                Score = 100000,
+                Team = (int)Team.Red,
+                IsValid = true
+            },
+            new()
+            {
+                PlayerId = 2,
+                Score = 100000,
+                Team = (int)Team.Blue,
+                IsValid = true
+            }
+        };
 
         Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
     }
@@ -700,14 +791,30 @@ public class AutomationChecksTests
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match
             .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = 0,
-                    Score = 0,
-                    Team = (int)Team.Red
-                }
-            );
+            .MatchScores = new List<MatchScore>
+        {
+            new()
+            {
+                PlayerId = 0,
+                Score = 0,
+                Team = (int)Team.Red,
+                IsValid = false
+            },
+            new()
+            {
+                PlayerId = 1,
+                Score = 100503,
+                Team = (int)Team.Red,
+                IsValid = true
+            },
+            new()
+            {
+                PlayerId = 2,
+                Score = 100000,
+                Team = (int)Team.Blue,
+                IsValid = true
+            }
+        };
 
         Assert.True(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
         Assert.True(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
@@ -720,14 +827,30 @@ public class AutomationChecksTests
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match
             .Games.First()
-            .MatchScores.Add(
-                new MatchScore
-                {
-                    PlayerId = 0,
-                    Score = 0,
-                    Team = (int)Team.Blue
-                }
-            );
+            .MatchScores = new List<MatchScore>
+        {
+            new()
+            {
+                PlayerId = 0,
+                Score = 0,
+                Team = (int)Team.Blue,
+                IsValid = false
+            },
+            new()
+            {
+                PlayerId = 1,
+                Score = 100503,
+                Team = (int)Team.Blue,
+                IsValid = true
+            },
+            new()
+            {
+                PlayerId = 2,
+                Score = 100000,
+                Team = (int)Team.Red,
+                IsValid = true
+            }
+        };
 
         Assert.True(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
         Assert.True(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
@@ -744,33 +867,38 @@ public class AutomationChecksTests
         {
             new() // Referee
             {
-                PlayerId = 0,
+                PlayerId = 1,
                 Score = 0,
-                Team = (int)Team.Red
+                Team = (int)Team.Red,
+                IsValid = false
             },
             new()
             {
-                PlayerId = 0,
+                PlayerId = 2,
                 Score = 100000,
-                Team = (int)Team.Red
+                Team = (int)Team.Red,
+                IsValid = true
             },
             new()
             {
-                PlayerId = 0,
+                PlayerId = 3,
                 Score = 100000,
-                Team = (int)Team.Red
+                Team = (int)Team.Red,
+                IsValid = true
             },
             new()
             {
-                PlayerId = 0,
+                PlayerId = 4,
                 Score = 100000,
-                Team = (int)Team.Blue
+                Team = (int)Team.Blue,
+                IsValid = true
             },
             new()
             {
-                PlayerId = 0,
+                PlayerId = 5,
                 Score = 100000,
-                Team = (int)Team.Blue
+                Team = (int)Team.Blue,
+                IsValid = true
             }
         };
 
@@ -788,33 +916,38 @@ public class AutomationChecksTests
         {
             new() // Referee
             {
-                PlayerId = 0,
+                PlayerId = 1,
                 Score = 0,
-                Team = (int)Team.Blue
+                Team = (int)Team.Blue,
+                IsValid = false
             },
             new()
             {
-                PlayerId = 0,
+                PlayerId = 2,
                 Score = 100000,
-                Team = (int)Team.Red
+                Team = (int)Team.Red,
+                IsValid = true
             },
             new()
             {
-                PlayerId = 0,
+                PlayerId = 3,
                 Score = 100000,
-                Team = (int)Team.Red
+                Team = (int)Team.Red,
+                IsValid = true
             },
             new()
             {
-                PlayerId = 0,
+                PlayerId = 4,
                 Score = 100000,
-                Team = (int)Team.Blue
+                Team = (int)Team.Blue,
+                IsValid = true
             },
             new()
             {
-                PlayerId = 0,
+                PlayerId = 5,
                 Score = 100000,
-                Team = (int)Team.Blue
+                Team = (int)Team.Blue,
+                IsValid = true
             }
         };
 
