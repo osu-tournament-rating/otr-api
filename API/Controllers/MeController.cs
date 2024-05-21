@@ -10,7 +10,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class MeController : Controller
+public class MeController(IUserService userService) : Controller
 {
     /// <summary>
     /// Get the currently logged in user
@@ -50,7 +50,7 @@ public class MeController : Controller
     [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status302Found)]
-    public IActionResult GetStats(
+    public async Task<IActionResult> GetStatsAsync(
         [FromQuery] Ruleset? ruleset = null,
         [FromQuery] DateTime? dateMin = null,
         [FromQuery] DateTime? dateMax = null
@@ -62,9 +62,15 @@ public class MeController : Controller
             return Unauthorized();
         }
 
+        var playerId = await userService.GetPlayerIdAsync(userId.Value);
+        if (!playerId.HasValue)
+        {
+            return NotFound();
+        }
+
         return RedirectToAction("Get", "Stats", new
         {
-            key = userId,
+            key = playerId.Value,
             ruleset,
             dateMin,
             dateMax

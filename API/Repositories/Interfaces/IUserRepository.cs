@@ -16,6 +16,12 @@ public interface IUserRepository : IRepository<User>
     Task<User> GetByPlayerIdOrCreateAsync(int playerId);
 
     /// <summary>
+    /// Gets a user's player id for the given id
+    /// </summary>
+    /// <returns> A player id, or null if a user was not found or the user has no player entry </returns>
+    Task<int?> GetPlayerIdAsync(int id);
+
+    /// <summary>
     /// Gets a list of OAuth clients owned by the user for the given id
     /// </summary>
     Task<IEnumerable<OAuthClient>> GetClientsAsync(int id);
