@@ -70,6 +70,12 @@ public class MatchesController(IMatchesService matchesService) : Controller
         return Ok();
     }
 
+    /// <summary>
+    /// Get a match
+    /// </summary>
+    /// <param name="id">Match id</param>
+    /// <response code="404">If a match does not exist for the given id</response>
+    /// <response code="200">Returns a match</response>
     [HttpGet("{id:int}")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

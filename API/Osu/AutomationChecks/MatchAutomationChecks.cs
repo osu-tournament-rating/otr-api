@@ -17,7 +17,7 @@ public static class MatchAutomationChecks
         var passes = match.TournamentId == match.Tournament.Id;
         if (!passes)
         {
-            s_logger.Warning(
+            s_logger.Information(
                 "{Prefix} Match {MatchID} has no tournament, failing automation checks",
                 LogPrefix,
                 match.MatchId
