@@ -13,11 +13,6 @@ public class OAuthClientDTO
     public int ClientId { get; set; }
 
     /// <summary>
-    /// Client secret of the client
-    /// </summary>
-    public string ClientSecret { get; set; } = null!;
-
-    /// <summary>
     /// List of permissions granted to the client
     /// </summary>
     public string[] Scopes { get; set; } = [];

@@ -26,6 +26,7 @@ using Dapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -406,6 +407,8 @@ builder.Services.AddSingleton<ICacheHandler>(
             .RedisConnection
     )
 );
+
+builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthClient>>();
 
 #endregion
 
