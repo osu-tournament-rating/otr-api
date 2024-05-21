@@ -24,12 +24,7 @@ public class MatchesRepository(
 
     public override async Task<Match?> GetAsync(int id) =>
         // Get the match with all associated data
-        await _context
-            .Matches.Include(x => x.Games)
-            .ThenInclude(x => x.MatchScores)
-            .Include(x => x.Games)
-            .ThenInclude(x => x.Beatmap)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        await MatchBaseQuery(false).FirstOrDefaultAsync(x => x.Id == id);
 
     public async Task InvalidateCacheEntriesAsync()
     {
@@ -39,26 +34,16 @@ public class MatchesRepository(
     // Suppression: This query will inherently produce a large number of records by including
     // games and match scores. The query itself is almost as efficient as possible (as far as we know)
     [SuppressMessage("ReSharper.DPA", "DPA0007: Large number of DB records")]
-    public async Task<IEnumerable<Match>> GetAsync(int limit, int page, bool filterUnverified = true)
-    {
-        IQueryable<Match> query = filterUnverified
-            ? _context.Matches.AsNoTracking().WhereVerified()
-            : _context.Matches.AsNoTracking();
-
-        return await query
+    public async Task<IEnumerable<Match>> GetAsync(int limit, int page, bool filterUnverified = true) =>
+        await MatchBaseQuery(filterUnverified)
             // Include all MatchDTO navigational properties
             .Include(m => m.Tournament)
-            .Include(m => m.Games)
-            .ThenInclude(g => g.Beatmap)
-            .Include(m => m.Games)
-            .ThenInclude(g => g.MatchScores)
             .OrderBy(m => m.Id)
             // Set index to start of desired page
             .Skip(limit * page)
             // Take only next n entities
             .Take(limit)
             .ToListAsync();
-    }
 
     public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name)
     {
@@ -360,8 +345,6 @@ public class MatchesRepository(
             .Include(x => x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified))
             .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
             .Include(x => x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified))
-            .ThenInclude(x => x.Beatmap)
-            .Where(x => x.Games.Any(y => y.VerificationStatus == GameVerificationStatus.Verified && y.MatchScores.Any(z => z.IsValid == true)))
-            .OrderBy(x => x.StartTime);
+            .ThenInclude(x => x.Beatmap);
     }
 }
