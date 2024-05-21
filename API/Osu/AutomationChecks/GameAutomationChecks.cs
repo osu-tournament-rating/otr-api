@@ -64,7 +64,7 @@ public static class GameAutomationChecks
     public static bool PassesTeamSizeCheck(Game game)
     {
         Tournament tournament = game.Match.Tournament;
-        var validScores = game.MatchScores.Where(x => x.IsValid == true).ToList();
+        var validScores = game.MatchScores.Where(x => x.IsValid).ToList();
 
         int? teamSize = tournament.TeamSize;
         if (teamSize is < 1 or > 8)
@@ -170,12 +170,12 @@ public static class GameAutomationChecks
         }
 
         s_logger.Information(
-            "{Prefix} Tournament {TournamentId} has a game mode that differs from game, can't verify game {GameId} [Tournament: Mode={TMode} | Game: Mode={GMode}]",
+            "{Prefix} Tournament {TournamentId} has a game mode that differs from game, can't verify game {GameId} [Tournament: Ruleset={TMode} | Game: Ruleset={GMode}]",
             LogPrefix,
             tournament.Id,
             game.GameId,
             (Ruleset)tournament.Mode,
-            game.Ruleset
+            game.Ruleset.ToString()
         );
 
         return false;
