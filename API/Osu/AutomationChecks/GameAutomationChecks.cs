@@ -64,7 +64,7 @@ public static class GameAutomationChecks
     public static bool PassesTeamSizeCheck(Game game)
     {
         Tournament tournament = game.Match.Tournament;
-        var validScores = game.MatchScores.Where(x => x.IsValid).ToList();
+        var validScores = game.MatchScores.Where(x => x.IsValid == true).ToList();
 
         int? teamSize = tournament.TeamSize;
         if (teamSize is < 1 or > 8)
