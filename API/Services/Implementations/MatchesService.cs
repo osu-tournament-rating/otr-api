@@ -68,10 +68,10 @@ public class MatchesService(
         IEnumerable<Match> result = await matchesRepository.GetAsync(limit, page, filterUnverified);
         var count = result.Count();
 
-        return new PagedResultDTO<MatchDTO>()
+        return new PagedResultDTO<MatchDTO>
         {
             Next = count == limit
-                ? urlHelperService.Action(new CreatedAtRouteValues()
+                ? urlHelperService.Action(new CreatedAtRouteValues
                 {
                     Controller = nameof(MatchesController),
                     Action = nameof(MatchesController.ListAsync),
@@ -79,7 +79,7 @@ public class MatchesService(
                 })
                 : null,
             Previous = page > 1
-                ? urlHelperService.Action(new CreatedAtRouteValues()
+                ? urlHelperService.Action(new CreatedAtRouteValues
                 {
                     Controller = nameof(MatchesController),
                     Action = nameof(MatchesController.ListAsync),

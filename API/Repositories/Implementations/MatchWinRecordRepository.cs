@@ -20,10 +20,10 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
             var record = new MatchWinRecord
             {
                 MatchId = item.MatchId,
-                LoserRoster = item.TeamBlue,
-                WinnerRoster = item.TeamRed,
-                LoserPoints = item.BluePoints,
-                WinnerPoints = item.RedPoints,
+                LoserRoster = item.LoserRoster,
+                WinnerRoster = item.WinnerRoster,
+                LoserPoints = item.LoserPoints,
+                WinnerPoints = item.WinnerPoints,
                 WinnerTeam = (Team?)item.WinnerTeam,
                 LoserTeam = (Team?)item.LoserTeam,
                 MatchType = (Enums.MatchType?)item.MatchType
