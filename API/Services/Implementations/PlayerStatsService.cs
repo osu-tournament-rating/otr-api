@@ -332,22 +332,20 @@ public class PlayerStatsService(
         DateTime dateMax
     )
     {
-        const int maxTournaments = 5;
-
         IEnumerable<PlayerTournamentMatchCostDTO> bestPerformances = await _tournamentsRepository.GetPerformancesAsync(
             playerId,
             (Ruleset)mode,
             dateMin,
             dateMax,
-            maxTournaments,
-            true
+            TournamentPerformanceResultType.Best
         );
 
         IEnumerable<PlayerTournamentMatchCostDTO> recentPerformances = await _tournamentsRepository.GetPerformancesAsync(
             playerId,
             (Ruleset)mode,
             dateMin,
-            dateMax
+            dateMax,
+            TournamentPerformanceResultType.Recent
         );
 
         PlayerTournamentTeamSizeCountDTO counts = await _tournamentsRepository.GetTeamSizeStatsAsync(
