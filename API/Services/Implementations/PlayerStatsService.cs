@@ -157,7 +157,7 @@ public class PlayerStatsService(
             await GetMatchStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
         PlayerModStatsDTO modStats = await GetModStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
         PlayerTournamentStatsDTO tournamentStats =
-            await GetTournamentStatsAsync(playerId, mode, dateMin.Value, dateMax.Value);
+            await GetTournamentStatsAsync(playerId, (Ruleset)mode, dateMin.Value, dateMax.Value);
         PlayerRatingChartDTO ratingChart = await _ratingStatsRepository.GetRatingChartAsync(
             playerId,
             mode,
@@ -325,16 +325,23 @@ public class PlayerStatsService(
         DateTime dateMax
     ) => await _matchStatsRepository.GetModStatsAsync(playerId, mode, dateMin, dateMax);
 
+    /// <summary>
+    /// Generate tournament stats for a player
+    /// </summary>
+    /// <param name="playerId">Id of the player</param>
+    /// <param name="ruleset">Ruleset to generate stats for</param>
+    /// <param name="dateMin">Date range lower bound</param>
+    /// <param name="dateMax">Date range upper bound</param>
     private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     )
     {
         IEnumerable<PlayerTournamentMatchCostDTO> bestPerformances = await _tournamentsRepository.GetPerformancesAsync(
             playerId,
-            (Ruleset)mode,
+            ruleset,
             dateMin,
             dateMax,
             TournamentPerformanceResultType.Best
@@ -342,7 +349,7 @@ public class PlayerStatsService(
 
         IEnumerable<PlayerTournamentMatchCostDTO> recentPerformances = await _tournamentsRepository.GetPerformancesAsync(
             playerId,
-            (Ruleset)mode,
+            ruleset,
             dateMin,
             dateMax,
             TournamentPerformanceResultType.Recent
@@ -350,7 +357,7 @@ public class PlayerStatsService(
 
         PlayerTournamentTeamSizeCountDTO counts = await _tournamentsRepository.GetTeamSizeStatsAsync(
             playerId,
-            mode,
+            (int)ruleset,
             dateMin,
             dateMax
         );
