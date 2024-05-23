@@ -1,8 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents match cost data across an entire tournament for a player
 /// </summary>
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class PlayerTournamentMatchCostDTO
 {
     /// <summary>

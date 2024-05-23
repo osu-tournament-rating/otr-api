@@ -16,12 +16,12 @@ public class PlayerTournamentStatsDTO
     /// <summary>
     /// List of best tournament performances for the player
     /// </summary>
-    public IEnumerable<PlayerTournamentMatchCostDTO> BestPerformances { get; init; } =
+    public IEnumerable<PlayerTournamentMatchCostDTO> BestPerformances { get; set; } =
         new List<PlayerTournamentMatchCostDTO>();
 
     /// <summary>
     /// List of recent tournament performances for the player
     /// </summary>
-    public IEnumerable<PlayerTournamentMatchCostDTO> RecentPerformances { get; init; } =
+    public IEnumerable<PlayerTournamentMatchCostDTO> RecentPerformances { get; set; } =
         new List<PlayerTournamentMatchCostDTO>();
 }
