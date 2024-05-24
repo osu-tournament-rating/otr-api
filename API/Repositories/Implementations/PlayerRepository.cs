@@ -56,22 +56,44 @@ public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler 
     }
 
     public async Task<IEnumerable<Player>> SearchAsync(string username) =>
-        await SearchQuery(username, true)
+        await _context.Players
+            .WhereUsername(username, true)
             .Include(p => p.Ratings)
             .AsNoTracking()
             .Take(30)
             .ToListAsync();
 
-    public async Task<Player?> GetAsync(string username)
-    {
-        List<Player> players = await SearchQuery(username, false).ToListAsync();
+    public async Task<Player?> GetAsync(string username) =>
+        await _context.Players.WhereUsername(username, false).FirstOrDefaultAsync();
 
-        if (players.Count > 1)
+    public async Task<Player?> GetVersatileAsync(string key, bool eagerLoad)
+    {
+        IQueryable<Player> query = _context.Players.AsNoTracking();
+        if (eagerLoad)
         {
-            throw new Exception("More than one player was found.");
+            query = query.Include(p => p.User).ThenInclude(u => u!.Settings);
         }
 
-        return players.Count == 0 ? null : players.First();
+        if (!int.TryParse(key, out var value))
+        {
+            return await query.WhereUsername(key, false).FirstOrDefaultAsync();
+        }
+
+        // Check for the player id
+        Player? result = await query.FirstOrDefaultAsync(p => p.Id == value);
+
+        if (result != null)
+        {
+            return result;
+        }
+
+        // Check for the osu id
+        if (long.TryParse(key, out var longValue))
+        {
+            return await query.FirstOrDefaultAsync(p => p.OsuId == longValue);
+        }
+
+        return await query.WhereUsername(key, false).FirstOrDefaultAsync();
     }
 
     public async Task<Player> GetOrCreateAsync(long osuId)
@@ -156,29 +178,11 @@ public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler 
     public async Task<string?> GetCountryAsync(int playerId) =>
         await _context.Players.Where(p => p.Id == playerId).Select(p => p.Country).FirstOrDefaultAsync();
 
-    public async Task<int?> GetIdAsync(string username)
-    {
-        return await SearchQuery(username, false).Select(x => x.Id).FirstOrDefaultAsync();
-    }
-
-    /// <summary>
-    /// Helper method for searching by username consistently
-    /// </summary>
-    /// <param name="username">The username to search for</param>
-    /// <param name="partialMatch">Whether or not we want to check for partial name matches on lookup.</param>
-    /// <returns>A query that filters players by the username provided</returns>
-    private IQueryable<Player> SearchQuery(string username, bool partialMatch)
-    {
-        //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
-        username = username.Replace("_", @"\_");
-
-        if (partialMatch)
-        {
-            return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, $"%{username}%", @"\"));
-        }
-
-        return _context.Players.Where(p => p.Username != null && EF.Functions.ILike(p.Username ?? string.Empty, username, @"\"));
-    }
+    public async Task<int?> GetIdAsync(string username) =>
+        await _context.Players
+            .WhereUsername(username, false)
+            .Select(p => p.Id)
+            .FirstOrDefaultAsync();
 
     // This is used by a scheduled task to automatically populate user info, such as username, country, etc.
     public async Task<IEnumerable<Player>> GetOutdatedAsync() =>

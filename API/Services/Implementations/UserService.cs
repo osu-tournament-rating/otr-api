@@ -15,6 +15,9 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
     public async Task<UserDTO?> GetAsync(int id) =>
         mapper.Map<UserDTO?>(await userRepository.GetAsync(id));
 
+    public async Task<int?> GetPlayerIdAsync(int id) =>
+        await userRepository.GetPlayerIdAsync(id);
+
     public async Task<IEnumerable<OAuthClientDTO>?> GetClientsAsync(int id) =>
         mapper.Map<IEnumerable<OAuthClientDTO>?>(await userRepository.GetClientsAsync(id));
 

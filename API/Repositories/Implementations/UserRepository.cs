@@ -54,6 +54,9 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
         );
     }
 
+    public async Task<int?> GetPlayerIdAsync(int id) =>
+        await _context.Users.Where(u => u.Id == id).Select(u => u.PlayerId).FirstOrDefaultAsync();
+
     public async Task<IEnumerable<OAuthClient>> GetClientsAsync(int id) =>
         (await _context.Users
             .Include(u => u.Clients)
