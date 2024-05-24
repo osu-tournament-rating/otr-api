@@ -17,6 +17,12 @@ public interface IUserService
     Task<UserDTO?> GetAsync(int id);
 
     /// <summary>
+    /// Gets a user's player id for the given id
+    /// </summary>
+    /// <returns>A player id, or null if a user was not found or the user has no player entry </returns>
+    Task<int?> GetPlayerIdAsync(int id);
+
+    /// <summary>
     /// Gets a user's OAuth clients for the given id
     /// </summary>
     /// <returns>A list of OAuth clients, or null if not found</returns>
