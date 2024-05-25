@@ -1,4 +1,5 @@
 ﻿using API.Configurations;
+using Database.Configurations;
 using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -10,11 +11,9 @@ namespace API;
 
 public partial class OtrContext(
     DbContextOptions<OtrContext> options,
-    IOptions<ConnectionStringsConfiguration> configuration
+    IOptions<IConnectionStringsConfiguration> configuration
     ) : DbContext(options)
 {
-    private readonly IOptions<ConnectionStringsConfiguration> _configuration = configuration;
-
     public virtual DbSet<BaseStats> BaseStats { get; set; }
     public virtual DbSet<Beatmap> Beatmaps { get; set; }
     public virtual DbSet<Game> Games { get; set; }
@@ -35,7 +34,7 @@ public partial class OtrContext(
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
         optionsBuilder
-            .UseNpgsql(_configuration.Value.DefaultConnection);
+            .UseNpgsql(configuration.Value.DefaultConnection);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
