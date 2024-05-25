@@ -33,7 +33,7 @@ public class TestDatabaseFixture : IDisposable
     {
         var optionsBuilder = new DbContextOptionsBuilder<OtrContext>();
         optionsBuilder.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
-        return new OtrContext(optionsBuilder.Options, ConnectionStringsOptions);
+        return new OtrContext(optionsBuilder.Options);
     }
 
     public void Dispose() => GC.SuppressFinalize(this);

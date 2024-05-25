@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Database.Configurations;
 
 namespace API.Configurations;
 
-public class ConnectionStringsConfiguration : IConnectionStringsConfiguration
+public class ConnectionStringsConfiguration
 {
     public const string Position = "ConnectionStrings";
 
