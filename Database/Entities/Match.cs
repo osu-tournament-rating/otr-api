@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using API.Entities.Interfaces;
+using Database.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
+
 // ReSharper disable StringLiteralTypo
 
-namespace API.Entities;
+namespace Database.Entities;
 
 /// <summary>
 /// Represents a tournament match

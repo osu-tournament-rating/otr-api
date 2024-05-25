@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 /// <summary>
 ///  A record of who won a game

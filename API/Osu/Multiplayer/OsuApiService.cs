@@ -1,9 +1,10 @@
 using API.Configurations;
-using API.Osu.Enums;
+using Database.Enums;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OsuSharp.Domain;
 using OsuSharp.Interfaces;
+using Beatmap = Database.Entities.Beatmap;
 
 namespace API.Osu.Multiplayer;
 
@@ -97,7 +98,7 @@ public class OsuApiService : IOsuApiService
             beatmapId
         );
 
-    public async Task<Entities.Beatmap?> GetBeatmapAsync(long beatmapId, string reason) =>
+    public async Task<Beatmap?> GetBeatmapAsync(long beatmapId, string reason) =>
         await ExecuteApiCallAsync(
             async () =>
             {
@@ -110,7 +111,7 @@ public class OsuApiService : IOsuApiService
 
                 IBeatmapDifficulty? attributes = await GetDifficultyAttributesAsync(beatmapId);
 
-                var beatmap = new Entities.Beatmap
+                var beatmap = new Beatmap
                 {
                     Artist = response.Beatmapset.Artist,
                     BeatmapId = beatmapId,

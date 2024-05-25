@@ -1,13 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using API.Entities.Interfaces;
-using API.Osu.Enums;
+using Database.Entities.Interfaces;
 using Database.Enums;
 using Microsoft.EntityFrameworkCore;
+
 // ReSharper disable StringLiteralTypo
 
-namespace API.Entities;
+namespace Database.Entities;
 
 /// <summary>
 /// Represents a single game (osu! map) played in a tournament match

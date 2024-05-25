@@ -1,5 +1,4 @@
-using API.Entities;
-using API.Osu.Enums;
+using Database.Entities;
 using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 /// <summary>
 /// Represents values used to override the default rate limit configuration

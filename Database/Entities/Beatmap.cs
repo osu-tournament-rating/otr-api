@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 [Table("beatmaps")]
 [Index("BeatmapId", Name = "beatmaps_beatmapid", IsUnique = true)]

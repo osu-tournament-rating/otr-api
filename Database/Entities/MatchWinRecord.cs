@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using API.Osu.Enums;
+using Database.Enums;
+using MatchType = System.IO.MatchType;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 /// <summary>
 /// Represents a record of who played in a match and who won or lost.

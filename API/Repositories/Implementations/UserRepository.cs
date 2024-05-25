@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using API.Entities;
 using API.Repositories.Interfaces;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;

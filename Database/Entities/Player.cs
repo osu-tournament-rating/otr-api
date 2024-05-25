@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using API.Osu.Enums;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 /// <summary>
 /// Represents a player

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 [Table("match_rating_stats")]
 public class MatchRatingStats

@@ -1,5 +1,5 @@
-﻿using API.Entities.Interfaces;
-using API.Repositories.Interfaces;
+﻿using API.Repositories.Interfaces;
+using Database.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;

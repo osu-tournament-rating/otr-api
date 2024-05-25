@@ -1,4 +1,4 @@
-namespace API.Osu.Enums;
+namespace Database.Enums;
 
 /// <summary>
 /// Represents the scoring method (win condition) used for a game

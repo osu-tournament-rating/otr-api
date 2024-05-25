@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using API.Entities.Interfaces;
+using Database.Entities.Interfaces;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 [Table("tournaments")]
 public class Tournament : IEntity

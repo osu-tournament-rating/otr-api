@@ -1,4 +1,4 @@
-﻿using API.Entities.Interfaces;
+﻿using Database.Entities.Interfaces;
 
 namespace API.Repositories.Interfaces;
 

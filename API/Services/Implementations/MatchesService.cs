@@ -1,9 +1,9 @@
 using API.Controllers;
 using API.DTOs;
-using API.Entities;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
+using Database.Entities;
 using Database.Enums;
 
 namespace API.Services.Implementations;

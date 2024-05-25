@@ -1,7 +1,7 @@
 using API.DTOs;
-using API.Entities;
 using API.Utilities;
 using AutoMapper;
+using Database.Entities;
 
 namespace API.Configurations;
 

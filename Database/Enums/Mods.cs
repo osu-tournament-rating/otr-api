@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace API.Osu.Enums;
+namespace Database.Enums;
 
 /// <summary>
 /// Represents score multiplier values for certain <see cref="Mods"/>

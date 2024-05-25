@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using API.Entities.Interfaces;
+using Database.Entities.Interfaces;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 [Table("matches_hist")]
 [SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]

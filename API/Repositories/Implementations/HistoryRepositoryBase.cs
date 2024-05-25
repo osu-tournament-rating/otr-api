@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using API.Entities.Interfaces;
 using API.Repositories.Interfaces;
 using AutoMapper;
+using Database.Entities.Interfaces;
 using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 

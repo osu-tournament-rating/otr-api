@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using API.Entities;
-using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Utilities;
+using Database.Entities;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;

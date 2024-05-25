@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using API.Entities.Interfaces;
-using API.Osu.Enums;
+using Database.Entities.Interfaces;
+using Database.Enums;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 /// <summary>
 /// Represents a user's settings for otr-web

@@ -1,4 +1,4 @@
-namespace API.Osu.Enums;
+namespace Database.Enums;
 
 /// <summary>
 /// Represents the team a given player was on for a game

@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using API.Osu.Enums;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 [Table("match_scores")]
 [Index("GameId", "PlayerId", Name = "match_scores_gameid_playerid", IsUnique = true)]

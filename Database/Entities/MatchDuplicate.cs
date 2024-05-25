@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 /// <summary>
 ///  Any matches that are duplicates are stored here. We track the osu! match id and link it to

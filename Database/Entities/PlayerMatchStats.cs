@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations.Schema;
+
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 // ReSharper disable ClassWithVirtualMembersNeverInherited.Global
 // ReSharper disable EntityFramework.ModelValidation.CircularDependency
 
-namespace API.Entities;
+namespace Database.Entities;
 
 /// <summary>
 /// A set of statistics updated by the rating processor for each player.

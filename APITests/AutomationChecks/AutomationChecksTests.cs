@@ -1,11 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using API.Entities;
 using API.Enums;
 using API.Osu.AutomationChecks;
-using API.Osu.Enums;
 using API.Repositories.Interfaces;
+using Database.Entities;
 using Database.Enums;
 using Moq;
+using Match = Database.Entities.Match;
 
 namespace APITests.AutomationChecks;
 
@@ -27,7 +27,7 @@ public class AutomationChecksTests
             RankRangeLowerBound = 10000
         };
 
-        var match = new API.Entities.Match
+        var match = new Match
         {
             MatchId = 1,
             Created = DateTime.UtcNow,
@@ -93,13 +93,13 @@ public class AutomationChecksTests
 
         _matchesServiceMock
             .Setup(x => x.GetMatchesNeedingAutoCheckAsync(10000).Result)
-            .Returns(new List<API.Entities.Match> { match });
+            .Returns(new List<Match> { match });
     }
 
     [Fact]
     public async Task Mock_ReturnsCorrectObject()
     {
-        API.Entities.Match match = (await _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync()).First();
+        Match match = (await _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync()).First();
 
         Assert.NotNull(match);
         Assert.Equal("STT3: (the voices are back) vs (la planta)", match.Name);
@@ -122,21 +122,21 @@ public class AutomationChecksTests
     [Fact]
     public void Match_PassesAutomatedChecks()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         Assert.True(MatchAutomationChecks.PassesAllChecks(match));
     }
 
     [Fact]
     public void Match_GameModeValid()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         Assert.True(MatchAutomationChecks.ValidGameMode(match));
     }
 
     [Fact]
     public void Match_FailsTournamentCheck_WhenMismatchedIds()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.TournamentId = 5;
         match.Tournament.Id = 6;
         Assert.False(MatchAutomationChecks.HasTournament(match));
@@ -145,7 +145,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_PassesTournamentCheck_WhenIdsMatch()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.TournamentId = 5;
         match.Tournament.Id = 5;
         Assert.True(MatchAutomationChecks.HasTournament(match));
@@ -154,7 +154,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_FailsNameCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Name = "STT4: (the voices are back) vs (la planta)";
         Assert.False(MatchAutomationChecks.PassesNameCheck(match));
     }
@@ -162,7 +162,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_FailsNameCheck_WithNullAbbreviation()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.Abbreviation = string.Empty;
         Assert.False(MatchAutomationChecks.PassesNameCheck(match));
     }
@@ -170,7 +170,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_FailsNameCheck_WithEmptyAbbreviation()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.Abbreviation = string.Empty;
         Assert.False(MatchAutomationChecks.PassesNameCheck(match));
     }
@@ -178,7 +178,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_FailsNameCheck_WithNullName()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Name = null;
         Assert.False(MatchAutomationChecks.PassesNameCheck(match));
     }
@@ -186,7 +186,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_FailsNameCheck_WithEmptyName()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Name = string.Empty;
         Assert.False(MatchAutomationChecks.PassesNameCheck(match));
     }
@@ -194,7 +194,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_NameCheck_ReturnsFalse_WhenNullAbbreviation()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.Abbreviation = string.Empty;
         Assert.False(MatchAutomationChecks.PassesNameCheck(match));
     }
@@ -202,7 +202,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_NameCheck_ReturnsFalse_WhenEmptyAbbreviation()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.Abbreviation = string.Empty;
         Assert.False(MatchAutomationChecks.PassesNameCheck(match));
     }
@@ -210,7 +210,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_NameCheck_ReturnsFalse_WhenNullName()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Name = null;
         Assert.False(MatchAutomationChecks.PassesNameCheck(match));
     }
@@ -218,7 +218,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_NameCheck_ReturnsFalse_WhenEmptyName()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Name = string.Empty;
         Assert.False(MatchAutomationChecks.PassesNameCheck(match));
     }
@@ -226,7 +226,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_NameCheck_ReturnsFalse_WhenNameDoesNotStartWithAbbreviation()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Name = "STT4: (the voices are back) vs (la planta)";
         match.Tournament.Abbreviation = "STT3";
         Assert.False(MatchAutomationChecks.PassesNameCheck(match));
@@ -235,7 +235,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_NameCheck_ReturnsTrue_WhenValid()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         Assert.True(MatchAutomationChecks.PassesNameCheck(match));
     }
 
@@ -244,7 +244,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_GameModeInvalid()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         match.Tournament.Mode = 5;
         Assert.False(MatchAutomationChecks.ValidGameMode(match));
@@ -256,7 +256,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_Games_PassAutomatedChecks()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         Assert.Multiple(() =>
         {
@@ -270,7 +270,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_Games_PassTeamSizeCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         Assert.Multiple(() =>
         {
@@ -284,7 +284,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamSizeCheck_WhenImbalancedRed()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match
             .Games.First()
             .MatchScores = new List<MatchScore>
@@ -315,7 +315,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamSizeCheck_WhenImbalancedBlue()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match
             .Games.First()
             .MatchScores = new List<MatchScore>
@@ -346,7 +346,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamSizeCheck_WhenOneScoreIsZero()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().MatchScores = new List<MatchScore>
         {
             new()
@@ -381,7 +381,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamSizeCheck_WhenFair2v2_And_ThreeScoresAreZero()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.TeamSize = 2;
 
         match.Games.First().MatchScores = new List<MatchScore>
@@ -418,7 +418,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamSizeCheck_WhenDiffersFromTournamentSize()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.TeamSize = 4;
 
         Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
@@ -427,7 +427,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_Games_PassModeCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         Assert.Multiple(() =>
         {
@@ -441,7 +441,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsModeCheck_WhenInvalidMode()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.Mode = 5;
 
         Assert.False(GameAutomationChecks.PassesRulesetCheck(match.Games.First()));
@@ -450,7 +450,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsModeCheck_WhenDiffersFromTournamentMode()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.Mode = 1;
 
         Assert.False(GameAutomationChecks.PassesRulesetCheck(match.Games.First()));
@@ -459,7 +459,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsScoringCheck_WhenComboScoring()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().ScoringType = ScoringType.Combo;
 
         Assert.False(GameAutomationChecks.PassesScoringTypeCheck(match.Games.First()));
@@ -468,7 +468,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamTypeCheck_WhenTagTeamMode()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().TeamType = TeamType.TagTeamVs;
 
         Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
@@ -480,7 +480,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamTypeCheck_WhenHeadToHead_And_TournamentSizeNotOne()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().TeamType = TeamType.HeadToHead;
         match.Tournament.TeamSize = 4;
 
@@ -490,7 +490,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_PassesTeamTypeCheck_WhenHeadToHead_And_TournamentSizeIsOne()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().TeamType = TeamType.HeadToHead;
         match.Tournament.TeamSize = 1;
 
@@ -513,7 +513,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamSizeCheck_WhenInvalidTeamSizing()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.TeamSize = 0;
         Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
 
@@ -524,7 +524,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamSizeCheck_WithAnyNoTeam()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         match.Tournament.TeamSize = 2;
 
@@ -565,7 +565,7 @@ public class AutomationChecksTests
     public void Game_FailsTeamSizeCheck_WhenFourNoTeam_AndTeamSizeTwo()
     {
         // Set the game's scores to: 4 players with NoTeam and team size 2
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.TeamSize = 2;
 
         match.Games.First().MatchScores = new List<MatchScore>
@@ -602,7 +602,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_Games_PassScoringTypeCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         Assert.Multiple(() =>
         {
@@ -616,7 +616,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsScoringTypeCheck_WhenNotScoreV2()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         var badScoringTypes = new List<ScoringType>
         {
             ScoringType.Score,
@@ -637,7 +637,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_Games_PassModsCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         Assert.Multiple(() =>
         {
@@ -651,7 +651,7 @@ public class AutomationChecksTests
     [Fact]
     public void Match_Games_PassTeamTypeCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         Assert.Multiple(() =>
         {
@@ -665,7 +665,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamSizeCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.TeamSize = 4;
 
         Assert.False(GameAutomationChecks.PassesTeamSizeCheck(match.Games.First()));
@@ -674,7 +674,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamSizeCheck_Unbalanced_Teams()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         match
             .Games.First().MatchScores = new List<MatchScore>
@@ -708,7 +708,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsModsCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().Mods = Mods.Relax;
 
         Assert.False(GameAutomationChecks.PassesModsCheck(match.Games.First()));
@@ -717,7 +717,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsModeCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().Ruleset = Ruleset.Catch;
 
         Assert.False(GameAutomationChecks.PassesRulesetCheck(match.Games.First()));
@@ -726,7 +726,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsScoringTypeCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().ScoringType = ScoringType.Combo;
 
         Assert.False(GameAutomationChecks.PassesScoringTypeCheck(match.Games.First()));
@@ -735,7 +735,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamTypeCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().TeamType = TeamType.TagCoop;
 
         Assert.False(GameAutomationChecks.PassesTeamTypeCheck(match.Games.First()));
@@ -747,7 +747,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_PassesTeamTypeCheck_HeadToHead()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         Game game = match.Games.First();
         game.TeamType = TeamType.HeadToHead;
 
@@ -761,7 +761,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsTeamTypeCheck_HeadToHead_When_TeamSize_Is_2()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().TeamType = TeamType.HeadToHead;
         match.Tournament.TeamSize = 2;
 
@@ -771,7 +771,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_PassesScoreSanity_WhenAnyScoresPresent()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         Game game = match.Games.First();
 
         Assert.True(GameAutomationChecks.PassesScoreSanityCheck(game));
@@ -780,7 +780,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_FailsScoreSanity_WhenNoScores()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().MatchScores = new List<MatchScore>();
 
         Assert.False(GameAutomationChecks.PassesScoreSanityCheck(match.Games.First()));
@@ -789,7 +789,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_PassesSanity_WhenRefereeInLobby_TeamRed_1v1()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match
             .Games.First()
             .MatchScores = new List<MatchScore>
@@ -825,7 +825,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_PassesSanity_WhenRefereeInLobby_TeamBlue_1v1()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match
             .Games.First()
             .MatchScores = new List<MatchScore>
@@ -861,7 +861,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_PassesChecks_WhenRefereeInLobby_TeamRed_2v2()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.TeamSize = 2;
 
         match.Games.First().MatchScores = new List<MatchScore>()
@@ -910,7 +910,7 @@ public class AutomationChecksTests
     [Fact]
     public void Game_PassesChecks_WhenRefereeInLobby_TeamBlue_2v2()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.TeamSize = 2;
 
         match.Games.First().MatchScores = new List<MatchScore>
@@ -962,7 +962,7 @@ public class AutomationChecksTests
         // This test ensures that a player who earns 0 score is not
         // accidentally flagged as a referee despite meeting a lot of the
         // criteria
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Tournament.TeamSize = 2;
 
         match.Games.First().MatchScores = new List<MatchScore>
@@ -1000,7 +1000,7 @@ public class AutomationChecksTests
     [Fact]
     public void Score_Invalid_WhenZeroScore()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         match.Games.First().MatchScores.First().Score = 0;
 
         Assert.False(ScoreAutomationChecks.PassesAutomationChecks(match.Games.First().MatchScores.First()));
@@ -1009,7 +1009,7 @@ public class AutomationChecksTests
     [Fact]
     public void Scores_PassAutomationChecks()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         Assert.Multiple(() =>
         {
@@ -1023,7 +1023,7 @@ public class AutomationChecksTests
     [Fact]
     public void Scores_PassScoreRequirementCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
         Assert.Multiple(() =>
         {
@@ -1037,7 +1037,7 @@ public class AutomationChecksTests
     [Fact]
     public void Scores_FailScoreRequirementCheck()
     {
-        API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
         var forbiddenMods = new List<Mods>
         {
             Mods.Relax,

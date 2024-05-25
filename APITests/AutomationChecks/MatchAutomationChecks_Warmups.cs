@@ -1,7 +1,7 @@
-using API.Entities;
 using API.Osu.AutomationChecks;
-using API.Osu.Enums;
 using API.Osu.Multiplayer;
+using Database.Entities;
+using Database.Enums;
 using Newtonsoft.Json;
 
 namespace APITests.AutomationChecks;

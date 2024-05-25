@@ -1,6 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using API.Entities;
+using Database.Entities;
 
 namespace API.Utilities;
 

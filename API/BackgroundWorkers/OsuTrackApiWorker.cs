@@ -1,8 +1,8 @@
 using System.Text;
-using API.Entities;
 using API.Osu;
-using API.Osu.Enums;
 using API.Repositories.Interfaces;
+using Database.Entities;
+using Database.Enums;
 using Newtonsoft.Json;
 
 namespace API.BackgroundWorkers;

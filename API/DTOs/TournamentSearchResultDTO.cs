@@ -1,4 +1,4 @@
-using API.Osu.Enums;
+using Database.Enums;
 
 namespace API.DTOs;
 

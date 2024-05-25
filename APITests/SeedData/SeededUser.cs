@@ -1,4 +1,4 @@
-using API.Entities;
+using Database.Entities;
 
 namespace APITests.SeedData;
 

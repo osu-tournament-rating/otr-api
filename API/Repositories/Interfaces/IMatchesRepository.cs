@@ -1,5 +1,5 @@
 using API.DTOs;
-using API.Entities;
+using Database.Entities;
 using Database.Enums;
 
 namespace API.Repositories.Interfaces;

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Entities;
+namespace Database.Entities;
 
 [Table("rating_adjustments")]
 public class RatingAdjustment

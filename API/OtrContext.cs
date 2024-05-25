@@ -1,5 +1,5 @@
 ﻿using API.Configurations;
-using API.Entities;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 

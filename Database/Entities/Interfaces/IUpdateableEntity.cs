@@ -1,4 +1,4 @@
-﻿namespace API.Entities.Interfaces;
+﻿namespace Database.Entities.Interfaces;
 
 public interface IUpdateableEntity : IEntity
 {
