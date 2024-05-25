@@ -25,7 +25,7 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
         mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>(await userRepository.GetSubmissionsAsync(id));
 
     public async Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId,
-        MatchVerificationSource verificationSource)
+        Old_MatchVerificationSource verificationSource)
     {
         IEnumerable<Match>? submissions = (await userRepository.GetAsync(id))?.SubmittedMatches?.ToList();
         if (submissions is null)
@@ -36,7 +36,7 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
 
         foreach (Match match in submissions)
         {
-            match.VerificationStatus = MatchVerificationStatus.Rejected;
+            match.VerificationStatus = Old_MatchVerificationStatus.Rejected;
             match.VerifierUserId = rejecterUserId;
             match.VerificationSource = verificationSource;
         }

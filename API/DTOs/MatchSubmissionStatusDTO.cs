@@ -25,7 +25,7 @@ public class MatchSubmissionStatusDTO
     /// <summary>
     /// Current verification status of the match
     /// </summary>
-    public MatchVerificationStatus? VerificationStatus { get; set; }
+    public Old_MatchVerificationStatus? VerificationStatus { get; set; }
 
     /// <summary>
     /// Date that the match was submitted

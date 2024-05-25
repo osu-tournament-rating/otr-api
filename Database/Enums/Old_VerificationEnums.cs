@@ -1,6 +1,6 @@
 namespace Database.Enums;
 
-public enum MatchVerificationSource
+public enum Old_MatchVerificationSource
 {
     System,
     Admin,
@@ -15,7 +15,7 @@ public enum MatchVerificationSource
 ///  An enum representing the status of a match verification.
 ///  Verified matches are considered legitimate and will be used in the rating algorithm.
 /// </summary>
-public enum MatchVerificationStatus
+public enum Old_MatchVerificationStatus
 {
     /// <summary>
     ///  Fully verified as legitimate and will be incorporated into the rating algorithm.
@@ -49,7 +49,7 @@ public enum MatchVerificationStatus
     Failure = 5
 }
 
-public enum GameVerificationStatus
+public enum Old_GameVerificationStatus
 {
     /// <summary>
     /// Game is confirmed accurate
@@ -71,7 +71,7 @@ public enum GameVerificationStatus
 /// Denotes why a game failed automation checks or is rejected
 /// </summary>
 [Flags]
-public enum GameRejectionReason
+public enum Old_GameRejectionReason
 {
     /// <summary>
     /// There is an uneven number of players in the lobby (e.g. 2v3),

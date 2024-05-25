@@ -181,8 +181,8 @@ public class MatchesController(IMatchesService matchesService) : Controller
         var verifierId = HttpContext.AuthorizedUserIdentity();
         MatchDTO? updatedMatch = await matchesService.UpdateVerificationStatusAsync(
             id,
-            (MatchVerificationStatus)match.VerificationStatus,
-            MatchVerificationSource.MatchVerifier,
+            (Old_MatchVerificationStatus)match.VerificationStatus,
+            Old_MatchVerificationSource.MatchVerifier,
             "Updated manually by an admin",
             verifierId
             );

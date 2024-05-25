@@ -36,7 +36,7 @@ public class AutomationChecksTests
             Name = "STT3: (the voices are back) vs (la planta)",
             NeedsAutoCheck = true,
             IsApiProcessed = true,
-            VerificationStatus = MatchVerificationStatus.PendingVerification,
+            VerificationStatus = Old_MatchVerificationStatus.PendingVerification,
             Tournament = tournament,
             TournamentId = tournament.Id
         };

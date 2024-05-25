@@ -53,13 +53,13 @@ public class MatchEntityBase
     /// </summary>
     [Column("verification_source")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public MatchVerificationSource? VerificationSource { get; set; }
+    public Old_MatchVerificationSource? VerificationSource { get; set; }
 
     /// <summary>
     /// The verification status of the match
     /// </summary>
     [Column("verification_status")]
-    public MatchVerificationStatus? VerificationStatus { get; set; }
+    public Old_MatchVerificationStatus? VerificationStatus { get; set; }
 
     /// <summary>
     /// The id of the user that verified the match

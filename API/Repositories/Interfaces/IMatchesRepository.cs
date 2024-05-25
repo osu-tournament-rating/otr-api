@@ -37,8 +37,8 @@ public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
     /// <returns>An updated match, or null if not found</returns>
     Task<Match?> UpdateVerificationStatusAsync(
         int id,
-        MatchVerificationStatus status,
-        MatchVerificationSource source,
+        Old_MatchVerificationStatus status,
+        Old_MatchVerificationSource source,
         string? info = null,
         int? verifierId = null
     );

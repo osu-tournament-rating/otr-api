@@ -78,13 +78,13 @@ public class Game : IUpdateableEntity
     /// The verification status of the game
     /// </summary>
     [Column("verification_status")]
-    public GameVerificationStatus? VerificationStatus { get; set; }
+    public Old_GameVerificationStatus? VerificationStatus { get; set; }
 
     /// <summary>
     /// The reason the game was rejected from verification
     /// </summary>
     [Column("rejection_reason")]
-    public GameRejectionReason? RejectionReason { get; set; }
+    public Old_GameRejectionReason? RejectionReason { get; set; }
 
     /// <summary>
     /// Date the entity was created

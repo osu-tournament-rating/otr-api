@@ -40,11 +40,11 @@ public static class ClaimsPrincipalExtensions
         IsInRole(claimsPrincipal, OtrClaims.Whitelist);
 
     /// <summary>
-    /// Returns the appropriate <see cref="Database.Enums.MatchVerificationSource"/> enum for the principle
+    /// Returns the appropriate <see cref="Old_MatchVerificationSource"/> enum for the principle
     /// </summary>
-    public static MatchVerificationSource? VerificationSource(this ClaimsPrincipal claimsPrincipal) =>
+    public static Old_MatchVerificationSource? VerificationSource(this ClaimsPrincipal claimsPrincipal) =>
         claimsPrincipal.IsMatchVerifier()
-            ? MatchVerificationSource.MatchVerifier
+            ? Old_MatchVerificationSource.MatchVerifier
             : null;
 
     /// <summary>

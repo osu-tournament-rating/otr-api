@@ -85,8 +85,8 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             // Filter for player, verified, mode, date range
             .Where(ms =>
                 ms.PlayerId == playerId
-                && ms.Game.VerificationStatus == GameVerificationStatus.Verified
-                && ms.Game.Match.VerificationStatus == MatchVerificationStatus.Verified
+                && ms.Game.VerificationStatus == Old_GameVerificationStatus.Verified
+                && ms.Game.Match.VerificationStatus == Old_MatchVerificationStatus.Verified
                 && ms.Game.WinRecord != null
                 && ms.Game.Match.Tournament.Mode == mode
                 && ms.Game.Match.StartTime >= dateMin

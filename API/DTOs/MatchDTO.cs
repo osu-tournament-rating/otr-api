@@ -42,7 +42,7 @@ public class MatchDTO
     /// <summary>
     /// Current verification status of the match
     /// </summary>
-    public MatchVerificationStatus? VerificationStatus { get; set; }
+    public Old_MatchVerificationStatus? VerificationStatus { get; set; }
 
     /// <summary>
     /// List of games played during the match
