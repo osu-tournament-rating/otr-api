@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -7,7 +6,6 @@ using API.DTOs;
 using API.Entities;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
-using API.Services.Interfaces;
 using API.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;

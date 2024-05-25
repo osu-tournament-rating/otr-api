@@ -1,7 +1,6 @@
 using API.Entities;
-using API.Enums;
 using API.Osu.Enums;
-using API.Utilities;
+using Database.Enums;
 
 namespace API.Osu.AutomationChecks;
 
@@ -19,12 +18,12 @@ public static class GameAutomationChecks
         && PassesScoreSanityCheck(game);
 
     /// <summary>
-    /// Returns a <see cref="GameRejectionReason"/> which explains why a game
+    /// Returns a <see cref="Database.Enums.GameRejectionReason"/> which explains why a game
     /// is rejected.
     /// </summary>
     /// <param name="game">A game containing match scores</param>
     /// <returns>Null if the game passes automation checks, otherwise
-    /// a <see cref="GameRejectionReason"/></returns>
+    /// a <see cref="Database.Enums.GameRejectionReason"/></returns>
     public static GameRejectionReason? IdentifyRejectionReason(Game game)
     {
         if (PassesAutomationChecks(game))

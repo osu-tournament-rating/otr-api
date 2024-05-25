@@ -1,4 +1,4 @@
-namespace API.Enums;
+namespace Database.Enums;
 
 public enum MatchType
 {

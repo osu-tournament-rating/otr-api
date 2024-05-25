@@ -1,6 +1,6 @@
 using API.Entities;
-using API.Enums;
 using API.Osu.Enums;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Utilities;

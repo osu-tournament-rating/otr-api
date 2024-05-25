@@ -26,7 +26,7 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
                 WinnerPoints = item.WinnerPoints,
                 WinnerTeam = (Team?)item.WinnerTeam,
                 LoserTeam = (Team?)item.LoserTeam,
-                MatchType = (Enums.MatchType?)item.MatchType
+                MatchType = (MatchType?)item.MatchType
             };
 
             await _context.MatchWinRecords.AddAsync(record);

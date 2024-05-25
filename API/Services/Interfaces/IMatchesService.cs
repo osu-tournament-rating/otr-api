@@ -1,5 +1,5 @@
 using API.DTOs;
-using API.Enums;
+using Database.Enums;
 
 namespace API.Services.Interfaces;
 
@@ -12,7 +12,7 @@ public interface IMatchesService
     /// <param name="submitterId">Id of the submitting user</param>
     /// <param name="matchIds">List of match ids</param>
     /// <param name="verify">Submitter is a match verifier</param>
-    /// <param name="verificationSource">Source of verification (int representation of <see cref="MatchVerificationSource"/></param>
+    /// <param name="verificationSource">Source of verification (int representation of <see cref="Database.Enums.MatchVerificationSource"/></param>
     /// <returns>Location information for the created matches, or null if parent tournament does not exist</returns>
     Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(
         int tournamentId,

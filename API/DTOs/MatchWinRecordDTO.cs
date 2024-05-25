@@ -1,3 +1,5 @@
+using API.Osu.Enums;
+
 namespace API.DTOs;
 
 /// <summary>
@@ -29,15 +31,15 @@ public class MatchWinRecordDTO
     /// <summary>
     public int WinnerPoints { get; set; }
     /// <summary>
-    /// The winning team (see <see cref="OsuEnums.Team"/>). Null if HeadToHead.
+    /// The winning team (see <see cref="Team"/>). Null if HeadToHead.
     /// </summary>
     public int? WinnerTeam { get; set; }
     /// <summary>
-    /// The losing team (see <see cref="OsuEnums.Team"/>). Null if HeadToHead.
+    /// The losing team (see <see cref="Team"/>). Null if HeadToHead.
     /// </summary>
     public int? LoserTeam { get; set; }
     /// <summary>
-    /// The type of match (see <see cref="Enums.MatchType"/>). Null if not able to be determined.
+    /// The type of match (see <see cref="Database.MatchType"/>). Null if not able to be determined.
     /// </summary>
     public int? MatchType { get; set; }
 }

@@ -1,6 +1,4 @@
-﻿using API.Enums;
-
-namespace API.Entities.Interfaces;
+﻿namespace API.Entities.Interfaces;
 
 public interface IHistoryEntity : IEntity
 {
@@ -10,7 +8,7 @@ public interface IHistoryEntity : IEntity
     public int? ReferenceId { get; set; }
 
     /// <summary>
-    /// The type of action taken on the original record, maps to <see cref="HistoryActionType"/>
+    /// The type of action taken on the original record, maps to <see cref="Database.Enums.HistoryActionType"/>
     /// </summary>
     public int HistoryAction { get; set; }
 

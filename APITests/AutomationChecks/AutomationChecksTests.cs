@@ -4,6 +4,7 @@ using API.Enums;
 using API.Osu.AutomationChecks;
 using API.Osu.Enums;
 using API.Repositories.Interfaces;
+using Database.Enums;
 using Moq;
 
 namespace APITests.AutomationChecks;

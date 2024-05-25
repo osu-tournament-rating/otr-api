@@ -1,11 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Authorization;
 using API.DTOs;
-using API.Enums;
-using API.Osu.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
+using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

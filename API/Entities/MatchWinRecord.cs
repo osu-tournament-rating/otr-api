@@ -53,7 +53,7 @@ public class MatchWinRecord
     /// The type of match this record is for (team or head-to-head)
     /// </summary>
     [Column("match_type")]
-    public Enums.MatchType? MatchType { get; set; }
+    public MatchType? MatchType { get; set; }
     /// <summary>
     /// The <see cref="Match"/> this record belongs to
     /// </summary>

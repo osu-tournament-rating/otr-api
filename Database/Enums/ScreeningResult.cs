@@ -1,4 +1,4 @@
-namespace API.Enums;
+namespace Database.Enums;
 
 /// <summary>
 /// Indicates whether a player passed or failed screening

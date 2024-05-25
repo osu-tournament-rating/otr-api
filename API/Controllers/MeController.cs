@@ -1,3 +1,4 @@
+using API.DTOs;
 using API.Osu.Enums;
 using API.Services.Interfaces;
 using API.Utilities;

@@ -1,4 +1,4 @@
-namespace API.Enums;
+namespace Database.Enums;
 
 /// <summary>
 /// Explains why the player failed screening
