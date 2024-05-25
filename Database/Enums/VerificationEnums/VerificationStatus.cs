@@ -1,7 +1,8 @@
 namespace Database.Enums.VerificationEnums;
 
 /// <summary>
-/// The verification status of a <see cref="Entities.Match"/> or <see cref="Entities.Game"/>
+/// The verification status of a <see cref="Entities.Tournament"/>,
+/// <see cref="Entities.Match"/>, or <see cref="Entities.Game"/>
 /// </summary>
 public enum VerificationStatus
 {
@@ -11,15 +12,15 @@ public enum VerificationStatus
     /// </summary>
     None = 0,
     /// <summary>
-    /// Ready for human review, does not pass all automation checks
+    /// Does not pass all automation checks, ready for human review
     /// </summary>
     PreRejected = 1,
     /// <summary>
-    /// Ready for human review, passes all automation checks
+    /// Passes all automation checks, ready for human review
     /// </summary>
     PreVerified = 2,
     /// <summary>
-    /// Determined via human review or automation checks to be invalid
+    /// Determined to be invalid by automation checks or manual review
     /// </summary>
     /// <remarks>
     /// Some automation checks will result in a concrete rejection upon failing them
