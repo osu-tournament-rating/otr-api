@@ -1,9 +1,9 @@
 namespace Database.Enums.VerificationEnums;
 
 /// <summary>
-/// The verification status of a match
+/// The verification status of a <see cref="Entities.Match"/> or <see cref="Entities.Game"/>
 /// </summary>
-public enum MatchVerificationStatus
+public enum VerificationStatus
 {
     /// <summary>
     /// Has not been assigned a verification status,
