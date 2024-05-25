@@ -22,6 +22,7 @@ using API.Utilities;
 using Asp.Versioning;
 using AutoMapper;
 using Dapper;
+using Database;
 using Database.Entities;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

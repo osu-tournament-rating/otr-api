@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
+using Database;
 using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 

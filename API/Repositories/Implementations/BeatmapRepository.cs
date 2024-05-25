@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Repositories.Interfaces;
+using Database;
 using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 
