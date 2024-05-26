@@ -1,9 +1,8 @@
-using API.DTOs;
+using Database.Entities;
 
 namespace API.Repositories.Interfaces;
 
-public interface IRatingAdjustmentsRepository
+public interface IRatingAdjustmentsRepository : IRepository<RatingAdjustment>
 {
-    Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody);
     Task TruncateAsync();
 }

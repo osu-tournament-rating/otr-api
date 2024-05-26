@@ -15,7 +15,7 @@ public class PlayerStatsService(
     IMatchWinRecordRepository matchWinRecordRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
     IPlayerRepository playerRepository,
-    IRatingAdjustmentsRepository ratingAdjustmentsRepository,
+    IRatingAdjustmentsService ratingAdjustmentsService,
     IMatchRatingStatsRepository ratingStatsRepository,
     ITournamentsRepository tournamentsRepository,
     IMapper mapper
@@ -251,7 +251,7 @@ public class PlayerStatsService(
         await baseStatsService.BatchInsertAsync(postBody);
 
     public async Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody) =>
-        await ratingAdjustmentsRepository.BatchInsertAsync(postBody);
+        await ratingAdjustmentsService.BatchInsertAsync(postBody);
 
     public async Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody) =>
         await gameWinRecordsService.BatchInsertAsync(postBody);
@@ -266,10 +266,10 @@ public class PlayerStatsService(
         await matchStatsRepository.TruncateAsync();
         await ratingStatsRepository.TruncateAsync();
         await matchWinRecordRepository.TruncateAsync();
-        await ratingAdjustmentsRepository.TruncateAsync();
+        await ratingAdjustmentsService.TruncateAsync();
     }
 
-    public async Task TruncateRatingAdjustmentsAsync() => await ratingAdjustmentsRepository.TruncateAsync();
+    public async Task TruncateRatingAdjustmentsAsync() => await ratingAdjustmentsService.TruncateAsync();
 
     public async Task<double> GetPeakRatingAsync(int playerId, int mode, DateTime? dateMin = null,
         DateTime? dateMax = null)
