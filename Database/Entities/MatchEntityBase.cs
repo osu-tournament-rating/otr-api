@@ -40,6 +40,7 @@ public class MatchEntityBase
     [Column("end_time", TypeName = "timestamp with time zone")]
     public DateTime? EndTime { get; set; }
 
+    // TODO: DELETE FIELD
     /// <summary>
     /// Any additional information included when <see cref="VerificationStatus"/> changes
     /// </summary>
