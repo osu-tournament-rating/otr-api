@@ -10,7 +10,7 @@ namespace API.Services.Implementations;
 
 public class SearchService(
     ITournamentsRepository tournamentsRepository,
-    IMatchesRepository matchesRepository,
+    IMatchesService matchesService,
     IPlayerRepository playerRepository,
     ICacheHandler cacheHandler
     ) : ISearchService
@@ -49,7 +49,7 @@ public class SearchService(
             return result;
         }
 
-        result = (await matchesRepository.SearchAsync(matchName)).ToList();
+        result = (await matchesService.SearchAsync(matchName)).ToList();
         await cacheHandler.SetMatchSearchResultAsync(result, matchName);
 
         return result;

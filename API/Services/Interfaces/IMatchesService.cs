@@ -60,6 +60,13 @@ public interface IMatchesService
     );
 
     /// <summary>
+    /// Searches for the specified match by name
+    /// </summary>
+    /// <param name="name">The partial search key for the match name</param>
+    /// <returns>Up to 30 results if any matches are found</returns>
+    Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name);
+
+    /// <summary>
     ///  Full flow for one-way operation of marking a match as duplicate, reassinging the
     ///  appropriate game data, updating the match_duplicate_xref table,
     ///  and deleting the duplicate match items.

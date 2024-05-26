@@ -22,7 +22,7 @@ public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
 
     Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds);
     Task<Match?> GetByMatchIdAsync(long matchId);
-    Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name);
+    Task<IEnumerable<Match>> SearchAsync(string name);
     Task<IList<Match>> GetMatchesNeedingAutoCheckAsync(int limit = 10000);
     Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
 

@@ -46,7 +46,7 @@ public class MatchesRepository(
             .Take(limit)
             .ToListAsync();
 
-    public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name)
+    public async Task<IEnumerable<Match>> SearchAsync(string name)
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         name = name.Replace("_", @"\_");
@@ -54,12 +54,6 @@ public class MatchesRepository(
             .AsNoTracking()
             .WhereVerified()
             .Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\"))
-            .Select(m => new MatchSearchResultDTO()
-            {
-                Id = m.Id,
-                MatchId = m.MatchId,
-                Name = m.Name
-            })
             .Take(30)
             .ToListAsync();
     }

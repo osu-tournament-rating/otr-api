@@ -105,6 +105,10 @@ public class MatchesService(
         return mapper.Map<IEnumerable<MatchDTO>>(matches);
     }
 
+    public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name) => mapper.Map<IEnumerable<MatchSearchResultDTO>>(
+        await matchesRepository.SearchAsync(name)
+    );
+
     public async Task VerifyDuplicatesAsync(int verifierUserId, int matchRootId, bool confirmedDuplicate)
     {
         // Mark the items as confirmed / denied duplicates
