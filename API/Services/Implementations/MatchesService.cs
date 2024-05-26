@@ -1,10 +1,10 @@
 using API.Controllers;
 using API.DTOs;
-using API.Entities;
-using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
+using Database.Entities;
+using Database.Enums;
 
 namespace API.Services.Implementations;
 
@@ -31,9 +31,9 @@ public class MatchesService(
             return null;
         }
 
-        MatchVerificationStatus verificationStatus = verify
-            ? MatchVerificationStatus.Verified
-            : MatchVerificationStatus.PendingVerification;
+        Old_MatchVerificationStatus verificationStatus = verify
+            ? Old_MatchVerificationStatus.Verified
+            : Old_MatchVerificationStatus.PendingVerification;
 
         // Only create matches that dont already exist
         IEnumerable<long> enumerableMatchIds = matchIds.ToList();
@@ -51,7 +51,7 @@ public class MatchesService(
                 VerificationStatus = verificationStatus,
                 NeedsAutoCheck = true,
                 IsApiProcessed = false,
-                VerificationSource = (MatchVerificationSource?)verificationSource,
+                VerificationSource = (Old_MatchVerificationSource?)verificationSource,
                 VerifierUserId = verify ? submitterId : null,
                 SubmitterUserId = submitterId
             });
@@ -175,8 +175,8 @@ public class MatchesService(
     }
 
     public async Task<MatchDTO?> UpdateVerificationStatusAsync(int id,
-        MatchVerificationStatus verificationStatus,
-        MatchVerificationSource verificationSource,
+        Old_MatchVerificationStatus verificationStatus,
+        Old_MatchVerificationSource verificationSource,
         string? info = null,
         int? verifierId = null) =>
         mapper.Map<MatchDTO?>(await matchesRepository

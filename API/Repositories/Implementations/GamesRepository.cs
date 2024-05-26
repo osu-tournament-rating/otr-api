@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using API.Entities;
 using API.Repositories.Interfaces;
+using Database;
+using Database.Entities;
 
 namespace API.Repositories.Implementations;
 

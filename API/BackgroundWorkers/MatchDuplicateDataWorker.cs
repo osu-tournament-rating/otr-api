@@ -1,5 +1,5 @@
-using API.Entities;
 using API.Repositories.Interfaces;
+using Database.Entities;
 
 namespace API.BackgroundWorkers;
 

@@ -1,8 +1,9 @@
-using API.Entities;
-using API.Enums;
 using API.Osu.AutomationChecks;
 using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
+using Database;
+using Database.Entities;
+using Database.Enums;
 
 namespace API.BackgroundWorkers;
 
@@ -98,14 +99,14 @@ public class OsuMatchDataWorker(
         // Match verification checks
         if (MatchAutomationChecks.PassesAllChecks(match))
         {
-            match.VerificationStatus = match.VerifierUserId is not null ? MatchVerificationStatus.Verified : MatchVerificationStatus.PreVerified;
-            match.VerificationSource = MatchVerificationSource.System;
+            match.VerificationStatus = match.VerifierUserId is not null ? Old_MatchVerificationStatus.Verified : Old_MatchVerificationStatus.PreVerified;
+            match.VerificationSource = Old_MatchVerificationSource.System;
             match.VerificationInfo = null;
         }
         else
         {
-            match.VerificationStatus = MatchVerificationStatus.Rejected;
-            match.VerificationSource = MatchVerificationSource.System;
+            match.VerificationStatus = Old_MatchVerificationStatus.Rejected;
+            match.VerificationSource = Old_MatchVerificationSource.System;
             match.VerificationInfo = "Failed automation checks";
 
             match.NeedsAutoCheck = false;
@@ -124,11 +125,11 @@ public class OsuMatchDataWorker(
                 score.IsValid = ScoreAutomationChecks.PassesAutomationChecks(score);
             }
 
-            GameRejectionReason? rejectionReason = GameAutomationChecks.IdentifyRejectionReason(game);
+            Old_GameRejectionReason? rejectionReason = GameAutomationChecks.IdentifyRejectionReason(game);
 
             if (rejectionReason is not null)
             {
-                game.VerificationStatus = GameVerificationStatus.Rejected;
+                game.VerificationStatus = Old_GameVerificationStatus.Rejected;
                 game.RejectionReason = rejectionReason;
                 logger.LogInformation("Game {Game} failed automation checks with reason {Reason}",
                     game.GameId, rejectionReason.ToString());
@@ -137,7 +138,7 @@ public class OsuMatchDataWorker(
             {
                 // Game has passed automation checks
                 game.RejectionReason = null;
-                game.VerificationStatus = match.VerificationStatus == MatchVerificationStatus.Verified ? GameVerificationStatus.Verified : GameVerificationStatus.PreVerified;
+                game.VerificationStatus = match.VerificationStatus == Old_MatchVerificationStatus.Verified ? Old_GameVerificationStatus.Verified : Old_GameVerificationStatus.PreVerified;
             }
 
             gamesRepository.MarkUpdated(game);
@@ -202,8 +203,8 @@ public class OsuMatchDataWorker(
         {
             await matchesRepository.UpdateVerificationStatusAsync(
                 existingEntity.Id,
-                MatchVerificationStatus.Failure,
-                MatchVerificationSource.System,
+                Old_MatchVerificationStatus.Failure,
+                Old_MatchVerificationSource.System,
                 "Failed to fetch match from osu! API"
             );
 

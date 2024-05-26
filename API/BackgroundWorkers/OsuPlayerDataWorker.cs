@@ -1,8 +1,8 @@
 using API.Configurations;
-using API.Entities;
-using API.Osu.Enums;
 using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
+using Database.Entities;
+using Database.Enums;
 using Microsoft.Extensions.Options;
 
 namespace API.BackgroundWorkers;

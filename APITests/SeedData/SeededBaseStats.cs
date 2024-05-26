@@ -1,6 +1,6 @@
 using API.DTOs;
-using API.Entities;
 using API.Utilities;
+using Database.Entities;
 
 namespace APITests.SeedData;
 

@@ -1,7 +1,8 @@
-using API.Osu.Enums;
+using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
+using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

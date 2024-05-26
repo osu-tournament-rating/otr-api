@@ -1,9 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
-using API.Entities;
-using API.Osu.Enums;
 using API.Repositories.Interfaces;
+using Database;
+using Database.Entities;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
+using MatchType = System.IO.MatchType;
 
 namespace API.Repositories.Implementations;
 
@@ -26,7 +28,7 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
                 WinnerPoints = item.WinnerPoints,
                 WinnerTeam = (Team?)item.WinnerTeam,
                 LoserTeam = (Team?)item.LoserTeam,
-                MatchType = (Enums.MatchType?)item.MatchType
+                MatchType = (MatchType?)item.MatchType
             };
 
             await _context.MatchWinRecords.AddAsync(record);

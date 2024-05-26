@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using API.Enums;
+using Database.Enums;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace API.Utilities;
@@ -40,11 +40,11 @@ public static class ClaimsPrincipalExtensions
         IsInRole(claimsPrincipal, OtrClaims.Whitelist);
 
     /// <summary>
-    /// Returns the appropriate <see cref="MatchVerificationSource"/> enum for the principle
+    /// Returns the appropriate <see cref="Old_MatchVerificationSource"/> enum for the principle
     /// </summary>
-    public static MatchVerificationSource? VerificationSource(this ClaimsPrincipal claimsPrincipal) =>
+    public static Old_MatchVerificationSource? VerificationSource(this ClaimsPrincipal claimsPrincipal) =>
         claimsPrincipal.IsMatchVerifier()
-            ? MatchVerificationSource.MatchVerifier
+            ? Old_MatchVerificationSource.MatchVerifier
             : null;
 
     /// <summary>

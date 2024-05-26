@@ -1,6 +1,5 @@
-using API.Entities;
-using API.Enums;
-using API.Osu.Enums;
+using Database.Entities;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Utilities;
@@ -35,7 +34,7 @@ public static class QueryExtensions
         query
             .AsQueryable()
             .Where(x =>
-                x.VerificationStatus == MatchVerificationStatus.Verified
+                x.VerificationStatus == Old_MatchVerificationStatus.Verified
                 && x.IsApiProcessed == true
                 && x.NeedsAutoCheck == false
             );
@@ -67,7 +66,7 @@ public static class QueryExtensions
         query
             .AsQueryable()
             .Where(x =>
-                x.VerificationStatus == (int)GameVerificationStatus.Verified && x.RejectionReason == null
+                x.VerificationStatus == (int)Old_GameVerificationStatus.Verified && x.RejectionReason == null
             );
 
     public static IQueryable<Game> WhereTeamVs(this IQueryable<Game> query) =>
@@ -113,8 +112,8 @@ public static class QueryExtensions
             .AsQueryable()
             .Where(x =>
                 x.IsValid != false
-                && x.Game.Match.VerificationStatus == MatchVerificationStatus.Verified
-                && x.Game.VerificationStatus == (int)GameVerificationStatus.Verified
+                && x.Game.Match.VerificationStatus == Old_MatchVerificationStatus.Verified
+                && x.Game.VerificationStatus == (int)Old_GameVerificationStatus.Verified
             );
 
     /// <summary>

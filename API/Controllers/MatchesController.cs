@@ -1,8 +1,8 @@
 using API.DTOs;
-using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
+using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -181,8 +181,8 @@ public class MatchesController(IMatchesService matchesService) : Controller
         var verifierId = HttpContext.AuthorizedUserIdentity();
         MatchDTO? updatedMatch = await matchesService.UpdateVerificationStatusAsync(
             id,
-            (MatchVerificationStatus)match.VerificationStatus,
-            MatchVerificationSource.MatchVerifier,
+            (Old_MatchVerificationStatus)match.VerificationStatus,
+            Old_MatchVerificationSource.MatchVerifier,
             "Updated manually by an admin",
             verifierId
             );

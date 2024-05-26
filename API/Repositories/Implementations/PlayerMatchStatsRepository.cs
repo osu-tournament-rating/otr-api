@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
-using API.Entities;
-using API.Enums;
-using API.Osu.Enums;
 using API.Repositories.Interfaces;
+using Database;
+using Database.Entities;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
@@ -85,8 +85,8 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             // Filter for player, verified, mode, date range
             .Where(ms =>
                 ms.PlayerId == playerId
-                && ms.Game.VerificationStatus == GameVerificationStatus.Verified
-                && ms.Game.Match.VerificationStatus == MatchVerificationStatus.Verified
+                && ms.Game.VerificationStatus == Old_GameVerificationStatus.Verified
+                && ms.Game.Match.VerificationStatus == Old_MatchVerificationStatus.Verified
                 && ms.Game.WinRecord != null
                 && ms.Game.Match.Tournament.Mode == mode
                 && ms.Game.Match.StartTime >= dateMin

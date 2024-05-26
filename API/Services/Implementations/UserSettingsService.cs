@@ -1,7 +1,7 @@
-using API.Entities;
-using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using Database.Entities;
+using Database.Enums;
 
 namespace API.Services.Implementations;
 

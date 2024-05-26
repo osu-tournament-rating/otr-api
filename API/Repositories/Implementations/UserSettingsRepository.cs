@@ -1,6 +1,7 @@
-using API.Entities;
-using API.Osu.Enums;
 using API.Repositories.Interfaces;
+using Database;
+using Database.Entities;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;

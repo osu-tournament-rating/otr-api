@@ -1,11 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
-using API.Entities;
-using API.Enums;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
 using API.Utilities;
 using AutoMapper;
+using Database;
+using Database.Entities;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
@@ -95,8 +96,8 @@ public class MatchesRepository(
 
     public async Task<Match?> UpdateVerificationStatusAsync(
         int id,
-        MatchVerificationStatus status,
-        MatchVerificationSource source,
+        Old_MatchVerificationStatus status,
+        Old_MatchVerificationSource source,
         string? info = null,
         int? verifierId = null
     )
@@ -161,8 +162,8 @@ public class MatchesRepository(
         {
             await _context
                 .Matches.Where(x =>
-                    x.VerificationStatus != MatchVerificationStatus.Verified
-                    && x.VerificationStatus != MatchVerificationStatus.PreVerified
+                    x.VerificationStatus != Old_MatchVerificationStatus.Verified
+                    && x.VerificationStatus != Old_MatchVerificationStatus.PreVerified
                 )
                 .ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
         }
@@ -342,9 +343,9 @@ public class MatchesRepository(
 
         return _context
             .Matches.WhereVerified()
-            .Include(x => x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified))
+            .Include(x => x.Games.Where(y => y.VerificationStatus == Old_GameVerificationStatus.Verified))
             .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
-            .Include(x => x.Games.Where(y => y.VerificationStatus == GameVerificationStatus.Verified))
+            .Include(x => x.Games.Where(y => y.VerificationStatus == Old_GameVerificationStatus.Verified))
             .ThenInclude(x => x.Beatmap);
     }
 }

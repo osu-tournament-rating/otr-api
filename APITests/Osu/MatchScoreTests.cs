@@ -1,4 +1,4 @@
-using API.Entities;
+using Database.Entities;
 using Newtonsoft.Json;
 
 namespace APITests.Osu;

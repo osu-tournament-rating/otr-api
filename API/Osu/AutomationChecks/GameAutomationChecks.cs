@@ -1,7 +1,5 @@
-using API.Entities;
-using API.Enums;
-using API.Osu.Enums;
-using API.Utilities;
+using Database.Entities;
+using Database.Enums;
 
 namespace API.Osu.AutomationChecks;
 
@@ -19,43 +17,43 @@ public static class GameAutomationChecks
         && PassesScoreSanityCheck(game);
 
     /// <summary>
-    /// Returns a <see cref="GameRejectionReason"/> which explains why a game
+    /// Returns a <see cref="Old_GameRejectionReason"/> which explains why a game
     /// is rejected.
     /// </summary>
     /// <param name="game">A game containing match scores</param>
     /// <returns>Null if the game passes automation checks, otherwise
-    /// a <see cref="GameRejectionReason"/></returns>
-    public static GameRejectionReason? IdentifyRejectionReason(Game game)
+    /// a <see cref="Old_GameRejectionReason"/></returns>
+    public static Old_GameRejectionReason? IdentifyRejectionReason(Game game)
     {
         if (PassesAutomationChecks(game))
         {
             return null;
         }
 
-        GameRejectionReason reason = 0;
+        Old_GameRejectionReason reason = 0;
         if (!PassesScoringTypeCheck(game))
         {
-            reason |= GameRejectionReason.InvalidScoringType;
+            reason |= Old_GameRejectionReason.InvalidScoringType;
         }
         if (!PassesRulesetCheck(game))
         {
-            reason |= GameRejectionReason.InvalidRuleset;
+            reason |= Old_GameRejectionReason.InvalidRuleset;
         }
         if (!PassesTeamTypeCheck(game))
         {
-            reason |= GameRejectionReason.InvalidTeamType;
+            reason |= Old_GameRejectionReason.InvalidTeamType;
         }
         if (!PassesTeamSizeCheck(game))
         {
-            reason |= GameRejectionReason.TeamSizeMismatch;
+            reason |= Old_GameRejectionReason.TeamSizeMismatch;
         }
         if (!PassesModsCheck(game))
         {
-            reason |= GameRejectionReason.InvalidMods;
+            reason |= Old_GameRejectionReason.InvalidMods;
         }
         if (!PassesScoreSanityCheck(game))
         {
-            reason |= GameRejectionReason.NoScores;
+            reason |= Old_GameRejectionReason.NoScores;
         }
 
         return reason;

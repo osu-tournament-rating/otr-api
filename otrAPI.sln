@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsuApiClient", "OsuApiClien
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsuApiClient.Tests", "OsuApiClient.Tests\OsuApiClient.Tests.csproj", "{2BB99D12-5FF7-47E7-8BA8-83D7FADB2D81}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database", "Database\Database.csproj", "{F05AF2BA-2066-45F2-9C5A-3E2C9E3EF17F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{2BB99D12-5FF7-47E7-8BA8-83D7FADB2D81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BB99D12-5FF7-47E7-8BA8-83D7FADB2D81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BB99D12-5FF7-47E7-8BA8-83D7FADB2D81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F05AF2BA-2066-45F2-9C5A-3E2C9E3EF17F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F05AF2BA-2066-45F2-9C5A-3E2C9E3EF17F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F05AF2BA-2066-45F2-9C5A-3E2C9E3EF17F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F05AF2BA-2066-45F2-9C5A-3E2C9E3EF17F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

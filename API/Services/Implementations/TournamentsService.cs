@@ -1,9 +1,9 @@
 using API.DTOs;
-using API.Entities;
-using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
+using Database.Entities;
+using Database.Enums;
 
 namespace API.Services.Implementations;
 
@@ -12,9 +12,9 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
     // TODO: Refactor to use enum for param "verificationSource"
     public async Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify, int? verificationSource)
     {
-        MatchVerificationStatus verificationStatus = verify
-            ? MatchVerificationStatus.Verified
-            : MatchVerificationStatus.PendingVerification;
+        Old_MatchVerificationStatus verificationStatus = verify
+            ? Old_MatchVerificationStatus.Verified
+            : Old_MatchVerificationStatus.PendingVerification;
 
         // Only create matches that dont already exist
         IEnumerable<long> enumerableMatchIds = wrapper.Ids.ToList();
@@ -39,7 +39,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
                     VerificationStatus = verificationStatus,
                     NeedsAutoCheck = true,
                     IsApiProcessed = false,
-                    VerificationSource = (MatchVerificationSource?)verificationSource,
+                    VerificationSource = (Old_MatchVerificationSource?)verificationSource,
                     VerifierUserId = verify ? wrapper.SubmitterId : null,
                     SubmitterUserId = wrapper.SubmitterId
                 }).ToList()

@@ -1,7 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
-using API.Entities;
 using API.Repositories.Interfaces;
+using Database;
+using Database.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;

@@ -1,10 +1,10 @@
 using API.DTOs;
-using API.Entities;
 using API.Handlers.Interfaces;
-using API.Osu.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
+using Database.Entities;
+using Database.Enums;
 
 namespace API.Services.Implementations;
 

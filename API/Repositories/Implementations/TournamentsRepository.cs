@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
-using API.Entities;
-using API.Enums;
 using API.Handlers.Interfaces;
-using API.Osu.Enums;
 using API.Repositories.Interfaces;
+using Database;
+using Database.Entities;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
@@ -89,7 +89,7 @@ public class TournamentsRepository(OtrContext context, ICacheHandler cacheHandle
                 // Calc average match cost
                 MatchCost = t.Matches
                     // Filter invalid matches (Above filter uses Any, so invalid matches can still be included)
-                    .Where(m => m.VerificationStatus == MatchVerificationStatus.Verified)
+                    .Where(m => m.VerificationStatus == Old_MatchVerificationStatus.Verified)
                     // Filter for ratings belonging to target player
                     .SelectMany(m => m.RatingStats)
                     .Where(mrs => mrs.PlayerId == playerId)
@@ -145,7 +145,7 @@ public class TournamentsRepository(OtrContext context, ICacheHandler cacheHandle
                     m.StartTime >= dateMin
                     && m.StartTime <= dateMax
                     // Verified
-                    && m.VerificationStatus == MatchVerificationStatus.Verified
+                    && m.VerificationStatus == Old_MatchVerificationStatus.Verified
                     // Participated in by player
                     && m.RatingStats.Any(stat => stat.PlayerId == playerId)
                 ));

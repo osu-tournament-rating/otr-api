@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs.Interfaces;
-using API.Entities.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
+using Database.Entities.Interfaces;
 
 namespace API.Utilities;
 

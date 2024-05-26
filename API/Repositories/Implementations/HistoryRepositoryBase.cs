@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using API.Entities.Interfaces;
-using API.Enums;
 using API.Repositories.Interfaces;
 using AutoMapper;
+using Database;
+using Database.Entities.Interfaces;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;

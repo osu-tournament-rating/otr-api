@@ -1,6 +1,7 @@
 using API.DTOs;
-using API.Entities;
 using API.Enums;
+using API.Repositories.Interfaces;
+using Database.Entities;
 
 namespace API.Services.Interfaces;
 

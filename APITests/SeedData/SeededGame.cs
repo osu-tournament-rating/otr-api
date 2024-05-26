@@ -1,6 +1,6 @@
-using API.Entities;
 using API.Enums;
-using API.Osu.Enums;
+using Database.Entities;
+using Database.Enums;
 
 namespace APITests.SeedData;
 
@@ -33,7 +33,7 @@ public static class SeededGame
             Mods = Mods.None,
             PostModSr = 6.36389,
             GameId = 502333236,
-            VerificationStatus = GameVerificationStatus.PreVerified,
+            VerificationStatus = Old_GameVerificationStatus.PreVerified,
             RejectionReason = null,
             Created = new DateTime(2023, 09, 14),
             StartTime = new DateTime(2023, 03, 10),

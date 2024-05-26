@@ -1,5 +1,5 @@
 using API.DTOs;
-using API.Enums;
+using Database.Enums;
 
 namespace API.Services.Interfaces;
 
@@ -39,9 +39,9 @@ public interface IUserService
     /// </summary>
     /// <param name="id">Id of the target user</param>
     /// <param name="rejecterUserId">Id of the user invoking this action</param>
-    /// <param name="verificationSource"><see cref="MatchVerificationSource"/></param>
+    /// <param name="verificationSource"><see cref="Old_MatchVerificationSource"/></param>
     /// <returns>True if successful or the user has no match submissions</returns>
-    Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId, MatchVerificationSource verificationSource);
+    Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId, Old_MatchVerificationSource verificationSource);
 
     /// <summary>
     /// Updates a user's scopes
