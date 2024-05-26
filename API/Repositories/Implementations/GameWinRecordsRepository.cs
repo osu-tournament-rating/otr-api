@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using API.DTOs;
 using API.Repositories.Interfaces;
 using Database;
 using Database.Entities;
@@ -12,25 +11,6 @@ namespace API.Repositories.Implementations;
 public class GameWinRecordsRepository(OtrContext context) : RepositoryBase<GameWinRecord>(context), IGameWinRecordsRepository
 {
     private readonly OtrContext _context = context;
-
-    public async Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody)
-    {
-        foreach (GameWinRecordDTO item in postBody)
-        {
-            var record = new GameWinRecord
-            {
-                GameId = item.GameId,
-                Winners = item.Winners,
-                Losers = item.Losers,
-                WinnerTeam = item.WinnerTeam,
-                LoserTeam = item.LoserTeam
-            };
-
-            await _context.AddAsync(record);
-        }
-
-        await _context.SaveChangesAsync();
-    }
 
     public async Task TruncateAsync()
     {
