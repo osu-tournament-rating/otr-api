@@ -16,9 +16,7 @@ public class OsuTrackApiWorker(
     private const string URL_BASE = "https://osutrack-api.ameo.dev";
     private const int UPDATE_INTERVAL_MINUTES = 1; // Every minute, check if this call needs to be made.
     private const int API_RATELIMIT = 200; // 200 requests per minute.
-    private readonly ILogger<OsuTrackApiWorker> _logger = logger;
     private readonly SemaphoreSlim _semaphore = new(1);
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
     private DateTime _ratelimitReset = DateTime.UtcNow;
     private int _ratelimitTracker;
     private readonly bool _allowDataFetching = configuration.GetValue<bool>("Osu:AutoUpdateUsers");
@@ -38,20 +36,20 @@ public class OsuTrackApiWorker(
         }
         else
         {
-            _logger.LogInformation("Skipping osu!Track API worker due to configuration");
+            logger.LogInformation("Skipping osu!Track API worker due to configuration");
         }
     }
 
     private async Task BackgroundTask(CancellationToken stoppingToken)
     {
         var client = new HttpClient();
-        _logger.LogInformation("Initialized osu!track API worker");
+        logger.LogInformation("Initialized osu!track API worker");
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 await _semaphore.WaitAsync(stoppingToken);
-                using (IServiceScope scope = _serviceProvider.CreateScope())
+                using (IServiceScope scope = serviceProvider.CreateScope())
                 {
                     IPlayerRepository playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
                     IMatchRatingStatsRepository ratingStatsRepository =
@@ -65,7 +63,7 @@ public class OsuTrackApiWorker(
                         continue;
                     }
 
-                    _logger.LogInformation(
+                    logger.LogInformation(
                         "Identified {PlayerCount} players to update earliest ranks for",
                         playersToUpdate.Count
                     );
@@ -81,7 +79,7 @@ public class OsuTrackApiWorker(
                             stoppingToken
                         );
 
-                        _logger.LogInformation(
+                        logger.LogInformation(
                             "Updated earliest known ranks for player {PlayerId}",
                             player.OsuId
                         );
@@ -95,7 +93,7 @@ public class OsuTrackApiWorker(
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error occurred while fetching osu!track data");
+                logger.LogError(e, "Error occurred while fetching osu!track data");
             }
             finally
             {
@@ -122,7 +120,7 @@ public class OsuTrackApiWorker(
 
             if (IsRatelimited())
             {
-                _logger.LogDebug("osu!track API ratelimited, waiting...");
+                logger.LogDebug("osu!track API ratelimited, waiting...");
                 await Task.Delay(_ratelimitReset - DateTime.UtcNow, stoppingToken);
             }
 
@@ -170,7 +168,7 @@ public class OsuTrackApiWorker(
                         break;
                 }
 
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Updated osu!track data for player {PlayerId} in mode {GameMode}, ratelimit = {Ratelimit}: {@Data}",
                     player.OsuId,
                     mode,
@@ -180,7 +178,7 @@ public class OsuTrackApiWorker(
             }
             catch (JsonSerializationException e)
             {
-                _logger.LogError(
+                logger.LogError(
                     e,
                     "Failed to deserialize osu!track data for player {PlayerId} in mode {GameMode}",
                     player.OsuId,
@@ -204,7 +202,7 @@ public class OsuTrackApiWorker(
 
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogError(
+            logger.LogError(
                 "Failed to fetch osu!Track history for player {PlayerId} in mode {GameMode}, ratelimit = {Ratelimit}",
                 player.OsuId,
                 ruleset,
@@ -251,7 +249,7 @@ public class OsuTrackApiWorker(
         {
             _ratelimitTracker = 0;
             _ratelimitReset = DateTime.UtcNow.AddMinutes(UPDATE_INTERVAL_MINUTES);
-            _logger.LogDebug("osu!Track ratelimiter reset");
+            logger.LogDebug("osu!Track ratelimiter reset");
         }
 
         return _ratelimitTracker >= API_RATELIMIT;

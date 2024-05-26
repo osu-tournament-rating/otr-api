@@ -16,12 +16,10 @@ namespace API.Repositories.Implementations;
 public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler cacheHandler) : RepositoryBase<Player>(context), IPlayerRepository, IUsesCache
 {
     private readonly OtrContext _context = context;
-    private readonly IMapper _mapper = mapper;
-    private readonly ICacheHandler _cacheHandler = cacheHandler;
 
     public async Task InvalidateCacheEntriesAsync()
     {
-        await _cacheHandler.OnPlayerUpdateAsync();
+        await cacheHandler.OnPlayerUpdateAsync();
     }
 
     public async Task<IEnumerable<Player>> GetPlayersMissingRankAsync()
@@ -198,7 +196,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler 
         int offsetDays = -1
     )
     {
-        PlayerInfoDTO? obj = _mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)ruleset, offsetDays));
+        PlayerInfoDTO? obj = mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)ruleset, offsetDays));
 
         if (obj == null)
         {

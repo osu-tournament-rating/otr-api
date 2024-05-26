@@ -11,8 +11,6 @@ public class MatchDuplicateDataWorker(
     IServiceProvider serviceProvider
     ) : BackgroundService
 {
-    private readonly ILogger<MatchDuplicateDataWorker> _logger = logger;
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
     private readonly TimeSpan _interval = TimeSpan.FromMinutes(10);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) =>
@@ -24,7 +22,7 @@ public class MatchDuplicateDataWorker(
         // Any duplicates found will be marked for manual review
         while (!stoppingToken.IsCancellationRequested)
         {
-            using IServiceScope scope = _serviceProvider.CreateScope();
+            using IServiceScope scope = serviceProvider.CreateScope();
             IMatchesRepository matchesRepository = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
             IMatchDuplicateRepository duplicateRepository = scope.ServiceProvider.GetRequiredService<IMatchDuplicateRepository>();
             var duplicateGroups = (await matchesRepository.GetDuplicateGroupsAsync()).ToList();
@@ -32,7 +30,7 @@ public class MatchDuplicateDataWorker(
 
             if (duplicateGroups.Count > 0)
             {
-                _logger.LogInformation("Identified {Count} duplicate groups", duplicateGroups.Count);
+                logger.LogInformation("Identified {Count} duplicate groups", duplicateGroups.Count);
 
                 foreach (IList<Match>? duplicateGroup in duplicateGroups)
                 {
@@ -56,7 +54,7 @@ public class MatchDuplicateDataWorker(
 
             if (created > 0)
             {
-                _logger.LogInformation("Created {Count} duplicate matches (awaiting manual review)", created);
+                logger.LogInformation("Created {Count} duplicate matches (awaiting manual review)", created);
             }
 
             await Task.Delay(_interval, stoppingToken);

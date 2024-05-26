@@ -16,17 +16,15 @@ namespace API.Repositories.Implementations;
 public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRepository, ICacheHandler cacheHandler) : RepositoryBase<BaseStats>(context), IBaseStatsRepository, IUsesCache
 {
     private readonly OtrContext _context = context;
-    private readonly IPlayerRepository _playerRepository = playerRepository;
-    private readonly ICacheHandler _cacheHandler = cacheHandler;
 
     public async Task InvalidateCacheEntriesAsync()
     {
-        await _cacheHandler.OnBaseStatsUpdateAsync();
+        await cacheHandler.OnBaseStatsUpdateAsync();
     }
 
     public async Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId)
     {
-        var id = await _playerRepository.GetIdAsync(osuPlayerId);
+        var id = await playerRepository.GetIdAsync(osuPlayerId);
 
         if (!id.HasValue)
         {

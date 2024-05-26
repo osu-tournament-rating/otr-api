@@ -16,8 +16,6 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class LeaderboardsController(ILeaderboardService leaderboardService) : Controller
 {
-    private readonly ILeaderboardService _leaderboardService = leaderboardService;
-
     [HttpGet]
     // [AllowAnonymous] // TODO: Frontend needs to have a dedicated client for these requests.
     public async Task<ActionResult<LeaderboardDTO>> GetAsync(
@@ -43,7 +41,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Co
             return BadRequest("Country leaderboards are only available to logged in users");
         }
 
-        LeaderboardDTO leaderboard = await _leaderboardService.GetLeaderboardAsync(requestQuery, authorizedUserId);
+        LeaderboardDTO leaderboard = await leaderboardService.GetLeaderboardAsync(requestQuery, authorizedUserId);
         return Ok(leaderboard);
     }
 }

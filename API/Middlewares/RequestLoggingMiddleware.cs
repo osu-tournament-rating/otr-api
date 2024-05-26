@@ -5,9 +5,6 @@ namespace API.Middlewares;
 
 public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggingMiddleware> logger)
 {
-    private readonly ILogger<RequestLoggingMiddleware> _logger = logger;
-    private readonly RequestDelegate _next = next;
-
     public async Task Invoke(HttpContext context)
     {
         await LogRequest(context.Request);
@@ -20,7 +17,7 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
             {
                 context.Response.Body = responseBody;
 
-                await _next(context);
+                await next(context);
 
                 await LogResponse(context.Response);
 
@@ -62,7 +59,7 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
                 bodyAsText = bodyAsText[..500] + "...";
             }
 
-            _logger.LogInformation(
+            logger.LogInformation(
                 "Client on scheme {Scheme} requests {Method} {Host}{Path}{QueryString} with body '{Body}'",
                 request.Scheme,
                 request.Method,
@@ -110,7 +107,7 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
 
         if (response.StatusCode >= 400)
         {
-            _logger.LogError(
+            logger.LogError(
                 "Client with identity {Identity} on scheme {Scheme} {Method} {Host}{Path}{QueryString} with body '{Body}' returned status {StatusCode}",
                 ident,
                 response.HttpContext.Request.Scheme,
@@ -126,7 +123,7 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
         }
 
         //Return the string for the response, including the status code (e.g. 200, 404, 401, etc.)
-        _logger.LogInformation(
+        logger.LogInformation(
             "Returned status {StatusCode} to client with identity {Ident} on scheme {Scheme} {Method} {Host}{Path}{QueryString} with body '{Body}'",
             response.StatusCode,
             ident,

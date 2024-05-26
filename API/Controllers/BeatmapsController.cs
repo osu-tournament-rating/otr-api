@@ -13,8 +13,6 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class BeatmapsController(IBeatmapService beatmapService) : Controller
 {
-    private readonly IBeatmapService _beatmapService = beatmapService;
-
     /// <summary>
     /// List all beatmaps
     /// </summary>
@@ -22,7 +20,7 @@ public class BeatmapsController(IBeatmapService beatmapService) : Controller
     [HttpGet]
     [ProducesResponseType<IEnumerable<BeatmapDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAsync() =>
-        Ok(await _beatmapService.ListAsync());
+        Ok(await beatmapService.ListAsync());
 
     /// <summary>
     /// Get a beatmap by versatile search
@@ -36,7 +34,7 @@ public class BeatmapsController(IBeatmapService beatmapService) : Controller
     [ProducesResponseType<BeatmapDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(long key)
     {
-        BeatmapDTO? beatmap = await _beatmapService.GetVersatileAsync(key);
+        BeatmapDTO? beatmap = await beatmapService.GetVersatileAsync(key);
         if (beatmap == null)
         {
             return NotFound();

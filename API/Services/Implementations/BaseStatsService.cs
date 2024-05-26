@@ -16,22 +16,16 @@ public class BaseStatsService(
     ITournamentsService tournamentsService
     ) : IBaseStatsService
 {
-    private readonly IBaseStatsRepository _baseStatsRepository = baseStatsRepository;
-    private readonly IPlayerMatchStatsRepository _matchStatsRepository = matchStatsRepository;
-    private readonly IPlayerRepository _playerRepository = playerRepository;
-    private readonly ITournamentsService _tournamentsService = tournamentsService;
-    private readonly IMatchRatingStatsRepository _ratingStatsRepository = ratingStatsRepository;
-
     public async Task<IEnumerable<BaseStatsDTO?>> GetAsync(long osuPlayerId)
     {
-        var id = await _playerRepository.GetIdAsync(osuPlayerId);
+        var id = await playerRepository.GetIdAsync(osuPlayerId);
 
         if (!id.HasValue)
         {
             return new List<BaseStatsDTO?>();
         }
 
-        IEnumerable<BaseStats> baseStats = await _baseStatsRepository.GetForPlayerAsync(osuPlayerId);
+        IEnumerable<BaseStats> baseStats = await baseStatsRepository.GetForPlayerAsync(osuPlayerId);
         var ret = new List<BaseStatsDTO?>();
 
         foreach (BaseStats stat in baseStats)
@@ -45,17 +39,17 @@ public class BaseStatsService(
 
     public async Task<BaseStatsDTO?> GetAsync(BaseStats? currentStats, int playerId, int mode)
     {
-        currentStats ??= await _baseStatsRepository.GetForPlayerAsync(playerId, mode);
+        currentStats ??= await baseStatsRepository.GetForPlayerAsync(playerId, mode);
 
         if (currentStats == null)
         {
             return null;
         }
 
-        var matchesPlayed = await _matchStatsRepository.CountMatchesPlayedAsync(playerId, mode);
-        var winRate = await _matchStatsRepository.GlobalWinrateAsync(playerId, mode);
-        var highestGlobalRank = await _ratingStatsRepository.HighestGlobalRankAsync(playerId, mode);
-        var tournamentsPlayed = await _tournamentsService.CountPlayedAsync(playerId, mode);
+        var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, mode);
+        var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, mode);
+        var highestGlobalRank = await ratingStatsRepository.HighestGlobalRankAsync(playerId, mode);
+        var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, mode);
         var rankProgress = new RankProgressDTO
         {
             CurrentTier = RatingUtils.GetTier(currentStats.Rating),
@@ -105,7 +99,7 @@ public class BaseStatsService(
             );
         }
 
-        return await _baseStatsRepository.BatchInsertAsync(toInsert);
+        return await baseStatsRepository.BatchInsertAsync(toInsert);
     }
 
     public async Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(
@@ -117,7 +111,7 @@ public class BaseStatsService(
         int? playerId
     )
     {
-        IEnumerable<BaseStats> baseStats = await _baseStatsRepository.GetLeaderboardAsync(
+        IEnumerable<BaseStats> baseStats = await baseStatsRepository.GetLeaderboardAsync(
             page,
             pageSize,
             mode,
@@ -136,7 +130,7 @@ public class BaseStatsService(
         return leaderboard;
     }
 
-    public async Task TruncateAsync() => await _baseStatsRepository.TruncateAsync();
+    public async Task TruncateAsync() => await baseStatsRepository.TruncateAsync();
 
     public async Task<int> LeaderboardCountAsync(
         int requestQueryMode,
@@ -144,7 +138,7 @@ public class BaseStatsService(
         LeaderboardFilterDTO requestQueryFilter,
         int? playerId
     ) =>
-        await _baseStatsRepository.LeaderboardCountAsync(
+        await baseStatsRepository.LeaderboardCountAsync(
             requestQueryMode,
             requestQueryChartType,
             requestQueryFilter,
@@ -157,11 +151,11 @@ public class BaseStatsService(
     ) =>
         new()
         {
-            MaxRating = await _baseStatsRepository.HighestRatingAsync(requestQueryMode),
-            MaxMatches = await _baseStatsRepository.HighestMatchesAsync(requestQueryMode),
+            MaxRating = await baseStatsRepository.HighestRatingAsync(requestQueryMode),
+            MaxMatches = await baseStatsRepository.HighestMatchesAsync(requestQueryMode),
             MaxRank = 100_000
         };
 
     public async Task<IDictionary<int, int>> GetHistogramAsync(int mode) =>
-        await _baseStatsRepository.GetHistogramAsync(mode);
+        await baseStatsRepository.GetHistogramAsync(mode);
 }

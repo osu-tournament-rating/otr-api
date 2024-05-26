@@ -12,8 +12,6 @@ namespace API.Repositories.Implementations;
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsRepository
 {
-    private readonly OtrContext _context = context;
-
     public async Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(
         int playerId,
         int mode,
@@ -21,7 +19,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         DateTime dateMax
     )
     {
-        return await _context
+        return await context
             .PlayerMatchStats.Where(stats =>
                 stats.PlayerId == playerId
                 && stats.Match.Tournament.Mode == mode
@@ -39,7 +37,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         DateTime dateMin,
         DateTime dateMax
     ) =>
-        await _context
+        await context
             .PlayerMatchStats.Where(stats =>
                 stats.PlayerId == playerId
                 && stats.TeammateIds.Contains(teammateId)
@@ -57,7 +55,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         DateTime dateMin,
         DateTime dateMax
     ) =>
-        await _context
+        await context
             .PlayerMatchStats.Where(stats =>
                 stats.PlayerId == playerId
                 && stats.OpponentIds.Contains(opponentId)
@@ -75,7 +73,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         DateTime dateMax
     )
     {
-        var modStats = await _context.MatchScores
+        var modStats = await context.MatchScores
             .AsNoTracking()
             .Include(ms => ms.Game)
             .ThenInclude(g => g.Match)
@@ -176,12 +174,12 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
 
     public async Task InsertAsync(IEnumerable<PlayerMatchStats> items)
     {
-        await _context.PlayerMatchStats.AddRangeAsync(items);
-        await _context.SaveChangesAsync();
+        await context.PlayerMatchStats.AddRangeAsync(items);
+        await context.SaveChangesAsync();
     }
 
     public async Task TruncateAsync() =>
-        await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE player_match_stats RESTART IDENTITY;");
+        await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE player_match_stats RESTART IDENTITY;");
 
     public async Task<int> CountMatchesPlayedAsync(
         int playerId,
@@ -193,7 +191,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        return await _context
+        return await context
             .PlayerMatchStats.Where(x =>
                 x.PlayerId == playerId
                 && x.Match.Tournament.Mode == mode
@@ -213,7 +211,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        return await _context
+        return await context
             .PlayerMatchStats.Where(x =>
                 x.PlayerId == playerId
                 && x.Match.Tournament.Mode == mode
