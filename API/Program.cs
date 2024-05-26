@@ -430,7 +430,7 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 
 #region Repositories
 
-builder.Services.AddScoped<IApiMatchRepository, ApiMatchRepository>();
+builder.Services.AddScoped<IApiMatchService, ApiMatchService>();
 builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
 builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();

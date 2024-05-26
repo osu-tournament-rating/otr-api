@@ -1,9 +1,9 @@
 using API.Osu.Multiplayer;
 using Database.Entities;
 
-namespace API.Repositories.Interfaces;
+namespace API.Services.Interfaces;
 
-public interface IApiMatchRepository
+public interface IApiMatchService
 {
     /// <summary>
     /// Inserts necessary data into the database from an osu! API match result.

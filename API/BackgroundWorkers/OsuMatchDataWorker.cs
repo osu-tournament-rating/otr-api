@@ -1,6 +1,7 @@
 using API.Osu.AutomationChecks;
 using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
+using API.Services.Interfaces;
 using Database;
 using Database.Entities;
 using Database.Enums;
@@ -40,7 +41,7 @@ public class OsuMatchDataWorker(
             using IServiceScope scope = serviceProvider.CreateScope();
 
             IMatchesRepository matchesRepository = scope.ServiceProvider.GetRequiredService<IMatchesRepository>();
-            IApiMatchRepository apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchRepository>();
+            IApiMatchService apiMatchService = scope.ServiceProvider.GetRequiredService<IApiMatchService>();
             IGamesRepository gamesRepository = scope.ServiceProvider.GetRequiredService<IGamesRepository>();
             IMatchScoresRepository matchScoresRepository = scope.ServiceProvider.GetRequiredService<IMatchScoresRepository>();
             OtrContext context = scope.ServiceProvider.GetRequiredService<OtrContext>();
@@ -151,14 +152,14 @@ public class OsuMatchDataWorker(
     private async Task ProcessMatchesOsuApiAsync(
         Match match,
         IMatchesRepository matchesRepository,
-        IApiMatchRepository apiMatchRepository
+        IApiMatchService apiMatchService
     )
     {
         try
         {
             // Matches at this point should only contain data posted from the web interface.
             // We need to call the osu! API on these matches and persist them.
-            Match? updatedEntity = await ProcessMatchAsync(match.MatchId, apiMatchRepository, matchesRepository);
+            Match? updatedEntity = await ProcessMatchAsync(match.MatchId, apiMatchService, matchesRepository);
 
             if (updatedEntity == null)
             {
@@ -180,7 +181,7 @@ public class OsuMatchDataWorker(
 
     private async Task<Match?> ProcessMatchAsync(
         long osuMatchId,
-        IApiMatchRepository apiMatchRepository,
+        IApiMatchService apiMatchService,
         IMatchesRepository matchesRepository
     )
     {
@@ -190,7 +191,7 @@ public class OsuMatchDataWorker(
         );
         if (osuMatch is not null)
         {
-            return await apiMatchRepository.CreateFromApiMatchAsync(osuMatch);
+            return await apiMatchService.CreateFromApiMatchAsync(osuMatch);
         }
 
         Match? existingEntity = await matchesRepository.GetByMatchIdAsync(osuMatchId);
