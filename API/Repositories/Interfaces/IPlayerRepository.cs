@@ -87,14 +87,6 @@ public interface IPlayerRepository : IRepository<Player>
     Task<IEnumerable<Player>> GetPlayersMissingRankAsync();
 
     /// <summary>
-    /// Returns a collection of <see cref="PlayerRatingDTO"/> in order by rating descending
-    /// for the given mode.
-    /// </summary>
-    /// <param name="n">The number of items to return</param>
-    /// <param name="ruleset">The mode to get the ratings from</param>
-    Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset);
-
-    /// <summary>
     /// Fetches the username for the given osu id, if available
     /// </summary>
     /// <param name="osuId">The osu id</param>

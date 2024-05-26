@@ -135,20 +135,6 @@ public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler 
     public async Task<long> GetOsuIdAsync(int id) =>
         await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
 
-    public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset) => await (
-            from p in _context.Players
-            join r in _context.BaseStats on p.Id equals r.PlayerId
-            where r.Mode == ruleset
-            orderby r.Rating descending
-            select new PlayerRatingDTO
-            {
-                OsuId = p.OsuId,
-                Username = p.Username ?? "User" + p.Id,
-                Mu = r.Rating,
-                Sigma = r.Volatility
-            }
-        ).Take(n).ToListAsync();
-
     public async Task<string?> GetUsernameAsync(long osuId) =>
         await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
 
