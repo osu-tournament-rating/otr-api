@@ -81,9 +81,9 @@ public class Beatmap
     [JsonProperty("version")]
     public string? DiffName { get; set; }
 
-    [Column("game_mode")]
+    [Column("ruleset")]
     [JsonProperty("mode")]
-    public int GameMode { get; set; }
+    public int Ruleset { get; set; }
 
     [Column("circle_count")]
     [JsonProperty("count_normal")]

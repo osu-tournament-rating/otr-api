@@ -21,7 +21,7 @@ public class AutomationChecksTests
             Name = "Stage's Tranquility Tournament 3",
             Abbreviation = "STT3",
             TeamSize = 1,
-            Mode = 0,
+            Ruleset = 0,
             ForumUrl = "https://osu.ppy.sh/community/forums/topics/1567938?n=1",
             RankRangeLowerBound = 10000
         };
@@ -245,10 +245,10 @@ public class AutomationChecksTests
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
 
-        match.Tournament.Mode = 5;
+        match.Tournament.Ruleset = 5;
         Assert.False(MatchAutomationChecks.ValidGameMode(match));
 
-        match.Tournament.Mode = -1;
+        match.Tournament.Ruleset = -1;
         Assert.False(MatchAutomationChecks.ValidGameMode(match));
     }
 
@@ -441,7 +441,7 @@ public class AutomationChecksTests
     public void Game_FailsModeCheck_WhenInvalidMode()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Tournament.Mode = 5;
+        match.Tournament.Ruleset = 5;
 
         Assert.False(GameAutomationChecks.PassesRulesetCheck(match.Games.First()));
     }
@@ -450,7 +450,7 @@ public class AutomationChecksTests
     public void Game_FailsModeCheck_WhenDiffersFromTournamentMode()
     {
         API.Entities.Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.Tournament.Mode = 1;
+        match.Tournament.Ruleset = 1;
 
         Assert.False(GameAutomationChecks.PassesRulesetCheck(match.Games.First()));
     }

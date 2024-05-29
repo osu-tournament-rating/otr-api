@@ -75,7 +75,7 @@ public static class MatchAutomationChecks
     public static bool ValidGameMode(Match match)
     {
         // Ensures the mode for the match's tournament is valid.
-        var valid = match.Tournament.Mode is >= 0 and <= 3;
+        var valid = match.Tournament.Ruleset is >= 0 and <= 3;
 
         if (!valid)
         {

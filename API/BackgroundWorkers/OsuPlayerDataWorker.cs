@@ -60,13 +60,13 @@ public class OsuPlayerDataWorker(
                         OsuApiUser? apiResult = await apiService.GetUserAsync(
                             player.OsuId,
                             ruleset,
-                            $"Identified player that needs to have ranks updated for mode {ruleset}"
+                            $"Identified player that needs to have ranks updated for ruleset {ruleset}"
                         );
 
                         if (apiResult is null)
                         {
                             logger.LogWarning(
-                                "Failed to fetch data for player {PlayerId} in mode {GameMode}, skipping (user is likely restricted)",
+                                "Failed to fetch data for player {PlayerId} in ruleset {Ruleset}, skipping (user is likely restricted)",
                                 player.OsuId,
                                 ruleset
                             );

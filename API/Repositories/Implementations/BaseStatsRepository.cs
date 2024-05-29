@@ -36,7 +36,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
     }
 
     public async Task<BaseStats?> GetForPlayerAsync(int playerId, int mode) =>
-        await _context.BaseStats.Where(x => x.PlayerId == playerId && x.Mode == (Ruleset)mode).FirstOrDefaultAsync();
+        await _context.BaseStats.Where(x => x.PlayerId == playerId && x.Ruleset == (Ruleset)mode).FirstOrDefaultAsync();
 
     public override async Task<int> UpdateAsync(BaseStats entity)
     {
@@ -47,7 +47,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
     public async Task<int> InsertOrUpdateForPlayerAsync(int playerId, BaseStats baseStats)
     {
         BaseStats? existingRating = await _context
-            .BaseStats.Where(r => r.PlayerId == baseStats.PlayerId && r.Mode == baseStats.Mode)
+            .BaseStats.Where(r => r.PlayerId == baseStats.PlayerId && r.Ruleset == baseStats.Ruleset)
             .FirstOrDefaultAsync();
 
         if (existingRating != null)
@@ -74,7 +74,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
                 {
                     PlayerId = stat.PlayerId,
                     MatchCostAverage = stat.MatchCostAverage,
-                    Mode = stat.Mode,
+                    Ruleset = stat.Ruleset,
                     Rating = stat.Rating,
                     Volatility = stat.Volatility,
                     Percentile = stat.Percentile,
@@ -151,7 +151,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         {
             return await _context
                 .BaseStats.AsNoTracking()
-                .Where(x => x.Player.Country == country && x.Mode == (Ruleset)mode)
+                .Where(x => x.Player.Country == country && x.Ruleset == (Ruleset)mode)
                 .Select(x => x.CountryRank)
                 .DefaultIfEmpty()
                 .MaxAsync();
@@ -171,7 +171,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         {
             return await _context
                 .BaseStats.AsNoTracking()
-                .Where(x => x.Player.Country == country && x.Mode == (Ruleset)mode)
+                .Where(x => x.Player.Country == country && x.Ruleset == (Ruleset)mode)
                 .Select(x => x.Rating)
                 .DefaultIfEmpty()
                 .MaxAsync();
@@ -179,7 +179,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
 
         return await _context
             .BaseStats.AsNoTracking()
-            .Where(x => x.Mode == (Ruleset)mode)
+            .Where(x => x.Ruleset == (Ruleset)mode)
             .Select(x => x.Rating)
             .DefaultIfEmpty()
             .MaxAsync();
@@ -191,7 +191,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         {
             return await _context
                 .Players.SelectMany(p => p.MatchStats)
-                .Where(ms => ms.Match.Tournament.Mode == mode && ms.Player.Country == country)
+                .Where(ms => ms.Match.Tournament.Ruleset == mode && ms.Player.Country == country)
                 .GroupBy(ms => ms.PlayerId)
                 .OrderByDescending(g => g.Count())
                 .Select(g => g.Count())
@@ -200,7 +200,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
 
         return await _context
             .Players.SelectMany(p => p.MatchStats)
-            .Where(ms => ms.Match.Tournament.Mode == mode)
+            .Where(ms => ms.Match.Tournament.Ruleset == mode)
             .GroupBy(ms => ms.PlayerId)
             .OrderByDescending(g => g.Count())
             .Select(g => g.Count())
@@ -210,7 +210,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
     public async Task<IDictionary<int, int>> GetHistogramAsync(int mode)
     {
         // Determine the maximum rating as a double
-        var maxRating = await _context.BaseStats.Where(x => x.Mode == (Ruleset)mode).MaxAsync(x => x.Rating);
+        var maxRating = await _context.BaseStats.Where(x => x.Ruleset == (Ruleset)mode).MaxAsync(x => x.Rating);
 
         // Round up maxRating to the nearest multiple of 25
         var maxBucket = (int)(Math.Ceiling(maxRating / 25) * 25);
@@ -221,7 +221,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
         // Adjust the GroupBy to correctly bucket the rating of 100
         Dictionary<int, int> dbHistogram = await _context
             .BaseStats.AsNoTracking()
-            .Where(x => x.Mode == (Ruleset)mode && x.Rating >= 100)
+            .Where(x => x.Ruleset == (Ruleset)mode && x.Rating >= 100)
             .GroupBy(x => (int)(x.Rating / 25) * 25)
             .Select(g => new { Bucket = g.Key == 0 ? 100 : g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.Bucket, g => g.Count);
@@ -247,7 +247,7 @@ public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRep
                 .WhereNotHeadToHead()
                 .WhereTeammate(osuPlayerId)
                 .SelectMany(x => x.Player.Ratings)
-                .Where(rating => rating.Mode == (Ruleset)mode)
+                .Where(rating => rating.Ruleset == (Ruleset)mode)
                 .AverageAsync(rating => (double?)rating.Rating) ?? 0.0;
 
         return (int)averageRating;

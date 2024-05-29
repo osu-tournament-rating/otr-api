@@ -6,7 +6,7 @@ namespace API.DTOs;
 public class RatingAdjustmentDTO
 {
     public int PlayerId { get; set; }
-    public int Mode { get; set; }
+    public int Ruleset { get; set; }
     public double RatingAdjustmentAmount { get; set; }
     public double VolatilityAdjustmentAmount { get; set; }
     public double RatingBefore { get; set; }

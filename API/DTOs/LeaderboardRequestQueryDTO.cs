@@ -6,7 +6,7 @@ namespace API.DTOs;
 
 public class LeaderboardRequestQueryDTO
 {
-    public int Mode { get; set; }
+    public int Ruleset { get; set; }
     public int Page { get; set; }
     public int PageSize { get; set; } = 50;
     public LeaderboardChartType ChartType { get; set; } = LeaderboardChartType.Global;

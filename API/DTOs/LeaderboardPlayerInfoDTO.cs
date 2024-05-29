@@ -13,6 +13,6 @@ public class LeaderboardPlayerInfoDTO
     public double Rating { get; set; }
     public int MatchesPlayed { get; set; }
     public double WinRate { get; set; }
-    public int Mode { get; set; }
+    public int Ruleset { get; set; }
     public string? Country { get; set; }
 }

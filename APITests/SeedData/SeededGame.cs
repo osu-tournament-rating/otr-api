@@ -58,7 +58,7 @@ public static class SeededGame
                 Length = 160,
                 Title = "SmithyLillyBobbyJonesy",
                 DiffName = "Smithy",
-                GameMode = 0,
+                Ruleset = 0,
                 CircleCount = 50,
                 SliderCount = 5,
                 SpinnerCount = 1,

@@ -30,15 +30,15 @@ public class LeaderboardService(
 
         var leaderboard = new LeaderboardDTO
         {
-            Mode = requestQuery.Mode,
+            Ruleset = requestQuery.Ruleset,
             TotalPlayerCount = await _baseStatsService.LeaderboardCountAsync(
-                requestQuery.Mode,
+                requestQuery.Ruleset,
                 requestQuery.ChartType,
                 requestQuery.Filter,
                 authorizedPlayerId
             ),
             FilterDefaults = await _baseStatsService.LeaderboardFilterDefaultsAsync(
-                requestQuery.Mode,
+                requestQuery.Ruleset,
                 requestQuery.ChartType
             )
         };
@@ -51,14 +51,14 @@ public class LeaderboardService(
             {
                 leaderboard.PlayerChart = await GetPlayerChartAsync(
                     authorizedPlayerId.Value,
-                    requestQuery.Mode,
+                    requestQuery.Ruleset,
                     requestQuery.ChartType
                 );
             }
         }
 
         IEnumerable<BaseStatsDTO?> baseStats = await _baseStatsService.GetLeaderboardAsync(
-            requestQuery.Mode,
+            requestQuery.Ruleset,
             requestQuery.Page,
             requestQuery.PageSize,
             requestQuery.ChartType,
@@ -90,7 +90,7 @@ public class LeaderboardService(
                     Rating = baseStat.Rating,
                     Tier = baseStat.RankProgress.CurrentTier,
                     WinRate = baseStat.WinRate,
-                    Mode = baseStat.Mode,
+                    Ruleset = baseStat.Ruleset,
                     Country = country
                 }
             );

@@ -22,7 +22,7 @@ public class OsuTrackApiWorker(
     private DateTime _ratelimitReset = DateTime.UtcNow;
     private int _ratelimitTracker;
     private readonly bool _allowDataFetching = configuration.GetValue<bool>("Osu:AutoUpdateUsers");
-    private readonly Ruleset[] _modes =
+    private readonly Ruleset[] _rulesets =
     [
         Ruleset.Standard,
         Ruleset.Taiko,
@@ -71,8 +71,8 @@ public class OsuTrackApiWorker(
                     );
                     foreach (Player? player in playersToUpdate)
                     {
-                        // If the player doesn't have any history, we need to set their earliest mode rank to what we have now,
-                        // then save what we end up with after we process all the modes.
+                        // If the player doesn't have any history, we need to set their earliest ruleset rank to what we have now,
+                        // then save what we end up with after we process all the rulesets.
                         SetDefaultEarliestKnownRanks(player);
                         await UpdateEarliestKnownRanksAsync(
                             ratingStatsRepository,
@@ -111,9 +111,9 @@ public class OsuTrackApiWorker(
         CancellationToken stoppingToken
     )
     {
-        foreach (Ruleset mode in _modes)
+        foreach (Ruleset ruleset in _rulesets)
         {
-            DateTime? oldestStatDate = await ratingStatsRepository.GetOldestForPlayerAsync(player.Id, (int)mode);
+            DateTime? oldestStatDate = await ratingStatsRepository.GetOldestForPlayerAsync(player.Id, (int)ruleset);
 
             if (!oldestStatDate.HasValue)
             {
@@ -129,14 +129,14 @@ public class OsuTrackApiWorker(
             var responseText = await FetchOsuTrackRankAsync(
                 player,
                 client,
-                mode,
+                ruleset,
                 oldestStatDate.Value,
                 stoppingToken
             );
 
             if (string.IsNullOrEmpty(responseText) || responseText == "[]")
             {
-                // Nothing found for this player in this mode.
+                // Nothing found for this player in this ruleset.
                 continue;
             }
 
@@ -150,7 +150,7 @@ public class OsuTrackApiWorker(
                 }
 
                 OsuTrackHistoryStats relevant = stats[0]; // The response is ordered by date.
-                switch (mode)
+                switch (ruleset)
                 {
                     case Ruleset.Standard:
                         player.EarliestOsuGlobalRank = relevant.Rank;
@@ -171,9 +171,9 @@ public class OsuTrackApiWorker(
                 }
 
                 _logger.LogInformation(
-                    "Updated osu!track data for player {PlayerId} in mode {GameMode}, ratelimit = {Ratelimit}: {@Data}",
+                    "Updated osu!track data for player {PlayerId} in ruleset {Ruleset}, ratelimit = {Ratelimit}: {@Data}",
                     player.OsuId,
-                    mode,
+                    ruleset,
                     _ratelimitTracker,
                     relevant
                 );
@@ -182,9 +182,9 @@ public class OsuTrackApiWorker(
             {
                 _logger.LogError(
                     e,
-                    "Failed to deserialize osu!track data for player {PlayerId} in mode {GameMode}",
+                    "Failed to deserialize osu!track data for player {PlayerId} in ruleset {Ruleset}",
                     player.OsuId,
-                    mode
+                    ruleset
                 );
             }
         }
@@ -205,7 +205,7 @@ public class OsuTrackApiWorker(
         if (!response.IsSuccessStatusCode)
         {
             _logger.LogError(
-                "Failed to fetch osu!Track history for player {PlayerId} in mode {GameMode}, ratelimit = {Ratelimit}",
+                "Failed to fetch osu!Track history for player {PlayerId} in ruleset {Ruleset}, ratelimit = {Ratelimit}",
                 player.OsuId,
                 ruleset,
                 _ratelimitTracker
@@ -261,7 +261,7 @@ public class OsuTrackApiWorker(
         new StringBuilder(URL_BASE)
             .Append("/stats_history")
             .Append($"?user={osuPlayerId}")
-            .Append($"&mode={(int)ruleset}")
+            .Append($"&ruleset={(int)ruleset}")
             .Append($"&from={from:yyyy-MM-dd}")
             .Append(to != null ? $"&to={to:yyyy-MM-dd}" : "")
             .ToString();

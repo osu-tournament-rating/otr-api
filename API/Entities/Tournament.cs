@@ -25,8 +25,8 @@ public class Tournament : IEntity
     [Column("rank_range_lower_bound")]
     public int RankRangeLowerBound { get; set; }
 
-    [Column("mode")]
-    public int Mode { get; set; }
+    [Column("ruleset")]
+    public int Ruleset { get; set; }
 
     [Column("team_size")]
     public int TeamSize { get; set; }

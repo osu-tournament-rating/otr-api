@@ -37,7 +37,7 @@ public class BaseStatsService(
         foreach (BaseStats stat in baseStats)
         {
             // One per mode
-            ret.Add(await GetAsync(stat, id.Value, (int)stat.Mode));
+            ret.Add(await GetAsync(stat, id.Value, (int)stat.Ruleset));
         }
 
         return ret;
@@ -74,7 +74,7 @@ public class BaseStatsService(
             CountryRank = currentStats.CountryRank,
             GlobalRank = currentStats.GlobalRank,
             MatchesPlayed = matchesPlayed,
-            Mode = mode,
+            Ruleset = mode,
             Percentile = currentStats.Percentile,
             Rating = currentStats.Rating,
             Volatility = currentStats.Volatility,
@@ -97,7 +97,7 @@ public class BaseStatsService(
                     MatchCostAverage = item.MatchCostAverage,
                     Rating = item.Rating,
                     Volatility = item.Volatility,
-                    Mode = (Ruleset)item.Mode,
+                    Ruleset = (Ruleset)item.Ruleset,
                     Percentile = item.Percentile,
                     GlobalRank = item.GlobalRank,
                     CountryRank = item.CountryRank

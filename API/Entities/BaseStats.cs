@@ -30,8 +30,8 @@ public class BaseStats
     /// <summary>
     /// The ruleset the base stat was generated for
     /// </summary>
-    [Column("mode")]
-    public Ruleset Mode { get; set; }
+    [Column("ruleset")]
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// The rating of the player for the given ruleset

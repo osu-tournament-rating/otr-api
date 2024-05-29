@@ -47,7 +47,7 @@ public static class QueryExtensions
         query.AsQueryable().Where(x => x.StartTime < before);
 
     public static IQueryable<Match> WhereMode(this IQueryable<Match> query, int mode) =>
-        query.AsQueryable().Where(x => x.Tournament.Mode == mode);
+        query.AsQueryable().Where(x => x.Tournament.Ruleset == mode);
 
     public static IQueryable<Match> IncludeAllChildren(this IQueryable<Match> query) =>
         query
@@ -194,7 +194,7 @@ public static class QueryExtensions
 
     // Rating
     public static IQueryable<BaseStats> WhereRuleset(this IQueryable<BaseStats> query, Ruleset ruleset) =>
-        query.AsQueryable().Where(x => x.Mode == ruleset);
+        query.AsQueryable().Where(x => x.Ruleset == ruleset);
 
     public static IQueryable<BaseStats> WhereOsuPlayerId(
         this IQueryable<BaseStats> query,

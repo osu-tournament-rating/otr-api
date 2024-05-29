@@ -122,7 +122,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler 
             )
             .ThenInclude(x => x.Game)
             .ThenInclude(x => x.Match)
-            .Include(x => x.Ratings.Where(y => y.Mode == (Ruleset)mode))
+            .Include(x => x.Ratings.Where(y => y.Ruleset == (Ruleset)mode))
             .Include(x => x.User)
             .WhereOsuId(osuId)
             .FirstOrDefaultAsync();
@@ -139,7 +139,7 @@ public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler 
     public async Task<IEnumerable<PlayerRatingDTO>> GetTopRatingsAsync(int n, Ruleset ruleset) => await (
             from p in _context.Players
             join r in _context.BaseStats on p.Id equals r.PlayerId
-            where r.Mode == ruleset
+            where r.Ruleset == ruleset
             orderby r.Rating descending
             select new PlayerRatingDTO
             {

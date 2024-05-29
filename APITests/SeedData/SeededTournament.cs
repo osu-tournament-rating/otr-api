@@ -13,7 +13,7 @@ public static class SeededTournament
             Abbreviation = "OWC2021",
             ForumUrl = "https://osu.ppy.sh/wiki/en/Tournaments/OWC/2021",
             RankRangeLowerBound = 1,
-            Mode = 0,
+            Ruleset = 0,
             TeamSize = 4,
             Created = new DateTime(2023, 10, 14),
             Updated = null,

@@ -58,8 +58,8 @@ public class StatsController(
     [HttpGet("histogram")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     public async Task<ActionResult<IDictionary<int, int>>> GetRatingHistogramAsync(
-        [FromQuery] int mode = 0
-    ) => Ok(await baseStatsService.GetHistogramAsync(mode));
+        [FromQuery] int ruleset = 0
+    ) => Ok(await baseStatsService.GetHistogramAsync(ruleset));
 
     [HttpPost("ratingadjustments")]
     [Authorize(Roles = OtrClaims.System)]

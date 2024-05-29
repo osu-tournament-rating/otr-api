@@ -43,5 +43,5 @@ public class TournamentWebSubmissionDTO : MatchesWebSubmissionDTO
     /// osu! ruleset
     /// </summary>
     [Range(0, 3)]
-    public int Mode { get; set; }
+    public int Ruleset { get; set; }
 }

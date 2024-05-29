@@ -52,10 +52,10 @@ public partial class OtrContext(
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("BaseStats___fkplayerid");
 
-            entity.HasIndex(x => new { x.PlayerId, x.Mode }).IsUnique();
+            entity.HasIndex(x => new { x.PlayerId, x.Ruleset }).IsUnique();
             entity.HasIndex(x => x.PlayerId);
             entity.HasIndex(x => x.Rating).IsDescending();
-            entity.HasIndex(x => x.Mode);
+            entity.HasIndex(x => x.Ruleset);
         });
 
         modelBuilder.Entity<Beatmap>(entity =>
@@ -305,7 +305,7 @@ public partial class OtrContext(
 
             entity.HasOne(e => e.Player).WithMany(e => e.RatingAdjustments).HasForeignKey(e => e.PlayerId);
 
-            entity.HasIndex(e => new { e.PlayerId, e.Mode });
+            entity.HasIndex(e => new { e.PlayerId, e.Ruleset });
         });
 
         modelBuilder.Entity<Tournament>(entity =>

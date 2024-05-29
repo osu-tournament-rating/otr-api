@@ -25,7 +25,7 @@ public class BaseStatsDTO
     /// <summary>
     /// osu! ruleset the statistics are derived from
     /// </summary>
-    public int Mode { get; set; }
+    public int Ruleset { get; set; }
 
     /// <summary>
     /// Current rating percentile

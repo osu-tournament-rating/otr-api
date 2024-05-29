@@ -80,10 +80,10 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
             return Forbid();
         }
 
-        if (await tournamentsService.ExistsAsync(tournamentSubmission.TournamentName, tournamentSubmission.Mode))
+        if (await tournamentsService.ExistsAsync(tournamentSubmission.TournamentName, tournamentSubmission.Ruleset))
         {
             return BadRequest(
-                $"A tournament with name {tournamentSubmission.TournamentName} for mode {tournamentSubmission.Mode} already exists");
+                $"A tournament with name {tournamentSubmission.TournamentName} for ruleset {tournamentSubmission.Ruleset} already exists");
         }
 
         // Create tournament

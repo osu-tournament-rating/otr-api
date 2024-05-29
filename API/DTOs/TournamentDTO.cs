@@ -35,7 +35,7 @@ public class TournamentDTO
     /// <summary>
     /// osu! ruleset
     /// </summary>
-    public int Mode { get; set; }
+    public int Ruleset { get; set; }
 
     /// <summary>
     /// Expected in-match team size

@@ -11,7 +11,7 @@ public static class SeededBaseStats
         {
             Id = 1,
             PlayerId = 1,
-            Mode = 0,
+            Ruleset = 0,
             Rating = 1245.324,
             Volatility = 100.5231,
             Percentile = 0.3431,

@@ -12,10 +12,10 @@ public class RatingAdjustment
     public int PlayerId { get; set; }
 
     /// <summary>
-    /// The mode of the rating / volatility we are modifying
+    /// The ruleset of the rating / volatility we are modifying
     /// </summary>
-    [Column("mode")]
-    public int Mode { get; set; }
+    [Column("ruleset")]
+    public int Ruleset { get; set; }
 
     [Column("rating_adjustment_amount")]
     public double RatingAdjustmentAmount { get; set; }

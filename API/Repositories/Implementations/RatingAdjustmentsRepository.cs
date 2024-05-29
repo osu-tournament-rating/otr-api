@@ -19,7 +19,7 @@ public class RatingAdjustmentsRepository(OtrContext context) : RepositoryBase<Ra
             var adjustment = new RatingAdjustment
             {
                 PlayerId = item.PlayerId,
-                Mode = item.Mode,
+                Ruleset = item.Ruleset,
                 RatingAdjustmentAmount = item.RatingAdjustmentAmount,
                 VolatilityAdjustmentAmount = item.VolatilityAdjustmentAmount,
                 RatingBefore = item.RatingBefore,

@@ -48,7 +48,7 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
     {
         List<MatchWinRecord> redTeams = await _context
             .MatchWinRecords.Where(x =>
-                x.Match.Tournament.Mode == mode
+                x.Match.Tournament.Ruleset == mode
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
                 && x.WinnerRoster.Contains(playerId)
@@ -57,7 +57,7 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
 
         List<MatchWinRecord> blueTeams = await _context
             .MatchWinRecords.Where(x =>
-                x.Match.Tournament.Mode == mode
+                x.Match.Tournament.Ruleset == mode
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
                 && x.LoserRoster.Contains(playerId)
@@ -95,7 +95,7 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
                 || (!x.LoserRoster.Contains(playerId) && x.WinnerRoster.Contains(playerId))
             )
             .Where(x =>
-                x.Match.Tournament.Mode == mode
+                x.Match.Tournament.Ruleset == mode
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
             )

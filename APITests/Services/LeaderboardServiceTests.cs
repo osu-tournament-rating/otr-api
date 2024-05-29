@@ -81,13 +81,13 @@ public class LeaderboardServiceTests
     {
         // Arrange
         LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(
-            new LeaderboardRequestQueryDTO { Mode = mode }
+            new LeaderboardRequestQueryDTO { Ruleset = mode }
         );
         // Act
 
         // Assert
 
-        Assert.Equal(mode, lb.Mode);
+        Assert.Equal(mode, lb.Ruleset);
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -120,7 +120,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -144,7 +144,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -168,7 +168,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -192,7 +192,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -216,7 +216,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -240,7 +240,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -264,7 +264,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -288,7 +288,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -312,7 +312,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             Filter = new LeaderboardFilterDTO
             {
                 TierFilters = new LeaderboardTierFilterDTO
@@ -352,7 +352,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             Filter = new LeaderboardFilterDTO
             {
                 TierFilters = new LeaderboardTierFilterDTO
@@ -384,7 +384,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             Filter = new LeaderboardFilterDTO
             {
                 TierFilters = new LeaderboardTierFilterDTO

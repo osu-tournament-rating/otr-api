@@ -28,7 +28,7 @@ public class PlayerTournamentMatchCostDTO
     /// <summary>
     /// osu! ruleset of the tournament
     /// </summary>
-    public int Mode { get; set; }
+    public int Ruleset { get; set; }
 
     /// <summary>
     /// Average match cost across the tournament for the player

@@ -24,7 +24,7 @@ public class TournamentsRepository(OtrContext context, ICacheHandler cacheHandle
         eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
-        await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
+        await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Ruleset == mode);
 
     public async Task<IEnumerable<TournamentSearchResultDTO>> SearchAsync(string name)
     {
@@ -39,7 +39,7 @@ public class TournamentsRepository(OtrContext context, ICacheHandler cacheHandle
             .Select(t => new TournamentSearchResultDTO()
             {
                 Id = t.Id,
-                Ruleset = (Ruleset)t.Mode,
+                Ruleset = (Ruleset)t.Ruleset,
                 TeamSize = t.TeamSize,
                 Name = t.Name
             })
@@ -82,7 +82,7 @@ public class TournamentsRepository(OtrContext context, ICacheHandler cacheHandle
             .Select(t => new PlayerTournamentMatchCostDTO()
             {
                 PlayerId = playerId,
-                Mode = mode,
+                Ruleset = mode,
                 TournamentId = t.Id,
                 TournamentName = t.Name,
                 TournamentAcronym = t.Abbreviation,
@@ -138,7 +138,7 @@ public class TournamentsRepository(OtrContext context, ICacheHandler cacheHandle
             .Include(t => t.Matches)
             .ThenInclude(m => m.RatingStats)
             .Where(t =>
-                t.Mode == mode
+                t.Ruleset == mode
                 // Contains *any* match that is:
                 && t.Matches.Any(m =>
                     // Within time range

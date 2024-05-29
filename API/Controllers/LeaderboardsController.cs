@@ -31,7 +31,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Co
          *
          * ?bronze=true
          * ?grandmaster=false&bronze=true
-         * ?mode=0&pagesize=25&minrating=500
+         * ?ruleset=0&pagesize=25&minrating=500
          *
          * This avoids annoying calls to ".Filter" in the query string (and .Filter.TierFilters for the tier filters)
          */
