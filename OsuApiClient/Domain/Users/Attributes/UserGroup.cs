@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Database.Enums;
 using OsuApiClient.Domain.Site;
 
 namespace OsuApiClient.Domain.Users.Attributes;
@@ -13,6 +14,7 @@ public class UserGroup : Group
     /// <summary>
     /// Ruleset(s) associated with this membership
     /// </summary>
-    /// <remarks>Null if <see cref="Group.HasPlayModes"/> is set to false</remarks>
-    public string[]? PlayModes { get; init; }
+    /// <remarks>Null if <see cref="Group.HasRulesets"/> is set to false</remarks>
+    [SuppressMessage("ReSharper", "IdentifierTypo")]
+    public Ruleset[]? Rulesets { get; init; }
 }

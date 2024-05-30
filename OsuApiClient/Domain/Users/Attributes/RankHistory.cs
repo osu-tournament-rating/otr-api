@@ -1,5 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
+using AutoMapper.Configuration.Annotations;
+using Database.Enums;
+using OsuApiClient.Net.Deserialization.ValueConverters;
 using OsuApiClient.Net.JsonModels.Users.Attributes;
 
 namespace OsuApiClient.Domain.Users.Attributes;
@@ -14,7 +17,9 @@ public class RankHistory : IModel
     /// <summary>
     /// The mode the history data is for
     /// </summary>
-    public string Mode { get; init; } = null!;
+    [ValueConverter(typeof(RulesetConverter))]
+    [SourceMember(nameof(RankHistoryJsonModel.Mode))]
+    public Ruleset Ruleset { get; init; }
 
     /// <summary>
     /// A collection of numbers representing the user's rank ordered by day

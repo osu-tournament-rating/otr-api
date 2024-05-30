@@ -22,7 +22,8 @@ public class Group : IModel
     /// <summary>
     /// Denotes whether this group associates any ruleset(s) with users' memberships
     /// </summary>
-    public bool HasPlayModes { get; init; }
+    [SuppressMessage("ReSharper", "IdentifierTypo")]
+    public bool HasRulesets { get; init; }
 
     /// <summary>
     /// Id of the group

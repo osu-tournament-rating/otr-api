@@ -4,14 +4,27 @@ using OsuApiClient.Net.JsonModels.Users.Attributes;
 
 namespace OsuApiClient.Net.JsonModels.Users;
 
+/*
+ * The definition for UserExtended is a bit hard to understand but at least behaves in a consistent manor.
+ * Any endpoints returning a UserExtended object will *always* return all fields defined in User, as well as
+ * all fields defined here outside of the "Optional Attributes" region.
+ *
+ * Any fields defined in the "Optional Attributes" region are not guaranteed to be populated. In most cases,
+ * the endpoint's documentation will detail any additional attributes.
+ *
+ * As defined in the osu! web documentation, the optional attributes here technically belong to User,
+ * but for the purposes of this wrapper it is easier to have them defined in UserExtended instead.
+ */
+
 /// <summary>
 /// Represents a user
 /// </summary>
 /// <remarks>Extends <see cref="UserJsonModel"/> with additional attributes</remarks>
 /// <copyright>
-/// ppy 2024 https://osu.ppy.sh/docs/index.html#user
+/// ppy 2024 https://osu.ppy.sh/docs/index.html#userextended
 /// Last accessed May 2024
 /// </copyright>
+[SuppressMessage("ReSharper", "CommentTypo")]
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
 public class UserExtendedJsonModel : UserJsonModel
 {
@@ -43,7 +56,7 @@ public class UserExtendedJsonModel : UserJsonModel
     public string? Occupation { get; set; }
 
     [JsonProperty("playmode")]
-    public string? PlayMode { get; set; }
+    public string PlayMode { get; set; } = null!;
 
     [JsonProperty("playstyle")]
     public string[] PlayStyle { get; set; } = [];
@@ -67,17 +80,25 @@ public class UserExtendedJsonModel : UserJsonModel
     public string? Website { get; set; }
 
     [JsonProperty("country")]
-    public CountryJsonModel? Country { get; set; }
+    public CountryJsonModel Country { get; set; } = null!;
 
     [JsonProperty("cover")]
-    public CoverJsonModel? Cover { get; set; }
+    public CoverJsonModel Cover { get; set; } = null!;
+
+    [JsonProperty("is_restricted")]
+    public bool? IsRestricted { get; set; }
 
     [JsonProperty("kudosu")]
     [SuppressMessage("ReSharper", "IdentifierTypo")]
-    public KudosuJsonModel? Kudosu { get; set; }
+    public KudosuJsonModel Kudosu { get; set; } = null!;
+
+    # region Optional Attributes
 
     [JsonProperty("account_history")]
     public UserAccountHistoryJsonModel[] AccountHistory { get; set; } = [];
+
+    [JsonProperty("user_achievements")]
+    public UserAchievementJsonModel[] Achievements { get; set; } = [];
 
     [JsonProperty("active_tournament_banner")]
     public ProfileBannerJsonModel? ActiveTournamentBanner { get; set; }
@@ -91,14 +112,20 @@ public class UserExtendedJsonModel : UserJsonModel
     [JsonProperty("beatmaps_playcounts_counts")]
     public long BeatmapPlayCount { get; set; }
 
+    // blocks
+
     [JsonProperty("comments_count")]
     public int CommentsCount { get; set; }
 
     [JsonProperty("favourite_beatmapset_count")]
     public int FavouriteBeatmapsCount { get; set; }
 
+    // follow_user_mapping
+
     [JsonProperty("follower_count")]
     public int FollowerCount { get; set; }
+
+    // friends
 
     [JsonProperty("graveyard_beatmapset_count")]
     public int GraveyardBeatmapsCount { get; set; }
@@ -131,6 +158,12 @@ public class UserExtendedJsonModel : UserJsonModel
     [JsonProperty("rank_highest")]
     public HighestRankJsonModel? HighestRank { get; set; }
 
+    [JsonProperty("ranked_and_approved_beatmapset_count")]
+    public int RankedAndApprovedBeatmapsCount { get; set; }
+
+    [JsonProperty("rank_history")]
+    public RankHistoryJsonModel? RankHistory { get; set; }
+
     [JsonProperty("ranked_beatmapset_count")]
     public int RankedBeatmapsCount { get; set; }
 
@@ -143,21 +176,24 @@ public class UserExtendedJsonModel : UserJsonModel
     [JsonProperty("scores_first_count")]
     public int FirstScoresCount { get; set; }
 
-    [JsonProperty("scores_pinned_count")]
-    public int PinnedScoresCount { get; set; }
-
     [JsonProperty("scores_recent_count")]
     public int RecentScoresCount { get; set; }
 
-    [JsonProperty("user_achievements")]
-    public UserAchievementJsonModel[] Achievements { get; set; } = [];
+    [JsonProperty("scores_pinned_count")]
+    public int PinnedScoresCount { get; set; }
 
-    [JsonProperty("rank_history")]
-    public RankHistoryJsonModel? RankHistory { get; set; }
+    // session_verified
 
-    [JsonProperty("ranked_and_approved_beatmapset_count")]
-    public int RankedAndApprovedBeatmapsCount { get; set; }
+    // statistics
+
+    // statistics_ruleset
+
+    // support_level
 
     [JsonProperty("unranked_beatmapset_count")]
     public int UnrankedBeatmapsCount { get; set; }
+
+    // unread_pm_count
+
+    # endregion
 }

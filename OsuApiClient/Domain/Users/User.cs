@@ -8,12 +8,12 @@ namespace OsuApiClient.Domain.Users;
 public class User : IModel
 {
     /// <summary>
-    /// Url of user's avatar
+    /// Url of the user's avatar
     /// </summary>
     public string AvatarUrl { get; init; } = null!;
 
     /// <summary>
-    /// Two-letter code representing user's country
+    /// Two-letter code representing the user's country
     /// </summary>
     public string CountryCode { get; init; } = null!;
 
@@ -23,23 +23,23 @@ public class User : IModel
     public string? DefaultGroup { get; init; }
 
     /// <summary>
-    /// Unique identifier for user
+    /// Unique identifier for the user
     /// </summary>
     public long Id { get; init; }
 
     /// <summary>
-    /// Has this account been active in the last x months?
+    /// Denotes if the user has been active in the last x months
     /// </summary>
-    /// <remarks>What defines "last x months" is not officially stated</remarks>
+    /// <remarks>What defines "last x months" is not documented</remarks>
     public bool IsActive { get; init; }
 
     /// <summary>
-    /// Is this a bot account?
+    /// Denotes if the user's account is a bot account
     /// </summary>
     public bool IsBot { get; init; }
 
     /// <summary>
-    /// Is the user's account deleted?
+    /// Denotes if the user's account is deleted
     /// </summary>
     /// <remarks>
     /// Undocumented, but in theory this is never true since fetching a deleted user would return a null response
@@ -47,29 +47,29 @@ public class User : IModel
     public bool IsDeleted { get; init; }
 
     /// <summary>
-    /// Is the user currently online? (either on Lazer or the website)
+    /// Denotes if the user is currently online (either on Lazer or the website)
     /// </summary>
     [SuppressMessage("ReSharper", "CommentTypo")]
     public bool IsOnline { get; init; }
 
     /// <summary>
-    ///	Does the user have an active supporter tag?
+    ///	Denotes if the user has an active supporter tag
     /// </summary>
     public bool IsSupporter { get; init; }
 
     /// <summary>
-    /// Last access time
+    /// Timestamp of last access to any osu! services
     /// </summary>
     /// <remarks>Null if the user hides online presence</remarks>
     public DateTimeOffset? LastVisit { get; init; }
 
     /// <summary>
-    /// Whether or not the user allows PM from other than friends
+    /// Denotes if the user allows PMs from users other than friends
     /// </summary>
     public bool PmFriendsOnly { get; init; }
 
     /// <summary>
-    /// Colour of username/profile highlight, hex code
+    /// Color of the user's username/profile highlight as a hex code
     /// </summary>
     public string? ProfileColor { get; init; }
 
