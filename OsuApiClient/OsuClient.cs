@@ -1,10 +1,12 @@
-using System.Web;
+using Database.Enums;
 using Microsoft.Extensions.Logging;
 using OsuApiClient.Configurations.Interfaces;
-using OsuApiClient.Models;
+using OsuApiClient.Domain;
+using OsuApiClient.Domain.Users;
 using OsuApiClient.Net.Authorization;
 using OsuApiClient.Net.Constants;
 using OsuApiClient.Net.JsonModels;
+using OsuApiClient.Net.JsonModels.Users;
 using OsuApiClient.Net.Requests;
 using OsuApiClient.Net.Requests.RequestHandler;
 
@@ -92,6 +94,102 @@ public sealed class OsuClient(IOsuClientConfiguration configuration, ILogger<Osu
 
         logger.LogWarning("Failed to fetch access credentials");
         return null;
+    }
+
+    public async Task<OsuCredentials?> AuthorizeUserWithCodeAsync(
+        string authorizationCode,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CheckDisposed();
+
+        var body = new Dictionary<string, string>
+        {
+            ["client_id"] = Configuration.ClientId.ToString(),
+            ["client_secret"] = Configuration.ClientSecret,
+            ["grant_type"] = "authorization_code",
+            ["code"] = authorizationCode,
+            ["redirect_url"] = Configuration.RedirectUrl
+        };
+
+        Uri.TryCreate(Endpoints.Credentials, UriKind.Relative, out Uri? uri);
+        AccessCredentialsModel? response = await _handler
+            .FetchAsync<AccessCredentialsModel, AccessCredentialsJsonModel>(new OsuApiRequest
+            {
+                Credentials = _credentials,
+                Method = HttpMethod.Post,
+                Route = uri!,
+                RequestBody = body
+            }, cancellationToken);
+
+        if (response is not null)
+        {
+            OsuCredentials newCredentials = _credentials = new OsuCredentials
+            {
+                AccessToken = response.AccessToken,
+                RefreshToken = response.RefreshToken,
+                ExpiresInSeconds = response.ExpiresIn
+            };
+
+            logger.LogDebug(
+                "Obtained new access credentials [Access Expires In: {Expiry}]",
+                newCredentials.ExpiresIn.ToString("g")
+            );
+
+            return newCredentials;
+        }
+
+        logger.LogWarning("Failed to fetch access credentials");
+        return null;
+    }
+
+    public async Task<OsuCredentials?> AuthorizeUserWithTokenAsync(
+        string refreshToken,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CheckDisposed();
+
+        _credentials = new OsuCredentials { AccessToken = "", RefreshToken = refreshToken, ExpiresInSeconds = 0 };
+
+        return await UpdateCredentialsAsync(cancellationToken);
+    }
+
+    public async Task<UserExtended?> GetCurrentUserAsync(
+        Ruleset? ruleset = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CheckDisposed();
+        await UpdateCredentialsAsync(cancellationToken);
+
+        if (_credentials is { RefreshToken: null })
+        {
+            return null;
+        }
+
+        var endpoint = Endpoints.Me;
+        if (ruleset.HasValue)
+        {
+            endpoint += $"/{ruleset}";
+        }
+
+        Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);
+        return await _handler
+            .FetchAsync<UserExtended, UserExtendedJsonModel>(new OsuApiRequest
+            {
+                Credentials = _credentials,
+                Method = HttpMethod.Get,
+                Route = uri!
+            }, cancellationToken);
+    }
+
+    public void ClearCredentials()
+    {
+        CheckDisposed();
+
+        _credentials = null;
+        logger.LogDebug("Cleared current credentials");
     }
 
     private void CheckDisposed()

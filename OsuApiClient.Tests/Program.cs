@@ -1,18 +1,19 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OsuApiClient;
 using OsuApiClient.Configurations.Implementations;
 using OsuApiClient.Extensions;
 using OsuApiClient.Tests;
+using OsuApiClient.Tests.Tests;
 using Serilog;
 
 IHostBuilder builder = Host.CreateDefaultBuilder(args);
 
-builder.ConfigureAppConfiguration(configurationBuilder => configurationBuilder.AddJsonFile("appsettings.json"));
-
 builder.UseSerilog((_, configuration) =>
 {
+    Console.OutputEncoding = Encoding.UTF8;
     configuration
         .MinimumLevel.Debug()
         .Enrich.FromLogContext()
@@ -21,6 +22,7 @@ builder.UseSerilog((_, configuration) =>
 
 builder.ConfigureServices((ctx, services) =>
 {
+    // Configure client
     var clientConfiguration = new OsuClientConfiguration();
     ctx.Configuration.GetSection("OsuClient").Bind(clientConfiguration);
 
@@ -28,8 +30,12 @@ builder.ConfigureServices((ctx, services) =>
     {
         Configuration = clientConfiguration,
         UseScopedServices = true
-    }
-    );
+    });
+
+    // Tests
+    services.AddSingleton<IOsuClientTest, ClientAuthorizationTest>();
+    services.AddSingleton<IOsuClientTest, RefreshTokenAuthorizationTest>();
+    services.AddSingleton<IOsuClientTest, CodeAuthorizationTest>();
 
     services.AddHostedService<ClientTestService>();
 });

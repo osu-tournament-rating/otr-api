@@ -1,4 +1,4 @@
-using OsuApiClient.Models;
+using OsuApiClient.Domain;
 using OsuApiClient.Net.JsonModels;
 
 namespace OsuApiClient.Net.Requests.RequestHandler;
