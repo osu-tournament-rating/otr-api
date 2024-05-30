@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
-using Newtonsoft.Json;
 using OsuApiClient.Net.JsonModels.Users.Attributes;
 
 namespace OsuApiClient.Domain.Users.Attributes;
@@ -10,11 +9,16 @@ namespace OsuApiClient.Domain.Users.Attributes;
 /// </summary>
 [AutoMap(typeof(HighestRankJsonModel))]
 [SuppressMessage("ReSharper", "CommentTypo")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class HighestRank : IModel
 {
-    [JsonProperty("rank")]
-    public int Rank { get; set; }
+    /// <summary>
+    /// Highest recorded global rank
+    /// </summary>
+    public int Rank { get; init; }
 
-    [JsonProperty("updated_at")]
-    public DateTimeOffset UpdatedAt { get; set; }
+    /// <summary>
+    /// Timestamp for when the <see cref="Rank"/> was recorded
+    /// </summary>
+    public DateTimeOffset UpdatedAt { get; init; }
 }

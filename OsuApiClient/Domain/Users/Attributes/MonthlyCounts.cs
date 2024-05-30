@@ -9,15 +9,16 @@ namespace OsuApiClient.Domain.Users.Attributes;
 /// </summary>
 [AutoMap(typeof(MonthlyCountsJsonModel))]
 [SuppressMessage("ReSharper", "CommentTypo")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class MonthlyCounts : IModel
 {
     /// <summary>
     /// Start date of the time range
     /// </summary>
-    public DateTime StartDate { get; set; }
+    public DateTime StartDate { get; init; }
 
     /// <summary>
     /// Target statistic as an numeric count
     /// </summary>
-    public int Count { get; set; }
+    public int Count { get; init; }
 }

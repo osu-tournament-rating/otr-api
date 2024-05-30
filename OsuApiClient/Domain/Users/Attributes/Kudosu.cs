@@ -10,15 +10,16 @@ namespace OsuApiClient.Domain.Users.Attributes;
 [AutoMap(typeof(KudosuJsonModel))]
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "CommentTypo")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class Kudosu : IModel
 {
     /// <summary>
     /// Number of available kudosu
     /// </summary>
-    public int Available { get; set; }
+    public int Available { get; init; }
 
     /// <summary>
     /// Total number of kudosu
     /// </summary>
-    public int Total { get; set; }
+    public int Total { get; init; }
 }

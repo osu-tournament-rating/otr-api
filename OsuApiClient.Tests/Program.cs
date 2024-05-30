@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,6 +9,10 @@ using OsuApiClient.Extensions;
 using OsuApiClient.Tests;
 using OsuApiClient.Tests.Tests;
 using Serilog;
+
+// Validate mappings
+var mapperConfiguration = new MapperConfiguration(cfg => cfg.AddMaps(typeof(OsuClient).Assembly));
+mapperConfiguration.AssertConfigurationIsValid();
 
 IHostBuilder builder = Host.CreateDefaultBuilder(args);
 

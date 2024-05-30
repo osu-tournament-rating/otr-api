@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using OsuApiClient.Net.JsonModels.Users.Attributes;
 
@@ -7,15 +8,16 @@ namespace OsuApiClient.Domain.Users.Attributes;
 /// Represents a user's country
 /// </summary>
 [AutoMap(typeof(CountryJsonModel))]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class Country : IModel
 {
     /// <summary>
     /// Two-letter ISO country code
     /// </summary>
-    public string? Code { get; set; }
+    public string? Code { get; init; }
 
     /// <summary>
     /// Country name
     /// </summary>
-    public string? Name { get; set; }
+    public string? Name { get; init; }
 }
