@@ -15,7 +15,11 @@ namespace OsuApiClient;
 /// <summary>
 /// The default implementation of a client that communicates with the osu! API
 /// </summary>
-public sealed class OsuClient(IOsuClientConfiguration configuration, ILogger<OsuClient> logger, IRequestHandler handler) : IOsuClient
+public sealed class OsuClient(
+    IOsuClientConfiguration configuration,
+    ILogger<OsuClient> logger,
+    IRequestHandler handler
+    ) : IOsuClient
 {
     private readonly IRequestHandler _handler = handler ?? throw new ArgumentNullException(nameof(handler));
     private OsuCredentials? _credentials;
@@ -25,7 +29,8 @@ public sealed class OsuClient(IOsuClientConfiguration configuration, ILogger<Osu
     /// <summary>
     /// Gets the configuration for the client
     /// </summary>
-    public IOsuClientConfiguration Configuration { get; } = configuration ?? throw new ArgumentNullException(nameof(configuration));
+    public IOsuClientConfiguration Configuration { get; } =
+        configuration ?? throw new ArgumentNullException(nameof(configuration));
 
     public void Dispose()
     {
@@ -65,13 +70,14 @@ public sealed class OsuClient(IOsuClientConfiguration configuration, ILogger<Osu
 
         Uri.TryCreate(Endpoints.Credentials, UriKind.Relative, out Uri? uri);
         AccessCredentialsModel? response = await _handler
-            .FetchAsync<AccessCredentialsModel, AccessCredentialsJsonModel>(new OsuApiRequest
-            {
-                Credentials = _credentials,
-                Method = HttpMethod.Post,
-                Route = uri!,
-                RequestBody = body
-            },
+            .FetchAsync<AccessCredentialsModel, AccessCredentialsJsonModel>(
+                new OsuApiRequest
+                {
+                    Credentials = _credentials,
+                    Method = HttpMethod.Post,
+                    Route = uri!,
+                    RequestBody = body
+                },
                 cancellationToken
             );
 
@@ -114,13 +120,14 @@ public sealed class OsuClient(IOsuClientConfiguration configuration, ILogger<Osu
 
         Uri.TryCreate(Endpoints.Credentials, UriKind.Relative, out Uri? uri);
         AccessCredentialsModel? response = await _handler
-            .FetchAsync<AccessCredentialsModel, AccessCredentialsJsonModel>(new OsuApiRequest
-            {
-                Credentials = _credentials,
-                Method = HttpMethod.Post,
-                Route = uri!,
-                RequestBody = body
-            }, cancellationToken);
+            .FetchAsync<AccessCredentialsModel, AccessCredentialsJsonModel>(
+                new OsuApiRequest
+                {
+                    Credentials = _credentials,
+                    Method = HttpMethod.Post,
+                    Route = uri!,
+                    RequestBody = body
+                }, cancellationToken);
 
         if (response is not null)
         {
@@ -175,13 +182,39 @@ public sealed class OsuClient(IOsuClientConfiguration configuration, ILogger<Osu
         }
 
         Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);
-        return await _handler
-            .FetchAsync<UserExtended, UserExtendedJsonModel>(new OsuApiRequest
+        return await _handler.FetchAsync<UserExtended, UserExtendedJsonModel>(
+            new OsuApiRequest
             {
                 Credentials = _credentials,
                 Method = HttpMethod.Get,
                 Route = uri!
-            }, cancellationToken);
+            },
+            cancellationToken
+        );
+    }
+
+    public async Task<UserExtended?> GetUserAsync(
+        long id,
+        Ruleset? ruleset = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CheckDisposed();
+        await UpdateCredentialsAsync(cancellationToken);
+
+        return await GetUserAsync(id.ToString(), "id", ruleset, cancellationToken);
+    }
+
+    public async Task<UserExtended?> GetUserAsync(
+        string username,
+        Ruleset? ruleset = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CheckDisposed();
+        await UpdateCredentialsAsync(cancellationToken);
+
+        return await GetUserAsync(username, "username", ruleset, cancellationToken);
     }
 
     public void ClearCredentials()
@@ -192,6 +225,46 @@ public sealed class OsuClient(IOsuClientConfiguration configuration, ILogger<Osu
         logger.LogDebug("Cleared current credentials");
     }
 
+    /// <summary>
+    /// Helper function for getting a user
+    /// </summary>
+    /// <param name="identifier">User id as a string or username</param>
+    /// <param name="key">"id" or "username"</param>
+    /// <param name="ruleset">Ruleset to query for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A user, or null if the request was unsuccessful</returns>
+    private async Task<UserExtended?> GetUserAsync(
+        string identifier,
+        string key,
+        Ruleset? ruleset = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var queryParams = new Dictionary<string, string> { ["key"] = key };
+
+        var endpoint = Endpoints.Users + $"/{identifier}";
+        if (ruleset.HasValue)
+        {
+            endpoint += $"/{ruleset}";
+        }
+
+        Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);
+        return await _handler.FetchAsync<UserExtended, UserExtendedJsonModel>(
+            new OsuApiRequest
+            {
+                Credentials = _credentials,
+                Method = HttpMethod.Get,
+                Route = uri!,
+                QueryParameters = queryParams
+            },
+            cancellationToken
+        );
+    }
+
+    /// <summary>
+    /// Ensures requests are not attempted if the client is disposed
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">Thrown if the client is disposed</exception>
     private void CheckDisposed()
     {
         if (_disposed)

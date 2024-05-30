@@ -36,6 +36,7 @@ builder.ConfigureServices((ctx, services) =>
     services.AddSingleton<IOsuClientTest, ClientAuthorizationTest>();
     services.AddSingleton<IOsuClientTest, RefreshTokenAuthorizationTest>();
     services.AddSingleton<IOsuClientTest, CodeAuthorizationTest>();
+    services.AddSingleton<IOsuClientTest, GetUserTest>();
 
     services.AddHostedService<ClientTestService>();
 });

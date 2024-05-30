@@ -181,7 +181,7 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
         }
 
         logger.LogDebug(
-            "Rate limit updated [Tokens: {Remaining}/{Limit} | Expires In: {Expiry}s]",
+            "Rate limit updated [Tokens: {Remaining}/{Limit} | Expires In: {Expiry}]",
             _rateLimit.RemainingTokens,
             _rateLimit.TokenLimit,
             _rateLimit.ExpiresIn.ToString("g")

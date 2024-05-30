@@ -71,6 +71,34 @@ public interface IOsuClient : IDisposable
     );
 
     /// <summary>
+    /// Gets a user
+    /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/docs/index.html#get-user">Get User</a></remarks>
+    /// <param name="id">Id of the user</param>
+    /// <param name="ruleset">Ruleset to query for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A user, or null if the request was unsuccessful</returns>
+    Task<UserExtended?> GetUserAsync(
+        long id,
+        Ruleset? ruleset = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Gets a user
+    /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/docs/index.html#get-user">Get User</a></remarks>
+    /// <param name="username">Username of the user</param>
+    /// <param name="ruleset">Ruleset to query for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A user, or null if the request was unsuccessful</returns>
+    Task<UserExtended?> GetUserAsync(
+        string username,
+        Ruleset? ruleset = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Clears the current access credentials for the client
     /// </summary>
     void ClearCredentials();
