@@ -3,7 +3,7 @@ namespace OsuApiClient.Net.Constants;
 public static class Endpoints
 {
     public const string BaseUrl = "https://osu.ppy.sh";
-    public const string Api = BaseUrl + "/api/v2";
+    public const string Api = "/api/v2";
 
     #region OAuth
 
@@ -19,5 +19,6 @@ public static class Endpoints
 
     public const string Matches = "/matches";
 
-    public const string Users = "/users";
+    public const string Users = Api + "/users";
+    public const string Me = Api + "/me";
 }

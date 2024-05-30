@@ -1,14 +1,14 @@
 using AutoMapper;
 using OsuApiClient.Net.JsonModels;
 
-namespace OsuApiClient.Models;
+namespace OsuApiClient.Domain;
 
 /// <summary>
 /// Represents a set of osu! API access credentials
 /// </summary>
 /// <remarks>See <a href="https://osu.ppy.sh/docs/index.html#client-credentials-grant">Client Credentials Grant</a></remarks>
 [AutoMap(typeof(AccessCredentialsJsonModel))]
-public class AccessCredentialsModel : ModelBase
+public class AccessCredentialsModel : IModel
 {
     /// <summary>
     /// The type of token, this should always be "Bearer"

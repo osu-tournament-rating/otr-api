@@ -5,6 +5,10 @@ namespace OsuApiClient.Net.JsonModels;
 /// <summary>
 /// JSON Model for osu! API access credentials
 /// </summary>
+/// <copyright>
+/// ppy 2024 https://osu.ppy.sh/docs/index.html#authentication
+/// Last accessed May 2024
+/// </copyright>
 public class AccessCredentialsJsonModel : JsonModelBase
 {
     [JsonProperty("token_type")]

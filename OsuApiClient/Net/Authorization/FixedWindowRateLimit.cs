@@ -3,7 +3,7 @@ namespace OsuApiClient.Net.Authorization;
 /// <summary>
 /// Represents a fixed window rate limit
 /// </summary>
-internal class FixedWindowRateLimit
+internal sealed class FixedWindowRateLimit
 {
     /// <summary>
     /// Timestamp that the window was created
