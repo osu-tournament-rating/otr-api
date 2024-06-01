@@ -244,7 +244,7 @@ public class PlayerStatsService(
             items.Add(stats);
         }
 
-        await ratingStatsRepository.InsertAsync(items);
+        await ratingStatsRepository.BulkInsertAsync(items);
     }
 
     public async Task BatchInsertAsync(IEnumerable<BaseStatsPostDTO> postBody) =>

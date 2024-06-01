@@ -1,10 +1,11 @@
 using API.DTOs;
 using API.Enums;
 using Database.Entities;
+using Database.Repositories.Interfaces;
 
 namespace API.Repositories.Interfaces;
 
-public interface IMatchRatingStatsRepository
+public interface IMatchRatingStatsRepository : IRepository<MatchRatingStats>
 {
     /// <summary>
     ///  Returns one entry per match, with each entry being all matches that occur on the same day.
@@ -33,21 +34,22 @@ public interface IMatchRatingStatsRepository
         DateTime? dateMax = null
     );
 
-    Task InsertAsync(MatchRatingStats item);
-    Task InsertAsync(IEnumerable<MatchRatingStats> items);
     Task TruncateAsync();
+
     Task<int> HighestGlobalRankAsync(
         int playerId,
         int mode,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
+
     Task<int> HighestCountryRankAsync(
         int playerId,
         int mode,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
+
     Task<DateTime?> GetOldestForPlayerAsync(int playerId, int mode);
 
     Task<IEnumerable<MatchRatingStats>> TeammateRatingStatsAsync(

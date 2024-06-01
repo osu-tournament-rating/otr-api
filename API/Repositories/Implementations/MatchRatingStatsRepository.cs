@@ -4,14 +4,17 @@ using API.Enums;
 using API.Repositories.Interfaces;
 using Database;
 using Database.Entities;
+using Database.Repositories.Implementations;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsRepository
+public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<MatchRatingStats>(context), IMatchRatingStatsRepository
 {
+    private readonly OtrContext _context = context;
+
     public async Task<IEnumerable<IEnumerable<MatchRatingStats>>> GetForPlayerAsync(
         int playerId,
         int mode,
@@ -22,7 +25,7 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        return await context
+        return await _context
             .MatchRatingStats.Where(x =>
                 x.PlayerId == playerId
                 && x.Match.Tournament.Mode == mode
@@ -47,7 +50,7 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
         dateMax ??= DateTime.MaxValue;
 
         // Fetch Match Rating Stats and group by Match.StartTime.Date
-        var matchRatingStats = await context
+        var matchRatingStats = await _context
             .MatchRatingStats.Where(mrs =>
                 mrs.PlayerId == playerId
                 && mrs.Match.Tournament.Mode == mode
@@ -74,7 +77,7 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
             .ToListAsync();
 
         // Assuming RatingAdjustments should be grouped by their own timestamp since they may not have a Match.StartTime
-        var ratingAdjustments = await context
+        var ratingAdjustments = await _context
             .RatingAdjustments.Where(ra =>
                 ra.PlayerId == playerId
                 && ra.Mode == mode
@@ -110,20 +113,8 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
         return new PlayerRatingChartDTO { ChartData = combinedDataPoints };
     }
 
-    public async Task InsertAsync(MatchRatingStats item)
-    {
-        await context.MatchRatingStats.AddAsync(item);
-        await context.SaveChangesAsync();
-    }
-
-    public async Task InsertAsync(IEnumerable<MatchRatingStats> items)
-    {
-        await context.MatchRatingStats.AddRangeAsync(items);
-        await context.SaveChangesAsync();
-    }
-
     public async Task TruncateAsync() =>
-        await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE match_rating_stats RESTART IDENTITY");
+        await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE match_rating_stats RESTART IDENTITY");
 
     public async Task<int> HighestGlobalRankAsync(
         int playerId,
@@ -135,7 +126,7 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        return await context
+        return await _context
             .MatchRatingStats.Where(x =>
                 x.PlayerId == playerId
                 && x.Match.Tournament.Mode == mode
@@ -158,7 +149,7 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        return await context
+        return await _context
             .MatchRatingStats.Where(x =>
                 x.PlayerId == playerId
                 && x.Match.Tournament.Mode == mode
@@ -172,7 +163,7 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
     }
 
     public async Task<DateTime?> GetOldestForPlayerAsync(int playerId, int mode) =>
-        await context
+        await _context
             .MatchRatingStats.Where(x =>
                 x.PlayerId == playerId && x.Match.Tournament.Mode == mode && x.Match.StartTime != null
             )
@@ -186,10 +177,10 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
         DateTime dateMin,
         DateTime dateMax
     ) =>
-        await context
+        await _context
             .MatchRatingStats.Where(mrs => mrs.PlayerId == playerId)
             .Where(mrs =>
-                context.PlayerMatchStats.Any(pms =>
+                _context.PlayerMatchStats.Any(pms =>
                     pms.PlayerId == mrs.PlayerId
                     && pms.TeammateIds.Contains(teammateId)
                     && pms.Match.Tournament.Mode == mode
@@ -207,10 +198,10 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
         DateTime dateMin,
         DateTime dateMax
     ) =>
-        await context
+        await _context
             .MatchRatingStats.Where(mrs => mrs.PlayerId == playerId)
             .Where(mrs =>
-                context.PlayerMatchStats.Any(pms =>
+                _context.PlayerMatchStats.Any(pms =>
                     pms.PlayerId == mrs.PlayerId
                     && pms.OpponentIds.Contains(opponentId)
                     && pms.Match.Tournament.Mode == mode
@@ -232,7 +223,7 @@ public class MatchRatingStatsRepository(OtrContext context) : IMatchRatingStatsR
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        List<RankChartDataPointDTO> chartData = await context
+        List<RankChartDataPointDTO> chartData = await _context
             .MatchRatingStats.Include(x => x.Match)
             .ThenInclude(x => x.Tournament)
             .Where(x =>
