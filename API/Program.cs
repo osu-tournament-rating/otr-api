@@ -131,7 +131,6 @@ builder
             .AddProcessInstrumentation()
             .AddPrometheusExporter(o => o.DisableTotalNameSuffixForCounters = true)
     );
-;
 
 #endregion
 
@@ -249,7 +248,6 @@ builder
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.OperationFilter<HttpResultsOperationFilter>();
     options.SchemaGeneratorOptions.SupportNonNullableReferenceTypes = true;
     options.SwaggerDoc(
         "v1",
