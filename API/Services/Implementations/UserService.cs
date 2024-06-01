@@ -41,7 +41,7 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
             match.VerificationSource = verificationSource;
         }
 
-        return await matchesRepository.UpdateAsync(submissions, rejecterUserId) == submissions.Count();
+        return await matchesRepository.UpdateAsync(submissions) == submissions.Count();
     }
 
     public async Task<UserDTO?> UpdateScopesAsync(int id, IEnumerable<string> scopes)

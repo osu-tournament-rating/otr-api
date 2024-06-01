@@ -4,6 +4,7 @@ using AutoMapper;
 using Database;
 using Database.Entities.Interfaces;
 using Database.Enums;
+using Database.Repositories.Implementations;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;

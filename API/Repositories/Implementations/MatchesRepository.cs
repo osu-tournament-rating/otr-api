@@ -1,9 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
-using API.DTOs;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
 using API.Utilities;
-using AutoMapper;
 using Database;
 using Database.Entities;
 using Database.Enums;
@@ -15,11 +13,10 @@ namespace API.Repositories.Implementations;
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class MatchesRepository(
     ILogger<MatchesRepository> logger,
-    IMapper mapper,
     OtrContext context,
     IMatchDuplicateRepository matchDuplicateRepository,
     ICacheHandler cacheHandler
-    ) : HistoryRepositoryBase<Match, MatchHistory>(context, mapper), IMatchesRepository, IUsesCache
+    ) : CachingRepositoryBase<Match>(context), IMatchesRepository, IUsesCache
 {
     private readonly OtrContext _context = context;
 
@@ -115,15 +112,7 @@ public class MatchesRepository(
             info
         );
 
-        // TODO: nullable "verifierId" can be passed for this without checking once #228 is merged
-        if (verifierId.HasValue)
-        {
-            await UpdateAsync(match, verifierId.Value);
-        }
-        else
-        {
-            await UpdateAsync(match);
-        }
+        await UpdateAsync(match);
 
         return match;
     }

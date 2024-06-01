@@ -1,10 +1,11 @@
 using API.DTOs;
 using Database.Entities;
 using Database.Enums;
+using Database.Repositories.Interfaces;
 
 namespace API.Repositories.Interfaces;
 
-public interface IMatchesRepository : IHistoryRepository<Match, MatchHistory>
+public interface IMatchesRepository : IRepository<Match>
 {
     Task<Match?> GetAsync(int id, bool filterInvalidMatches = true);
 

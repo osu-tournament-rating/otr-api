@@ -1,5 +1,6 @@
 ﻿using Database.Entities;
 using Database.Entities.Interfaces;
+using Database.Repositories.Interfaces;
 
 namespace API.Repositories.Interfaces;
 

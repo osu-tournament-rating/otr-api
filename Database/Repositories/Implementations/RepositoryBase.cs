@@ -1,9 +1,8 @@
-﻿using API.Repositories.Interfaces;
-using Database;
-using Database.Entities.Interfaces;
+﻿using Database.Entities.Interfaces;
+using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Repositories.Implementations;
+namespace Database.Repositories.Implementations;
 
 public class RepositoryBase<T> : IRepository<T>
     where T : class
@@ -20,7 +19,6 @@ public class RepositoryBase<T> : IRepository<T>
         T created = (await _context.Set<T>().AddAsync(entity)).Entity;
         await _context.SaveChangesAsync();
 
-        await TryInvalidateCacheAsync();
         return created;
     }
 
@@ -32,7 +30,6 @@ public class RepositoryBase<T> : IRepository<T>
         T[] created = await Task.WhenAll(entityTasks);
         await _context.SaveChangesAsync();
 
-        await TryInvalidateCacheAsync();
         return created;
     }
 
@@ -50,7 +47,6 @@ public class RepositoryBase<T> : IRepository<T>
             _context.Set<T>().Update(entity);
         }
 
-        await TryInvalidateCacheAsync();
         return await _context.SaveChangesAsync();
     }
 
@@ -69,7 +65,6 @@ public class RepositoryBase<T> : IRepository<T>
             }
         }
 
-        await TryInvalidateCacheAsync();
         return await _context.SaveChangesAsync();
     }
 
@@ -89,7 +84,6 @@ public class RepositoryBase<T> : IRepository<T>
 
         _context.Set<T>().Remove(entity);
         await _context.SaveChangesAsync();
-        await TryInvalidateCacheAsync();
         return id;
     }
 
@@ -98,20 +92,8 @@ public class RepositoryBase<T> : IRepository<T>
     public virtual async Task<int> BulkInsertAsync(IEnumerable<T> entities)
     {
         await _context.Set<T>().AddRangeAsync(entities);
-        await TryInvalidateCacheAsync();
         return await _context.SaveChangesAsync();
     }
 
     public virtual async Task<IEnumerable<T>> GetAllAsync() => await _context.Set<T>().AsNoTracking().ToListAsync();
-
-    /// <summary>
-    /// For repositories implementing <see cref="IUsesCache"/>, invalidates entries on CRUD actions
-    /// </summary>
-    private async Task TryInvalidateCacheAsync()
-    {
-        if (this is IUsesCache repository)
-        {
-            await repository.InvalidateCacheEntriesAsync();
-        }
-    }
 }

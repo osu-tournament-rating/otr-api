@@ -1,6 +1,6 @@
 ﻿using Database.Entities.Interfaces;
 
-namespace API.Repositories.Interfaces;
+namespace Database.Repositories.Interfaces;
 
 public interface IRepository<T>
     where T : class

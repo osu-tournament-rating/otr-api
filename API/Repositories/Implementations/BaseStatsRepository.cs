@@ -7,13 +7,18 @@ using API.Utilities;
 using Database;
 using Database.Entities;
 using Database.Enums;
+using Database.Repositories.Implementations;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class BaseStatsRepository(OtrContext context, IPlayerRepository playerRepository, ICacheHandler cacheHandler) : RepositoryBase<BaseStats>(context), IBaseStatsRepository, IUsesCache
+public class BaseStatsRepository(
+    OtrContext context,
+    IPlayerRepository playerRepository,
+    ICacheHandler cacheHandler
+    ) : CachingRepositoryBase<BaseStats>(context), IBaseStatsRepository, IUsesCache
 {
     private readonly OtrContext _context = context;
 
