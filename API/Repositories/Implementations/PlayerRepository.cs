@@ -3,6 +3,7 @@ using API.DTOs;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using AutoMapper;
 using Database;
 using Database.Entities;

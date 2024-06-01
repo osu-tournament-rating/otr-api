@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Handlers.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -18,6 +18,7 @@ using API.Repositories.Interfaces;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
 using Dapper;

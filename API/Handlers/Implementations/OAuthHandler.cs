@@ -6,6 +6,7 @@ using API.DTOs;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Database.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;

@@ -1,5 +1,6 @@
 using API.Authorization.Requirements;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Microsoft.AspNetCore.Authorization;
 
 namespace API.Authorization.Handlers;

@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Utilities;
+using API.Utilities.Extensions;
 
 namespace APITests.Utilities;
 

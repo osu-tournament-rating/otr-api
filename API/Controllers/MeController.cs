@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Asp.Versioning;
 using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -57,7 +58,7 @@ public class MeController(IUserService userService) : Controller
         [FromQuery] DateTime? dateMax = null
     )
     {
-        var userId = HttpContext.AuthorizedUserIdentity();
+        var userId = User.AuthorizedIdentity();
         if (!userId.HasValue)
         {
             return Unauthorized();
@@ -89,7 +90,7 @@ public class MeController(IUserService userService) : Controller
     [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
     public IActionResult UpdateRuleset([FromBody] Ruleset ruleset)
     {
-        var userId = HttpContext.AuthorizedUserIdentity();
+        var userId = User.AuthorizedIdentity();
         if (!userId.HasValue)
         {
             return Unauthorized();
@@ -109,7 +110,7 @@ public class MeController(IUserService userService) : Controller
     [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
     public IActionResult SyncRuleset()
     {
-        var userId = HttpContext.AuthorizedUserIdentity();
+        var userId = User.AuthorizedIdentity();
         if (!userId.HasValue)
         {
             return Unauthorized();

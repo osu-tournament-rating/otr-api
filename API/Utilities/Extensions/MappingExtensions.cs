@@ -1,7 +1,7 @@
 using API.DTOs.Interfaces;
 using AutoMapper;
 
-namespace API.Utilities;
+namespace API.Utilities.Extensions;
 
 public static class MappingExtensions
 {

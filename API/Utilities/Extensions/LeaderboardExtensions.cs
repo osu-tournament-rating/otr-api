@@ -1,6 +1,6 @@
 using API.DTOs;
 
-namespace API.Utilities;
+namespace API.Utilities.Extensions;
 
 public static class LeaderboardExtensions
 {

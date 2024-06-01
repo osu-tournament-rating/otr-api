@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 
-namespace API.Utilities;
+namespace API.Utilities.Extensions;
 
 public static class JsonPatchDocumentExtensions
 {

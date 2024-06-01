@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Asp.Versioning;
 using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -101,7 +102,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
         [FromQuery]
         bool confirmedDuplicate)
     {
-        var loggedInUser = HttpContext.AuthorizedUserIdentity();
+        var loggedInUser = User.AuthorizedIdentity();
         if (!loggedInUser.HasValue)
         {
             return Unauthorized("You must be logged in to perform this action.");
@@ -178,7 +179,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
             return BadRequest();
         }
 
-        var verifierId = HttpContext.AuthorizedUserIdentity();
+        var verifierId = User.AuthorizedIdentity();
         MatchDTO? updatedMatch = await matchesService.UpdateVerificationStatusAsync(
             id,
             (Old_MatchVerificationStatus)match.VerificationStatus,

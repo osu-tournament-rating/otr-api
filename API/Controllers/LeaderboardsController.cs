@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -34,7 +35,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Co
          * This avoids annoying calls to ".Filter" in the query string (and .Filter.TierFilters for the tier filters)
          */
 
-        var authorizedUserId = HttpContext.AuthorizedUserIdentity();
+        var authorizedUserId = User.AuthorizedIdentity();
 
         if (!authorizedUserId.HasValue && requestQuery.ChartType == LeaderboardChartType.Country)
         {

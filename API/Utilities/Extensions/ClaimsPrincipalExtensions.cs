@@ -2,7 +2,7 @@ using System.Security.Claims;
 using Database.Enums;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace API.Utilities;
+namespace API.Utilities.Extensions;
 
 public static class ClaimsPrincipalExtensions
 {

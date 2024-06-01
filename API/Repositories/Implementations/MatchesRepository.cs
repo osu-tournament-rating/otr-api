@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Database;
 using Database.Entities;
 using Database.Enums;

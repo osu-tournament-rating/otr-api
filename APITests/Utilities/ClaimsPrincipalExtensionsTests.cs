@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using API.Utilities;
+using API.Utilities.Extensions;
 
 namespace APITests.Utilities;
 

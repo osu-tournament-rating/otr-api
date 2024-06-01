@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
@@ -69,7 +70,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         }
 
         // Prevent users from submitting matches on another user's behalf
-        var userId = HttpContext.AuthorizedUserIdentity();
+        var userId = User.AuthorizedIdentity();
         if (userId is null || tournamentSubmission.SubmitterId != userId)
         {
             return Forbid();
