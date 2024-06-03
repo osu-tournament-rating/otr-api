@@ -3,6 +3,7 @@ using API.Osu.Multiplayer;
 using API.Repositories.Interfaces;
 using Database.Entities;
 using Database.Enums;
+using Database.Repositories.Interfaces;
 using Microsoft.Extensions.Options;
 
 namespace API.BackgroundWorkers;

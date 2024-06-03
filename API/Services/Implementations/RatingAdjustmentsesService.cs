@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Database.Entities;
+using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 

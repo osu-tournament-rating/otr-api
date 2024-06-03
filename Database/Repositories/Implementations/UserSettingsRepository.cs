@@ -1,11 +1,9 @@
-using API.Repositories.Interfaces;
-using Database;
 using Database.Entities;
 using Database.Enums;
-using Database.Repositories.Implementations;
+using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Repositories.Implementations;
+namespace Database.Repositories.Implementations;
 
 public class UserSettingsRepository(OtrContext context, IPlayerRepository playerRepository) : RepositoryBase<UserSettings>(context), IUserSettingsRepository
 {

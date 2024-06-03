@@ -24,6 +24,8 @@ using AutoMapper;
 using Dapper;
 using Database;
 using Database.Entities;
+using Database.Repositories.Implementations;
+using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

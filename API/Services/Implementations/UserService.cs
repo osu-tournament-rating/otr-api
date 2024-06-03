@@ -4,6 +4,7 @@ using API.Services.Interfaces;
 using AutoMapper;
 using Database.Entities;
 using Database.Enums;
+using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 

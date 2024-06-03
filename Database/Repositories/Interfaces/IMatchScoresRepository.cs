@@ -1,8 +1,7 @@
 using Database.Entities;
 using Database.Enums;
-using Database.Repositories.Interfaces;
 
-namespace API.Repositories.Interfaces;
+namespace Database.Repositories.Interfaces;
 
 public interface IMatchScoresRepository : IRepository<MatchScore>
 {

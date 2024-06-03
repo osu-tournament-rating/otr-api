@@ -1,6 +1,5 @@
 using Database.Entities;
-using Database.Repositories.Interfaces;
 
-namespace API.Repositories.Interfaces;
+namespace Database.Repositories.Interfaces;
 
 public interface IGamesRepository : IRepository<Game>;

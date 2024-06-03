@@ -1,11 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using API.Repositories.Interfaces;
-using Database;
 using Database.Entities;
-using Database.Repositories.Implementations;
+using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Repositories.Implementations;
+namespace Database.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
@@ -60,14 +58,12 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
         await _context.Users.Where(u => u.Id == id).Select(u => u.PlayerId).FirstOrDefaultAsync();
 
     public async Task<IEnumerable<OAuthClient>> GetClientsAsync(int id) =>
-        (await _context.Users
-            .Include(u => u.Clients)
-            .FirstOrDefaultAsync(u => u.Id == id))?.Clients ?? new List<OAuthClient>();
+        await _context.Users.Where(u => u.Id == id).Select(u => u.Clients).FirstOrDefaultAsync()
+        ?? new List<OAuthClient>();
 
     public async Task<IEnumerable<Match>> GetSubmissionsAsync(int id) =>
-        (await _context.Users
-            .Include(u => u.SubmittedMatches)
-            .FirstOrDefaultAsync(u => u.Id == id))?.SubmittedMatches ?? new List<Match>();
+        await _context.Users.Where(u => u.Id == id).Select(u => u.SubmittedMatches).FirstOrDefaultAsync()
+        ?? new List<Match>();
 
     private IQueryable<User> UserBaseQuery() =>
         _context.Users

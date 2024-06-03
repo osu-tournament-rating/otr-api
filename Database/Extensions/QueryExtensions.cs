@@ -2,7 +2,7 @@ using Database.Entities;
 using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Utilities.Extensions;
+namespace Database.Extensions;
 
 public static class QueryExtensions
 {

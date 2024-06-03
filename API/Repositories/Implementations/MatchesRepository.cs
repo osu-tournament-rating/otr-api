@@ -6,6 +6,7 @@ using API.Utilities.Extensions;
 using Database;
 using Database.Entities;
 using Database.Enums;
+using Database.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;

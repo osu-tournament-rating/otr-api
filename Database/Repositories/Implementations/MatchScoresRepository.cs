@@ -1,14 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using API.Repositories.Interfaces;
-using API.Utilities;
-using API.Utilities.Extensions;
-using Database;
 using Database.Entities;
 using Database.Enums;
-using Database.Repositories.Implementations;
+using Database.Extensions;
+using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Repositories.Implementations;
+namespace Database.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]

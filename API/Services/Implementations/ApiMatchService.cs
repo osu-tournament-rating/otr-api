@@ -4,6 +4,7 @@ using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using Database;
 using Database.Entities;
+using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.Implementations;

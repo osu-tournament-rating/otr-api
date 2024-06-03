@@ -5,6 +5,7 @@ using API.Services.Interfaces;
 using Database;
 using Database.Entities;
 using Database.Enums;
+using Database.Repositories.Interfaces;
 
 namespace API.BackgroundWorkers;
 
