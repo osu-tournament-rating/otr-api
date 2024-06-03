@@ -6,7 +6,7 @@ using Moq;
 
 namespace APITests.MockRepositories;
 
-public class MockBaseStatsRepository : Mock<IBaseStatsRepository>
+public class MockBaseStatsRepository : Mock<IApiBaseStatsRepository>
 {
     public MockBaseStatsRepository SetupLeaderboardCount()
     {

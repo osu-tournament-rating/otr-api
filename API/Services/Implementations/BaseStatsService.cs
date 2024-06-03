@@ -9,7 +9,7 @@ using Database.Enums;
 namespace API.Services.Implementations;
 
 public class BaseStatsService(
-    IBaseStatsRepository baseStatsRepository,
+    IApiBaseStatsRepository baseStatsRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
     IMatchRatingStatsRepository ratingStatsRepository,
     IApiPlayersRepository playerRepository,

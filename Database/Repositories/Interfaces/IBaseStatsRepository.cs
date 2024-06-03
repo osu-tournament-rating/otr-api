@@ -1,9 +1,6 @@
-using API.DTOs;
-using API.Enums;
 using Database.Entities;
-using Database.Repositories.Interfaces;
 
-namespace API.Repositories.Interfaces;
+namespace Database.Repositories.Interfaces;
 
 public interface IBaseStatsRepository : IRepository<BaseStats>
 {
@@ -14,33 +11,21 @@ public interface IBaseStatsRepository : IRepository<BaseStats>
     /// <returns></returns>
     Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId);
 
+
     Task<BaseStats?> GetForPlayerAsync(int playerId, int mode);
+
+
     Task<int> InsertOrUpdateForPlayerAsync(int playerId, BaseStats baseStats);
+
+
     Task<int> BatchInsertAsync(IEnumerable<BaseStats> baseStats);
+
+
     Task TruncateAsync();
+
+
     Task<int> GetGlobalRankAsync(long osuPlayerId, int mode);
 
-    /// <summary>
-    ///  Returns the creation date of the most recently created rating entry for a player
-    /// </summary>
-    /// <returns></returns>
-    Task<DateTime> GetRecentCreatedDate(long osuPlayerId);
-
-    Task<IEnumerable<BaseStats>> GetLeaderboardAsync(
-        int page,
-        int pageSize,
-        int mode,
-        LeaderboardChartType chartType,
-        LeaderboardFilterDTO? filter,
-        int? playerId
-    );
-
-    Task<int> LeaderboardCountAsync(
-        int requestQueryMode,
-        LeaderboardChartType requestQueryChartType,
-        LeaderboardFilterDTO requestQueryFilter,
-        int? playerId
-    );
 
     /// <summary>
     ///  The highest numeric (aka the worst) rank of a player in our system.
@@ -49,7 +34,10 @@ public interface IBaseStatsRepository : IRepository<BaseStats>
     /// <returns></returns>
     Task<int> HighestRankAsync(int mode, string? country = null);
 
+
     Task<double> HighestRatingAsync(int mode, string? country = null);
+
+
     Task<int> HighestMatchesAsync(int mode, string? country = null);
 
     /// <summary>

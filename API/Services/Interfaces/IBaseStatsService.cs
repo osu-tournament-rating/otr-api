@@ -39,7 +39,7 @@ public interface IBaseStatsService
     );
 
     /// <summary>
-    /// See <see cref="IBaseStatsRepository.GetHistogramAsync"/>
+    /// See <see cref="IApiBaseStatsRepository.GetHistogramAsync"/>
     /// </summary>
     /// <param name="mode"></param>
     /// <returns></returns>
