@@ -1,11 +1,8 @@
-using API.DTOs;
 using Database.Entities;
-using Database.Enums;
-using Database.Repositories.Interfaces;
 
-namespace API.Repositories.Interfaces;
+namespace Database.Repositories.Interfaces;
 
-public interface IPlayerRepository : IRepository<Player>
+public interface IPlayersRepository : IRepository<Player>
 {
     /// <summary>
     /// Returns a list of players that matches the given username. Case insensitive
@@ -13,13 +10,6 @@ public interface IPlayerRepository : IRepository<Player>
     /// <param name="username"></param>
     /// <returns></returns>
     Task<IEnumerable<Player>> SearchAsync(string username);
-
-    /// <summary>
-    /// Returns a player, if available, that matches the given username. Case insensitive
-    /// </summary>
-    /// <param name="username"></param>
-    /// <returns></returns>
-    Task<Player?> GetAsync(string username);
 
     /// <summary>
     /// Gets a player filtering by the following, in order of priority: (id, osu! id, username)
@@ -99,16 +89,6 @@ public interface IPlayerRepository : IRepository<Player>
     /// </summary>
     /// <param name="id">The user id</param>
     Task<string?> GetUsernameAsync(int id);
-
-    /// <summary>
-    /// Returns a collection of <see cref="PlayerIdMappingDTO"/> for all players
-    /// </summary>
-    Task<IEnumerable<PlayerIdMappingDTO>> GetIdMappingAsync();
-
-    /// <summary>
-    /// Returns a collection of <see cref="PlayerCountryMappingDTO"/> for all players
-    /// </summary>
-    Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync();
 
     /// <summary>
     /// Returns the player id for the given user id

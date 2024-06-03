@@ -442,7 +442,7 @@ builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
 builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
-builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+builder.Services.AddScoped<IApiPlayersRepository, ApiPlayersRepository>();
 builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
 builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();

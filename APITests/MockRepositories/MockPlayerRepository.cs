@@ -4,7 +4,7 @@ using Moq;
 
 namespace APITests.MockRepositories;
 
-public class MockPlayerRepository : Mock<IPlayerRepository>
+public class MockPlayerRepository : Mock<IApiPlayersRepository>
 {
     public MockPlayerRepository SetupGetId()
     {

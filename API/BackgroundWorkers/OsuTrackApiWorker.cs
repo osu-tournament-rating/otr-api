@@ -51,7 +51,7 @@ public class OsuTrackApiWorker(
                 await _semaphore.WaitAsync(stoppingToken);
                 using (IServiceScope scope = serviceProvider.CreateScope())
                 {
-                    IPlayerRepository playerService = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+                    IApiPlayersRepository playerService = scope.ServiceProvider.GetRequiredService<IApiPlayersRepository>();
                     IMatchRatingStatsRepository ratingStatsRepository =
                         scope.ServiceProvider.GetRequiredService<IMatchRatingStatsRepository>();
 

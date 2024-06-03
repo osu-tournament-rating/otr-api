@@ -12,7 +12,7 @@ public class BaseStatsService(
     IBaseStatsRepository baseStatsRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
     IMatchRatingStatsRepository ratingStatsRepository,
-    IPlayerRepository playerRepository,
+    IApiPlayersRepository playerRepository,
     ITournamentsService tournamentsService
     ) : IBaseStatsService
 {

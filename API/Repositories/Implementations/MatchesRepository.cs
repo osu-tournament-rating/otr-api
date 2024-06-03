@@ -1,12 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
-using API.Utilities;
-using API.Utilities.Extensions;
 using Database;
 using Database.Entities;
 using Database.Enums;
 using Database.Extensions;
+using Database.Repositories.Implementations;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
@@ -16,20 +15,14 @@ namespace API.Repositories.Implementations;
 public class MatchesRepository(
     ILogger<MatchesRepository> logger,
     OtrContext context,
-    IMatchDuplicateRepository matchDuplicateRepository,
-    ICacheHandler cacheHandler
-    ) : CachingRepositoryBase<Match>(context), IMatchesRepository, IUsesCache
+    IMatchDuplicateRepository matchDuplicateRepository
+    ) : RepositoryBase<Match>(context), IMatchesRepository
 {
     private readonly OtrContext _context = context;
 
     public override async Task<Match?> GetAsync(int id) =>
         // Get the match with all associated data
         await MatchBaseQuery(false).FirstOrDefaultAsync(x => x.Id == id);
-
-    public async Task InvalidateCacheEntriesAsync()
-    {
-        await cacheHandler.OnMatchUpdateAsync();
-    }
 
     // Suppression: This query will inherently produce a large number of records by including
     // games and match scores. The query itself is almost as efficient as possible (as far as we know)

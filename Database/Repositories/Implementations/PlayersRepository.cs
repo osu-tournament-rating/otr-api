@@ -1,29 +1,14 @@
-using System.Diagnostics.CodeAnalysis;
-using API.DTOs;
-using API.Handlers.Interfaces;
-using API.Repositories.Interfaces;
-using API.Utilities;
-using API.Utilities.Extensions;
-using AutoMapper;
-using Database;
 using Database.Entities;
 using Database.Enums;
 using Database.Extensions;
-using Database.Repositories.Implementations;
+using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Repositories.Implementations;
+namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
-[SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler cacheHandler) : RepositoryBase<Player>(context), IPlayerRepository, IUsesCache
+public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(context), IPlayersRepository
 {
     private readonly OtrContext _context = context;
-
-    public async Task InvalidateCacheEntriesAsync()
-    {
-        await cacheHandler.OnPlayerUpdateAsync();
-    }
 
     public async Task<IEnumerable<Player>> GetPlayersMissingRankAsync()
     {
@@ -64,9 +49,6 @@ public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler 
             .AsNoTracking()
             .Take(30)
             .ToListAsync();
-
-    public async Task<Player?> GetAsync(string username) =>
-        await _context.Players.WhereUsername(username, false).FirstOrDefaultAsync();
 
     public async Task<Player?> GetVersatileAsync(string key, bool eagerLoad)
     {
@@ -144,18 +126,6 @@ public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler 
     public async Task<string?> GetUsernameAsync(int id) =>
         await _context.Players.Where(p => p.Id == id).Select(p => p.Username).FirstOrDefaultAsync();
 
-    public async Task<IEnumerable<PlayerIdMappingDTO>> GetIdMappingAsync() =>
-        (await _context.Players.AsNoTracking().ToDictionaryAsync(p => p.OsuId, p => p.Id))
-            .OrderBy(x => x.Value)
-            .Select(x => new PlayerIdMappingDTO { Id = x.Value, OsuId = x.Key });
-
-    public async Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync() =>
-        await _context
-            .Players.AsNoTracking()
-            .OrderBy(x => x.Id)
-            .Select(x => new PlayerCountryMappingDTO { PlayerId = x.Id, Country = x.Country })
-            .ToListAsync();
-
     public async Task<int> GetIdAsync(int userId) =>
         await _context
             .Players.AsNoTracking()
@@ -177,21 +147,4 @@ public class PlayerRepository(OtrContext context, IMapper mapper, ICacheHandler 
         await _context
             .Players.Where(p => p.Updated == null || (DateTime.UtcNow - p.Updated) > TimeSpan.FromDays(14))
             .ToListAsync();
-
-    public async Task<PlayerInfoDTO?> GetPlayerDTOByOsuIdAsync(
-        long osuId,
-        bool eagerLoad = false,
-        Ruleset ruleset = Ruleset.Standard,
-        int offsetDays = -1
-    )
-    {
-        PlayerInfoDTO? obj = mapper.Map<PlayerInfoDTO?>(await GetAsync(osuId, eagerLoad, (int)ruleset, offsetDays));
-
-        if (obj == null)
-        {
-            return obj;
-        }
-
-        return obj;
-    }
 }

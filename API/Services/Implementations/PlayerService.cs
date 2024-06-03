@@ -6,7 +6,7 @@ using Database.Entities;
 
 namespace API.Services.Implementations;
 
-public class PlayerService(IPlayerRepository playerRepository, IMapper mapper) : IPlayerService
+public class PlayerService(IApiPlayersRepository playerRepository, IMapper mapper) : IPlayerService
 {
     public async Task<IEnumerable<PlayerDTO>> GetAllAsync() =>
         mapper.Map<IEnumerable<PlayerDTO>>(await playerRepository.GetAsync());

@@ -14,7 +14,7 @@ public class PlayerStatsService(
     IGameWinRecordsService gameWinRecordsService,
     IMatchWinRecordRepository matchWinRecordRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
-    IPlayerRepository playerRepository,
+    IApiPlayersRepository playerRepository,
     IRatingAdjustmentsService ratingAdjustmentsService,
     IMatchRatingStatsRepository ratingStatsRepository,
     ITournamentsRepository tournamentsRepository,

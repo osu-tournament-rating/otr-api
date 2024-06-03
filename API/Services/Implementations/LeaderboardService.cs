@@ -8,7 +8,7 @@ namespace API.Services.Implementations;
 
 [SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly")]
 public class LeaderboardService(
-    IPlayerRepository playerRepository,
+    IApiPlayersRepository playerRepository,
     IBaseStatsService baseStatsService,
     IMatchRatingStatsRepository ratingStatsRepository,
     IPlayerService playerService,

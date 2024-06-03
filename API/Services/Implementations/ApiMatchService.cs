@@ -21,7 +21,7 @@ namespace API.Services.Implementations;
 public class ApiMatchService(
     ILogger<ApiMatchService> logger,
     OtrContext context,
-    IPlayerRepository playerRepository,
+    IApiPlayersRepository playerRepository,
     IBeatmapRepository beatmapRepository,
     IOsuApiService osuApiService,
     IMatchesRepository matchesRepository,

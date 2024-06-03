@@ -41,7 +41,7 @@ public class OsuPlayerDataWorker(
              */
             using (IServiceScope scope = serviceProvider.CreateScope())
             {
-                IPlayerRepository playerRepository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
+                IApiPlayersRepository playerRepository = scope.ServiceProvider.GetRequiredService<IApiPlayersRepository>();
                 IUserRepository userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
                 var playersToUpdate = (await playerRepository.GetOutdatedAsync()).ToList();

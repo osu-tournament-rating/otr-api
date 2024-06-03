@@ -18,16 +18,10 @@ namespace API.Repositories.Implementations;
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class BaseStatsRepository(
     OtrContext context,
-    IPlayerRepository playerRepository,
-    ICacheHandler cacheHandler
-    ) : CachingRepositoryBase<BaseStats>(context), IBaseStatsRepository, IUsesCache
+    IApiPlayersRepository playerRepository
+    ) : RepositoryBase<BaseStats>(context), IBaseStatsRepository
 {
     private readonly OtrContext _context = context;
-
-    public async Task InvalidateCacheEntriesAsync()
-    {
-        await cacheHandler.OnBaseStatsUpdateAsync();
-    }
 
     public async Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId)
     {

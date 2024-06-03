@@ -11,7 +11,7 @@ namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class MatchWinRecordRepository(OtrContext context, IPlayerRepository playerRepository) : RepositoryBase<MatchWinRecord>(context), IMatchWinRecordRepository
+public class MatchWinRecordRepository(OtrContext context, IApiPlayersRepository playerRepository) : RepositoryBase<MatchWinRecord>(context), IMatchWinRecordRepository
 {
     private readonly OtrContext _context = context;
 
