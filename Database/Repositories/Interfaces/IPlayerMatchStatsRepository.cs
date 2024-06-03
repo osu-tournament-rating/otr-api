@@ -1,7 +1,6 @@
-using API.DTOs;
 using Database.Entities;
 
-namespace API.Repositories.Interfaces;
+namespace Database.Repositories.Interfaces;
 
 public interface IPlayerMatchStatsRepository
 {
@@ -36,7 +35,6 @@ public interface IPlayerMatchStatsRepository
         DateTime dateMax
     );
 
-    Task<PlayerModStatsDTO> GetModStatsAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax);
     Task InsertAsync(IEnumerable<PlayerMatchStats> items);
     Task TruncateAsync();
     Task<int> CountMatchesPlayedAsync(

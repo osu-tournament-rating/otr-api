@@ -14,11 +14,11 @@ public class PlayerStatsService(
     IBaseStatsService baseStatsService,
     IGameWinRecordsService gameWinRecordsService,
     IApiMatchWinRecordRepository matchWinRecordRepository,
-    IPlayerMatchStatsRepository matchStatsRepository,
+    IApiPlayerMatchStatsRepository matchStatsRepository,
     IPlayersRepository playerRepository,
     IRatingAdjustmentsService ratingAdjustmentsService,
     IApiMatchRatingStatsRepository ratingStatsRepository,
-    ITournamentsRepository tournamentsRepository,
+    IApiTournamentsRepository tournamentsRepository,
     IMapper mapper
 ) : IPlayerStatsService
 {
