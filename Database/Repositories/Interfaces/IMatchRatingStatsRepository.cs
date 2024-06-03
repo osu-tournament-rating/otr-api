@@ -1,9 +1,6 @@
-using API.DTOs;
-using API.Enums;
 using Database.Entities;
-using Database.Repositories.Interfaces;
 
-namespace API.Repositories.Interfaces;
+namespace Database.Repositories.Interfaces;
 
 public interface IMatchRatingStatsRepository : IRepository<MatchRatingStats>
 {
@@ -18,16 +15,6 @@ public interface IMatchRatingStatsRepository : IRepository<MatchRatingStats>
     /// <param name="dateMax"></param>
     /// <returns></returns>
     Task<IEnumerable<IEnumerable<MatchRatingStats>>> GetForPlayerAsync(
-        int playerId,
-        int mode,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null
-    );
-
-    /// <summary>
-    ///  Get the rating chart for a player
-    /// </summary>
-    Task<PlayerRatingChartDTO> GetRatingChartAsync(
         int playerId,
         int mode,
         DateTime? dateMin = null,
@@ -66,13 +53,5 @@ public interface IMatchRatingStatsRepository : IRepository<MatchRatingStats>
         int mode,
         DateTime dateMin,
         DateTime dateMax
-    );
-
-    Task<PlayerRankChartDTO> GetRankChartAsync(
-        int playerId,
-        int mode,
-        LeaderboardChartType chartType,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null
     );
 }

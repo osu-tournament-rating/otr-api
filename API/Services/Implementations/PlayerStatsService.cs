@@ -6,6 +6,7 @@ using API.Utilities;
 using AutoMapper;
 using Database.Entities;
 using Database.Enums;
+using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
@@ -14,9 +15,9 @@ public class PlayerStatsService(
     IGameWinRecordsService gameWinRecordsService,
     IMatchWinRecordRepository matchWinRecordRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
-    IApiPlayersRepository playerRepository,
+    IPlayersRepository playerRepository,
     IRatingAdjustmentsService ratingAdjustmentsService,
-    IMatchRatingStatsRepository ratingStatsRepository,
+    IApiMatchRatingStatsRepository ratingStatsRepository,
     ITournamentsRepository tournamentsRepository,
     IMapper mapper
 ) : IPlayerStatsService
