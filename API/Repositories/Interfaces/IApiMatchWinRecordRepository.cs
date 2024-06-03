@@ -1,13 +1,11 @@
 using API.DTOs;
-using Database.Entities;
 using Database.Repositories.Interfaces;
 
 namespace API.Repositories.Interfaces;
 
-public interface IMatchWinRecordRepository : IRepository<MatchWinRecord>
+public interface IApiMatchWinRecordRepository : IMatchWinRecordRepository
 {
     Task BatchInsertAsync(IEnumerable<MatchWinRecordDTO> postBody);
-    Task TruncateAsync();
 
     Task<IEnumerable<PlayerFrequencyDTO>> GetFrequentTeammatesAsync(
         int playerId,

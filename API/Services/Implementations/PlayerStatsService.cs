@@ -13,7 +13,7 @@ namespace API.Services.Implementations;
 public class PlayerStatsService(
     IBaseStatsService baseStatsService,
     IGameWinRecordsService gameWinRecordsService,
-    IMatchWinRecordRepository matchWinRecordRepository,
+    IApiMatchWinRecordRepository matchWinRecordRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
     IPlayersRepository playerRepository,
     IRatingAdjustmentsService ratingAdjustmentsService,

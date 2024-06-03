@@ -1,17 +1,18 @@
-using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Repositories.Interfaces;
 using Database;
 using Database.Entities;
 using Database.Enums;
 using Database.Repositories.Implementations;
+using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
-[SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class MatchWinRecordRepository(OtrContext context, IApiPlayersRepository playerRepository) : RepositoryBase<MatchWinRecord>(context), IMatchWinRecordRepository
+public class ApiMatchWinRecordRepository(
+    OtrContext context,
+    IPlayersRepository playersRepository
+    ) : MatchWinRecordRepository(context), IApiMatchWinRecordRepository
 {
     private readonly OtrContext _context = context;
 
@@ -36,9 +37,6 @@ public class MatchWinRecordRepository(OtrContext context, IApiPlayersRepository 
 
         await _context.SaveChangesAsync();
     }
-
-    public async Task TruncateAsync() =>
-        await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE match_win_records RESTART IDENTITY");
 
     public async Task<IEnumerable<PlayerFrequencyDTO>> GetFrequentTeammatesAsync(
         int playerId,
@@ -78,8 +76,8 @@ public class MatchWinRecordRepository(OtrContext context, IApiPlayersRepository 
             {
                 PlayerId = x.Key,
                 Frequency = x.Count(),
-                OsuId = playerRepository.GetOsuIdAsync(x.Key).GetAwaiter().GetResult(),
-                Username = playerRepository.GetUsernameAsync(x.Key).GetAwaiter().GetResult()
+                OsuId = playersRepository.GetOsuIdAsync(x.Key).GetAwaiter().GetResult(),
+                Username = playersRepository.GetUsernameAsync(x.Key).GetAwaiter().GetResult()
             });
     }
 
@@ -116,8 +114,8 @@ public class MatchWinRecordRepository(OtrContext context, IApiPlayersRepository 
             {
                 PlayerId = x.Key,
                 Frequency = x.Count(),
-                OsuId = playerRepository.GetOsuIdAsync(x.Key).GetAwaiter().GetResult(),
-                Username = playerRepository.GetUsernameAsync(x.Key).GetAwaiter().GetResult()
+                OsuId = playersRepository.GetOsuIdAsync(x.Key).GetAwaiter().GetResult(),
+                Username = playersRepository.GetUsernameAsync(x.Key).GetAwaiter().GetResult()
             });
     }
 }
