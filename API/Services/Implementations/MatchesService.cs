@@ -5,12 +5,12 @@ using API.Services.Interfaces;
 using AutoMapper;
 using Database.Entities;
 using Database.Enums;
+using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
 public class MatchesService(
     IMatchesRepository matchesRepository,
-    IMatchDuplicateRepository duplicateRepository,
     ITournamentsRepository tournamentsRepository,
     IUrlHelperService urlHelperService,
     IMapper mapper
@@ -108,66 +108,6 @@ public class MatchesService(
     public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name) => mapper.Map<IEnumerable<MatchSearchResultDTO>>(
         await matchesRepository.SearchAsync(name)
     );
-
-    public async Task VerifyDuplicatesAsync(int verifierUserId, int matchRootId, bool confirmedDuplicate)
-    {
-        // Mark the items as confirmed / denied duplicates
-        await matchesRepository.VerifyDuplicatesAsync(matchRootId, verifierUserId, confirmedDuplicate);
-
-        // If confirmedDuplicate, trigger the update process.
-        if (confirmedDuplicate)
-        {
-            await matchesRepository.MergeDuplicatesAsync(matchRootId);
-        }
-    }
-
-    public async Task<IEnumerable<MatchDuplicateCollectionDTO>> GetAllDuplicatesAsync()
-    {
-        var collections = new List<MatchDuplicateCollectionDTO>();
-        IEnumerable<IGrouping<int, MatchDuplicate>> duplicateGroups = (await duplicateRepository.GetAllUnknownStatusAsync()).GroupBy(x =>
-            x.SuspectedDuplicateOf
-        );
-        foreach (IGrouping<int, MatchDuplicate> dupeGroup in duplicateGroups)
-        {
-            MatchDTO? root = await GetAsync(dupeGroup.First().SuspectedDuplicateOf, false) ?? throw new Exception("Failed to find root from lookup.");
-            var collection = new MatchDuplicateCollectionDTO
-            {
-                Id = root.Id,
-                Name = root.Name ?? string.Empty,
-                OsuMatchId = root.MatchId,
-                SuspectedDuplicates = new List<MatchDuplicateDTO>()
-            };
-
-            foreach (MatchDuplicate? item in dupeGroup)
-            {
-                if (root == null || item.MatchId == root.Id)
-                {
-                    continue;
-                }
-
-                MatchDTO? duplicateMatchData = await GetByOsuIdAsync(item.OsuMatchId);
-                if (duplicateMatchData == null)
-                {
-                    continue;
-                }
-
-                collection.SuspectedDuplicates.Add(
-                    new MatchDuplicateDTO
-                    {
-                        Name = duplicateMatchData.Name ?? string.Empty,
-                        OsuMatchId = duplicateMatchData.MatchId,
-                        VerifiedByUsername = item.Verifier?.Player.Username,
-                        VerifiedAsDuplicate = item.VerifiedAsDuplicate,
-                        VerifiedByUserId = item.VerifiedBy
-                    }
-                );
-            }
-
-            collections.Add(collection);
-        }
-
-        return collections;
-    }
 
     public async Task RefreshAutomationChecks(bool invalidOnly = true) =>
         await matchesRepository.SetRequireAutoCheckAsync(invalidOnly);

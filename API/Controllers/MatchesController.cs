@@ -90,33 +90,6 @@ public class MatchesController(IMatchesService matchesService) : Controller
             : Ok(match);
     }
 
-    [HttpGet("duplicates")]
-    [Authorize(Roles = OtrClaims.Admin)]
-    [EndpointSummary("Retrieves all known duplicate groups")]
-    public async Task<IActionResult> GetDuplicatesAsync() => Ok(await matchesService.GetAllDuplicatesAsync());
-
-    [HttpPost("duplicate")]
-    [Authorize(Roles = OtrClaims.Admin)]
-    [EndpointSummary("Mark a match as a confirmed or denied duplicate of the root")]
-    public async Task<IActionResult> MarkDuplicatesAsync([FromQuery] int rootId,
-        [FromQuery]
-        bool confirmedDuplicate)
-    {
-        var loggedInUser = User.AuthorizedIdentity();
-        if (!loggedInUser.HasValue)
-        {
-            return Unauthorized("You must be logged in to perform this action.");
-        }
-
-        if (!HttpContext.User.IsAdmin())
-        {
-            return Unauthorized("You lack permissions to perform this action.");
-        }
-
-        await matchesService.VerifyDuplicatesAsync(loggedInUser.Value, rootId, confirmedDuplicate);
-        return Ok();
-    }
-
     // TODO: Should be /player/{osuId}/matches instead.
     [HttpGet("player/{osuId:long}")]
     [Authorize(Roles = $"{OtrClaims.Admin}, {OtrClaims.System}")]

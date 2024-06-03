@@ -65,17 +65,4 @@ public interface IMatchesService
     /// <param name="name">The partial search key for the match name</param>
     /// <returns>Up to 30 results if any matches are found</returns>
     Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name);
-
-    /// <summary>
-    ///  Full flow for one-way operation of marking a match as duplicate, reassinging the
-    ///  appropriate game data, updating the match_duplicate_xref table,
-    ///  and deleting the duplicate match items.
-    ///  <param name="confirmedDuplicate">
-    ///   If true, all <see cref="duplicateIds" /> are confirmed duplicates.
-    ///   If false, all <see cref="duplicateIds" /> are confirmed to NOT be duplicates.
-    ///  </param>
-    /// </summary>
-    Task VerifyDuplicatesAsync(int verifierUserId, int matchRootId, bool confirmedDuplicate);
-
-    Task<IEnumerable<MatchDuplicateCollectionDTO>> GetAllDuplicatesAsync();
 }

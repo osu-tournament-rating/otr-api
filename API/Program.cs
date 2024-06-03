@@ -6,7 +6,6 @@ using System.Threading.RateLimiting;
 using API.Authorization;
 using API.Authorization.Handlers;
 using API.Authorization.Requirements;
-using API.BackgroundWorkers;
 using API.Configurations;
 using API.Handlers.Implementations;
 using API.Handlers.Interfaces;
@@ -413,15 +412,6 @@ builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthCli
 
 #endregion
 
-#region Hosted Services
-
-builder.Services.AddHostedService<MatchDuplicateDataWorker>();
-builder.Services.AddHostedService<OsuPlayerDataWorker>();
-builder.Services.AddHostedService<OsuMatchDataWorker>();
-builder.Services.AddHostedService<OsuTrackApiWorker>();
-
-#endregion
-
 #region Handlers
 
 builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
@@ -436,7 +426,6 @@ builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
-builder.Services.AddScoped<IMatchDuplicateRepository, MatchDuplicateRepository>();
 builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
 builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
 builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
