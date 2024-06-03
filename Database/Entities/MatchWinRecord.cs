@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Database.Enums;
-using MatchType = System.IO.MatchType;
 
 namespace Database.Entities;
 
@@ -54,7 +53,7 @@ public class MatchWinRecord
     /// The type of match this record is for (team or head-to-head)
     /// </summary>
     [Column("match_type")]
-    public MatchType? MatchType { get; set; }
+    public OsuMatchType? MatchType { get; set; }
     /// <summary>
     /// The <see cref="Match"/> this record belongs to
     /// </summary>

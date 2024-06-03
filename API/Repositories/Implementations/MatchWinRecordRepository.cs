@@ -6,7 +6,6 @@ using Database.Entities;
 using Database.Enums;
 using Database.Repositories.Implementations;
 using Microsoft.EntityFrameworkCore;
-using MatchType = System.IO.MatchType;
 
 namespace API.Repositories.Implementations;
 
@@ -29,7 +28,7 @@ public class MatchWinRecordRepository(OtrContext context, IPlayerRepository play
                 WinnerPoints = item.WinnerPoints,
                 WinnerTeam = (Team?)item.WinnerTeam,
                 LoserTeam = (Team?)item.LoserTeam,
-                MatchType = (MatchType?)item.MatchType
+                MatchType = (OsuMatchType?)item.MatchType
             };
 
             await _context.MatchWinRecords.AddAsync(record);
