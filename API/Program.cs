@@ -420,7 +420,13 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 
 #region Repositories
 
-builder.Services.AddScoped<IApiMatchService, ApiMatchService>();
+builder.Services.AddScoped<IApiBaseStatsRepository, ApiBaseStatsRepository>();
+builder.Services.AddScoped<IApiMatchRatingStatsRepository, ApiMatchRatingStatsRepository>();
+builder.Services.AddScoped<IApiMatchWinRecordRepository, ApiMatchWinRecordRepository>();
+builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRepository>();
+builder.Services.AddScoped<IApiPlayersRepository, ApiPlayersRepository>();
+builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
+
 builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
 builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
@@ -431,15 +437,15 @@ builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
 builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
-builder.Services.AddScoped<IApiPlayersRepository, ApiPlayersRepository>();
+builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
 builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
 builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
-
 #endregion
 
 #region Services
+builder.Services.AddScoped<IApiMatchService, ApiMatchService>();
 
 builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
@@ -456,7 +462,6 @@ builder.Services.AddScoped<ITournamentsService, TournamentsService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
-
 #endregion
 
 #region osu! Api
