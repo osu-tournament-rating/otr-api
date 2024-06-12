@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Enums;
 using API.Repositories.Interfaces;
 using Database;
+using Database.Enums;
 using Database.Repositories.Implementations;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,7 +27,7 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
         var matchRatingStats = await _context
             .MatchRatingStats.Where(mrs =>
                 mrs.PlayerId == playerId
-                && mrs.Match.Tournament.Mode == mode
+                && mrs.Match.Tournament.Ruleset == (Ruleset)mode
                 && mrs.Match.StartTime >= dateMin
                 && mrs.Match.StartTime <= dateMax
             )
@@ -102,7 +103,7 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
             .ThenInclude(x => x.Tournament)
             .Where(x =>
                 x.PlayerId == playerId
-                && x.Match.Tournament.Mode == mode
+                && x.Match.Tournament.Ruleset == (Ruleset)mode
                 && x.Match.StartTime != null
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax

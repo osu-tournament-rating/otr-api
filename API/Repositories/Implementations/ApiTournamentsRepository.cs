@@ -24,7 +24,7 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
             .Select(t => new TournamentSearchResultDTO()
             {
                 Id = t.Id,
-                Ruleset = (Ruleset)t.Mode,
+                Ruleset = (Ruleset)t.Ruleset,
                 TeamSize = t.TeamSize,
                 Name = t.Name
             })
@@ -32,12 +32,12 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
             .ToListAsync();
     }
 
-        public async Task<PlayerTournamentTeamSizeCountDTO> GetTeamSizeStatsAsync(
-        int playerId,
-        int mode,
-        DateTime dateMin,
-        DateTime dateMax
-    )
+    public async Task<PlayerTournamentTeamSizeCountDTO> GetTeamSizeStatsAsync(
+    int playerId,
+    int mode,
+    DateTime dateMin,
+    DateTime dateMax
+)
     {
         var participatedTournaments =
             await QueryForParticipation(playerId, mode, dateMin, dateMax)

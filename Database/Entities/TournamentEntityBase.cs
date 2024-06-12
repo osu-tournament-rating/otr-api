@@ -1,12 +1,16 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Entities;
 
 /// <summary>
 /// Base entity for tournaments
 /// </summary>
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[Index(nameof(Name), nameof(Abbreviation), IsUnique = true)]
 public abstract class TournamentEntityBase : UpdateableEntityBase
 {
     /// <summary>
@@ -59,4 +63,16 @@ public abstract class TournamentEntityBase : UpdateableEntityBase
     /// </summary>
     [Column("team_size")]
     public int TeamSize { get; set; }
+
+    /// <summary>
+    /// The <see cref="User"/> that submitted the tournament
+    /// </summary>
+    [ForeignKey(nameof(User.SubmittedTournaments))]
+    public User SubmittedBy { get; set; } = null!;
+
+    /// <summary>
+    /// The <see cref="User"/> that verified the tournament
+    /// </summary>
+    [ForeignKey(nameof(User.VerifiedTournaments))]
+    public User VerifiedBy { get; set; } = null!;
 }

@@ -31,7 +31,7 @@ public class ApiPlayerMatchStatsRepository(OtrContext context) : PlayerMatchStat
                     && ms.Game.VerificationStatus == Old_GameVerificationStatus.Verified
                     && ms.Game.Match.VerificationStatus == Old_MatchVerificationStatus.Verified
                     && ms.Game.WinRecord != null
-                    && ms.Game.Match.Tournament.Mode == mode
+                    && ms.Game.Match.Tournament.Ruleset == (Ruleset)mode
                     && ms.Game.Match.StartTime >= dateMin
                     && ms.Game.Match.EndTime <= dateMax
                 )

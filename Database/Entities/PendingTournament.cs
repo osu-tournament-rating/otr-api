@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Database.Enums.VerificationEnums;
 
 namespace Database.Entities;
@@ -7,6 +8,7 @@ namespace Database.Entities;
 /// TBD
 /// </summary>
 [Table("pending_tournaments")]
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class PendingTournament : TournamentEntityBase
 {
     /// <summary>

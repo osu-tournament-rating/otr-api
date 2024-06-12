@@ -1,4 +1,5 @@
 using Database.Entities;
+using Database.Enums;
 
 namespace API.Osu.AutomationChecks;
 
@@ -75,7 +76,7 @@ public static class MatchAutomationChecks
     public static bool ValidGameMode(Match match)
     {
         // Ensures the mode for the match's tournament is valid.
-        var valid = match.Tournament.Mode is >= 0 and <= 3;
+        var valid = match.Tournament.Ruleset is >= Ruleset.Standard and <= Ruleset.Mania;
 
         if (!valid)
         {

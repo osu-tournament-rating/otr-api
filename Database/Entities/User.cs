@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Database.Entities.Interfaces;
 
@@ -51,6 +52,9 @@ public class User : IUpdateableEntity
     // Assuming the user has permission to verify, the matches they do verify will be here
     [InverseProperty("VerifiedBy")]
     public virtual ICollection<Match>? VerifiedMatches { get; set; }
+
+    [InverseProperty("VerifiedBy")]
+    public ICollection<Tournament> VerifiedTournaments { get; set; } = new Collection<Tournament>();
 
     [InverseProperty("Verifier")]
     public virtual ICollection<MatchDuplicate>? VerifiedDuplicates { get; set; }

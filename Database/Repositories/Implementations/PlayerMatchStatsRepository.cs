@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
+using Database.Enums;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +20,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         return await context
             .PlayerMatchStats.Where(stats =>
                 stats.PlayerId == playerId
-                && stats.Match.Tournament.Mode == mode
+                && stats.Match.Tournament.Ruleset == (Ruleset)mode
                 && stats.Match.StartTime >= dateMin
                 && stats.Match.StartTime <= dateMax
             )
@@ -38,7 +39,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .PlayerMatchStats.Where(stats =>
                 stats.PlayerId == playerId
                 && stats.TeammateIds.Contains(teammateId)
-                && stats.Match.Tournament.Mode == mode
+                && stats.Match.Tournament.Ruleset == (Ruleset)mode
                 && stats.Match.StartTime >= dateMin
                 && stats.Match.StartTime <= dateMax
             )
@@ -56,7 +57,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .PlayerMatchStats.Where(stats =>
                 stats.PlayerId == playerId
                 && stats.OpponentIds.Contains(opponentId)
-                && stats.Match.Tournament.Mode == mode
+                && stats.Match.Tournament.Ruleset == (Ruleset)mode
                 && stats.Match.StartTime >= dateMin
                 && stats.Match.StartTime <= dateMax
             )
@@ -85,7 +86,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         return await context
             .PlayerMatchStats.Where(x =>
                 x.PlayerId == playerId
-                && x.Match.Tournament.Mode == mode
+                && x.Match.Tournament.Ruleset == (Ruleset)mode
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
             )
@@ -105,7 +106,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         return await context
             .PlayerMatchStats.Where(x =>
                 x.PlayerId == playerId
-                && x.Match.Tournament.Mode == mode
+                && x.Match.Tournament.Ruleset == (Ruleset)mode
                 && x.Won
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax

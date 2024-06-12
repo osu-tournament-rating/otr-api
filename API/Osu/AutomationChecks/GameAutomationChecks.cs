@@ -147,7 +147,7 @@ public static class GameAutomationChecks
     public static bool PassesRulesetCheck(Game game)
     {
         Tournament tournament = game.Match.Tournament;
-        var tournamentRuleset = (Ruleset)tournament.Mode;
+        var tournamentRuleset = (Ruleset)tournament.Ruleset;
 
         if (!Enum.GetValues<Ruleset>().Contains(tournamentRuleset))
         {
@@ -155,7 +155,7 @@ public static class GameAutomationChecks
                 "{Prefix} Tournament {TournamentId} has an invalid ruleset: {Mode}, can't verify game {GameId}",
                 LogPrefix,
                 tournament.Id,
-                tournament.Mode,
+                tournament.Ruleset,
                 game.GameId
             );
 
@@ -172,7 +172,7 @@ public static class GameAutomationChecks
             LogPrefix,
             tournament.Id,
             game.GameId,
-            (Ruleset)tournament.Mode,
+            (Ruleset)tournament.Ruleset,
             game.Ruleset.ToString()
         );
 

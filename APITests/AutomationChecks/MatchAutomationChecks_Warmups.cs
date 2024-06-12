@@ -29,7 +29,7 @@ public class MatchAutomationChecks_Warmups
             Abbreviation = "STT3",
             ForumUrl = "https://osu.ppy.sh/community/forums/topics/1567938?n=1",
             RankRangeLowerBound = 10000,
-            Mode = 0,
+            Ruleset = 0,
             TeamSize = 3
         };
 

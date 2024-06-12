@@ -104,10 +104,9 @@ public class MatchesRepository(
         DateTime after
     )
     {
-        return await _context
-            .Matches.IncludeAllChildren()
-            .WherePlayerParticipated(osuId)
-            .WhereMode(mode)
+        return await QueryExtensions.WhereRuleset(_context
+                .Matches.IncludeAllChildren()
+                .WherePlayerParticipated(osuId), (Ruleset)mode)
             .Before(before)
             .After(after)
             .ToListAsync();

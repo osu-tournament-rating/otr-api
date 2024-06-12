@@ -9,6 +9,11 @@ namespace Database;
 public partial class OtrContext(
     DbContextOptions<OtrContext> options) : DbContext(options)
 {
+    /// <summary>
+    /// SQL function for getting the current timestamp
+    /// </summary>
+    private const string SqlCurrentTimestamp = "CURRENT_TIMESTAMP";
+
     public virtual DbSet<BaseStats> BaseStats { get; set; }
     public virtual DbSet<Beatmap> Beatmaps { get; set; }
     public virtual DbSet<Game> Games { get; set; }
@@ -300,28 +305,12 @@ public partial class OtrContext(
 
         modelBuilder.Entity<Tournament>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("Tournaments_pk");
+            entity.Property(e => e.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+        });
 
-            entity.Property(e => e.Id).UseIdentityAlwaysColumn();
-
-            entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-            entity
-                .HasMany(e => e.Matches)
-                .WithOne(m => m.Tournament)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("Tournaments___fkmatchid")
-                .IsRequired();
-
-            // These are nullable because a user's account could be deleted
-            entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
-            entity
-                .HasOne(e => e.SubmittedBy)
-                .WithMany(u => u.SubmittedTournaments)
-                .HasForeignKey(e => e.SubmitterUserId)
-                .IsRequired(false);
-
-            entity.HasIndex(e => new { e.Name, e.Abbreviation }).IsUnique();
+        modelBuilder.Entity<PendingTournament>(entity =>
+        {
+            entity.Property(e => e.Created).HasDefaultValueSql(SqlCurrentTimestamp);
         });
 
         modelBuilder.Entity<User>(entity =>

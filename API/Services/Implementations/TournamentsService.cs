@@ -29,9 +29,9 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
             Abbreviation = wrapper.Abbreviation,
             ForumUrl = wrapper.ForumPost,
             RankRangeLowerBound = wrapper.RankRangeLowerBound,
-            Mode = wrapper.Mode,
+            Ruleset = (Ruleset)wrapper.Mode,
             TeamSize = wrapper.TeamSize,
-            SubmitterUserId = wrapper.SubmitterId,
+            SubmittedByUserId = wrapper.SubmitterId,
             Matches = enumerableMatchIds
                 .Except(existingMatchIds)
                 .Select(matchId => new Match
@@ -81,7 +81,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
         existing.Name = wrapper.Name;
         existing.Abbreviation = wrapper.Abbreviation;
         existing.ForumUrl = wrapper.ForumUrl;
-        existing.Mode = wrapper.Mode;
+        existing.Ruleset = (Ruleset)wrapper.Mode;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
         existing.TeamSize = wrapper.TeamSize;
 

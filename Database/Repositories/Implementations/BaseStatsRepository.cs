@@ -128,13 +128,13 @@ public class BaseStatsRepository(OtrContext context, IPlayersRepository playersR
             .MaxAsync();
     }
 
-        public async Task<int> HighestMatchesAsync(int mode, string? country = null)
+    public async Task<int> HighestMatchesAsync(int mode, string? country = null)
     {
         if (country != null)
         {
             return await _context
                 .Players.SelectMany(p => p.MatchStats)
-                .Where(ms => ms.Match.Tournament.Mode == mode && ms.Player.Country == country)
+                .Where(ms => ms.Match.Tournament.Ruleset == (Ruleset)mode && ms.Player.Country == country)
                 .GroupBy(ms => ms.PlayerId)
                 .OrderByDescending(g => g.Count())
                 .Select(g => g.Count())
@@ -143,7 +143,7 @@ public class BaseStatsRepository(OtrContext context, IPlayersRepository playersR
 
         return await _context
             .Players.SelectMany(p => p.MatchStats)
-            .Where(ms => ms.Match.Tournament.Mode == mode)
+            .Where(ms => ms.Match.Tournament.Ruleset == (Ruleset)mode)
             .GroupBy(ms => ms.PlayerId)
             .OrderByDescending(g => g.Count())
             .Select(g => g.Count())

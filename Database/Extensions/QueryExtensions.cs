@@ -45,8 +45,8 @@ public static class QueryExtensions
     public static IQueryable<Match> Before(this IQueryable<Match> query, DateTime before) =>
         query.AsQueryable().Where(x => x.StartTime < before);
 
-    public static IQueryable<Match> WhereMode(this IQueryable<Match> query, int mode) =>
-        query.AsQueryable().Where(x => x.Tournament.Mode == mode);
+    public static IQueryable<Match> WhereRuleset(this IQueryable<Match> query, Ruleset ruleset) =>
+        query.AsQueryable().Where(x => x.Tournament.Ruleset == ruleset);
 
     public static IQueryable<Match> IncludeAllChildren(this IQueryable<Match> query) =>
         query

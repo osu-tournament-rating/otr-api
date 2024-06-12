@@ -14,7 +14,7 @@ public class MapperProfile : Profile
         CreateMap<Game, GameDTO>();
         CreateMap<GameWinRecord, GameWinRecordDTO>();
         CreateMap<Match, MatchDTO>()
-            .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Mode));
+            .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset));
         CreateMap<Match, MatchSubmissionStatusDTO>();
         CreateMap<Match, MatchHistory>()
             .ForMember(x => x.ReferenceId, opt => opt.MapFrom(x => x.Id))
@@ -66,6 +66,6 @@ public class MapperProfile : Profile
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(us => us.DefaultRuleset))
             .ForMember(x => x.RulesetIsControlled, opt => opt.MapFrom(us => us.DefaultRulesetIsControlled));
         CreateMap<Tournament, TournamentSearchResultDTO>()
-            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Mode));
+            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Ruleset));
     }
 }

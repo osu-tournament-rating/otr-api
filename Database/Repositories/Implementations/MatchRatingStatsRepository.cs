@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
+using Database.Enums;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,7 +25,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Mat
         return await _context
             .MatchRatingStats.Where(x =>
                 x.PlayerId == playerId
-                && x.Match.Tournament.Mode == mode
+                && x.Match.Tournament.Ruleset == (Ruleset)mode
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
             )
@@ -50,7 +51,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Mat
         return await _context
             .MatchRatingStats.Where(x =>
                 x.PlayerId == playerId
-                && x.Match.Tournament.Mode == mode
+                && x.Match.Tournament.Ruleset == (Ruleset)mode
                 && x.Match.StartTime != null
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
@@ -73,7 +74,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Mat
         return await _context
             .MatchRatingStats.Where(x =>
                 x.PlayerId == playerId
-                && x.Match.Tournament.Mode == mode
+                && x.Match.Tournament.Ruleset == (Ruleset)mode
                 && x.Match.StartTime != null
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
@@ -86,7 +87,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Mat
     public async Task<DateTime?> GetOldestForPlayerAsync(int playerId, int mode) =>
         await _context
             .MatchRatingStats.Where(x =>
-                x.PlayerId == playerId && x.Match.Tournament.Mode == mode && x.Match.StartTime != null
+                x.PlayerId == playerId && x.Match.Tournament.Ruleset == (Ruleset)mode && x.Match.StartTime != null
             )
             .Select(x => x.Match.StartTime)
             .MinAsync();
@@ -104,7 +105,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Mat
                 _context.PlayerMatchStats.Any(pms =>
                     pms.PlayerId == mrs.PlayerId
                     && pms.TeammateIds.Contains(teammateId)
-                    && pms.Match.Tournament.Mode == mode
+                    && pms.Match.Tournament.Ruleset == (Ruleset)mode
                     && pms.Match.StartTime >= dateMin
                     && pms.Match.StartTime <= dateMax
                 )
@@ -125,7 +126,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Mat
                 _context.PlayerMatchStats.Any(pms =>
                     pms.PlayerId == mrs.PlayerId
                     && pms.OpponentIds.Contains(opponentId)
-                    && pms.Match.Tournament.Mode == mode
+                    && pms.Match.Tournament.Ruleset == (Ruleset)mode
                     && pms.Match.StartTime >= dateMin
                     && pms.Match.StartTime <= dateMax
                 )

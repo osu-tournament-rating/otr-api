@@ -16,7 +16,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
 
     public async Task<bool> ExistsAsync(string name, int mode) =>
-        await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Mode == mode);
+        await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Ruleset == (Ruleset)mode);
 
     public async Task<int> CountPlayedAsync(
         int playerId,
@@ -52,7 +52,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .Include(t => t.Matches)
             .ThenInclude(m => m.RatingStats)
             .Where(t =>
-                t.Mode == mode
+                t.Ruleset == (Ruleset)mode
                 // Contains *any* match that is:
                 && t.Matches.Any(m =>
                     // Within time range
