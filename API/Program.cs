@@ -536,7 +536,7 @@ if (app.Environment.IsDevelopment())
     mapper.ConfigurationProvider.AssertConfigurationIsValid();
 
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(x => { x.SwaggerEndpoint("/swagger/v1/swagger.yaml", "osu! Tournament Rating API"); });
     app.MapControllers().AllowAnonymous();
 }
 else
