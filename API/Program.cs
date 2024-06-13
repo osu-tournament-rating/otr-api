@@ -257,7 +257,7 @@ builder.Services.AddSwaggerGen(options =>
         {
             Version = "v1",
             Title = "osu! Tournament Rating API",
-            Description = "An API for interacting with the o!TR database",
+            Description = "An API for interacting with the osu! Tournament Rating platform",
             TermsOfService = new Uri(
                 "https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/usage/limits/en.md"
             )
