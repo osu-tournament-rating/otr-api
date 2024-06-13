@@ -253,11 +253,11 @@ builder.Services.AddSwaggerGen(options =>
     options.SchemaGeneratorOptions.SupportNonNullableReferenceTypes = true;
     options.SwaggerDoc(
         "v1",
-        new OpenApiInfo()
+        new OpenApiInfo
         {
             Version = "v1",
             Title = "osu! Tournament Rating API",
-            Description = "An API for interacting with the osu! Tournament Rating platform",
+            Description = "The official resource for reading and writing data within the osu! Tournament Rating platform.",
             TermsOfService = new Uri(
                 "https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/usage/limits/en.md"
             )
