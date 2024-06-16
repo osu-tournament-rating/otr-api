@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Processor;
 using Database.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Database.Entities;
 
@@ -11,105 +10,84 @@ namespace Database.Entities;
 /// Represents a player
 /// </summary>
 [Table("players")]
-[Index("OsuId", Name = "Players_osuid", IsUnique = true)]
-[SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
+[SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-public class Player
+[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
+public class Player : UpdateableEntityBase
 {
     /// <summary>
-    /// Primary key
-    /// </summary>
-    [Key]
-    [Column("id")]
-    public int Id { get; set; }
-
-    /// <summary>
-    /// osu! id of the player
+    /// osu! id
     /// </summary>
     [Column("osu_id")]
     public long OsuId { get; set; }
 
     /// <summary>
-    /// Date the entity was created
-    /// </summary>
-    [Column("created", TypeName = "timestamp with time zone")]
-    public DateTime Created { get; set; }
-
-    /// <summary>
-    /// Last recorded osu! standard rank for the player
-    /// </summary>
-    [Column("rank_standard")]
-    public int? RankStandard { get; set; }
-
-    /// <summary>
-    /// Last recorded osu! taiko rank for the player
-    /// </summary>
-    [Column("rank_taiko")]
-    public int? RankTaiko { get; set; }
-
-    /// <summary>
-    /// Last recorded osu! catch rank for the player
-    /// </summary>
-
-    [Column("rank_catch")]
-    public int? RankCatch { get; set; }
-
-    /// <summary>
-    /// Last recorded osu! mania rank for the player
-    /// </summary>
-    [Column("rank_mania")]
-    public int? RankMania { get; set; }
-
-    /// <summary>
-    /// Date of the last update to the entity
-    /// </summary>
-    [Column("updated", TypeName = "timestamp with time zone")]
-    public DateTime? Updated { get; set; }
-
-    /// <summary>
     /// osu! username of the player
     /// </summary>
-    [Column("username")]
     [MaxLength(32)]
+    [Column("username")]
     public string? Username { get; set; }
 
     /// <summary>
-    /// osu! country code of the player
+    /// ISO country code
     /// </summary>
-    [Column("country")]
     [MaxLength(4)]
+    [Column("country")]
     public string? Country { get; set; }
 
     /// <summary>
-    /// Preferred ruleset of the player
+    /// <see cref="Enums.Ruleset"/> as set on the <see cref="Player"/>'s osu! profile
     /// </summary>
     [Column("default_ruleset")]
     public Ruleset? Ruleset { get; set; }
 
     /// <summary>
-    /// Earliest known standard rank available for the player after they started playing tournaments
+    /// Last recorded <see cref="Ruleset.Standard"/> rank
+    /// </summary>
+    [Column("rank_standard")]
+    public int? RankStandard { get; set; }
+
+    /// <summary>
+    /// Last recorded <see cref="Ruleset.Taiko"/> rank
+    /// </summary>
+    [Column("rank_taiko")]
+    public int? RankTaiko { get; set; }
+
+    /// <summary>
+    /// Last recorded <see cref="Ruleset.Catch"/> rank
+    /// </summary>
+    [Column("rank_catch")]
+    public int? RankCatch { get; set; }
+
+    /// <summary>
+    /// Last recorded <see cref="Ruleset.Mania"/> rank
+    /// </summary>
+    [Column("rank_mania")]
+    public int? RankMania { get; set; }
+
+    /// <summary>
+    /// Earliest known <see cref="Ruleset.Standard"/> rank available for the player after they started playing tournaments
     /// </summary>
     [Column("earliest_osu_global_rank")]
     public int? EarliestOsuGlobalRank { get; set; }
 
     /// <summary>
-    /// Earliest known mania rank available for the player after they started playing tournaments
-    /// </summary>
-    [Column("earliest_mania_global_rank")]
-    public int? EarliestManiaGlobalRank { get; set; }
-
-    /// <summary>
-    /// Earliest known taiko rank available for the player after they started playing tournaments
+    /// Earliest known <see cref="Ruleset.Taiko"/> rank available for the player after they started playing tournaments
     /// </summary>
     [Column("earliest_taiko_global_rank")]
     public int? EarliestTaikoGlobalRank { get; set; }
 
     /// <summary>
-    /// Earliest known catch rank available for the player after they started playing tournaments
+    /// Earliest known <see cref="Ruleset.Catch"/> rank available for the player after they started playing tournaments
     /// </summary>
     [Column("earliest_catch_global_rank")]
     public int? EarliestCatchGlobalRank { get; set; }
+
+    /// <summary>
+    /// Earliest known <see cref="Ruleset.Mania"/> rank available for the player after they started playing tournaments
+    /// </summary>
+    [Column("earliest_mania_global_rank")]
+    public int? EarliestManiaGlobalRank { get; set; }
 
     /// <summary>
     /// Date for the earliest known standard rank available for the player after they started playing tournaments
@@ -118,52 +96,53 @@ public class Player
     public DateTime? EarliestOsuGlobalRankDate { get; set; }
 
     /// <summary>
-    /// Date for the earliest known mania rank available for the player after they started playing tournaments
-    /// </summary>
-    [Column("earliest_mania_global_rank_date")]
-    public DateTime? EarliestManiaGlobalRankDate { get; set; }
-
-    /// <summary>
-    /// Date for the earliest known taiko rank available for the player after they started playing tournaments
+    /// Date for the earliest known <see cref="Ruleset.Taiko"/> rank available for the player after they started
+    /// playing tournaments
     /// </summary>
     [Column("earliest_taiko_global_rank_date")]
     public DateTime? EarliestTaikoGlobalRankDate { get; set; }
 
     /// <summary>
-    /// Date for the earliest known catch rank available for the player after they started playing tournaments
+    /// Date for the earliest known <see cref="Ruleset.Catch"/> rank available for the player after they started
+    /// playing tournaments
     /// </summary>
     [Column("earliest_catch_global_rank_date")]
     public DateTime? EarliestCatchGlobalRankDate { get; set; }
 
     /// <summary>
-    /// All match rating stats for the player
+    /// Date for the earliest known <see cref="Ruleset.Mania"/> rank available for the player after they started
+    /// playing tournaments
     /// </summary>
-    public ICollection<MatchRatingStats> MatchRatingStats { get; set; } = new List<MatchRatingStats>();
+    [Column("earliest_mania_global_rank_date")]
+    public DateTime? EarliestManiaGlobalRankDate { get; set; }
 
     /// <summary>
-    /// All match scores for the player
+    /// The <see cref="User"/> that owns the <see cref="Player"/>
     /// </summary>
-    public ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
+    public User? User { get; set; }
 
     /// <summary>
-    /// All match stats for the player
-    /// </summary>
-    [InverseProperty("Player")]
-    public virtual IEnumerable<PlayerMatchStats> MatchStats { get; set; } = null!;
-
-    /// <summary>
-    /// All rating adjustments for the player
-    /// </summary>
-    public ICollection<RatingAdjustment> RatingAdjustments { get; set; } = new List<RatingAdjustment>();
-
-    /// <summary>
-    /// All o!tr ratings for the player
+    /// A collection of <see cref="BaseStats"/> owned by the <see cref="Player"/>
     /// </summary>
     public ICollection<BaseStats> Ratings { get; set; } = new List<BaseStats>();
 
     /// <summary>
-    /// The associated user for the player
+    /// A collection of <see cref="RatingAdjustment"/>s owned by the <see cref="Player"/>
     /// </summary>
-    [InverseProperty("Player")]
-    public virtual User? User { get; set; }
+    public ICollection<RatingAdjustment> RatingAdjustments { get; set; } = new List<RatingAdjustment>();
+
+    /// <summary>
+    /// A collection of <see cref="Entities.Processor.MatchRatingStats"/> owned by the <see cref="Player"/>
+    /// </summary>
+    public ICollection<MatchRatingStats> MatchRatingStats { get; set; } = new List<MatchRatingStats>();
+
+    /// <summary>
+    /// A collection of <see cref="MatchScore"/>s owned by the <see cref="Player"/>
+    /// </summary>
+    public ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
+
+    /// <summary>
+    /// A collection of <see cref="PlayerMatchStats"/> owned by the <see cref="Player"/>
+    /// </summary>
+    public IEnumerable<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();
 }

@@ -53,8 +53,7 @@ public class PlayerMatchStats
     [Column("opponent_ids")]
     public int[] OpponentIds { get; set; } = [];
 
-    [InverseProperty("MatchStats")]
-    public virtual Player Player { get; set; } = null!;
+    public Player Player { get; set; } = null!;
 
     public Match Match { get; set; } = null!;
 }
