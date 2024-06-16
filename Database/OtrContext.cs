@@ -308,11 +308,6 @@ public partial class OtrContext(
             entity.Property(e => e.Created).HasDefaultValueSql(SqlCurrentTimestamp);
         });
 
-        modelBuilder.Entity<PendingTournament>(entity =>
-        {
-            entity.Property(e => e.Created).HasDefaultValueSql(SqlCurrentTimestamp);
-        });
-
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("User_pk");
