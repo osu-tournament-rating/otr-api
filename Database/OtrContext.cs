@@ -103,18 +103,19 @@ public class OtrContext(
 
         modelBuilder.Entity<GameWinRecord>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("game_win_records_pk");
-            entity.Property(e => e.Id).UseIdentityColumn();
+            entity.Property(gwr => gwr.Id).UseIdentityAlwaysColumn();
 
+            entity.Property(gwr => gwr.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Game
             entity
-                .HasOne(e => e.Game)
-                .WithOne(e => e.WinRecord)
-                .HasForeignKey<GameWinRecord>(e => e.GameId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("game_win_records_games_id_fk");
+                .HasOne(gwr => gwr.Game)
+                .WithOne(g => g.WinRecord)
+                .HasForeignKey<GameWinRecord>(gwr => gwr.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(x => x.GameId);
             entity.HasIndex(x => x.Winners);
+            entity.HasIndex(x => x.GameId).IsUnique();
         });
 
         modelBuilder.Entity<Match>(entity =>

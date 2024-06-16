@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Interfaces;
+using Database.Entities.Processor;
 using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -133,6 +134,5 @@ public class Game : IUpdateableEntity
     /// <summary>
     /// The win record for the game
     /// </summary>
-    [InverseProperty("Game")]
-    public virtual GameWinRecord? WinRecord { get; set; }
+    public GameWinRecord? WinRecord { get; set; }
 }

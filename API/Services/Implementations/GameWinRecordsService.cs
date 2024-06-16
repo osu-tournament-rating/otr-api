@@ -1,6 +1,8 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using Database.Entities;
+using Database.Entities.Processor;
+using Database.Enums;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -14,8 +16,8 @@ public class GameWinRecordsService(IGameWinRecordsRepository gameWinRecordsRepos
             GameId = item.GameId,
             Winners = item.Winners,
             Losers = item.Losers,
-            WinnerTeam = item.WinnerTeam,
-            LoserTeam = item.LoserTeam
+            WinnerTeam = (Team)item.WinnerTeam,
+            LoserTeam = (Team)item.LoserTeam
         })
             .ToList();
 
