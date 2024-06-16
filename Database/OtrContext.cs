@@ -265,9 +265,11 @@ public class OtrContext(
 
         modelBuilder.Entity<OAuthClient>(entity =>
         {
-            entity.HasKey(x => x.Id).HasName("oauth_clients_pk");
-            entity.Property(x => x.Id).UseIdentityColumn();
+            entity.Property(c => c.Id).UseIdentityAlwaysColumn();
 
+            entity.Property(c => c.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // RateLimitOverrides as an object is stored in a column as JSON
             entity
                 .OwnsOne(e => e.RateLimitOverrides, rlo =>
                 {
@@ -276,13 +278,12 @@ public class OtrContext(
                     rlo.Property(p => p.Window).HasDefaultValue(null);
                 });
 
-            entity.Property(x => x.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
-
+            // Relation: User
             entity
-                .HasOne(e => e.User)
-                .WithMany(e => e.Clients)
-                .OnDelete(DeleteBehavior.Cascade)
-                .IsRequired(false);
+                .HasOne(c => c.User)
+                .WithMany(u => u.Clients)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Player>(entity =>

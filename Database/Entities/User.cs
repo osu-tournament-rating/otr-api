@@ -45,8 +45,10 @@ public class User : IUpdateableEntity
     [InverseProperty("User")]
     public virtual Player Player { get; set; } = null!;
 
-    [InverseProperty("User")]
-    public virtual ICollection<OAuthClient>? Clients { get; set; }
+    /// <summary>
+    /// A collection of <see cref="OAuthClient"/>s owned by the user
+    /// </summary>
+    public ICollection<OAuthClient> Clients { get; set; } = new List<OAuthClient>();
 
     /// <summary>
     /// A collection of <see cref="Match"/>es submitted by the user
