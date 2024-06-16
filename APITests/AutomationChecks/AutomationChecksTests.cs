@@ -132,23 +132,24 @@ public class AutomationChecksTests
         Assert.True(MatchAutomationChecks.ValidGameMode(match));
     }
 
-    [Fact]
-    public void Match_FailsTournamentCheck_WhenMismatchedIds()
-    {
-        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.TournamentId = 5;
-        match.Tournament.Id = 6;
-        Assert.False(MatchAutomationChecks.HasTournament(match));
-    }
-
-    [Fact]
-    public void Match_PassesTournamentCheck_WhenIdsMatch()
-    {
-        Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
-        match.TournamentId = 5;
-        match.Tournament.Id = 5;
-        Assert.True(MatchAutomationChecks.HasTournament(match));
-    }
+    // TODO: Remove, impossible test case
+    // [Fact]
+    // public void Match_FailsTournamentCheck_WhenMismatchedIds()
+    // {
+    //     Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+    //     match.TournamentId = 5;
+    //     match.Tournament.Id = 6;
+    //     Assert.False(MatchAutomationChecks.HasTournament(match));
+    // }
+    //
+    // [Fact]
+    // public void Match_PassesTournamentCheck_WhenIdsMatch()
+    // {
+    //     Match match = _matchesServiceMock.Object.GetMatchesNeedingAutoCheckAsync().Result.First();
+    //     match.TournamentId = 5;
+    //     match.Tournament.Id = 5;
+    //     Assert.True(MatchAutomationChecks.HasTournament(match));
+    // }
 
     [Fact]
     public void Match_FailsNameCheck()

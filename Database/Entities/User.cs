@@ -46,15 +46,14 @@ public class User : IUpdateableEntity
     [InverseProperty("SubmittedBy")]
     public virtual ICollection<Match>? SubmittedMatches { get; set; }
 
-    [InverseProperty("SubmittedBy")]
-    public virtual ICollection<Tournament>? SubmittedTournaments { get; set; }
+    /// <summary>
+    /// A collection of <see cref="Tournament"/>s submitted by the user
+    /// </summary>
+    public ICollection<Tournament> SubmittedTournaments { get; set; } = new List<Tournament>();
 
     // Assuming the user has permission to verify, the matches they do verify will be here
     [InverseProperty("VerifiedBy")]
     public virtual ICollection<Match>? VerifiedMatches { get; set; }
-
-    [InverseProperty("VerifiedBy")]
-    public ICollection<Tournament> VerifiedTournaments { get; set; } = new Collection<Tournament>();
 
     [InverseProperty("Verifier")]
     public virtual ICollection<MatchDuplicate>? VerifiedDuplicates { get; set; }

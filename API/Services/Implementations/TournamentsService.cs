@@ -81,7 +81,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
         existing.Name = wrapper.Name;
         existing.Abbreviation = wrapper.Abbreviation;
         existing.ForumUrl = wrapper.ForumUrl;
-        existing.Ruleset = (Ruleset)wrapper.Mode;
+        existing.Ruleset = (Ruleset)wrapper.Ruleset;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
         existing.TeamSize = wrapper.TeamSize;
 

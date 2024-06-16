@@ -1,6 +1,7 @@
 // ReSharper disable CommentTypo
 
 using System.Diagnostics.CodeAnalysis;
+using Database.Enums;
 
 namespace API.DTOs;
 
@@ -35,7 +36,7 @@ public class TournamentDTO
     /// <summary>
     /// osu! ruleset
     /// </summary>
-    public int Mode { get; set; }
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Expected in-match team size

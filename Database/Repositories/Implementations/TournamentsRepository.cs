@@ -74,7 +74,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Beatmap)
-            .Include(e => e.SubmittedBy)
+            .Include(e => e.SubmittedByUser)
             .AsSplitQuery();
     }
 }

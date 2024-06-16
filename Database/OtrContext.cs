@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database;
 
-public partial class OtrContext(
+public class OtrContext(
     DbContextOptions<OtrContext> options) : DbContext(options)
 {
     /// <summary>
@@ -305,7 +305,33 @@ public partial class OtrContext(
 
         modelBuilder.Entity<Tournament>(entity =>
         {
-            entity.Property(e => e.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+            entity.Property(t => t.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(t => t.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: User (Submitter)
+            entity
+                .HasOne(t => t.SubmittedByUser)
+                .WithMany(u => u.SubmittedTournaments)
+                .HasForeignKey(t => t.SubmittedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Relation: User (Verifier)
+            entity
+                .HasOne(t => t.VerifiedByUser)
+                .WithMany()
+                .HasForeignKey(t => t.VerifiedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Relation: Matches
+            entity
+                .HasMany(t => t.Matches)
+                .WithOne(m => m.Tournament)
+                .HasForeignKey(m => m.TournamentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(t => t.Ruleset);
+            entity.HasIndex(t => new { t.Name, t.Abbreviation }).IsUnique();
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -322,6 +348,13 @@ public partial class OtrContext(
                     rlo.Property(p => p.PermitLimit).HasDefaultValue(null);
                     rlo.Property(p => p.Window).HasDefaultValue(null);
                 });
+
+            // Relation: Tournaments (Submitter)
+            entity
+                .HasMany(u => u.SubmittedTournaments)
+                .WithOne(t => t.SubmittedByUser)
+                .HasForeignKey(t => t.SubmittedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasMany(e => e.Clients).WithOne(e => e.User).IsRequired(false);
 
@@ -359,10 +392,5 @@ public partial class OtrContext(
                 .WithOne(u => u.Settings)
                 .IsRequired();
         });
-
-        OnModelCreatingPartial(modelBuilder);
     }
-
-    // ReSharper disable once PartialMethodWithSinglePart
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
