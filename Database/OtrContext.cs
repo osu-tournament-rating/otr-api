@@ -197,13 +197,16 @@ public class OtrContext(
 
         modelBuilder.Entity<MatchRatingStats>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("match_rating_stats_pk");
-            entity.Property(e => e.Id).UseIdentityColumn();
+            entity.Property(mrs => mrs.Id).UseIdentityAlwaysColumn();
 
+            entity.Property(m => m.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Player
             entity
-                .HasOne(e => e.Player)
-                .WithMany(e => e.MatchRatingStats)
-                .HasForeignKey(e => e.PlayerId);
+                .HasOne(mrs => mrs.Player)
+                .WithMany(p => p.MatchRatingStats)
+                .HasForeignKey(mrs => mrs.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Match
             entity
@@ -211,6 +214,8 @@ public class OtrContext(
                 .WithMany(m => m.MatchRatingStats)
                 .HasForeignKey(mrs => mrs.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(mrs => new { mrs.PlayerId, mrs.MatchId }).IsUnique();
         });
 
         modelBuilder.Entity<MatchScore>(entity =>
@@ -281,7 +286,10 @@ public class OtrContext(
 
             entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-            entity.HasMany(e => e.MatchScores).WithOne(m => m.Player).OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasMany(e => e.MatchScores)
+                .WithOne(m => m.Player)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: RatingAdjustments
             entity
@@ -295,6 +303,13 @@ public class OtrContext(
                 .HasMany(p => p.Ratings)
                 .WithOne(bs => bs.Player)
                 .HasForeignKey(bs => bs.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: MatchRatingStats
+            entity
+                .HasMany(p => p.MatchRatingStats)
+                .WithOne(mrs => mrs.Player)
+                .HasForeignKey(mrs => mrs.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity

@@ -138,8 +138,7 @@ public class Player
     /// <summary>
     /// All match rating stats for the player
     /// </summary>
-    [InverseProperty("Player")]
-    public virtual IEnumerable<MatchRatingStats> MatchRatingStats { get; set; } = null!;
+    public ICollection<MatchRatingStats> MatchRatingStats { get; set; } = new List<MatchRatingStats>();
 
     /// <summary>
     /// All match scores for the player
@@ -161,8 +160,7 @@ public class Player
     /// <summary>
     /// All o!tr ratings for the player
     /// </summary>
-    [InverseProperty("Player")]
-    public virtual ICollection<BaseStats> Ratings { get; set; } = new List<BaseStats>();
+    public ICollection<BaseStats> Ratings { get; set; } = new List<BaseStats>();
 
     /// <summary>
     /// The associated user for the player
