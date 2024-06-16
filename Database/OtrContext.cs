@@ -16,6 +16,12 @@ public class OtrContext(
     /// </summary>
     private const string SqlCurrentTimestamp = "CURRENT_TIMESTAMP";
 
+    /// <summary>
+    /// SQL formatted date to be used as a placeholder for date columns
+    /// </summary>
+    /// <remarks>This is the (approx) creation date of osu! :D</remarks>
+    private const string SqlPlaceholderDate = "'2007-09-17T00:00:00'::timestamp";
+
     public virtual DbSet<BaseStats> BaseStats { get; set; }
     public virtual DbSet<Beatmap> Beatmaps { get; set; }
     public virtual DbSet<Game> Games { get; set; }
@@ -71,16 +77,19 @@ public class OtrContext(
 
         modelBuilder.Entity<Game>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("osugames_pk");
-            entity.Property(e => e.Id).UseIdentityColumn();
+            entity.Property(g => g.Id).UseIdentityAlwaysColumn();
 
-            entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(e => e.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
+            entity.Property(g => g.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
+            entity.Property(g => g.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
+
+            // Relation: Match
             entity
-                .HasOne(d => d.Match)
-                .WithMany(p => p.Games)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("games_matches_id_fk");
+                .HasOne(g => g.Match)
+                .WithMany(m => m.Games)
+                .HasForeignKey(g => g.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Beatmap
             entity
@@ -89,21 +98,23 @@ public class OtrContext(
                 .HasForeignKey(g => g.BeatmapId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            entity
-                .HasMany(g => g.MatchScores)
-                .WithOne(s => s.Game)
-                .OnDelete(DeleteBehavior.Cascade);
-
             // Relation: GameWinRecord
             entity
                 .HasOne(g => g.WinRecord)
                 .WithOne(gwr => gwr.Game)
                 .HasForeignKey<GameWinRecord>(gwr => gwr.GameId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Relation: MatchScores
+            entity
+                .HasMany(g => g.MatchScores)
+                .WithOne(ms => ms.Game)
+                .HasForeignKey(ms => ms.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(x => x.GameId);
             entity.HasIndex(x => x.MatchId);
             entity.HasIndex(x => x.StartTime);
+            entity.HasIndex(x => x.GameId).IsUnique();
         });
 
         modelBuilder.Entity<GameWinRecord>(entity =>
@@ -144,12 +155,20 @@ public class OtrContext(
                 .WithMany(u => u.VerifiedMatches)
                 .HasForeignKey(e => e.VerifierUserId)
                 .IsRequired(false);
-            entity.HasMany(e => e.Games).WithOne(g => g.Match).OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: Games
+            entity
+                .HasMany(m => m.Games)
+                .WithOne(g => g.Match)
+                .HasForeignKey(g => g.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity
                 .HasOne(e => e.Tournament)
                 .WithMany(t => t.Matches)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
+
             entity
                 .HasMany(e => e.Stats)
                 .WithOne(s => s.Match)
@@ -176,11 +195,12 @@ public class OtrContext(
 
             entity.Property(e => e.IsValid).HasDefaultValue(true);
 
+            // Relation: Game
             entity
-                .HasOne(d => d.Game)
-                .WithMany(p => p.MatchScores)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("match_scores_games_id_fk");
+                .HasOne(ms => ms.Game)
+                .WithMany(g => g.MatchScores)
+                .HasForeignKey(ms => ms.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity
                 .HasOne(d => d.Player)

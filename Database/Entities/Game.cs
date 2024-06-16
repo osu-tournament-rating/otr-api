@@ -1,58 +1,44 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
-using Microsoft.EntityFrameworkCore;
-
-// ReSharper disable StringLiteralTypo
 
 namespace Database.Entities;
 
 /// <summary>
-/// Represents a single game (osu! map) played in a tournament match
+/// A game played in a <see cref="Match"/>
 /// </summary>
-[SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [Table("games")]
-[Index("GameId", Name = "osugames_gameid", IsUnique = true)]
-public class Game : IUpdateableEntity
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
+[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
+public class Game : UpdateableEntityBase
 {
     /// <summary>
-    /// Primary key
+    /// osu! id
     /// </summary>
-    [Key]
-    [Column("id")]
-    public int Id { get; set; }
+    [Column("game_id")]
+    public long GameId { get; set; }
 
     /// <summary>
-    /// The id of the match the game was played in
-    /// </summary>
-    [Column("match_id")]
-    public int MatchId { get; set; }
-
-    /// <summary>
-    /// The ruleset for the game
+    /// The <see cref="Enums.Ruleset"/> the game was played in
     /// </summary>
     [Column("ruleset")]
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// The scoring type used for the game
+    /// The <see cref="Enums.ScoringType"/> used
     /// </summary>
     [Column("scoring_type")]
     public ScoringType ScoringType { get; set; }
 
     /// <summary>
-    /// The team type used for the game
+    /// The <see cref="Enums.TeamType"/> used
     /// </summary>
     [Column("team_type")]
     public TeamType TeamType { get; set; }
 
     /// <summary>
-    /// The mods enabled for the game
+    /// The enabled <see cref="Enums.Mods"/>
     /// </summary>
     [Column("mods")]
     public Mods Mods { get; set; }
@@ -63,18 +49,14 @@ public class Game : IUpdateableEntity
     [Column("post_mod_sr")]
     public double PostModSr { get; set; }
 
-    /// <summary>
-    /// The osu! id for the game
-    /// </summary>
-    [Column("game_id")]
-    public long GameId { get; set; }
-
+    // TODO: Data worker refactor
     /// <summary>
     /// The verification status of the game
     /// </summary>
     [Column("verification_status")]
     public Old_GameVerificationStatus? VerificationStatus { get; set; }
 
+    // TODO: Data worker refactor
     /// <summary>
     /// The reason the game was rejected from verification
     /// </summary>
@@ -82,55 +64,46 @@ public class Game : IUpdateableEntity
     public Old_GameRejectionReason? RejectionReason { get; set; }
 
     /// <summary>
-    /// Date the entity was created
+    /// Timestamp for the beginning of the game
     /// </summary>
-    [Column("created", TypeName = "timestamp with time zone")]
-    public DateTime Created { get; set; }
-
-    /// <summary>
-    /// Timestamp of the beginning of the game
-    /// </summary>
-    [Column("start_time", TypeName = "timestamp with time zone")]
+    [Column("start_time")]
     public DateTime StartTime { get; set; }
 
     /// <summary>
-    /// Timestamp of the end of the game
+    /// Timestamp for the end of the game
     /// </summary>
-    [Column("end_time", TypeName = "timestamp with time zone")]
-    public DateTime? EndTime { get; set; }
+    [Column("end_time")]
+    public DateTime EndTime { get; set; }
 
     /// <summary>
-    /// Date of the last update to the entity
+    /// Id of the <see cref="Entities.Match"/> that the game was played in
     /// </summary>
-    [Column("updated", TypeName = "timestamp with time zone")]
-    public DateTime? Updated { get; set; }
+    [Column("match_id")]
+    public int MatchId { get; set; }
 
     /// <summary>
-    /// The match the game was played in
+    /// The <see cref="Entities.Match"/> the game was played in
     /// </summary>
-    [ForeignKey("MatchId")]
-    [InverseProperty("Games")]
-    public virtual Match Match { get; set; } = null!;
+    public Match Match { get; set; } = null!;
 
     /// <summary>
-    /// The id of the beatmap the game was played on
+    /// Id of the <see cref="Entities.Beatmap"/> played during the game
     /// </summary>
     [Column("beatmap_id")]
     public int? BeatmapId { get; set; }
 
     /// <summary>
-    /// The beatmap the game was played on
+    /// The <see cref="Entities.Beatmap"/> played during the game
     /// </summary>
     public Beatmap? Beatmap { get; set; }
-
-    /// <summary>
-    /// All match scores for the game
-    /// </summary>
-    [InverseProperty("Game")]
-    public virtual ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
 
     /// <summary>
     /// The win record for the game
     /// </summary>
     public GameWinRecord? WinRecord { get; set; }
+
+    /// <summary>
+    /// All match scores for the game
+    /// </summary>
+    public ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
 }

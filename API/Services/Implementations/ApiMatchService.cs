@@ -274,7 +274,7 @@ public class ApiMatchService(
             MatchId = existingMatch.Id,
             GameId = osuApiGame.GameId,
             StartTime = osuApiGame.StartTime,
-            EndTime = osuApiGame.EndTime,
+            EndTime = osuApiGame.EndTime!.Value,
             BeatmapId = beatmapIdResult,
             Ruleset = osuApiGame.Ruleset,
             ScoringType = osuApiGame.ScoringType,

@@ -61,8 +61,7 @@ public class MatchScore
     [Column("is_valid")]
     public bool? IsValid { get; set; }
 
-    [InverseProperty("MatchScores")]
-    public virtual Game Game { get; set; } = null!;
+    public Game Game { get; set; } = null!;
 
     [ForeignKey("PlayerId")]
     [InverseProperty("MatchScores")]

@@ -44,8 +44,7 @@ public class Match : MatchEntityBase, IUpdateableEntity
     /// <summary>
     /// All games played during the match
     /// </summary>
-    [InverseProperty("Match")]
-    public virtual ICollection<Game> Games { get; set; } = new List<Game>();
+    public ICollection<Game> Games { get; set; } = new List<Game>();
 
     /// <summary>
     /// The tournament that the match was played in
