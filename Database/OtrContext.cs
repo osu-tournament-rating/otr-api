@@ -1,4 +1,5 @@
 ﻿using Database.Entities;
+using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
@@ -340,7 +341,14 @@ public class OtrContext(
             entity.Property(e => e.Id).UseIdentityColumn();
 
             entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(e => e.Scopes);
+
+            // Relation: UserSettings
+            entity
+                .HasOne(u => u.Settings)
+                .WithOne()
+                .HasForeignKey<UserSettings>(us => us.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity
                 .OwnsOne(e => e.RateLimitOverrides, rlo =>
                 {
@@ -370,27 +378,24 @@ public class OtrContext(
                 .WithOne(e => e.Verifier)
                 .HasForeignKey(e => e.VerifiedBy)
                 .IsRequired(false);
-
-            entity
-                .HasOne(e => e.Settings)
-                .WithOne(s => s.User)
-                .OnDelete(DeleteBehavior.Cascade)
-                .IsRequired();
         });
 
         modelBuilder.Entity<UserSettings>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("user_settings_pk");
-            entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+            entity.Property(us => us.Id).UseIdentityAlwaysColumn();
 
-            entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(us => us.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
-            entity.Property(e => e.DefaultRulesetIsControlled).IsRequired().HasDefaultValue(false);
+            entity.Property(us => us.DefaultRuleset).HasDefaultValue(Ruleset.Standard);
 
+            // Relation: User
             entity
-                .HasOne(e => e.User)
+                .HasOne<User>()
                 .WithOne(u => u.Settings)
-                .IsRequired();
+                .HasForeignKey<UserSettings>(us => us.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(us => us.UserId).IsUnique();
         });
     }
 }

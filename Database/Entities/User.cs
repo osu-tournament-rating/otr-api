@@ -36,6 +36,11 @@ public class User : IUpdateableEntity
     /// </summary>
     public RateLimitOverrides RateLimitOverrides { get; set; } = null!;
 
+    /// <summary>
+    /// Settings that control behaviors on the o!TR website
+    /// </summary>
+    public UserSettings Settings { get; set; } = null!;
+
     [ForeignKey("PlayerId")]
     [InverseProperty("User")]
     public virtual Player Player { get; set; } = null!;
@@ -57,7 +62,4 @@ public class User : IUpdateableEntity
 
     [InverseProperty("Verifier")]
     public virtual ICollection<MatchDuplicate>? VerifiedDuplicates { get; set; }
-
-    [InverseProperty("User")]
-    public UserSettings Settings { get; set; } = null!;
 }

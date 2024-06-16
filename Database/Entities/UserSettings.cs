@@ -1,50 +1,32 @@
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Database.Entities.Interfaces;
 using Database.Enums;
 
 namespace Database.Entities;
 
 /// <summary>
-/// Represents a user's settings for otr-web
+/// <see cref="Entities.User"/> controlled values that define behaviors on the o!TR website
 /// </summary>
 [Table("user_settings")]
-public class UserSettings : IUpdateableEntity
+public class UserSettings : UpdateableEntityBase
 {
-    [Key]
-    [Column("id")]
-    public int Id { get; set; }
-
-    [Column("created")]
-    public DateTime Created { get; set; }
-
-    [Column("updated")]
-    public DateTime? Updated { get; set; }
-
     /// <summary>
-    /// The id of the associated user
-    /// </summary>
-    [Column("user_id")]
-    public int UserId { get; set; }
-
-    /// <summary>
-    /// The default ruleset for the associated user
+    /// Default <see cref="Ruleset"/> for browsing
     /// </summary>
     [Column("default_ruleset")]
-    public Ruleset? DefaultRuleset { get; set; }
+    public Ruleset DefaultRuleset { get; set; }
 
     /// <summary>
-    /// Denotes whether the associated user has overwritten their default ruleset
+    /// Denotes if the user has overwritten the <see cref="DefaultRuleset"/>
     /// </summary>
     /// <remarks>
-    /// If false, the default ruleset is always the same as the user's default ruleset on the osu! website
+    /// If false, <see cref="DefaultRuleset"/> will sync to the <see cref="Ruleset"/> selected on the user's osu! profile
     /// </remarks>
     [Column("default_ruleset_controlled")]
     public bool DefaultRulesetIsControlled { get; set; }
 
     /// <summary>
-    /// The associated user
+    /// Id of the associated <see cref="User"/>
     /// </summary>
-    [InverseProperty("Settings")]
-    public User User { get; set; } = null!;
+    [Column("user_id")]
+    public int UserId { get; init; }
 }
