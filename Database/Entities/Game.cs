@@ -34,12 +34,6 @@ public class Game : IUpdateableEntity
     public int MatchId { get; set; }
 
     /// <summary>
-    /// The id of the beatmap the game was played on
-    /// </summary>
-    [Column("beatmap_id")]
-    public int? BeatmapId { get; set; }
-
-    /// <summary>
     /// The ruleset for the game
     /// </summary>
     [Column("ruleset")]
@@ -119,11 +113,15 @@ public class Game : IUpdateableEntity
     public virtual Match Match { get; set; } = null!;
 
     /// <summary>
+    /// The id of the beatmap the game was played on
+    /// </summary>
+    [Column("beatmap_id")]
+    public int? BeatmapId { get; set; }
+
+    /// <summary>
     /// The beatmap the game was played on
     /// </summary>
-    [ForeignKey("BeatmapId")]
-    [InverseProperty("Games")]
-    public virtual Beatmap? Beatmap { get; set; }
+    public Beatmap? Beatmap { get; set; }
 
     /// <summary>
     /// All match scores for the game

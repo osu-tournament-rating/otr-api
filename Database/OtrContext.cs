@@ -55,16 +55,18 @@ public class OtrContext(
 
         modelBuilder.Entity<Beatmap>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("beatmaps_pk");
-            entity.Property(e => e.Id).UseIdentityColumn();
-            entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(b => b.Id).UseIdentityAlwaysColumn();
 
+            entity.Property(b => b.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Games
             entity
                 .HasMany(b => b.Games)
                 .WithOne(g => g.Beatmap)
                 .HasForeignKey(g => g.BeatmapId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("games_beatmaps_id_fk");
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(b => b.BeatmapId).IsUnique();
         });
 
         modelBuilder.Entity<Game>(entity =>
@@ -80,12 +82,12 @@ public class OtrContext(
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("games_matches_id_fk");
 
+            // Relation: Beatmap
             entity
                 .HasOne(g => g.Beatmap)
                 .WithMany(b => b.Games)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("games_beatmaps_id_fk")
-                .IsRequired(false);
+                .HasForeignKey(g => g.BeatmapId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             entity
                 .HasMany(g => g.MatchScores)

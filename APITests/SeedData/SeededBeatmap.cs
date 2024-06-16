@@ -24,7 +24,7 @@ public static class SeededBeatmap
             Length = 188,
             Title = "Otoshimae",
             DiffName = "Extreme",
-            GameMode = 0,
+            Ruleset = 0,
             CircleCount = 674,
             SliderCount = 430,
             SpinnerCount = 0,

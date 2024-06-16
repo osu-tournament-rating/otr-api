@@ -124,7 +124,7 @@ public class OsuApiService : IOsuApiService
                     DrainTime = response.Drain,
                     Length = response.Length.TotalSeconds,
                     Title = response.Beatmapset.Title,
-                    GameMode = (int)response.Mode,
+                    Ruleset = (Ruleset)response.Mode,
                     CircleCount = response.CircleCount,
                     SliderCount = response.SliderCount,
                     SpinnerCount = response.SpinnerCount,

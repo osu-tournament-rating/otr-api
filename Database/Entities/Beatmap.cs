@@ -1,108 +1,150 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
+using Database.Enums;
 
 namespace Database.Entities;
 
+/// <summary>
+/// An osu! beatmap
+/// </summary>
 [Table("beatmaps")]
-[Index("BeatmapId", Name = "beatmaps_beatmapid", IsUnique = true)]
-public class Beatmap
+[SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+public class Beatmap : EntityBase
 {
-    [Key]
-    [Column("id")]
-    public int Id { get; set; }
-
-    [Column("artist")]
-    [MaxLength(512)]
-    [JsonProperty("artist")]
-    public string Artist { get; set; } = null!;
-
+    /// <summary>
+    /// osu! id of the beatmap
+    /// </summary>
     [Column("beatmap_id")]
-    [JsonProperty("beatmap_id")]
-    public long BeatmapId { get; set; }
+    public long BeatmapId { get; init; }
 
-    [Column("bpm")]
-    [JsonProperty("bpm")]
-    public double? Bpm { get; set; }
+    /// <summary>
+    /// Song title
+    /// </summary>
+    [MaxLength(512)]
+    [Column("title")]
+    public string Title { get; init; } = null!;
 
+    /// <summary>
+    /// Song artist
+    /// </summary>
+    [MaxLength(512)]
+    [Column("artist")]
+    public string Artist { get; init; } = null!;
+
+    /// <summary>
+    /// Difficulty name
+    /// </summary>
+    [MaxLength(255)]
+    [Column("diff_name")]
+    public string? DiffName { get; init; }
+
+    /// <summary>
+    /// osu! id of the mapper
+    /// </summary>
     [Column("mapper_id")]
-    [JsonProperty("creator_id")]
-    public long MapperId { get; set; }
+    public long MapperId { get; init; }
 
-    [Column("mapper_name")]
+    /// <summary>
+    /// osu! username of the mapper
+    /// </summary>
     [MaxLength(32)]
-    [JsonProperty("creator")]
-    public string MapperName { get; set; } = null!;
+    [Column("mapper_name")]
+    public string MapperName { get; init; } = null!;
 
+    /// <summary>
+    /// Star rating
+    /// </summary>
     [Column("sr")]
-    [JsonProperty("difficultyrating")]
     public double Sr { get; set; }
 
+    /// <summary>
+    /// Beats per minute
+    /// </summary>
+    [Column("bpm")]
+    public double? Bpm { get; init; }
+
+    /// <summary>
+    /// Circle size
+    /// </summary>
+    [Column("cs")]
+    public double Cs { get; init; }
+
+    /// <summary>
+    /// Approach rate
+    /// </summary>
+    [Column("ar")]
+    public double Ar { get; init; }
+
+    /// <summary>
+    /// Hp
+    /// </summary>
+    [Column("hp")]
+    public double Hp { get; init; }
+
+    /// <summary>
+    /// Overall difficulty
+    /// </summary>
+    [Column("od")]
+    public double Od { get; init; }
+
+    /// <summary>
+    /// Measure of aim difficulty
+    /// </summary>
     [Column("aim_diff")]
-    [JsonProperty("diff_aim")]
     public double? AimDiff { get; set; }
 
+    /// <summary>
+    /// Measure of speed difficulty
+    /// </summary>
     [Column("speed_diff")]
-    [JsonProperty("diff_speed")]
     public double? SpeedDiff { get; set; }
 
-    [Column("cs")]
-    [JsonProperty("diff_size")]
-    public double Cs { get; set; }
-
-    [Column("ar")]
-    [JsonProperty("diff_approach")]
-    public double Ar { get; set; }
-
-    [Column("hp")]
-    [JsonProperty("diff_drain")]
-    public double Hp { get; set; }
-
-    [Column("od")]
-    [JsonProperty("diff_overall")]
-    public double Od { get; set; }
-
+    /// <summary>
+    /// Total length of song that is playable (mapped)
+    /// </summary>
     [Column("drain_time")]
-    [JsonProperty("hit_length")]
-    public double DrainTime { get; set; }
+    public double DrainTime { get; init; }
 
+    /// <summary>
+    /// Total length of the song
+    /// </summary>
     [Column("length")]
-    [JsonProperty("total_length")]
-    public double Length { get; set; }
+    public double Length { get; init; }
 
-    [Column("title")]
-    [MaxLength(512)]
-    [JsonProperty("title")]
-    public string Title { get; set; } = null!;
+    /// <summary>
+    /// The <see cref="Enums.Ruleset"/> this <see cref="Beatmap"/> is playable on
+    /// </summary>
+    [Column("ruleset")]
+    public Ruleset Ruleset { get; init; }
 
-    [Column("diff_name")]
-    [MaxLength(255)]
-    [JsonProperty("version")]
-    public string? DiffName { get; set; }
-
-    [Column("game_mode")]
-    [JsonProperty("mode")]
-    public int GameMode { get; set; }
-
+    /// <summary>
+    /// Count of circles
+    /// </summary>
     [Column("circle_count")]
-    [JsonProperty("count_normal")]
-    public int CircleCount { get; set; }
+    public int CircleCount { get; init; }
 
+    /// <summary>
+    /// Count of sliders
+    /// </summary>
     [Column("slider_count")]
-    [JsonProperty("count_slider")]
-    public int SliderCount { get; set; }
+    public int SliderCount { get; init; }
 
+    /// <summary>
+    /// Count of spinners
+    /// </summary>
     [Column("spinner_count")]
-    [JsonProperty("count_spinner")]
-    public int SpinnerCount { get; set; }
+    public int SpinnerCount { get; init; }
 
+    /// <summary>
+    /// Max possible combo
+    /// </summary>
     [Column("max_combo")]
-    [JsonProperty("max_combo")]
-    public int? MaxCombo { get; set; }
+    public int? MaxCombo { get; init; }
 
-    [Column("created", TypeName = "timestamp with time zone")]
-    [JsonProperty("submit_date")] // Mapping to submit_date as the closest match
-    public DateTime Created { get; set; }
-    public virtual ICollection<Game> Games { get; set; } = new List<Game>();
+    /// <summary>
+    /// A collection of <see cref="Game"/>s that were played on this <see cref="Beatmap"/>
+    /// </summary>
+    public ICollection<Game> Games { get; init; } = new List<Game>();
 }
