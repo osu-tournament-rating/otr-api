@@ -1,72 +1,49 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using Database.Entities.Interfaces;
-using Microsoft.EntityFrameworkCore;
-
-// ReSharper disable StringLiteralTypo
 
 namespace Database.Entities;
 
 /// <summary>
-/// Represents a tournament match
+/// A match played in a <see cref="Tournament"/>
 /// </summary>
 [Table("matches")]
-[Index("MatchId", Name = "osumatches_matchid", IsUnique = true)]
-[SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
+[SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-public class Match : MatchEntityBase, IUpdateableEntity
+[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
+public class Match : MatchEntityBase
 {
     /// <summary>
-    /// Date the entity was created
+    /// The <see cref="Tournament"/> that the match was played in
     /// </summary>
-    [Column("created", TypeName = "timestamp with time zone")]
-    public DateTime Created { get; set; }
+    public Tournament Tournament { get; set; } = null!;
 
     /// <summary>
-    /// Date of the last update to the entity
+    /// The <see cref="User"/> that submitted the match
     /// </summary>
-    [Column("updated", TypeName = "timestamp with time zone")]
-    public DateTime? Updated { get; set; }
+    public User? SubmittedByUser { get; set; }
 
     /// <summary>
-    /// The user that submitted the match
+    /// The <see cref="User"/> that verified the match
     /// </summary>
-    [InverseProperty("SubmittedMatches")]
-    public virtual User? SubmittedBy { get; set; }
+    public User? VerifiedByUser { get; set; }
 
     /// <summary>
-    /// The user that verified the match
+    /// The <see cref="MatchWinRecord"/> for the match
     /// </summary>
-    [InverseProperty("VerifiedMatches")]
-    public virtual User? VerifiedBy { get; set; }
+    public MatchWinRecord? WinRecord { get; set; }
 
     /// <summary>
-    /// All games played during the match
+    /// A collection of the <see cref="Game"/>s played in the match
     /// </summary>
     public ICollection<Game> Games { get; set; } = new List<Game>();
 
     /// <summary>
-    /// The tournament that the match was played in
+    /// A collection of <see cref="Processor.MatchRatingStats"/> for the match
     /// </summary>
-    [InverseProperty("Matches")]
-    public virtual Tournament Tournament { get; set; } = null!;
+    public ICollection<MatchRatingStats> MatchRatingStats { get; set; } = new List<MatchRatingStats>();
 
     /// <summary>
-    /// All player stats for the match
+    /// A collection of <see cref="Processor.PlayerMatchStats"/> for the match
     /// </summary>
-    [InverseProperty("Match")]
-    public virtual ICollection<PlayerMatchStats> Stats { get; set; } = new List<PlayerMatchStats>();
-
-    /// <summary>
-    /// All rating stats for the match
-    /// </summary>
-    [InverseProperty("Match")]
-    public virtual ICollection<MatchRatingStats> RatingStats { get; set; } = new List<MatchRatingStats>();
-
-    /// <summary>
-    /// The win record for the match
-    /// </summary>
-    [InverseProperty("Match")]
-    public virtual MatchWinRecord WinRecord { get; set; } = new();
+    public ICollection<PlayerMatchStats> PlayerMatchStats { get; set; } = new List<PlayerMatchStats>();
 }

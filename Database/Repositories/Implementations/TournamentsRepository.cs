@@ -50,7 +50,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
         return _context.Tournaments
             .Include(t => t.Matches)
-            .ThenInclude(m => m.RatingStats)
+            .ThenInclude(m => m.MatchRatingStats)
             .Where(t =>
                 t.Ruleset == (Ruleset)mode
                 // Contains *any* match that is:
@@ -61,7 +61,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
                     // Verified
                     && m.VerificationStatus == Old_MatchVerificationStatus.Verified
                     // Participated in by player
-                    && m.RatingStats.Any(stat => stat.PlayerId == playerId)
+                    && m.MatchRatingStats.Any(stat => stat.PlayerId == playerId)
                 ));
     }
 

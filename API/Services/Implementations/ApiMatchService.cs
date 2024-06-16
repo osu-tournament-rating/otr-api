@@ -206,9 +206,8 @@ public class ApiMatchService(
     {
         existingMatch.Name = apiMatch.OsuApiMatch.Name;
         existingMatch.StartTime = apiMatch.OsuApiMatch.StartTime;
-        existingMatch.EndTime = apiMatch.OsuApiMatch.EndTime;
+        existingMatch.EndTime = apiMatch.OsuApiMatch.EndTime!.Value;
         existingMatch.IsApiProcessed = true;
-        existingMatch.VerificationInfo = null;
 
         await matchesRepository.UpdateAsync(existingMatch);
 

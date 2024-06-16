@@ -40,9 +40,8 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
                     VerificationStatus = verificationStatus,
                     NeedsAutoCheck = true,
                     IsApiProcessed = false,
-                    VerificationSource = (Old_MatchVerificationSource?)verificationSource,
-                    VerifierUserId = verify ? wrapper.SubmitterId : null,
-                    SubmitterUserId = wrapper.SubmitterId
+                    VerifiedByUserId = verify ? wrapper.SubmitterId : null,
+                    SubmittedByUserId = wrapper.SubmitterId
                 }).ToList()
         });
         return mapper.Map<TournamentCreatedResultDTO>(tournament);

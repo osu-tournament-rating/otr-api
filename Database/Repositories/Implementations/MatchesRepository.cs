@@ -90,8 +90,6 @@ public class MatchesRepository(
         }
 
         match.VerificationStatus = status;
-        match.VerificationSource = source;
-        match.VerificationInfo = info;
         await UpdateAsync(match);
 
         return match;

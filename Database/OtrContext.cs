@@ -79,7 +79,7 @@ public class OtrContext(
         {
             entity.Property(g => g.Id).UseIdentityAlwaysColumn();
 
-            entity.Property(e => e.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+            entity.Property(g => g.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
             entity.Property(g => g.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
             entity.Property(g => g.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
@@ -112,9 +112,9 @@ public class OtrContext(
                 .HasForeignKey(ms => ms.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(x => x.MatchId);
-            entity.HasIndex(x => x.StartTime);
-            entity.HasIndex(x => x.GameId).IsUnique();
+            entity.HasIndex(g => g.MatchId);
+            entity.HasIndex(g => g.StartTime);
+            entity.HasIndex(g => g.GameId).IsUnique();
         });
 
         modelBuilder.Entity<GameWinRecord>(entity =>
@@ -136,25 +136,40 @@ public class OtrContext(
 
         modelBuilder.Entity<Match>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("matches_pk");
-            entity.HasIndex(e => e.MatchId).IsUnique();
-            entity.Property(e => e.Id).UseIdentityColumn();
+            entity.Property(m => m.Id).UseIdentityAlwaysColumn();
 
-            entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(m => m.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
-            // These are nullable because a user's account could be deleted
-            entity.Property(e => e.SubmitterUserId).IsRequired(false).HasDefaultValue(null);
+            entity.Property(m => m.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
+            entity.Property(m => m.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
+
+            // Relation: Tournament
             entity
-                .HasOne(e => e.SubmittedBy)
+                .HasOne(m => m.Tournament)
+                .WithMany(t => t.Matches)
+                .HasForeignKey(m => m.TournamentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: User (Submitter)
+            entity
+                .HasOne(m => m.SubmittedByUser)
                 .WithMany(u => u.SubmittedMatches)
-                .HasForeignKey(e => e.SubmitterUserId)
-                .IsRequired(false);
+                .HasForeignKey(m => m.SubmittedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
 
+            // Relation: User (Verifier)
             entity
-                .HasOne(e => e.VerifiedBy)
-                .WithMany(u => u.VerifiedMatches)
-                .HasForeignKey(e => e.VerifierUserId)
-                .IsRequired(false);
+                .HasOne(m => m.VerifiedByUser)
+                .WithMany()
+                .HasForeignKey(m => m.VerifiedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Relation: MatchWinRecord
+            entity
+                .HasOne(m => m.WinRecord)
+                .WithOne(mwr => mwr.Match)
+                .HasForeignKey<MatchWinRecord>(mwr => mwr.MatchId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Relation: Games
             entity
@@ -163,20 +178,21 @@ public class OtrContext(
                 .HasForeignKey(g => g.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: MatchRatingStats
             entity
-                .HasOne(e => e.Tournament)
-                .WithMany(t => t.Matches)
-                .IsRequired()
+                .HasMany(m => m.MatchRatingStats)
+                .WithOne(mrs => mrs.Match)
+                .HasForeignKey(mrs => mrs.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: PlayerMatchStats
             entity
-                .HasMany(e => e.Stats)
-                .WithOne(s => s.Match)
-                .HasForeignKey(e => e.MatchId)
-                .IsRequired()
+                .HasMany(m => m.PlayerMatchStats)
+                .WithOne(pms => pms.Match)
+                .HasForeignKey(pms => pms.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(x => x.MatchId);
+            entity.HasIndex(m => m.MatchId).IsUnique();
         });
 
         modelBuilder.Entity<MatchRatingStats>(entity =>
@@ -184,8 +200,17 @@ public class OtrContext(
             entity.HasKey(e => e.Id).HasName("match_rating_stats_pk");
             entity.Property(e => e.Id).UseIdentityColumn();
 
-            entity.HasOne(e => e.Player).WithMany(e => e.MatchRatingStats).HasForeignKey(e => e.PlayerId);
-            entity.HasOne(e => e.Match).WithMany(e => e.RatingStats).HasForeignKey(e => e.MatchId);
+            entity
+                .HasOne(e => e.Player)
+                .WithMany(e => e.MatchRatingStats)
+                .HasForeignKey(e => e.PlayerId);
+
+            // Relation: Match
+            entity
+                .HasOne(mrs => mrs.Match)
+                .WithMany(m => m.MatchRatingStats)
+                .HasForeignKey(mrs => mrs.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<MatchScore>(entity =>
@@ -216,12 +241,12 @@ public class OtrContext(
             entity.HasKey(e => e.Id).HasName("match_win_records_pk");
             entity.Property(e => e.Id).UseIdentityColumn();
 
+            // Relation: Match
             entity
-                .HasOne(e => e.Match)
-                .WithOne(e => e.WinRecord)
-                .HasForeignKey<MatchWinRecord>(e => e.MatchId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("match_win_records_matches_id_fk");
+                .HasOne(mwr => mwr.Match)
+                .WithOne(m => m.WinRecord)
+                .HasForeignKey<MatchWinRecord>(mwr => mwr.MatchId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasIndex(e => e.LoserRoster);
             entity.HasIndex(e => e.WinnerRoster);
@@ -286,8 +311,16 @@ public class OtrContext(
             entity.HasKey(e => e.Id).HasName("PlayerMatchStats_pk");
             entity.Property(e => e.Id).UseIdentityColumn();
 
-            entity.HasOne(e => e.Player).WithMany(e => e.MatchStats).HasForeignKey(e => e.PlayerId);
-            entity.HasOne(e => e.Match).WithMany(e => e.Stats).HasForeignKey(e => e.MatchId);
+            entity
+                .HasOne(e => e.Player)
+                .WithMany(e => e.MatchStats)
+                .HasForeignKey(e => e.PlayerId);
+
+            entity
+                .HasOne(pms => pms.Match)
+                .WithMany(m => m.PlayerMatchStats)
+                .HasForeignKey(pms => pms.MatchId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => e.PlayerId);
             entity.HasIndex(e => new { e.PlayerId, e.MatchId }).IsUnique();
@@ -368,6 +401,29 @@ public class OtrContext(
                 .HasMany(u => u.SubmittedTournaments)
                 .WithOne(t => t.SubmittedByUser)
                 .HasForeignKey(t => t.SubmittedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Relation: Tournaments (Verifier)
+            // Navigation not mapped
+            entity
+                .HasMany<Tournament>()
+                .WithOne(t => t.VerifiedByUser)
+                .HasForeignKey(t => t.VerifiedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Relation: Matches (Submitter)
+            entity
+                .HasMany(u => u.SubmittedMatches)
+                .WithOne(m => m.SubmittedByUser)
+                .HasForeignKey(m => m.SubmittedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Relation: Matches (Verifier)
+            // Navigation not mapped
+            entity
+                .HasMany<Match>()
+                .WithOne(m => m.VerifiedByUser)
+                .HasForeignKey(m => m.VerifiedByUserId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasMany(e => e.Clients).WithOne(e => e.User).IsRequired(false);

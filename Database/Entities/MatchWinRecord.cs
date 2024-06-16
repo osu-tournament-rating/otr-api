@@ -57,6 +57,5 @@ public class MatchWinRecord
     /// <summary>
     /// The <see cref="Match"/> this record belongs to
     /// </summary>
-    [InverseProperty("WinRecord")]
     public Match Match { get; set; } = null!;
 }

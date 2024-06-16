@@ -51,9 +51,8 @@ public class MatchesService(
                 VerificationStatus = verificationStatus,
                 NeedsAutoCheck = true,
                 IsApiProcessed = false,
-                VerificationSource = (Old_MatchVerificationSource?)verificationSource,
-                VerifierUserId = verify ? submitterId : null,
-                SubmitterUserId = submitterId
+                VerifiedByUserId = verify ? submitterId : null,
+                SubmittedByUserId = submitterId
             });
         }
 

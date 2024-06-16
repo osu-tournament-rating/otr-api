@@ -77,7 +77,7 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
 
         // Combine data points, converting Match.StartTime and RatingAdjustment.Timestamp to Date for grouping
         var combinedDataPoints = matchRatingStats
-            .Select(mrs => new { mrs.StartTime!.Value.Date, mrs.DataPoint })
+            .Select(mrs => new { mrs.StartTime.Date, mrs.DataPoint })
             .Concat(ratingAdjustments.Select(ra => new { ra.Timestamp.Date, ra.DataPoint }))
             .GroupBy(x => x.Date)
             .OrderBy(g => g.Key)

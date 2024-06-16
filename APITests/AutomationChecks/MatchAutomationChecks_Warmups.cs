@@ -39,7 +39,7 @@ public class MatchAutomationChecks_Warmups
             MatchId = matchData.OsuApiMatch.MatchId,
             Name = matchData.OsuApiMatch.Name,
             StartTime = matchData.OsuApiMatch.StartTime,
-            EndTime = matchData.OsuApiMatch.EndTime,
+            EndTime = matchData.OsuApiMatch.EndTime!.Value,
             Games = new List<Game>()
         };
 

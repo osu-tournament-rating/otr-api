@@ -30,11 +30,9 @@ public static class SeededMatch
             Created = new DateTime(2023, 09, 30),
             Updated = new DateTime(2023, 11, 04),
             EndTime = new DateTime(2022, 01, 23),
-            VerificationInfo = null,
-            VerificationSource = Old_MatchVerificationSource.System,
             VerificationStatus = Old_MatchVerificationStatus.Verified,
-            SubmitterUserId = 21,
-            VerifierUserId = null,
+            SubmittedByUserId = 21,
+            VerifiedByUserId = null,
             TournamentId = tournamentId,
             NeedsAutoCheck = false,
             IsApiProcessed = true

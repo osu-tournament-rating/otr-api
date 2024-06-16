@@ -5,81 +5,54 @@ using Database.Enums;
 
 namespace Database.Entities;
 
+/// <summary>
+/// Base entity for matches
+/// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-public class MatchEntityBase
+public abstract class MatchEntityBase : UpdateableEntityBase
 {
     /// <summary>
-    /// Primary key
+    /// osu! id
     /// </summary>
-    [Key]
-    [Column("id")]
-    public int Id { get; set; }
-
-    /// <summary>
-    /// The osu! match id
-    /// </summary>
+    /// <example>https://osu.ppy.sh/community/matches/[113475484]</example>
     [Column("match_id")]
     public long MatchId { get; set; }
 
     /// <summary>
     /// Name of the lobby the match was played in
     /// </summary>
+    /// <example>5WC2024: (France) vs (Germany)</example>
+    [MaxLength(512)]
     [Column("name")]
-    [MaxLength(512)]
-    public string? Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// Timestamp of the beginning of the match
+    /// Timestamp for the beginning of the match
     /// </summary>
-    [Column("start_time", TypeName = "timestamp with time zone")]
-    public DateTime? StartTime { get; set; }
+    [Column("start_time")]
+    public DateTime StartTime { get; set; }
 
     /// <summary>
-    /// Timestamp of the end of the match
+    /// Timestamp for the end of the match
     /// </summary>
-    [Column("end_time", TypeName = "timestamp with time zone")]
-    public DateTime? EndTime { get; set; }
+    [Column("end_time")]
+    public DateTime EndTime { get; set; }
 
-    // TODO: DELETE FIELD
-    /// <summary>
-    /// Any additional information included when <see cref="VerificationStatus"/> changes
-    /// </summary>
-    [Column("verification_info")]
-    [MaxLength(512)]
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public string? VerificationInfo { get; set; }
-
-    /// <summary>
-    /// The type of source that verified the match
-    /// </summary>
-    [Column("verification_source")]
-    [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-    public Old_MatchVerificationSource? VerificationSource { get; set; }
-
+    // TODO: Data worker refactor
     /// <summary>
     /// The verification status of the match
     /// </summary>
     [Column("verification_status")]
     public Old_MatchVerificationStatus? VerificationStatus { get; set; }
 
-    /// <summary>
-    /// The id of the user that verified the match
-    /// </summary>
-    [Column("verified_by_user")]
-    public int? VerifierUserId { get; set; }
-
-    /// <summary>
-    /// The id of the tournament the match was played in
-    /// </summary>
-    [Column("tournament_id")]
-    public int TournamentId { get; set; }
-
+    // TODO: Data worker refactor
     /// <summary>
     /// Indicates to background workers that the match needs to be processed
     /// </summary>
     [Column("needs_auto_check")]
     public bool? NeedsAutoCheck { get; set; }
 
+    // TODO: Data worker refactor
     /// <summary>
     /// Indicates to background workers that the match needs to be processed with the osu! api
     /// </summary>
@@ -87,8 +60,20 @@ public class MatchEntityBase
     public bool? IsApiProcessed { get; set; }
 
     /// <summary>
-    /// The id of the user that submitted the match
+    /// Id of the <see cref="Tournament"/> the match was played in
     /// </summary>
-    [Column("submitted_by_user")]
-    public int? SubmitterUserId { get; set; }
+    [Column("tournament_id")]
+    public int TournamentId { get; set; }
+
+    /// <summary>
+    /// Id of the <see cref="User"/> that submitted the match
+    /// </summary>
+    [Column("submitted_by_user_id")]
+    public int? SubmittedByUserId { get; set; }
+
+    /// <summary>
+    /// Id of the <see cref="User"/> that verified the match
+    /// </summary>
+    [Column("verified_by_user_id")]
+    public int? VerifiedByUserId { get; set; }
 }

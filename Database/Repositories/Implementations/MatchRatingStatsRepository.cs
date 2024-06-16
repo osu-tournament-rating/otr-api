@@ -31,7 +31,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Mat
             )
             .Include(x => x.Match)
             .ThenInclude(x => x.Tournament)
-            .GroupBy(x => x.Match.StartTime!.Value.Date)
+            .GroupBy(x => x.Match.StartTime.Date)
             .ToListAsync();
     }
 

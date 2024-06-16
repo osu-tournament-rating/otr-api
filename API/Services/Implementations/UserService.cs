@@ -37,8 +37,7 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
         foreach (Match match in submissions)
         {
             match.VerificationStatus = Old_MatchVerificationStatus.Rejected;
-            match.VerifierUserId = rejecterUserId;
-            match.VerificationSource = verificationSource;
+            match.VerifiedByUserId = rejecterUserId;
         }
 
         return await matchesRepository.UpdateAsync(submissions) == submissions.Count();

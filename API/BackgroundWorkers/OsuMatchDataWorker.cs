@@ -100,15 +100,11 @@ public class OsuMatchDataWorker(
         // Match verification checks
         if (MatchAutomationChecks.PassesAllChecks(match))
         {
-            match.VerificationStatus = match.VerifierUserId is not null ? Old_MatchVerificationStatus.Verified : Old_MatchVerificationStatus.PreVerified;
-            match.VerificationSource = Old_MatchVerificationSource.System;
-            match.VerificationInfo = null;
+            match.VerificationStatus = match.VerifiedByUserId is not null ? Old_MatchVerificationStatus.Verified : Old_MatchVerificationStatus.PreVerified;
         }
         else
         {
             match.VerificationStatus = Old_MatchVerificationStatus.Rejected;
-            match.VerificationSource = Old_MatchVerificationSource.System;
-            match.VerificationInfo = "Failed automation checks";
 
             match.NeedsAutoCheck = false;
         }

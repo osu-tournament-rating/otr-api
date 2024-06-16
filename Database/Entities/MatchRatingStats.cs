@@ -71,6 +71,5 @@ public class MatchRatingStats
     [InverseProperty("MatchRatingStats")]
     public virtual Player Player { get; set; } = null!;
 
-    [InverseProperty("RatingStats")]
-    public virtual Match Match { get; set; } = null!;
+    public Match Match { get; set; } = null!;
 }
