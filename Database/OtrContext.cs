@@ -247,8 +247,9 @@ public class OtrContext(
 
         modelBuilder.Entity<MatchWinRecord>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("match_win_records_pk");
-            entity.Property(e => e.Id).UseIdentityColumn();
+            entity.Property(mwr => mwr.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(mwr => mwr.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
             // Relation: Match
             entity
@@ -257,8 +258,9 @@ public class OtrContext(
                 .HasForeignKey<MatchWinRecord>(mwr => mwr.MatchId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            entity.HasIndex(e => e.LoserRoster);
-            entity.HasIndex(e => e.WinnerRoster);
+            entity.HasIndex(mwr => mwr.LoserRoster);
+            entity.HasIndex(mwr => mwr.WinnerRoster);
+            entity.HasIndex(mwr => mwr.MatchId).IsUnique();
         });
 
         modelBuilder.Entity<OAuthClient>(entity =>
