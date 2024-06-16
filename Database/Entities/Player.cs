@@ -143,8 +143,7 @@ public class Player
     /// <summary>
     /// All match scores for the player
     /// </summary>
-    [InverseProperty("Player")]
-    public virtual ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
+    public ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
 
     /// <summary>
     /// All match stats for the player

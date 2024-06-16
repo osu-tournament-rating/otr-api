@@ -1,71 +1,132 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Database.Entities;
 
+// TODO: Rename to "Score"
+/// <summary>
+/// Describes performance information relative to a single <see cref="Entities.Game"/> for a <see cref="Entities.Player"/>
+/// </summary>
+/// <remarks>
+/// Functionally, a <see cref="MatchScore"/> is a representation of a single "map" played in a
+/// <see cref="Entities.Match"/> by a <see cref="Entities.Player"/>
+/// </remarks>
 [Table("match_scores")]
-[Index("GameId", "PlayerId", Name = "match_scores_gameid_playerid", IsUnique = true)]
-public class MatchScore
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
+[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
+public class MatchScore : UpdateableEntityBase
 {
-    [Key]
-    [Column("id")]
-    public int Id { get; set; }
-
-    [Column("game_id")]
-    public int GameId { get; set; }
-
+    /// <summary>
+    /// The <see cref="Enums.Team"/> the <see cref="Player"/> played for in the match
+    /// </summary>
     [Column("team")]
     public int Team { get; set; }
 
+    /// <summary>
+    /// Total score
+    /// </summary>
     [Column("score")]
     public long Score { get; set; }
 
+    /// <summary>
+    /// Max combo obtained
+    /// </summary>
     [Column("max_combo")]
     public int MaxCombo { get; set; }
 
+    /// <summary>
+    /// Count of notes hit with "MEH" timing
+    /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu%21">osu! Judgement</a></remarks>
     [Column("count_50")]
     public int Count50 { get; set; }
 
+    /// <summary>
+    /// Count of notes hit with "OK" timing
+    /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu%21">osu! Judgement</a></remarks>
     [Column("count_100")]
     public int Count100 { get; set; }
 
+    /// <summary>
+    /// Count of notes hit with "GREAT" timing
+    /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu%21">osu! Judgement</a></remarks>
     [Column("count_300")]
     public int Count300 { get; set; }
 
+    /// <summary>
+    /// Count of misses
+    /// </summary>
     [Column("count_miss")]
     public int CountMiss { get; set; }
 
-    [Column("perfect")]
-    public bool Perfect { get; set; }
-
-    [Column("pass")]
-    public bool Pass { get; set; }
-
-    [Column("enabled_mods")]
-    public int? EnabledMods { get; set; }
-
+    /// <summary>
+    /// Count of combos completed without the highest possible accuracy on every note
+    /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Judgement/Katu">osu! Judgement - Katu</a></remarks>
     [Column("count_katu")]
     public int CountKatu { get; set; }
 
+    /// <summary>
+    /// Count of combos completed with the highest possible accuracy on every note
+    /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Judgement/Geki">osu! Judgement - Geki</a></remarks>
     [Column("count_geki")]
     public int CountGeki { get; set; }
 
-    [Column("player_id")]
-    public int PlayerId { get; set; }
+    /// <summary>
+    /// Denotes if the score is perfect (AKA, is an SS)
+    /// </summary>
+    [Column("pass")]
+    public bool Pass { get; set; }
 
     /// <summary>
-    ///  If not valid, the score is not sent to the rating processor.
+    /// Denotes if the <see cref="Player"/> passed
+    /// </summary>
+    [Column("perfect")]
+    public bool Perfect { get; set; }
+
+    /// <summary>
+    /// The <see cref="Mods"/> enabled for the score represented as an integer
+    /// </summary>
+    /// <remarks>
+    /// Mods are only populated at the <see cref="MatchScore"/> level for <see cref="Entities.Game"/>s played with
+    /// "FreeMod". If the <see cref="Game"/> was forced "ScoreV2 + NoFail", <see cref="MatchScore"/> mods will be null,
+    /// and mods should be referenced from the <see cref="Game"/> instead.
+    /// </remarks>
+    [Column("enabled_mods")]
+    public int? EnabledMods { get; set; }
+
+    // TODO: REMOVE
+    /// <summary>
+    /// If not valid, the score is not sent to the rating processor.
     /// </summary>
     [Column("is_valid")]
     public bool? IsValid { get; set; }
 
+    /// <summary>
+    /// Id of the <see cref="Entities.Game"/> that the <see cref="MatchScore"/> was a part of
+    /// </summary>
+    [Column("game_id")]
+    public int GameId { get; set; }
+
+    /// <summary>
+    /// The <see cref="Entities.Game"/> that the <see cref="MatchScore"/> was a part of
+    /// </summary>
     public Game Game { get; set; } = null!;
 
-    [ForeignKey("PlayerId")]
-    [InverseProperty("MatchScores")]
-    public virtual Player Player { get; set; } = null!;
+    /// <summary>
+    /// Id of the <see cref="Entities.Player"/> that owns the <see cref="MatchScore"/>
+    /// </summary>
+    [Column("player_id")]
+    public int PlayerId { get; set; }
+
+    /// <summary>
+    /// The <see cref="Entities.Player"/> that owns the <see cref="MatchScore"/>
+    /// </summary>
+    public Player Player { get; set; } = null!;
 
     [NotMapped]
     public Mods? EnabledModsEnum
@@ -82,8 +143,9 @@ public class MatchScore
     }
 
     /// <summary>
-    ///  Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
+    /// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
     /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Accuracy">osu! Accuracy</a></remarks>
     [NotMapped]
     public double AccuracyStandard
     {
@@ -101,8 +163,9 @@ public class MatchScore
     }
 
     /// <summary>
-    ///  Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
+    /// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
     /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Accuracy">osu! Accuracy</a></remarks>
     [NotMapped]
     public double AccuracyTaiko
     {
@@ -120,8 +183,9 @@ public class MatchScore
     }
 
     /// <summary>
-    ///  Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985).
+    /// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985).
     /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Accuracy">osu! Accuracy</a></remarks>
     [NotMapped]
     public double AccuracyCatch
     {
@@ -143,9 +207,9 @@ public class MatchScore
     }
 
     /// <summary>
-    ///  Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985). ScoreV2 accuracy as shown here
-    ///  https://osu.ppy.sh/wiki/en/Gameplay/Accuracy
+    /// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985). ScoreV2 accuracy as shown here
     /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Accuracy">osu! Accuracy</a></remarks>
     [NotMapped]
     public double AccuracyMania
     {

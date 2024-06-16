@@ -220,9 +220,11 @@ public class OtrContext(
 
         modelBuilder.Entity<MatchScore>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("match_scores_pk");
-            entity.Property(e => e.Id).UseIdentityColumn();
+            entity.Property(ms => ms.Id).UseIdentityAlwaysColumn();
 
+            entity.Property(ms => ms.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // TODO: REMOVE
             entity.Property(e => e.IsValid).HasDefaultValue(true);
 
             // Relation: Game
@@ -232,13 +234,15 @@ public class OtrContext(
                 .HasForeignKey(ms => ms.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: Player
             entity
-                .HasOne(d => d.Player)
+                .HasOne(ms => ms.Player)
                 .WithMany(p => p.MatchScores)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("match_scores_players_id_fk");
+                .HasForeignKey(ms => ms.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(x => x.PlayerId);
+            entity.HasIndex(ms => ms.PlayerId);
+            entity.HasIndex(ms => new { ms.PlayerId, ms.GameId }).IsUnique();
         });
 
         modelBuilder.Entity<MatchWinRecord>(entity =>
@@ -286,9 +290,11 @@ public class OtrContext(
 
             entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+            // Relation: MatchScores
             entity
-                .HasMany(e => e.MatchScores)
-                .WithOne(m => m.Player)
+                .HasMany(p => p.MatchScores)
+                .WithOne(ms => ms.Player)
+                .HasForeignKey(ms => ms.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: RatingAdjustments
