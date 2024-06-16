@@ -59,7 +59,4 @@ public class User : IUpdateableEntity
     // Assuming the user has permission to verify, the matches they do verify will be here
     [InverseProperty("VerifiedBy")]
     public virtual ICollection<Match>? VerifiedMatches { get; set; }
-
-    [InverseProperty("Verifier")]
-    public virtual ICollection<MatchDuplicate>? VerifiedDuplicates { get; set; }
 }

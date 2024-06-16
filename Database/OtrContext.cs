@@ -21,8 +21,6 @@ public class OtrContext(
     public virtual DbSet<Game> Games { get; set; }
     public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
     public virtual DbSet<Match> Matches { get; set; }
-    public virtual DbSet<MatchHistory> MatchHistory { get; set; }
-    public virtual DbSet<MatchDuplicate> MatchDuplicates { get; set; }
     public virtual DbSet<MatchRatingStats> MatchRatingStats { get; set; }
     public virtual DbSet<MatchScore> MatchScores { get; set; }
     public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
@@ -154,41 +152,6 @@ public class OtrContext(
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(x => x.MatchId);
-        });
-
-        modelBuilder.Entity<MatchHistory>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("matches_hist_pk");
-            entity.Property(e => e.Id).UseIdentityColumn();
-
-            // Set nullable and no action on delete because we want to keep the records if a match is deleted
-            entity.Property(e => e.ReferenceId).IsRequired(false).HasDefaultValue(null);
-            entity
-                .HasOne(e => e.ReferenceMatch)
-                .WithMany()
-                .HasForeignKey(e => e.ReferenceId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // Set nullable because the API itself performs many edits on matches records
-            entity.Property(e => e.ModifierId).IsRequired(false).HasDefaultValue(null);
-            // If an edit / delete record is being created, it means the data stopped being available on history creation
-            entity.Property(e => e.HistoryEndTime).HasDefaultValueSql("CURRENT_TIMESTAMP");
-            entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
-        });
-
-        modelBuilder.Entity<MatchDuplicate>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("match_duplicate_xref_pk");
-            entity.Property(e => e.Id).UseIdentityColumn();
-
-            entity.HasIndex(e => e.SuspectedDuplicateOf);
-            entity.HasIndex(e => e.OsuMatchId);
-
-            entity
-                .HasOne(e => e.Verifier)
-                .WithMany(e => e.VerifiedDuplicates)
-                .HasForeignKey(e => e.VerifiedBy)
-                .IsRequired(false);
         });
 
         modelBuilder.Entity<MatchRatingStats>(entity =>
@@ -382,12 +345,6 @@ public class OtrContext(
                 .WithOne(p => p.User)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("Users___fkplayerid")
-                .IsRequired(false);
-
-            entity
-                .HasMany(e => e.VerifiedDuplicates)
-                .WithOne(e => e.Verifier)
-                .HasForeignKey(e => e.VerifiedBy)
                 .IsRequired(false);
         });
 

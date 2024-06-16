@@ -17,14 +17,6 @@ public class MapperProfile : Profile
         CreateMap<Match, MatchDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset));
         CreateMap<Match, MatchSubmissionStatusDTO>();
-        CreateMap<Match, MatchHistory>()
-            .ForMember(x => x.ReferenceId, opt => opt.MapFrom(x => x.Id))
-            .ForMember(x => x.HistoryStartTime, opt => opt.MapFrom(x => x.Updated))
-            .ForMember(x => x.Id, opt => opt.Ignore())
-            .ForMember(x => x.HistoryAction, opt => opt.Ignore())
-            .ForMember(x => x.HistoryEndTime, opt => opt.Ignore())
-            .ForMember(x => x.ModifierId, opt => opt.Ignore())
-            .ForMember(x => x.ReferenceMatch, opt => opt.Ignore());
         CreateMap<Match, MatchCreatedResultDTO>()
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
