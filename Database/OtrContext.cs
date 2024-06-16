@@ -36,21 +36,21 @@ public class OtrContext(
     {
         modelBuilder.Entity<BaseStats>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("BaseStats_pk");
-            entity.Property(e => e.Id).UseIdentityAlwaysColumn();
+            entity.Property(bs => bs.Id).UseIdentityAlwaysColumn();
 
-            entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(bs => bs.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
+            // Relation: Player
             entity
-                .HasOne(d => d.Player)
+                .HasOne(bs => bs.Player)
                 .WithMany(p => p.Ratings)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("BaseStats___fkplayerid");
+                .HasForeignKey(bs => bs.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(x => new { x.PlayerId, x.Mode }).IsUnique();
+            entity.HasIndex(x => x.Mode);
             entity.HasIndex(x => x.PlayerId);
             entity.HasIndex(x => x.Rating).IsDescending();
-            entity.HasIndex(x => x.Mode);
+            entity.HasIndex(x => new { x.PlayerId, x.Mode }).IsUnique();
         });
 
         modelBuilder.Entity<Beatmap>(entity =>
@@ -87,14 +87,17 @@ public class OtrContext(
                 .HasConstraintName("games_beatmaps_id_fk")
                 .IsRequired(false);
 
-            entity.HasMany(g => g.MatchScores).WithOne(s => s.Game).OnDelete(DeleteBehavior.Cascade);
+            entity
+                .HasMany(g => g.MatchScores)
+                .WithOne(s => s.Game)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: GameWinRecord
             entity
                 .HasOne(g => g.WinRecord)
-                .WithOne(wr => wr.Game)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("games_game_win_records_id_fk")
-                .IsRequired();
+                .WithOne(gwr => gwr.Game)
+                .HasForeignKey<GameWinRecord>(gwr => gwr.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(x => x.GameId);
             entity.HasIndex(x => x.MatchId);
@@ -240,7 +243,13 @@ public class OtrContext(
                 .HasForeignKey(ra => ra.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasMany(e => e.Ratings).WithOne(r => r.Player).OnDelete(DeleteBehavior.Cascade);
+            // Relation: BaseStats
+            entity
+                .HasMany(p => p.Ratings)
+                .WithOne(bs => bs.Player)
+                .HasForeignKey(bs => bs.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity
                 .HasOne(e => e.User)
                 .WithOne(u => u.Player)

@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Utilities;
 using API.Utilities.Extensions;
 using Database.Entities;
+using Database.Entities.Processor;
 
 namespace APITests.SeedData;
 
@@ -19,8 +20,7 @@ public static class SeededBaseStats
             GlobalRank = 20,
             CountryRank = 2,
             MatchCostAverage = 1.23424,
-            Created = new DateTime(2023, 11, 11),
-            Updated = new DateTime(2023, 11, 12)
+            Created = new DateTime(2023, 11, 11)
         };
 
     public static List<BaseStats> GetSimpleLeaderboard(int size = 25)

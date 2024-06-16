@@ -1,4 +1,5 @@
 using Database.Entities;
+using Database.Entities.Processor;
 
 namespace Database.Repositories.Interfaces;
 
@@ -13,9 +14,6 @@ public interface IBaseStatsRepository : IRepository<BaseStats>
 
 
     Task<BaseStats?> GetForPlayerAsync(int playerId, int mode);
-
-
-    Task<int> InsertOrUpdateForPlayerAsync(int playerId, BaseStats baseStats);
 
 
     Task<int> BatchInsertAsync(IEnumerable<BaseStats> baseStats);

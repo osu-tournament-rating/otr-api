@@ -1,4 +1,5 @@
 using Database.Entities;
+using Database.Entities.Processor;
 using Database.Enums;
 using Database.Extensions;
 using Database.Repositories.Interfaces;
@@ -24,26 +25,6 @@ public class BaseStatsRepository(OtrContext context, IPlayersRepository playersR
 
     public async Task<BaseStats?> GetForPlayerAsync(int playerId, int mode) =>
         await _context.BaseStats.Where(x => x.PlayerId == playerId && x.Mode == (Ruleset)mode).FirstOrDefaultAsync();
-
-    public async Task<int> InsertOrUpdateForPlayerAsync(int playerId, BaseStats baseStats)
-    {
-        BaseStats? existingRating = await _context
-            .BaseStats.Where(r => r.PlayerId == baseStats.PlayerId && r.Mode == baseStats.Mode)
-            .FirstOrDefaultAsync();
-
-        if (existingRating != null)
-        {
-            existingRating.Rating = baseStats.Rating;
-            existingRating.Volatility = baseStats.Volatility;
-            existingRating.Updated = baseStats.Updated;
-        }
-        else
-        {
-            _context.BaseStats.Add(baseStats);
-        }
-
-        return await _context.SaveChangesAsync();
-    }
 
     public async Task<int> BatchInsertAsync(IEnumerable<BaseStats> baseStats)
     {

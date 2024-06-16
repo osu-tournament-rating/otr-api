@@ -6,6 +6,7 @@ using API.Utilities;
 using API.Utilities.Extensions;
 using Database;
 using Database.Entities;
+using Database.Entities.Processor;
 using Database.Enums;
 using Database.Extensions;
 using Database.Repositories.Implementations;

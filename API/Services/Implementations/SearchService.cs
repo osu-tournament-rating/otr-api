@@ -4,6 +4,7 @@ using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
 using Database.Entities;
+using Database.Entities.Processor;
 using Database.Enums;
 using Database.Repositories.Interfaces;
 
