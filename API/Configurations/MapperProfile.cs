@@ -3,6 +3,7 @@ using API.Utilities;
 using API.Utilities.Extensions;
 using AutoMapper;
 using Database.Entities;
+using Database.Entities.Processor;
 
 namespace API.Configurations;
 

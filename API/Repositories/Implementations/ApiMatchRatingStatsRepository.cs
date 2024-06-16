@@ -52,9 +52,10 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
 
         // Assuming RatingAdjustments should be grouped by their own timestamp since they may not have a Match.StartTime
         var ratingAdjustments = await _context
-            .RatingAdjustments.Where(ra =>
+            .RatingAdjustments
+            .Where(ra =>
                 ra.PlayerId == playerId
-                && ra.Mode == mode
+                && ra.Ruleset == (Ruleset)mode
                 && ra.Timestamp >= dateMin
                 && ra.Timestamp <= dateMax
             )

@@ -1,4 +1,5 @@
 ﻿using Database.Entities;
+using Database.Entities.Processor;
 using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -267,10 +268,14 @@ public class OtrContext(
             entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             entity.HasMany(e => e.MatchScores).WithOne(m => m.Player).OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: RatingAdjustments
             entity
                 .HasMany(e => e.RatingAdjustments)
                 .WithOne(ra => ra.Player)
+                .HasForeignKey(ra => ra.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
+
             entity.HasMany(e => e.Ratings).WithOne(r => r.Player).OnDelete(DeleteBehavior.Cascade);
             entity
                 .HasOne(e => e.User)
@@ -296,12 +301,18 @@ public class OtrContext(
 
         modelBuilder.Entity<RatingAdjustment>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("RatingAdjustment_pk");
-            entity.Property(e => e.Id).UseIdentityColumn();
+            entity.Property(ra => ra.Id).UseIdentityAlwaysColumn();
 
-            entity.HasOne(e => e.Player).WithMany(e => e.RatingAdjustments).HasForeignKey(e => e.PlayerId);
+            entity.Property(ra => ra.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
-            entity.HasIndex(e => new { e.PlayerId, e.Mode });
+            // Relation: Player
+            entity
+                .HasOne(ra => ra.Player)
+                .WithMany(p => p.RatingAdjustments)
+                .HasForeignKey(ra => ra.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.PlayerId, e.Ruleset });
         });
 
         modelBuilder.Entity<Tournament>(entity =>

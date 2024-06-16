@@ -1,6 +1,8 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using Database.Entities;
+using Database.Entities.Processor;
+using Database.Enums;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -15,14 +17,14 @@ public class RatingAdjustmentsesService(IRatingAdjustmentsRepository ratingAdjus
             var adjustment = new RatingAdjustment
             {
                 PlayerId = item.PlayerId,
-                Mode = item.Mode,
+                Ruleset = (Ruleset)item.Ruleset,
                 RatingAdjustmentAmount = item.RatingAdjustmentAmount,
                 VolatilityAdjustmentAmount = item.VolatilityAdjustmentAmount,
                 RatingBefore = item.RatingBefore,
                 RatingAfter = item.RatingAfter,
                 VolatilityBefore = item.VolatilityBefore,
                 VolatilityAfter = item.VolatilityAfter,
-                RatingAdjustmentType = item.RatingAdjustmentType,
+                RatingAdjustmentType = (RatingAdjustmentType)item.RatingAdjustmentType,
                 Timestamp = item.Timestamp
             };
 

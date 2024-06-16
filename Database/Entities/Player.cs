@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Database.Entities.Processor;
 using Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
@@ -155,9 +156,7 @@ public class Player
     /// <summary>
     /// All rating adjustments for the player
     /// </summary>
-    [InverseProperty("Player")]
-    public virtual ICollection<RatingAdjustment> RatingAdjustments { get; set; } =
-        new List<RatingAdjustment>();
+    public ICollection<RatingAdjustment> RatingAdjustments { get; set; } = new List<RatingAdjustment>();
 
     /// <summary>
     /// All o!tr ratings for the player
