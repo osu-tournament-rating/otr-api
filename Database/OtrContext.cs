@@ -338,15 +338,18 @@ public class OtrContext(
 
         modelBuilder.Entity<PlayerMatchStats>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PlayerMatchStats_pk");
-            entity.Property(e => e.Id).UseIdentityColumn();
+            entity.Property(pms => pms.Id).UseIdentityAlwaysColumn();
 
+            entity.Property(pms => pms.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Player
             entity
                 .HasOne(e => e.Player)
                 .WithMany(e => e.MatchStats)
                 .HasForeignKey(e => e.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: Match
             entity
                 .HasOne(pms => pms.Match)
                 .WithMany(m => m.PlayerMatchStats)
@@ -354,8 +357,8 @@ public class OtrContext(
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => e.PlayerId);
-            entity.HasIndex(e => new { e.PlayerId, e.MatchId }).IsUnique();
             entity.HasIndex(e => new { e.PlayerId, e.Won });
+            entity.HasIndex(e => new { e.PlayerId, e.MatchId }).IsUnique();
         });
 
         modelBuilder.Entity<RatingAdjustment>(entity =>
