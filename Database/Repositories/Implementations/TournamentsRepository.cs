@@ -31,7 +31,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     /// with *any* match applicable to all of the following criteria:
     /// - Is verified
     /// - Started between <paramref name="dateMin"/> and <paramref name="dateMax"/>
-    /// - Contains a <see cref="MatchRatingStats"/> for given <paramref name="playerId"/> (Denotes participation)
+    /// - Contains a <see cref="MatchRatingAdjustment"/> for given <paramref name="playerId"/> (Denotes participation)
     /// </summary>
     /// <param name="playerId">Id (primary key) of target player</param>
     /// <param name="mode">Ruleset</param>
@@ -51,7 +51,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
         return _context.Tournaments
             .Include(t => t.Matches)
-            .ThenInclude(m => m.MatchRatingStats)
+            .ThenInclude(m => m.MatchRatingAdjustments)
             .Where(t =>
                 t.Ruleset == (Ruleset)mode
                 // Contains *any* match that is:
@@ -62,7 +62,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
                     // Verified
                     && m.VerificationStatus == Old_MatchVerificationStatus.Verified
                     // Participated in by player
-                    && m.MatchRatingStats.Any(stat => stat.PlayerId == playerId)
+                    && m.MatchRatingAdjustments.Any(stat => stat.PlayerId == playerId)
                 ));
     }
 

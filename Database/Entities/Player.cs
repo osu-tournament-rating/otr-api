@@ -132,9 +132,9 @@ public class Player : UpdateableEntityBase
     public ICollection<RatingAdjustment> RatingAdjustments { get; set; } = new List<RatingAdjustment>();
 
     /// <summary>
-    /// A collection of <see cref="Entities.Processor.MatchRatingStats"/> owned by the <see cref="Player"/>
+    /// A collection of <see cref="MatchRatingAdjustment"/> owned by the <see cref="Player"/>
     /// </summary>
-    public ICollection<MatchRatingStats> MatchRatingStats { get; set; } = new List<MatchRatingStats>();
+    public ICollection<MatchRatingAdjustment> MatchRatingAdjustments { get; set; } = new List<MatchRatingAdjustment>();
 
     /// <summary>
     /// A collection of <see cref="MatchScore"/>s owned by the <see cref="Player"/>

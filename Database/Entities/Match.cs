@@ -39,9 +39,9 @@ public class Match : MatchEntityBase
     public ICollection<Game> Games { get; set; } = new List<Game>();
 
     /// <summary>
-    /// A collection of <see cref="Processor.MatchRatingStats"/> for the match
+    /// A collection of <see cref="MatchRatingAdjustment"/> for the match
     /// </summary>
-    public ICollection<MatchRatingStats> MatchRatingStats { get; set; } = new List<MatchRatingStats>();
+    public ICollection<MatchRatingAdjustment> MatchRatingAdjustments { get; set; } = new List<MatchRatingAdjustment>();
 
     /// <summary>
     /// A collection of <see cref="Processor.PlayerMatchStats"/> for the match

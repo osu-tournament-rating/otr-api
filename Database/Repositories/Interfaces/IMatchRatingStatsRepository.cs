@@ -3,7 +3,7 @@ using Database.Entities.Processor;
 
 namespace Database.Repositories.Interfaces;
 
-public interface IMatchRatingStatsRepository : IRepository<MatchRatingStats>
+public interface IMatchRatingStatsRepository : IRepository<MatchRatingAdjustment>
 {
     /// <summary>
     ///  Returns one entry per match, with each entry being all matches that occur on the same day.
@@ -15,7 +15,7 @@ public interface IMatchRatingStatsRepository : IRepository<MatchRatingStats>
     /// <param name="dateMin"></param>
     /// <param name="dateMax"></param>
     /// <returns></returns>
-    Task<IEnumerable<IEnumerable<MatchRatingStats>>> GetForPlayerAsync(
+    Task<IEnumerable<IEnumerable<MatchRatingAdjustment>>> GetForPlayerAsync(
         int playerId,
         int mode,
         DateTime? dateMin = null,
@@ -40,7 +40,7 @@ public interface IMatchRatingStatsRepository : IRepository<MatchRatingStats>
 
     Task<DateTime?> GetOldestForPlayerAsync(int playerId, int mode);
 
-    Task<IEnumerable<MatchRatingStats>> TeammateRatingStatsAsync(
+    Task<IEnumerable<MatchRatingAdjustment>> TeammateRatingStatsAsync(
         int playerId,
         int teammateId,
         int mode,
@@ -48,7 +48,7 @@ public interface IMatchRatingStatsRepository : IRepository<MatchRatingStats>
         DateTime dateMax
     );
 
-    Task<IEnumerable<MatchRatingStats>> OpponentRatingStatsAsync(
+    Task<IEnumerable<MatchRatingAdjustment>> OpponentRatingStatsAsync(
         int playerId,
         int opponentId,
         int mode,

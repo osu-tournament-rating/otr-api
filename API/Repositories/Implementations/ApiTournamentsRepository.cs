@@ -76,7 +76,7 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
                     // Filter invalid matches (Above filter uses Any, so invalid matches can still be included)
                     .Where(m => m.VerificationStatus == Old_MatchVerificationStatus.Verified)
                     // Filter for ratings belonging to target player
-                    .SelectMany(m => m.MatchRatingStats)
+                    .SelectMany(m => m.MatchRatingAdjustments)
                     .Where(mrs => mrs.PlayerId == playerId)
                     .Average(mrs => mrs.MatchCost)
             });

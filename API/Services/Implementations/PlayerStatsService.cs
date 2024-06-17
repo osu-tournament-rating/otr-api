@@ -216,10 +216,10 @@ public class PlayerStatsService(
 
     public async Task BatchInsertAsync(IEnumerable<MatchRatingStatsDTO> postBody)
     {
-        var items = new List<MatchRatingStats>();
+        var items = new List<MatchRatingAdjustment>();
         foreach (MatchRatingStatsDTO item in postBody)
         {
-            var stats = new MatchRatingStats
+            var stats = new MatchRatingAdjustment
             {
                 PlayerId = item.PlayerId,
                 MatchId = item.MatchId,
@@ -372,7 +372,7 @@ public class PlayerStatsService(
     )
     {
         var matchStats = (await matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
-        IEnumerable<MatchRatingStats> ratingStats =
+        IEnumerable<MatchRatingAdjustment> ratingStats =
             (await ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax))
             .ToList()
             .SelectMany(x => x);

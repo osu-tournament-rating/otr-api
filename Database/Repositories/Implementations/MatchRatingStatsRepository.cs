@@ -9,11 +9,11 @@ namespace Database.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<MatchRatingStats>(context), IMatchRatingStatsRepository
+public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<MatchRatingAdjustment>(context), IMatchRatingStatsRepository
 {
     private readonly OtrContext _context = context;
 
-    public async Task<IEnumerable<IEnumerable<MatchRatingStats>>> GetForPlayerAsync(
+    public async Task<IEnumerable<IEnumerable<MatchRatingAdjustment>>> GetForPlayerAsync(
         int playerId,
         int mode,
         DateTime? dateMin = null,
@@ -93,7 +93,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Mat
             .Select(x => x.Match.StartTime)
             .MinAsync();
 
-    public async Task<IEnumerable<MatchRatingStats>> TeammateRatingStatsAsync(
+    public async Task<IEnumerable<MatchRatingAdjustment>> TeammateRatingStatsAsync(
         int playerId,
         int teammateId,
         int mode,
@@ -114,7 +114,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Mat
             .Distinct()
             .ToListAsync();
 
-    public async Task<IEnumerable<MatchRatingStats>> OpponentRatingStatsAsync(
+    public async Task<IEnumerable<MatchRatingAdjustment>> OpponentRatingStatsAsync(
         int playerId,
         int opponentId,
         int mode,

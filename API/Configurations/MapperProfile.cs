@@ -30,7 +30,7 @@ public class MapperProfile : Profile
             .ForMember(x => x.ClientSecret, opt => opt.Ignore());
 
         CreateMap<RatingAdjustment, RatingAdjustmentDTO>();
-        CreateMap<MatchRatingStats, MatchRatingStatsDTO>()
+        CreateMap<MatchRatingAdjustment, MatchRatingStatsDTO>()
             .ForMember(
                 x => x.TooltipInfo,
                 opt =>

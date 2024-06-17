@@ -5,7 +5,7 @@ namespace APITests.SeedData;
 
 public static class SeededMatchRatingStats
 {
-    public static MatchRatingStats Get() =>
+    public static MatchRatingAdjustment Get() =>
         new()
         {
             Id = 89,

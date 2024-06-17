@@ -27,7 +27,7 @@ public class OtrContext(
     public virtual DbSet<Game> Games { get; set; }
     public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
     public virtual DbSet<Match> Matches { get; set; }
-    public virtual DbSet<MatchRatingStats> MatchRatingStats { get; set; }
+    public virtual DbSet<MatchRatingAdjustment> MatchRatingStats { get; set; }
     public virtual DbSet<MatchScore> MatchScores { get; set; }
     public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
     public virtual DbSet<OAuthClient> OAuthClients { get; set; }
@@ -180,7 +180,7 @@ public class OtrContext(
 
             // Relation: MatchRatingStats
             entity
-                .HasMany(m => m.MatchRatingStats)
+                .HasMany(m => m.MatchRatingAdjustments)
                 .WithOne(mrs => mrs.Match)
                 .HasForeignKey(mrs => mrs.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -195,7 +195,7 @@ public class OtrContext(
             entity.HasIndex(m => m.MatchId).IsUnique();
         });
 
-        modelBuilder.Entity<MatchRatingStats>(entity =>
+        modelBuilder.Entity<MatchRatingAdjustment>(entity =>
         {
             entity.Property(mrs => mrs.Id).UseIdentityAlwaysColumn();
 
@@ -204,14 +204,14 @@ public class OtrContext(
             // Relation: Player
             entity
                 .HasOne(mrs => mrs.Player)
-                .WithMany(p => p.MatchRatingStats)
+                .WithMany(p => p.MatchRatingAdjustments)
                 .HasForeignKey(mrs => mrs.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Match
             entity
                 .HasOne(mrs => mrs.Match)
-                .WithMany(m => m.MatchRatingStats)
+                .WithMany(m => m.MatchRatingAdjustments)
                 .HasForeignKey(mrs => mrs.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -314,7 +314,7 @@ public class OtrContext(
 
             // Relation: MatchRatingStats
             entity
-                .HasMany(p => p.MatchRatingStats)
+                .HasMany(p => p.MatchRatingAdjustments)
                 .WithOne(mrs => mrs.Player)
                 .HasForeignKey(mrs => mrs.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
