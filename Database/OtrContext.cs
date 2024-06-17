@@ -356,9 +356,9 @@ public class OtrContext(
                 .HasForeignKey(pms => pms.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(e => e.PlayerId);
-            entity.HasIndex(e => new { e.PlayerId, e.Won });
-            entity.HasIndex(e => new { e.PlayerId, e.MatchId }).IsUnique();
+            entity.HasIndex(pms => pms.PlayerId);
+            entity.HasIndex(pms => new { pms.PlayerId, pms.Won });
+            entity.HasIndex(pms => new { pms.PlayerId, pms.MatchId }).IsUnique();
         });
 
         modelBuilder.Entity<RatingAdjustment>(entity =>
@@ -374,7 +374,7 @@ public class OtrContext(
                 .HasForeignKey(ra => ra.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(e => new { e.PlayerId, e.Ruleset });
+            entity.HasIndex(ra => new { ra.PlayerId, ra.Ruleset });
         });
 
         modelBuilder.Entity<Tournament>(entity =>
@@ -410,10 +410,18 @@ public class OtrContext(
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("User_pk");
-            entity.Property(e => e.Id).UseIdentityColumn();
+            entity.Property(u => u.Id).UseIdentityColumn();
 
-            entity.Property(e => e.Created).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            entity.Property(u => u.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // RateLimitOverrides as an object is stored in a column as JSON
+            entity
+                .OwnsOne(e => e.RateLimitOverrides, rlo =>
+                {
+                    rlo.ToJson("rate_limit_overrides");
+                    rlo.Property(p => p.PermitLimit).HasDefaultValue(null);
+                    rlo.Property(p => p.Window).HasDefaultValue(null);
+                });
 
             // Relation: UserSettings
             entity
@@ -422,13 +430,12 @@ public class OtrContext(
                 .HasForeignKey<UserSettings>(us => us.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: Player
             entity
-                .OwnsOne(e => e.RateLimitOverrides, rlo =>
-                {
-                    rlo.ToJson("rate_limit_overrides");
-                    rlo.Property(p => p.PermitLimit).HasDefaultValue(null);
-                    rlo.Property(p => p.Window).HasDefaultValue(null);
-                });
+                .HasOne(u => u.Player)
+                .WithOne(p => p.User)
+                .HasForeignKey<User>(u => u.PlayerId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Relation: Tournaments (Submitter)
             entity
@@ -460,14 +467,12 @@ public class OtrContext(
                 .HasForeignKey(m => m.VerifiedByUserId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            entity.HasMany(e => e.Clients).WithOne(e => e.User).IsRequired(false);
-
+            // Relation: OAuthClients
             entity
-                .HasOne(d => d.Player)
-                .WithOne(p => p.User)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("Users___fkplayerid")
-                .IsRequired(false);
+                .HasMany(u => u.Clients)
+                .WithOne(c => c.User)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<UserSettings>(entity =>

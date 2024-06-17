@@ -1,49 +1,53 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using Database.Entities.Interfaces;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Database.Entities;
 
+/// <summary>
+/// A user of the o!TR platform
+/// </summary>
+/// <remarks>
+/// Not to be confused with <see cref="Player"/>.
+/// Users only contain data tied to the o!TR platform and no data related to tournament participation or ratings
+/// </remarks>
 [Table("users")]
-public class User : IUpdateableEntity
+[SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
+public class User : UpdateableEntityBase
 {
-    [Key]
-    [Column("id")]
-    public int Id { get; set; }
-
-    [Column("player_id")]
-    public int? PlayerId { get; set; }
-
+    /// <summary>
+    /// Timestamp of the user's last login to the o!TR website
+    /// </summary>
     [Column("last_login", TypeName = "timestamp with time zone")]
     public DateTime? LastLogin { get; set; }
 
-    [Column("created", TypeName = "timestamp with time zone")]
-    public DateTime Created { get; set; }
-
     /// <summary>
-    /// Comma-delimited list of scopes
+    /// A collection of string literals denoting special permissions granted to the user
     /// </summary>
     [Column("scopes")]
     public string[] Scopes { get; set; } = [];
 
-    [Column("updated", TypeName = "timestamp with time zone")]
-    public DateTime? Updated { get; set; }
-
     // Column name and value initialization is handled via OtrContext
     /// <summary>
-    /// Represents values that override the API rate limit for the User
+    /// Values that override the default API rate limit configuration for the user
     /// </summary>
     public RateLimitOverrides RateLimitOverrides { get; set; } = null!;
 
     /// <summary>
-    /// Settings that control behaviors on the o!TR website
+    /// The <see cref="UserSettings"/> owned by the user
     /// </summary>
     public UserSettings Settings { get; set; } = null!;
 
-    [ForeignKey("PlayerId")]
-    [InverseProperty("User")]
-    public virtual Player Player { get; set; } = null!;
+    /// <summary>
+    /// Id of the <see cref="Entities.Player"/> associated to the user
+    /// </summary>
+    [Column("player_id")]
+    public int? PlayerId { get; set; }
+
+    /// <summary>
+    /// The <see cref="Entities.Player"/> associated to the user
+    /// </summary>
+    public Player? Player { get; set; }
 
     /// <summary>
     /// A collection of <see cref="OAuthClient"/>s owned by the user
