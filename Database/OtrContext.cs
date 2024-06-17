@@ -24,6 +24,7 @@ public class OtrContext(
 
     public virtual DbSet<BaseStats> BaseStats { get; set; }
     public virtual DbSet<Beatmap> Beatmaps { get; set; }
+    public virtual DbSet<DataWorkerQueueMatch> DataWorkerQueueMatches { get; set; }
     public virtual DbSet<Game> Games { get; set; }
     public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
     public virtual DbSet<Match> Matches { get; set; }
@@ -73,6 +74,15 @@ public class OtrContext(
                 .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasIndex(b => b.BeatmapId).IsUnique();
+        });
+
+        modelBuilder.Entity<DataWorkerQueueMatch>(entity =>
+        {
+            entity.Property(qm => qm.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(qm => qm.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            entity.HasIndex(qm => qm.OsuMatchId).IsUnique();
         });
 
         modelBuilder.Entity<Game>(entity =>
