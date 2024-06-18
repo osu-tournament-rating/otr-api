@@ -6,15 +6,31 @@ public class OsuConfiguration
 {
     public const string Position = "Osu";
 
-    [Required(ErrorMessage = "ApiKey is required!")]
-    public string ApiKey { get; set; } = string.Empty;
-
+    /// <summary>
+    /// osu! OAuth client id
+    /// </summary>
     [Required(ErrorMessage = "ClientId is required!")]
     [Range(1, long.MaxValue, ErrorMessage = "ClientId must be a positive, non-zero value!")]
     public long ClientId { get; set; }
 
+    /// <summary>
+    /// osu! OAuth client secret
+    /// </summary>
     [Required(ErrorMessage = "ClientSecret is required!")]
     public string ClientSecret { get; set; } = string.Empty;
-    public bool AutoUpdateUsers { get; set; }
-    public bool AllowDataFetching { get; set; }
+
+    /// <summary>
+    /// Denotes if the worker should fetch <see cref="Player"/> data from the osu! API
+    /// </summary>
+    public bool ProcessPlayersOsu { get; set; }
+
+    /// <summary>
+    /// Denotes if the worker should fetch <see cref="Player"/> data from the osu!Track API
+    /// </summary>
+    public bool ProcessPlayersOsuTrack { get; set; }
+
+    /// <summary>
+    /// Denotes if the worker should fetch <see cref="Match"/> data from the osu! API
+    /// </summary>
+    public bool ProcessMatches { get; set; }
 }
