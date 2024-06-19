@@ -7,9 +7,9 @@ namespace OsuApiClient.Domain.Beatmaps;
 /// <summary>
 /// Represents a beatmaps hype
 /// </summary>
-[AutoMap(typeof(BeatmapHypeJsonModel))]
+[AutoMap(typeof(BeatmapsetHypeJsonModel))]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class BeatmapHype : IModel
+public class BeatmapsetHype : IModel
 {
     /// <summary>
     /// Current hype

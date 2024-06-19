@@ -1,17 +1,15 @@
 using Newtonsoft.Json;
-using OsuApiClient.Net.JsonModels.Beatmaps;
 
-namespace OsuApiClient.Net.JsonModels.Multiplayer;
+namespace OsuApiClient.Net.JsonModels.Beatmaps;
 
 /// <summary>
-/// No description
+/// Represents a beatmapset
 /// </summary>
-/// <remarks>Undocumented</remarks>
 /// <copyright>
-/// ppy 2024
+/// ppy 2024 https://osu.ppy.sh/docs/index.html#beatmapset
 /// Last accessed June 2024
 /// </copyright>
-public class GameBeatmapsetJsonModel : JsonModelBase
+public class BeatmapsetJsonModel : JsonModelBase
 {
     [JsonProperty("artist")]
     public string Artist { get; set; } = null!;
@@ -20,7 +18,7 @@ public class GameBeatmapsetJsonModel : JsonModelBase
     public string ArtistUnicode { get; set; } = null!;
 
     [JsonProperty("covers")]
-    public BeatmapCoversJsonModel Covers { get; set; } = null!;
+    public BeatmapsetCoversJsonModel Covers { get; set; } = null!;
 
     [JsonProperty("creator")]
     public string? Creator { get; set; }
@@ -29,7 +27,7 @@ public class GameBeatmapsetJsonModel : JsonModelBase
     public int FavouriteCount { get; set; }
 
     [JsonProperty("hype")]
-    public BeatmapHypeJsonModel? Hype { get; set; }
+    public BeatmapsetHypeJsonModel? Hype { get; set; }
 
     [JsonProperty("id")]
     public long Id { get; set; }

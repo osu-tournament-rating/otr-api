@@ -2,17 +2,18 @@ using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
 using Database.Enums;
+using OsuApiClient.Domain.Multiplayer;
 using OsuApiClient.Net.Deserialization.ValueConverters;
-using OsuApiClient.Net.JsonModels.Multiplayer;
+using OsuApiClient.Net.JsonModels.Beatmaps;
 
-namespace OsuApiClient.Domain.Multiplayer;
+namespace OsuApiClient.Domain.Beatmaps;
 
 /// <summary>
 /// Represents a beatmap played in a <see cref="MultiplayerGame"/>
 /// </summary>
-[AutoMap(typeof(GameBeatmapJsonModel))]
+[AutoMap(typeof(BeatmapJsonModel))]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class GameBeatmap : IModel
+public class Beatmap : IModel
 {
     /// <summary>
     /// Beatmap id
@@ -27,14 +28,14 @@ public class GameBeatmap : IModel
     /// <summary>
     /// Star rating
     /// </summary>
-    [SourceMember(nameof(GameBeatmapJsonModel.DifficultyRating))]
+    [SourceMember(nameof(BeatmapJsonModel.DifficultyRating))]
     public double StarRating { get; init; }
 
     /// <summary>
     /// The <see cref="Database.Enums.Ruleset"/> this beatmap is playable on
     /// </summary>
     [ValueConverter(typeof(RulesetConverter))]
-    [SourceMember(nameof(GameBeatmapJsonModel.Mode))]
+    [SourceMember(nameof(BeatmapJsonModel.Mode))]
     public Ruleset Ruleset { get; init; }
 
     /// <summary>
@@ -55,11 +56,11 @@ public class GameBeatmap : IModel
     /// <summary>
     /// Difficulty name
     /// </summary>
-    [SourceMember(nameof(GameBeatmapJsonModel.Version))]
+    [SourceMember(nameof(BeatmapJsonModel.Version))]
     public string DifficultyName { get; init; } = null!;
 
     /// <summary>
-    /// The <see cref="GameBeatmapset"/> the beatmap is part of
+    /// The <see cref="Beatmaps.Beatmapset"/> the beatmap is part of
     /// </summary>
-    public GameBeatmapset? Beatmapset { get; init; }
+    public Beatmapset? Beatmapset { get; init; }
 }

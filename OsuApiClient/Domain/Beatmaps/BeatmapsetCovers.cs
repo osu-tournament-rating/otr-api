@@ -7,9 +7,9 @@ namespace OsuApiClient.Domain.Beatmaps;
 /// <summary>
 /// Represents a collection of urls to the cover images for a beatmap
 /// </summary>
-[AutoMap(typeof(BeatmapCoversJsonModel))]
+[AutoMap(typeof(BeatmapsetCoversJsonModel))]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class BeatmapCovers
+public class BeatmapsetCovers
 {
     /// <summary>
     /// Cover image url

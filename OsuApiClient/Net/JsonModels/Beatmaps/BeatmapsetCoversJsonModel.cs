@@ -6,12 +6,11 @@ namespace OsuApiClient.Net.JsonModels.Beatmaps;
 /// <summary>
 /// No description
 /// </summary>
-/// <remarks>Undocumented</remarks>
 /// <copyright>
-/// ppy 2024
+/// ppy 2024 https://osu.ppy.sh/docs/index.html#beatmapset-covers
 /// Last accessed June 2024
 /// </copyright>
-public class BeatmapCoversJsonModel
+public class BeatmapsetCoversJsonModel
 {
     [JsonProperty("cover")]
     public string Cover { get; set; } = null!;

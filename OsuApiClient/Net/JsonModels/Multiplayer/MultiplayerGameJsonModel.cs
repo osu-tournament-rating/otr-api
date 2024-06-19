@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using OsuApiClient.Net.JsonModels.Beatmaps;
 
 namespace OsuApiClient.Net.JsonModels.Multiplayer;
 
@@ -40,7 +41,7 @@ public class MultiplayerGameJsonModel : JsonModelBase
     public string[] Mods { get; set; } = null!;
 
     [JsonProperty("beatmap")]
-    public GameBeatmapJsonModel? Beatmap { get; set; }
+    public BeatmapJsonModel? Beatmap { get; set; }
 
     [JsonProperty("scores")]
     public GameScoreJsonModel[] Scores { get; set; } = [];

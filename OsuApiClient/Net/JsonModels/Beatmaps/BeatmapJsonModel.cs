@@ -1,16 +1,15 @@
 using Newtonsoft.Json;
 
-namespace OsuApiClient.Net.JsonModels.Multiplayer;
+namespace OsuApiClient.Net.JsonModels.Beatmaps;
 
 /// <summary>
-/// No description
+/// Represent a beatmap
 /// </summary>
-/// <remarks>Undocumented</remarks>
 /// <copyright>
-/// ppy 2024
+/// ppy 2024 https://osu.ppy.sh/docs/index.html#beatmap
 /// Last accessed June 2024
 /// </copyright>
-public class GameBeatmapJsonModel : JsonModelBase
+public class BeatmapJsonModel : JsonModelBase
 {
     [JsonProperty("beatmapset_id")]
     public long BeatmapsetId { get; set; }
@@ -37,5 +36,5 @@ public class GameBeatmapJsonModel : JsonModelBase
     public string Version { get; set; } = null!;
 
     [JsonProperty("beatmapset")]
-    public GameBeatmapsetJsonModel? Beatmapset { get; set; }
+    public BeatmapsetJsonModel? Beatmapset { get; set; }
 }

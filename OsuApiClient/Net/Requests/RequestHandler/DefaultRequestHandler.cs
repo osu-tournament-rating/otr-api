@@ -116,7 +116,7 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
 
         logger.LogDebug(
             "Preparing to fetch the osu! API [Endpoint: {Endpoint} | Method: {Method}]",
-            request.Route.ToString(),
+            uri.ToString(),
             request.Method.ToString()
         );
 

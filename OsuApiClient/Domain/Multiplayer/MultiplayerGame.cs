@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
 using Database.Enums;
+using OsuApiClient.Domain.Beatmaps;
 using OsuApiClient.Net.Deserialization.ValueConverters;
 using OsuApiClient.Net.JsonModels.Multiplayer;
 
@@ -60,9 +61,9 @@ public class MultiplayerGame : IModel
     public Mods Mods { get; init; }
 
     /// <summary>
-    /// The played <see cref="GameBeatmap"/>
+    /// The played <see cref="Beatmaps.Beatmap"/>
     /// </summary>
-    public GameBeatmap? Beatmap { get; init; }
+    public Beatmap? Beatmap { get; init; }
 
     /// <summary>
     /// A list of all scores set

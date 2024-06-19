@@ -1,17 +1,17 @@
 using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
-using OsuApiClient.Domain.Beatmaps;
-using OsuApiClient.Net.JsonModels.Multiplayer;
+using OsuApiClient.Domain.Multiplayer;
+using OsuApiClient.Net.JsonModels.Beatmaps;
 
-namespace OsuApiClient.Domain.Multiplayer;
+namespace OsuApiClient.Domain.Beatmaps;
 
 /// <summary>
-/// Represents a beatmapset of a <see cref="GameBeatmap"/> played in a <see cref="MultiplayerGame"/>
+/// Represents a beatmapset of a <see cref="Beatmap"/> played in a <see cref="MultiplayerGame"/>
 /// </summary>
-[AutoMap(typeof(GameBeatmapsetJsonModel))]
+[AutoMap(typeof(BeatmapsetJsonModel))]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class GameBeatmapset : IModel
+public class Beatmapset : IModel
 {
     /// <summary>
     /// Id of the beatmapset
@@ -41,7 +41,7 @@ public class GameBeatmapset : IModel
     /// <summary>
     /// Id of the <see cref="Creator"/>
     /// </summary>
-    [SourceMember(nameof(GameBeatmapsetJsonModel.UserId))]
+    [SourceMember(nameof(BeatmapsetJsonModel.UserId))]
     public int? CreatorId { get; init; }
 
     /// <summary>
@@ -52,7 +52,7 @@ public class GameBeatmapset : IModel
     /// <summary>
     /// Cover image urls
     /// </summary>
-    public BeatmapCovers Covers { get; init; } = null!;
+    public BeatmapsetCovers Covers { get; init; } = null!;
 
     /// <summary>
     /// Number of favorites
@@ -62,7 +62,7 @@ public class GameBeatmapset : IModel
     /// <summary>
     /// Hype information
     /// </summary>
-    public BeatmapHype? Hype { get; init; }
+    public BeatmapsetHype? Hype { get; init; }
 
     /// <summary>
     /// Denotes if the set contains nsfw content
