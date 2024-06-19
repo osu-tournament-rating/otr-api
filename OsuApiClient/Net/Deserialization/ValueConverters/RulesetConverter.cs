@@ -3,6 +3,9 @@ using Database.Enums;
 
 namespace OsuApiClient.Net.Deserialization.ValueConverters;
 
+/// <summary>
+/// Converts a string into its respective <see cref="Ruleset"/>
+/// </summary>
 public class RulesetConverter : IValueConverter<string, Ruleset>
 {
     public Ruleset Convert(string sourceMember, ResolutionContext context) =>

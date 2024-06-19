@@ -2,10 +2,12 @@ using Database.Enums;
 using Microsoft.Extensions.Logging;
 using OsuApiClient.Configurations.Interfaces;
 using OsuApiClient.Domain;
+using OsuApiClient.Domain.Multiplayer;
 using OsuApiClient.Domain.Users;
 using OsuApiClient.Net.Authorization;
 using OsuApiClient.Net.Constants;
 using OsuApiClient.Net.JsonModels;
+using OsuApiClient.Net.JsonModels.Multiplayer;
 using OsuApiClient.Net.JsonModels.Users;
 using OsuApiClient.Net.Requests;
 using OsuApiClient.Net.Requests.RequestHandler;
@@ -215,6 +217,113 @@ public sealed class OsuClient(
         await UpdateCredentialsAsync(cancellationToken);
 
         return await GetUserAsync(username, "username", ruleset, cancellationToken);
+    }
+
+    public async Task<MultiplayerMatch?> GetPartialMatchAsync(
+        long matchId,
+        long? eventsBeforeId = null,
+        long? eventsAfterId = null,
+        int? eventsLimit = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CheckDisposed();
+        await UpdateCredentialsAsync(cancellationToken);
+
+        var queryParams = new Dictionary<string, string>();
+        if (eventsBeforeId.HasValue)
+        {
+            queryParams.Add("before", eventsBeforeId.Value.ToString());
+        }
+
+        if (eventsAfterId.HasValue)
+        {
+            queryParams.Add("after", eventsAfterId.Value.ToString());
+        }
+
+        if (eventsLimit.HasValue)
+        {
+            queryParams.Add("limit", eventsLimit.Value.ToString());
+        }
+
+        var endpoint = Endpoints.Matches + $"/{matchId}";
+        Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);
+        return await _handler.FetchAsync<MultiplayerMatch, MultiplayerMatchJsonModel>(
+            new OsuApiRequest
+            {
+                Credentials = _credentials,
+                Method = HttpMethod.Get,
+                Route = uri!,
+                QueryParameters = queryParams
+            },
+            cancellationToken
+        );
+    }
+
+    public async Task<MultiplayerMatch?> GetMatchAsync(
+        long matchId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CheckDisposed();
+        await UpdateCredentialsAsync(cancellationToken);
+
+        // Get the first 100 events
+        MultiplayerMatch? initialMatch = await GetPartialMatchAsync(
+            matchId,
+            eventsAfterId: 0,
+            cancellationToken: cancellationToken
+        );
+
+        if (initialMatch is null)
+        {
+            return null;
+        }
+
+        // osu! API uses 0 as a fallback for null event ids
+        // https://github.com/ppy/osu-web/blob/master/app/Http/Controllers/MatchesController.php#L121
+        if (initialMatch.LatestEventId == 0)
+        {
+            logger.LogWarning(
+                "Cannot identify the last event id for a match [Match Id: {MatchId}]",
+                matchId
+            );
+            return initialMatch;
+        }
+
+        // Get batches of 100 events until we have them all
+        while (initialMatch.Events.Max(ev => ev.Id) != initialMatch.LatestEventId)
+        {
+            var eventsAfterId = initialMatch.Events.Max(ev => ev.Id);
+            logger.LogDebug(
+                "Attempting to fetch a batch of match events [Match Id: {MatchId} | Most Recent Event: {RecentEvId}]",
+                matchId,
+                eventsAfterId
+            );
+
+            MultiplayerMatch? nextBatch = await GetPartialMatchAsync(
+                matchId,
+                eventsAfterId: eventsAfterId,
+                cancellationToken: cancellationToken
+            );
+
+            if (nextBatch is null)
+            {
+                logger.LogWarning("Failed to fetch the next batch of match events [Match Id: {MatchId}]", matchId);
+                break;
+            }
+
+            // Add new data
+            initialMatch.Events = [.. initialMatch.Events, .. nextBatch.Events];
+            initialMatch.Users = initialMatch.Users.Concat(nextBatch.Users).DistinctBy(u => u.Id).ToArray();
+        }
+
+        logger.LogDebug(
+            "Successfully fetched a full match [Match Id: {MatchId} | Events: {CountEvents}]",
+            matchId,
+            initialMatch.Events.Length
+        );
+        return initialMatch;
     }
 
     public void ClearCredentials()

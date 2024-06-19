@@ -13,11 +13,13 @@ namespace OsuApiClient.Net.JsonModels.Multiplayer;
 public class MultiplayerMatchJsonModel : JsonModelBase
 {
     [JsonProperty("match")]
-    public MultiplayerMatchInfoJsonModel Match { get; set; } = null!;
+    public MatchInfoJsonModel Match { get; set; } = null!;
 
-    // events
+    [JsonProperty("events")]
+    public MatchEventJsonModel[] Events { get; set; } = [];
 
-    // users
+    [JsonProperty("users")]
+    public MatchUserJsonModel[] Users { get; set; } = [];
 
     [JsonProperty("first_event_id")]
     public long FirstEventId { get; set; }

@@ -17,7 +17,7 @@ public static class Endpoints
 
     # endregion
 
-    public const string Matches = "/matches";
+    public const string Matches = Api + "/matches";
 
     public const string Users = Api + "/users";
     public const string Me = Api + "/me";

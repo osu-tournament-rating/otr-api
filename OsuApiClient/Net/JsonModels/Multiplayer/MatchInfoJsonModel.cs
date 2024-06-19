@@ -10,7 +10,7 @@ namespace OsuApiClient.Net.JsonModels.Multiplayer;
 /// ppy 2024
 /// Last accessed May 2024
 /// </copyright>
-public class MultiplayerMatchInfoJsonModel : JsonModelBase
+public class MatchInfoJsonModel : JsonModelBase
 {
     [JsonProperty("id")]
     public long Id { get; set; }
@@ -19,7 +19,7 @@ public class MultiplayerMatchInfoJsonModel : JsonModelBase
     public DateTimeOffset StartTime { get; set; }
 
     [JsonProperty("end_time")]
-    public DateTimeOffset EndTime { get; set; }
+    public DateTimeOffset? EndTime { get; set; }
 
     [JsonProperty("name")]
     public string Name { get; set; } = null!;

@@ -1,4 +1,5 @@
 using Database.Enums;
+using OsuApiClient.Domain.Multiplayer;
 using OsuApiClient.Domain.Users;
 using OsuApiClient.Net.Authorization;
 
@@ -18,8 +19,8 @@ public interface IOsuClient : IDisposable
     /// </remarks>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>
-    /// The current credentials if they are not revoked or expired,
-    /// the new credentials,
+    /// The current <see cref="OsuCredentials"/> if they are not revoked or expired,
+    /// the new <see cref="OsuCredentials"/>,
     /// or null if update was unsuccessful
     /// </returns>
     Task<OsuCredentials?> UpdateCredentialsAsync(CancellationToken cancellationToken = default);
@@ -33,7 +34,7 @@ public interface IOsuClient : IDisposable
     /// <param name="authorizationCode">User authorization code</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>
-    /// Access credentials for the user, or null if the request was unsuccessful
+    /// The <see cref="OsuCredentials"/> for the user, or null if the request was unsuccessful
     /// </returns>
     Task<OsuCredentials?> AuthorizeUserWithCodeAsync(
         string authorizationCode,
@@ -49,7 +50,7 @@ public interface IOsuClient : IDisposable
     /// <param name="refreshToken">User refresh token</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>
-    /// Access credentials for the user, or null if the request was unsuccessful
+    /// The <see cref="OsuCredentials"/> for the user, or null if the request was unsuccessful
     /// </returns>
     Task<OsuCredentials?> AuthorizeUserWithTokenAsync(
         string refreshToken,
@@ -64,7 +65,9 @@ public interface IOsuClient : IDisposable
     /// </remarks>
     /// <param name="ruleset">Ruleset to query for</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The user, or null if there is no currently authenticated user or the request was unsuccessful</returns>
+    /// <returns>
+    /// The <see cref="UserExtended"/>, or null if there is no currently authenticated user or the request was unsuccessful
+    /// </returns>
     Task<UserExtended?> GetCurrentUserAsync(
         Ruleset? ruleset = null,
         CancellationToken cancellationToken = default
@@ -77,7 +80,7 @@ public interface IOsuClient : IDisposable
     /// <param name="id">Id of the user</param>
     /// <param name="ruleset">Ruleset to query for</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>A user, or null if the request was unsuccessful</returns>
+    /// <returns>A <see cref="UserExtended"/>, or null if the request was unsuccessful</returns>
     Task<UserExtended?> GetUserAsync(
         long id,
         Ruleset? ruleset = null,
@@ -91,10 +94,45 @@ public interface IOsuClient : IDisposable
     /// <param name="username">Username of the user</param>
     /// <param name="ruleset">Ruleset to query for</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>A user, or null if the request was unsuccessful</returns>
+    /// <returns>A <see cref="UserExtended"/>, or null if the request was unsuccessful</returns>
     Task<UserExtended?> GetUserAsync(
         string username,
         Ruleset? ruleset = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Gets a multiplayer match, limit 100 events
+    /// </summary>
+    /// <remarks>
+    /// By default the endpoint returns a match with only the last 100 events that occurred.
+    /// For example, if you wanted the first 100 events, you would pass 0 for <paramref name="eventsAfterId"/>
+    /// </remarks>
+    /// <param name="matchId">Id of the multiplayer lobby</param>
+    /// <param name="eventsBeforeId">Include only events before this id</param>
+    /// <param name="eventsAfterId">Include only events after this id</param>
+    /// <param name="eventsLimit">Max number of events to include. Clamped at a maximum of 100</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A <see cref="MultiplayerMatch"/>, or null if the request was unsuccessful</returns>
+    Task<MultiplayerMatch?> GetPartialMatchAsync(
+        long matchId,
+        long? eventsBeforeId = null,
+        long? eventsAfterId = null,
+        int? eventsLimit = null,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Gets a complete multiplayer match
+    /// </summary>
+    /// <remarks>
+    /// Will query the osu! API until it collects a complete list of match events
+    /// </remarks>
+    /// <param name="matchId">Id of the multiplayer lobby</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A <see cref="MultiplayerMatch"/>, or null if the request was unsuccessful</returns>
+    Task<MultiplayerMatch?> GetMatchAsync(
+        long matchId,
         CancellationToken cancellationToken = default
     );
 

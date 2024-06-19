@@ -1,8 +1,12 @@
 using AutoMapper;
+using Database.Enums;
+using OsuApiClient.Domain.Multiplayer;
 using OsuApiClient.Domain.Site;
 using OsuApiClient.Domain.Users;
 using OsuApiClient.Domain.Users.Attributes;
+using OsuApiClient.Net.Deserialization;
 using OsuApiClient.Net.Deserialization.ValueConverters;
+using OsuApiClient.Net.JsonModels.Multiplayer;
 using OsuApiClient.Net.JsonModels.Site;
 using OsuApiClient.Net.JsonModels.Users;
 using OsuApiClient.Net.JsonModels.Users.Attributes;
@@ -24,5 +28,11 @@ public class MapperProfile : Profile
         CreateMap<UserGroupJsonModel, UserGroup>()
             .IncludeBase<GroupJsonModel, Group>()
             .ForMember(dest => dest.Rulesets, opt => opt.MapFrom(src => src.PlayModes != null ? src.PlayModes.Select(RulesetConverter.Convert) : null));
+
+        CreateMap<GameScoreJsonModel, GameScore>()
+            .ForMember(dest => dest.Ruleset, opt => opt.MapFrom(src => src.ModeInt))
+            .ForMember(dest => dest.Mods, opt => opt.ConvertUsing(new ModsConverter()))
+            .ForMember(dest => dest.Grade, opt => opt.MapFrom(src => ScoreGradeUtils.DetermineGrade(src)))
+            .ForMember(dest => dest.SlotInfo, opt => opt.MapFrom(src => src.Match));
     }
 }

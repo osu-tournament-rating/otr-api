@@ -99,12 +99,6 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
         CancellationToken cancellationToken = default
     )
     {
-        logger.LogDebug(
-            "Preparing to fetch the osu! API [Endpoint: {Endpoint} | Method: {Method}]",
-            request.Route.ToString(),
-                request.Method.ToString()
-        );
-
         Uri uri = request.QueryParameters is { Count: > 0 }
             ? new Uri(request.Route + request.QueryParameters.ToQueryString(), UriKind.Relative)
             : request.Route;
@@ -119,6 +113,12 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
             RequestUri = uri,
             Content = content
         };
+
+        logger.LogDebug(
+            "Preparing to fetch the osu! API [Endpoint: {Endpoint} | Method: {Method}]",
+            request.Route.ToString(),
+            request.Method.ToString()
+        );
 
         await RespectRateLimitAsync(cancellationToken);
 

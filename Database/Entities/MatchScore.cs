@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Database.Entities.Interfaces;
 using Database.Enums;
 
 namespace Database.Entities;
@@ -15,7 +16,7 @@ namespace Database.Entities;
 [Table("match_scores")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class MatchScore : UpdateableEntityBase
+public class MatchScore : UpdateableEntityBase, IScoreStatistics
 {
     /// <summary>
     /// The <see cref="Enums.Team"/> the <see cref="Player"/> played for in the match
@@ -35,30 +36,15 @@ public class MatchScore : UpdateableEntityBase
     [Column("max_combo")]
     public int MaxCombo { get; set; }
 
-    /// <summary>
-    /// Count of notes hit with "MEH" timing
-    /// </summary>
-    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu%21">osu! Judgement</a></remarks>
     [Column("count_50")]
     public int Count50 { get; set; }
 
-    /// <summary>
-    /// Count of notes hit with "OK" timing
-    /// </summary>
-    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu%21">osu! Judgement</a></remarks>
     [Column("count_100")]
     public int Count100 { get; set; }
 
-    /// <summary>
-    /// Count of notes hit with "GREAT" timing
-    /// </summary>
-    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu%21">osu! Judgement</a></remarks>
     [Column("count_300")]
     public int Count300 { get; set; }
 
-    /// <summary>
-    /// Count of misses
-    /// </summary>
     [Column("count_miss")]
     public int CountMiss { get; set; }
 
