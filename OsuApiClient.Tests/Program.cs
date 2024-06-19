@@ -43,6 +43,7 @@ builder.ConfigureServices((ctx, services) =>
     services.AddSingleton<IOsuClientTest, CodeAuthorizationTest>();
     services.AddSingleton<IOsuClientTest, GetUserTest>();
     services.AddSingleton<IOsuClientTest, GetMultiplayerMatchTest>();
+    services.AddSingleton<IOsuClientTest, GetBeatmapTest>();
 
     services.AddHostedService<ClientTestService>();
 });

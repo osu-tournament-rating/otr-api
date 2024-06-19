@@ -2,11 +2,13 @@ using Database.Enums;
 using Microsoft.Extensions.Logging;
 using OsuApiClient.Configurations.Interfaces;
 using OsuApiClient.Domain;
+using OsuApiClient.Domain.Beatmaps;
 using OsuApiClient.Domain.Multiplayer;
 using OsuApiClient.Domain.Users;
 using OsuApiClient.Net.Authorization;
 using OsuApiClient.Net.Constants;
 using OsuApiClient.Net.JsonModels;
+using OsuApiClient.Net.JsonModels.Beatmaps;
 using OsuApiClient.Net.JsonModels.Multiplayer;
 using OsuApiClient.Net.JsonModels.Users;
 using OsuApiClient.Net.Requests;
@@ -324,6 +326,27 @@ public sealed class OsuClient(
             initialMatch.Events.Length
         );
         return initialMatch;
+    }
+
+    public async Task<BeatmapExtended?> GetBeatmapAsync(
+        long beatmapId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CheckDisposed();
+        await UpdateCredentialsAsync(cancellationToken);
+
+        var endpoint = Endpoints.Beatmaps + $"/{beatmapId}";
+        Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);
+        return await _handler.FetchAsync<BeatmapExtended, BeatmapExtendedJsonModel>(
+            new OsuApiRequest
+            {
+                Credentials = _credentials,
+                Method = HttpMethod.Get,
+                Route = uri!
+            },
+            cancellationToken
+        );
     }
 
     public void ClearCredentials()

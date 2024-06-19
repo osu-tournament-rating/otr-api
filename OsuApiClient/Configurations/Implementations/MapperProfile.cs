@@ -1,11 +1,12 @@
 using AutoMapper;
-using Database.Enums;
+using OsuApiClient.Domain.Beatmaps;
 using OsuApiClient.Domain.Multiplayer;
 using OsuApiClient.Domain.Site;
 using OsuApiClient.Domain.Users;
 using OsuApiClient.Domain.Users.Attributes;
 using OsuApiClient.Net.Deserialization;
 using OsuApiClient.Net.Deserialization.ValueConverters;
+using OsuApiClient.Net.JsonModels.Beatmaps;
 using OsuApiClient.Net.JsonModels.Multiplayer;
 using OsuApiClient.Net.JsonModels.Site;
 using OsuApiClient.Net.JsonModels.Users;
@@ -34,5 +35,15 @@ public class MapperProfile : Profile
             .ForMember(dest => dest.Mods, opt => opt.ConvertUsing(new ModsConverter()))
             .ForMember(dest => dest.Grade, opt => opt.MapFrom(src => ScoreGradeUtils.DetermineGrade(src)))
             .ForMember(dest => dest.SlotInfo, opt => opt.MapFrom(src => src.Match));
+
+        CreateMap<BeatmapJsonModel, Beatmap>()
+            .ForMember(dest => dest.StarRating, opt => opt.MapFrom(src => src.DifficultyRating))
+            .ForMember(dest => dest.Ruleset, opt => opt.ConvertUsing(new RulesetConverter(), src => src.Mode))
+            .ForMember(dest => dest.DifficultyName, opt => opt.MapFrom(src => src.Version));
+
+        CreateMap<BeatmapExtendedJsonModel, BeatmapExtended>()
+            .IncludeBase<BeatmapJsonModel, Beatmap>()
+            .ForMember(dest => dest.HpDrain, opt => opt.MapFrom(src => src.Drain))
+            .ForMember(dest => dest.OverallDifficulty, opt => opt.MapFrom(src => src.Accuracy));
     }
 }

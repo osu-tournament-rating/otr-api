@@ -21,4 +21,6 @@ public static class Endpoints
 
     public const string Users = Api + "/users";
     public const string Me = Api + "/me";
+
+    public const string Beatmaps = Api + "/beatmaps";
 }

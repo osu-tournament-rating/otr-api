@@ -1,4 +1,5 @@
 using Database.Enums;
+using OsuApiClient.Domain.Beatmaps;
 using OsuApiClient.Domain.Multiplayer;
 using OsuApiClient.Domain.Users;
 using OsuApiClient.Net.Authorization;
@@ -133,6 +134,17 @@ public interface IOsuClient : IDisposable
     /// <returns>A <see cref="MultiplayerMatch"/>, or null if the request was unsuccessful</returns>
     Task<MultiplayerMatch?> GetMatchAsync(
         long matchId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Gets a beatmap
+    /// </summary>
+    /// <param name="beatmapId">Id of the beatmap</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A <see cref="BeatmapExtended"/>, or null if the request was unsuccessful</returns>
+    Task<BeatmapExtended?> GetBeatmapAsync(
+        long beatmapId,
         CancellationToken cancellationToken = default
     );
 
