@@ -1,5 +1,7 @@
 using API.DTOs;
 using API.Entities;
+using API.Enums;
+using API.Osu.Enums;
 
 namespace API.Repositories.Interfaces;
 
@@ -37,20 +39,27 @@ public interface ITournamentsRepository : IRepository<Tournament>
     );
 
     /// <summary>
-    /// Returns a list of best or worst tournament performances for a player
+    /// Gets a list of tournament performances for a player
     /// </summary>
-    /// <param name="playerId">Id (primary key) of target player</param>
-    /// <param name="mode">Ruleset</param>
-    /// <param name="dateMin">Date lower bound</param>
-    /// <param name="dateMax">Date upper bound</param>
-    /// <param name="count">Size of results</param>
-    /// <param name="bestPerformances">Sort by best or worst performance</param>
-    Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(int playerId,
-        int mode,
+    /// <param name="playerId">Id of target player</param>
+    /// <param name="ruleset">Ruleset of the tournaments</param>
+    /// <param name="dateMin">Date range lower bound</param>
+    /// <param name="dateMax">Date range upper bound</param>
+    /// <param name="resultType">Denotes the manner in which results are ordered</param>
+    /// <param name="limit">Number of performances</param>
+    /// <returns>
+    /// A list of <see cref="PlayerTournamentMatchCostDTO"/> of size <paramref name="limit"/> for tournaments in
+    /// <paramref name="ruleset"/> with timestamps between the <paramref name="dateMin"/> and <paramref name="dateMax"/>
+    /// ordered by the <see cref="resultType"/>
+    /// </returns>
+    Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(
+        int playerId,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax,
-        int count,
-        bool bestPerformances);
+        TournamentPerformanceResultType resultType,
+        int limit = 5
+    );
 
     /// <summary>
     /// Count number of tournaments played for a player

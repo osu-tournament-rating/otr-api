@@ -1,8 +1,13 @@
+using System.Diagnostics.CodeAnalysis;
+using API.Osu.Enums;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents match cost data across an entire tournament for a player
 /// </summary>
+[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 public class PlayerTournamentMatchCostDTO
 {
     /// <summary>
@@ -26,9 +31,9 @@ public class PlayerTournamentMatchCostDTO
     public string TournamentAcronym { get; set; } = null!;
 
     /// <summary>
-    /// osu! ruleset of the tournament
+    /// Ruleset of the tournament
     /// </summary>
-    public int Mode { get; set; }
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Average match cost across the tournament for the player

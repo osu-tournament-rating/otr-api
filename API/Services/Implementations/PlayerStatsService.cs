@@ -157,7 +157,7 @@ public class PlayerStatsService(
             await GetModStatsAsync(player.Id, (int)ruleset.Value, dateMin.Value, dateMax.Value);
 
         PlayerTournamentStatsDTO tournamentStats =
-            await GetTournamentStatsAsync(player.Id, (int)ruleset.Value, dateMin.Value, dateMax.Value);
+            await GetTournamentStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
 
         PlayerRatingChartDTO ratingChart = await _ratingStatsRepository.GetRatingChartAsync(
             player.Id,
@@ -328,47 +328,48 @@ public class PlayerStatsService(
         DateTime dateMax
     ) => await _matchStatsRepository.GetModStatsAsync(playerId, mode, dateMin, dateMax);
 
+    /// <summary>
+    /// Generate tournament stats for a player
+    /// </summary>
+    /// <param name="playerId">Id of the player</param>
+    /// <param name="ruleset">Ruleset to generate stats for</param>
+    /// <param name="dateMin">Date range lower bound</param>
+    /// <param name="dateMax">Date range upper bound</param>
     private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     )
     {
-        const int maxTournaments = 5;
-
         IEnumerable<PlayerTournamentMatchCostDTO> bestPerformances = await _tournamentsRepository.GetPerformancesAsync(
             playerId,
-            mode,
+            ruleset,
             dateMin,
             dateMax,
-            maxTournaments, true);
+            TournamentPerformanceResultType.Best
+        );
 
-        IEnumerable<PlayerTournamentMatchCostDTO> worstPerformances = await _tournamentsRepository.GetPerformancesAsync(
+        IEnumerable<PlayerTournamentMatchCostDTO> recentPerformances = await _tournamentsRepository.GetPerformancesAsync(
             playerId,
-            mode,
+            ruleset,
             dateMin,
             dateMax,
-            maxTournaments, false);
-
-        // Remove any best performances from worst performances
-        // ReSharper disable PossibleMultipleEnumeration
-        foreach (PlayerTournamentMatchCostDTO performance in bestPerformances)
-        {
-            worstPerformances = worstPerformances.Where(x => x.TournamentId != performance.TournamentId);
-        }
+            TournamentPerformanceResultType.Recent
+        );
 
         PlayerTournamentTeamSizeCountDTO counts = await _tournamentsRepository.GetTeamSizeStatsAsync(
             playerId,
-            mode,
+            (int)ruleset,
             dateMin,
             dateMax
         );
+
         return new PlayerTournamentStatsDTO
         {
             TeamSizeCounts = counts,
             BestPerformances = bestPerformances,
-            WorstPerformances = worstPerformances
+            RecentPerformances = recentPerformances
         };
     }
 
@@ -382,8 +383,8 @@ public class PlayerStatsService(
         var matchStats = (await _matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
         IEnumerable<MatchRatingStats> ratingStats =
             (await _ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax))
-            .ToList()
-            .SelectMany(x => x);
+            .SelectMany(x => x)
+            .ToList();
 
         if (matchStats.Count == 0)
         {
