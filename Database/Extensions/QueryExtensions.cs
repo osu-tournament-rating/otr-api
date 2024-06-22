@@ -50,14 +50,14 @@ public static class QueryExtensions
         query
             .AsQueryable()
             .Include(x => x.Games)
-            .ThenInclude(x => x.MatchScores)
+            .ThenInclude(x => x.Scores)
             .Include(x => x.Games)
             .ThenInclude(x => x.Beatmap);
 
     public static IQueryable<Match> WherePlayerParticipated(this IQueryable<Match> query, long osuPlayerId) =>
         query
             .AsQueryable()
-            .Where(x => x.Games.Any(y => y.MatchScores.Any(z => z.Player.OsuId == osuPlayerId)));
+            .Where(x => x.Games.Any(y => y.Scores.Any(z => z.Player.OsuId == osuPlayerId)));
 
     // Game
     public static IQueryable<Game> WhereVerified(this IQueryable<Game> query) =>
@@ -82,8 +82,8 @@ public static class QueryExtensions
     /// <param name="query"></param>
     /// <param name="enabledMods"></param>
     /// <returns></returns>
-    public static IQueryable<MatchScore> WhereMods(
-        this IQueryable<MatchScore> query,
+    public static IQueryable<GameScore> WhereMods(
+        this IQueryable<GameScore> query,
         Mods enabledMods
     )
     {
@@ -92,10 +92,10 @@ public static class QueryExtensions
             .Where(x =>
                 (x.Game.Mods != Mods.None && x.Game.Mods == enabledMods)
                 || // Not using NF
-                (x.EnabledMods != null && x.EnabledMods.Value == (int)enabledMods)
+                (x.Mods == enabledMods)
                 || (x.Game.Mods != Mods.None && x.Game.Mods == (enabledMods | Mods.NoFail))
                 || // Using NF
-                (x.EnabledMods != null && x.EnabledMods.Value == (int)(enabledMods | Mods.NoFail))
+                x.Mods == (enabledMods | Mods.NoFail)
             );
     }
 
@@ -105,11 +105,11 @@ public static class QueryExtensions
     /// </summary>
     /// <param name="query"></param>
     /// <returns></returns>
-    public static IQueryable<MatchScore> WhereVerified(this IQueryable<MatchScore> query) =>
+    public static IQueryable<GameScore> WhereVerified(this IQueryable<GameScore> query) =>
         query
             .AsQueryable()
             .Where(x =>
-                x.IsValid != false
+                x.VerificationStatus == VerificationStatus.Verified
                 && x.Game.Match.VerificationStatus == VerificationStatus.Verified
                 && x.Game.VerificationStatus == (int)Old_GameVerificationStatus.Verified
             );
@@ -119,10 +119,10 @@ public static class QueryExtensions
     /// </summary>
     /// <param name="query"></param>
     /// <returns></returns>
-    public static IQueryable<MatchScore> WhereHeadToHead(this IQueryable<MatchScore> query) =>
+    public static IQueryable<GameScore> WhereHeadToHead(this IQueryable<GameScore> query) =>
         query.AsQueryable().Where(x => x.Game.TeamType == TeamType.HeadToHead);
 
-    public static IQueryable<MatchScore> WhereNotHeadToHead(this IQueryable<MatchScore> query) =>
+    public static IQueryable<GameScore> WhereNotHeadToHead(this IQueryable<GameScore> query) =>
         query.AsQueryable().Where(x => x.Game.TeamType != TeamType.HeadToHead);
 
     /// <summary>
@@ -130,7 +130,7 @@ public static class QueryExtensions
     /// </summary>
     /// <param name="query"></param>
     /// <returns></returns>
-    public static IQueryable<MatchScore> WhereTeamVs(this IQueryable<MatchScore> query) =>
+    public static IQueryable<GameScore> WhereTeamVs(this IQueryable<GameScore> query) =>
         query.AsQueryable().Where(x => x.Game.TeamType == TeamType.TeamVs);
 
     /// <summary>
@@ -140,13 +140,13 @@ public static class QueryExtensions
     /// <param name="query"></param>
     /// <param name="osuPlayerId"></param>
     /// <returns></returns>
-    public static IQueryable<MatchScore> WhereOpponent(this IQueryable<MatchScore> query, long osuPlayerId) =>
+    public static IQueryable<GameScore> WhereOpponent(this IQueryable<GameScore> query, long osuPlayerId) =>
         query
             .AsQueryable()
             .Where(x =>
-                x.Game.MatchScores.Any(y => y.Player.OsuId == osuPlayerId)
+                x.Game.Scores.Any(y => y.Player.OsuId == osuPlayerId)
                 && x.Player.OsuId != osuPlayerId
-                && x.Team != x.Game.MatchScores.First(y => y.Player.OsuId == osuPlayerId).Team
+                && x.Team != x.Game.Scores.First(y => y.Player.OsuId == osuPlayerId).Team
             );
 
     /// <summary>
@@ -156,18 +156,18 @@ public static class QueryExtensions
     /// <param name="query"></param>
     /// <param name="osuPlayerId"></param>
     /// <returns></returns>
-    public static IQueryable<MatchScore> WhereTeammate(this IQueryable<MatchScore> query, long osuPlayerId) =>
+    public static IQueryable<GameScore> WhereTeammate(this IQueryable<GameScore> query, long osuPlayerId) =>
         query
             .AsQueryable()
             .Where(x =>
-                x.Game.MatchScores.Any(y => y.Player.OsuId == osuPlayerId)
+                x.Game.Scores.Any(y => y.Player.OsuId == osuPlayerId)
                 && x.Player.OsuId != osuPlayerId
                 && x.Game.TeamType != TeamType.HeadToHead
-                && x.Team == x.Game.MatchScores.First(y => y.Player.OsuId == osuPlayerId).Team
+                && x.Team == x.Game.Scores.First(y => y.Player.OsuId == osuPlayerId).Team
             );
 
-    public static IQueryable<MatchScore> WhereDateRange(
-        this IQueryable<MatchScore> query,
+    public static IQueryable<GameScore> WhereDateRange(
+        this IQueryable<GameScore> query,
         DateTime dateMin,
         DateTime dateMax
     ) => query.AsQueryable().Where(x => x.Game.StartTime > dateMin && x.Game.StartTime < dateMax);
@@ -175,18 +175,18 @@ public static class QueryExtensions
     /// <summary>
     /// Selects all MatchScores for a given ruleset (e.g. mania)
     /// </summary>
-    public static IQueryable<MatchScore> WhereRuleset(this IQueryable<MatchScore> query, Ruleset ruleset) =>
+    public static IQueryable<GameScore> WhereRuleset(this IQueryable<GameScore> query, Ruleset ruleset) =>
         query.AsQueryable().Where(x => x.Game.Ruleset == ruleset);
 
-    public static IQueryable<MatchScore> WhereOsuPlayerId(
-        this IQueryable<MatchScore> query,
+    public static IQueryable<GameScore> WhereOsuPlayerId(
+        this IQueryable<GameScore> query,
         long osuPlayerId
     ) => query.AsQueryable().Where(x => x.Player.OsuId == osuPlayerId);
 
-    public static IQueryable<MatchScore> WherePlayerId(this IQueryable<MatchScore> query, int playerId) =>
+    public static IQueryable<GameScore> WherePlayerId(this IQueryable<GameScore> query, int playerId) =>
         query.AsQueryable().Where(x => x.PlayerId == playerId);
 
-    public static IQueryable<MatchScore> After(this IQueryable<MatchScore> query, DateTime after) =>
+    public static IQueryable<GameScore> After(this IQueryable<GameScore> query, DateTime after) =>
         query.AsQueryable().Where(x => x.Game.StartTime > after);
 
     // Rating

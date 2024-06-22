@@ -33,7 +33,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
         if (eagerLoad)
         {
             return await _context
-                .Players.Include(x => x.MatchScores)
+                .Players.Include(x => x.Scores)
                 .Include(x => x.Ratings)
                 .AsNoTracking()
                 .ToListAsync();
@@ -102,7 +102,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
 
         Player? p = await _context
             .Players.Include(x =>
-                x.MatchScores.Where(y => y.Game.StartTime > time && y.Game.Ruleset == (Ruleset)mode)
+                x.Scores.Where(y => y.Game.StartTime > time && y.Game.Ruleset == (Ruleset)mode)
             )
             .ThenInclude(x => x.Game)
             .ThenInclude(x => x.Match)

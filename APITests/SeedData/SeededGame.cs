@@ -1,5 +1,6 @@
 using Database.Entities;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace APITests.SeedData;
 
@@ -31,9 +32,9 @@ public static class SeededGame
             TeamType = TeamType.HeadToHead,
             Mods = Mods.None,
             PostModSr = 6.36389,
-            GameId = 502333236,
-            VerificationStatus = Old_GameVerificationStatus.PreVerified,
-            RejectionReason = null,
+            OsuId = 502333236,
+            VerificationStatus = VerificationStatus.PreVerified,
+            RejectionReason = GameRejectionReason.None,
             Created = new DateTime(2023, 09, 14),
             StartTime = new DateTime(2023, 03, 10),
             EndTime = new DateTime(2023, 03, 10),
@@ -66,7 +67,7 @@ public static class SeededGame
             }
         };
 
-        game.MatchScores = SeededMatchScore.GetScoresForGame(game.Id, 4, 4, 0).ToList();
+        game.Scores = SeededMatchScore.GetScoresForGame(game.Id, 4, 4, 0).ToList();
         return game;
     }
 }

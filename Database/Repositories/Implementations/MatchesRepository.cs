@@ -52,7 +52,7 @@ public class MatchesRepository(
     public async Task<Match?> GetByMatchIdAsync(long matchId) =>
         await _context
             .Matches.Include(x => x.Games)
-            .ThenInclude(x => x.MatchScores)
+            .ThenInclude(x => x.Scores)
             .Include(x => x.Tournament)
             .FirstOrDefaultAsync(x => x.OsuId == matchId);
 
@@ -60,7 +60,7 @@ public class MatchesRepository(
         // We only want api processed matches because the verification checks require the data from the API
         await _context
             .Matches.Include(x => x.Games)
-            .ThenInclude(x => x.MatchScores)
+            .ThenInclude(x => x.Scores)
             .Include(x => x.Tournament)
             .Where(x => x.ProcessingStatus == MatchProcessingStatus.NeedsAutomationChecks)
             .Take(limit)
@@ -111,16 +111,16 @@ public class MatchesRepository(
         {
             return _context
                 .Matches.Include(x => x.Games)
-                .ThenInclude(x => x.MatchScores)
+                .ThenInclude(x => x.Scores)
                 .Include(x => x.Games)
                 .ThenInclude(x => x.Beatmap);
         }
 
         return _context
             .Matches.WhereVerified()
-            .Include(x => x.Games.Where(y => y.VerificationStatus == Old_GameVerificationStatus.Verified))
-            .ThenInclude(x => x.MatchScores.Where(y => y.IsValid == true))
-            .Include(x => x.Games.Where(y => y.VerificationStatus == Old_GameVerificationStatus.Verified))
+            .Include(x => x.Games.Where(y => y.VerificationStatus == VerificationStatus.Verified))
+            .ThenInclude(x => x.Scores.Where(y => y.VerificationStatus == VerificationStatus.Verified))
+            .Include(x => x.Games.Where(y => y.VerificationStatus == VerificationStatus.Verified))
             .ThenInclude(x => x.Beatmap);
     }
 }

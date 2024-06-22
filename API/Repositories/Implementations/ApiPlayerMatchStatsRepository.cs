@@ -29,7 +29,7 @@ public class ApiPlayerMatchStatsRepository(OtrContext context) : PlayerMatchStat
             // Filter for player, verified, mode, date range
             .Where(ms =>
                 ms.PlayerId == playerId
-                && ms.Game.VerificationStatus == Old_GameVerificationStatus.Verified
+                && ms.Game.VerificationStatus == VerificationStatus.Verified
                 && ms.Game.Match.VerificationStatus == VerificationStatus.Verified
                 && ms.Game.WinRecord != null
                 && ms.Game.Match.Tournament.Ruleset == (Ruleset)mode
@@ -40,7 +40,7 @@ public class ApiPlayerMatchStatsRepository(OtrContext context) : PlayerMatchStat
             .Select(ms => new
             {
                 // Match score mods populated for free mod, else game (lobby) mods
-                ModType = (Mods?)ms.EnabledMods ?? ms.Game.Mods,
+                ModType = (Mods?)ms.Mods ?? ms.Game.Mods,
                 ms.Score,
                 PlayerWon = ms.Game.WinRecord!.Winners.Contains(playerId)
             })

@@ -1,4 +1,6 @@
 using Database.Entities;
+using Database.Enums;
+using Database.Enums.Verification;
 
 namespace APITests.SeedData;
 
@@ -11,14 +13,14 @@ public static class SeededMatchScore
     private const int COUNT_300_LIMIT = (COUNT_50_LIMIT + COUNT_100_LIMIT + MAX_COMBO_LIMIT) * 2;
     private const int MISS_LIMIT = 10;
 
-    public static IEnumerable<MatchScore> GetScoresForGame(
+    public static IEnumerable<GameScore> GetScoresForGame(
         int gameId,
         int? amountBlue = null,
         int? amountRed = null,
         int? amountHeadToHead = null
     )
     {
-        var ret = new List<MatchScore>();
+        var ret = new List<GameScore>();
 
         if (amountBlue.HasValue)
         {
@@ -47,16 +49,16 @@ public static class SeededMatchScore
         return ret;
     }
 
-    private static MatchScore Generate(int gameId, int team)
+    private static GameScore Generate(int gameId, int team)
     {
         var misses = s_rand.Next() % MISS_LIMIT;
         var perfect = misses == 0;
 
-        return new MatchScore
+        return new GameScore
         {
             Id = s_rand.Next(),
             GameId = gameId,
-            Team = team,
+            Team = (Team)team,
             Score = s_rand.NextInt64(),
             MaxCombo = s_rand.Next() % 2000,
             Count50 = s_rand.Next() % COUNT_50_LIMIT,
@@ -67,8 +69,8 @@ public static class SeededMatchScore
             CountMiss = misses,
             Perfect = perfect,
             PlayerId = s_rand.Next() % 10000,
-            IsValid = true,
-            EnabledMods = null
+            VerificationStatus = VerificationStatus.Verified,
+            Mods = Mods.None
         };
     }
 }

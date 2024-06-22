@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240622184806_Rename_MatchScore_To_GameScore")]
+    partial class Rename_MatchScore_To_GameScore
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -192,6 +195,10 @@ namespace Database.Migrations
                         .HasColumnName("end_time")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
+                    b.Property<long>("GameId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("game_id");
+
                     b.Property<int>("MatchId")
                         .HasColumnType("integer")
                         .HasColumnName("match_id");
@@ -200,15 +207,11 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("mods");
 
-                    b.Property<long>("OsuId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("osu_id");
-
                     b.Property<double>("PostModSr")
                         .HasColumnType("double precision")
                         .HasColumnName("post_mod_sr");
 
-                    b.Property<int>("RejectionReason")
+                    b.Property<int?>("RejectionReason")
                         .HasColumnType("integer")
                         .HasColumnName("rejection_reason");
 
@@ -234,7 +237,7 @@ namespace Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
 
-                    b.Property<int>("VerificationStatus")
+                    b.Property<int?>("VerificationStatus")
                         .HasColumnType("integer")
                         .HasColumnName("verification_status");
 
@@ -242,10 +245,10 @@ namespace Database.Migrations
 
                     b.HasIndex("BeatmapId");
 
-                    b.HasIndex("MatchId");
-
-                    b.HasIndex("OsuId")
+                    b.HasIndex("GameId")
                         .IsUnique();
+
+                    b.HasIndex("MatchId");
 
                     b.HasIndex("StartTime");
 
@@ -1188,7 +1191,7 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Entities.GameScore", b =>
                 {
                     b.HasOne("Database.Entities.Game", "Game")
-                        .WithMany("Scores")
+                        .WithMany("MatchScores")
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1427,7 +1430,7 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.Game", b =>
                 {
-                    b.Navigation("Scores");
+                    b.Navigation("MatchScores");
 
                     b.Navigation("WinRecord");
                 });

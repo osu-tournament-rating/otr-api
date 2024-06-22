@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Processor;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace Database.Entities;
 
@@ -16,8 +17,8 @@ public class Game : UpdateableEntityBase
     /// <summary>
     /// osu! id
     /// </summary>
-    [Column("game_id")]
-    public long GameId { get; set; }
+    [Column("osu_id")]
+    public long OsuId { get; set; }
 
     /// <summary>
     /// The <see cref="Enums.Ruleset"/> the game was played in
@@ -38,30 +39,16 @@ public class Game : UpdateableEntityBase
     public TeamType TeamType { get; set; }
 
     /// <summary>
-    /// The enabled <see cref="Enums.Mods"/>
+    /// The <see cref="Enums.Mods"/> enabled for the game
     /// </summary>
     [Column("mods")]
     public Mods Mods { get; set; }
 
     /// <summary>
-    /// Star rating of the played beatmap after applying mods
+    /// Star rating of the <see cref="Beatmap"/> after applying mods
     /// </summary>
     [Column("post_mod_sr")]
     public double PostModSr { get; set; }
-
-    // TODO: Data worker refactor
-    /// <summary>
-    /// The verification status of the game
-    /// </summary>
-    [Column("verification_status")]
-    public Old_GameVerificationStatus? VerificationStatus { get; set; }
-
-    // TODO: Data worker refactor
-    /// <summary>
-    /// The reason the game was rejected from verification
-    /// </summary>
-    [Column("rejection_reason")]
-    public Old_GameRejectionReason? RejectionReason { get; set; }
 
     /// <summary>
     /// Timestamp for the beginning of the game
@@ -74,6 +61,18 @@ public class Game : UpdateableEntityBase
     /// </summary>
     [Column("end_time")]
     public DateTime EndTime { get; set; }
+
+    /// <summary>
+    /// Verification status
+    /// </summary>
+    [Column("verification_status")]
+    public VerificationStatus VerificationStatus { get; set; }
+
+    /// <summary>
+    /// Rejection reason
+    /// </summary>
+    [Column("rejection_reason")]
+    public GameRejectionReason RejectionReason { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Match"/> that the game was played in
@@ -103,7 +102,7 @@ public class Game : UpdateableEntityBase
     public GameWinRecord? WinRecord { get; set; }
 
     /// <summary>
-    /// All match scores for the game
+    /// A collection of <see cref="GameScore"/>s set in the <see cref="Game"/>
     /// </summary>
-    public ICollection<MatchScore> MatchScores { get; set; } = new List<MatchScore>();
+    public ICollection<GameScore> Scores { get; set; } = new List<GameScore>();
 }

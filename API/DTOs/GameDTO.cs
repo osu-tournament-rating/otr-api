@@ -37,7 +37,7 @@ public class GameDTO
     /// <summary>
     /// osu! id of the game
     /// </summary>
-    public long GameId { get; set; }
+    public long OsuId { get; set; }
 
     /// <summary>
     /// Timestamp of the beginning of the game
@@ -58,5 +58,5 @@ public class GameDTO
     /// All match scores for the game
     /// </summary>
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public List<MatchScoreDTO> MatchScores { get; set; } = [];
+    public List<GameScoreDTO> Scores { get; set; } = [];
 }

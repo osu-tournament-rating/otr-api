@@ -2,28 +2,18 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Interfaces;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace Database.Entities;
 
-// TODO: Rename to "Score"
 /// <summary>
-/// Describes performance information relative to a single <see cref="Entities.Game"/> for a <see cref="Entities.Player"/>
+/// A score set by a <see cref="Entities.Player"/> in a <see cref="Entities.Game"/>
 /// </summary>
-/// <remarks>
-/// Functionally, a <see cref="MatchScore"/> is a representation of a single "map" played in a
-/// <see cref="Entities.Match"/> by a <see cref="Entities.Player"/>
-/// </remarks>
-[Table("match_scores")]
+[Table("game_scores")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class MatchScore : UpdateableEntityBase, IScoreStatistics
+public class GameScore : UpdateableEntityBase, IScoreStatistics
 {
-    /// <summary>
-    /// The <see cref="Enums.Team"/> the <see cref="Player"/> played for in the match
-    /// </summary>
-    [Column("team")]
-    public int Team { get; set; }
-
     /// <summary>
     /// Total score
     /// </summary>
@@ -63,70 +53,68 @@ public class MatchScore : UpdateableEntityBase, IScoreStatistics
     public int CountGeki { get; set; }
 
     /// <summary>
-    /// Denotes if the score is perfect (AKA, is an SS)
+    /// Denotes if the <see cref="Player"/> passed
     /// </summary>
     [Column("pass")]
     public bool Pass { get; set; }
 
     /// <summary>
-    /// Denotes if the <see cref="Player"/> passed
+    /// Denotes if the score is perfect (is an SS)
     /// </summary>
     [Column("perfect")]
     public bool Perfect { get; set; }
 
     /// <summary>
-    /// The <see cref="Mods"/> enabled for the score represented as an integer
+    /// The <see cref="Enums.Mods"/> enabled for the score
     /// </summary>
-    /// <remarks>
-    /// Mods are only populated at the <see cref="MatchScore"/> level for <see cref="Entities.Game"/>s played with
-    /// "FreeMod". If the <see cref="Game"/> was forced "ScoreV2 + NoFail", <see cref="MatchScore"/> mods will be null,
-    /// and mods should be referenced from the <see cref="Game"/> instead.
-    /// </remarks>
-    [Column("enabled_mods")]
-    public int? EnabledMods { get; set; }
-
-    // TODO: REMOVE
-    /// <summary>
-    /// If not valid, the score is not sent to the rating processor.
-    /// </summary>
-    [Column("is_valid")]
-    public bool? IsValid { get; set; }
+    [Column("mods")]
+    public Mods Mods { get; set; }
 
     /// <summary>
-    /// Id of the <see cref="Entities.Game"/> that the <see cref="MatchScore"/> was a part of
+    /// The <see cref="Enums.Team"/> the <see cref="Player"/> played for in the game
+    /// </summary>
+    [Column("team")]
+    public Team Team { get; set; }
+
+    /// <summary>
+    /// The <see cref="Enums.Ruleset"/> the score was set in
+    /// </summary>
+    [Column("ruleset")]
+    public Ruleset Ruleset { get; set; }
+
+    /// <summary>
+    /// Verification status
+    /// </summary>
+    [Column("verification_status")]
+    public VerificationStatus VerificationStatus { get; set; }
+
+    /// <summary>
+    /// Rejection reason
+    /// </summary>
+    [Column("rejection_reason")]
+    public ScoreRejectionReason RejectionReason { get; set; }
+
+    /// <summary>
+    /// Id of the <see cref="Entities.Game"/> that the <see cref="GameScore"/> was set in
     /// </summary>
     [Column("game_id")]
     public int GameId { get; set; }
 
     /// <summary>
-    /// The <see cref="Entities.Game"/> that the <see cref="MatchScore"/> was a part of
+    /// The <see cref="Entities.Game"/> that the <see cref="GameScore"/> was set in
     /// </summary>
     public Game Game { get; set; } = null!;
 
     /// <summary>
-    /// Id of the <see cref="Entities.Player"/> that owns the <see cref="MatchScore"/>
+    /// Id of the <see cref="Entities.Player"/> that set the <see cref="GameScore"/>
     /// </summary>
     [Column("player_id")]
     public int PlayerId { get; set; }
 
     /// <summary>
-    /// The <see cref="Entities.Player"/> that owns the <see cref="MatchScore"/>
+    /// The <see cref="Entities.Player"/> that set the <see cref="GameScore"/>
     /// </summary>
     public Player Player { get; set; } = null!;
-
-    [NotMapped]
-    public Mods? EnabledModsEnum
-    {
-        get
-        {
-            if (EnabledMods != null)
-            {
-                return (Mods)EnabledMods;
-            }
-
-            return null;
-        }
-    }
 
     /// <summary>
     /// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)

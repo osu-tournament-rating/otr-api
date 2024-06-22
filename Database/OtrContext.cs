@@ -36,7 +36,7 @@ public class OtrContext(
     public virtual DbSet<Match> Matches { get; set; }
     public virtual DbSet<MatchAudit> MatchAudits { get; set; }
     public virtual DbSet<MatchRatingAdjustment> MatchRatingStats { get; set; }
-    public virtual DbSet<MatchScore> MatchScores { get; set; }
+    public virtual DbSet<GameScore> MatchScores { get; set; }
     public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
     public virtual DbSet<OAuthClient> OAuthClients { get; set; }
     public virtual DbSet<Player> Players { get; set; }
@@ -142,14 +142,14 @@ public class OtrContext(
 
             // Relation: MatchScores
             entity
-                .HasMany(g => g.MatchScores)
+                .HasMany(g => g.Scores)
                 .WithOne(ms => ms.Game)
                 .HasForeignKey(ms => ms.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(g => g.MatchId);
             entity.HasIndex(g => g.StartTime);
-            entity.HasIndex(g => g.GameId).IsUnique();
+            entity.HasIndex(g => g.OsuId).IsUnique();
         });
 
         modelBuilder.Entity<GameWinRecord>(entity =>
@@ -278,26 +278,23 @@ public class OtrContext(
             entity.HasIndex(mrs => new { mrs.PlayerId, mrs.MatchId }).IsUnique();
         });
 
-        modelBuilder.Entity<MatchScore>(entity =>
+        modelBuilder.Entity<GameScore>(entity =>
         {
             entity.Property(ms => ms.Id).UseIdentityAlwaysColumn();
 
             entity.Property(ms => ms.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
-            // TODO: REMOVE
-            entity.Property(e => e.IsValid).HasDefaultValue(true);
-
             // Relation: Game
             entity
                 .HasOne(ms => ms.Game)
-                .WithMany(g => g.MatchScores)
+                .WithMany(g => g.Scores)
                 .HasForeignKey(ms => ms.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Player
             entity
                 .HasOne(ms => ms.Player)
-                .WithMany(p => p.MatchScores)
+                .WithMany(p => p.Scores)
                 .HasForeignKey(ms => ms.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -381,7 +378,7 @@ public class OtrContext(
 
             // Relation: MatchScores
             entity
-                .HasMany(p => p.MatchScores)
+                .HasMany(p => p.Scores)
                 .WithOne(ms => ms.Player)
                 .HasForeignKey(ms => ms.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);

@@ -21,7 +21,7 @@ public class MapperProfile : Profile
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
         CreateMap<Match, MatchSearchResultDTO>();
-        CreateMap<MatchScore, MatchScoreDTO>().ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
+        CreateMap<GameScore, GameScoreDTO>().ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
 
         CreateMap<OAuthClient, OAuthClientDTO>()
             .ForMember(x => x.ClientId, opt => opt.MapFrom(y => y.Id));

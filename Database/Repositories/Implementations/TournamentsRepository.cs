@@ -72,7 +72,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         return _context.Tournaments
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
-            .ThenInclude(g => g.MatchScores)
+            .ThenInclude(g => g.Scores)
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Beatmap)

@@ -16,7 +16,7 @@ public class MatchScoreTests
         double expectedAccuracy
     )
     {
-        var matchScore = new MatchScore
+        var matchScore = new GameScore
         {
             Count50 = fifties,
             Count100 = oneHundreds,
@@ -40,7 +40,7 @@ public class MatchScoreTests
         double expectedAccuracy
     )
     {
-        var matchScore = new MatchScore
+        var matchScore = new GameScore
         {
             CountGeki = max,
             Count300 = threeHundreds,
@@ -64,7 +64,7 @@ public class MatchScoreTests
         double expectedAccuracy
     )
     {
-        var matchScore = new MatchScore
+        var matchScore = new GameScore
         {
             Count50 = fifties,
             Count100 = oneHundreds,
@@ -86,7 +86,7 @@ public class MatchScoreTests
         double expectedAccuracy
     )
     {
-        var matchScore = new MatchScore
+        var matchScore = new GameScore
         {
             Count50 = fifties,
             Count100 = oneHundreds,
@@ -101,7 +101,7 @@ public class MatchScoreTests
     [Fact]
     public void Accuracy_IncludedInJsonSerialization()
     {
-        var matchScore = new MatchScore() { Count300 = 500 };
+        var matchScore = new GameScore() { Count300 = 500 };
 
         var json = JsonConvert.SerializeObject(matchScore);
         Assert.Contains("Accuracy", json);
@@ -111,7 +111,7 @@ public class MatchScoreTests
     [Fact]
     public void Accuracy_NeverReturnsNaN()
     {
-        var matchScore = new MatchScore
+        var matchScore = new GameScore
         {
             Count300 = 0,
             Count100 = 0,
