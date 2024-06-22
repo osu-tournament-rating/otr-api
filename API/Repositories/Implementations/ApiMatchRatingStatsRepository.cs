@@ -38,7 +38,7 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
                 {
                     Name = mrs.Match.Name ?? "<Unknown>",
                     MatchId = mrs.MatchId,
-                    MatchOsuId = mrs.Match.MatchId,
+                    MatchOsuId = mrs.Match.OsuId,
                     MatchCost = mrs.MatchCost,
                     RatingBefore = mrs.RatingBefore,
                     RatingAfter = mrs.RatingAfter,

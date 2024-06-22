@@ -445,7 +445,6 @@ builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
 #endregion
 
 #region Services
-builder.Services.AddScoped<IApiMatchService, ApiMatchService>();
 
 builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
@@ -462,6 +461,7 @@ builder.Services.AddScoped<ITournamentsService, TournamentsService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
+
 #endregion
 
 #region osu! Api

@@ -1,7 +1,11 @@
 ﻿using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums;
+using Database.Interceptors;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Newtonsoft.Json;
 
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -11,6 +15,8 @@ namespace Database;
 public class OtrContext(
     DbContextOptions<OtrContext> options) : DbContext(options)
 {
+    private readonly AuditingInterceptor _auditingInterceptor = new();
+
     /// <summary>
     /// SQL function for getting the current timestamp
     /// </summary>
@@ -28,6 +34,7 @@ public class OtrContext(
     public virtual DbSet<Game> Games { get; set; }
     public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
     public virtual DbSet<Match> Matches { get; set; }
+    public virtual DbSet<MatchAudit> MatchAudits { get; set; }
     public virtual DbSet<MatchRatingAdjustment> MatchRatingStats { get; set; }
     public virtual DbSet<MatchScore> MatchScores { get; set; }
     public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
@@ -39,8 +46,26 @@ public class OtrContext(
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<UserSettings> UserSettings { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
+        optionsBuilder.AddInterceptors(_auditingInterceptor);
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        var changesConverter = new ValueConverter<IDictionary<string, AuditChangelogEntry>, string>(
+            v => JsonConvert.SerializeObject(v, Formatting.None),
+            v => JsonConvert.DeserializeObject<IDictionary<string, AuditChangelogEntry>>(v)
+                 ?? new Dictionary<string, AuditChangelogEntry>()
+        );
+
+        var changesComparer = new ValueComparer<IDictionary<string, AuditChangelogEntry>>(
+            (c1, c2) => JsonConvert.SerializeObject(c1) == JsonConvert.SerializeObject(c2),
+            c => JsonConvert.SerializeObject(c).GetHashCode(),
+            c => c.ToDictionary(
+                e => e.Key,
+                e => (AuditChangelogEntry)e.Value.Clone()
+            )
+        );
+
         modelBuilder.Entity<BaseStats>(entity =>
         {
             entity.Property(bs => bs.Id).UseIdentityAlwaysColumn();
@@ -202,7 +227,32 @@ public class OtrContext(
                 .HasForeignKey(pms => pms.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(m => m.MatchId).IsUnique();
+            // Relation: Audits
+            entity
+                .HasMany(m => m.Audits)
+                .WithOne()
+                .HasForeignKey(a => a.ReferenceId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(m => m.OsuId).IsUnique();
+        });
+
+        modelBuilder.Entity<MatchAudit>(entity =>
+        {
+            entity.Property(ma => ma.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(ma => ma.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            entity.Property(ma => ma.Changes)
+                .HasConversion(changesConverter)
+                .Metadata.SetValueComparer(changesComparer);
+
+            // Relation: Match
+            entity
+                .HasOne<Match>()
+                .WithMany(m => m.Audits)
+                .HasForeignKey(ma => ma.ReferenceId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<MatchRatingAdjustment>(entity =>

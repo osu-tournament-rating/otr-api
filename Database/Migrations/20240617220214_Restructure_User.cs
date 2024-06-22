@@ -14,14 +14,11 @@ namespace Database.Migrations
                 name: "Users___fkplayerid",
                 table: "users");
 
-            migrationBuilder.DropPrimaryKey(
-                name: "User_pk",
-                table: "users");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_users",
-                table: "users",
-                column: "id");
+            migrationBuilder.Sql(
+                """
+                ALTER TABLE users RENAME CONSTRAINT "User_pk" TO "PK_users"
+                """
+            );
 
             migrationBuilder.AddForeignKey(
                 name: "FK_users_players_player_id",
@@ -39,14 +36,11 @@ namespace Database.Migrations
                 name: "FK_users_players_player_id",
                 table: "users");
 
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_users",
-                table: "users");
-
-            migrationBuilder.AddPrimaryKey(
-                name: "User_pk",
-                table: "users",
-                column: "id");
+            migrationBuilder.Sql(
+                """
+                ALTER TABLE users RENAME CONSTRAINT "PK_users" TO "User_pk"
+                """
+            );
 
             migrationBuilder.AddForeignKey(
                 name: "Users___fkplayerid",

@@ -86,7 +86,7 @@ public static class GameAutomationChecks
                 s_logger.Information(
                     "{Prefix} Match {MatchId} has a team size of 1, but does not satisfy the 1v1 checks, can't verify game {GameId}",
                     LogPrefix,
-                    game.Match.MatchId,
+                    game.Match.OsuId,
                     game.GameId
                 );
             }
@@ -103,7 +103,7 @@ public static class GameAutomationChecks
             s_logger.Information(
                 "{Prefix} Match {MatchId} has no team size for red or blue, can't verify game {GameId} (likely a warmup) [Red: {Red} | Blue: {Blue}]",
                 LogPrefix,
-                game.Match.MatchId,
+                game.Match.OsuId,
                 game.GameId,
                 countRed,
                 countBlue
@@ -118,7 +118,7 @@ public static class GameAutomationChecks
             s_logger.Information(
                 "{Prefix} Match {MatchId} has a mismatched team size: [Red: {Red} | Blue: {Blue}], can't verify game {GameId}",
                 LogPrefix,
-                game.Match.MatchId,
+                game.Match.OsuId,
                 countRed,
                 countBlue,
                 game.GameId
@@ -132,7 +132,7 @@ public static class GameAutomationChecks
             s_logger.Information(
                 "{Prefix} Match {MatchId} has a mismatched team size: [Red: {Red} | Blue: {Blue}], can't verify game {GameId}",
                 LogPrefix,
-                game.Match.MatchId,
+                game.Match.OsuId,
                 countRed,
                 countBlue,
                 game.GameId
@@ -189,7 +189,7 @@ public static class GameAutomationChecks
         s_logger.Information(
             "{Prefix} Match {MatchId} does not have a ScoreV2 scoring type, can't verify game {GameId}",
             LogPrefix,
-            game.Match.MatchId,
+            game.Match.OsuId,
             game.GameId
         );
         return false;
@@ -230,7 +230,7 @@ public static class GameAutomationChecks
                 s_logger.Information(
                     "{Prefix} Match {MatchId} has a tag team type, can't verify game {GameId}",
                     LogPrefix,
-                    game.Match.MatchId,
+                    game.Match.OsuId,
                     game.GameId
                 );
                 return false;
@@ -246,7 +246,7 @@ public static class GameAutomationChecks
         s_logger.Information(
             "{Prefix} Match {MatchId} has a HeadToHead team type, but team size is not 1, can't verify game {GameId}",
             LogPrefix,
-            game.Match.MatchId,
+            game.Match.OsuId,
             game.GameId
         );
 

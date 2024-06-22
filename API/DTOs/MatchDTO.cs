@@ -17,7 +17,7 @@ public class MatchDTO
     /// <summary>
     /// osu! id of the match
     /// </summary>
-    public long MatchId { get; set; }
+    public long OsuId { get; set; }
 
     /// <summary>
     /// Title of the lobby

@@ -11,9 +11,11 @@ namespace Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropPrimaryKey(
-                name: "Player_pk",
-                table: "players");
+            migrationBuilder.Sql(
+                """
+                ALTER TABLE players RENAME CONSTRAINT "Player_pk" TO "PK_players"
+                """
+            );
 
             migrationBuilder.DropIndex(
                 name: "Players_osuid",
@@ -28,19 +30,16 @@ namespace Database.Migrations
                 oldType: "integer")
                 .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn)
                 .OldAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-            migrationBuilder.AddPrimaryKey(
-                name: "PK_players",
-                table: "players",
-                column: "id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_players",
-                table: "players");
+            migrationBuilder.Sql(
+                """
+                ALTER TABLE players RENAME CONSTRAINT "PK_players" TO "Player_pk"
+                """
+            );
 
             migrationBuilder.AlterColumn<int>(
                 name: "id",
@@ -51,11 +50,6 @@ namespace Database.Migrations
                 oldType: "integer")
                 .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn)
                 .OldAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn);
-
-            migrationBuilder.AddPrimaryKey(
-                name: "Player_pk",
-                table: "players",
-                column: "id");
 
             migrationBuilder.CreateIndex(
                 name: "Players_osuid",

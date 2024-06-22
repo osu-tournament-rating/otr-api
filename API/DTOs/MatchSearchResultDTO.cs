@@ -13,7 +13,7 @@ public class MatchSearchResultDTO
     /// <summary>
     /// osu! match id of the match
     /// </summary>
-    public long MatchId { get; set; }
+    public long OsuId { get; set; }
 
     /// <summary>
     /// Name of the match

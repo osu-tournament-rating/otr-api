@@ -21,7 +21,7 @@ public static class MatchAutomationChecks
             s_logger.Information(
                 "{Prefix} Match {MatchID} has no tournament, failing automation checks",
                 LogPrefix,
-                match.MatchId
+                match.OsuId
             );
         }
 
@@ -35,7 +35,7 @@ public static class MatchAutomationChecks
             s_logger.Information(
                 "{Prefix} Match {MatchID} had null or empty abbreviation, failing",
                 LogPrefix,
-                match.MatchId
+                match.OsuId
             );
             return false;
         }
@@ -45,7 +45,7 @@ public static class MatchAutomationChecks
             s_logger.Information(
                 "{Prefix} Match {MatchID} had null or empty name, failing",
                 LogPrefix,
-                match.MatchId
+                match.OsuId
             );
             return false;
         }
@@ -55,7 +55,7 @@ public static class MatchAutomationChecks
             s_logger.Information(
                 "{Prefix} Match {MatchID} had a name that didn't start with the expected abbreviation, failing",
                 LogPrefix,
-                match.MatchId
+                match.OsuId
             );
             return false;
         }
@@ -65,7 +65,7 @@ public static class MatchAutomationChecks
             s_logger.Information(
                 "{Prefix} Match {MatchID} had a name that didn't pass the lobby name check, failing",
                 LogPrefix,
-                match.MatchId
+                match.OsuId
             );
             return false;
         }
@@ -83,7 +83,7 @@ public static class MatchAutomationChecks
             s_logger.Information(
                 "{Prefix} Match {MatchID} had an invalid mode, failing automation checks",
                 LogPrefix,
-                match.MatchId
+                match.OsuId
             );
         }
 

@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Repositories.Interfaces;
 using Database;
 using Database.Enums;
+using Database.Enums.Verification;
 using Database.Repositories.Implementations;
 using Microsoft.EntityFrameworkCore;
 
@@ -74,7 +75,7 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
                 // Calc average match cost
                 MatchCost = t.Matches
                     // Filter invalid matches (Above filter uses Any, so invalid matches can still be included)
-                    .Where(m => m.VerificationStatus == Old_MatchVerificationStatus.Verified)
+                    .Where(m => m.VerificationStatus == VerificationStatus.Verified)
                     // Filter for ratings belonging to target player
                     .SelectMany(m => m.MatchRatingAdjustments)
                     .Where(mrs => mrs.PlayerId == playerId)

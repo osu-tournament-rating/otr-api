@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Enums;
+using Database.Enums.Verification;
 using Database.Extensions;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -40,7 +41,7 @@ public class MatchesRepository(
         return await _context.Matches
             .AsNoTracking()
             .WhereVerified()
-            .Where(x => EF.Functions.ILike(x.Name ?? string.Empty, $"%{name}%", @"\"))
+            .Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\"))
             .Take(30)
             .ToListAsync();
     }
@@ -53,7 +54,7 @@ public class MatchesRepository(
             .Matches.Include(x => x.Games)
             .ThenInclude(x => x.MatchScores)
             .Include(x => x.Tournament)
-            .FirstOrDefaultAsync(x => x.MatchId == matchId);
+            .FirstOrDefaultAsync(x => x.OsuId == matchId);
 
     public async Task<IList<Match>> GetMatchesNeedingAutoCheckAsync(int limit = 10000) =>
         // We only want api processed matches because the verification checks require the data from the API
@@ -61,19 +62,12 @@ public class MatchesRepository(
             .Matches.Include(x => x.Games)
             .ThenInclude(x => x.MatchScores)
             .Include(x => x.Tournament)
-            .Where(x => x.NeedsAutoCheck == true && x.IsApiProcessed == true)
+            .Where(x => x.ProcessingStatus == MatchProcessingStatus.NeedsAutomationChecks)
             .Take(limit)
             .ToListAsync();
 
-    public async Task<Match?> GetFirstMatchNeedingApiProcessingAsync() =>
-        await _context
-            .Matches.Include(x => x.Games)
-            .ThenInclude(x => x.MatchScores)
-            .Where(x => x.IsApiProcessed == false)
-            .FirstOrDefaultAsync();
-
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
-        await _context.Matches.Where(x => matchIds.Contains(x.MatchId)).ToListAsync();
+        await _context.Matches.Where(x => matchIds.Contains(x.OsuId)).ToListAsync();
 
     public async Task<Match?> UpdateVerificationStatusAsync(
         int id,
@@ -89,7 +83,7 @@ public class MatchesRepository(
             return null;
         }
 
-        match.VerificationStatus = status;
+        match.VerificationStatus = (VerificationStatus)status;
         await UpdateAsync(match);
 
         return match;
@@ -102,36 +96,13 @@ public class MatchesRepository(
         DateTime after
     )
     {
-        return await QueryExtensions.WhereRuleset(_context
-                .Matches.IncludeAllChildren()
-                .WherePlayerParticipated(osuId), (Ruleset)mode)
+        return await _context
+            .Matches.IncludeAllChildren()
+            .WherePlayerParticipated(osuId)
+            .WhereRuleset((Ruleset)mode)
             .Before(before)
             .After(after)
             .ToListAsync();
-    }
-
-    public async Task UpdateAsApiProcessed(Match match)
-    {
-        match.IsApiProcessed = true;
-        await UpdateAsync(match);
-    }
-
-    public async Task SetRequireAutoCheckAsync(bool invalidOnly = true)
-    {
-        if (invalidOnly)
-        {
-            await _context
-                .Matches.Where(x =>
-                    x.VerificationStatus != Old_MatchVerificationStatus.Verified
-                    && x.VerificationStatus != Old_MatchVerificationStatus.PreVerified
-                )
-                .ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
-        }
-        else
-        {
-            // Applies to all matches
-            await _context.Matches.ExecuteUpdateAsync(x => x.SetProperty(y => y.NeedsAutoCheck, true));
-        }
     }
 
     private IQueryable<Match> MatchBaseQuery(bool filterInvalidMatches)

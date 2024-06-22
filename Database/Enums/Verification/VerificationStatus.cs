@@ -1,4 +1,4 @@
-namespace Database.Enums.VerificationEnums;
+namespace Database.Enums.Verification;
 
 /// <summary>
 /// The verification status of a <see cref="Entities.Tournament"/>,
@@ -11,21 +11,23 @@ public enum VerificationStatus
     /// is awaiting processing
     /// </summary>
     None = 0,
+
     /// <summary>
     /// Does not pass all automation checks, ready for human review
     /// </summary>
     PreRejected = 1,
+
     /// <summary>
     /// Passes all automation checks, ready for human review
     /// </summary>
     PreVerified = 2,
+
     /// <summary>
     /// Determined to be invalid by automation checks or manual review
     /// </summary>
-    /// <remarks>
-    /// Some automation checks will result in a concrete rejection upon failing them
-    /// </remarks>
+    /// <remarks>Some automation checks will result in a concrete rejection upon failing them</remarks>
     Rejected = 3,
+
     /// <summary>
     /// Passed manual review. Data is fit for rating calculations
     /// </summary>

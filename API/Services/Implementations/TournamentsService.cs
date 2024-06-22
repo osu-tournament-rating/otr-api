@@ -4,6 +4,7 @@ using API.Services.Interfaces;
 using AutoMapper;
 using Database.Entities;
 using Database.Enums;
+using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -20,7 +21,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
         // Only create matches that dont already exist
         IEnumerable<long> enumerableMatchIds = wrapper.Ids.ToList();
         IEnumerable<long> existingMatchIds = (await matchesRepository.GetAsync(enumerableMatchIds))
-            .Select(m => m.MatchId)
+            .Select(m => m.OsuId)
             .ToList();
 
         Tournament tournament = await tournamentsRepository.CreateAsync(new Tournament
@@ -36,10 +37,8 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
                 .Except(existingMatchIds)
                 .Select(matchId => new Match
                 {
-                    MatchId = matchId,
-                    VerificationStatus = verificationStatus,
-                    NeedsAutoCheck = true,
-                    IsApiProcessed = false,
+                    OsuId = matchId,
+                    VerificationStatus = (VerificationStatus)verificationStatus,
                     VerifiedByUserId = verify ? wrapper.SubmitterId : null,
                     SubmittedByUserId = wrapper.SubmitterId
                 }).ToList()

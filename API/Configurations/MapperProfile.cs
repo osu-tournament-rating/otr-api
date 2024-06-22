@@ -38,7 +38,7 @@ public class MapperProfile : Profile
                     {
                         MatchName = x.Match.Name,
                         MatchDate = x.Match.StartTime,
-                        MpLink = $"https://osu.ppy.sh/mp/{x.Match.MatchId}",
+                        MpLink = $"https://osu.ppy.sh/mp/{x.Match.OsuId}",
                         TournamentAbbreviation = x.Match.Tournament.Abbreviation,
                         TournamentName = x.Match.Tournament.Name
                     })

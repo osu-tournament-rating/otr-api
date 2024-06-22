@@ -1,6 +1,7 @@
 using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums;
+using Database.Enums.Verification;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Extensions;
@@ -34,11 +35,7 @@ public static class QueryExtensions
     public static IQueryable<Match> WhereVerified(this IQueryable<Match> query) =>
         query
             .AsQueryable()
-            .Where(x =>
-                x.VerificationStatus == Old_MatchVerificationStatus.Verified
-                && x.IsApiProcessed == true
-                && x.NeedsAutoCheck == false
-            );
+            .Where(x => x.VerificationStatus == VerificationStatus.Verified);
 
     public static IQueryable<Match> After(this IQueryable<Match> query, DateTime after) =>
         query.AsQueryable().Where(x => x.StartTime > after);
@@ -113,7 +110,7 @@ public static class QueryExtensions
             .AsQueryable()
             .Where(x =>
                 x.IsValid != false
-                && x.Game.Match.VerificationStatus == Old_MatchVerificationStatus.Verified
+                && x.Game.Match.VerificationStatus == VerificationStatus.Verified
                 && x.Game.VerificationStatus == (int)Old_GameVerificationStatus.Verified
             );
 

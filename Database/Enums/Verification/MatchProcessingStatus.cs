@@ -1,4 +1,4 @@
-namespace Database.Enums.VerificationEnums;
+namespace Database.Enums.Verification;
 
 /// <summary>
 /// The status of a match in the processing flow
@@ -9,11 +9,13 @@ public enum MatchProcessingStatus
     /// Needs data requested from the osu! API
     /// </summary>
     NeedsData = 0,
+
     /// <summary>
     /// Data has been retrieved from the osu! API and parsed,
     /// ready for automation checks
     /// </summary>
     NeedsAutomationChecks = 1,
+
     /// <summary>
     /// All steps have been completed, match is ready for human review
     /// </summary>

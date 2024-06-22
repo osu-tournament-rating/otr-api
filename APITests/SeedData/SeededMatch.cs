@@ -1,5 +1,6 @@
 using Database.Entities;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace APITests.SeedData;
 
@@ -24,18 +25,16 @@ public static class SeededMatch
         var match = new Match
         {
             Id = s_rand.Next(),
-            MatchId = s_rand.NextInt64(),
+            OsuId = s_rand.NextInt64(),
             Name = "OWC2021: (United States) vs (Germany)",
             StartTime = new DateTime(2022, 01, 23),
             Created = new DateTime(2023, 09, 30),
             Updated = new DateTime(2023, 11, 04),
             EndTime = new DateTime(2022, 01, 23),
-            VerificationStatus = Old_MatchVerificationStatus.Verified,
+            VerificationStatus = VerificationStatus.Verified,
             SubmittedByUserId = 21,
             VerifiedByUserId = null,
-            TournamentId = tournamentId,
-            NeedsAutoCheck = false,
-            IsApiProcessed = true
+            TournamentId = tournamentId
         };
 
         match.Games = SeededGame.Generate(match.Id, 5);

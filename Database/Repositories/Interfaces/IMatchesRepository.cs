@@ -20,10 +20,12 @@ public interface IMatchesRepository : IRepository<Match>
     Task<IEnumerable<Match>> GetAsync(int limit, int page, bool filterUnverified = true);
 
     Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds);
+
     Task<Match?> GetByMatchIdAsync(long matchId);
+
     Task<IEnumerable<Match>> SearchAsync(string name);
+
     Task<IList<Match>> GetMatchesNeedingAutoCheckAsync(int limit = 10000);
-    Task<Match?> GetFirstMatchNeedingApiProcessingAsync();
 
     /// <summary>
     /// Updates the verification status of a match for the given id
@@ -42,6 +44,4 @@ public interface IMatchesRepository : IRepository<Match>
         int? verifierId = null
     );
     Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, int mode, DateTime before, DateTime after);
-    Task UpdateAsApiProcessed(Match match);
-    Task SetRequireAutoCheckAsync(bool invalidOnly = true);
 }

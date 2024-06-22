@@ -1,5 +1,8 @@
 ﻿namespace Database.Entities.Interfaces;
 
+/// <summary>
+/// Interfaces an entity
+/// </summary>
 public interface IEntity
 {
     /// <summary>

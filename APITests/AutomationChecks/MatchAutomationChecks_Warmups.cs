@@ -36,7 +36,7 @@ public class MatchAutomationChecks_Warmups
         var match = new Match
         {
             Tournament = tournament,
-            MatchId = matchData.OsuApiMatch.MatchId,
+            OsuId = matchData.OsuApiMatch.MatchId,
             Name = matchData.OsuApiMatch.Name,
             StartTime = matchData.OsuApiMatch.StartTime,
             EndTime = matchData.OsuApiMatch.EndTime!.Value,

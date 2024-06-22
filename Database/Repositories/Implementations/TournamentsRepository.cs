@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums;
+using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -60,7 +61,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
                     m.StartTime >= dateMin
                     && m.StartTime <= dateMax
                     // Verified
-                    && m.VerificationStatus == Old_MatchVerificationStatus.Verified
+                    && m.VerificationStatus == VerificationStatus.Verified
                     // Participated in by player
                     && m.MatchRatingAdjustments.Any(stat => stat.PlayerId == playerId)
                 ));

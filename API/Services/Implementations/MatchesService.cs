@@ -1,10 +1,10 @@
 using API.Controllers;
 using API.DTOs;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
 using Database.Entities;
 using Database.Enums;
+using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -38,7 +38,7 @@ public class MatchesService(
         // Only create matches that dont already exist
         IEnumerable<long> enumerableMatchIds = matchIds.ToList();
         IEnumerable<long> existingMatchIds = (await matchesRepository.GetAsync(enumerableMatchIds))
-            .Select(m => m.MatchId)
+            .Select(m => m.OsuId)
             .ToList();
 
         // Create matches directly on the tournament because we can't access their ids until after the entity is updated
@@ -47,17 +47,15 @@ public class MatchesService(
         {
             tournament.Matches.Add(new Match
             {
-                MatchId = matchId,
-                VerificationStatus = verificationStatus,
-                NeedsAutoCheck = true,
-                IsApiProcessed = false,
+                OsuId = matchId,
+                VerificationStatus = (VerificationStatus)verificationStatus,
                 VerifiedByUserId = verify ? submitterId : null,
                 SubmittedByUserId = submitterId
             });
         }
 
         await tournamentsRepository.UpdateAsync(tournament);
-        IEnumerable<Match> createdMatches = tournament.Matches.Where(m => createdMatchIds.Contains(m.MatchId));
+        IEnumerable<Match> createdMatches = tournament.Matches.Where(m => createdMatchIds.Contains(m.OsuId));
 
         return mapper.Map<IEnumerable<MatchCreatedResultDTO>>(createdMatches);
     }
@@ -107,9 +105,6 @@ public class MatchesService(
     public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name) => mapper.Map<IEnumerable<MatchSearchResultDTO>>(
         await matchesRepository.SearchAsync(name)
     );
-
-    public async Task RefreshAutomationChecks(bool invalidOnly = true) =>
-        await matchesRepository.SetRequireAutoCheckAsync(invalidOnly);
 
     public async Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId)
     {

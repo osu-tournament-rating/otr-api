@@ -59,18 +59,6 @@ public class MatchesController(IMatchesService matchesService) : Controller
         return Ok(await matchesService.GetAsync(limit, page, filterUnverified));
     }
 
-    [HttpPost("checks/refresh")]
-    [Authorize(Roles = $"{OtrClaims.Admin}, {OtrClaims.System}")]
-    [EndpointSummary(
-        "Sets all matches as requiring automation checks. Should be run if " + "automation checks are altered."
-    )]
-    public async Task<IActionResult> RefreshAutomationChecksAsync()
-    {
-        // Marks all matches as needing automation checks
-        await matchesService.RefreshAutomationChecks(false);
-        return Ok();
-    }
-
     /// <summary>
     /// Get a match
     /// </summary>
@@ -106,7 +94,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
             return NotFound($"Match with id {id} does not exist");
         }
 
-        var osuMatchId = match.MatchId;
+        var osuMatchId = match.OsuId;
         if (osuMatchId != 0)
         {
             return Ok(osuMatchId);

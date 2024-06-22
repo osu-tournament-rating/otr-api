@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using API.Osu.AutomationChecks;
 using Database.Entities;
 using Database.Enums;
+using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 using Moq;
 using Match = Database.Entities.Match;
@@ -28,14 +29,12 @@ public class AutomationChecksTests
 
         var match = new Match
         {
-            MatchId = 1,
+            OsuId = 1,
             Created = DateTime.UtcNow,
             StartTime = new DateTime(2023, 1, 1, 0, 0, 0),
             EndTime = new DateTime(2023, 1, 1, 1, 0, 0),
             Name = "STT3: (the voices are back) vs (la planta)",
-            NeedsAutoCheck = true,
-            IsApiProcessed = true,
-            VerificationStatus = Old_MatchVerificationStatus.PendingVerification,
+            VerificationStatus = VerificationStatus.None,
             Tournament = tournament,
             TournamentId = tournament.Id
         };

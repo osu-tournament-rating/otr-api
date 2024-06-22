@@ -15,5 +15,5 @@ public class MatchCreatedResultDTO : CreatedResultBaseDTO, ICreatedResult
     /// <summary>
     /// osu! match id
     /// </summary>
-    public long MatchId { get; set; }
+    public long OsuId { get; set; }
 }

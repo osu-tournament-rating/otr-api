@@ -1,5 +1,8 @@
 ﻿namespace Database.Entities.Interfaces;
 
+/// <summary>
+/// Interfaces an updateable entity
+/// </summary>
 public interface IUpdateableEntity : IEntity
 {
     /// <summary>

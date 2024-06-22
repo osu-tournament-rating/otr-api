@@ -3,6 +3,7 @@ using API.Services.Interfaces;
 using AutoMapper;
 using Database.Entities;
 using Database.Enums;
+using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -36,7 +37,7 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
 
         foreach (Match match in submissions)
         {
-            match.VerificationStatus = Old_MatchVerificationStatus.Rejected;
+            match.VerificationStatus = VerificationStatus.Rejected;
             match.VerifiedByUserId = rejecterUserId;
         }
 

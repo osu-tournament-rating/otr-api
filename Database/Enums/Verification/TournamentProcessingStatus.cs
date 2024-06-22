@@ -1,4 +1,4 @@
-namespace Database.Enums.VerificationEnums;
+namespace Database.Enums.Verification;
 
 /// <summary>
 /// The status of a tournament in the processing flow
@@ -9,6 +9,7 @@ public enum TournamentProcessingStatus
     /// The tournament needs automation checks
     /// </summary>
     NeedsAutomationChecks = 0,
+
     /// <summary>
     /// The tournament has completed automation checks
     /// </summary>
