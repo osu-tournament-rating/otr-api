@@ -68,7 +68,7 @@ public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>
     public int TournamentId { get; set; }
 
     /// <summary>
-    /// The <see cref="Tournament"/> that the match was played in
+    /// The <see cref="Entities.Tournament"/> the match was played in
     /// </summary>
     public Tournament Tournament { get; set; } = null!;
 
@@ -95,7 +95,7 @@ public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>
     public User? VerifiedByUser { get; set; }
 
     /// <summary>
-    /// The <see cref="MatchWinRecord"/> for the match
+    /// The <see cref="MatchWinRecord"/>
     /// </summary>
     public MatchWinRecord? WinRecord { get; set; }
 
