@@ -31,7 +31,7 @@ public class Beatmap : IModel
     public Ruleset Ruleset { get; init; }
 
     /// <summary>
-    /// Ranking status
+    /// Ranking status as a string
     /// </summary>
     public string Status { get; init; } = null!;
 

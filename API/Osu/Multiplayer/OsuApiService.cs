@@ -114,21 +114,20 @@ public class OsuApiService : IOsuApiService
                 var beatmap = new Beatmap
                 {
                     Artist = response.Beatmapset.Artist,
-                    BeatmapId = beatmapId,
+                    OsuId = beatmapId,
                     Bpm = response.Bpm,
                     MapperId = response.Beatmapset.UserId,
                     Cs = response.CircleSize,
                     Ar = response.ApproachRate,
                     Hp = response.Drain,
                     Od = response.DifficultyRating,
-                    DrainTime = response.Drain,
                     Length = response.Length.TotalSeconds,
                     Title = response.Beatmapset.Title,
                     Ruleset = (Ruleset)response.Mode,
                     CircleCount = response.CircleCount,
                     SliderCount = response.SliderCount,
                     SpinnerCount = response.SpinnerCount,
-                    MaxCombo = response.MaxCombo,
+                    // MaxCombo = response.MaxCombo,
                     MapperName = response.Beatmapset.Creator
                 };
 
@@ -136,8 +135,6 @@ public class OsuApiService : IOsuApiService
                 {
                     IBeatmapDifficultyAttributes attr = attributes.Attributes;
                     beatmap.Sr = attr.StarRating;
-                    beatmap.AimDiff = attr.AimDifficulty;
-                    beatmap.SpeedDiff = attr.SpeedDifficulty;
                 }
 
                 return beatmap;

@@ -12,7 +12,7 @@ public class BeatmapRepository(OtrContext context) : RepositoryBase<Beatmap>(con
     private readonly OtrContext _context = context;
 
     public async Task<Beatmap?> GetAsync(long beatmapId) =>
-        await _context.Beatmaps.FirstOrDefaultAsync(x => x.BeatmapId == beatmapId);
+        await _context.Beatmaps.FirstOrDefaultAsync(x => x.OsuId == beatmapId);
 
     public async Task<int?> GetIdAsync(long beatmapId) => (await GetAsync(beatmapId))?.Id;
 }

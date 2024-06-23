@@ -14,8 +14,8 @@ public class GameWinRecordsService(IGameWinRecordsRepository gameWinRecordsRepos
         var gameWinRecords = postBody.Select(item => new GameWinRecord
         {
             GameId = item.GameId,
-            WinnerRoster = item.Winners,
-            LoserRoster = item.Losers,
+            WinnerRoster = item.WinnerRoster,
+            LoserRoster = item.LoserRoster,
             WinnerTeam = (Team)item.WinnerTeam,
             LoserTeam = (Team)item.LoserTeam
         })

@@ -57,6 +57,12 @@ public class GameScore : UpdateableEntityBase, IScoreStatistics
     public bool Perfect { get; set; }
 
     /// <summary>
+    /// Represents the overall performance as a letter grade
+    /// </summary>
+    [Column("grade")]
+    public ScoreGrade Grade { get; set; }
+
+    /// <summary>
     /// The <see cref="Enums.Mods"/> enabled for the score
     /// </summary>
     [Column("mods")]

@@ -71,6 +71,8 @@ public class OtrContext(
 
             entity.Property(b => b.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
+            entity.Property(b => b.HasData).HasDefaultValue(true);
+
             // Relation: Games
             entity
                 .HasMany(b => b.Games)
@@ -78,7 +80,7 @@ public class OtrContext(
                 .HasForeignKey(g => g.BeatmapId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            entity.HasIndex(b => b.BeatmapId).IsUnique();
+            entity.HasIndex(b => b.OsuId).IsUnique();
         });
 
         modelBuilder.Entity<DataWorkerQueueMatch>(entity =>

@@ -16,29 +16,18 @@ public class Beatmap : EntityBase
     /// <summary>
     /// osu! id of the beatmap
     /// </summary>
-    [Column("beatmap_id")]
-    public long BeatmapId { get; init; }
+    [Column("osu_id")]
+    public long OsuId { get; init; }
 
     /// <summary>
-    /// Song title
+    /// Denotes if the <see cref="Beatmap"/> has populated data
     /// </summary>
-    [MaxLength(512)]
-    [Column("title")]
-    public string Title { get; init; } = null!;
-
-    /// <summary>
-    /// Song artist
-    /// </summary>
-    [MaxLength(512)]
-    [Column("artist")]
-    public string Artist { get; init; } = null!;
-
-    /// <summary>
-    /// Difficulty name
-    /// </summary>
-    [MaxLength(255)]
-    [Column("diff_name")]
-    public string? DiffName { get; init; }
+    /// <remarks>
+    /// Set only on creation. If the beatmap is deleted from osu! at
+    /// the time of access, this value will be false and all properties will be unpopulated.
+    /// </remarks>
+    [Column("has_data")]
+    public bool HasData { get; init; }
 
     /// <summary>
     /// osu! id of the mapper
@@ -52,6 +41,33 @@ public class Beatmap : EntityBase
     [MaxLength(32)]
     [Column("mapper_name")]
     public string MapperName { get; init; } = null!;
+
+    /// <summary>
+    /// Song artist
+    /// </summary>
+    [MaxLength(512)]
+    [Column("artist")]
+    public string Artist { get; init; } = null!;
+
+    /// <summary>
+    /// Song title
+    /// </summary>
+    [MaxLength(512)]
+    [Column("title")]
+    public string Title { get; init; } = null!;
+
+    /// <summary>
+    /// Difficulty name
+    /// </summary>
+    [MaxLength(255)]
+    [Column("diff_name")]
+    public string DiffName { get; init; } = null!;
+
+    /// <summary>
+    /// Ranked status
+    /// </summary>
+    [Column("ranked_status")]
+    public BeatmapRankedStatus RankedStatus { get; init; }
 
     /// <summary>
     /// Star rating
@@ -90,24 +106,6 @@ public class Beatmap : EntityBase
     public double Od { get; init; }
 
     /// <summary>
-    /// Measure of aim difficulty
-    /// </summary>
-    [Column("aim_diff")]
-    public double? AimDiff { get; set; }
-
-    /// <summary>
-    /// Measure of speed difficulty
-    /// </summary>
-    [Column("speed_diff")]
-    public double? SpeedDiff { get; set; }
-
-    /// <summary>
-    /// Total length of song that is playable (mapped)
-    /// </summary>
-    [Column("drain_time")]
-    public double DrainTime { get; init; }
-
-    /// <summary>
     /// Total length of the song
     /// </summary>
     [Column("length")]
@@ -141,10 +139,10 @@ public class Beatmap : EntityBase
     /// Max possible combo
     /// </summary>
     [Column("max_combo")]
-    public int? MaxCombo { get; init; }
+    public int MaxCombo { get; init; }
 
     /// <summary>
-    /// A collection of <see cref="Game"/>s that were played on this <see cref="Beatmap"/>
+    /// A collection of <see cref="Game"/>s played on the <see cref="Beatmap"/>
     /// </summary>
     public ICollection<Game> Games { get; init; } = new List<Game>();
 }
