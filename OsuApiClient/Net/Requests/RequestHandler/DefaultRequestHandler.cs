@@ -160,25 +160,26 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
     /// </summary>
     /// <param name="response">osu! API response</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    private void UpdateRateLimit(HttpResponseMessage response)
+    // private void UpdateRateLimit(HttpResponseMessage response)
+    private void UpdateRateLimit()
     {
-        // Try to update token limit
-        _rateLimit.TokenLimit =
-            response.Headers.TryGetValues("X-RateLimit-Limit", out IEnumerable<string>? limitHeaders)
-                ? int.Parse(limitHeaders.First())
-                : _rateLimit.TokenLimit;
+        _rateLimit.RemainingTokens -= 1;
 
-        // Try to update remaining tokens
-        _rateLimit.RemainingTokens =
-            response.Headers.TryGetValues("X-RateLimit-Remaining", out IEnumerable<string>? remainingHeaders)
-                ? int.Parse(remainingHeaders.First())
-                : _rateLimit.RemainingTokens - 1;
-
-        // Reset the window
-        if (_rateLimit.HasExpired)
-        {
-            _rateLimit.Created = DateTimeOffset.Now;
-        }
+        // The osu! API rate limit headers return values based on the burst limit
+        // This method is reliable, but we should respect the courtesy limit of 60 r/m
+        // See https://osu.ppy.sh/docs/index.html#terms-of-use
+        // _rateLimit.TokenLimit =
+        //     response.Headers.TryGetValues("X-RateLimit-Limit", out IEnumerable<string>? limitHeaders)
+        //         ? int.Parse(limitHeaders.First())
+        //         : _rateLimit.TokenLimit;
+        // _rateLimit.RemainingTokens =
+        //     response.Headers.TryGetValues("X-RateLimit-Remaining", out IEnumerable<string>? remainingHeaders)
+        //         ? int.Parse(remainingHeaders.First())
+        //         : _rateLimit.RemainingTokens - 1;
+        // if (_rateLimit.HasExpired)
+        // {
+        //     _rateLimit.Created = DateTimeOffset.Now;
+        // }
 
         logger.LogDebug(
             "Rate limit updated [Tokens: {Remaining}/{Limit} | Expires In: {Expiry}]",
@@ -200,7 +201,7 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
         CancellationToken cancellationToken = default
     )
     {
-        UpdateRateLimit(response);
+        UpdateRateLimit();
 
         // Parse response body
         var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
