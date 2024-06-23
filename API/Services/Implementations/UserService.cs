@@ -25,8 +25,7 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
     public async Task<IEnumerable<MatchSubmissionStatusDTO>?> GetSubmissionsAsync(int id) =>
         mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>(await userRepository.GetSubmissionsAsync(id));
 
-    public async Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId,
-        Old_MatchVerificationSource verificationSource)
+    public async Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId)
     {
         IEnumerable<Match>? submissions = (await userRepository.GetAsync(id))?.SubmittedMatches?.ToList();
         if (submissions is null)

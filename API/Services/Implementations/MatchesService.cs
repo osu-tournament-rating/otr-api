@@ -17,23 +17,16 @@ public class MatchesService(
 ) : IMatchesService
 {
     // TODO: Refactor to use enums for param "verificationSource"
-    public async Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(
-        int tournamentId,
+    public async Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(int tournamentId,
         int submitterId,
         IEnumerable<long> matchIds,
-        bool verify,
-        int? verificationSource
-    )
+        bool verify)
     {
         Tournament? tournament = await tournamentsRepository.GetAsync(tournamentId);
         if (tournament is null)
         {
             return null;
         }
-
-        Old_MatchVerificationStatus verificationStatus = verify
-            ? Old_MatchVerificationStatus.Verified
-            : Old_MatchVerificationStatus.PendingVerification;
 
         // Only create matches that dont already exist
         IEnumerable<long> enumerableMatchIds = matchIds.ToList();
@@ -48,7 +41,7 @@ public class MatchesService(
             tournament.Matches.Add(new Match
             {
                 OsuId = matchId,
-                VerificationStatus = (VerificationStatus)verificationStatus,
+                VerificationStatus = VerificationStatus.None,
                 VerifiedByUserId = verify ? submitterId : null,
                 SubmittedByUserId = submitterId
             });
@@ -112,11 +105,10 @@ public class MatchesService(
         return mapper.Map<MatchDTO?>(match);
     }
 
-    public async Task<MatchDTO?> UpdateVerificationStatusAsync(int id,
-        Old_MatchVerificationStatus verificationStatus,
-        Old_MatchVerificationSource verificationSource,
-        string? info = null,
-        int? verifierId = null) =>
-        mapper.Map<MatchDTO?>(await matchesRepository
-            .UpdateVerificationStatusAsync(id, verificationStatus, verificationSource, info, verifierId));
+    public async Task<MatchDTO?> UpdateVerificationStatusAsync(
+        int id,
+        VerificationStatus verificationStatus,
+        int? verifierId = null
+    ) =>
+        mapper.Map<MatchDTO?>(await matchesRepository.UpdateVerificationStatusAsync(id, verificationStatus, verifierId));
 }

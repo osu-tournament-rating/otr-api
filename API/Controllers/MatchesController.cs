@@ -135,19 +135,15 @@ public class MatchesController(IMatchesService matchesService) : Controller
             return BadRequest(ModelState);
         }
 
-        if (match.VerificationStatus is null)
-        {
-            return BadRequest();
-        }
+        // TODO: Add check for verification status matching original before update
 
         var verifierId = User.AuthorizedIdentity();
         MatchDTO? updatedMatch = await matchesService.UpdateVerificationStatusAsync(
             id,
-            (Old_MatchVerificationStatus)match.VerificationStatus,
-            Old_MatchVerificationSource.MatchVerifier,
-            "Updated manually by an admin",
+            match.VerificationStatus,
             verifierId
-            );
+        );
+
         return Ok(updatedMatch);
     }
 }

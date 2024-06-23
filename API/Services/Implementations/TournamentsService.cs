@@ -12,12 +12,8 @@ namespace API.Services.Implementations;
 public class TournamentsService(ITournamentsRepository tournamentsRepository, IMatchesRepository matchesRepository, IMapper mapper) : ITournamentsService
 {
     // TODO: Refactor to use enum for param "verificationSource"
-    public async Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify, int? verificationSource)
+    public async Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify)
     {
-        Old_MatchVerificationStatus verificationStatus = verify
-            ? Old_MatchVerificationStatus.Verified
-            : Old_MatchVerificationStatus.PendingVerification;
-
         // Only create matches that dont already exist
         IEnumerable<long> enumerableMatchIds = wrapper.Ids.ToList();
         IEnumerable<long> existingMatchIds = (await matchesRepository.GetAsync(enumerableMatchIds))
@@ -38,7 +34,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
                 .Select(matchId => new Match
                 {
                     OsuId = matchId,
-                    VerificationStatus = (VerificationStatus)verificationStatus,
+                    VerificationStatus = VerificationStatus.None,
                     VerifiedByUserId = verify ? wrapper.SubmitterId : null,
                     SubmittedByUserId = wrapper.SubmitterId
                 }).ToList()

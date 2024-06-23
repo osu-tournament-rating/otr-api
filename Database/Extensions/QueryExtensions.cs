@@ -63,9 +63,7 @@ public static class QueryExtensions
     public static IQueryable<Game> WhereVerified(this IQueryable<Game> query) =>
         query
             .AsQueryable()
-            .Where(x =>
-                x.VerificationStatus == (int)Old_GameVerificationStatus.Verified && x.RejectionReason == null
-            );
+            .Where(x => x.VerificationStatus == VerificationStatus.Verified);
 
     public static IQueryable<Game> WhereTeamVs(this IQueryable<Game> query) =>
         query.AsQueryable().Where(x => x.TeamType == TeamType.TeamVs);
@@ -111,7 +109,7 @@ public static class QueryExtensions
             .Where(x =>
                 x.VerificationStatus == VerificationStatus.Verified
                 && x.Game.Match.VerificationStatus == VerificationStatus.Verified
-                && x.Game.VerificationStatus == (int)Old_GameVerificationStatus.Verified
+                && x.Game.VerificationStatus == VerificationStatus.Verified
             );
 
     /// <summary>

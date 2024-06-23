@@ -89,7 +89,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
 
         // Create tournament
         TournamentCreatedResultDTO result =
-            await tournamentsService.CreateAsync(tournamentSubmission, verify, (int?)User.VerificationSource());
+            await tournamentsService.CreateAsync(tournamentSubmission, verify);
         return CreatedAtAction("Get", new { id = result.Id }, result);
     }
 
@@ -191,8 +191,8 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
             await matchesService.CreateAsync(
                 id,
                 matchesSubmission.SubmitterId,
-                matchesSubmission.Ids, verify,
-                (int?)User.VerificationSource()
+                matchesSubmission.Ids,
+                verify
             );
 
         return result is not null

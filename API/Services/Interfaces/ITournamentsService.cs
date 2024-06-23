@@ -10,9 +10,8 @@ public interface ITournamentsService
     /// </summary>
     /// <param name="wrapper">Submission data</param>
     /// <param name="verify">Verify all included matches</param>
-    /// <param name="verificationSource">Source of verification (int representation of <see cref="Old_MatchVerificationSource"/></param>
     /// <returns>Location information for the created tournament</returns>
-    Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify, int? verificationSource);
+    Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify);
 
     /// <summary>
     /// Denotes a tournament with matching id exists

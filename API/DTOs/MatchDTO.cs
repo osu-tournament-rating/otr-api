@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace API.DTOs;
 
@@ -42,7 +43,7 @@ public class MatchDTO
     /// <summary>
     /// Current verification status of the match
     /// </summary>
-    public Old_MatchVerificationStatus? VerificationStatus { get; set; }
+    public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
     /// List of games played during the match

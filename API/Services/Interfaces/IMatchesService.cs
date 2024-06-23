@@ -1,5 +1,5 @@
 using API.DTOs;
-using Database.Enums;
+using Database.Enums.Verification;
 
 namespace API.Services.Interfaces;
 
@@ -12,14 +12,12 @@ public interface IMatchesService
     /// <param name="submitterId">Id of the submitting user</param>
     /// <param name="matchIds">List of match ids</param>
     /// <param name="verify">Submitter is a match verifier</param>
-    /// <param name="verificationSource">Source of verification (int representation of <see cref="Old_MatchVerificationSource"/></param>
     /// <returns>Location information for the created matches, or null if parent tournament does not exist</returns>
     Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(
         int tournamentId,
         int submitterId,
         IEnumerable<long> matchIds,
-        bool verify,
-        int? verificationSource
+        bool verify
     );
 
     /// <summary>
@@ -40,12 +38,13 @@ public interface IMatchesService
     /// </summary>
     /// <param name="id">Id of the match</param>
     /// <param name="verificationStatus">New verification status to assign</param>
-    /// <param name="verificationSource">New verification source to assign</param>
-    /// <param name="info">Optional verification info</param>
     /// <param name="verifierId">Optional user id to attribute the update to</param>
     /// <returns>An updated match, or null if not found</returns>
-    Task<MatchDTO?> UpdateVerificationStatusAsync(int id, Old_MatchVerificationStatus verificationStatus,
-        Old_MatchVerificationSource verificationSource, string? info = null, int? verifierId = null);
+    Task<MatchDTO?> UpdateVerificationStatusAsync(
+        int id,
+        VerificationStatus verificationStatus,
+        int? verifierId = null
+    );
 
     Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(
         long osuPlayerId,

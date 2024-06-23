@@ -71,9 +71,7 @@ public class MatchesRepository(
 
     public async Task<Match?> UpdateVerificationStatusAsync(
         int id,
-        Old_MatchVerificationStatus status,
-        Old_MatchVerificationSource source,
-        string? info = null,
+        VerificationStatus status,
         int? verifierId = null
     )
     {
@@ -83,7 +81,7 @@ public class MatchesRepository(
             return null;
         }
 
-        match.VerificationStatus = (VerificationStatus)status;
+        match.VerificationStatus = status;
         await UpdateAsync(match);
 
         return match;

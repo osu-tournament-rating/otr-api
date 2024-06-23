@@ -1,5 +1,6 @@
 using Database.Entities;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace Database.Repositories.Interfaces;
 
@@ -32,15 +33,11 @@ public interface IMatchesRepository : IRepository<Match>
     /// </summary>
     /// <param name="id">Id of the match</param>
     /// <param name="verificationStatus">New verification status to assign</param>
-    /// <param name="verificationSource">New verification source to assign</param>
-    /// <param name="info">Optional verification info</param>
     /// <param name="verifierId">Optional user id to attribute the update to</param>
     /// <returns>An updated match, or null if not found</returns>
     Task<Match?> UpdateVerificationStatusAsync(
         int id,
-        Old_MatchVerificationStatus status,
-        Old_MatchVerificationSource source,
-        string? info = null,
+        VerificationStatus verificationStatus,
         int? verifierId = null
     );
     Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, int mode, DateTime before, DateTime after);
