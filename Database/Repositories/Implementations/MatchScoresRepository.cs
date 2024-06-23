@@ -16,7 +16,7 @@ public class MatchScoresRepository(OtrContext context) : RepositoryBase<GameScor
     public async Task<int> AverageTeammateScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
     {
         List<long> teammateScores = await _context
-            .MatchScores.WhereVerified()
+            .GameScores.WhereVerified()
             .After(fromTime)
             .WhereRuleset(ruleset)
             .WhereTeammate(osuPlayerId)
@@ -28,7 +28,7 @@ public class MatchScoresRepository(OtrContext context) : RepositoryBase<GameScor
     public async Task<int> AverageOpponentScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
     {
         List<long> oppScoresHeadToHead = await _context
-            .MatchScores.WhereVerified()
+            .GameScores.WhereVerified()
             .After(fromTime)
             .WhereRuleset(ruleset)
             .WhereHeadToHead()
@@ -37,7 +37,7 @@ public class MatchScoresRepository(OtrContext context) : RepositoryBase<GameScor
             .ToListAsync();
 
         List<long> oppScoresTeamVs = await _context
-            .MatchScores.WhereVerified()
+            .GameScores.WhereVerified()
             .After(fromTime)
             .WhereRuleset(ruleset)
             .WhereTeamVs()
@@ -58,7 +58,7 @@ public class MatchScoresRepository(OtrContext context) : RepositoryBase<GameScor
     {
         return (int)
             await _context
-                .MatchScores.WhereVerified()
+                .GameScores.WhereVerified()
                 .WhereRuleset(ruleset)
                 .WhereMods((Mods)mods)
                 .WherePlayerId(playerId)
@@ -76,7 +76,7 @@ public class MatchScoresRepository(OtrContext context) : RepositoryBase<GameScor
         DateTime dateMax)
     {
         return await _context
-            .MatchScores.WhereVerified()
+            .GameScores.WhereVerified()
             .WhereRuleset(ruleset)
             .WhereMods((Mods)mods)
             .WherePlayerId(playerId)

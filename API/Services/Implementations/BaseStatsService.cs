@@ -18,28 +18,28 @@ public class BaseStatsService(
     ITournamentsService tournamentsService
     ) : IBaseStatsService
 {
-    public async Task<IEnumerable<BaseStatsDTO?>> GetAsync(long osuPlayerId)
+    public async Task<IEnumerable<PlayerRatingDTO?>> GetAsync(long osuPlayerId)
     {
         var id = await playerRepository.GetIdAsync(osuPlayerId);
 
         if (!id.HasValue)
         {
-            return new List<BaseStatsDTO?>();
+            return new List<PlayerRatingDTO?>();
         }
 
-        IEnumerable<BaseStats> baseStats = await baseStatsRepository.GetForPlayerAsync(osuPlayerId);
-        var ret = new List<BaseStatsDTO?>();
+        IEnumerable<PlayerRating> baseStats = await baseStatsRepository.GetForPlayerAsync(osuPlayerId);
+        var ret = new List<PlayerRatingDTO?>();
 
-        foreach (BaseStats stat in baseStats)
+        foreach (PlayerRating stat in baseStats)
         {
             // One per mode
-            ret.Add(await GetAsync(stat, id.Value, (int)stat.Mode));
+            ret.Add(await GetAsync(stat, id.Value, (int)stat.Ruleset));
         }
 
         return ret;
     }
 
-    public async Task<BaseStatsDTO?> GetAsync(BaseStats? currentStats, int playerId, int mode)
+    public async Task<PlayerRatingDTO?> GetAsync(PlayerRating? currentStats, int playerId, int mode)
     {
         currentStats ??= await baseStatsRepository.GetForPlayerAsync(playerId, mode);
 
@@ -63,10 +63,9 @@ public class BaseStatsService(
             MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(currentStats.Rating)
         };
 
-        return new BaseStatsDTO
+        return new PlayerRatingDTO
         {
             PlayerId = playerId,
-            AverageMatchCost = currentStats.MatchCostAverage,
             CountryRank = currentStats.CountryRank,
             GlobalRank = currentStats.GlobalRank,
             MatchesPlayed = matchesPlayed,
@@ -83,17 +82,16 @@ public class BaseStatsService(
 
     public async Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats)
     {
-        var toInsert = new List<BaseStats>();
+        var toInsert = new List<PlayerRating>();
         foreach (BaseStatsPostDTO item in stats)
         {
             toInsert.Add(
-                new BaseStats
+                new PlayerRating
                 {
                     PlayerId = item.PlayerId,
-                    MatchCostAverage = item.MatchCostAverage,
                     Rating = item.Rating,
                     Volatility = item.Volatility,
-                    Mode = (Ruleset)item.Mode,
+                    Ruleset = (Ruleset)item.Mode,
                     Percentile = item.Percentile,
                     GlobalRank = item.GlobalRank,
                     CountryRank = item.CountryRank
@@ -104,7 +102,7 @@ public class BaseStatsService(
         return await baseStatsRepository.BatchInsertAsync(toInsert);
     }
 
-    public async Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(
+    public async Task<IEnumerable<PlayerRatingDTO?>> GetLeaderboardAsync(
         int mode,
         int page,
         int pageSize,
@@ -113,7 +111,7 @@ public class BaseStatsService(
         int? playerId
     )
     {
-        IEnumerable<BaseStats> baseStats = await baseStatsRepository.GetLeaderboardAsync(
+        IEnumerable<PlayerRating> baseStats = await baseStatsRepository.GetLeaderboardAsync(
             page,
             pageSize,
             mode,
@@ -122,9 +120,9 @@ public class BaseStatsService(
             playerId
         );
 
-        var leaderboard = new List<BaseStatsDTO?>();
+        var leaderboard = new List<PlayerRatingDTO?>();
 
-        foreach (BaseStats baseStat in baseStats)
+        foreach (PlayerRating baseStat in baseStats)
         {
             leaderboard.Add(await GetAsync(baseStat, baseStat.PlayerId, mode));
         }

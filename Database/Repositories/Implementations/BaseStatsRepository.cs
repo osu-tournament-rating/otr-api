@@ -7,36 +7,35 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-public class BaseStatsRepository(OtrContext context, IPlayersRepository playersRepository) : RepositoryBase<BaseStats>(context), IBaseStatsRepository
+public class BaseStatsRepository(OtrContext context, IPlayersRepository playersRepository) : RepositoryBase<PlayerRating>(context), IBaseStatsRepository
 {
     private readonly OtrContext _context = context;
 
-    public async Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId)
+    public async Task<IEnumerable<PlayerRating>> GetForPlayerAsync(long osuPlayerId)
     {
         var id = await playersRepository.GetIdAsync(osuPlayerId);
 
         if (!id.HasValue)
         {
-            return new List<BaseStats>();
+            return new List<PlayerRating>();
         }
 
-        return await _context.BaseStats.Where(x => x.PlayerId == id.Value).ToListAsync();
+        return await _context.PlayerRatings.Where(x => x.PlayerId == id.Value).ToListAsync();
     }
 
-    public async Task<BaseStats?> GetForPlayerAsync(int playerId, int mode) =>
-        await _context.BaseStats.Where(x => x.PlayerId == playerId && x.Mode == (Ruleset)mode).FirstOrDefaultAsync();
+    public async Task<PlayerRating?> GetForPlayerAsync(int playerId, int mode) =>
+        await _context.PlayerRatings.Where(x => x.PlayerId == playerId && x.Ruleset == (Ruleset)mode).FirstOrDefaultAsync();
 
-    public async Task<int> BatchInsertAsync(IEnumerable<BaseStats> baseStats)
+    public async Task<int> BatchInsertAsync(IEnumerable<PlayerRating> baseStats)
     {
-        var ls = new List<BaseStats>();
-        foreach (BaseStats stat in baseStats)
+        var ls = new List<PlayerRating>();
+        foreach (PlayerRating stat in baseStats)
         {
             ls.Add(
-                new BaseStats
+                new PlayerRating
                 {
                     PlayerId = stat.PlayerId,
-                    MatchCostAverage = stat.MatchCostAverage,
-                    Mode = stat.Mode,
+                    Ruleset = stat.Ruleset,
                     Rating = stat.Rating,
                     Volatility = stat.Volatility,
                     Percentile = stat.Percentile,
@@ -47,7 +46,7 @@ public class BaseStatsRepository(OtrContext context, IPlayersRepository playersR
             );
         }
 
-        await _context.BaseStats.AddRangeAsync(ls);
+        await _context.PlayerRatings.AddRangeAsync(ls);
         return await _context.SaveChangesAsync();
     }
 
@@ -58,7 +57,7 @@ public class BaseStatsRepository(OtrContext context, IPlayersRepository playersR
     {
         var globalIndex = (
                 await _context
-                    .BaseStats.WhereRuleset((Ruleset)mode)
+                    .PlayerRatings.WhereRuleset((Ruleset)mode)
                     .OrderByRatingDescending()
                     .Select(x => x.Player.OsuId)
                     .ToListAsync()
@@ -74,15 +73,15 @@ public class BaseStatsRepository(OtrContext context, IPlayersRepository playersR
         if (country != null)
         {
             return await _context
-                .BaseStats.AsNoTracking()
-                .Where(x => x.Player.Country == country && x.Mode == (Ruleset)mode)
+                .PlayerRatings.AsNoTracking()
+                .Where(x => x.Player.Country == country && x.Ruleset == (Ruleset)mode)
                 .Select(x => x.CountryRank)
                 .DefaultIfEmpty()
                 .MaxAsync();
         }
 
         return await _context
-            .BaseStats.AsNoTracking()
+            .PlayerRatings.AsNoTracking()
             .WhereRuleset((Ruleset)mode)
             .Select(x => x.GlobalRank)
             .DefaultIfEmpty()
@@ -94,16 +93,16 @@ public class BaseStatsRepository(OtrContext context, IPlayersRepository playersR
         if (country != null)
         {
             return await _context
-                .BaseStats.AsNoTracking()
-                .Where(x => x.Player.Country == country && x.Mode == (Ruleset)mode)
+                .PlayerRatings.AsNoTracking()
+                .Where(x => x.Player.Country == country && x.Ruleset == (Ruleset)mode)
                 .Select(x => x.Rating)
                 .DefaultIfEmpty()
                 .MaxAsync();
         }
 
         return await _context
-            .BaseStats.AsNoTracking()
-            .Where(x => x.Mode == (Ruleset)mode)
+            .PlayerRatings.AsNoTracking()
+            .Where(x => x.Ruleset == (Ruleset)mode)
             .Select(x => x.Rating)
             .DefaultIfEmpty()
             .MaxAsync();
@@ -134,7 +133,7 @@ public class BaseStatsRepository(OtrContext context, IPlayersRepository playersR
     public async Task<IDictionary<int, int>> GetHistogramAsync(int mode)
     {
         // Determine the maximum rating as a double
-        var maxRating = await _context.BaseStats.Where(x => x.Mode == (Ruleset)mode).MaxAsync(x => x.Rating);
+        var maxRating = await _context.PlayerRatings.Where(x => x.Ruleset == (Ruleset)mode).MaxAsync(x => x.Rating);
 
         // Round up maxRating to the nearest multiple of 25
         var maxBucket = (int)(Math.Ceiling(maxRating / 25) * 25);
@@ -144,8 +143,8 @@ public class BaseStatsRepository(OtrContext context, IPlayersRepository playersR
 
         // Adjust the GroupBy to correctly bucket the rating of 100
         Dictionary<int, int> dbHistogram = await _context
-            .BaseStats.AsNoTracking()
-            .Where(x => x.Mode == (Ruleset)mode && x.Rating >= 100)
+            .PlayerRatings.AsNoTracking()
+            .Where(x => x.Ruleset == (Ruleset)mode && x.Rating >= 100)
             .GroupBy(x => (int)(x.Rating / 25) * 25)
             .Select(g => new { Bucket = g.Key == 0 ? 100 : g.Key, Count = g.Count() })
             .ToDictionaryAsync(g => g.Bucket, g => g.Count);

@@ -30,19 +30,6 @@ public class MapperProfile : Profile
             .ForMember(x => x.ClientSecret, opt => opt.Ignore());
 
         CreateMap<RatingAdjustment, RatingAdjustmentDTO>();
-        CreateMap<MatchRatingAdjustment, MatchRatingStatsDTO>()
-            .ForMember(
-                x => x.TooltipInfo,
-                opt =>
-                    opt.MapFrom(x => new MatchTooltipInfoDTO
-                    {
-                        MatchName = x.Match.Name,
-                        MatchDate = x.Match.StartTime,
-                        MpLink = $"https://osu.ppy.sh/mp/{x.Match.OsuId}",
-                        TournamentAbbreviation = x.Match.Tournament.Abbreviation,
-                        TournamentName = x.Match.Tournament.Name
-                    })
-            );
 
         CreateMap<Player, PlayerDTO>();
         CreateMap<Player, PlayerRanksDTO>();

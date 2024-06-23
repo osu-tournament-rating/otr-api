@@ -106,7 +106,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
             )
             .ThenInclude(x => x.Game)
             .ThenInclude(x => x.Match)
-            .Include(x => x.Ratings.Where(y => y.Mode == (Ruleset)mode))
+            .Include(x => x.Ratings.Where(y => y.Ruleset == (Ruleset)mode))
             .Include(x => x.User)
             .WhereOsuId(osuId)
             .FirstOrDefaultAsync();

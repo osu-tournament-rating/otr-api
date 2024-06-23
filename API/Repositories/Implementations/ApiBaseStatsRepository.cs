@@ -23,7 +23,7 @@ public class ApiBaseStatsRepository(
 {
     private readonly OtrContext _context = context;
 
-    public async Task<IEnumerable<BaseStats>> GetLeaderboardAsync(
+    public async Task<IEnumerable<PlayerRating>> GetLeaderboardAsync(
         int page,
         int pageSize,
         int mode,
@@ -32,7 +32,7 @@ public class ApiBaseStatsRepository(
         int? playerId
     )
     {
-        IQueryable<BaseStats> query = await LeaderboardQuery(mode, chartType, filter, playerId);
+        IQueryable<PlayerRating> query = await LeaderboardQuery(mode, chartType, filter, playerId);
 
         return await query
             .OrderByRatingDescending()
@@ -49,19 +49,19 @@ public class ApiBaseStatsRepository(
         int? playerId
     )
     {
-        IQueryable<BaseStats> query = await LeaderboardQuery(mode, chartType, filter, playerId);
+        IQueryable<PlayerRating> query = await LeaderboardQuery(mode, chartType, filter, playerId);
 
         return await query.CountAsync();
     }
 
-    private async Task<IQueryable<BaseStats>> LeaderboardQuery(
+    private async Task<IQueryable<PlayerRating>> LeaderboardQuery(
         int mode,
         LeaderboardChartType chartType,
         LeaderboardFilterDTO? filter,
         int? playerId
     )
     {
-        IQueryable<BaseStats> baseQuery = _context.BaseStats.WhereRuleset((Ruleset)mode);
+        IQueryable<PlayerRating> baseQuery = _context.PlayerRatings.WhereRuleset((Ruleset)mode);
 
         if (chartType == LeaderboardChartType.Country && playerId.HasValue)
         {
@@ -102,9 +102,9 @@ public class ApiBaseStatsRepository(
         return baseQuery;
     }
 
-    private static IQueryable<BaseStats> FilterByRank(
+    private static IQueryable<PlayerRating> FilterByRank(
         int mode,
-        IQueryable<BaseStats> query,
+        IQueryable<PlayerRating> query,
         int? minRank,
         int? maxRank
     )
@@ -138,7 +138,7 @@ public class ApiBaseStatsRepository(
         return query;
     }
 
-    private static IQueryable<BaseStats> FilterByRating(IQueryable<BaseStats> query, int? minRating, int? maxRating)
+    private static IQueryable<PlayerRating> FilterByRating(IQueryable<PlayerRating> query, int? minRating, int? maxRating)
     {
         if (minRating.HasValue)
         {
@@ -153,8 +153,8 @@ public class ApiBaseStatsRepository(
         return query;
     }
 
-    private static IQueryable<BaseStats> FilterByMatchesPlayed(
-        IQueryable<BaseStats> query,
+    private static IQueryable<PlayerRating> FilterByMatchesPlayed(
+        IQueryable<PlayerRating> query,
         int? minMatches,
         int? maxMatches
     )
@@ -180,8 +180,8 @@ public class ApiBaseStatsRepository(
         return query;
     }
 
-    private static IQueryable<BaseStats> FilterByTier(
-        IQueryable<BaseStats> query,
+    private static IQueryable<PlayerRating> FilterByTier(
+        IQueryable<PlayerRating> query,
         LeaderboardTierFilterDTO tierFilter
     )
     {

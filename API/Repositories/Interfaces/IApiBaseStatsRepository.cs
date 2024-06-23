@@ -8,7 +8,7 @@ namespace API.Repositories.Interfaces;
 
 public interface IApiBaseStatsRepository : IBaseStatsRepository
 {
-    Task<IEnumerable<BaseStats>> GetLeaderboardAsync(
+    Task<IEnumerable<PlayerRating>> GetLeaderboardAsync(
         int page,
         int pageSize,
         int mode,

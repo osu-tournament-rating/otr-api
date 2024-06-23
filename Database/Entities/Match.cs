@@ -105,14 +105,14 @@ public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>
     public ICollection<Game> Games { get; set; } = new List<Game>();
 
     /// <summary>
-    /// A collection of <see cref="MatchRatingAdjustment"/> for the match
-    /// </summary>
-    public ICollection<MatchRatingAdjustment> MatchRatingAdjustments { get; set; } = new List<MatchRatingAdjustment>();
-
-    /// <summary>
-    /// A collection of <see cref="Processor.PlayerMatchStats"/> for the match
+    /// A collection of <see cref="Processor.PlayerMatchStats"/>, one for each <see cref="Player"/> that participated
     /// </summary>
     public ICollection<PlayerMatchStats> PlayerMatchStats { get; set; } = new List<PlayerMatchStats>();
+
+    /// <summary>
+    /// A collection of <see cref="RatingAdjustment"/>s, one for each <see cref="Player"/> that participated
+    /// </summary>
+    public ICollection<RatingAdjustment> PlayerRatingAdjustments { get; set; } = new List<RatingAdjustment>();
 
     public ICollection<MatchAudit> Audits { get; set; } = new List<MatchAudit>();
 }

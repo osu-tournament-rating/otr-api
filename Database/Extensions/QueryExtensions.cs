@@ -190,14 +190,14 @@ public static class QueryExtensions
         query.AsQueryable().Where(x => x.Game.StartTime > after);
 
     // Rating
-    public static IQueryable<BaseStats> WhereRuleset(this IQueryable<BaseStats> query, Ruleset ruleset) =>
-        query.AsQueryable().Where(x => x.Mode == ruleset);
+    public static IQueryable<PlayerRating> WhereRuleset(this IQueryable<PlayerRating> query, Ruleset ruleset) =>
+        query.AsQueryable().Where(x => x.Ruleset == ruleset);
 
-    public static IQueryable<BaseStats> WhereOsuPlayerId(
-        this IQueryable<BaseStats> query,
+    public static IQueryable<PlayerRating> WhereOsuPlayerId(
+        this IQueryable<PlayerRating> query,
         long osuPlayerId
     ) => query.AsQueryable().Where(x => x.Player.OsuId == osuPlayerId);
 
-    public static IQueryable<BaseStats> OrderByRatingDescending(this IQueryable<BaseStats> query) =>
+    public static IQueryable<PlayerRating> OrderByRatingDescending(this IQueryable<PlayerRating> query) =>
         query.AsQueryable().OrderByDescending(x => x.Rating);
 }

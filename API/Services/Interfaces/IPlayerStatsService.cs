@@ -56,7 +56,6 @@ public interface IPlayerStatsService
     );
 
     Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody);
-    Task BatchInsertAsync(IEnumerable<MatchRatingStatsDTO> postBody);
     Task BatchInsertAsync(IEnumerable<BaseStatsPostDTO> postBody);
     Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody);
     Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody);

@@ -72,14 +72,15 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
                 TournamentId = t.Id,
                 TournamentName = t.Name,
                 TournamentAcronym = t.Abbreviation,
+                // TODO
                 // Calc average match cost
-                MatchCost = t.Matches
-                    // Filter invalid matches (Above filter uses Any, so invalid matches can still be included)
-                    .Where(m => m.VerificationStatus == VerificationStatus.Verified)
-                    // Filter for ratings belonging to target player
-                    .SelectMany(m => m.MatchRatingAdjustments)
-                    .Where(mrs => mrs.PlayerId == playerId)
-                    .Average(mrs => mrs.MatchCost)
+                // MatchCost = t.Matches
+                //     // Filter invalid matches (Above filter uses Any, so invalid matches can still be included)
+                //     .Where(m => m.VerificationStatus == VerificationStatus.Verified)
+                //     // Filter for ratings belonging to target player
+                //     .SelectMany(m => m.MatchRatingAdjustments)
+                //     .Where(mrs => mrs.PlayerId == playerId)
+                //     .Average(mrs => mrs.MatchCost)
             });
 
         // Sort

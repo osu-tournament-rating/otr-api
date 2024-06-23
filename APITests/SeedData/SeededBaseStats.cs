@@ -8,24 +8,23 @@ namespace APITests.SeedData;
 
 public static class SeededBaseStats
 {
-    public static BaseStats Get() =>
+    public static PlayerRating Get() =>
         new()
         {
             Id = 1,
             PlayerId = 1,
-            Mode = 0,
+            Ruleset = 0,
             Rating = 1245.324,
             Volatility = 100.5231,
             Percentile = 0.3431,
             GlobalRank = 20,
             CountryRank = 2,
-            MatchCostAverage = 1.23424,
             Created = new DateTime(2023, 11, 11)
         };
 
-    public static List<BaseStats> GetSimpleLeaderboard(int size = 25)
+    public static List<PlayerRating> GetSimpleLeaderboard(int size = 25)
     {
-        var lb = new List<BaseStats>();
+        var lb = new List<PlayerRating>();
         for (var i = 0; i < size; i++)
         {
             lb.Add(Get());
@@ -34,9 +33,9 @@ public static class SeededBaseStats
         return lb;
     }
 
-    public static List<BaseStats> GetLeaderboardFiltered(LeaderboardFilterDTO filter, int size = 25)
+    public static List<PlayerRating> GetLeaderboardFiltered(LeaderboardFilterDTO filter, int size = 25)
     {
-        var lb = new List<BaseStats>();
+        var lb = new List<PlayerRating>();
         LeaderboardTierFilterDTO? tiers = filter.TierFilters;
 
         if (tiers == null || !tiers.IsEngaged())
@@ -96,7 +95,7 @@ public static class SeededBaseStats
 
         for (var i = 0; i < fillAmount; i++)
         {
-            BaseStats toAdd = Get();
+            PlayerRating toAdd = Get();
             toAdd.Rating = fillRating;
 
             lb.Add(toAdd);
@@ -167,55 +166,55 @@ public static class SeededBaseStats
         return lb;
     }
 
-    private static BaseStats SetEliteGrandmaster(this BaseStats b)
+    private static PlayerRating SetEliteGrandmaster(this PlayerRating b)
     {
         b.Rating = RatingUtils.RatingEliteGrandmaster;
         return b;
     }
 
-    private static BaseStats SetGrandmaster(this BaseStats b)
+    private static PlayerRating SetGrandmaster(this PlayerRating b)
     {
         b.Rating = RatingUtils.RatingGrandmasterIII;
         return b;
     }
 
-    private static BaseStats SetMaster(this BaseStats b)
+    private static PlayerRating SetMaster(this PlayerRating b)
     {
         b.Rating = RatingUtils.RatingMasterIII;
         return b;
     }
 
-    private static BaseStats SetDiamond(this BaseStats b)
+    private static PlayerRating SetDiamond(this PlayerRating b)
     {
         b.Rating = RatingUtils.RatingDiamondIII;
         return b;
     }
 
-    private static BaseStats SetEmerald(this BaseStats b)
+    private static PlayerRating SetEmerald(this PlayerRating b)
     {
         b.Rating = RatingUtils.RatingEmeraldIII;
         return b;
     }
 
-    private static BaseStats SetPlatinum(this BaseStats b)
+    private static PlayerRating SetPlatinum(this PlayerRating b)
     {
         b.Rating = RatingUtils.RatingPlatinumIII;
         return b;
     }
 
-    private static BaseStats SetGold(this BaseStats b)
+    private static PlayerRating SetGold(this PlayerRating b)
     {
         b.Rating = RatingUtils.RatingGoldIII;
         return b;
     }
 
-    private static BaseStats SetSilver(this BaseStats b)
+    private static PlayerRating SetSilver(this PlayerRating b)
     {
         b.Rating = RatingUtils.RatingSilverIII;
         return b;
     }
 
-    private static BaseStats SetBronze(this BaseStats b)
+    private static PlayerRating SetBronze(this PlayerRating b)
     {
         b.Rating = RatingUtils.RatingBronzeIII;
         return b;

@@ -19,7 +19,7 @@ public class ApiPlayerMatchStatsRepository(OtrContext context) : PlayerMatchStat
         DateTime dateMax
     )
     {
-        var modStats = await _context.MatchScores
+        var modStats = await _context.GameScores
             .AsNoTracking()
             .Include(ms => ms.Game)
             .ThenInclude(g => g.Match)

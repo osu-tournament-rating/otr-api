@@ -3,20 +3,20 @@ using Database.Entities.Processor;
 
 namespace Database.Repositories.Interfaces;
 
-public interface IBaseStatsRepository : IRepository<BaseStats>
+public interface IBaseStatsRepository : IRepository<PlayerRating>
 {
     /// <summary>
     ///  Returns all ratings for a player, one for each game mode (if available)
     /// </summary>
     /// <param name="playerId"></param>
     /// <returns></returns>
-    Task<IEnumerable<BaseStats>> GetForPlayerAsync(long osuPlayerId);
+    Task<IEnumerable<PlayerRating>> GetForPlayerAsync(long osuPlayerId);
 
 
-    Task<BaseStats?> GetForPlayerAsync(int playerId, int mode);
+    Task<PlayerRating?> GetForPlayerAsync(int playerId, int mode);
 
 
-    Task<int> BatchInsertAsync(IEnumerable<BaseStats> baseStats);
+    Task<int> BatchInsertAsync(IEnumerable<PlayerRating> baseStats);
 
 
     Task TruncateAsync();

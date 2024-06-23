@@ -70,8 +70,8 @@ public class SearchService(
         result = (await playerRepository.SearchAsync(username))
             .Select(player =>
             {
-                BaseStats? stats = player.Ratings
-                    .FirstOrDefault(r => r.Mode == (player.Ruleset ?? Ruleset.Standard));
+                PlayerRating? stats = player.Ratings
+                    .FirstOrDefault(r => r.Ruleset == (player.Ruleset ?? Ruleset.Standard));
                 return new PlayerSearchResultDTO
                 {
                     Id = player.Id,

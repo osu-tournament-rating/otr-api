@@ -77,14 +77,6 @@ public class StatsController(
         return Ok();
     }
 
-    [HttpPost("ratingstats")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchRatingStatsDTO> postBody)
-    {
-        await playerStatsService.BatchInsertAsync(postBody);
-        return Ok();
-    }
-
     [HttpPost("basestats")]
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<BaseStatsPostDTO> postBody)

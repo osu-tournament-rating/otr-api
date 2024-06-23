@@ -57,7 +57,7 @@ public class PlayerStatsService(
             MatchesPlayed = matchesPlayed,
             MatchesWon = matchesWon,
             MatchesLost = matchesLost,
-            RatingDelta = teammateRatingStats.Sum(x => x.RatingChange),
+            RatingDelta = teammateRatingStats.Sum(x => x.RatingDelta),
             WinRate = winRate
         };
     }
@@ -95,7 +95,7 @@ public class PlayerStatsService(
             MatchesPlayed = matchesPlayed,
             MatchesWon = matchesWon,
             MatchesLost = opponentMatchStats.Sum(x => x.Won ? 0 : 1),
-            RatingDelta = opponentRatingStats.Sum(x => x.RatingChange),
+            RatingDelta = opponentRatingStats.Sum(x => x.RatingDelta),
             WinRate = winRate
         };
     }
@@ -135,7 +135,7 @@ public class PlayerStatsService(
 
         PlayerInfoDTO playerInfo = mapper.Map<PlayerInfoDTO>(player);
 
-        BaseStatsDTO? baseStats = await GetBaseStatsAsync(player.Id, (int)ruleset!.Value);
+        PlayerRatingDTO? baseStats = await GetBaseStatsAsync(player.Id, (int)ruleset!.Value);
 
         if (baseStats is null)
         {
@@ -176,7 +176,7 @@ public class PlayerStatsService(
         {
             PlayerInfo = playerInfo,
             Ruleset = ruleset.Value,
-            BaseStats = baseStats,
+            Rating = baseStats,
             MatchStats = matchStats,
             ModStats = modStats,
             TournamentStats = tournamentStats,
@@ -214,41 +214,6 @@ public class PlayerStatsService(
         await matchStatsRepository.InsertAsync(items);
     }
 
-    public async Task BatchInsertAsync(IEnumerable<MatchRatingStatsDTO> postBody)
-    {
-        var items = new List<MatchRatingAdjustment>();
-        foreach (MatchRatingStatsDTO item in postBody)
-        {
-            var stats = new MatchRatingAdjustment
-            {
-                PlayerId = item.PlayerId,
-                MatchId = item.MatchId,
-                MatchCost = item.MatchCost,
-                RatingBefore = item.RatingBefore,
-                RatingAfter = item.RatingAfter,
-                RatingChange = item.RatingChange,
-                VolatilityBefore = item.VolatilityBefore,
-                VolatilityAfter = item.VolatilityAfter,
-                VolatilityChange = item.VolatilityChange,
-                GlobalRankBefore = item.GlobalRankBefore,
-                GlobalRankAfter = item.GlobalRankAfter,
-                GlobalRankChange = item.GlobalRankChange,
-                CountryRankBefore = item.CountryRankBefore,
-                CountryRankAfter = item.CountryRankAfter,
-                CountryRankChange = item.CountryRankChange,
-                PercentileBefore = item.PercentileBefore,
-                PercentileAfter = item.PercentileAfter,
-                PercentileChange = item.PercentileChange,
-                AverageTeammateRating = item.AverageTeammateRating,
-                AverageOpponentRating = item.AverageOpponentRating
-            };
-
-            items.Add(stats);
-        }
-
-        await ratingStatsRepository.BulkInsertAsync(items);
-    }
-
     public async Task BatchInsertAsync(IEnumerable<BaseStatsPostDTO> postBody) =>
         await baseStatsService.BatchInsertAsync(postBody);
 
@@ -282,9 +247,9 @@ public class PlayerStatsService(
     }
 
     // Returns overall stats for the player, no need to filter by date.
-    private async Task<BaseStatsDTO?> GetBaseStatsAsync(int playerId, int mode)
+    private async Task<PlayerRatingDTO?> GetBaseStatsAsync(int playerId, int mode)
     {
-        BaseStatsDTO? dto = await baseStatsService.GetAsync(null, playerId, mode);
+        PlayerRatingDTO? dto = await baseStatsService.GetAsync(null, playerId, mode);
 
         if (dto == null)
         {
@@ -372,7 +337,7 @@ public class PlayerStatsService(
     )
     {
         var matchStats = (await matchStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax)).ToList();
-        IEnumerable<MatchRatingAdjustment> ratingStats =
+        IEnumerable<RatingAdjustment> ratingStats =
             (await ratingStatsRepository.GetForPlayerAsync(id, mode, dateMin, dateMax))
             .ToList()
             .SelectMany(x => x);
@@ -384,7 +349,8 @@ public class PlayerStatsService(
 
         return new AggregatePlayerMatchStatsDTO
         {
-            AverageMatchCostAggregate = ratingStats.Average(x => x.MatchCost),
+            // TODO: Different way of calcing this
+            // AverageMatchCostAggregate = ratingStats.Average(x => x.MatchCost),
             HighestRating = ratingStats.Max(x => x.RatingAfter),
             HighestGlobalRank = ratingStats.Min(x => x.GlobalRankAfter),
             HighestCountryRank = ratingStats.Min(x => x.CountryRankAfter),
@@ -395,8 +361,9 @@ public class PlayerStatsService(
             GamesPlayed = matchStats.Sum(x => x.GamesPlayed),
             MatchesWon = matchStats.Count(x => x.Won),
             MatchesLost = matchStats.Count(x => !x.Won),
-            AverageTeammateRating = ratingStats.Average(x => x.AverageTeammateRating),
-            AverageOpponentRating = ratingStats.Average(x => x.AverageOpponentRating),
+            // TODO: Different way of calcing this
+            // AverageTeammateRating = ratingStats.Average(x => x.AverageTeammateRating),
+            // AverageOpponentRating = ratingStats.Average(x => x.AverageOpponentRating),
             BestWinStreak = GetHighestWinStreak(matchStats),
             MatchAverageScoreAggregate = matchStats.Average(x => x.AverageScore),
             MatchAverageAccuracyAggregate = matchStats.Average(x => x.AverageAccuracy),

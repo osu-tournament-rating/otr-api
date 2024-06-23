@@ -5,7 +5,7 @@ namespace API.DTOs;
 /// <summary>
 /// Represents general statistics for a player that are current and not time specific
 /// </summary>
-public class BaseStatsDTO
+public class PlayerRatingDTO
 {
     /// <summary>
     /// Id of the player
@@ -56,11 +56,6 @@ public class BaseStatsDTO
     /// Current o!tr country rank
     /// </summary>
     public int CountryRank { get; set; }
-
-    /// <summary>
-    /// Current average match cost
-    /// </summary>
-    public double AverageMatchCost { get; set; }
 
     /// <summary>
     /// Total number of tournaments played

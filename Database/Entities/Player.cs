@@ -122,27 +122,22 @@ public class Player : UpdateableEntityBase
     public User? User { get; set; }
 
     /// <summary>
-    /// A collection of <see cref="BaseStats"/> owned by the <see cref="Player"/>
+    /// A collection of <see cref="PlayerRating"/> owned by the <see cref="Player"/>
     /// </summary>
-    public ICollection<BaseStats> Ratings { get; set; } = new List<BaseStats>();
+    public ICollection<PlayerRating> Ratings { get; set; } = new List<PlayerRating>();
 
     /// <summary>
-    /// A collection of <see cref="RatingAdjustment"/>s owned by the <see cref="Player"/>
+    /// A collection of <see cref="RatingAdjustment"/>s adjusting any <see cref="Ratings"/>
     /// </summary>
     public ICollection<RatingAdjustment> RatingAdjustments { get; set; } = new List<RatingAdjustment>();
 
     /// <summary>
-    /// A collection of <see cref="MatchRatingAdjustment"/> owned by the <see cref="Player"/>
-    /// </summary>
-    public ICollection<MatchRatingAdjustment> MatchRatingAdjustments { get; set; } = new List<MatchRatingAdjustment>();
-
-    /// <summary>
-    /// A collection of <see cref="GameScore"/>s owned by the <see cref="Player"/>
+    /// A collection of <see cref="GameScore"/>s set by the <see cref="Player"/>
     /// </summary>
     public ICollection<GameScore> Scores { get; set; } = new List<GameScore>();
 
     /// <summary>
-    /// A collection of <see cref="PlayerMatchStats"/> owned by the <see cref="Player"/>
+    /// A collection of <see cref="PlayerMatchStats"/> generated for the <see cref="Player"/>
     /// </summary>
     public IEnumerable<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();
 }
