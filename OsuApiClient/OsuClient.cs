@@ -5,6 +5,7 @@ using OsuApiClient.Domain;
 using OsuApiClient.Domain.Beatmaps;
 using OsuApiClient.Domain.Multiplayer;
 using OsuApiClient.Domain.Users;
+using OsuApiClient.Extensions;
 using OsuApiClient.Net.Authorization;
 using OsuApiClient.Net.Constants;
 using OsuApiClient.Net.JsonModels;
@@ -377,7 +378,7 @@ public sealed class OsuClient(
         var endpoint = Endpoints.Users + $"/{identifier}";
         if (ruleset.HasValue)
         {
-            endpoint += $"/{ruleset}";
+            endpoint += $"/{ruleset.GetDescription()}";
         }
 
         Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);

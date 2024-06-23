@@ -297,7 +297,11 @@ public class UserExtended : User
 
     // session_verified
 
-    // statistics
+    /// <summary>
+    /// A summary of various gameplay statistics specific to the <see cref="Ruleset"/>
+    /// </summary>
+    /// <remarks>Optional attribute</remarks>
+    public UserStatistics? Statistics { get; init; }
 
     // statistics_ruleset
 

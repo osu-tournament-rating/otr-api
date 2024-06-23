@@ -28,7 +28,10 @@ public class MapperProfile : Profile
             .ForMember(dest => dest.HasRulesets, opt => opt.MapFrom(src => src.HasPlayModes));
         CreateMap<UserGroupJsonModel, UserGroup>()
             .IncludeBase<GroupJsonModel, Group>()
-            .ForMember(dest => dest.Rulesets, opt => opt.MapFrom(src => src.PlayModes != null ? src.PlayModes.Select(RulesetConverter.Convert) : null));
+            .ForMember(dest => dest.Rulesets, opt => opt.MapFrom(src => src.PlayModes != null ? src.PlayModes.Select(r => RulesetConverter.Convert(r, null)) : null));
+
+        CreateMap<UserStatisticsVariantJsonModel, UserStatisticsVariant>()
+            .ForMember(dest => dest.Ruleset, opt => opt.MapFrom(src => RulesetConverter.Convert(src.Mode, src.Variant)));
 
         CreateMap<GameScoreJsonModel, GameScore>()
             .ForMember(dest => dest.Ruleset, opt => opt.MapFrom(src => src.ModeInt))

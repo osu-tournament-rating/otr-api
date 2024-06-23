@@ -11,19 +11,21 @@ public class RulesetConverter : IValueConverter<string, Ruleset>
     public Ruleset Convert(string sourceMember, ResolutionContext context) =>
         Convert(sourceMember);
 
-    public static Ruleset Convert(string value)
+    public static Ruleset Convert(string value, string? variant = null)
     {
         if (Enum.TryParse(value, true, out Ruleset result))
         {
             return result;
         }
 
-        return value switch
+        return (value, variant) switch
         {
-            "osu" => Ruleset.Standard,
-            "taiko" => Ruleset.Taiko,
-            "fruits" => Ruleset.Catch,
-            "mania" => Ruleset.Mania,
+            ("osu", null) => Ruleset.Standard,
+            ("taiko", null) => Ruleset.Taiko,
+            ("fruits", null) => Ruleset.Catch,
+            ("mania", null) => Ruleset.ManiaOther,
+            ("mania", "4k") => Ruleset.Mania4k,
+            ("mania", "7k") => Ruleset.Mania7k,
             // This should never happen, but using standard as a fallback is ok for our use case
             _ => Ruleset.Standard
         };

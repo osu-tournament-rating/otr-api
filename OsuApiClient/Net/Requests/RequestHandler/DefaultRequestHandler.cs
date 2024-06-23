@@ -141,10 +141,10 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
         if (_rateLimit.RemainingTokens <= 0)
         {
             logger.LogWarning(
-                "Throttling client for rate limit violation: [Tokens: {Remaining}/{Limit} | Waiting: {Expiry}]",
+                "Throttling client for rate limit violation: [Tokens: {Remaining}/{Limit} | Waiting: {Expiry:mm\\:ss}]",
                 _rateLimit.RemainingTokens,
                 _rateLimit.TokenLimit,
-                _rateLimit.ExpiresIn.ToString("g")
+                _rateLimit.ExpiresIn
             );
 
             // Throttle until the window expires
@@ -182,10 +182,10 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
         // }
 
         logger.LogDebug(
-            "Rate limit updated [Tokens: {Remaining}/{Limit} | Expires In: {Expiry}]",
+            "Rate limit updated [Tokens: {Remaining}/{Limit} | Resets In: {Expiry:mm\\:ss}]",
             _rateLimit.RemainingTokens,
             _rateLimit.TokenLimit,
-            _rateLimit.ExpiresIn.ToString("g")
+            _rateLimit.ExpiresIn
         );
     }
 
@@ -232,9 +232,10 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
 
         logger.LogWarning(
             "Error fetching the osu! API [Code: {Code} | Reason: {Reason} | Response: {Response}]",
-            response.StatusCode.ToString(),
+            response.StatusCode,
             response.ReasonPhrase,
-            responseContent.Length >= 500
+            responseContent.Length > 500
+                // Truncate responses > 500 chars
                 ? string.Join("", responseContent.Take(500)) + "..."
                 : responseContent
         );

@@ -184,7 +184,8 @@ public class UserExtendedJsonModel : UserJsonModel
 
     // session_verified
 
-    // statistics
+    [JsonProperty("statistics")]
+    public UserStatisticsJsonModel? Statistics { get; set; }
 
     // statistics_ruleset
 

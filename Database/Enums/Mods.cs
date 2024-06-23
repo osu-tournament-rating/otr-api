@@ -156,43 +156,43 @@ public enum Mods
     /// <summary>
     /// 4 key (4K)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     Key4 = 32768,
 
     /// <summary>
     /// 5 key (5K)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     Key5 = 65536,
 
     /// <summary>
     /// 6 key (6K)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     Key6 = 131072,
 
     /// <summary>
     /// 7 key (7K)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     Key7 = 262144,
 
     /// <summary>
     /// 8 key (8K)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     Key8 = 524288,
 
     /// <summary>
     /// Fade In (FI)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     FadeIn = 1048576,
 
     /// <summary>
     /// Random (RD)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     Random = 2097152,
 
     /// <summary>
@@ -208,31 +208,31 @@ public enum Mods
     /// <summary>
     /// 9 Key (9K)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     Key9 = 16777216,
 
     /// <summary>
     /// Co-op (CO)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     KeyCoop = 33554432,
 
     /// <summary>
     /// 1 Key (1K)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     Key1 = 67108864,
 
     /// <summary>
     /// 3 Key (3K)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     Key3 = 134217728,
 
     /// <summary>
     /// 2 Key (2K)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     Key2 = 268435456,
 
     /// <summary>
@@ -243,11 +243,11 @@ public enum Mods
     /// <summary>
     /// Mirror (MR)
     /// </summary>
-    /// <remarks>Applicable only to <see cref="Ruleset.Mania"/></remarks>
+    /// <remarks>Applicable only to <see cref="Ruleset.ManiaOther"/></remarks>
     Mirror = 1073741824,
 
     /// <summary>
-    /// Denotes mods that are <see cref="Ruleset.Mania"/> key modifiers
+    /// Denotes mods that are <see cref="Ruleset.ManiaOther"/> key modifiers
     /// </summary>
     /// <remarks>See https://osu.ppy.sh/wiki/en/Gameplay/Game_modifier/xK</remarks>
     KeyMod = Key1 | Key2 | Key3 | Key4 | Key5 | Key6 | Key7 | Key8 | Key9 | KeyCoop,

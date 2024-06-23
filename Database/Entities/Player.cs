@@ -60,7 +60,7 @@ public class Player : UpdateableEntityBase
     public int? RankCatch { get; set; }
 
     /// <summary>
-    /// Last recorded <see cref="Ruleset.Mania"/> rank
+    /// Last recorded <see cref="Enums.Ruleset.ManiaOther"/> rank
     /// </summary>
     [Column("rank_mania")]
     public int? RankMania { get; set; }
@@ -84,7 +84,7 @@ public class Player : UpdateableEntityBase
     public int? EarliestCatchGlobalRank { get; set; }
 
     /// <summary>
-    /// Earliest known <see cref="Ruleset.Mania"/> rank available for the player after they started playing tournaments
+    /// Earliest known <see cref="Enums.Ruleset.ManiaOther"/> rank available for the player after they started playing tournaments
     /// </summary>
     [Column("earliest_mania_global_rank")]
     public int? EarliestManiaGlobalRank { get; set; }
@@ -110,7 +110,7 @@ public class Player : UpdateableEntityBase
     public DateTime? EarliestCatchGlobalRankDate { get; set; }
 
     /// <summary>
-    /// Date for the earliest known <see cref="Ruleset.Mania"/> rank available for the player after they started
+    /// Date for the earliest known <see cref="Enums.Ruleset.ManiaOther"/> rank available for the player after they started
     /// playing tournaments
     /// </summary>
     [Column("earliest_mania_global_rank_date")]

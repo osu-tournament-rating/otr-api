@@ -21,7 +21,7 @@ public static class ScoreGradeUtils
         {
             Ruleset.Taiko => DetermineTaikoGrade(rawScore.Accuracy, mods, rawScore.Statistics),
             Ruleset.Catch => DetermineCatchGrade(rawScore.Accuracy, mods),
-            Ruleset.Mania => DetermineManiaGrade(rawScore.Accuracy, mods),
+            Ruleset.ManiaOther => DetermineManiaGrade(rawScore.Accuracy, mods),
             _ => DetermineStandardGrade(rawScore.Accuracy, mods, rawScore.Statistics)
         };
     }
@@ -139,7 +139,7 @@ public static class ScoreGradeUtils
 
     /// <summary>
     /// Determines the <see cref="ScoreGrade"/> of a <see cref="Domain.Multiplayer.GameScore"/>
-    /// played in <see cref="Ruleset.Mania"/>
+    /// played in <see cref="Ruleset.ManiaOther"/>
     /// </summary>
     /// <param name="accuracy">Accuracy</param>
     /// <param name="mods">Enabled mods</param>
