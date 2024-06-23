@@ -105,7 +105,7 @@ public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>
     public ICollection<Game> Games { get; set; } = new List<Game>();
 
     /// <summary>
-    /// A collection of <see cref="Processor.PlayerMatchStats"/>, one for each <see cref="Player"/> that participated
+    /// A collection of <see cref="Entities.PlayerMatchStats"/>, one for each <see cref="Player"/> that participated
     /// </summary>
     public ICollection<PlayerMatchStats> PlayerMatchStats { get; set; } = new List<PlayerMatchStats>();
 

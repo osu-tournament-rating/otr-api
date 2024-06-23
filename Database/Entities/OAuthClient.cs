@@ -15,7 +15,7 @@ public class OAuthClient : UpdateableEntityBase
     /// Authorization secret
     /// </summary>
     /// <remarks>
-    /// Client secrets are stored as hashes, and only returned as plaintext when generated for the first time
+    /// Client secrets are stored as hashes and only returned as plaintext when generated for the first time
     /// </remarks>
     [MaxLength(128)]
     [Column("secret")]
