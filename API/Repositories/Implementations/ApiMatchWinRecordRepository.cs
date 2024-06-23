@@ -17,28 +17,6 @@ public class ApiMatchWinRecordRepository(
 {
     private readonly OtrContext _context = context;
 
-    public async Task BatchInsertAsync(IEnumerable<MatchWinRecordDTO> postBody)
-    {
-        foreach (MatchWinRecordDTO item in postBody)
-        {
-            var record = new MatchWinRecord
-            {
-                MatchId = item.MatchId,
-                LoserRoster = item.LoserRoster,
-                WinnerRoster = item.WinnerRoster,
-                LoserPoints = item.LoserPoints,
-                WinnerPoints = item.WinnerPoints,
-                WinnerTeam = (Team?)item.WinnerTeam,
-                LoserTeam = (Team?)item.LoserTeam,
-                MatchType = (OsuMatchType?)item.MatchType
-            };
-
-            await _context.MatchWinRecords.AddAsync(record);
-        }
-
-        await _context.SaveChangesAsync();
-    }
-
     public async Task<IEnumerable<PlayerFrequencyDTO>> GetFrequentTeammatesAsync(
         int playerId,
         int mode,

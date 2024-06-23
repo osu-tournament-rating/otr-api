@@ -220,12 +220,6 @@ public class PlayerStatsService(
     public async Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody) =>
         await ratingAdjustmentsService.BatchInsertAsync(postBody);
 
-    public async Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody) =>
-        await gameWinRecordsService.BatchInsertAsync(postBody);
-
-    public async Task BatchInsertAsync(IEnumerable<MatchWinRecordDTO> postBody) =>
-        await matchWinRecordRepository.BatchInsertAsync(postBody);
-
     public async Task TruncateAsync()
     {
         await baseStatsService.TruncateAsync();

@@ -169,7 +169,7 @@ public class OtrContext(
                 .HasForeignKey<GameWinRecord>(gwr => gwr.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(x => x.Winners);
+            entity.HasIndex(x => x.WinnerRoster);
             entity.HasIndex(x => x.GameId).IsUnique();
         });
 

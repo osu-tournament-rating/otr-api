@@ -6,12 +6,12 @@
 public interface IEntity
 {
     /// <summary>
-    /// Primary key of the entity
+    /// Primary key
     /// </summary>
     public int Id { get; }
 
     /// <summary>
-    /// Date the entity was created
+    /// Timestamp of creation
     /// </summary>
     public DateTime Created { get; }
 }

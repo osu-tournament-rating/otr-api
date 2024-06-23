@@ -85,22 +85,6 @@ public class StatsController(
         return Ok();
     }
 
-    [HttpPost("gamewinrecords")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> PostAsync([FromBody] IEnumerable<GameWinRecordDTO> postBody)
-    {
-        await playerStatsService.BatchInsertAsync(postBody);
-        return Ok();
-    }
-
-    [HttpPost("matchwinrecords")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchWinRecordDTO> postBody)
-    {
-        await playerStatsService.BatchInsertAsync(postBody);
-        return Ok();
-    }
-
     [HttpDelete]
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> TruncateAsync()

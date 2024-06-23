@@ -38,17 +38,9 @@ public class GameScore : UpdateableEntityBase, IScoreStatistics
     [Column("count_miss")]
     public int CountMiss { get; set; }
 
-    /// <summary>
-    /// Count of combos completed without the highest possible accuracy on every note
-    /// </summary>
-    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Judgement/Katu">osu! Judgement - Katu</a></remarks>
     [Column("count_katu")]
     public int CountKatu { get; set; }
 
-    /// <summary>
-    /// Count of combos completed with the highest possible accuracy on every note
-    /// </summary>
-    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Judgement/Geki">osu! Judgement - Geki</a></remarks>
     [Column("count_geki")]
     public int CountGeki { get; set; }
 

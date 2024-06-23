@@ -6,7 +6,7 @@
 public interface IUpdateableEntity : IEntity
 {
     /// <summary>
-    /// Date of the last update to the entity
+    /// Timestamp for the last update
     /// </summary>
     public DateTime? Updated { get; set; }
 }

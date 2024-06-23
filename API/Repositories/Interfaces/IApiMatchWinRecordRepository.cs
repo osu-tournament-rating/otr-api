@@ -5,8 +5,6 @@ namespace API.Repositories.Interfaces;
 
 public interface IApiMatchWinRecordRepository : IMatchWinRecordRepository
 {
-    Task BatchInsertAsync(IEnumerable<MatchWinRecordDTO> postBody);
-
     Task<IEnumerable<PlayerFrequencyDTO>> GetFrequentTeammatesAsync(
         int playerId,
         int mode,
