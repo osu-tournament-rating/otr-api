@@ -80,12 +80,12 @@ public class UserStatistics : IModel
     /// <summary>
     /// Current rank according to <see cref="Pp"/>
     /// </summary>
-    public int GlobalRank { get; init; }
+    public int? GlobalRank { get; init; }
 
     /// <summary>
     /// Current country rank according to <see cref="Pp"/>
     /// </summary>
-    public int CountryRank { get; init; }
+    public int? CountryRank { get; init; }
 
     /// <summary>
     /// Current rank according to <see cref="PpExp"/>

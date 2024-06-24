@@ -30,7 +30,7 @@ public class UserStatisticsJsonModel : JsonModelBase
     // public UserStatisticsLevelJsonModel Level { get; set; }
 
     [JsonProperty("global_rank")]
-    public int GlobalRank { get; set; }
+    public int? GlobalRank { get; set; }
 
     [JsonProperty("global_rank_exp")]
     public int? GlobalRankExp { get; set; }
@@ -72,7 +72,7 @@ public class UserStatisticsJsonModel : JsonModelBase
     public IDictionary<ScoreGrade, int> GradeCounts { get; set; } = new Dictionary<ScoreGrade, int>();
 
     [JsonProperty("country_rank")]
-    public int CountryRank { get; set; }
+    public int? CountryRank { get; set; }
 
     [JsonProperty("variants")]
     public UserStatisticsVariantJsonModel[] Variants { get; set; } = [];

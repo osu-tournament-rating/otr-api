@@ -127,9 +127,20 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
             .Select(p => p.Id)
             .FirstOrDefaultAsync();
 
-    // This is used by a scheduled task to automatically populate user info, such as username, country, etc.
-    public async Task<IEnumerable<Player>> GetOutdatedAsync() =>
-        await _context
-            .Players.Where(p => p.Updated == null || (DateTime.UtcNow - p.Updated) > TimeSpan.FromDays(14))
+    public async Task SetOutdatedOsuAsync(TimeSpan outdatedAfter)
+    {
+        await _context.Players
+            .Where(p => DateTime.UtcNow - p.OsuLastFetch < outdatedAfter)
+            .ExecuteUpdateAsync(setter => setter
+                .SetProperty(p => p.OsuLastFetch, DateTime.UtcNow - outdatedAfter));
+    }
+
+    public async Task<IEnumerable<Player>> GetOutdatedOsuAsync(TimeSpan outdatedAfter, int limit) =>
+        await _context.Players
+            .Include(p => p.User)
+            .ThenInclude(u => u.Settings)
+            .Where(p => DateTime.UtcNow - p.OsuLastFetch > outdatedAfter)
+            .OrderBy(p => p.Id)
+            .Take(limit)
             .ToListAsync();
 }

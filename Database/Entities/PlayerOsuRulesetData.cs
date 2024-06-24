@@ -3,12 +3,12 @@ using Database.Enums;
 namespace Database.Entities;
 
 /// <summary>
-/// Data
+/// Data for a <see cref="Player"/> in a <see cref="Ruleset"/> obtained from the osu! API and/or osu!Track API
 /// </summary>
-public class PlayerRulesetData
+public class PlayerOsuRulesetData
 {
     /// <summary>
-    /// The <see cref="Enums.Ruleset"/> the <see cref="PlayerRulesetData"/> is for
+    /// The <see cref="Enums.Ruleset"/> the <see cref="PlayerOsuRulesetData"/> is for
     /// </summary>
     public Ruleset Ruleset { get; set; }
 
@@ -23,12 +23,12 @@ public class PlayerRulesetData
     public int GlobalRank { get; set; }
 
     /// <summary>
-    /// Earliest known global rank at the time of the <see cref="Player"/>'s first appearance in a <see cref="Match"/>
+    /// Global rank approximately at the time of the <see cref="Player"/>'s first appearance in a <see cref="Match"/>
     /// </summary>
     public int? EarliestGlobalRank { get; set; }
 
     /// <summary>
-    /// Timestamp of access for the <see cref="EarliestGlobalRank"/>
+    /// Timestamp for when the <see cref="EarliestGlobalRank"/> was recorded
     /// </summary>
     public DateTime? EarliestGlobalRankDate { get; set; }
 }

@@ -15,15 +15,20 @@ public class UserStatisticsVariant : IModel
     /// <summary>
     /// Global rank
     /// </summary>
-    public int GlobalRank { get; init; }
+    public int? GlobalRank { get; init; }
 
     /// <summary>
     /// Country rank
     /// </summary>
-    public int CountryRank { get; init; }
+    public int? CountryRank { get; init; }
 
     /// <summary>
     /// Performance points
     /// </summary>
     public double Pp { get; init; }
+
+    /// <summary>
+    /// Denotes if the player is ranked in the variant
+    /// </summary>
+    public bool IsRanked { get; init; }
 }

@@ -25,7 +25,7 @@ public class Player : UpdateableEntityBase
     public long OsuId { get; set; }
 
     /// <summary>
-    /// osu! username of the player
+    /// osu! username
     /// </summary>
     [MaxLength(32)]
     [Column("username")]
@@ -66,9 +66,9 @@ public class Player : UpdateableEntityBase
 
     // Column name and value initialization is handled via OtrContext
     /// <summary>
-    /// A collection of <see cref="PlayerRulesetData"/>, one for each <see cref="Enums.Ruleset"/>
+    /// A collection of <see cref="PlayerOsuRulesetData"/>, one for each <see cref="Enums.Ruleset"/>
     /// </summary>
-    public ICollection<PlayerRulesetData> RulesetData { get; set; } = new List<PlayerRulesetData>();
+    public ICollection<PlayerOsuRulesetData> RulesetData { get; set; } = new List<PlayerOsuRulesetData>();
 
     /// <summary>
     /// The <see cref="User"/> that owns the <see cref="Player"/>

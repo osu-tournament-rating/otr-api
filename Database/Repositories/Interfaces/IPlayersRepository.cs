@@ -65,13 +65,6 @@ public interface IPlayersRepository : IRepository<Player>
     Task<long> GetOsuIdAsync(int id);
 
     /// <summary>
-    ///  Returns players that haven't been updated in the last 14 days,
-    ///  or players that have never been updated.
-    /// </summary>
-    /// <returns></returns>
-    Task<IEnumerable<Player>> GetOutdatedAsync();
-
-    /// <summary>
     /// Fetches the username for the given osu id, if available
     /// </summary>
     /// <param name="osuId">The osu id</param>
@@ -95,4 +88,17 @@ public interface IPlayersRepository : IRepository<Player>
     /// </summary>
     /// <param name="playerId"></param>
     Task<string?> GetCountryAsync(int playerId);
+
+    /// <summary>
+    /// Sets all players' <see cref="Player.OsuLastFetch"/> to an outdated value based on the given timespan
+    /// </summary>
+    /// <param name="outdatedAfter">Timespan to check against the date of last access to the osu! API</param>
+    Task SetOutdatedOsuAsync(TimeSpan outdatedAfter);
+
+    /// <summary>
+    /// Gets players with outdated osu! API data
+    /// </summary>
+    /// <param name="outdatedAfter">Timespan to check against the date of last access to the osu! API</param>
+    /// <param name="limit">Maximum number of players</param>
+    Task<IEnumerable<Player>> GetOutdatedOsuAsync(TimeSpan outdatedAfter, int limit);
 }

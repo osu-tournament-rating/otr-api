@@ -428,7 +428,7 @@ builder.Services.AddScoped<IApiPlayersRepository, ApiPlayersRepository>();
 builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
 
 builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
-builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
+builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
@@ -442,6 +442,7 @@ builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsReposi
 builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
+
 #endregion
 
 #region Services

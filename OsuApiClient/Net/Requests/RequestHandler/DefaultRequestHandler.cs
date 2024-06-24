@@ -28,7 +28,7 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
     private readonly Mapper _mapper = new(
         new MapperConfiguration(cfg =>
         cfg.AddMaps(typeof(DefaultRequestHandler).Assembly)
-        ));
+    ));
     private readonly JsonSerializer _serializer = new();
 
     private FixedWindowRateLimit _rateLimit = new();
@@ -136,6 +136,12 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
         if (_rateLimit.HasExpired)
         {
             _rateLimit = new FixedWindowRateLimit();
+            logger.LogDebug(
+                "Rate limit window elapsed, resetting [Tokens: {Remaining}/{Limit} | Expires In: {Expiry:mm\\:ss}]",
+                _rateLimit.RemainingTokens,
+                _rateLimit.TokenLimit,
+                _rateLimit.ExpiresIn
+            );
         }
 
         if (_rateLimit.RemainingTokens <= 0)

@@ -31,7 +31,8 @@ public class MapperProfile : Profile
             .ForMember(dest => dest.Rulesets, opt => opt.MapFrom(src => src.PlayModes != null ? src.PlayModes.Select(r => RulesetConverter.Convert(r, null)) : null));
 
         CreateMap<UserStatisticsVariantJsonModel, UserStatisticsVariant>()
-            .ForMember(dest => dest.Ruleset, opt => opt.MapFrom(src => RulesetConverter.Convert(src.Mode, src.Variant)));
+            .ForMember(dest => dest.Ruleset, opt => opt.MapFrom(src => RulesetConverter.Convert(src.Mode, src.Variant)))
+            .ForMember(dest => dest.IsRanked, opt => opt.MapFrom(src => src.GlobalRank != null));
 
         CreateMap<GameScoreJsonModel, GameScore>()
             .ForMember(dest => dest.Ruleset, opt => opt.MapFrom(src => src.ModeInt))

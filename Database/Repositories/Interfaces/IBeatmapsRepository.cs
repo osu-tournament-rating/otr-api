@@ -2,7 +2,7 @@ using Database.Entities;
 
 namespace Database.Repositories.Interfaces;
 
-public interface IBeatmapRepository : IRepository<Beatmap>
+public interface IBeatmapsRepository : IRepository<Beatmap>
 {
     /// <summary>
     /// Returns a beatmap for the given osu! beatmap id

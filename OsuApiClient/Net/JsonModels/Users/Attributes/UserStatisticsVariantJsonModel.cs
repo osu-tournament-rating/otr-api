@@ -19,10 +19,10 @@ public class UserStatisticsVariantJsonModel : JsonModelBase
     public string Variant { get; set; } = null!;
 
     [JsonProperty("country_rank")]
-    public int CountryRank { get; set; }
+    public int? CountryRank { get; set; }
 
     [JsonProperty("global_rank")]
-    public int GlobalRank { get; set; }
+    public int? GlobalRank { get; set; }
 
     [JsonProperty("pp")]
     public double Pp { get; set; }

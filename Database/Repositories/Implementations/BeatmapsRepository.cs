@@ -7,7 +7,7 @@ namespace Database.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class BeatmapRepository(OtrContext context) : RepositoryBase<Beatmap>(context), IBeatmapRepository
+public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(context), IBeatmapsRepository
 {
     private readonly OtrContext _context = context;
 

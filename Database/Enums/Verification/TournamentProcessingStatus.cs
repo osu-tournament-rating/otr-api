@@ -6,12 +6,17 @@ namespace Database.Enums.Verification;
 public enum TournamentProcessingStatus
 {
     /// <summary>
+    /// The tournament is awaiting approval from a verifier before data is gathered
+    /// </summary>
+    AwaitingApproval = 0,
+
+    /// <summary>
     /// The tournament needs automation checks
     /// </summary>
-    NeedsAutomationChecks = 0,
+    NeedsAutomationChecks = 1,
 
     /// <summary>
     /// The tournament has completed automation checks
     /// </summary>
-    Done = 1
+    Done = 2
 }

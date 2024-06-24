@@ -1,4 +1,5 @@
 ﻿using Database.Entities;
+using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
 using Database.Interceptors;
@@ -542,5 +543,25 @@ public class OtrContext(
 
             entity.HasIndex(us => us.UserId).IsUnique();
         });
+    }
+
+    public override int SaveChanges()
+    {
+        SetUpdatedTimestamps();
+        return base.SaveChanges();
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        SetUpdatedTimestamps();
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void SetUpdatedTimestamps()
+    {
+        foreach (EntityEntry entry in ChangeTracker.Entries().Where(e => e is { State: EntityState.Modified, Entity: IUpdateableEntity }))
+        {
+            ((IUpdateableEntity)entry.Entity).Updated = DateTime.UtcNow;
+        }
     }
 }
