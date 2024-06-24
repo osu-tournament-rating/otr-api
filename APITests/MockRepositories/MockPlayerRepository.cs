@@ -48,21 +48,9 @@ public class MockPlayerRepository : Mock<IApiPlayersRepository>
                 Id = Random.Shared.Next(),
                 OsuId = Random.Shared.Next(),
                 Created = default,
-                RankStandard = Random.Shared.Next() % 100000,
-                RankTaiko = Random.Shared.Next() % 100000,
-                RankCatch = Random.Shared.Next() % 100000,
-                RankMania = Random.Shared.Next() % 100000,
                 Updated = null,
                 Username = "RandomPlayer" + Random.Shared.Next(),
-                Country = "US",
-                EarliestOsuGlobalRank = Random.Shared.Next() % 100000,
-                EarliestManiaGlobalRank = Random.Shared.Next() % 100000,
-                EarliestTaikoGlobalRank = Random.Shared.Next() % 100000,
-                EarliestCatchGlobalRank = Random.Shared.Next() % 100000,
-                EarliestOsuGlobalRankDate = new DateTime(2005, 1, 1),
-                EarliestManiaGlobalRankDate = new DateTime(2005, 1, 1),
-                EarliestTaikoGlobalRankDate = new DateTime(2005, 1, 1),
-                EarliestCatchGlobalRankDate = new DateTime(2005, 1, 1)
+                Country = "US"
             });
 
         return this;

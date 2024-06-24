@@ -306,7 +306,13 @@ public class OtrContext(
         {
             entity.Property(p => p.Id).UseIdentityAlwaysColumn();
 
-            entity.Property(e => e.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+            entity.Property(p => p.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            entity.Property(p => p.OsuLastFetch).HasDefaultValueSql(SqlPlaceholderDate);
+            entity.Property(p => p.OsuTrackLastFetch).HasDefaultValueSql(SqlPlaceholderDate);
+
+            entity.OwnsMany(p => p.RulesetData,
+                rd => rd.ToJson("ruleset_data"));
 
             // Relation: User
             entity

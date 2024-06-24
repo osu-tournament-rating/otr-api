@@ -72,12 +72,6 @@ public interface IPlayersRepository : IRepository<Player>
     Task<IEnumerable<Player>> GetOutdatedAsync();
 
     /// <summary>
-    /// Get all players that are missing an earliest global rank in any mode (but have a current rank in that mode)
-    /// </summary>
-    /// <returns></returns>
-    Task<IEnumerable<Player>> GetPlayersMissingRankAsync();
-
-    /// <summary>
     /// Fetches the username for the given osu id, if available
     /// </summary>
     /// <param name="osuId">The osu id</param>

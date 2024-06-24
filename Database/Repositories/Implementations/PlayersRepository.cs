@@ -10,21 +10,6 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
 {
     private readonly OtrContext _context = context;
 
-    public async Task<IEnumerable<Player>> GetPlayersMissingRankAsync()
-    {
-        // Get all players that are missing an earliest global rank in any mode (but have a current rank in that mode)
-        List<Player> players = await _context
-            .Players.Where(x =>
-                (x.EarliestOsuGlobalRank == null && x.RankStandard != null)
-                || (x.EarliestTaikoGlobalRank == null && x.RankTaiko != null)
-                || (x.EarliestCatchGlobalRank == null && x.RankCatch != null)
-                || (x.EarliestManiaGlobalRank == null && x.RankMania != null)
-            )
-            .ToListAsync();
-
-        return players;
-    }
-
     public async Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds) =>
         await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 

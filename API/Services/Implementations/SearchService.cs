@@ -71,7 +71,7 @@ public class SearchService(
             .Select(player =>
             {
                 PlayerRating? stats = player.Ratings
-                    .FirstOrDefault(r => r.Ruleset == (player.Ruleset ?? Ruleset.Standard));
+                    .FirstOrDefault(r => r.Ruleset == (player.User?.Settings.DefaultRuleset ?? player.Ruleset));
                 return new PlayerSearchResultDTO
                 {
                     Id = player.Id,

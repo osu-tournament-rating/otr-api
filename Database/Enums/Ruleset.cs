@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Database.Enums;
 
 /// <summary>
-/// Represents the four osu! play modes
+/// Represents osu! play modes
 /// </summary>
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]

@@ -125,13 +125,7 @@ public class PlayerStatsService(
             return null;
         }
 
-        ruleset ??= player.User?.Settings is not null
-            // Use the User's selected ruleset (o!tr)
-            ? player.User.Settings.DefaultRuleset
-            // Use the Player's selected ruleset (osu!)
-            : player.Ruleset
-              // Use standard as a fallback
-              ?? Ruleset.Standard;
+        ruleset ??= player.User?.Settings.DefaultRuleset ?? player.Ruleset;
 
         PlayerInfoDTO playerInfo = mapper.Map<PlayerInfoDTO>(player);
 

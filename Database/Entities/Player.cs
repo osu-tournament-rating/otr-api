@@ -15,6 +15,9 @@ namespace Database.Entities;
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class Player : UpdateableEntityBase
 {
+    private string _username = string.Empty;
+    private string _country = string.Empty;
+
     /// <summary>
     /// osu! id
     /// </summary>
@@ -26,95 +29,46 @@ public class Player : UpdateableEntityBase
     /// </summary>
     [MaxLength(32)]
     [Column("username")]
-    public string? Username { get; set; }
+    public string Username
+    {
+        get => string.IsNullOrEmpty(_username) ? $"Player {Id}" : _username;
+        set => _username = value;
+    }
 
     /// <summary>
     /// ISO country code
     /// </summary>
     [MaxLength(4)]
     [Column("country")]
-    public string? Country { get; set; }
+    public string Country
+    {
+        get => string.IsNullOrEmpty(_country) ? "XX" : _country;
+        set => _country = value;
+    }
 
     /// <summary>
     /// <see cref="Enums.Ruleset"/> as set on the <see cref="Player"/>'s osu! profile
     /// </summary>
     [Column("default_ruleset")]
-    public Ruleset? Ruleset { get; set; }
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// Last recorded <see cref="Ruleset.Standard"/> rank
+    /// Timestamp for the last time <see cref="RulesetData"/> was updated with data from the osu! API
     /// </summary>
-    [Column("rank_standard")]
-    public int? RankStandard { get; set; }
+    [Column("osu_last_fetch")]
+    public DateTime OsuLastFetch { get; set; }
 
     /// <summary>
-    /// Last recorded <see cref="Ruleset.Taiko"/> rank
+    /// Timestamp for the last time <see cref="RulesetData"/> was updated with data from the osu!Track API
     /// </summary>
-    [Column("rank_taiko")]
-    public int? RankTaiko { get; set; }
+    [Column("osu_track_last_fetch")]
+    public DateTime OsuTrackLastFetch { get; set; }
 
+    // Column name and value initialization is handled via OtrContext
     /// <summary>
-    /// Last recorded <see cref="Ruleset.Catch"/> rank
+    /// A collection of <see cref="PlayerRulesetData"/>, one for each <see cref="Enums.Ruleset"/>
     /// </summary>
-    [Column("rank_catch")]
-    public int? RankCatch { get; set; }
-
-    /// <summary>
-    /// Last recorded <see cref="Enums.Ruleset.ManiaOther"/> rank
-    /// </summary>
-    [Column("rank_mania")]
-    public int? RankMania { get; set; }
-
-    /// <summary>
-    /// Earliest known <see cref="Ruleset.Standard"/> rank available for the player after they started playing tournaments
-    /// </summary>
-    [Column("earliest_osu_global_rank")]
-    public int? EarliestOsuGlobalRank { get; set; }
-
-    /// <summary>
-    /// Earliest known <see cref="Ruleset.Taiko"/> rank available for the player after they started playing tournaments
-    /// </summary>
-    [Column("earliest_taiko_global_rank")]
-    public int? EarliestTaikoGlobalRank { get; set; }
-
-    /// <summary>
-    /// Earliest known <see cref="Ruleset.Catch"/> rank available for the player after they started playing tournaments
-    /// </summary>
-    [Column("earliest_catch_global_rank")]
-    public int? EarliestCatchGlobalRank { get; set; }
-
-    /// <summary>
-    /// Earliest known <see cref="Enums.Ruleset.ManiaOther"/> rank available for the player after they started playing tournaments
-    /// </summary>
-    [Column("earliest_mania_global_rank")]
-    public int? EarliestManiaGlobalRank { get; set; }
-
-    /// <summary>
-    /// Date for the earliest known standard rank available for the player after they started playing tournaments
-    /// </summary>
-    [Column("earliest_osu_global_rank_date")]
-    public DateTime? EarliestOsuGlobalRankDate { get; set; }
-
-    /// <summary>
-    /// Date for the earliest known <see cref="Ruleset.Taiko"/> rank available for the player after they started
-    /// playing tournaments
-    /// </summary>
-    [Column("earliest_taiko_global_rank_date")]
-    public DateTime? EarliestTaikoGlobalRankDate { get; set; }
-
-    /// <summary>
-    /// Date for the earliest known <see cref="Ruleset.Catch"/> rank available for the player after they started
-    /// playing tournaments
-    /// </summary>
-    [Column("earliest_catch_global_rank_date")]
-    public DateTime? EarliestCatchGlobalRankDate { get; set; }
-
-    /// <summary>
-    /// Date for the earliest known <see cref="Enums.Ruleset.ManiaOther"/> rank available for the player after they started
-    /// playing tournaments
-    /// </summary>
-    [Column("earliest_mania_global_rank_date")]
-    public DateTime? EarliestManiaGlobalRankDate { get; set; }
+    public ICollection<PlayerRulesetData> RulesetData { get; set; } = new List<PlayerRulesetData>();
 
     /// <summary>
     /// The <see cref="User"/> that owns the <see cref="Player"/>

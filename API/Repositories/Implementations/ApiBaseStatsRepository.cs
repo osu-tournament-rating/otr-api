@@ -90,7 +90,7 @@ public class ApiBaseStatsRepository(
             return baseQuery;
         }
 
-        baseQuery = FilterByRank(mode, baseQuery, filter.MinRank, filter.MaxRank);
+        baseQuery = FilterByRank((Ruleset)mode, baseQuery, filter.MinRank, filter.MaxRank);
         baseQuery = FilterByRating(baseQuery, filter.MinRating, filter.MaxRating);
         baseQuery = FilterByMatchesPlayed(baseQuery, filter.MinMatches, filter.MaxMatches);
 
@@ -103,7 +103,7 @@ public class ApiBaseStatsRepository(
     }
 
     private static IQueryable<PlayerRating> FilterByRank(
-        int mode,
+        Ruleset ruleset,
         IQueryable<PlayerRating> query,
         int? minRank,
         int? maxRank
@@ -112,26 +112,16 @@ public class ApiBaseStatsRepository(
         if (minRank.HasValue)
         {
             query = query.Where(x =>
-                mode == 0
-                    ? x.Player.RankStandard >= minRank.Value
-                    : mode == 1
-                        ? x.Player.RankTaiko >= minRank.Value
-                        : mode == 2
-                            ? x.Player.RankCatch >= minRank.Value
-                            : x.Player.RankMania >= minRank.Value
+                x.Player.RulesetData.Any(rd => rd.Ruleset == ruleset)
+                && x.Player.RulesetData.FirstOrDefault(rd => rd.Ruleset == ruleset)!.GlobalRank >= minRank
             );
         }
 
         if (maxRank.HasValue)
         {
             query = query.Where(x =>
-                mode == 0
-                    ? x.Player.RankStandard <= maxRank.Value
-                    : mode == 1
-                        ? x.Player.RankTaiko <= maxRank.Value
-                        : mode == 2
-                            ? x.Player.RankCatch <= maxRank.Value
-                            : x.Player.RankMania <= maxRank.Value
+                x.Player.RulesetData.Any(rd => rd.Ruleset == ruleset)
+                && x.Player.RulesetData.FirstOrDefault(rd => rd.Ruleset == ruleset)!.GlobalRank <= maxRank
             );
         }
 

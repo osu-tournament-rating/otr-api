@@ -32,7 +32,7 @@ public class UserSettingsService(IUserSettingsRepository userSettingsRepository,
             return false;
         }
 
-        user.Settings.DefaultRuleset = user.Player.Ruleset ?? Ruleset.Standard;
+        user.Settings.DefaultRuleset = user.Player!.Ruleset;
         user.Settings.DefaultRulesetIsControlled = false;
         await userRepository.UpdateAsync(user);
 
