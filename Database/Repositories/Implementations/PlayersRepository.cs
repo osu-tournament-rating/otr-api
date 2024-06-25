@@ -138,8 +138,26 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
     public async Task<IEnumerable<Player>> GetOutdatedOsuAsync(TimeSpan outdatedAfter, int limit) =>
         await _context.Players
             .Include(p => p.User)
-            .ThenInclude(u => u.Settings)
+            .ThenInclude(u => u!.Settings)
             .Where(p => DateTime.UtcNow - p.OsuLastFetch > outdatedAfter)
+            .OrderBy(p => p.Id)
+            .Take(limit)
+            .ToListAsync();
+
+    public async Task SetOutdatedOsuTrackAsync(TimeSpan outdatedAfter)
+    {
+        await _context.Players
+            .Where(p => DateTime.UtcNow - p.OsuTrackLastFetch < outdatedAfter)
+            .ExecuteUpdateAsync(setter => setter
+                .SetProperty(p => p.OsuTrackLastFetch, DateTime.UtcNow - outdatedAfter));
+    }
+
+    public async Task<IEnumerable<Player>> GetOutdatedOsuTrackAsync(TimeSpan outdatedAfter, int limit) =>
+        await _context.Players
+            .Where(p =>
+                p.RulesetData.Count > 0
+                && DateTime.UtcNow - p.OsuLastFetch > outdatedAfter
+            )
             .OrderBy(p => p.Id)
             .Take(limit)
             .ToListAsync();

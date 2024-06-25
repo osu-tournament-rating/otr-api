@@ -6,8 +6,8 @@ using Database.Repositories.Interfaces;
 using DataWorkerService.Configurations;
 using DataWorkerService.Services.Interfaces;
 using OsuApiClient;
-using OsuApiClient.Domain.Users;
-using OsuApiClient.Domain.Users.Attributes;
+using OsuApiClient.Domain.Osu.Users;
+using OsuApiClient.Domain.Osu.Users.Attributes;
 
 namespace DataWorkerService.Services.Implementations;
 
@@ -126,4 +126,10 @@ public class PlayersService(
 
         player.OsuLastFetch = DateTime.UtcNow;
     }
+
+    public async Task SetAllOutdatedOsuTrackApiAsync(PlayerPlatformConfiguration config) => throw new NotImplementedException();
+
+    public async Task UpdateOutdatedFromOsuTrackApiAsync(PlayerPlatformConfiguration config) => throw new NotImplementedException();
+
+    public async Task UpdateFromOsuTrackApiAsync(Player player) => throw new NotImplementedException();
 }

@@ -22,9 +22,28 @@ public interface IPlayersService
     Task UpdateOutdatedFromOsuApiAsync(PlayerPlatformConfiguration config);
 
     /// <summary>
-    /// Updates a single <see cref="Player"/> with data from the osu! API
+    /// Updates a <see cref="Player"/> with data from the osu! API
     /// </summary>
     /// <param name="player">The player to update</param>
     /// <remarks>Does not save changes to the database</remarks>
     Task UpdateFromOsuApiAsync(Player player);
+
+    /// <summary>
+    /// Sets all players' <see cref="Player.OsuTrackLastFetch"/> to an outdated value based on the given configuration
+    /// </summary>
+    /// <param name="config">Configuration to control the manner in which the osu!Track API is fetched</param>
+    Task SetAllOutdatedOsuTrackApiAsync(PlayerPlatformConfiguration config);
+
+    /// <summary>
+    /// Updates outdated <see cref="Player"/> osu!Track API data based on the given configuration
+    /// </summary>
+    /// <param name="config">Configuration to control the manner in which the osu!Track API is fetched</param>
+    Task UpdateOutdatedFromOsuTrackApiAsync(PlayerPlatformConfiguration config);
+
+    /// <summary>
+    /// Updates a <see cref="Player"/> with data from the osu!Track API
+    /// </summary>
+    /// <param name="player">The player to update</param>
+    /// <remarks>Does not save changes to the database</remarks>
+    Task UpdateFromOsuTrackApiAsync(Player player);
 }

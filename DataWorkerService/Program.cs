@@ -110,6 +110,7 @@ builder.Services.AddScoped<IPlayersService, PlayersService>();
 #endregion
 
 builder.Services.AddHostedService<OsuPlayerDataWorker>();
+builder.Services.AddHostedService<OsuTrackPlayerDataWorker>();
 
 IHost host = builder.Build();
 host.Run();

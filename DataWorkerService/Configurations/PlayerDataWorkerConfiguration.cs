@@ -1,19 +1,32 @@
+using System.Diagnostics.CodeAnalysis;
+using OsuApiClient.Enums;
+
 namespace DataWorkerService.Configurations;
-
-public class PlayerDataWorkerConfiguration
-{
-    public const string Position = "Players";
-
-    public PlayerPlatformConfiguration Osu { get; init; } = new(PlayerFetchPlatform.Osu);
-
-    public PlayerPlatformConfiguration OsuTrack { get; init; } = new(PlayerFetchPlatform.OsuTrack);
-}
 
 /// <summary>
 /// Values that control the way player data is fetched from outside sources
 /// </summary>
+public class PlayerDataWorkerConfiguration
+{
+    public const string Position = "Players";
+
+    /// <summary>
+    /// Configuration for <see cref="FetchPlatform.Osu"/>
+    /// </summary>
+    public PlayerPlatformConfiguration Osu { get; init; } = new(FetchPlatform.Osu);
+
+    /// <summary>
+    /// Configuration for <see cref="FetchPlatform.OsuTrack"/>
+    /// </summary>
+    public PlayerPlatformConfiguration OsuTrack { get; init; } = new(FetchPlatform.OsuTrack);
+}
+
+/// <summary>
+/// Values that control the way player data is fetched for a single <see cref="FetchPlatform"/>
+/// </summary>
 /// <param name="platform">Loads a default configuration for the given platform</param>
-public class PlayerPlatformConfiguration(PlayerFetchPlatform platform)
+[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+public class PlayerPlatformConfiguration(FetchPlatform platform)
 {
     /// <summary>
     /// Denotes if the worker should fetch data for players
@@ -30,8 +43,8 @@ public class PlayerPlatformConfiguration(PlayerFetchPlatform platform)
     /// </summary>
     public int BatchSize { get; init; } = platform switch
     {
-        PlayerFetchPlatform.Osu => 30,
-        PlayerFetchPlatform.OsuTrack => 10,
+        FetchPlatform.Osu => 30,
+        FetchPlatform.OsuTrack => 10,
         _ => 5
     };
 
@@ -40,8 +53,8 @@ public class PlayerPlatformConfiguration(PlayerFetchPlatform platform)
     /// </summary>
     public int BatchIntervalSeconds { get; init; } = platform switch
     {
-        PlayerFetchPlatform.Osu => 120,
-        PlayerFetchPlatform.OsuTrack => 300,
+        FetchPlatform.Osu => 120,
+        FetchPlatform.OsuTrack => 300,
         _ => 120
     };
 
@@ -50,17 +63,8 @@ public class PlayerPlatformConfiguration(PlayerFetchPlatform platform)
     /// </summary>
     public int PlayerOutdatedAfterDays { get; init; } = platform switch
     {
-        PlayerFetchPlatform.Osu => 7,
-        PlayerFetchPlatform.OsuTrack => 14,
+        FetchPlatform.Osu => 7,
+        FetchPlatform.OsuTrack => 14,
         _ => 7
     };
-}
-
-/// <summary>
-/// Outside source used to fetch player data
-/// </summary>
-public enum PlayerFetchPlatform
-{
-    Osu,
-    OsuTrack
 }

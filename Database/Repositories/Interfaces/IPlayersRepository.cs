@@ -101,4 +101,17 @@ public interface IPlayersRepository : IRepository<Player>
     /// <param name="outdatedAfter">Timespan to check against the date of last access to the osu! API</param>
     /// <param name="limit">Maximum number of players</param>
     Task<IEnumerable<Player>> GetOutdatedOsuAsync(TimeSpan outdatedAfter, int limit);
+
+    /// <summary>
+    /// Sets all players' <see cref="Player.OsuTrackLastFetch"/> to an outdated value based on the given timespan
+    /// </summary>
+    /// <param name="outdatedAfter">Timespan to check against the date of last access to the osu!Track API</param>
+    Task SetOutdatedOsuTrackAsync(TimeSpan outdatedAfter);
+
+    /// <summary>
+    /// Gets players with outdated osu!Track API data
+    /// </summary>
+    /// <param name="outdatedAfter">Timespan to check against the date of last access to the osu!Track API</param>
+    /// <param name="limit">Maximum number of players</param>
+    Task<IEnumerable<Player>> GetOutdatedOsuTrackAsync(TimeSpan outdatedAfter, int limit);
 }
