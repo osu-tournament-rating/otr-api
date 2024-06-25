@@ -1,4 +1,4 @@
-using OsuApiClient.Domain.Multiplayer;
+using OsuApiClient.Domain.Osu.Multiplayer;
 
 namespace OsuApiClient.Tests.Tests;
 

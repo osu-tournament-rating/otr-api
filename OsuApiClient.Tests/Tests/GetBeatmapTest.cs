@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using OsuApiClient.Domain.Beatmaps;
+using OsuApiClient.Domain.Osu.Beatmaps;
 
 namespace OsuApiClient.Tests.Tests;
 

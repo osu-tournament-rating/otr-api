@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using OsuApiClient.Domain.Users;
+using OsuApiClient.Domain.Osu.Users;
 using OsuApiClient.Net.Authorization;
 
 namespace OsuApiClient.Tests.Tests;

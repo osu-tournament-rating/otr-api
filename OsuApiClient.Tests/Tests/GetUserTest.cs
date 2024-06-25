@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
-using OsuApiClient.Domain.Users;
+using OsuApiClient.Domain.Osu.Users;
 
 namespace OsuApiClient.Tests.Tests;
 
