@@ -1,7 +1,9 @@
+using OsuApiClient.Domain.Osu.Multiplayer;
+
 namespace OsuApiClient.Enums;
 
 /// <summary>
-/// Describes the type of a <see cref="OsuApiClient.Domain.Multiplayer.MatchEvent"/>
+/// Describes the type of a <see cref="MatchEvent"/>
 /// </summary>
 public enum MultiplayerEventType
 {

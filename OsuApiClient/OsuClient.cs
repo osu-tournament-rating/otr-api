@@ -1,17 +1,20 @@
 using Database.Enums;
 using Microsoft.Extensions.Logging;
 using OsuApiClient.Configurations.Interfaces;
-using OsuApiClient.Domain;
-using OsuApiClient.Domain.Beatmaps;
-using OsuApiClient.Domain.Multiplayer;
-using OsuApiClient.Domain.Users;
+using OsuApiClient.Domain.Osu;
+using OsuApiClient.Domain.Osu.Beatmaps;
+using OsuApiClient.Domain.Osu.Multiplayer;
+using OsuApiClient.Domain.Osu.Users;
+using OsuApiClient.Domain.OsuTrack;
+using OsuApiClient.Enums;
 using OsuApiClient.Extensions;
 using OsuApiClient.Net.Authorization;
 using OsuApiClient.Net.Constants;
 using OsuApiClient.Net.JsonModels;
-using OsuApiClient.Net.JsonModels.Beatmaps;
-using OsuApiClient.Net.JsonModels.Multiplayer;
-using OsuApiClient.Net.JsonModels.Users;
+using OsuApiClient.Net.JsonModels.Osu.Beatmaps;
+using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
+using OsuApiClient.Net.JsonModels.Osu.Users;
+using OsuApiClient.Net.JsonModels.OsuTrack;
 using OsuApiClient.Net.Requests;
 using OsuApiClient.Net.Requests.RequestHandler;
 
@@ -73,10 +76,10 @@ public sealed class OsuClient(
             body.Add("refresh_token", _credentials.RefreshToken);
         }
 
-        Uri.TryCreate(Endpoints.Credentials, UriKind.Relative, out Uri? uri);
+        Uri.TryCreate(Endpoints.Osu.Credentials, UriKind.Relative, out Uri? uri);
         AccessCredentialsModel? response = await _handler
             .FetchAsync<AccessCredentialsModel, AccessCredentialsJsonModel>(
-                new OsuApiRequest
+                new ApiRequest
                 {
                     Credentials = _credentials,
                     Method = HttpMethod.Post,
@@ -123,10 +126,10 @@ public sealed class OsuClient(
             ["redirect_url"] = Configuration.RedirectUrl
         };
 
-        Uri.TryCreate(Endpoints.Credentials, UriKind.Relative, out Uri? uri);
+        Uri.TryCreate(Endpoints.Osu.Credentials, UriKind.Relative, out Uri? uri);
         AccessCredentialsModel? response = await _handler
             .FetchAsync<AccessCredentialsModel, AccessCredentialsJsonModel>(
-                new OsuApiRequest
+                new ApiRequest
                 {
                     Credentials = _credentials,
                     Method = HttpMethod.Post,
@@ -180,7 +183,7 @@ public sealed class OsuClient(
             return null;
         }
 
-        var endpoint = Endpoints.Me;
+        var endpoint = Endpoints.Osu.Me;
         if (ruleset.HasValue)
         {
             endpoint += $"/{ruleset}";
@@ -188,7 +191,7 @@ public sealed class OsuClient(
 
         Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);
         return await _handler.FetchAsync<UserExtended, UserExtendedJsonModel>(
-            new OsuApiRequest
+            new ApiRequest
             {
                 Credentials = _credentials,
                 Method = HttpMethod.Get,
@@ -249,10 +252,10 @@ public sealed class OsuClient(
             queryParams.Add("limit", eventsLimit.Value.ToString());
         }
 
-        var endpoint = Endpoints.Matches + $"/{matchId}";
+        var endpoint = Endpoints.Osu.Matches + $"/{matchId}";
         Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);
         return await _handler.FetchAsync<MultiplayerMatch, MultiplayerMatchJsonModel>(
-            new OsuApiRequest
+            new ApiRequest
             {
                 Credentials = _credentials,
                 Method = HttpMethod.Get,
@@ -337,14 +340,53 @@ public sealed class OsuClient(
         CheckDisposed();
         await UpdateCredentialsAsync(cancellationToken);
 
-        var endpoint = Endpoints.Beatmaps + $"/{beatmapId}";
+        var endpoint = Endpoints.Osu.Beatmaps + $"/{beatmapId}";
         Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);
         return await _handler.FetchAsync<BeatmapExtended, BeatmapExtendedJsonModel>(
-            new OsuApiRequest
+            new ApiRequest
             {
                 Credentials = _credentials,
                 Method = HttpMethod.Get,
                 Route = uri!
+            },
+            cancellationToken
+        );
+    }
+
+    public async Task<IEnumerable<UserStatUpdate>?> GetUserStatsHistory(
+        long id,
+        Ruleset ruleset,
+        DateTime? fromDate = null,
+        DateTime? toDate = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CheckDisposed();
+
+        var queryParams = new Dictionary<string, string>()
+        {
+            ["user"] = id.ToString(),
+            ["mode"] = ((int)ruleset).ToString()
+        };
+
+        if (fromDate.HasValue)
+        {
+            queryParams.Add("from", fromDate.Value.ToString("yyyy-mm-dd"));
+        }
+
+        if (toDate.HasValue)
+        {
+            queryParams.Add("to", toDate.Value.ToString("yyyy-mm-dd"));
+        }
+
+        Uri.TryCreate(Endpoints.OsuTrack.StatsHistory, UriKind.Relative, out Uri? uri);
+        return await _handler.FetchEnumerableAsync<UserStatUpdate, UserStatUpdateJsonModel>(
+            new ApiRequest
+            {
+                Platform = FetchPlatform.OsuTrack,
+                Method = HttpMethod.Get,
+                Route = uri!,
+                QueryParameters = queryParams
             },
             cancellationToken
         );
@@ -375,7 +417,7 @@ public sealed class OsuClient(
     {
         var queryParams = new Dictionary<string, string> { ["key"] = key };
 
-        var endpoint = Endpoints.Users + $"/{identifier}";
+        var endpoint = Endpoints.Osu.Users + $"/{identifier}";
         if (ruleset.HasValue)
         {
             endpoint += $"/{ruleset.GetDescription()}";
@@ -383,7 +425,7 @@ public sealed class OsuClient(
 
         Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);
         return await _handler.FetchAsync<UserExtended, UserExtendedJsonModel>(
-            new OsuApiRequest
+            new ApiRequest
             {
                 Credentials = _credentials,
                 Method = HttpMethod.Get,

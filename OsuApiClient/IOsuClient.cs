@@ -1,7 +1,8 @@
 using Database.Enums;
-using OsuApiClient.Domain.Beatmaps;
-using OsuApiClient.Domain.Multiplayer;
-using OsuApiClient.Domain.Users;
+using OsuApiClient.Domain.Osu.Beatmaps;
+using OsuApiClient.Domain.Osu.Multiplayer;
+using OsuApiClient.Domain.Osu.Users;
+using OsuApiClient.Domain.OsuTrack;
 using OsuApiClient.Net.Authorization;
 
 namespace OsuApiClient;
@@ -140,11 +141,35 @@ public interface IOsuClient : IDisposable
     /// <summary>
     /// Gets a beatmap
     /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/docs/index.html#get-beatmap">Get Beatmap</a></remarks>
     /// <param name="beatmapId">Id of the beatmap</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A <see cref="BeatmapExtended"/>, or null if the request was unsuccessful</returns>
     Task<BeatmapExtended?> GetBeatmapAsync(
         long beatmapId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Gets statistics updates for a user
+    /// </summary>
+    /// <remarks>
+    /// See
+    /// <a href="https://github.com/Ameobea/osutrack-api?tab=readme-ov-file#get-all-stats-updates-for-user">
+    /// Get all stats updates for user
+    /// </a>
+    /// </remarks>
+    /// <param name="id">Id of the user</param>
+    /// <param name="ruleset">Ruleset to query for</param>
+    /// <param name="fromDate">Include only updates after this date</param>
+    /// <param name="toDate">Include only updates before this date</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A list of <see cref="UserStatUpdate"/>, or null if the request was unsuccessful</returns>
+    Task<IEnumerable<UserStatUpdate>?> GetUserStatsHistory(
+        long id,
+        Ruleset ruleset,
+        DateTime? fromDate = null,
+        DateTime? toDate = null,
         CancellationToken cancellationToken = default
     );
 

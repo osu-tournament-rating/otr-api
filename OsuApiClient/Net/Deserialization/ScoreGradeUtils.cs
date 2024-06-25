@@ -1,13 +1,14 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Interfaces;
 using Database.Enums;
+using OsuApiClient.Domain.Osu.Multiplayer;
 using OsuApiClient.Net.Deserialization.ValueConverters;
-using OsuApiClient.Net.JsonModels.Multiplayer;
+using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 
 namespace OsuApiClient.Net.Deserialization;
 
 /// <summary>
-/// Helper for determining the <see cref="Database.Enums.ScoreGrade"/> of a <see cref="Domain.Multiplayer.GameScore"/>
+/// Helper for determining the <see cref="Database.Enums.ScoreGrade"/> of a <see cref="GameScore"/>
 /// </summary>
 /// <remarks>
 /// Calculations based on the <a href="https://osu.ppy.sh/wiki/en/Gameplay/Grade">osu! wiki - Grade</a>
@@ -27,7 +28,7 @@ public static class ScoreGradeUtils
     }
 
     /// <summary>
-    /// Determines the <see cref="ScoreGrade"/> of a <see cref="Domain.Multiplayer.GameScore"/>
+    /// Determines the <see cref="ScoreGrade"/> of a <see cref="GameScore"/>
     /// played in <see cref="Ruleset.Standard"/>
     /// </summary>
     /// <param name="accuracy">Accuracy</param>
@@ -68,7 +69,7 @@ public static class ScoreGradeUtils
     }
 
     /// <summary>
-    /// Determines the <see cref="ScoreGrade"/> of a <see cref="Domain.Multiplayer.GameScore"/>
+    /// Determines the <see cref="ScoreGrade"/> of a <see cref="GameScore"/>
     /// played in <see cref="Ruleset.Taiko"/>
     /// </summary>
     /// <param name="accuracy">Accuracy</param>
@@ -109,7 +110,7 @@ public static class ScoreGradeUtils
     }
 
     /// <summary>
-    /// Determines the <see cref="ScoreGrade"/> of a <see cref="Domain.Multiplayer.GameScore"/>
+    /// Determines the <see cref="ScoreGrade"/> of a <see cref="GameScore"/>
     /// played in <see cref="Ruleset.Catch"/>
     /// </summary>
     /// <param name="accuracy">Accuracy</param>
@@ -138,7 +139,7 @@ public static class ScoreGradeUtils
     }
 
     /// <summary>
-    /// Determines the <see cref="ScoreGrade"/> of a <see cref="Domain.Multiplayer.GameScore"/>
+    /// Determines the <see cref="ScoreGrade"/> of a <see cref="GameScore"/>
     /// played in <see cref="Ruleset.ManiaOther"/>
     /// </summary>
     /// <param name="accuracy">Accuracy</param>
