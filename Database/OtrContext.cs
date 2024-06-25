@@ -30,7 +30,6 @@ public class OtrContext(
     private const string SqlPlaceholderDate = "'2007-09-17T00:00:00'::timestamp";
 
     public virtual DbSet<Beatmap> Beatmaps { get; set; }
-    public virtual DbSet<DataWorkerQueueMatch> DataWorkerQueueMatches { get; set; }
     public virtual DbSet<Game> Games { get; set; }
     public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
     public virtual DbSet<Match> Matches { get; set; }
@@ -82,15 +81,6 @@ public class OtrContext(
                 .OnDelete(DeleteBehavior.SetNull);
 
             entity.HasIndex(b => b.OsuId).IsUnique();
-        });
-
-        modelBuilder.Entity<DataWorkerQueueMatch>(entity =>
-        {
-            entity.Property(qm => qm.Id).UseIdentityAlwaysColumn();
-
-            entity.Property(qm => qm.Created).HasDefaultValueSql(SqlCurrentTimestamp);
-
-            entity.HasIndex(qm => qm.OsuMatchId).IsUnique();
         });
 
         modelBuilder.Entity<Game>(entity =>
