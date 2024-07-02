@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Database.Entities.Interfaces;
 using Database.Enums;
 using Database.Enums.Verification;
 
@@ -11,7 +12,7 @@ namespace Database.Entities;
 [Table("games")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Game : UpdateableEntityBase
+public class Game : UpdateableEntityBase, IProcessableEntity
 {
     /// <summary>
     /// osu! id
@@ -72,6 +73,15 @@ public class Game : UpdateableEntityBase
     /// </summary>
     [Column("rejection_reason")]
     public GameRejectionReason RejectionReason { get; set; }
+
+    /// <summary>
+    /// Processing status
+    /// </summary>
+    [Column("processing_status")]
+    public GameProcessingStatus ProcessingStatus { get; set; }
+
+    [Column("last_processing_date")]
+    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Match"/> that the game was played in

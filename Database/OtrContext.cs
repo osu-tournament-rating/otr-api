@@ -91,6 +91,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(g => g.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
             entity.Property(g => g.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
 
+            entity.Property(g => g.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
+
             // Relation: Match
             entity
                 .HasOne(g => g.Match)
@@ -126,26 +128,28 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
         modelBuilder.Entity<GameScore>(entity =>
         {
-            entity.Property(ms => ms.Id).UseIdentityAlwaysColumn();
+            entity.Property(gs => gs.Id).UseIdentityAlwaysColumn();
 
-            entity.Property(ms => ms.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+            entity.Property(gs => gs.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            entity.Property(gs => gs.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
 
             // Relation: Game
             entity
-                .HasOne(ms => ms.Game)
+                .HasOne(gs => gs.Game)
                 .WithMany(g => g.Scores)
-                .HasForeignKey(ms => ms.GameId)
+                .HasForeignKey(gs => gs.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Player
             entity
-                .HasOne(ms => ms.Player)
+                .HasOne(gs => gs.Player)
                 .WithMany(p => p.Scores)
-                .HasForeignKey(ms => ms.PlayerId)
+                .HasForeignKey(gs => gs.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(ms => ms.PlayerId);
-            entity.HasIndex(ms => new { ms.PlayerId, ms.GameId }).IsUnique();
+            entity.HasIndex(gs => gs.PlayerId);
+            entity.HasIndex(gs => new { gs.PlayerId, gs.GameId }).IsUnique();
         });
 
         modelBuilder.Entity<GameWinRecord>(entity =>

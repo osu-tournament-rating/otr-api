@@ -12,7 +12,7 @@ namespace Database.Entities;
 [Table("game_scores")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class GameScore : UpdateableEntityBase, IScoreStatistics
+public class GameScore : UpdateableEntityBase, IProcessableEntity, IScoreStatistics
 {
     /// <summary>
     /// Total score
@@ -91,6 +91,15 @@ public class GameScore : UpdateableEntityBase, IScoreStatistics
     /// </summary>
     [Column("rejection_reason")]
     public ScoreRejectionReason RejectionReason { get; set; }
+
+    /// <summary>
+    /// Processing status
+    /// </summary>
+    [Column("processing_status")]
+    public ScoreProcessingStatus ProcessingStatus { get; set; }
+
+    [Column("last_processing_date")]
+    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Game"/> that the <see cref="GameScore"/> was set in

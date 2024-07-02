@@ -1,32 +1,44 @@
 namespace Database.Enums.Verification;
 
 /// <summary>
-/// The status of a tournament in the processing flow
+/// The status of a <see cref="Entities.Tournament"/> in the processing flow
 /// </summary>
 public enum TournamentProcessingStatus
 {
     /// <summary>
-    /// The tournament is awaiting approval from a verifier before data is gathered
+    /// The <see cref="Entities.Tournament"/> is awaiting approval from a
+    /// <see cref="Entities.User"/> with verifier permission
     /// </summary>
+    /// <remarks>
+    /// Functions as the entry point to the processing flow. No entities owned by a <see cref="Entities.Tournament"/>
+    /// will advance through the processing flow until approved.
+    /// </remarks>
     NeedsApproval = 0,
 
     /// <summary>
-    /// The tournament is awaiting match data population
+    /// The <see cref="Entities.Tournament"/> has <see cref="Entities.Match"/>es with a
+    /// <see cref="MatchProcessingStatus"/> of <see cref="MatchProcessingStatus.NeedsData"/>
     /// </summary>
     NeedsData = 1,
 
     /// <summary>
-    /// The tournament needs automation checks
+    /// The <see cref="Entities.Tournament"/> needs automation checks
     /// </summary>
     NeedsAutomationChecks = 2,
 
     /// <summary>
-    /// The tournament is awaiting verification from a verifier
+    /// The <see cref="Entities.Tournament"/> is awaiting verification from a
+    /// <see cref="Entities.User"/> with verifier permission
     /// </summary>
     NeedsVerification = 3,
 
     /// <summary>
-    /// The tournament has completed automation checks
+    /// The <see cref="Entities.Tournament"/> needs stat calculation
     /// </summary>
-    Done = 4
+    NeedsStatCalculation = 4,
+
+    /// <summary>
+    /// The tournament has completed all processing steps
+    /// </summary>
+    Done = 5
 }
