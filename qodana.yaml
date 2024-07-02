@@ -21,6 +21,11 @@ exclude:
     paths:
       - API/Migrations
 
+linter: jetbrains/qodana-cdnet:2024.1-eap
+dotnet:
+  solution: otrAPI.sln
+
+
 #Execute shell command before Qodana execution (Applied in CI/CD pipeline)
 #bootstrap: sh ./prepare-qodana.sh
 
