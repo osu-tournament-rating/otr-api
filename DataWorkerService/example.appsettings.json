@@ -16,18 +16,23 @@
   },
   "Players": {
     "Osu": {
-      "AllowFetch": true,
+      "Enabled": true,
       "MarkAllOutdated": false,
       "BatchSize": 30,
       "BatchIntervalSeconds": 120,
       "PlayerOutdatedAfterDays": 7
     },
     "OsuTrack": {
-      "AllowFetch": true,
+      "Enabled": true,
       "MarkAllOutdated": false,
       "BatchSize": 10,
       "BatchIntervalSeconds": 300,
       "PlayerOutdatedAfterDays": 14
     }
+  },
+  "Tournaments": {
+    "Enabled": true,
+    "BatchSize": 1,
+    "BatchIntervalSeconds": 60
   }
 }

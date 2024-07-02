@@ -17,7 +17,7 @@ public class Beatmap : EntityBase
     /// osu! id of the beatmap
     /// </summary>
     [Column("osu_id")]
-    public long OsuId { get; init; }
+    public long OsuId { get; set; }
 
     /// <summary>
     /// Denotes if the <see cref="Beatmap"/> has populated data
@@ -27,47 +27,47 @@ public class Beatmap : EntityBase
     /// the time of access, this value will be false and all properties will be unpopulated.
     /// </remarks>
     [Column("has_data")]
-    public bool HasData { get; init; }
+    public bool HasData { get; set; }
 
     /// <summary>
     /// osu! id of the mapper
     /// </summary>
     [Column("mapper_id")]
-    public long MapperId { get; init; }
+    public long MapperId { get; set; }
 
     /// <summary>
     /// osu! username of the mapper
     /// </summary>
     [MaxLength(32)]
     [Column("mapper_name")]
-    public string MapperName { get; init; } = null!;
+    public string MapperName { get; set; } = string.Empty;
 
     /// <summary>
     /// Song artist
     /// </summary>
     [MaxLength(512)]
     [Column("artist")]
-    public string Artist { get; init; } = null!;
+    public string Artist { get; set; } = string.Empty;
 
     /// <summary>
     /// Song title
     /// </summary>
     [MaxLength(512)]
     [Column("title")]
-    public string Title { get; init; } = null!;
+    public string Title { get; set; } = string.Empty;
 
     /// <summary>
     /// Difficulty name
     /// </summary>
     [MaxLength(255)]
     [Column("diff_name")]
-    public string DiffName { get; init; } = null!;
+    public string DiffName { get; set; } = string.Empty;
 
     /// <summary>
     /// Ranked status
     /// </summary>
     [Column("ranked_status")]
-    public BeatmapRankedStatus RankedStatus { get; init; }
+    public BeatmapRankedStatus RankedStatus { get; set; }
 
     /// <summary>
     /// Star rating
@@ -79,70 +79,70 @@ public class Beatmap : EntityBase
     /// Beats per minute
     /// </summary>
     [Column("bpm")]
-    public double? Bpm { get; init; }
+    public double Bpm { get; set; }
 
     /// <summary>
     /// Circle size
     /// </summary>
     [Column("cs")]
-    public double Cs { get; init; }
+    public double Cs { get; set; }
 
     /// <summary>
     /// Approach rate
     /// </summary>
     [Column("ar")]
-    public double Ar { get; init; }
+    public double Ar { get; set; }
 
     /// <summary>
     /// Hp
     /// </summary>
     [Column("hp")]
-    public double Hp { get; init; }
+    public double Hp { get; set; }
 
     /// <summary>
     /// Overall difficulty
     /// </summary>
     [Column("od")]
-    public double Od { get; init; }
+    public double Od { get; set; }
 
     /// <summary>
     /// Total length of the song
     /// </summary>
     [Column("length")]
-    public double Length { get; init; }
+    public double Length { get; set; }
 
     /// <summary>
     /// The <see cref="Enums.Ruleset"/> this <see cref="Beatmap"/> is playable on
     /// </summary>
     [Column("ruleset")]
-    public Ruleset Ruleset { get; init; }
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Count of circles
     /// </summary>
     [Column("circle_count")]
-    public int CircleCount { get; init; }
+    public int CircleCount { get; set; }
 
     /// <summary>
     /// Count of sliders
     /// </summary>
     [Column("slider_count")]
-    public int SliderCount { get; init; }
+    public int SliderCount { get; set; }
 
     /// <summary>
     /// Count of spinners
     /// </summary>
     [Column("spinner_count")]
-    public int SpinnerCount { get; init; }
+    public int SpinnerCount { get; set; }
 
     /// <summary>
     /// Max possible combo
     /// </summary>
     [Column("max_combo")]
-    public int MaxCombo { get; init; }
+    public int MaxCombo { get; set; }
 
     /// <summary>
     /// A collection of <see cref="Game"/>s played on the <see cref="Beatmap"/>
     /// </summary>
-    public ICollection<Game> Games { get; init; } = new List<Game>();
+    public ICollection<Game> Games { get; set; } = new List<Game>();
 }

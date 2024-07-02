@@ -14,7 +14,7 @@ public class BeatmapService(IBeatmapsRepository beatmapsRepository, IMapper mapp
         mapper.Map<BeatmapDTO?>(await beatmapsRepository.GetAsync(id: id));
 
     public async Task<BeatmapDTO?> GetAsync(long beatmapId) =>
-        mapper.Map<BeatmapDTO?>(await beatmapsRepository.GetAsync(beatmapId: beatmapId));
+        mapper.Map<BeatmapDTO?>(await beatmapsRepository.GetAsync(osuId: beatmapId));
 
     public async Task<BeatmapDTO?> GetVersatileAsync(long key)
     {

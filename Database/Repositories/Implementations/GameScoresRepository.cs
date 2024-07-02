@@ -9,9 +9,12 @@ namespace Database.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class MatchScoresRepository(OtrContext context) : RepositoryBase<GameScore>(context), IMatchScoresRepository
+public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore>(context), IGameScoresRepository
 {
     private readonly OtrContext _context = context;
+
+    public async Task<bool> ExistsAsync(long osuId) =>
+        await _context.GameScores.AnyAsync(gs => gs.GameId == osuId);
 
     public async Task<int> AverageTeammateScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
     {

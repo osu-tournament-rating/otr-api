@@ -11,8 +11,7 @@ public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(co
 {
     private readonly OtrContext _context = context;
 
-    public async Task<Beatmap?> GetAsync(long beatmapId) =>
-        await _context.Beatmaps.FirstOrDefaultAsync(x => x.OsuId == beatmapId);
-
-    public async Task<int?> GetIdAsync(long beatmapId) => (await GetAsync(beatmapId))?.Id;
+    public async Task<Beatmap?> GetAsync(long osuId) =>
+        LocalView.FirstOrDefault(b => b.OsuId == osuId)
+        ?? await _context.Beatmaps.FirstOrDefaultAsync(x => x.OsuId == osuId);
 }

@@ -1,21 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using OsuApiClient.Configurations.Interfaces;
 
 namespace DataWorkerService.Configurations;
 
-public class OsuConfiguration
+/// <summary>
+/// Configures the <see cref="OsuApiClient.OsuClient"/>
+/// </summary>
+public class OsuConfiguration : IOsuClientConfiguration
 {
     public const string Position = "Osu";
 
-    /// <summary>
-    /// osu! OAuth client id
-    /// </summary>
     [Required(ErrorMessage = "ClientId is required!")]
-    [Range(1, long.MaxValue, ErrorMessage = "ClientId must be a positive, non-zero value!")]
     public long ClientId { get; set; }
 
-    /// <summary>
-    /// osu! OAuth client secret
-    /// </summary>
     [Required(ErrorMessage = "ClientSecret is required!")]
-    public string ClientSecret { get; set; } = string.Empty;
+    public string ClientSecret { get; set; } = null!;
+
+    public string RedirectUrl { get; set; } = string.Empty;
 }

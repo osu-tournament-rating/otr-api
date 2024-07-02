@@ -13,8 +13,7 @@ using Newtonsoft.Json;
 
 namespace Database;
 
-public class OtrContext(
-    DbContextOptions<OtrContext> options) : DbContext(options)
+public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(options)
 {
     private readonly AuditingInterceptor _auditingInterceptor = new();
 
@@ -175,6 +174,8 @@ public class OtrContext(
             entity.Property(m => m.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
             entity.Property(m => m.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
 
+            entity.Property(m => m.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
+
             // Relation: Tournament
             entity
                 .HasOne(m => m.Tournament)
@@ -239,6 +240,8 @@ public class OtrContext(
             entity.Property(ma => ma.Id).UseIdentityAlwaysColumn();
 
             entity.Property(ma => ma.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            entity.Property(ma => ma.ActionType);
 
             entity.Property(ma => ma.Changes)
                 .HasConversion(changesConverter)
@@ -423,6 +426,8 @@ public class OtrContext(
             entity.Property(t => t.Id).UseIdentityAlwaysColumn();
 
             entity.Property(t => t.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            entity.Property(t => t.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
 
             // Relation: User (Submitter)
             entity

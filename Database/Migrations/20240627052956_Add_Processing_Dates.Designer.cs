@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240627052956_Add_Processing_Dates")]
+    partial class Add_Processing_Dates
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -471,10 +474,6 @@ namespace Database.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ActionType")
-                        .HasColumnType("integer")
-                        .HasColumnName("action_type");
 
                     b.Property<int?>("ActionUserId")
                         .HasColumnType("integer")
@@ -959,7 +958,7 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("ruleset");
 
-                    b.Property<int?>("SubmittedByUserId")
+                    b.Property<int>("SubmittedByUserId")
                         .HasColumnType("integer")
                         .HasColumnName("submitted_by_user_id");
 
@@ -1304,7 +1303,8 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.User", "SubmittedByUser")
                         .WithMany("SubmittedTournaments")
                         .HasForeignKey("SubmittedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.HasOne("Database.Entities.User", "VerifiedByUser")
                         .WithMany()

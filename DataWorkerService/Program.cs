@@ -1,14 +1,19 @@
 using Database;
+using Database.Entities;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
+using DataWorkerService.BackgroundServices;
 using DataWorkerService.Configurations;
 using DataWorkerService.Extensions;
+using DataWorkerService.Processors;
+using DataWorkerService.Processors.Matches;
+using DataWorkerService.Processors.Resolvers.Implementations;
+using DataWorkerService.Processors.Resolvers.Interfaces;
+using DataWorkerService.Processors.Tournaments;
 using DataWorkerService.Services.Implementations;
 using DataWorkerService.Services.Interfaces;
-using DataWorkerService.Workers;
 using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
-using OsuApiClient.Configurations.Implementations;
 using OsuApiClient.Extensions;
 using Serilog;
 using Serilog.Events;
@@ -17,11 +22,12 @@ HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
 #region Configuration Bindings
 
-OsuConfiguration osuConfig =
-    builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
-
-builder.Services.AddOptions<OsuConfiguration>().Bind(builder.Configuration.GetSection(OsuConfiguration.Position));
-builder.Services.AddOptions<PlayerDataWorkerConfiguration>().Bind(builder.Configuration.GetSection(PlayerDataWorkerConfiguration.Position));
+builder.Services
+    .AddOptions<PlayerFetchConfiguration>()
+    .Bind(builder.Configuration.GetSection(PlayerFetchConfiguration.Position));
+builder.Services
+    .AddOptions<TournamentProcessingConfiguration>()
+    .Bind(builder.Configuration.GetSection(TournamentProcessingConfiguration.Position));
 
 #endregion
 
@@ -49,7 +55,7 @@ builder.Services.AddSerilog(configuration =>
         )
         .Enrich.FromLogContext()
         .WriteTo.Console(
-            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] ({SourceContext}.{Method}) {Message:lj}{NewLine}{Exception}"
+            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}"
         )
         .WriteTo.File(
             path: Path.Join("logs", "dataworker_log.log"),
@@ -81,17 +87,15 @@ builder.Services.AddDbContext<OtrContext>(o =>
     );
 });
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 #endregion
 
 #region osu! API
 
 builder.Services.AddOsuApiClient(new OsuClientOptions
 {
-    Configuration = new OsuClientConfiguration
-    {
-        ClientId = osuConfig.ClientId,
-        ClientSecret = osuConfig.ClientSecret
-    },
+    Configuration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position),
     UseScopedServices = false
 });
 
@@ -99,18 +103,38 @@ builder.Services.AddOsuApiClient(new OsuClientOptions
 
 #region Repositories
 
+builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
+builder.Services.AddScoped<IGamesRepository, GamesRepository>();
+builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
 builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
+builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 
 #endregion
 
 #region Services
 
 builder.Services.AddScoped<IPlayersService, PlayersService>();
+builder.Services.AddScoped<IOsuApiDataParserService, OsuApiDataParserService>();
 
 #endregion
 
-builder.Services.AddHostedService<OsuPlayerDataWorker>();
-builder.Services.AddHostedService<OsuTrackPlayerDataWorker>();
+# region Processors
+
+builder.Services.AddScoped<ITournamentProcessorResolver, TournamentProcessorResolver>();
+builder.Services.AddScoped<IProcessor<Tournament>, TournamentDataProcessor>();
+
+builder.Services.AddScoped<IMatchProcessorResolver, MatchProcessorResolver>();
+builder.Services.AddScoped<IProcessor<Match>, MatchDataProcessor>();
+
+# endregion
+
+# region Background Services
+
+builder.Services.AddHostedService<PlayerOsuUpdateService>();
+builder.Services.AddHostedService<PlayerOsuTrackUpdateService>();
+builder.Services.AddHostedService<TournamentProcessorService>();
+
+# endregion
 
 IHost host = builder.Build();
 host.Run();

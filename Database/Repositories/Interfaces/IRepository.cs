@@ -1,11 +1,28 @@
 ﻿using Database.Entities.Interfaces;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Database.Repositories.Interfaces;
 
-public interface IRepository<T>
-    where T : class
+public interface IRepository<T> where T : class
 {
+    /// <summary>
+    /// Exposes a <see cref="LocalView{T}"/> that tracks <typeparamref name="T"/> entities in the context
+    /// </summary>
+    LocalView<T> LocalView { get; }
+
     // CRUD operations
+
+    /// <summary>
+    /// Begins tracking an entity in the <see cref="EntityState.Added"/> state
+    /// </summary>
+    /// <remarks>Changes will be applied on the next call to <see cref="DbContext.SaveChangesAsync"/></remarks>
+    void Add(T entity);
+
+    /// <summary>
+    /// Begins tracking a collection of entity in the <see cref="EntityState.Added"/> state
+    /// </summary>
+    /// <remarks>Changes will be applied on the next call to <see cref="DbContext.SaveChangesAsync"/></remarks>
+    void AddRange(IEnumerable<T> entities);
 
     /// <summary>
     /// Adds a new entity to the database

@@ -14,7 +14,7 @@ namespace Database.Entities;
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>
+public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>, IProcessableEntity
 {
     /// <summary>
     /// osu! id
@@ -44,22 +44,25 @@ public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>
     public DateTime EndTime { get; set; }
 
     /// <summary>
-    /// Processing status
-    /// </summary>
-    [Column("processing_status")]
-    public MatchProcessingStatus ProcessingStatus { get; set; }
-
-    /// <summary>
     /// Verification status
     /// </summary>
     [Column("verification_status")]
     public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
-    /// Reason for rejection
+    /// Rejection reason
     /// </summary>
     [Column("rejection_reason")]
     public MatchRejectionReason RejectionReason { get; set; }
+
+    /// <summary>
+    /// Processing status
+    /// </summary>
+    [Column("processing_status")]
+    public MatchProcessingStatus ProcessingStatus { get; set; }
+
+    [Column("last_processing_date")]
+    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Tournament"/> the match was played in

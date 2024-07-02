@@ -5,6 +5,13 @@ namespace Database.Repositories.Interfaces;
 public interface IPlayersRepository : IRepository<Player>
 {
     /// <summary>
+    /// Gets a player for the given osu! id
+    /// </summary>
+    /// <param name="osuId">Player osu! id</param>
+    /// <returns>A player, or null if not found</returns>
+    Task<Player?> GetByOsuIdAsync(long osuId);
+
+    /// <summary>
     /// Returns a list of players that matches the given username. Case insensitive
     /// </summary>
     /// <param name="username"></param>

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Database.Entities.Interfaces;
 using Database.Enums;
 using Database.Enums.Verification;
 
@@ -12,7 +13,7 @@ namespace Database.Entities;
 [Table("tournaments")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Tournament : UpdateableEntityBase
+public class Tournament : UpdateableEntityBase, IProcessableEntity
 {
     /// <summary>
     /// Name of the tournament
@@ -60,22 +61,25 @@ public class Tournament : UpdateableEntityBase
     public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
-    /// Processing status
-    /// </summary>
-    [Column("processing_status")]
-    public TournamentProcessingStatus ProcessingStatus { get; set; }
-
-    /// <summary>
     /// Rejection reason
     /// </summary>
     [Column("rejection_reason")]
     public TournamentRejectionReason RejectionReason { get; set; }
 
     /// <summary>
+    /// Processing status
+    /// </summary>
+    [Column("processing_status")]
+    public TournamentProcessingStatus ProcessingStatus { get; set; }
+
+    [Column("last_processing_date")]
+    public DateTime LastProcessingDate { get; set; }
+
+    /// <summary>
     /// Id of the user that submitted the tournament
     /// </summary>
     [Column("submitted_by_user_id")]
-    public int SubmittedByUserId { get; set; }
+    public int? SubmittedByUserId { get; set; }
 
     /// <summary>
     /// The <see cref="User"/> that submitted the tournament

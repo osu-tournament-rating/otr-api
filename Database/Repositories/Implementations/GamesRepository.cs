@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
@@ -8,9 +9,9 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class GamesRepository(OtrContext context) : RepositoryBase<Game>(context), IGamesRepository
 {
-    public override async Task<int> UpdateAsync(Game game)
-    {
-        game.Updated = DateTime.UtcNow;
-        return await base.UpdateAsync(game);
-    }
+    private readonly OtrContext _context = context;
+
+    public async Task<Game?> GetAsync(long osuId) =>
+        LocalView.FirstOrDefault(g => g.OsuId == osuId)
+        ?? await _context.Games.FirstOrDefaultAsync(g => g.OsuId == osuId);
 }

@@ -1,45 +1,46 @@
-using System.Diagnostics.CodeAnalysis;
 using OsuApiClient.Enums;
 
 namespace DataWorkerService.Configurations;
 
 /// <summary>
-/// Values that control the way player data is fetched from outside sources
+/// Configures the way <see cref="Database.Entities.Player"/> data is fetched from outside sources
 /// </summary>
-public class PlayerDataWorkerConfiguration
+public class PlayerFetchConfiguration
 {
     public const string Position = "Players";
 
     /// <summary>
-    /// Configuration for <see cref="FetchPlatform.Osu"/>
+    /// The <see cref="PlayerFetchPlatformConfiguration"/> for <see cref="FetchPlatform.Osu"/>
     /// </summary>
-    public PlayerPlatformConfiguration Osu { get; init; } = new(FetchPlatform.Osu);
+    public PlayerFetchPlatformConfiguration Osu { get; init; } = new(FetchPlatform.Osu);
 
     /// <summary>
-    /// Configuration for <see cref="FetchPlatform.OsuTrack"/>
+    /// The <see cref="PlayerFetchPlatformConfiguration"/> <see cref="FetchPlatform.OsuTrack"/>
     /// </summary>
-    public PlayerPlatformConfiguration OsuTrack { get; init; } = new(FetchPlatform.OsuTrack);
+    public PlayerFetchPlatformConfiguration OsuTrack { get; init; } = new(FetchPlatform.OsuTrack);
 }
 
 /// <summary>
-/// Values that control the way player data is fetched for a single <see cref="FetchPlatform"/>
+/// Configures the way <see cref="Database.Entities.Player"/> data is fetched for a single <see cref="FetchPlatform"/>
 /// </summary>
-/// <param name="platform">Loads a default configuration for the given platform</param>
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class PlayerPlatformConfiguration(FetchPlatform platform)
+/// <param name="platform">
+/// The <see cref="FetchPlatform"/> being configured by the <see cref="PlayerFetchPlatformConfiguration"/>
+/// </param>
+public class PlayerFetchPlatformConfiguration(FetchPlatform platform)
 {
     /// <summary>
-    /// Denotes if the worker should fetch data for players
+    /// Denotes if the worker is enabled
     /// </summary>
-    public bool AllowFetch { get; init; } = true;
+    public bool Enabled { get; init; } = true;
 
     /// <summary>
     /// Denotes if the worker should mark all players as outdated on start
     /// </summary>
+    /// <remarks>Effectively queues all players to be processed</remarks>
     public bool MarkAllOutdated { get; init; }
 
     /// <summary>
-    /// The number of players to fetch in succession
+    /// The number of players to process at once
     /// </summary>
     public int BatchSize { get; init; } = platform switch
     {
@@ -59,7 +60,7 @@ public class PlayerPlatformConfiguration(FetchPlatform platform)
     };
 
     /// <summary>
-    /// Time between fetches for individual players in days
+    /// Time before a player's data is considered outdated in days
     /// </summary>
     public int PlayerOutdatedAfterDays { get; init; } = platform switch
     {

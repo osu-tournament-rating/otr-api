@@ -13,13 +13,13 @@ public interface IPlayersService
     /// Sets all players' <see cref="Player.OsuLastFetch"/> to an outdated value based on the given configuration
     /// </summary>
     /// <param name="config">Configuration to control the manner in which the osu! API is fetched</param>
-    Task SetAllOutdatedOsuApiAsync(PlayerPlatformConfiguration config);
+    Task SetAllOutdatedOsuApiAsync(PlayerFetchPlatformConfiguration config);
 
     /// <summary>
     /// Updates outdated <see cref="Player"/> osu! API data based on the given configuration
     /// </summary>
     /// <param name="config">Configuration to control the manner in which the osu! API is fetched</param>
-    Task UpdateOutdatedFromOsuApiAsync(PlayerPlatformConfiguration config);
+    Task UpdateOutdatedFromOsuApiAsync(PlayerFetchPlatformConfiguration config);
 
     /// <summary>
     /// Updates a <see cref="Player"/> with data from the osu! API
@@ -32,13 +32,13 @@ public interface IPlayersService
     /// Sets all players' <see cref="Player.OsuTrackLastFetch"/> to an outdated value based on the given configuration
     /// </summary>
     /// <param name="config">Configuration to control the manner in which the osu!Track API is fetched</param>
-    Task SetAllOutdatedOsuTrackApiAsync(PlayerPlatformConfiguration config);
+    Task SetAllOutdatedOsuTrackApiAsync(PlayerFetchPlatformConfiguration config);
 
     /// <summary>
     /// Updates outdated <see cref="Player"/> osu!Track API data based on the given configuration
     /// </summary>
     /// <param name="config">Configuration to control the manner in which the osu!Track API is fetched</param>
-    Task UpdateOutdatedFromOsuTrackApiAsync(PlayerPlatformConfiguration config);
+    Task UpdateOutdatedFromOsuTrackApiAsync(PlayerFetchPlatformConfiguration config);
 
     /// <summary>
     /// Updates a <see cref="Player"/> with data from the osu!Track API

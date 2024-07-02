@@ -18,4 +18,16 @@
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Database\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Database\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Database\**" />
+    </ItemGroup>
+
 </Project>

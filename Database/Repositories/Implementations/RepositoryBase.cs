@@ -1,18 +1,26 @@
 ﻿using Database.Entities.Interfaces;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Database.Repositories.Implementations;
 
-public class RepositoryBase<T> : IRepository<T>
-    where T : class
+public class RepositoryBase<T> : IRepository<T> where T : class
 {
     private readonly OtrContext _context;
+
+    public LocalView<T> LocalView => _context.Set<T>().Local;
 
     protected RepositoryBase(OtrContext context)
     {
         _context = context;
     }
+
+    public virtual void Add(T entity) =>
+        _context.Set<T>().Add(entity);
+
+    public virtual void AddRange(IEnumerable<T> entities) =>
+        _context.Set<T>().AddRange(entities);
 
     public virtual async Task<T> CreateAsync(T entity)
     {

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
 

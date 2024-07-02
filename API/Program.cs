@@ -433,7 +433,7 @@ builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
 builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
-builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
+builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
 builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();

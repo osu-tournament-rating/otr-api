@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 
@@ -7,6 +8,7 @@ namespace OsuApiClient.Domain.Osu.Multiplayer;
 /// Represents a multiplayer lobby
 /// </summary>
 [AutoMap(typeof(MultiplayerMatchJsonModel))]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class MultiplayerMatch : IModel
 {
     /// <summary>

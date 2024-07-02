@@ -12,6 +12,13 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
 
     /// <summary>
+    /// Gets tournaments with a <see cref="Enums.Verification.TournamentProcessingStatus"/>
+    /// that is not <see cref="Enums.Verification.TournamentProcessingStatus.Done"/>
+    /// </summary>
+    /// <param name="limit">Maximum number of tournaments</param>
+    Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit);
+
+    /// <summary>
     /// Returns whether an entity with the given name and mode exists
     /// </summary>
     public Task<bool> ExistsAsync(string name, int mode);

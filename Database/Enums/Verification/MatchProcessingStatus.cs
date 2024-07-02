@@ -11,13 +11,22 @@ public enum MatchProcessingStatus
     NeedsData = 0,
 
     /// <summary>
-    /// Data has been retrieved from the osu! API and parsed,
-    /// ready for automation checks
+    /// Data has been retrieved from the osu! API and parsed, ready for automation checks
     /// </summary>
     NeedsAutomationChecks = 1,
 
     /// <summary>
+    /// Automation checks have completed, ready for verification
+    /// </summary>
+    NeedsVerification = 2,
+
+    /// <summary>
+    /// TBD
+    /// </summary>
+    NeedsStatCalculation = 3,
+
+    /// <summary>
     /// All steps have been completed, match is ready for human review
     /// </summary>
-    Done = 2
+    Done = 4
 }

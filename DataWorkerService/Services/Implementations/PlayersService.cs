@@ -18,12 +18,12 @@ public class PlayersService(
     OtrContext context
     ) : IPlayersService
 {
-    public async Task SetAllOutdatedOsuApiAsync(PlayerPlatformConfiguration config)
+    public async Task SetAllOutdatedOsuApiAsync(PlayerFetchPlatformConfiguration config)
     {
         await playersRepository.SetOutdatedOsuAsync(TimeSpan.FromDays(config.PlayerOutdatedAfterDays));
     }
 
-    public async Task UpdateOutdatedFromOsuApiAsync(PlayerPlatformConfiguration config)
+    public async Task UpdateOutdatedFromOsuApiAsync(PlayerFetchPlatformConfiguration config)
     {
         IEnumerable<Player> outdatedPlayers = (await playersRepository.GetOutdatedOsuAsync(
             TimeSpan.FromDays(config.PlayerOutdatedAfterDays),
@@ -127,9 +127,9 @@ public class PlayersService(
         player.OsuLastFetch = DateTime.UtcNow;
     }
 
-    public async Task SetAllOutdatedOsuTrackApiAsync(PlayerPlatformConfiguration config) => throw new NotImplementedException();
+    public async Task SetAllOutdatedOsuTrackApiAsync(PlayerFetchPlatformConfiguration config) => throw new NotImplementedException();
 
-    public async Task UpdateOutdatedFromOsuTrackApiAsync(PlayerPlatformConfiguration config) => throw new NotImplementedException();
+    public async Task UpdateOutdatedFromOsuTrackApiAsync(PlayerFetchPlatformConfiguration config) => throw new NotImplementedException();
 
     public async Task UpdateFromOsuTrackApiAsync(Player player) => throw new NotImplementedException();
 }

@@ -3,7 +3,7 @@ using Database.Enums;
 
 namespace Database.Repositories.Interfaces;
 
-public interface IMatchScoresRepository : IRepository<GameScore>
+public interface IGameScoresRepository : IRepository<GameScore>
 {
     Task<int> AverageTeammateScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime);
     Task<int> AverageOpponentScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime);

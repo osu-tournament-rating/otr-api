@@ -261,7 +261,7 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
         logger.LogWarning(
             "Fetch was unsuccessful [Platform: {Platform} | Code: {Code} | Reason: {Reason} | Response: {Response}]",
             platform,
-            response.StatusCode,
+            (int)response.StatusCode,
             response.ReasonPhrase,
             responseContent.Length > 500
                 // Truncate responses > 500 chars

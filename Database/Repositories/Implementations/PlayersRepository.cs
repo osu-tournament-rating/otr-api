@@ -1,5 +1,4 @@
 using Database.Entities;
-using Database.Enums;
 using Database.Extensions;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +8,10 @@ namespace Database.Repositories.Implementations;
 public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(context), IPlayersRepository
 {
     private readonly OtrContext _context = context;
+
+    public async Task<Player?> GetByOsuIdAsync(long osuId) =>
+        LocalView.FirstOrDefault(p => p.OsuId == osuId)
+        ?? await _context.Players.FirstOrDefaultAsync(p => p.OsuId == osuId);
 
     public async Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds) =>
         await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
@@ -65,39 +68,9 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
         return await query.WhereUsername(key, false).FirstOrDefaultAsync();
     }
 
-    public async Task<Player> GetOrCreateAsync(long osuId)
-    {
-        if (await _context.Players.AnyAsync(x => x.OsuId == osuId))
-        {
-            return await _context.Players.FirstAsync(x => x.OsuId == osuId);
-        }
-
-        return await CreateAsync(new Player { OsuId = osuId });
-    }
-
-    // TODO: Refactor param "mode" to use OsuEnums.Ruleset
-    public async Task<Player?> GetAsync(long osuId, bool eagerLoad, int mode = 0, int offsetDays = -1)
-    {
-        if (!eagerLoad)
-        {
-            return await _context.Players.WhereOsuId(osuId).FirstOrDefaultAsync();
-        }
-
-        DateTime time = offsetDays == -1 ? DateTime.MinValue : DateTime.UtcNow.AddDays(-offsetDays);
-
-        Player? p = await _context
-            .Players.Include(x =>
-                x.Scores.Where(y => y.Game.StartTime > time && y.Game.Ruleset == (Ruleset)mode)
-            )
-            .ThenInclude(x => x.Game)
-            .ThenInclude(x => x.Match)
-            .Include(x => x.Ratings.Where(y => y.Ruleset == (Ruleset)mode))
-            .Include(x => x.User)
-            .WhereOsuId(osuId)
-            .FirstOrDefaultAsync();
-
-        return p ?? null;
-    }
+    public async Task<Player> GetOrCreateAsync(long osuId) =>
+        await _context.Players.FirstOrDefaultAsync(x => x.OsuId == osuId)
+            ?? await CreateAsync(new Player { OsuId = osuId });
 
     public async Task<int?> GetIdAsync(long osuId) =>
         await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();

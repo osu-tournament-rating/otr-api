@@ -17,6 +17,21 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
         eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
 
+    public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
+        await _context.Tournaments
+            .AsSplitQuery()
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.Games)
+            .ThenInclude(g => g.Beatmap)
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.Games)
+            .ThenInclude(g => g.Scores)
+            .ThenInclude(s => s.Player)
+            .Where(t => t.ProcessingStatus != TournamentProcessingStatus.Done)
+            .OrderBy(t => t.LastProcessingDate)
+            .Take(limit)
+            .ToListAsync();
+
     public async Task<bool> ExistsAsync(string name, int mode) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Ruleset == (Ruleset)mode);
 

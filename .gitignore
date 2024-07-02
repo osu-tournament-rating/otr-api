@@ -9,6 +9,7 @@ logs/
 **/appsettings.*.json
 scripts/inserts
 **/apptests.json
+./Database/Database/
 
 app.env
 db.env
@@ -20,3 +21,4 @@ postgres_exporter.env
 *Backup.csproj
 *.csproj.user
 .vscode/
+
