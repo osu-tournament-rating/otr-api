@@ -17,3 +17,5 @@ exclude:
 linter: jetbrains/qodana-cdnet:2024.1-eap
 dotnet:
   solution: otrAPI.sln
+
+baseline: qodana.sarif.json
