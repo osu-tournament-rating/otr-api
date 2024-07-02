@@ -1,0 +1,21 @@
+#-------------------------------------------------------------------------------#
+#               Qodana analysis is configured by qodana.yaml file               #
+#             https://www.jetbrains.com/help/qodana/qodana-yaml.html            #
+#-------------------------------------------------------------------------------#
+version: "1.0"
+
+#Specify inspection profile for code analysis
+profile:
+  name: qodana.starter
+
+#Disable inspections
+exclude:
+  - name: Migrations
+    paths:
+      - API/Migrations
+
+linter: jetbrains/qodana-cdnet:2024.1-eap
+dotnet:
+  solution: otrAPI.sln
+
+baseline: qodana.sarif.json
