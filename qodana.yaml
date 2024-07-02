@@ -4,16 +4,9 @@
 #-------------------------------------------------------------------------------#
 version: "1.0"
 
-#Specify IDE code to run analysis without container (Applied in CI/CD pipeline)
-ide: QDNET
-
 #Specify inspection profile for code analysis
 profile:
   name: qodana.starter
-
-#Enable inspections
-#include:
-#  - name: <SomeEnabledInspectionId>
 
 #Disable inspections
 exclude:
@@ -24,11 +17,3 @@ exclude:
 linter: jetbrains/qodana-cdnet:2024.1-eap
 dotnet:
   solution: otrAPI.sln
-
-
-#Execute shell command before Qodana execution (Applied in CI/CD pipeline)
-#bootstrap: sh ./prepare-qodana.sh
-
-#Install IDE plugins before Qodana execution (Applied in CI/CD pipeline)
-#plugins:
-#  - id: <plugin.id> #(plugin id can be found at https://plugins.jetbrains.com)
