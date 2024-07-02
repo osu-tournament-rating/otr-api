@@ -11,8 +11,8 @@ profile:
 #Disable inspections
 exclude:
   - name: Migrations
-    patterns:
-      - "**/API/Migrations/*"
+    paths:
+      - API/Migrations
 
 linter: jetbrains/qodana-cdnet:2024.1-eap
 dotnet:
