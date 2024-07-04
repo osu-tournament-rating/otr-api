@@ -1,16 +1,15 @@
 using Database.Entities;
-using Database.Enums;
 using Database.Enums.Verification;
 
 namespace DataWorkerService.AutomationChecks.Games;
 
 /// <summary>
-/// Checks for <see cref="Game"/>s played using any <see cref="Mods.InvalidMods"/>
+/// Checks for <see cref="Game"/>s played using any <see cref="Constants.InvalidMods"/>
 /// </summary>
 public class GameModCheck(ILogger<GameModCheck> logger) : AutomationCheckBase<Game>(logger)
 {
     protected override bool OnChecking(Game entity) =>
-        entity.Mods.HasFlag(Mods.InvalidMods);
+        Constants.InvalidMods.All(m => !entity.Mods.HasFlag(m));
 
     protected override void OnFail(Game entity)
     {

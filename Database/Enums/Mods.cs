@@ -57,6 +57,24 @@ public struct ModScoreMultipliers
     /// Score multiplier for the combination of <see cref="Mods.Hidden"/> and <see cref="Mods.Easy"/>
     /// </summary>
     public const double HiddenEasy = 0.53;
+
+    /// <summary>
+    /// Gets the score multiplier for a <see cref="Mods"/>
+    /// </summary>
+    public static double Get(Mods mods) =>
+        mods switch
+        {
+            Mods.Easy => Easy,
+            Mods.Hidden => Hidden,
+            Mods.HardRock => HardRock,
+            Mods.HalfTime => HalfTime,
+            Mods.DoubleTime => DoubleTime,
+            Mods.Flashlight => Flashlight,
+            Mods.Hidden | Mods.DoubleTime => HiddenDoubleTime,
+            Mods.Hidden | Mods.HardRock => HiddenHardRock,
+            Mods.Hidden | Mods.Easy => HiddenEasy,
+            _ => NoMod
+        };
 }
 
 /// <summary>

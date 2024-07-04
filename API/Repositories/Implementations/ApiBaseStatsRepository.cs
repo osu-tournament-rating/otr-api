@@ -8,8 +8,8 @@ using Database;
 using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums;
-using Database.Extensions;
 using Database.Repositories.Implementations;
+using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;

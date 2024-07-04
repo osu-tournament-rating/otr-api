@@ -4,14 +4,12 @@ using Database.Enums.Verification;
 namespace DataWorkerService.AutomationChecks.Scores;
 
 /// <summary>
-/// Checks for <see cref="GameScore"/>s with score below the <see cref="MinimumScore"/>
+/// Checks for <see cref="GameScore"/>s with score below the <see cref="Constants.ScoreMinimum"/>
 /// </summary>
 public class ScoreMinimumCheck(ILogger<ScoreMinimumCheck> logger) : AutomationCheckBase<GameScore>(logger)
 {
-    public const int MinimumScore = 1_000;
-
     protected override bool OnChecking(GameScore entity) =>
-        entity.Score > MinimumScore;
+        entity.Score > Constants.ScoreMinimum;
 
     protected override void OnFail(GameScore entity)
     {

@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Enums;
-using Database.Extensions;
 using Database.Repositories.Interfaces;
+using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;

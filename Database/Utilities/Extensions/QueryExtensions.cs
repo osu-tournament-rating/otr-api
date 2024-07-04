@@ -4,7 +4,7 @@ using Database.Enums;
 using Database.Enums.Verification;
 using Microsoft.EntityFrameworkCore;
 
-namespace Database.Extensions;
+namespace Database.Utilities.Extensions;
 
 public static class QueryExtensions
 {

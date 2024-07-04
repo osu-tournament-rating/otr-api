@@ -2,7 +2,7 @@ namespace DataWorkerService.Extensions;
 
 public static class DateExtensions
 {
-    private static readonly DateTime s_placeholderDate = new(2007, 9, 17, 0, 0, 0);
+    private static readonly DateTime s_placeholderDate = new(2007, 9, 17);
 
     /// <summary>
     /// Denotes if the date is the database placeholder date

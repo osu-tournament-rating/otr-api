@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
 
-namespace Database.Extensions;
+namespace Database.Utilities.Extensions;
 
 public static class EnumExtensions
 {

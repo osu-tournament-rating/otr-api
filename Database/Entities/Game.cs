@@ -114,4 +114,10 @@ public class Game : UpdateableEntityBase, IProcessableEntity
     /// A collection of <see cref="GameScore"/>s set in the <see cref="Game"/>
     /// </summary>
     public ICollection<GameScore> Scores { get; set; } = new List<GameScore>();
+
+    /// <summary>
+    /// Denotes if the mod setting was "free mod"
+    /// </summary>
+    [NotMapped]
+    public bool IsFreeMod => Mods is Mods.None;
 }

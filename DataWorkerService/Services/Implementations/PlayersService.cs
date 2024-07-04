@@ -1,8 +1,8 @@
 using Database;
 using Database.Entities;
 using Database.Enums;
-using Database.Extensions;
 using Database.Repositories.Interfaces;
+using Database.Utilities.Extensions;
 using DataWorkerService.Configurations;
 using DataWorkerService.Services.Interfaces;
 using OsuApiClient;

@@ -124,95 +124,45 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IScoreStatist
     public Player Player { get; set; } = null!;
 
     /// <summary>
-    /// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
+    /// Accuracy
     /// </summary>
-    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Accuracy">osu! Accuracy</a></remarks>
+    /// <remarks>
+    /// Represented as a full percentage, e.g. 98.5 (instead of 0.985) <br/>
+    /// See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Accuracy">osu! wiki - Accuracy</a>
+    /// </remarks>
     [NotMapped]
-    public double AccuracyStandard
+    public double Accuracy
     {
         get
         {
-            var divisor = 300d * (Count300 + Count100 + Count50 + CountMiss);
-
-            if (divisor == 0)
+            double divisor;
+            switch (Ruleset)
             {
-                return 0;
+                case Ruleset.Standard:
+                    divisor = 300d * (Count300 + Count100 + Count50 + CountMiss);
+                    return divisor != 0
+                        ? 100 * (300d * Count300 + 100d * Count100 + 50d * Count50) / divisor
+                        : divisor;
+
+                case Ruleset.Taiko:
+                    divisor = Count300 + Count100 + CountMiss;
+                    return divisor != 0
+                        ? 100 * (Count300 + 0.5 * Count100) / divisor
+                        : divisor;
+
+                case Ruleset.Catch:
+                    divisor = Count300 + Count100 + Count50 + CountMiss + CountKatu;
+                    return divisor != 0
+                        ? 100 * (Count300 + Count100 + Count50) / divisor
+                        : divisor;
+
+                // Any mania variant
+                default:
+                    divisor = 305d * (CountGeki + Count300 + CountKatu + Count100 + Count50 + CountMiss);
+                    return divisor != 0
+                        ? 100 * (305d * CountGeki + 300 * Count300 + 200 * CountKatu + 100 * Count100 + 50 * Count50) / divisor
+                        : divisor;
             }
-
-            return (100 * ((300d * Count300) + (100d * Count100) + (50d * Count50))) / divisor;
-        }
-    }
-
-    /// <summary>
-    /// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985)
-    /// </summary>
-    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Accuracy">osu! Accuracy</a></remarks>
-    [NotMapped]
-    public double AccuracyTaiko
-    {
-        get
-        {
-            double divisor = Count300 + Count100 + CountMiss;
-
-            if (divisor == 0)
-            {
-                return 0;
-            }
-
-            return (100 * (Count300 + (0.5 * Count100))) / divisor;
-        }
-    }
-
-    /// <summary>
-    /// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985).
-    /// </summary>
-    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Accuracy">osu! Accuracy</a></remarks>
-    [NotMapped]
-    public double AccuracyCatch
-    {
-        get
-        {
-            var nFruitsCaught = Count300;
-            var nDropsCaught = Count100;
-            var nDropletsCaught = Count50;
-
-            double divisor = nFruitsCaught + nDropsCaught + nDropletsCaught + CountMiss + CountKatu;
-
-            if (divisor == 0)
-            {
-                return 0;
-            }
-
-            return (100 * (Count300 + Count100 + Count50)) / divisor;
-        }
-    }
-
-    /// <summary>
-    /// Accuracy represented as a full percentage, e.g. 98.5 (instead of 0.985). ScoreV2 accuracy as shown here
-    /// </summary>
-    /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Accuracy">osu! Accuracy</a></remarks>
-    [NotMapped]
-    public double AccuracyMania
-    {
-        get
-        {
-            var divisor = 305d * (CountGeki + Count300 + CountKatu + Count100 + Count50 + CountMiss);
-
-            if (divisor == 0)
-            {
-                return 0;
-            }
-
-            return (
-                    100
-                    * (
-                        (305d * CountGeki)
-                        + (300 * Count300)
-                        + (200 * CountKatu)
-                        + (100 * Count100)
-                        + (50 * Count50)
-                    )
-                ) / divisor;
         }
     }
 }
