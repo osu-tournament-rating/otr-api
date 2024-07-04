@@ -15,7 +15,7 @@ public class MatchDataProcessor(
     IOsuApiDataParserService parserService
 ) : ProcessorBase<Match>(logger)
 {
-    public override async Task OnProcessingAsync(Match entity, CancellationToken cancellationToken)
+    protected override async Task OnProcessingAsync(Match entity, CancellationToken cancellationToken)
     {
         if (entity.ProcessingStatus is not MatchProcessingStatus.NeedsData)
         {

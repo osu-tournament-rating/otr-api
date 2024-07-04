@@ -1,49 +1,57 @@
 namespace Database.Enums.Verification;
 
 /// <summary>
-/// The reason why a game is rejected
+/// The reason why a <see cref="Entities.Game"/> is rejected
 /// </summary>
 [Flags]
 public enum GameRejectionReason
 {
     /// <summary>
-    /// Game is not rejected
+    /// The <see cref="Entities.Game"/> is not rejected
     /// </summary>
     None = 0,
 
     /// <summary>
-    /// osu! API data does not contain scores for the game
+    /// The <see cref="Entities.Game"/>'s osu! API data did not contain any <see cref="Entities.GameScore"/>s
     /// </summary>
     NoScores = 1 << 0,
 
     /// <summary>
-    /// Game has invalid mods applied
+    /// The <see cref="Entities.Game"/> has invalid mods applied
     /// </summary>
     InvalidMods = 1 << 1,
 
     /// <summary>
-    /// Game's ruleset does not match that of the tournament it belongs to
+    /// The <see cref="Entities.Game"/>'s <see cref="Ruleset"/> does not match that of the parent <see cref="Entities.Tournament"/>
     /// </summary>
     RulesetMismatch = 1 << 2,
 
     /// <summary>
-    /// Game's scoring type is not equal to 'ScoreV2'
+    /// The <see cref="Entities.Game"/>'s <see cref="ScoringType"/> is not <see cref="ScoringType.ScoreV2"/>
     /// </summary>
     InvalidScoringType = 1 << 3,
 
     /// <summary>
-    /// Game's team type is not TeamVs, even after head to head conversion
+    /// The <see cref="Entities.Game"/>'s <see cref="TeamType"/> is not <see cref="TeamType.TeamVs"/>,
+    /// even after attempting <see cref="TeamType.HeadToHead"/> conversion
     /// </summary>
     InvalidTeamType = 1 << 4,
 
     /// <summary>
-    /// Game's number of verified scores is < 2
+    /// The <see cref="Entities.Game"/>'s number of <see cref="Entities.Game.Scores"/> with a <see cref="VerificationStatus"/>
+    /// of <see cref="VerificationStatus.Verified"/> or <see cref="VerificationStatus.PreVerified"/> is &lt; 2
     /// </summary>
     NoValidScores = 1 << 5,
 
     /// <summary>
-    /// Game's team size (based on the number of verified scores)
-    /// divided by 2 is not equal to the team size of the tournament
+    /// The <see cref="Entities.Game"/>'s number of <see cref="Entities.Game.Scores"/> with a <see cref="VerificationStatus"/>
+    /// of <see cref="VerificationStatus.Verified"/> or <see cref="VerificationStatus.PreVerified"/> divided by 2 is
+    /// not equal to the <see cref="Entities.Tournament.TeamSize"/> of the parent <see cref="Entities.Tournament"/>
     /// </summary>
-    TeamSizeMismatch = 1 << 6
+    TeamSizeMismatch = 1 << 6,
+
+    /// <summary>
+    /// The <see cref="Entities.Game"/>'s <see cref="Entities.Game.EndTime"/> could not be determined
+    /// </summary>
+    NoEndTime = 1 << 7
 }

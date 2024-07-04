@@ -1,7 +1,7 @@
 namespace Database.Enums;
 
 /// <summary>
-/// Represents the team type used for a game
+/// Represents the team type used for a <see cref="Entities.Game"/>
 /// </summary>
 /// <remarks>See <a href="https://osu.ppy.sh/wiki/en/Client/Interface/Multiplayer"> osu! wiki - Multiplayer</a></remarks>
 public enum TeamType

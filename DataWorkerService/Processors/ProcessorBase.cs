@@ -35,5 +35,5 @@ public abstract class ProcessorBase<TEntity>(ILogger logger) : IProcessor<TEntit
     /// </summary>
     /// <param name="entity">Entity to be processed</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    public abstract Task OnProcessingAsync(TEntity entity, CancellationToken cancellationToken);
+    protected abstract Task OnProcessingAsync(TEntity entity, CancellationToken cancellationToken);
 }

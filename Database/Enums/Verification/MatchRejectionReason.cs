@@ -1,34 +1,41 @@
 namespace Database.Enums.Verification;
 
 /// <summary>
-/// The reason why a match is rejected
+/// The reason why a <see cref="Entities.Match"/> is rejected
 /// </summary>
 [Flags]
 public enum MatchRejectionReason
 {
     /// <summary>
-    /// Match is not rejected
+    /// The <see cref="Entities.Match"/> is not rejected
     /// </summary>
     None = 0,
 
     /// <summary>
-    /// osu! API returned invalid or no data for the match
+    /// The osu! API returned invalid data or no data for the <see cref="Entities.Match"/>
     /// </summary>
     NoData = 1 << 0,
 
     /// <summary>
-    /// Match name does not follow tournament lobby title conventions
+    /// The <see cref="Entities.Match"/>'s <see cref="Entities.Match.Name"/> does not follow tournament lobby title conventions
     /// </summary>
     InvalidName = 1 << 1,
 
     /// <summary>
-    /// Match does not contain any <see cref="Entities.Game"/>s marked "PreVerified" or "Verified"
+    /// The <see cref="Entities.Match"/> has no <see cref="Entities.Match.Games"/> with a <see cref="VerificationStatus"/>
+    /// of <see cref="VerificationStatus.Verified"/> or <see cref="VerificationStatus.PreVerified"/>
     /// </summary>
     NoVerifiedGames = 1 << 2,
 
     /// <summary>
-    /// Match does not contain an odd number of verified <see cref="Entities.Game"/>s
-    /// (e.g. does not satisfy "best of X")
+    /// The <see cref="Entities.Match"/>'s number of <see cref="Entities.Match.Games"/> with a <see cref="VerificationStatus"/>
+    /// of <see cref="VerificationStatus.Verified"/> or <see cref="VerificationStatus.PreVerified"/> is not an odd number
+    /// (does not satisfy "best of X")
     /// </summary>
-    UnexpectedGameCount = 1 << 3
+    UnexpectedGameCount = 1 << 3,
+
+    /// <summary>
+    /// The <see cref="Entities.Match"/>'s <see cref="Entities.Match.EndTime"/> could not be determined
+    /// </summary>
+    NoEndTime = 1 << 4
 }

@@ -1,27 +1,28 @@
 namespace Database.Enums.Verification;
 
 /// <summary>
-/// The reason why a score is rejected
+/// The reason why a <see cref="Entities.GameScore"/> is rejected
 /// </summary>
+[Flags]
 public enum ScoreRejectionReason
 {
     /// <summary>
-    /// The score is not rejected
+    /// The <see cref="Entities.GameScore"/> is not rejected
     /// </summary>
     None = 0,
 
     /// <summary>
-    /// The score is below the minimum threshold for verification
+    /// The <see cref="Entities.GameScore"/>'s <see cref="Entities.GameScore.Score"/> is below the minimum threshold
     /// </summary>
     ScoreBelowMinimum = 1 << 0,
 
     /// <summary>
-    /// The score has invalid mods applied
+    /// The <see cref="Entities.GameScore"/> was set with any <see cref="Mods.InvalidMods"/>
     /// </summary>
     InvalidMods = 1 << 1,
 
     /// <summary>
-    /// The ruleset of the score does not match the tournament's ruleset
+    /// The <see cref="Entities.GameScore"/>'s <see cref="Ruleset"/> does not match that of the parent <see cref="Entities.Tournament"/>
     /// </summary>
     RulesetMismatch = 1 << 2
 }

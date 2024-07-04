@@ -26,7 +26,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     /// SQL formatted date to be used as a placeholder for date columns
     /// </summary>
     /// <remarks>This is the (approx) creation date of osu! :D</remarks>
-    private const string SqlPlaceholderDate = "'2007-09-17T00:00:00'::timestamp";
+    public const string SqlPlaceholderDate = "'2007-09-17T00:00:00'::timestamp";
 
     public virtual DbSet<Beatmap> Beatmaps { get; set; }
     public virtual DbSet<Game> Games { get; set; }

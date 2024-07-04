@@ -1,49 +1,64 @@
 namespace Database.Enums.Verification;
 
 /// <summary>
-/// The reason why a tournament is rejected
+/// The reason why a <see cref="Entities.Tournament"/> is rejected
 /// </summary>
 [Flags]
 public enum TournamentRejectionReason
 {
     /// <summary>
-    /// The tournament is not rejected
+    /// The <see cref="Entities.Tournament"/> is not rejected
     /// </summary>
     None = 0,
 
     /// <summary>
-    /// The tournament has no 'Verified' or 'PreVerified' matches
+    /// The <see cref="Entities.Tournament"/> has no <see cref="Entities.Tournament.Matches"/> with a
+    /// <see cref="VerificationStatus"/> of <see cref="VerificationStatus.Verified"/> or <see cref="VerificationStatus.PreVerified"/>
     /// </summary>
     NoVerifiedMatches = 1 << 0,
 
     /// <summary>
-    /// The tournament has &lt;80% of matches marked as 'Verified' or 'PreVerified'
+    /// The <see cref="Entities.Tournament"/>'s number of <see cref="Entities.Tournament.Matches"/> with a
+    /// <see cref="VerificationStatus"/> of <see cref="VerificationStatus.Verified"/> or
+    /// <see cref="VerificationStatus.PreVerified"/> is below 80% of the total
     /// </summary>
     NotEnoughVerifiedMatches = 1 << 1,
 
     /// <summary>
-    /// Tournament's win condition is not 'ScoreV2'.
-    /// Covers cases such as gimmicky win conditions, mixed win conditions, etc.
+    /// The <see cref="Entities.Tournament"/>'s win condition is not <see cref="ScoringType.ScoreV2"/>
     /// </summary>
+    /// <remarks>
+    /// Only assigned via a "rejected submission". <br/>
+    /// Covers cases such as gimmicky win conditions, mixed win conditions, etc
+    /// </remarks>
     AbnormalWinCondition = 1 << 2,
 
     /// <summary>
-    /// Tournament's format is not suitable for ratings.
-    /// Covers cases such as excessive gimmicks, relax, multiple modes, etc.
+    /// The <see cref="Entities.Tournament"/>'s format is not suitable for ratings
     /// </summary>
+    /// <remarks>
+    /// Only assigned via a "rejected submission". <br/>
+    /// Covers cases such as excessive gimmicks, relax, multiple modes, etc
+    /// </remarks>
     AbnormalFormat = 1 << 3,
 
     /// <summary>
-    /// Tournament's team sizes are not consistent.
-    /// Covers cases such as >2 teams in lobby, team size gimmicks,
-    /// and varying team sizes.
+    /// The <see cref="Entities.Tournament"/>'s team sizes are not consistent.
     /// </summary>
+    /// <remarks>
+    /// Only assigned via a "rejected submission". <br/>
+    /// Covers cases such as &gt; 2 teams in lobby at once, async lobbies, team size gimmicks, varying team sizes, etc
+    /// </remarks>
     VaryingTeamSize = 1 << 4,
 
     /// <summary>
-    /// Tournament's match data is incomplete or not recoverable.
+    /// The <see cref="Entities.Tournament"/>'s data is incomplete or not recoverable
     /// Covers cases where match links are lost to time, private,
     /// main sheet is deleted, missing rounds, etc.
     /// </summary>
+    /// <remarks>
+    /// Only assigned via a "rejected submission". <br/>
+    /// Covers cases where match links are lost to time / dead / private, main sheet is deleted, missing rounds, etc
+    /// </remarks>
     IncompleteData = 1 << 5
 }

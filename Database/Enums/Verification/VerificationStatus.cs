@@ -2,34 +2,32 @@ namespace Database.Enums.Verification;
 
 /// <summary>
 /// The verification status of a <see cref="Entities.Tournament"/>,
-/// <see cref="Entities.Match"/>, or <see cref="Entities.Game"/>
+/// <see cref="Entities.Match"/>, <see cref="Entities.Game"/>, or <see cref="Entities.GameScore"/>
 /// </summary>
 public enum VerificationStatus
 {
     /// <summary>
-    /// Has not been assigned a verification status,
-    /// is awaiting processing
+    /// Verification status has not yet been assigned
     /// </summary>
     None = 0,
 
     /// <summary>
-    /// Does not pass all automation checks, ready for human review
+    /// The Data Worker has identified an issue during processing
     /// </summary>
     PreRejected = 1,
 
     /// <summary>
-    /// Passes all automation checks, ready for human review
+    /// The Data Worker has not identified any issues during processing
     /// </summary>
     PreVerified = 2,
 
     /// <summary>
-    /// Determined to be invalid by automation checks or manual review
+    /// Determined to be unfit for ratings by manual review
     /// </summary>
-    /// <remarks>Some automation checks will result in a concrete rejection upon failing them</remarks>
     Rejected = 3,
 
     /// <summary>
-    /// Passed manual review. Data is fit for rating calculations
+    /// Determined to be fit for ratings by manual review
     /// </summary>
     Verified = 4
 }

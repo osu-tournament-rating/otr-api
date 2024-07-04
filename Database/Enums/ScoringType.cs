@@ -1,7 +1,7 @@
 namespace Database.Enums;
 
 /// <summary>
-/// Represents the scoring method (win condition) used for a game
+/// Represents the scoring method (win condition) for a <see cref="Entities.Game"/>
 /// </summary>
 public enum ScoringType
 {

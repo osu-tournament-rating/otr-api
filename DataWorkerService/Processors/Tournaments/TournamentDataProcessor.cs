@@ -12,7 +12,7 @@ public class TournamentDataProcessor(
     IMatchProcessorResolver matchProcessorResolver
 ) : ProcessorBase<Tournament>(logger)
 {
-    public override async Task OnProcessingAsync(Tournament entity, CancellationToken cancellationToken)
+    protected override async Task OnProcessingAsync(Tournament entity, CancellationToken cancellationToken)
     {
         if (entity.ProcessingStatus is not TournamentProcessingStatus.NeedsData)
         {

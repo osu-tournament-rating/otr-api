@@ -1,7 +1,7 @@
 namespace Database.Enums;
 
 /// <summary>
-/// Represents the team a given player was on for a game
+/// Represents the team a <see cref="Entities.Player"/> was on when a <see cref="Entities.GameScore"/> was set
 /// </summary>
 public enum Team
 {

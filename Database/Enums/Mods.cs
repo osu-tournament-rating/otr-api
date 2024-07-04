@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Database.Enums;
 
 /// <summary>
-/// Represents score multiplier values for certain <see cref="Mods"/>
+/// Score multiplier values for any applicable <see cref="Mods"/>
 /// </summary>
 public struct ModScoreMultipliers
 {
@@ -271,5 +271,10 @@ public enum Mods
     /// <summary>
     /// Denotes mods that directly impose a modifier on score
     /// </summary>
-    ScoreIncreaseMods = Hidden | HardRock | DoubleTime | Flashlight | FadeIn
+    ScoreIncreaseMods = Hidden | HardRock | DoubleTime | Flashlight | FadeIn,
+
+    /// <summary>
+    /// Denotes mods that are ineligible for ratings
+    /// </summary>
+    InvalidMods = SuddenDeath | Perfect | Relax | Autoplay | SpunOut
 }
