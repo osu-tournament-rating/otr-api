@@ -32,26 +32,31 @@ public enum GameRejectionReason
     InvalidScoringType = 1 << 3,
 
     /// <summary>
-    /// The <see cref="Entities.Game"/>'s <see cref="TeamType"/> is not <see cref="TeamType.TeamVs"/>,
-    /// even after attempting <see cref="TeamType.HeadToHead"/> conversion
+    /// The <see cref="Entities.Game"/>'s <see cref="TeamType"/> is not <see cref="TeamType.TeamVs"/>
     /// </summary>
     InvalidTeamType = 1 << 4,
+
+    /// <summary>
+    /// The <see cref="Entities.Game"/>'s <see cref="TeamType"/> is not <see cref="TeamType.TeamVs"/>
+    /// and attempting <see cref="TeamType.TeamVs"/> conversion was not successful
+    /// </summary>
+    FailedTeamVsConversion = 1 << 5,
 
     /// <summary>
     /// The <see cref="Entities.Game"/>'s number of <see cref="Entities.Game.Scores"/> with a <see cref="VerificationStatus"/>
     /// of <see cref="VerificationStatus.Verified"/> or <see cref="VerificationStatus.PreVerified"/> is &lt; 2
     /// </summary>
-    NoValidScores = 1 << 5,
+    NoValidScores = 1 << 6,
 
     /// <summary>
     /// The <see cref="Entities.Game"/>'s number of <see cref="Entities.Game.Scores"/> with a <see cref="VerificationStatus"/>
     /// of <see cref="VerificationStatus.Verified"/> or <see cref="VerificationStatus.PreVerified"/> divided by 2 is
     /// not equal to the <see cref="Entities.Tournament.TeamSize"/> of the parent <see cref="Entities.Tournament"/>
     /// </summary>
-    TeamSizeMismatch = 1 << 6,
+    TeamSizeMismatch = 1 << 7,
 
     /// <summary>
     /// The <see cref="Entities.Game"/>'s <see cref="Entities.Game.EndTime"/> could not be determined
     /// </summary>
-    NoEndTime = 1 << 7
+    NoEndTime = 1 << 8
 }

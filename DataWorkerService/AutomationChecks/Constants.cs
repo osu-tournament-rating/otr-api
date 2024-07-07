@@ -18,4 +18,19 @@ public static class Constants
     /// <see cref="Database.Entities.GameScore"/> to be considered valid
     /// </summary>
     public const long ScoreMinimum = 1_000;
+
+    /// <summary>
+    /// Regex filters that define valid <see cref="Database.Entities.Match"/> <see cref="Database.Entities.Match.Name"/>
+    /// conventions
+    /// </summary>
+    public static readonly List<string> MatchNamePatterns = [@"^[^\n\r]*(\(.+\)\s*vs\.?\s*\(.+\)).*$"];
+
+    /// <summary>
+    /// Percentage threshold (0.0 to 1.0) that a <see cref="Database.Entities.Tournament"/>'s
+    /// <see cref="Database.Entities.Tournament.Matches"/> having a
+    /// <see cref="Database.Enums.Verification.VerificationStatus"/> of
+    /// <see cref="Database.Enums.Verification.VerificationStatus.PreVerified"/> or
+    /// <see cref="Database.Enums.Verification.VerificationStatus.Verified"/> must meet or exceed to be considered valid
+    /// </summary>
+    public const double TournamentVerifiedMatchesPercentageThreshold = 0.8;
 }

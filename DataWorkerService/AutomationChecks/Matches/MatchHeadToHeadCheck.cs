@@ -5,24 +5,42 @@ using Database.Enums.Verification;
 namespace DataWorkerService.AutomationChecks.Matches;
 
 /// <summary>
-/// Checks (and attempts to fix) <see cref="Match"/>es where all <see cref="Game"/>s were played with a
+/// Checks (and attempts to fix) <see cref="Match"/>es played in a <see cref="Tournament"/> with a
+/// <see cref="Tournament.TeamSize"/> of 1 where all <see cref="Match.Games"/> were played with a
 /// <see cref="Database.Enums.TeamType"/> of <see cref="Database.Enums.TeamType.HeadToHead"/>
 /// instead of <see cref="Database.Enums.TeamType.TeamVs"/>
 /// </summary>
+/// <remarks>
+/// Functionally this automation check attempts to programatically correct 1v1 Tournament games where the match was
+/// mistakenly set to HeadToHead instead of TeamVs by assigning a team to both players
+/// </remarks>
 public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : AutomationCheckBase<Match>(logger)
 {
     public override int Order => 1;
 
     protected override bool OnChecking(Match entity)
     {
-        if (
-            !entity.Games.Any(g => g.VerificationStatus is VerificationStatus.PreRejected)
-            || !entity.Games
-                .Where(g => g.VerificationStatus is VerificationStatus.PreRejected)
-                .All(g => g.RejectionReason is GameRejectionReason.InvalidTeamType && g.Scores.Count == 2)
-            || entity.Tournament.TeamSize != 1
-            )
+        if (entity.Games.Count == 0)
         {
+            logger.LogDebug("Match has no games");
+            return true;
+        }
+
+        if (entity.Tournament.TeamSize != 1)
+        {
+            logger.LogDebug("Match's tournament team size is not 1 [Team size: {TeamSize}]", entity.Tournament.TeamSize);
+            return true;
+        }
+
+        if (!entity.Games.All(g =>
+                g.VerificationStatus is VerificationStatus.PreRejected
+                && g.RejectionReason is GameRejectionReason.InvalidTeamType
+                && g.TeamType is TeamType.HeadToHead
+                && g.Scores.Count == 2
+            )
+        )
+        {
+            logger.LogDebug("Match's games are not eligible for TeamVs conversion");
             return true;
         }
 
@@ -32,19 +50,26 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
             .Where(g => g.VerificationStatus is VerificationStatus.PreRejected)
             .ToList();
 
-        if (preRejectedGames.Any(g => g.Scores.Count != 2))
-        {
-            return false;
-        }
-
         // Decide which players are Red and Blue
         Game firstGame = preRejectedGames.First();
 
         var bluePlayerOsuId = firstGame.Scores.ElementAt(0).Player.OsuId;
         var redPlayerOsuId = firstGame.Scores.ElementAt(1).Player.OsuId;
 
-        if (preRejectedGames.Any(g => g.Scores.Any(s => s.Player.OsuId != redPlayerOsuId || s.Player.OsuId != bluePlayerOsuId)))
+        if (preRejectedGames.Any(g => g.Scores.Any(s => s.Player.OsuId != redPlayerOsuId && s.Player.OsuId != bluePlayerOsuId)))
         {
+            logger.LogInformation(
+                "Match's participants contain more than two unique osu! ids, aborting TeamVs conversion [Id: {Id}]",
+                entity.Id
+            );
+
+            entity.RejectionReason |= MatchRejectionReason.FailedTeamVsConversion;
+
+            foreach (Game game in preRejectedGames)
+            {
+                game.RejectionReason |= GameRejectionReason.FailedTeamVsConversion;
+            }
+
             return false;
         }
 
@@ -59,6 +84,8 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
 
             game.TeamType = TeamType.TeamVs;
         }
+
+        logger.LogInformation("Successfully converted HeadToHead games to TeamVs [Id: {Id}]", entity.Id);
 
         return true;
     }

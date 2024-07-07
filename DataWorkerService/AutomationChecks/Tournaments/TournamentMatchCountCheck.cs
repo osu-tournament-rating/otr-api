@@ -10,8 +10,6 @@ public class TournamentMatchCountCheck(
     ILogger<TournamentMatchCountCheck> logger
 ) : AutomationCheckBase<Tournament>(logger)
 {
-    public const double ValidMatchesPercentageThreshold = 0.8;
-
     protected override bool OnChecking(Tournament entity)
     {
         var validMatchesCount = entity.Matches.Count(m =>
@@ -25,7 +23,7 @@ public class TournamentMatchCountCheck(
         }
 
         // Number of valid matches is above the threshold
-        if (validMatchesCount / (double)entity.Matches.Count >= ValidMatchesPercentageThreshold)
+        if (validMatchesCount / (double)entity.Matches.Count >= Constants.TournamentVerifiedMatchesPercentageThreshold)
         {
             return true;
         }

@@ -12,18 +12,25 @@ public class MatchGameCountCheck(ILogger<MatchGameCountCheck> logger) : Automati
 
     protected override bool OnChecking(Match entity)
     {
+        // Match has no games at all
+        if (entity.Games.Count == 0)
+        {
+            entity.RejectionReason |= MatchRejectionReason.NoGames;
+            return false;
+        }
+
         var validGamesCount = entity.Games
             .Count(g => g.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified);
 
         // Match has no valid games
         if (validGamesCount == 0)
         {
-            entity.RejectionReason |= MatchRejectionReason.NoVerifiedGames;
+            entity.RejectionReason |= MatchRejectionReason.NoValidGames;
             return false;
         }
 
         // Number of games satisfies a "best of X" situation
-        if (validGamesCount % 2 == 0)
+        if (int.IsOddInteger(validGamesCount))
         {
             return true;
         }
