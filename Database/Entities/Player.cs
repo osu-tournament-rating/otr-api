@@ -93,5 +93,10 @@ public class Player : UpdateableEntityBase
     /// <summary>
     /// A collection of <see cref="PlayerMatchStats"/> generated for the <see cref="Player"/>
     /// </summary>
-    public IEnumerable<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();
+    public ICollection<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();
+
+    /// <summary>
+    /// A collection of <see cref="PlayerTournamentStats"/> generated for the <see cref="Player"/>
+    /// </summary>
+    public ICollection<PlayerTournamentStats> TournamentStats { get; set; } = new List<PlayerTournamentStats>();
 }

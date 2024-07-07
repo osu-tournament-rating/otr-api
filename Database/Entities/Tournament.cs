@@ -16,40 +16,40 @@ namespace Database.Entities;
 public class Tournament : UpdateableEntityBase, IProcessableEntity
 {
     /// <summary>
-    /// Name of the tournament
+    /// Name
     /// </summary>
     [MaxLength(512)]
     [Column("name")]
     public string Name { get; set; } = null!;
 
     /// <summary>
-    /// Abbreviation of the tournament
+    /// Abbreviation
     /// </summary>
     [MaxLength(32)]
     [Column("abbreviation")]
     public string Abbreviation { get; set; } = null!;
 
     /// <summary>
-    /// Link to the forum post for the tournament
+    /// Link to the osu! forum post
     /// </summary>
     [MaxLength(255)]
     [Column("forum_url")]
     public string ForumUrl { get; set; } = null!;
 
     /// <summary>
-    /// Lower bound of the rank range for the tournament
+    /// Lower bound of the rank range
     /// </summary>
     [Column("rank_range_lower_bound")]
     public int RankRangeLowerBound { get; set; }
 
     /// <summary>
-    /// Ruleset the tournament was played in
+    /// The <see cref="Ruleset"/> the tournament was played in
     /// </summary>
     [Column("ruleset")]
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// Expected in-game team size for the tournament
+    /// Expected in-game team size
     /// </summary>
     [Column("team_size")]
     public int TeamSize { get; set; }
@@ -76,7 +76,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity
     public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
-    /// Id of the user that submitted the tournament
+    /// Id of the <see cref="User"/> that submitted the tournament
     /// </summary>
     [Column("submitted_by_user_id")]
     public int? SubmittedByUserId { get; set; }
@@ -87,7 +87,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity
     public User? SubmittedByUser { get; set; }
 
     /// <summary>
-    /// Id of the user that verified the tournament
+    /// Id of the <see cref="User"/> that verified the tournament
     /// </summary>
     [Column("verified_by_user_id")]
     public int? VerifiedByUserId { get; set; }
@@ -101,4 +101,9 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity
     /// A collection of <see cref="Match"/>es played in the tournament
     /// </summary>
     public ICollection<Match> Matches { get; set; } = new List<Match>();
+
+    /// <summary>
+    /// A collection of <see cref="Entities.PlayerTournamentStats"/>, one for each <see cref="Player"/> that participated
+    /// </summary>
+    public ICollection<PlayerTournamentStats> PlayerTournamentStats { get; set; } = new List<PlayerTournamentStats>();
 }

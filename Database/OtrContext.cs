@@ -26,7 +26,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     /// SQL formatted date to be used as a placeholder for date columns
     /// </summary>
     /// <remarks>This is the (approx) creation date of osu! :D</remarks>
-    public const string SqlPlaceholderDate = "'2007-09-17T00:00:00'::timestamp";
+    private const string SqlPlaceholderDate = "'2007-09-17T00:00:00'::timestamp";
 
     public virtual DbSet<Beatmap> Beatmaps { get; set; }
     public virtual DbSet<Game> Games { get; set; }
@@ -39,6 +39,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     public virtual DbSet<OAuthClient> OAuthClients { get; set; }
     public virtual DbSet<Player> Players { get; set; }
     public virtual DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
+    public virtual DbSet<PlayerTournamentStats> PlayerTournamentStats { get; set; }
     public virtual DbSet<PlayerRating> PlayerRatings { get; set; }
     public virtual DbSet<Tournament> Tournaments { get; set; }
     public virtual DbSet<User> Users { get; set; }
@@ -347,6 +348,13 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(ms => ms.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: TournamentStats
+            entity
+                .HasMany(p => p.TournamentStats)
+                .WithOne(pts => pts.Player)
+                .HasForeignKey(pts => pts.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity.HasIndex(x => x.OsuId).IsUnique();
         });
 
@@ -373,6 +381,29 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.HasIndex(pms => pms.PlayerId);
             entity.HasIndex(pms => new { pms.PlayerId, pms.Won });
             entity.HasIndex(pms => new { pms.PlayerId, pms.MatchId }).IsUnique();
+        });
+
+        modelBuilder.Entity<PlayerTournamentStats>(entity =>
+        {
+            entity.Property(pts => pts.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(pts => pts.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Player
+            entity
+                .HasOne(pts => pts.Player)
+                .WithMany(p => p.TournamentStats)
+                .HasForeignKey(pts => pts.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: Tournament
+            entity
+                .HasOne(pts => pts.Tournament)
+                .WithMany(t => t.PlayerTournamentStats)
+                .HasForeignKey(pts => pts.TournamentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(pts => new { pts.PlayerId, pts.TournamentId }).IsUnique();
         });
 
         modelBuilder.Entity<PlayerRating>(entity =>
@@ -452,6 +483,13 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasMany(t => t.Matches)
                 .WithOne(m => m.Tournament)
                 .HasForeignKey(m => m.TournamentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: PlayerTournamentStats
+            entity
+                .HasMany(t => t.PlayerTournamentStats)
+                .WithOne(pts => pts.Tournament)
+                .HasForeignKey(pts => pts.TournamentId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(t => t.Ruleset);
