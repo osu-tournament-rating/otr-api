@@ -31,10 +31,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Processors\Games\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Compile Remove="logs\**" />
     </ItemGroup>
 

@@ -1,16 +1,18 @@
 using Database.Entities;
 using Database.Enums.Verification;
+using DataWorkerService.AutomationChecks;
 
 namespace DataWorkerService.Processors.Scores;
 
 /// <summary>
-/// Processor tasked with fetching data from outside sources for a <see cref="Tournament"/>
+/// Processor tasked with running <see cref="AutomationChecks.IAutomationCheck"/>s against a <see cref="GameScore"/>
 /// </summary>
 public class ScoreAutomationChecksProcessor(
-    ILogger<ScoreAutomationChecksProcessor> logger
+    ILogger<ScoreAutomationChecksProcessor> logger,
+    IEnumerable<IAutomationCheck<GameScore>> scoreAutomationChecks
 ) : ProcessorBase<GameScore>(logger)
 {
-    protected override async Task OnProcessingAsync(GameScore entity, CancellationToken cancellationToken)
+    protected override Task OnProcessingAsync(GameScore entity, CancellationToken cancellationToken)
     {
         if (entity.ProcessingStatus is not ScoreProcessingStatus.NeedsAutomationChecks)
         {
@@ -20,9 +22,20 @@ public class ScoreAutomationChecksProcessor(
                 entity.ProcessingStatus
             );
 
-            return;
+            return Task.CompletedTask;
         }
 
+        foreach (IAutomationCheck<GameScore> automationCheck in scoreAutomationChecks.OrderBy(ac => ac.Order))
+        {
+            automationCheck.Check(entity);
+        }
 
+        entity.VerificationStatus = entity.RejectionReason is ScoreRejectionReason.None
+            ? VerificationStatus.PreVerified
+            : VerificationStatus.PreRejected;
+
+        entity.ProcessingStatus += 1;
+
+        return Task.CompletedTask;
     }
 }

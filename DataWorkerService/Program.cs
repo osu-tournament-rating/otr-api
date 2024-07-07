@@ -2,13 +2,20 @@ using Database;
 using Database.Entities;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
+using DataWorkerService.AutomationChecks;
+using DataWorkerService.AutomationChecks.Games;
+using DataWorkerService.AutomationChecks.Matches;
+using DataWorkerService.AutomationChecks.Scores;
+using DataWorkerService.AutomationChecks.Tournaments;
 using DataWorkerService.BackgroundServices;
 using DataWorkerService.Configurations;
 using DataWorkerService.Extensions;
 using DataWorkerService.Processors;
+using DataWorkerService.Processors.Games;
 using DataWorkerService.Processors.Matches;
 using DataWorkerService.Processors.Resolvers.Implementations;
 using DataWorkerService.Processors.Resolvers.Interfaces;
+using DataWorkerService.Processors.Scores;
 using DataWorkerService.Processors.Tournaments;
 using DataWorkerService.Services.Implementations;
 using DataWorkerService.Services.Interfaces;
@@ -118,15 +125,45 @@ builder.Services.AddScoped<IOsuApiDataParserService, OsuApiDataParserService>();
 
 #endregion
 
-# region Processors
+#region Automation Checks
 
-builder.Services.AddScoped<ITournamentProcessorResolver, TournamentProcessorResolver>();
-builder.Services.AddScoped<IProcessor<Tournament>, TournamentDataProcessor>();
+builder.Services.AddSingleton<IAutomationCheck<GameScore>, ScoreMinimumCheck>();
+builder.Services.AddSingleton<IAutomationCheck<GameScore>, ScoreModCheck>();
+builder.Services.AddSingleton<IAutomationCheck<GameScore>, ScoreRulesetCheck>();
+
+builder.Services.AddSingleton<IAutomationCheck<Game>, GameEndTimeCheck>();
+builder.Services.AddSingleton<IAutomationCheck<Game>, GameModCheck>();
+builder.Services.AddSingleton<IAutomationCheck<Game>, GameRulesetCheck>();
+builder.Services.AddSingleton<IAutomationCheck<Game>, GameScoreCountCheck>();
+builder.Services.AddSingleton<IAutomationCheck<Game>, GameScoringTypeCheck>();
+builder.Services.AddSingleton<IAutomationCheck<Game>, GameTeamTypeCheck>();
+
+builder.Services.AddSingleton<IAutomationCheck<Match>, MatchEndTimeCheck>();
+builder.Services.AddSingleton<IAutomationCheck<Match>, MatchGameCountCheck>();
+builder.Services.AddSingleton<IAutomationCheck<Match>, MatchHeadToHeadCheck>();
+builder.Services.AddSingleton<IAutomationCheck<Match>, MatchNameCheck>();
+
+builder.Services.AddSingleton<IAutomationCheck<Tournament>, TournamentMatchCountCheck>();
+
+#endregion
+
+#region Processors
+
+builder.Services.AddScoped<IScoreProcessorResolver, ScoreProcessorResolver>();
+builder.Services.AddScoped<IProcessor<GameScore>, ScoreAutomationChecksProcessor>();
+
+builder.Services.AddScoped<IGameProcessorResolver, GameProcessorResolver>();
+builder.Services.AddScoped<IProcessor<Game>, GameAutomationChecksProcessor>();
 
 builder.Services.AddScoped<IMatchProcessorResolver, MatchProcessorResolver>();
 builder.Services.AddScoped<IProcessor<Match>, MatchDataProcessor>();
+builder.Services.AddScoped<IProcessor<Match>, MatchAutomationChecksProcessor>();
 
-# endregion
+builder.Services.AddScoped<ITournamentProcessorResolver, TournamentProcessorResolver>();
+builder.Services.AddScoped<IProcessor<Tournament>, TournamentDataProcessor>();
+builder.Services.AddScoped<IProcessor<Tournament>, TournamentAutomationChecksProcessor>();
+
+#endregion
 
 # region Background Services
 
