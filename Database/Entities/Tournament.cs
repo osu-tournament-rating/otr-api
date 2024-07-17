@@ -13,7 +13,7 @@ namespace Database.Entities;
 [Table("tournaments")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Tournament : UpdateableEntityBase, IProcessableEntity
+public class Tournament : UpdateableEntityBase, IProcessableEntity, IAuditableEntity<TournamentAudit>
 {
     /// <summary>
     /// Name
@@ -106,4 +106,6 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity
     /// A collection of <see cref="Entities.PlayerTournamentStats"/>, one for each <see cref="Player"/> that participated
     /// </summary>
     public ICollection<PlayerTournamentStats> PlayerTournamentStats { get; set; } = new List<PlayerTournamentStats>();
+
+    public ICollection<TournamentAudit> Audits { get; set; } = new List<TournamentAudit>();
 }

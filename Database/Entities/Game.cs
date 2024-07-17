@@ -12,7 +12,7 @@ namespace Database.Entities;
 [Table("games")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Game : UpdateableEntityBase, IProcessableEntity
+public class Game : UpdateableEntityBase, IProcessableEntity, IAuditableEntity<GameAudit>
 {
     /// <summary>
     /// osu! id
@@ -114,6 +114,8 @@ public class Game : UpdateableEntityBase, IProcessableEntity
     /// A collection of <see cref="GameScore"/>s set in the <see cref="Game"/>
     /// </summary>
     public ICollection<GameScore> Scores { get; set; } = new List<GameScore>();
+
+    public ICollection<GameAudit> Audits { get; set; } = new List<GameAudit>();
 
     /// <summary>
     /// Denotes if the mod setting was "free mod"
