@@ -18,7 +18,7 @@ public static class SeededScore
     /// <remarks>Any properties not given will be randomized</remarks>
     public static GameScore Generate(
         int? id = null,
-        long? score = null,
+        int? score = null,
         int? maxCombo = null,
         int? count50 = null,
         int? count100 = null,
@@ -58,7 +58,7 @@ public static class SeededScore
             Player = seededPlayer
         };
 
-        seededScore.Score = score ?? s_rand.NextInt64(Convert.ToInt64(1_000_000 * ModScoreMultipliers.Get(seededScore.Mods)));
+        seededScore.Score = score ?? s_rand.NextInclusive(Convert.ToInt32(1_000_000 * ModScoreMultipliers.Get(seededScore.Mods)));
 
         seededScore.MaxCombo = maxCombo ?? s_rand.NextInclusive(seededScore.Game.Beatmap?.MaxCombo ?? SeededBeatmap.MaxComboMax);
         seededScore.Count300 = count300 ?? s_rand.NextInclusive(seededScore.MaxCombo);

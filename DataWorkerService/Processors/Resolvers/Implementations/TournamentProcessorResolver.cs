@@ -15,4 +15,8 @@ public class TournamentProcessorResolver(
     public override IProcessor<Tournament> GetAutomationChecksProcessor() =>
         Processors.FirstOrDefault(p => p is TournamentAutomationChecksProcessor)
         ?? throw new InvalidOperationException($"Processor was not registered: {nameof(TournamentAutomationChecksProcessor)}");
+
+    public IProcessor<Tournament> GetStatsProcessor() =>
+        Processors.FirstOrDefault(p => p is TournamentStatsProcessor)
+        ?? throw new InvalidOperationException($"Processor was not registered: {nameof(TournamentStatsProcessor)}");
 }

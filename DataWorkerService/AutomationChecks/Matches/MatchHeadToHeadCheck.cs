@@ -83,6 +83,7 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
             redScore.Team = Team.Red;
 
             game.TeamType = TeamType.TeamVs;
+            game.RejectionReason = GameRejectionReason.None;
         }
 
         logger.LogInformation("Successfully converted HeadToHead games to TeamVs [Id: {Id}]", entity.Id);

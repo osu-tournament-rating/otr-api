@@ -9,8 +9,5 @@ public class GameScoreDTO
     public long Score { get; set; }
     public Mods Mods { get; set; }
     public int Misses { get; set; }
-    public double AccuracyStandard { get; set; }
-    public double AccuracyTaiko { get; set; }
-    public double AccuracyCatch { get; set; }
-    public double AccuracyMania { get; set; }
+    public double Accuracy { get; set; }
 }

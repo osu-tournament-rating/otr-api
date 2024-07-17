@@ -18,7 +18,13 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IScoreStatist
     /// Total score
     /// </summary>
     [Column("score")]
-    public long Score { get; set; }
+    public int Score { get; set; }
+
+    /// <summary>
+    /// Placement of the <see cref="Score"/> in the <see cref="Game"/> compared to all <see cref="Entities.Player"/>'s <see cref="Score"/>
+    /// </summary>
+    [Column("placement")]
+    public int Placement { get; set; }
 
     /// <summary>
     /// Max combo obtained
@@ -165,4 +171,10 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IScoreStatist
             }
         }
     }
+
+    /// <summary>
+    /// Normalized <see cref="Score"/>
+    /// </summary>
+    [NotMapped]
+    public int NormalizedScore => (int)(Score / ModScoreMultipliers.Get(Mods));
 }

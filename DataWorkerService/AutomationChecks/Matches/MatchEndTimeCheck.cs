@@ -1,6 +1,6 @@
 using Database.Entities;
 using Database.Enums.Verification;
-using DataWorkerService.Extensions;
+using DataWorkerService.Utilities.Extensions;
 
 namespace DataWorkerService.AutomationChecks.Matches;
 

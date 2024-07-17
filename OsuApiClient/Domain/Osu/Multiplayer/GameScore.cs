@@ -71,7 +71,7 @@ public class GameScore : IModel
     /// <summary>
     /// Score
     /// </summary>
-    public long Score { get; init; }
+    public int Score { get; init; }
 
     /// <summary>
     /// Statistics (accuracy values)

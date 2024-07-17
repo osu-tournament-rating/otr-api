@@ -19,7 +19,7 @@ public enum TournamentProcessingStatus
     /// The <see cref="Entities.Tournament"/> has <see cref="Entities.Match"/>es with a
     /// <see cref="MatchProcessingStatus"/> of <see cref="MatchProcessingStatus.NeedsData"/>
     /// </summary>
-    NeedsData = 1,
+    NeedsMatchData = 1,
 
     /// <summary>
     /// The <see cref="Entities.Tournament"/> needs automation checks

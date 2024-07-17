@@ -17,7 +17,7 @@ public static class Constants
     /// Lowest (non-inclusive) <see cref="Database.Entities.GameScore.Score"/> for a
     /// <see cref="Database.Entities.GameScore"/> to be considered valid
     /// </summary>
-    public const long ScoreMinimum = 1_000;
+    public const int ScoreMinimum = 1_000;
 
     /// <summary>
     /// Regex filters that define valid <see cref="Database.Entities.Match"/> <see cref="Database.Entities.Match.Name"/>

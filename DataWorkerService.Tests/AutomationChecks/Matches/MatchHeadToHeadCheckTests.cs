@@ -84,7 +84,7 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
             {
                 // Set differing player osu! ids to ensure the check fails later
                 // This test is only meant to test the eligibility constraints
-                SeededScore.Generate(game: game, player: SeededPlayer.Generate(osuId: idx));
+                SeededScore.Generate(player: SeededPlayer.Generate(osuId: idx), game: game);
             }
         }
 
@@ -110,8 +110,8 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
             rejectionReason: GameRejectionReason.InvalidTeamType,
             match: match
         );
-        SeededScore.Generate(game: gameOne, player: SeededPlayer.Generate(osuId: 1));
-        SeededScore.Generate(game: gameOne, player: SeededPlayer.Generate(osuId: 2));
+        SeededScore.Generate(player: SeededPlayer.Generate(osuId: 1), game: gameOne);
+        SeededScore.Generate(player: SeededPlayer.Generate(osuId: 2), game: gameOne);
 
         Game gameTwo = SeededGame.Generate(
             teamType: TeamType.HeadToHead,
@@ -119,8 +119,8 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
             rejectionReason: GameRejectionReason.InvalidTeamType,
             match: match
         );
-        SeededScore.Generate(game: gameTwo, player: SeededPlayer.Generate(osuId: 1));
-        SeededScore.Generate(game: gameTwo, player: SeededPlayer.Generate(osuId: 3));
+        SeededScore.Generate(player: SeededPlayer.Generate(osuId: 1), game: gameTwo);
+        SeededScore.Generate(player: SeededPlayer.Generate(osuId: 3), game: gameTwo);
 
         // Act
         var actualPass = AutomationCheck.Check(match);
@@ -145,8 +145,8 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
             rejectionReason: GameRejectionReason.InvalidTeamType,
             match: match
         );
-        SeededScore.Generate(team: Team.NoTeam, game: gameOne, player: SeededPlayer.Generate(osuId: 1));
-        SeededScore.Generate(team: Team.NoTeam, game: gameOne, player: SeededPlayer.Generate(osuId: 2));
+        SeededScore.Generate(team: Team.NoTeam, player: SeededPlayer.Generate(osuId: 1), game: gameOne);
+        SeededScore.Generate(team: Team.NoTeam, player: SeededPlayer.Generate(osuId: 2), game: gameOne);
 
         Game gameTwo = SeededGame.Generate(
             teamType: TeamType.HeadToHead,
@@ -154,8 +154,8 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
             rejectionReason: GameRejectionReason.InvalidTeamType,
             match: match
         );
-        SeededScore.Generate(team: Team.NoTeam, game: gameTwo, player: SeededPlayer.Generate(osuId: 1));
-        SeededScore.Generate(team: Team.NoTeam, game: gameTwo, player: SeededPlayer.Generate(osuId: 2));
+        SeededScore.Generate(team: Team.NoTeam, player: SeededPlayer.Generate(osuId: 1), game: gameTwo);
+        SeededScore.Generate(team: Team.NoTeam, player: SeededPlayer.Generate(osuId: 2), game: gameTwo);
 
         // Act
         var actualPass = AutomationCheck.Check(match);

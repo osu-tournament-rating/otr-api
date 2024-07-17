@@ -1,4 +1,4 @@
-namespace DataWorkerService.Extensions;
+namespace DataWorkerService.Utilities.Extensions;
 
 public static class DateExtensions
 {

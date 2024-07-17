@@ -1,5 +1,7 @@
 namespace Database.Enums.Verification;
 
+// TODO: Make increment processing status static method
+
 /// <summary>
 /// The status of a <see cref="Entities.Match"/> in the processing flow
 /// </summary>

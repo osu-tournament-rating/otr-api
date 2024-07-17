@@ -14,7 +14,7 @@ public class TournamentDataProcessor(
 {
     protected override async Task OnProcessingAsync(Tournament entity, CancellationToken cancellationToken)
     {
-        if (entity.ProcessingStatus is not TournamentProcessingStatus.NeedsData)
+        if (entity.ProcessingStatus is not TournamentProcessingStatus.NeedsMatchData)
         {
             logger.LogDebug(
                 "Tournament does not require processing [Id: {Id} | Processing Status: {Status}]",

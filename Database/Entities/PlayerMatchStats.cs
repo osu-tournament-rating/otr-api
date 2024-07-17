@@ -11,10 +11,22 @@ namespace Database.Entities;
 public class PlayerMatchStats : EntityBase
 {
     /// <summary>
+    /// Match cost
+    /// </summary>
+    [Column("match_cost")]
+    public double MatchCost { get; init; }
+
+    /// <summary>
     /// Average score
     /// </summary>
     [Column("average_score")]
     public double AverageScore { get; init; }
+
+    /// <summary>
+    /// Average placement based on score
+    /// </summary>
+    [Column("average_placement")]
+    public double AveragePlacement { get; init; }
 
     /// <summary>
     /// Average miss count
@@ -27,12 +39,6 @@ public class PlayerMatchStats : EntityBase
     /// </summary>
     [Column("average_accuracy")]
     public double AverageAccuracy { get; init; }
-
-    /// <summary>
-    /// Average placement based on score
-    /// </summary>
-    [Column("average_placement")]
-    public double AveragePlacement { get; init; }
 
     /// <summary>
     /// Total number of games played

@@ -52,7 +52,7 @@ public class GameScoreJsonModel : JsonModelBase
     public bool Replay { get; set; }
 
     [JsonProperty("score")]
-    public long Score { get; set; }
+    public int Score { get; set; }
 
     [JsonProperty("statistics")]
     public GameScoreStatisticsJsonModel Statistics { get; set; } = null!;

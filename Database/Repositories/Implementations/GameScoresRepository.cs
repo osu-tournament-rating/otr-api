@@ -18,38 +18,39 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
 
     public async Task<int> AverageTeammateScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
     {
-        List<long> teammateScores = await _context
+        return (int)await _context
             .GameScores.WhereVerified()
             .After(fromTime)
             .WhereRuleset(ruleset)
             .WhereTeammate(osuPlayerId)
             .Select(ms => ms.Score)
-            .ToListAsync();
-        return (int)teammateScores.Average();
+            .AverageAsync();
     }
 
-    public async Task<int> AverageOpponentScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
+    public Task<int> AverageOpponentScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
     {
-        List<long> oppScoresHeadToHead = await _context
-            .GameScores.WhereVerified()
-            .After(fromTime)
-            .WhereRuleset(ruleset)
-            .WhereHeadToHead()
-            .WhereOpponent(osuPlayerId)
-            .Select(ms => ms.Score)
-            .ToListAsync();
-
-        List<long> oppScoresTeamVs = await _context
-            .GameScores.WhereVerified()
-            .After(fromTime)
-            .WhereRuleset(ruleset)
-            .WhereTeamVs()
-            .WhereOpponent(osuPlayerId)
-            .Select(ms => ms.Score)
-            .ToListAsync();
-
-        IEnumerable<long> oppScores = oppScoresHeadToHead.Concat(oppScoresTeamVs);
-        return (int)oppScores.Average();
+        // TODO: rewrite
+        // List<long> oppScoresHeadToHead = await _context
+        //     .GameScores.WhereVerified()
+        //     .After(fromTime)
+        //     .WhereRuleset(ruleset)
+        //     .WhereHeadToHead()
+        //     .WhereOpponent(osuPlayerId)
+        //     .Select(ms => ms.Score)
+        //     .ToListAsync();
+        //
+        // List<long> oppScoresTeamVs = await _context
+        //     .GameScores.WhereVerified()
+        //     .After(fromTime)
+        //     .WhereRuleset(ruleset)
+        //     .WhereTeamVs()
+        //     .WhereOpponent(osuPlayerId)
+        //     .Select(ms => ms.Score)
+        //     .ToListAsync();
+        //
+        // IEnumerable<long> oppScores = oppScoresHeadToHead.Concat(oppScoresTeamVs);
+        // return (int)oppScores.Average();
+        return Task.FromResult(1);
     }
 
     public async Task<int> AverageModScoreAsync(

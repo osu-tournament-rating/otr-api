@@ -16,28 +16,28 @@ public class PlayerTournamentStats : EntityBase
     public double AverageRatingDelta { get; set; }
 
     /// <summary>
-    /// Average score
-    /// </summary>
-    [Column("average_score")]
-    public int AverageScore { get; set; }
-
-    /// <summary>
-    /// Average accuracy
-    /// </summary>
-    [Column("average_accuracy")]
-    public double AverageAccuracy { get; set; }
-
-    /// <summary>
     /// Average match cost
     /// </summary>
     [Column("average_match_cost")]
     public double AverageMatchCost { get; set; }
 
     /// <summary>
+    /// Average score
+    /// </summary>
+    [Column("average_score")]
+    public int AverageScore { get; set; }
+
+    /// <summary>
     /// Average placement
     /// </summary>
     [Column("average_placement")]
     public double AveragePlacement { get; set; }
+
+    /// <summary>
+    /// Average accuracy
+    /// </summary>
+    [Column("average_accuracy")]
+    public double AverageAccuracy { get; set; }
 
     /// <summary>
     /// Total number of <see cref="Match"/>es played

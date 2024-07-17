@@ -15,7 +15,7 @@ public class ScoreMinimumCheckTests : AutomationChecksTestBase<ScoreMinimumCheck
     [InlineData(Constants.ScoreMinimum + 1, true)]
     [InlineData(124_961, true)]
     [InlineData(873_884, true)]
-    public void Check_PassesWhenExpected(long score, bool expectedPass)
+    public void Check_PassesWhenExpected(int score, bool expectedPass)
     {
         // Arrange
         GameScore gameScore = SeededScore.Generate(score: score, rejectionReason: ScoreRejectionReason.None);

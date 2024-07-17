@@ -15,4 +15,8 @@ public class MatchProcessorResolver(
     public override IProcessor<Match> GetAutomationChecksProcessor() =>
         Processors.FirstOrDefault(p => p is MatchAutomationChecksProcessor)
         ?? throw new InvalidOperationException($"Processor was not registered: {nameof(MatchAutomationChecksProcessor)}");
+
+    public IProcessor<Match> GetStatsProcessor() =>
+        Processors.FirstOrDefault(p => p is MatchStatsProcessor)
+        ?? throw new InvalidOperationException($"Processor was not registered: {nameof(MatchStatsProcessor)}");
 }

@@ -16,4 +16,15 @@ public static class EnumExtensions
             Ruleset.Mania7k => false,
             _ => true
         };
+
+    /// <summary>
+    /// Returns the opposite team
+    /// </summary>
+    public static Team OppositeTeam(this Team team) =>
+        team switch
+        {
+            Team.Blue => Team.Red,
+            Team.Red => Team.Blue,
+            _ => Team.NoTeam
+        };
 }

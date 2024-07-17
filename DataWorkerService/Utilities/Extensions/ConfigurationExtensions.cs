@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace DataWorkerService.Extensions;
+namespace DataWorkerService.Utilities.Extensions;
 
 public static class ConfigurationExtensions
 {

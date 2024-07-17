@@ -59,7 +59,7 @@ public static class SeededMatchScore
             Id = s_rand.Next(),
             GameId = gameId,
             Team = (Team)team,
-            Score = s_rand.NextInt64(),
+            Score = s_rand.Next(),
             MaxCombo = s_rand.Next() % 2000,
             Count50 = s_rand.Next() % COUNT_50_LIMIT,
             Count100 = s_rand.Next() % COUNT_100_LIMIT,
