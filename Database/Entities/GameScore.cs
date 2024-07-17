@@ -171,10 +171,4 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IScoreStatist
             }
         }
     }
-
-    /// <summary>
-    /// Normalized <see cref="Score"/>
-    /// </summary>
-    [NotMapped]
-    public int NormalizedScore => (int)(Score / ModScoreMultipliers.Get(Mods));
 }

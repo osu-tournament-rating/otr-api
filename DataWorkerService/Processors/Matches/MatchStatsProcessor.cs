@@ -97,7 +97,7 @@ public class MatchStatsProcessor(
             entity.PlayerMatchStats.Add(new PlayerMatchStats
             {
                 MatchCost = matchCosts[playerId],
-                AverageScore = playerScores.Average(s => s.NormalizedScore),
+                AverageScore = playerScores.Average(s => s.Score),
                 AveragePlacement = playerScores.Average(s => s.Placement),
                 AverageMisses = playerScores.Average(s => s.CountMiss),
                 AverageAccuracy = playerScores.Average(s => s.Accuracy),

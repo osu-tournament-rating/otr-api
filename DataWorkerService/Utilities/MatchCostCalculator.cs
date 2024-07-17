@@ -29,13 +29,13 @@ public static class MatchCostCalculator
 
         foreach (Game game in enumerableGames)
         {
-            var gameScoresAvg = game.Scores.Average(s => s.NormalizedScore);
-            var gameScoresStdev = game.Scores.Select(s => (double)s.NormalizedScore).StandardDeviation();
+            var gameScoresAvg = game.Scores.Average(s => s.Score);
+            var gameScoresStdev = game.Scores.Select(s => (double)s.Score).StandardDeviation();
 
             // Calculate z-scores
             foreach (GameScore score in game.Scores)
             {
-                zScores[score.Player.Id].Add((score.NormalizedScore - gameScoresAvg) / gameScoresStdev);
+                zScores[score.Player.Id].Add((score.Score - gameScoresAvg) / gameScoresStdev);
             }
         }
 

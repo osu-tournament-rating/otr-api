@@ -1,4 +1,5 @@
 using Database.Entities;
+using Database.Enums;
 using Database.Repositories.Interfaces;
 using DataWorkerService.Services.Interfaces;
 using OsuApiClient;
@@ -109,6 +110,15 @@ public class OsuApiDataParserService(
 
             // Create scores
             game.Scores = (await CreateScoresAsync(gameEvent.Game.Scores, apiMatch.Users)).ToList();
+
+            // Scale up scores set with EZ
+            foreach (GameScore score in game.Scores)
+            {
+                if (game.Mods.HasFlag(Mods.Easy) || score.Mods.HasFlag(Mods.Easy))
+                {
+                    score.Score = (int)(score.Score * 1.75);
+                }
+            }
 
             // Determine end time
             DateTime? endTime = DetermineGameEndTime(game, gameEvent.Game);
@@ -222,7 +232,7 @@ public class OsuApiDataParserService(
         beatmap.MapperId = apiBeatmap.Beatmapset.CreatorId ?? default;
     }
 
-    public void ParseBeatmap(Beatmap beatmap, BeatmapExtended fullApiBeatmap)
+    public static void ParseBeatmap(Beatmap beatmap, BeatmapExtended fullApiBeatmap)
     {
         ParseBeatmapPartial(beatmap, fullApiBeatmap);
 

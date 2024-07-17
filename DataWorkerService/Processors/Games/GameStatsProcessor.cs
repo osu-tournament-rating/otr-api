@@ -27,7 +27,7 @@ public class GameStatsProcessor(
         // Assign placements
         IEnumerable<GameScore> verifiedScores = entity.Scores
             .Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done })
-            .OrderByDescending(s => s.NormalizedScore)
+            .OrderByDescending(s => s.Score)
             .ToList();
 
         foreach (var placement in verifiedScores.Select((s, idx) => new { Score = s, Index = idx + 1 }))
@@ -38,7 +38,7 @@ public class GameStatsProcessor(
         IEnumerable<GameScore> blueTeamScores = verifiedScores.Where(s => s.Team is Team.Blue).ToList();
         IEnumerable<GameScore> redTeamScores = verifiedScores.Where(s => s.Team is Team.Red).ToList();
 
-        entity.WinRecord = blueTeamScores.Sum(gs => gs.NormalizedScore) > redTeamScores.Sum(gs => gs.NormalizedScore)
+        entity.WinRecord = blueTeamScores.Sum(gs => gs.Score) > redTeamScores.Sum(gs => gs.Score)
             ? GenerateWinRecord(blueTeamScores, redTeamScores)
             : GenerateWinRecord(redTeamScores, blueTeamScores);
 
@@ -61,8 +61,8 @@ public class GameStatsProcessor(
             LoserRoster = loserScores.Select(gs => gs.Player.Id).ToArray(),
             WinnerTeam = winnerScores.First().Team,
             LoserTeam = loserScores.First().Team,
-            WinnerScore = (int)winnerScores.Sum(gs => gs.NormalizedScore),
-            LoserScore = (int)loserScores.Sum(gs => gs.NormalizedScore)
+            WinnerScore = winnerScores.Sum(gs => gs.Score),
+            LoserScore = loserScores.Sum(gs => gs.Score)
         };
     }
 }
