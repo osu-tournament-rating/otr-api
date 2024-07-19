@@ -22,7 +22,7 @@ namespace API.Handlers.Implementations;
 public class OAuthHandler(
     ILogger<OAuthHandler> logger,
     IOAuthClientRepository clientRepository,
-    IApiPlayersRepository playerRepository,
+    IPlayersRepository playerRepository,
     IUserRepository userRepository,
     IOsuClient osuClient,
     IPasswordHasher<OAuthClient> clientSecretHasher,

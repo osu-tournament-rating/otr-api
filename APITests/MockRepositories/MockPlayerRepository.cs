@@ -1,10 +1,10 @@
-using API.Repositories.Interfaces;
 using Database.Entities;
+using Database.Repositories.Interfaces;
 using Moq;
 
 namespace APITests.MockRepositories;
 
-public class MockPlayerRepository : Mock<IApiPlayersRepository>
+public class MockPlayerRepository : Mock<IPlayersRepository>
 {
     public MockPlayerRepository SetupGetId()
     {

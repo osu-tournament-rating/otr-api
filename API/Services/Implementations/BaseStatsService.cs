@@ -14,7 +14,7 @@ public class BaseStatsService(
     IApiBaseStatsRepository baseStatsRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
     IMatchRatingStatsRepository ratingStatsRepository,
-    IApiPlayersRepository playerRepository,
+    IPlayersRepository playerRepository,
     ITournamentsService tournamentsService
     ) : IBaseStatsService
 {

@@ -31,9 +31,7 @@ public class MapperProfile : Profile
 
         CreateMap<RatingAdjustment, RatingAdjustmentDTO>();
 
-        CreateMap<Player, PlayerDTO>();
-        CreateMap<Player, PlayerRanksDTO>();
-        CreateMap<Player, PlayerInfoDTO>();
+        CreateMap<Player, PlayerCompactDTO>();
         CreateMap<Tournament, TournamentDTO>();
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()

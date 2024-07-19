@@ -19,10 +19,10 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
         var passed = 0;
         var failed = 0;
 
-        IEnumerable<PlayerInfoDTO> playerInfoCollection = await playerService.GetAsync(idList);
+        IEnumerable<PlayerCompactDTO> playerInfoCollection = await playerService.GetAsync(idList);
         var resultCollection = new List<PlayerScreeningResultDTO>();
 
-        foreach (PlayerInfoDTO playerInfo in playerInfoCollection)
+        foreach (PlayerCompactDTO playerInfo in playerInfoCollection)
         {
             (ScreeningResult result, ScreeningFailReason? failReason) = await ScreenAsync(screeningRequest, playerInfo);
 
@@ -57,7 +57,7 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
     }
 
     private async Task<(ScreeningResult result, ScreeningFailReason? failReason)> ScreenAsync(ScreeningRequestDTO screeningRequest,
-        PlayerInfoDTO? playerInfo)
+        PlayerCompactDTO? playerInfo)
     {
         ScreeningResult result = ScreeningResult.Fail;
         ScreeningFailReason? failReason = ScreeningFailReason.None;

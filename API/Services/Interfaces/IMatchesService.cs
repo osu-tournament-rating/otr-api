@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.DTOs.Processor;
 using Database.Enums.Verification;
 
 namespace API.Services.Interfaces;
@@ -29,9 +30,9 @@ public interface IMatchesService
     /// <param name="filterUnverified">If unverified matches should be excluded from the results</param>
     Task<PagedResultDTO<MatchDTO>> GetAsync(int limit, int page, bool filterUnverified = true);
 
-    Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId);
-
     Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true);
+
+    Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId);
 
     /// <summary>
     /// Updates the verification status of a match for the given id

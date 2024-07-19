@@ -6,12 +6,17 @@ namespace Database.Enums;
 public enum RatingAdjustmentType
 {
     /// <summary>
+    /// The <see cref="Entities.Processor.RatingAdjustment"/> is the initial rating
+    /// </summary>
+    Initial = 0,
+
+    /// <summary>
     /// The <see cref="Entities.Processor.RatingAdjustment"/> is the result of a period of inactivity (decay)
     /// </summary>
-    Decay = 0,
+    Decay = 1,
 
     /// <summary>
     /// The <see cref="Entities.Processor.RatingAdjustment"/> is the result of participation in a <see cref="Entities.Match"/>
     /// </summary>
-    Match = 1
+    Match = 2
 }

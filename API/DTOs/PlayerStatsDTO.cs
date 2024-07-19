@@ -12,7 +12,7 @@ public class PlayerStatsDTO
     /// <summary>
     /// Player info
     /// </summary>
-    public PlayerInfoDTO PlayerInfo { get; init; } = null!;
+    public PlayerCompactDTO PlayerInfo { get; init; } = null!;
 
     /// <summary>
     /// Ruleset the statistics were calculated for

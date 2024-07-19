@@ -4,19 +4,9 @@ namespace API.Services.Interfaces;
 
 public interface IPlayerService
 {
-    Task<IEnumerable<PlayerDTO>> GetAllAsync();
-
-    Task<IEnumerable<PlayerRanksDTO>> GetAllRanksAsync();
+    Task<IEnumerable<PlayerCompactDTO>> GetAllAsync();
 
     Task<int?> GetIdAsync(int userId);
-
-    /// <summary>
-    /// A unique mapping of osu! user ids to our internal ids.
-    /// </summary>
-    /// <returns></returns>
-    Task<IEnumerable<PlayerIdMappingDTO>> GetIdMappingAsync();
-
-    Task<IEnumerable<PlayerCountryMappingDTO>> GetCountryMappingAsync();
 
     /// <summary>
     /// Dynamically searches for players via the following, in order of priority:
@@ -31,15 +21,15 @@ public interface IPlayerService
     /// </summary>
     /// <param name="key">The dynamic key of the player to look for</param>
     /// <returns></returns>
-    Task<PlayerInfoDTO?> GetVersatileAsync(string key);
+    Task<PlayerCompactDTO?> GetVersatileAsync(string key);
 
     /// <summary>
     /// Gets player information for a list of osu! ids
     /// </summary>
     /// <param name="osuIds">The osu! player ids</param>
-    /// <returns>A list of <see cref="PlayerInfoDTO"/>, one per provided osu! id.
+    /// <returns>A list of <see cref="PlayerCompactDTO"/>, one per provided osu! id.
     /// If a provided osu! id does not belong to a player in the database,
-    /// the <see cref="PlayerInfoDTO"/> will be returned in a default state,
-    /// except the <see cref="PlayerInfoDTO.OsuId"/> value will be set</returns>
-    Task<IEnumerable<PlayerInfoDTO>> GetAsync(IEnumerable<long> osuIds);
+    /// the <see cref="PlayerCompactDTO"/> will be returned in a default state,
+    /// except the <see cref="PlayerCompactDTO.OsuId"/> value will be set</returns>
+    Task<IEnumerable<PlayerCompactDTO>> GetAsync(IEnumerable<long> osuIds);
 }

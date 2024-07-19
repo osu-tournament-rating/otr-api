@@ -13,7 +13,7 @@ namespace API.Services.Implementations;
 public class SearchService(
     IApiTournamentsRepository tournamentsRepository,
     IMatchesService matchesService,
-    IApiPlayersRepository playerRepository,
+    IPlayersRepository playerRepository,
     ICacheHandler cacheHandler
     ) : ISearchService
 {

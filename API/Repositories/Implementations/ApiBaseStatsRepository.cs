@@ -5,10 +5,10 @@ using API.Repositories.Interfaces;
 using API.Utilities;
 using API.Utilities.Extensions;
 using Database;
-using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums;
 using Database.Repositories.Implementations;
+using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +18,7 @@ namespace API.Repositories.Implementations;
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class ApiBaseStatsRepository(
     OtrContext context,
-    IApiPlayersRepository playerRepository
+    IPlayersRepository playerRepository
     ) : BaseStatsRepository(context, playerRepository), IApiBaseStatsRepository
 {
     private readonly OtrContext _context = context;

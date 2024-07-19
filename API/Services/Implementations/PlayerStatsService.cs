@@ -127,7 +127,7 @@ public class PlayerStatsService(
 
         ruleset ??= player.User?.Settings.DefaultRuleset ?? player.Ruleset;
 
-        PlayerInfoDTO playerInfo = mapper.Map<PlayerInfoDTO>(player);
+        PlayerCompactDTO playerInfo = mapper.Map<PlayerCompactDTO>(player);
 
         PlayerRatingDTO? baseStats = await GetBaseStatsAsync(player.Id, (int)ruleset!.Value);
 

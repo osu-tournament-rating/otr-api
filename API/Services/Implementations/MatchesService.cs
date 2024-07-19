@@ -1,5 +1,6 @@
 using API.Controllers;
 using API.DTOs;
+using API.DTOs.Processor;
 using API.Services.Interfaces;
 using AutoMapper;
 using Database.Entities;

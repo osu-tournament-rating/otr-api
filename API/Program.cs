@@ -424,7 +424,6 @@ builder.Services.AddScoped<IApiBaseStatsRepository, ApiBaseStatsRepository>();
 builder.Services.AddScoped<IApiMatchRatingStatsRepository, ApiMatchRatingStatsRepository>();
 builder.Services.AddScoped<IApiMatchWinRecordRepository, ApiMatchWinRecordRepository>();
 builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRepository>();
-builder.Services.AddScoped<IApiPlayersRepository, ApiPlayersRepository>();
 builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
 
 builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
