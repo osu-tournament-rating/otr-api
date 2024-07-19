@@ -11,7 +11,6 @@ using API.Handlers.Implementations;
 using API.Handlers.Interfaces;
 using API.Middlewares;
 using API.ModelBinders.Providers;
-using API.Osu.Multiplayer;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Implementations;
@@ -477,8 +476,6 @@ builder.Services.AddOsuSharp(options =>
         ClientSecret = osuConfiguration.ClientSecret
     };
 });
-
-builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
 
 builder.Host.ConfigureOsuSharp(
     (_, options) =>
