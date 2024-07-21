@@ -100,8 +100,8 @@ public class MatchesRepository(
             .Matches.IncludeAllChildren()
             .WherePlayerParticipated(osuId)
             .WhereRuleset((Ruleset)mode)
-            .Before(before)
-            .After(after)
+            .BeforeDate(before)
+            .AfterDate(after)
             .ToListAsync();
     }
 

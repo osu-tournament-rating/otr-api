@@ -20,9 +20,9 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
     {
         return (int)await _context
             .GameScores.WhereVerified()
-            .After(fromTime)
+            .AfterDate(fromTime)
             .WhereRuleset(ruleset)
-            .WhereTeammate(osuPlayerId)
+            .WhereTeammateOf(osuPlayerId)
             .Select(ms => ms.Score)
             .AverageAsync();
     }
