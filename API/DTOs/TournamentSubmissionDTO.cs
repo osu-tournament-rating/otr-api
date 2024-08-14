@@ -1,18 +1,19 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Database.Enums;
 
 namespace API.DTOs;
 
 /// <summary>
-/// Represents data used to create a tournament
+/// An incoming tournament submission
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class TournamentWebSubmissionDTO : MatchesWebSubmissionDTO
+public class TournamentSubmissionDTO
 {
     /// <summary>
     /// The name of the tournament
     /// </summary>
-    public required string TournamentName { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// Acronym / shortened name of the tournament
@@ -23,7 +24,7 @@ public class TournamentWebSubmissionDTO : MatchesWebSubmissionDTO
     /// <summary>
     /// The osu! forum post advertising this tournament
     /// </summary>
-    public required string ForumPost { get; set; }
+    public required string ForumUrl { get; set; }
 
     /// <summary>
     /// Lowest rank a player can be to participate in the tournament
@@ -37,11 +38,17 @@ public class TournamentWebSubmissionDTO : MatchesWebSubmissionDTO
     /// </summary>
     /// <example>For a 2v2 team size 4 tournament, this value should be 2</example>
     [Range(1, 8)]
-    public int TeamSize { get; set; }
+    public int Format { get; set; }
 
     /// <summary>
     /// osu! ruleset
     /// </summary>
     [Range(0, 3)]
-    public int Mode { get; set; }
+    public Ruleset Ruleset { get; set; }
+
+    /// <summary>
+    /// List of osu! match ids
+    /// </summary>
+    /// <example>For a match link https://osu.ppy.sh/mp/98119977, add 98119977 to this list</example>
+    public IEnumerable<long> Ids { get; set; } = new List<long>();
 }

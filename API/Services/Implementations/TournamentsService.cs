@@ -10,40 +10,41 @@ namespace API.Services.Implementations;
 
 public class TournamentsService(ITournamentsRepository tournamentsRepository, IMatchesRepository matchesRepository, IMapper mapper) : ITournamentsService
 {
-    // TODO: Refactor to use enum for param "verificationSource"
-    public async Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify)
+    public async Task<TournamentCreatedResultDTO> CreateAsync(
+        TournamentSubmissionDTO submission,
+        int submitterUserId,
+        bool preApprove
+    )
     {
         // Only create matches that dont already exist
-        IEnumerable<long> enumerableMatchIds = wrapper.Ids.ToList();
+        IEnumerable<long> enumerableMatchIds = submission.Ids.ToList();
         IEnumerable<long> existingMatchIds = (await matchesRepository.GetAsync(enumerableMatchIds))
             .Select(m => m.OsuId)
             .ToList();
 
         Tournament tournament = await tournamentsRepository.CreateAsync(new Tournament
         {
-            Name = wrapper.TournamentName,
-            Abbreviation = wrapper.Abbreviation,
-            ForumUrl = wrapper.ForumPost,
-            RankRangeLowerBound = wrapper.RankRangeLowerBound,
-            Ruleset = (Ruleset)wrapper.Mode,
-            TeamSize = wrapper.TeamSize,
-            SubmittedByUserId = wrapper.SubmitterId,
+            Name = submission.Name,
+            Abbreviation = submission.Abbreviation,
+            ForumUrl = submission.ForumUrl,
+            RankRangeLowerBound = submission.RankRangeLowerBound,
+            Ruleset = submission.Ruleset,
+            TeamSize = submission.Format,
+            ProcessingStatus = preApprove ? TournamentProcessingStatus.NeedsMatchData : TournamentProcessingStatus.NeedsApproval,
+            SubmittedByUserId = submitterUserId,
             Matches = enumerableMatchIds
                 .Except(existingMatchIds)
                 .Select(matchId => new Match
                 {
                     OsuId = matchId,
-                    VerificationStatus = VerificationStatus.None,
-                    VerifiedByUserId = verify ? wrapper.SubmitterId : null,
-                    SubmittedByUserId = wrapper.SubmitterId
+                    SubmittedByUserId = submitterUserId
                 }).ToList()
         });
         return mapper.Map<TournamentCreatedResultDTO>(tournament);
     }
 
-    public async Task<bool> ExistsAsync(int id) => await tournamentsRepository.ExistsAsync(id);
-
-    public async Task<bool> ExistsAsync(string name, int mode) => await tournamentsRepository.ExistsAsync(name, mode);
+    public async Task<bool> ExistsAsync(string name, Ruleset ruleset)
+        => await tournamentsRepository.ExistsAsync(name, ruleset);
 
     public async Task<IEnumerable<TournamentDTO>> ListAsync()
     {

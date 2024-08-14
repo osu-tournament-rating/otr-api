@@ -1,4 +1,5 @@
 using Database.Entities;
+using Database.Enums;
 
 namespace Database.Repositories.Interfaces;
 
@@ -19,9 +20,9 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit);
 
     /// <summary>
-    /// Returns whether an entity with the given name and mode exists
+    /// Denotes if a tournament with the given name and ruleset exists
     /// </summary>
-    public Task<bool> ExistsAsync(string name, int mode);
+    public Task<bool> ExistsAsync(string name, Ruleset ruleset);
 
     /// <summary>
     /// Count number of tournaments played for a player

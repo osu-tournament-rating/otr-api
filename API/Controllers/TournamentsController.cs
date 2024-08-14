@@ -32,25 +32,7 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <summary>
     /// Submit a tournament
     /// </summary>
-    /// <remarks>
-    /// The user submits a tournament (containing metadata and links) to the front-end. They are looking to add new data
-    /// to our database that will eventually count towards ratings.
-    ///
-    /// This post endpoint takes these links, validates them (i.e. checks for duplicates,
-    /// whether the match titles align with osu! tournament naming conventions,
-    /// amount of matches being submitted, etc.).
-    ///
-    /// Assuming we have a good batch, we will mark all of the new items as "PENDING".
-    /// If verify is true, they will be marked as "VERIFIED" immediately.
-    /// The MultiplayerLobbyDataWorker service checks the database for pending links
-    /// periodically and processes them automatically.
-    /// </remarks>
     /// <param name="tournamentSubmission">Tournament submission data</param>
-    /// <param name="verify">Optionally verify all included matches, assuming the user has permission to do so</param>
-    /// <response code="403">
-    /// If verify is true and the User does not have match verification privileges
-    /// If the authorized user's id does not match the given <see cref="tournamentSubmission.Id"/>
-    /// </response>
     /// <response code="400">
     /// If the given <see cref="tournamentSubmission"/> is malformed
     /// If a tournament matching the given name and mode already exists
@@ -58,38 +40,34 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
     [Authorize(Roles = OtrClaims.User)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateAsync([FromBody] TournamentWebSubmissionDTO tournamentSubmission,
-        [FromQuery] bool verify = false)
+    public async Task<IActionResult> CreateAsync([FromBody] TournamentSubmissionDTO tournamentSubmission)
     {
+        var submitterId = User.AuthorizedIdentity();
+        if (!submitterId.HasValue)
+        {
+            return Unauthorized();
+        }
+
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        // Prevent users from submitting matches on another user's behalf
-        var userId = User.AuthorizedIdentity();
-        if (userId is null || tournamentSubmission.SubmitterId != userId)
+        if (await tournamentsService.ExistsAsync(tournamentSubmission.Name, tournamentSubmission.Ruleset))
         {
-            return Forbid();
-        }
-
-        if (verify && !User.IsMatchVerifier())
-        {
-            return Forbid();
-        }
-
-        if (await tournamentsService.ExistsAsync(tournamentSubmission.TournamentName, tournamentSubmission.Mode))
-        {
-            return BadRequest(
-                $"A tournament with name {tournamentSubmission.TournamentName} for mode {tournamentSubmission.Mode} already exists");
+            return BadRequest($"A tournament with name {tournamentSubmission.Name} for mode {tournamentSubmission.Ruleset} already exists");
         }
 
         // Create tournament
-        TournamentCreatedResultDTO result =
-            await tournamentsService.CreateAsync(tournamentSubmission, verify);
+        TournamentCreatedResultDTO result = await tournamentsService.CreateAsync(
+            tournamentSubmission,
+            submitterId.Value,
+            User.IsAdmin() || User.IsSystem()
+        );
+
         return CreatedAtAction("Get", new { id = result.Id }, result);
     }
 
@@ -155,51 +133,6 @@ public class TournamentsController(ITournamentsService tournamentsService, IMatc
         // Apply patched values to entity
         TournamentDTO? updatedTournament = await tournamentsService.UpdateAsync(id, tournament);
         return Ok(updatedTournament!);
-    }
-
-    /// <summary>
-    /// Submit matches to an existing tournament
-    /// </summary>
-    /// <param name="id">Tournament id</param>
-    /// <param name="matchesSubmission">Match submission data</param>
-    /// <param name="verify">Optionally verify all included matches, assuming the user has permission to do so</param>
-    /// <response code="403">If verify is true and the User does not have match verification privileges</response>
-    /// <response code="404">If a tournament matching the given id does not exist</response>
-    /// <response code="400">If the creation of matches was unsuccessful</response>
-    /// <response code="201">Returns location information of the created matches</response>
-    [HttpPost("{id:int}/matches")]
-    [Authorize(Roles = OtrClaims.Admin)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<IEnumerable<MatchCreatedResultDTO>>(StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateMatchesAsync(int id,
-        [FromBody] MatchesWebSubmissionDTO matchesSubmission,
-        [FromQuery] bool verify = false)
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        if (verify && !User.IsMatchVerifier())
-        {
-            return Forbid();
-        }
-
-        IEnumerable<MatchCreatedResultDTO>? result =
-            await matchesService.CreateAsync(
-                id,
-                matchesSubmission.SubmitterId,
-                matchesSubmission.Ids,
-                verify
-            );
-
-        return result is not null
-            // Use no location header for multiple creation (formatter does the casting here)
-            ? Created((string?)null, result)
-            // Match creation only fails if the tournament does not exist, so NotFound() is proper
-            : NotFound();
     }
 
     /// <summary>

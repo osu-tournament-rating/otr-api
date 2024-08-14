@@ -32,8 +32,8 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .Take(limit)
             .ToListAsync();
 
-    public async Task<bool> ExistsAsync(string name, int mode) =>
-        await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Ruleset == (Ruleset)mode);
+    public async Task<bool> ExistsAsync(string name, Ruleset ruleset) =>
+        await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Ruleset == ruleset);
 
     public async Task<int> CountPlayedAsync(
         int playerId,

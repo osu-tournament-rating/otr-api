@@ -1,26 +1,27 @@
 using API.DTOs;
+using Database.Enums;
 
 namespace API.Services.Interfaces;
 
 public interface ITournamentsService
 {
     /// <summary>
-    /// Creates a tournament from a <see cref="TournamentWebSubmissionDTO"/>.
+    /// Creates a tournament from a <see cref="TournamentSubmissionDTO"/>.
     /// </summary>
-    /// <param name="wrapper">Submission data</param>
-    /// <param name="verify">Verify all included matches</param>
+    /// <param name="submission">Tournament submission data</param>
+    /// <param name="submitterUserId">Id of the User that created the submission</param>
+    /// <param name="preApprove">Denotes if the tournament should be pre-approved</param>
     /// <returns>Location information for the created tournament</returns>
-    Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify);
-
-    /// <summary>
-    /// Denotes a tournament with matching id exists
-    /// </summary>
-    Task<bool> ExistsAsync(int id);
+    Task<TournamentCreatedResultDTO> CreateAsync(
+        TournamentSubmissionDTO submission,
+        int submitterUserId,
+        bool preApprove
+    );
 
     /// <summary>
     /// Denotes a tournament with matching name and mode exists
     /// </summary>
-    Task<bool> ExistsAsync(string name, int mode);
+    Task<bool> ExistsAsync(string name, Ruleset ruleset);
 
     /// <summary>
     /// Gets all tournaments
