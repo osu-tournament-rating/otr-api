@@ -5,7 +5,6 @@ using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
-using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

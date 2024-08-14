@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Enums;
+using Database.Enums.Queries;
 using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
@@ -12,29 +13,121 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class MatchesRepository(
     OtrContext context
-    ) : RepositoryBase<Match>(context), IMatchesRepository
+) : RepositoryBase<Match>(context), IMatchesRepository
 {
     private readonly OtrContext _context = context;
 
-    public override async Task<Match?> GetAsync(int id) =>
-        // Get the match with all associated data
-        await MatchBaseQuery(false).FirstOrDefaultAsync(x => x.Id == id);
+    public async Task<Match?> GetAsync(
+        int id,
+        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
+    ) =>
+        await _context.Matches
+            .WhereFiltered(filterType)
+            .IncludeChildren(filterType)
+            .FirstOrDefaultAsync(x => x.Id == id);
 
-    // Suppression: This query will inherently produce a large number of records by including
-    // games and match scores. The query itself is almost as efficient as possible (as far as we know)
-    [SuppressMessage("ReSharper.DPA", "DPA0007: Large number of DB records")]
-    public async Task<IEnumerable<Match>> GetAsync(int limit, int page, bool filterUnverified = true) =>
-        await MatchBaseQuery(filterUnverified)
-            // Include all MatchDTO navigational properties
+    public async Task<IEnumerable<Match>> GetAsync(
+        int limit,
+        int page,
+        Ruleset? ruleset = null,
+        string? name = null,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null,
+        VerificationStatus? verificationStatus = null,
+        MatchRejectionReason? rejectionReason = null,
+        MatchProcessingStatus? processingStatus = null,
+        int? submittedBy = null,
+        int? verifiedBy = null,
+        MatchesQuerySortType? querySortType = null,
+        bool? sortDescending = null
+    )
+    {
+        IQueryable<Match> query = _context.Matches.AsQueryable();
+
+        if (ruleset.HasValue)
+        {
+            query = query.WhereRuleset(ruleset.Value);
+        }
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            query = query.WhereName(name);
+        }
+
+        if (dateMin.HasValue)
+        {
+            query = query.AfterDate(dateMin.Value);
+        }
+
+        if (dateMax.HasValue)
+        {
+            query = query.BeforeDate(dateMax.Value);
+        }
+
+        if (verificationStatus.HasValue)
+        {
+            query = query.Where(m => m.VerificationStatus == verificationStatus.Value);
+        }
+
+        if (rejectionReason.HasValue)
+        {
+            query = query.Where(m => m.RejectionReason == rejectionReason.Value);
+        }
+
+        if (processingStatus.HasValue)
+        {
+            query = query.Where(m => m.ProcessingStatus == processingStatus.Value);
+        }
+
+        if (submittedBy.HasValue)
+        {
+            query = query.Where(m => m.SubmittedByUserId == submittedBy.Value);
+        }
+
+        if (verifiedBy.HasValue)
+        {
+            query = query.Where(m => m.VerifiedByUserId == verifiedBy.Value);
+        }
+
+        if (querySortType.HasValue)
+        {
+            query = querySortType switch
+            {
+                MatchesQuerySortType.OsuId => sortDescending != null && sortDescending.Value
+                    ? query.OrderByDescending(m => m.OsuId) : query.OrderBy(m => m.OsuId),
+                MatchesQuerySortType.StartTime => sortDescending != null && sortDescending.Value
+                    ? query.OrderByDescending(m => m.StartTime) : query.OrderBy(m => m.StartTime),
+                MatchesQuerySortType.EndTime => sortDescending != null && sortDescending.Value
+                    ? query.OrderByDescending(m => m.EndTime) : query.OrderBy(m => m.EndTime),
+                _ => sortDescending != null && sortDescending.Value
+                    ? query.OrderByDescending(m => m.Id) : query.OrderBy(m => m.Id),
+            };
+        }
+
+        return await query.Page(limit, page).ToListAsync();
+    }
+
+    public async Task<IEnumerable<Match>> GetAsync(
+        int limit,
+        int page,
+        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
+    ) =>
+        await _context.Matches
+            .WhereFiltered(filterType)
+            .IncludeChildren(filterType)
             .Include(m => m.Tournament)
             .OrderBy(m => m.Id)
-            // Set index to start of desired page
-            .Skip(limit * page)
-            // Take only next n entities
-            .Take(limit)
+            .Page(limit, page)
             .ToListAsync();
 
+    public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
+        await _context.Matches.Where(x => matchIds.Contains(x.OsuId)).ToListAsync();
 
+    public async Task<Match?> GetByOsuIdAsync(long osuId) =>
+        await _context
+            .Matches
+            .IncludeChildren(QueryFilterType.None)
+            .FirstOrDefaultAsync(x => x.OsuId == osuId);
 
     public async Task<IEnumerable<Match>> SearchAsync(string name)
     {
@@ -42,34 +135,11 @@ public class MatchesRepository(
         name = name.Replace("_", @"\_");
         return await _context.Matches
             .AsNoTracking()
-            .WhereVerified()
+            .WhereFiltered(QueryFilterType.Verified | QueryFilterType.ProcessingCompleted)
             .Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\"))
             .Take(30)
             .ToListAsync();
     }
-
-    public async Task<Match?> GetAsync(int id, bool filterInvalidMatches = true) =>
-        await MatchBaseQuery(filterInvalidMatches).FirstOrDefaultAsync(x => x.Id == id);
-
-    public async Task<Match?> GetByMatchIdAsync(long matchId) =>
-        await _context
-            .Matches.Include(x => x.Games)
-            .ThenInclude(x => x.Scores)
-            .Include(x => x.Tournament)
-            .FirstOrDefaultAsync(x => x.OsuId == matchId);
-
-    public async Task<IList<Match>> GetMatchesNeedingAutoCheckAsync(int limit = 10000) =>
-        // We only want api processed matches because the verification checks require the data from the API
-        await _context
-            .Matches.Include(x => x.Games)
-            .ThenInclude(x => x.Scores)
-            .Include(x => x.Tournament)
-            .Where(x => x.ProcessingStatus == MatchProcessingStatus.NeedsAutomationChecks)
-            .Take(limit)
-            .ToListAsync();
-
-    public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
-        await _context.Matches.Where(x => matchIds.Contains(x.OsuId)).ToListAsync();
 
     public async Task<Match?> UpdateVerificationStatusAsync(
         int id,
@@ -77,7 +147,7 @@ public class MatchesRepository(
         int? verifierId = null
     )
     {
-        Match? match = await GetAsync(id);
+        Match? match = await GetAsync(id, QueryFilterType.None);
         if (match is null)
         {
             return null;
@@ -94,33 +164,12 @@ public class MatchesRepository(
         int mode,
         DateTime before,
         DateTime after
-    )
-    {
-        return await _context
-            .Matches.IncludeAllChildren()
+    ) =>
+        await _context.Matches
+            .WhereFiltered(QueryFilterType.Verified | QueryFilterType.ProcessingCompleted)
+            .IncludeChildren(QueryFilterType.Verified | QueryFilterType.ProcessingCompleted)
             .WherePlayerParticipated(osuId)
             .WhereRuleset((Ruleset)mode)
-            .BeforeDate(before)
-            .AfterDate(after)
+            .WhereDateRange(after, before)
             .ToListAsync();
-    }
-
-    private IQueryable<Match> MatchBaseQuery(bool filterInvalidMatches)
-    {
-        if (!filterInvalidMatches)
-        {
-            return _context
-                .Matches.Include(x => x.Games)
-                .ThenInclude(x => x.Scores)
-                .Include(x => x.Games)
-                .ThenInclude(x => x.Beatmap);
-        }
-
-        return _context
-            .Matches.WhereVerified()
-            .Include(x => x.Games.Where(y => y.VerificationStatus == VerificationStatus.Verified))
-            .ThenInclude(x => x.Scores.Where(y => y.VerificationStatus == VerificationStatus.Verified))
-            .Include(x => x.Games.Where(y => y.VerificationStatus == VerificationStatus.Verified))
-            .ThenInclude(x => x.Beatmap);
-    }
 }

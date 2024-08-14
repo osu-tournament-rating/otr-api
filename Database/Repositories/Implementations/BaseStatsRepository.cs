@@ -1,4 +1,3 @@
-using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums;
 using Database.Repositories.Interfaces;

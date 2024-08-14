@@ -1,7 +1,6 @@
 using API.Enums;
 using API.Repositories.Interfaces;
 using APITests.SeedData.DTOs;
-using Database.Repositories.Interfaces;
 using Moq;
 
 namespace APITests.MockRepositories;

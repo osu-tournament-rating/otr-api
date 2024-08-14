@@ -1,4 +1,3 @@
-using Database.Enums;
 using Database.Enums.Verification;
 
 namespace API.DTOs;

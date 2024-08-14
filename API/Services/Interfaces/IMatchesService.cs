@@ -1,6 +1,5 @@
 using API.DTOs;
-using API.DTOs.Processor;
-using Database.Enums.Verification;
+using Database.Enums;
 
 namespace API.Services.Interfaces;
 
@@ -21,6 +20,12 @@ public interface IMatchesService
         bool verify
     );
 
+    Task<PagedResultDTO<MatchDTO>> GetAsync(
+        int limit,
+        int page,
+        MatchesFilterDTO filter
+    );
+
     /// <summary>
     /// Gets a paged list of matches
     /// </summary>
@@ -28,23 +33,15 @@ public interface IMatchesService
     /// <param name="limit">Amount of matches to return. Functions as the "page size"</param>
     /// <param name="page">Which block of matches to return</param>
     /// <param name="filterUnverified">If unverified matches should be excluded from the results</param>
-    Task<PagedResultDTO<MatchDTO>> GetAsync(int limit, int page, bool filterUnverified = true);
+    Task<PagedResultDTO<MatchDTO>> GetAsync(
+        int limit,
+        int page,
+        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
+    );
 
-    Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true);
-
-    Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId);
-
-    /// <summary>
-    /// Updates the verification status of a match for the given id
-    /// </summary>
-    /// <param name="id">Id of the match</param>
-    /// <param name="verificationStatus">New verification status to assign</param>
-    /// <param name="verifierId">Optional user id to attribute the update to</param>
-    /// <returns>An updated match, or null if not found</returns>
-    Task<MatchDTO?> UpdateVerificationStatusAsync(
+    Task<MatchDTO?> GetAsync(
         int id,
-        VerificationStatus verificationStatus,
-        int? verifierId = null
+        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
     );
 
     Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(

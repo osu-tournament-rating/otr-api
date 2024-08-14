@@ -1,4 +1,3 @@
-using API.Repositories.Interfaces;
 using Database.Repositories.Interfaces;
 using Moq;
 

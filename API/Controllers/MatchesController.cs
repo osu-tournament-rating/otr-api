@@ -1,13 +1,11 @@
+using System.ComponentModel.DataAnnotations;
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
-using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace API.Controllers;
 
@@ -30,33 +28,23 @@ public class MatchesController(IMatchesService matchesService) : Controller
     /// Controls which block of size <paramref name="limit"/> to return.
     /// Default: 1, Constraints: Minimum 1
     /// </param>
-    /// <param name="filterUnverified">
-    /// If unverified matches should be excluded from results
-    /// Default: True, Constraints: Requires admin or system permission if false
-    /// </param>
-    /// <response code="400">If query parameters violate constraints</response>
     /// <response code="200">Returns the desired page of matches</response>
     [HttpGet]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<PagedResultDTO<MatchDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAsync(
-        [FromQuery] int limit = 100,
-        [FromQuery] int page = 1,
-        [FromQuery] bool filterUnverified = true
+        [FromQuery] MatchesFilterDTO filter,
+        [FromQuery][Range(1, int.MaxValue)] int limit = 100,
+        [FromQuery][Range(1, int.MaxValue)] int page = 1
     )
     {
-        if (limit < 1 || limit > 5000 || page < 1)
+        // Clamp page size for non-admin users
+        if (limit > 5000 && !(User.IsAdmin() || User.IsSystem()))
         {
-            return BadRequest();
+            limit = 5000;
         }
 
-        if (!filterUnverified && !(User.IsAdmin() || User.IsSystem()))
-        {
-            return BadRequest();
-        }
-
-        return Ok(await matchesService.GetAsync(limit, page, filterUnverified));
+        return Ok(await matchesService.GetAsync(limit, page, filter));
     }
 
     /// <summary>
@@ -83,67 +71,4 @@ public class MatchesController(IMatchesService matchesService) : Controller
     [Authorize(Roles = $"{OtrClaims.Admin}, {OtrClaims.System}")]
     public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatchesAsync(long osuId, int mode) =>
         Ok(await matchesService.GetAllForPlayerAsync(osuId, mode, DateTime.MinValue, DateTime.MaxValue));
-
-    [HttpGet("{id:int}/osuid")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<ActionResult<long>> GetOsuMatchIdByIdAsync(int id)
-    {
-        MatchDTO? match = await matchesService.GetByOsuIdAsync(id);
-        if (match == null)
-        {
-            return NotFound($"Match with id {id} does not exist");
-        }
-
-        var osuMatchId = match.OsuId;
-        if (osuMatchId != 0)
-        {
-            return Ok(osuMatchId);
-        }
-
-        return NotFound($"Match with id {id} does not exist");
-    }
-
-    /// <summary>
-    /// Update the verification status of a match
-    /// </summary>
-    /// <param name="id">Match id</param>
-    /// <param name="patch">JsonPatch data</param>
-    /// <response code="404">If a match matching the given id does not exist</response>
-    /// <response code="400">If JsonPatch data is malformed</response>
-    /// <response code="200">Returns the updated match</response>
-    [HttpPatch("{id:int}/verification-status")]
-    [Authorize(Roles = OtrClaims.Admin)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> UpdateVerificationStatusAsync(int id, [FromBody] JsonPatchDocument<MatchDTO> patch)
-    {
-        MatchDTO? match = await matchesService.GetAsync(id, false);
-        if (match is null)
-        {
-            return NotFound();
-        }
-
-        if (!patch.IsReplaceOnly())
-        {
-            return BadRequest();
-        }
-
-        patch.ApplyTo(match, ModelState);
-        if (!TryValidateModel(match))
-        {
-            return BadRequest(ModelState);
-        }
-
-        // TODO: Add check for verification status matching original before update
-
-        var verifierId = User.AuthorizedIdentity();
-        MatchDTO? updatedMatch = await matchesService.UpdateVerificationStatusAsync(
-            id,
-            match.VerificationStatus,
-            verifierId
-        );
-
-        return Ok(updatedMatch);
-    }
 }

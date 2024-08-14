@@ -1,5 +1,4 @@
 using Database.Entities;
-using Database.Enums;
 using Database.Enums.Verification;
 
 namespace APITests.SeedData;

@@ -2,7 +2,6 @@ using API.DTOs;
 using API.Repositories.Interfaces;
 using Database;
 using Database.Enums;
-using Database.Enums.Verification;
 using Database.Repositories.Implementations;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,7 +24,7 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
             .Select(t => new TournamentSearchResultDTO()
             {
                 Id = t.Id,
-                Ruleset = (Ruleset)t.Ruleset,
+                Ruleset = t.Ruleset,
                 TeamSize = t.TeamSize,
                 Name = t.Name
             })

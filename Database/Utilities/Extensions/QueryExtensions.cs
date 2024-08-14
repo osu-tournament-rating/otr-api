@@ -8,6 +8,14 @@ namespace Database.Utilities.Extensions;
 
 public static class QueryExtensions
 {
+    /// <summary>
+    /// Gets the desired "page" of a query
+    /// </summary>
+    /// <param name="limit">Page size</param>
+    /// <param name="page">Desired page</param>
+    public static IQueryable<T> Page<T>(this IQueryable<T> query, int limit, int page) =>
+        query.AsQueryable().Skip(limit * page).Take(limit);
+
     #region Ratings
 
     /// <summary>
@@ -89,6 +97,31 @@ public static class QueryExtensions
         query.AsQueryable().Where(x => x.ProcessingStatus == MatchProcessingStatus.Done);
 
     /// <summary>
+    /// Filters a <see cref="Match"/> query based on the given <see cref="QueryFilterType"/>
+    /// </summary>
+    public static IQueryable<Match> WhereFiltered(this IQueryable<Match> query, QueryFilterType filterType) =>
+        filterType switch
+        {
+            QueryFilterType.Verified => query.AsQueryable().WhereVerified(),
+            QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereProcessingCompleted(),
+            QueryFilterType.Verified | QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereVerified().WhereProcessingCompleted(),
+            _ => query
+        };
+
+    /// <summary>
+    /// Includes child navigation properties for a <see cref="Match"/> query based on the given <see cref="QueryFilterType"/>
+    /// <br/>Includes: <see cref="Match.Games"/> (<see cref="Game.Scores"/>, <see cref="Game.Beatmap"/>)
+    /// </summary>
+    /// <param name="filterType">A <see cref="QueryFilterType"/> that controls the way children are included</param>
+    public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query, QueryFilterType filterType) =>
+        query
+            .AsQueryable()
+            .Include(x => x.Games.AsQueryable().WhereFiltered(filterType))
+            .ThenInclude(x => x.Scores.AsQueryable().WhereFiltered(filterType))
+            .Include(x => x.Games)
+            .ThenInclude(x => x.Beatmap);
+
+    /// <summary>
     /// Filters a <see cref="Match"/> query for those with a <see cref="Match.StartTime"/> that is greater than
     /// the given date
     /// </summary>
@@ -105,19 +138,34 @@ public static class QueryExtensions
         query.AsQueryable().Where(x => x.StartTime < date);
 
     /// <summary>
+    /// Filters a <see cref="Match"/> query for those played between a given date range
+    /// </summary>
+    /// <param name="dateMin">Date range lower bound</param>
+    /// <param name="dateMax">Date range upper bound</param>
+    public static IQueryable<Match> WhereDateRange(
+        this IQueryable<Match> query,
+        DateTime dateMin,
+        DateTime dateMax
+    ) => query.AsQueryable().AfterDate(dateMin).BeforeDate(dateMax);
+
+    /// <summary>
     /// Filters a <see cref="Match"/> query for those played in the given <see cref="Ruleset"/>
     /// </summary>
     /// <param name="ruleset">Ruleset</param>
     public static IQueryable<Match> WhereRuleset(this IQueryable<Match> query, Ruleset ruleset) =>
         query.AsQueryable().Where(x => x.Tournament.Ruleset == ruleset);
 
-    public static IQueryable<Match> IncludeAllChildren(this IQueryable<Match> query) =>
-        query
+    /// <summary>
+    /// Filters a <see cref="Match"/> query for those with a partial match of the given name
+    /// </summary>
+    /// <param name="name">Match name</param>
+    public static IQueryable<Match> WhereName(this IQueryable<Match> query, string name)
+    {
+        name = name.Replace("_", @"\_");
+        return query
             .AsQueryable()
-            .Include(x => x.Games)
-            .ThenInclude(x => x.Scores)
-            .Include(x => x.Games)
-            .ThenInclude(x => x.Beatmap);
+            .Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\"));
+    }
 
     /// <summary>
     /// Filters a <see cref="Match"/> query for those where a <see cref="Player"/> with the given osu! id participated
@@ -149,6 +197,18 @@ public static class QueryExtensions
         query.AsQueryable().Where(x => x.ProcessingStatus == GameProcessingStatus.Done);
 
     /// <summary>
+    /// Filters a <see cref="Game"/> query based on the given <see cref="QueryFilterType"/>
+    /// </summary>
+    public static IQueryable<Game> WhereFiltered(this IQueryable<Game> query, QueryFilterType filterType) =>
+        filterType switch
+        {
+            QueryFilterType.Verified => query.AsQueryable().WhereVerified(),
+            QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereProcessingCompleted(),
+            QueryFilterType.Verified | QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereVerified().WhereProcessingCompleted(),
+            _ => query
+        };
+
+    /// <summary>
     /// Filters a <see cref="Game"/> query for those with a <see cref="Game.StartTime"/> that is greater than
     /// the given date
     /// </summary>
@@ -164,6 +224,17 @@ public static class QueryExtensions
     public static IQueryable<Game> BeforeDate(this IQueryable<Game> query, DateTime date) =>
         query.AsQueryable().Where(x => x.StartTime < date);
 
+    /// <summary>
+    /// Filters a <see cref="Game"/> query for those played between a given date range
+    /// </summary>
+    /// <param name="dateMin">Date range lower bound</param>
+    /// <param name="dateMax">Date range upper bound</param>
+    public static IQueryable<Game> WhereDateRange(
+        this IQueryable<Game> query,
+        DateTime dateMin,
+        DateTime dateMax
+    ) => query.AsQueryable().AfterDate(dateMin).BeforeDate(dateMax);
+
     #endregion
 
     #region Scores
@@ -173,13 +244,7 @@ public static class QueryExtensions
     /// of <see cref="VerificationStatus.Verified"/>
     /// </summary>
     public static IQueryable<GameScore> WhereVerified(this IQueryable<GameScore> query) =>
-        query
-            .AsQueryable()
-            .Where(x =>
-                x.VerificationStatus == VerificationStatus.Verified
-                && x.Game.Match.VerificationStatus == VerificationStatus.Verified
-                && x.Game.VerificationStatus == VerificationStatus.Verified
-            );
+        query.AsQueryable().Where(x => x.VerificationStatus == VerificationStatus.Verified);
 
     /// <summary>
     /// Filters a <see cref="GameScore"/> query for those with a <see cref="ScoreProcessingStatus"/>
@@ -187,6 +252,18 @@ public static class QueryExtensions
     /// </summary>
     public static IQueryable<GameScore> WhereProcessingCompleted(this IQueryable<GameScore> query) =>
         query.AsQueryable().Where(x => x.ProcessingStatus == ScoreProcessingStatus.Done);
+
+    /// <summary>
+    /// Filters a <see cref="GameScore"/> query based on the given <see cref="QueryFilterType"/>
+    /// </summary>
+    public static IQueryable<GameScore> WhereFiltered(this IQueryable<GameScore> query, QueryFilterType filterType) =>
+        filterType switch
+        {
+            QueryFilterType.Verified => query.AsQueryable().WhereVerified(),
+            QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereProcessingCompleted(),
+            QueryFilterType.Verified | QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereVerified().WhereProcessingCompleted(),
+            _ => query
+        };
 
     /// <summary>
     /// Filters a <see cref="GameScore"/> query for those set after a given date
