@@ -35,6 +35,7 @@ public class PlayersService(
         foreach (Player player in outdatedPlayers)
         {
             await UpdateFromOsuApiAsync(player);
+            await UpdateFromOsuTrackApiAsync(player);
         }
 
         await context.SaveChangesAsync();
