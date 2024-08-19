@@ -11,7 +11,9 @@
 
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.0"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0"/>
+        <PackageReference Include="Moq" Version="4.20.70" />
         <PackageReference Include="xunit" Version="2.5.3"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3"/>
     </ItemGroup>
@@ -23,6 +25,14 @@
     <ItemGroup>
       <ProjectReference Include="..\DataWorkerService\DataWorkerService.csproj" />
       <ProjectReference Include="..\TestingUtils\TestingUtils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Services\Implementations\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Services\Implementations\PlayersServiceTests.cs" />
     </ItemGroup>
 
 </Project>

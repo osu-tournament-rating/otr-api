@@ -14,7 +14,7 @@ public class GetUserStatsHistoryTest(IOsuClient client) : IOsuClientTest
 
     public async Task<bool> RunAsync(CancellationToken cancellationToken)
     {
-        IEnumerable<UserStatUpdate>? statsHistory = await client.GetUserStatsHistory(
+        IEnumerable<UserStatUpdate>? statsHistory = await client.GetUserStatsHistoryAsync(
             StageUserId,
             Ruleset.Standard,
             DateTime.Today.AddMonths(-1),

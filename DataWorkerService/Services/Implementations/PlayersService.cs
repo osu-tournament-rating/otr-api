@@ -5,9 +5,11 @@ using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
 using DataWorkerService.Configurations;
 using DataWorkerService.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
 using OsuApiClient.Domain.Osu.Users;
 using OsuApiClient.Domain.Osu.Users.Attributes;
+using OsuApiClient.Domain.OsuTrack;
 
 namespace DataWorkerService.Services.Implementations;
 
@@ -25,7 +27,7 @@ public class PlayersService(
 
     public async Task UpdateOutdatedFromOsuApiAsync(PlayerFetchPlatformConfiguration config)
     {
-        IEnumerable<Player> outdatedPlayers = (await playersRepository.GetOutdatedOsuAsync(
+        var outdatedPlayers = (await playersRepository.GetOutdatedOsuAsync(
             TimeSpan.FromDays(config.PlayerOutdatedAfterDays),
             config.BatchSize
         )).ToList();
@@ -39,7 +41,7 @@ public class PlayersService(
 
         logger.LogDebug(
             "Updated Players with outdated osu! API data [Count: {Count}]",
-            outdatedPlayers.Count()
+            outdatedPlayers.Count
         );
     }
 
@@ -127,9 +129,54 @@ public class PlayersService(
         player.OsuLastFetch = DateTime.UtcNow;
     }
 
-    public async Task SetAllOutdatedOsuTrackApiAsync(PlayerFetchPlatformConfiguration config) => throw new NotImplementedException();
+    public async Task SetAllOutdatedOsuTrackApiAsync(PlayerFetchPlatformConfiguration config)
+    {
+        DateTime newTime = DateTime.UtcNow - TimeSpan.FromDays(config.PlayerOutdatedAfterDays);
+        await context.Players.ExecuteUpdateAsync(x => x.SetProperty(p => p.OsuTrackLastFetch, newTime));
 
-    public async Task UpdateOutdatedFromOsuTrackApiAsync(PlayerFetchPlatformConfiguration config) => throw new NotImplementedException();
+        logger.LogInformation("Set all players' OsuTrackLastFetch value to {}", newTime);
+    }
 
-    public async Task UpdateFromOsuTrackApiAsync(Player player) => throw new NotImplementedException();
+    public async Task UpdateOutdatedFromOsuTrackApiAsync(PlayerFetchPlatformConfiguration config)
+    {
+        var outdatedPlayers = (await playersRepository.GetOutdatedOsuTrackAsync(
+            TimeSpan.FromDays(config.PlayerOutdatedAfterDays), config.BatchSize)).ToList();
+
+        foreach (Player player in outdatedPlayers)
+        {
+            await UpdateFromOsuTrackApiAsync(player);
+        }
+    }
+
+    public async Task UpdateFromOsuTrackApiAsync(Player player)
+    {
+        logger.LogDebug(
+            "Preparing to update Player osu! API data [Id: {Id} | osu! Id: {OsuId} | Last Update: {LastUpdate:u}]",
+            player.Id,
+            player.OsuId,
+            player.OsuLastFetch
+        );
+
+        foreach (Ruleset r in Enum.GetValues<Ruleset>().Where(r => r.IsFetchable()))
+        {
+            var result = (await osuClient.GetUserStatsHistoryAsync(player.OsuId, r) ?? Array.Empty<UserStatUpdate>()).ToList();
+
+            if (result.Count == 0)
+            {
+                logger.LogTrace("Failed to fetch Player osu!track API data. Result has no elements. [Id: {Id} | Ruleset: {Ruleset}]", player.Id, r);
+            }
+
+            PlayerOsuRulesetData? rulesetData = player.RulesetData.FirstOrDefault(x => x.Ruleset == r);
+
+            if (rulesetData is null)
+            {
+                continue;
+            }
+
+            rulesetData.EarliestGlobalRank = result.First().Rank;
+            rulesetData.EarliestGlobalRankDate = result.First().Timestamp;
+
+            logger.LogDebug("Updated Player osu!track API data [Id: {Id} | Ruleset: {Ruleset}]", player.Id, r);
+        }
+    }
 }
