@@ -43,6 +43,7 @@ public class PlayerOsuUpdateService(
         IPlayersService playersService = scope.ServiceProvider.GetRequiredService<IPlayersService>();
 
         await playersService.UpdateOutdatedFromOsuApiAsync(_config);
+        await playersService.UpdateOutdatedFromOsuTrackApiAsync(_config);
     }
 
     private async Task MarkAllOutdated()
@@ -51,5 +52,6 @@ public class PlayerOsuUpdateService(
         IPlayersService playersService = scope.ServiceProvider.GetRequiredService<IPlayersService>();
 
         await playersService.SetAllOutdatedOsuApiAsync(_config);
+        await playersService.SetAllOutdatedOsuTrackApiAsync(_config);
     }
 }
