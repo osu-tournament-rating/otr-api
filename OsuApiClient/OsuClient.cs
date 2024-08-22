@@ -353,7 +353,7 @@ public sealed class OsuClient(
         );
     }
 
-    public async Task<IEnumerable<UserStatUpdate>?> GetUserStatsHistory(
+    public async Task<IEnumerable<UserStatUpdate>?> GetUserStatsHistoryAsync(
         long id,
         Ruleset ruleset,
         DateTime? fromDate = null,
@@ -363,7 +363,7 @@ public sealed class OsuClient(
     {
         CheckDisposed();
 
-        var queryParams = new Dictionary<string, string>()
+        var queryParams = new Dictionary<string, string>
         {
             ["user"] = id.ToString(),
             ["mode"] = ((int)ruleset).ToString()

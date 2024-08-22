@@ -165,7 +165,7 @@ public interface IOsuClient : IDisposable
     /// <param name="toDate">Include only updates before this date</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A list of <see cref="UserStatUpdate"/>, or null if the request was unsuccessful</returns>
-    Task<IEnumerable<UserStatUpdate>?> GetUserStatsHistory(
+    Task<IEnumerable<UserStatUpdate>?> GetUserStatsHistoryAsync(
         long id,
         Ruleset ruleset,
         DateTime? fromDate = null,
