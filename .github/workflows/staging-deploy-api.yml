@@ -3,6 +3,14 @@ name: .NET CI/CD
 on:
   push:
     branches: [ master ]
+    paths:
+      - API
+      - API.Tests
+      - Common
+      - Database
+      - OsuApiClient
+      - OsuApiClient.Tests
+      - TestingUtils
 
 jobs:
   build_test:
