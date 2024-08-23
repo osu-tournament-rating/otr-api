@@ -4,7 +4,7 @@
 // using Database.Enums;
 // using Newtonsoft.Json;
 //
-// namespace APITests.AutomationChecks;
+// namespace API.Tests.AutomationChecks;
 //
 // public class MatchAutomationChecks_Warmups
 // {

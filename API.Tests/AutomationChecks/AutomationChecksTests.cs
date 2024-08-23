@@ -7,7 +7,7 @@
 // using Moq;
 // using Match = Database.Entities.Match;
 //
-// namespace APITests.AutomationChecks;
+// namespace API.Tests.AutomationChecks;
 //
 // [SuppressMessage("Usage", "xUnit1031:Do not use blocking task operations in test method")]
 // public class AutomationChecksTests
