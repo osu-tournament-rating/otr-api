@@ -15,6 +15,4 @@ public class OsuConfiguration
 
     [Required(ErrorMessage = "ClientSecret is required!")]
     public string ClientSecret { get; set; } = string.Empty;
-    public bool AutoUpdateUsers { get; set; }
-    public bool AllowDataFetching { get; set; }
 }
