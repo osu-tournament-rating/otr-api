@@ -74,7 +74,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
     }
 
     [Fact]
-    public void Check_GivenVerifiedScoresCount_LessThanTournamentTeamSize_FailsWith_TeamSizeMissMatch()
+    public void Check_GivenVerifiedScoresCount_LessThanTournamentLobbySize_FailsWith_LobbySizeMissMatch()
     {
         // Arrange
         Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);

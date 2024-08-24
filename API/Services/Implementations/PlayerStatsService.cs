@@ -303,7 +303,7 @@ public class PlayerStatsService(
             worstPerformances = worstPerformances.Where(x => x.TournamentId != performance.TournamentId);
         }
 
-        PlayerTournamentLobbySizeCountDTO counts = await tournamentsRepository.GetTeamSizeStatsAsync(
+        PlayerTournamentLobbySizeCountDTO counts = await tournamentsRepository.GetLobbySizeStatsAsync(
             playerId,
             mode,
             dateMin,

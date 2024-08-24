@@ -32,7 +32,7 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
             .ToListAsync();
     }
 
-    public async Task<PlayerTournamentLobbySizeCountDTO> GetTeamSizeStatsAsync(
+    public async Task<PlayerTournamentLobbySizeCountDTO> GetLobbySizeStatsAsync(
     int playerId,
     int mode,
     DateTime dateMin,
