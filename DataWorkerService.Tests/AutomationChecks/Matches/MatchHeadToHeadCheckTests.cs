@@ -31,11 +31,11 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
     [InlineData(6)]
     [InlineData(7)]
     [InlineData(8)]
-    public void Check_GivenInvalidTournamentLobbySizes_PassesWithNoRejectionReason(int tournamentTeamSize)
+    public void Check_GivenInvalidTournamentLobbySizes_PassesWithNoRejectionReason(int tournamentLobbySize)
     {
         // Arrange
         Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None);
-        match.Tournament.LobbySize = tournamentTeamSize;
+        match.Tournament.LobbySize = tournamentLobbySize;
 
         SeededGame.Generate(match: match);
 
