@@ -41,7 +41,7 @@ jobs:
       - name: Build and push DataWorkerService
         run: |
           docker build -t stagecodes/otr-data-worker-service-staging -f DataWorkerService.Dockerfile .
-          docker push stagecodes/otr-api-staging
+          docker push stagecodes/otr-data-worker-service-staging
 
   deploy:
     environment: Staging
@@ -52,7 +52,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Create .env files
         run: |
-          echo "${{ secrets.APP_ENV }}" > api.env
+          echo "${{ secrets.API_ENV }}" > api.env
+          echo "${{ secrets.DATAWORKERSERVICE_ENV }}" > dataworkerservice.env
           echo "${{ secrets.DB_ENV }}" > db.env
           echo "${{ secrets.POSTGRES_EXPORTER_ENV }}" > postgres_exporter.env
       - name: Copy files to server
@@ -61,8 +62,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "api.env,db.env,postgres_exporter.env,docker-compose-staging.yml,otel-collector-config.yml,prometheus.yml"
-          target: "~/otr-api/"
+          source: "api.env,dataworkerservice.env,db.env,postgres_exporter.env,docker-compose-staging.yml,otel-collector-config.yml,prometheus.yml"
+          target: "~/otr-api-dataworker/"
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:
@@ -70,6 +71,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd ~/otr-api
+            cd ~/otr-api-dataworker
             docker compose -f docker-compose-staging.yml pull
             docker compose -f docker-compose-staging.yml up -d --build

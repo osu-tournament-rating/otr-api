@@ -12,22 +12,17 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
-      with:
-        ref: master
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '8.0.x'
 
-    - name: Restore Dependencies
-      run: dotnet restore
-
     - name: Build
-      run: dotnet build -c Release --no-restore
+      run: dotnet build -c Release
 
     - name: Test
-      run: dotnet test ./APITests/APITests.csproj -c Release --verbosity normal
+      run: dotnet test -c Release --verbosity normal
 
   publish:
     needs: build_test
@@ -35,8 +30,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: master
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
@@ -44,8 +37,12 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and Push Docker Image
         run: |
-          docker build -t stagecodes/otr-api-prod .
+          docker build -t stagecodes/otr-api-prod -f API.Dockerfile .
           docker push stagecodes/otr-api-prod
+      - name: Build and push DataWorkerService
+        run: |
+          docker build -t stagecodes/otr-data-worker-service-prod -f DataWorkerService.Dockerfile .
+          docker push stagecodes/otr-data-worker-service-prod
 
   deploy:
     environment: Production
@@ -54,11 +51,10 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        with:
-          ref: master
       - name: Create .env files
         run: |
-          echo "${{ secrets.APP_ENV }}" > api.env
+          echo "${{ secrets.API_ENV }}" > api.env
+          echo "${{ secrets.DATAWORKERSERVICE_ENV }}" > dataworkerservice.env
           echo "${{ secrets.DB_ENV }}" > db.env
           echo "${{ secrets.POSTGRES_EXPORTER_ENV }}" > postgres_exporter.env
       - name: Copy files to server
@@ -67,8 +63,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "api.env,db.env,postgres_exporter.env,docker-compose-prod.yml,otel-collector-config.yml,prometheus.yml"
-          target: "~/otr-api/"
+          source: "api.env,dataworkerservice.env,db.env,postgres_exporter.env,docker-compose-prod.yml,otel-collector-config.yml,prometheus.yml"
+          target: "~/otr-api-dataworker/"
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:
@@ -76,6 +72,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd ~/otr-api
+            cd ~/otr-api-dataworker
             docker compose -f docker-compose-prod.yml pull
             docker compose -f docker-compose-prod.yml up -d --build
