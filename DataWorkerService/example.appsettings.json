@@ -6,13 +6,12 @@
     }
   },
   "ConnectionStrings": {
-    "DefaultConnection": "",
-    "CollectorConnection": "",
-    "RedisConnection": ""
+    "DefaultConnection": ""
   },
   "Osu": {
     "ClientId": "",
-    "ClientSecret": ""
+    "ClientSecret": "",
+    "RedirectUrl": ""
   },
   "Players": {
     "Osu": {
