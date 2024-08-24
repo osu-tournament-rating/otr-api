@@ -25,7 +25,7 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
             {
                 Id = t.Id,
                 Ruleset = t.Ruleset,
-                TeamSize = t.TeamSize,
+                LobbySize = t.TeamSize,
                 Name = t.Name
             })
             .Take(30)

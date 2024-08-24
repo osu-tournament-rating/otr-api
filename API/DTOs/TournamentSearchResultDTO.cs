@@ -18,9 +18,9 @@ public class TournamentSearchResultDTO
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// Expected team size of the tournament
+    /// Expected in-match team size
     /// </summary>
-    public int TeamSize { get; set; }
+    public int LobbySize { get; set; }
 
     /// <summary>
     /// Name of the tournament
