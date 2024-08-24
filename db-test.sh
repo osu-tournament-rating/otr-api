@@ -1,1 +1,0 @@
-docker run -d -p 5432:5432 --name otr-db-test -e POSTGRES_PASSWORD=postgres -v otr-db-test:/var/lib/postgresql postgres
