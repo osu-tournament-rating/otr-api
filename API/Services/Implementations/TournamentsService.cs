@@ -29,7 +29,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
             ForumUrl = submission.ForumUrl,
             RankRangeLowerBound = submission.RankRangeLowerBound,
             Ruleset = submission.Ruleset,
-            TeamSize = submission.Format,
+            TeamSize = submission.LobbySize,
             ProcessingStatus = preApprove ? TournamentProcessingStatus.NeedsMatchData : TournamentProcessingStatus.NeedsApproval,
             SubmittedByUserId = submitterUserId,
             Matches = enumerableMatchIds
