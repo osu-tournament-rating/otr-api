@@ -48,8 +48,7 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
         var submitterId = User.AuthorizedIdentity();
         if (!submitterId.HasValue)
         {
-            submitterId = 1;
-            // return Unauthorized();
+            return Unauthorized();
         }
 
         if (!ModelState.IsValid)

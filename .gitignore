@@ -1,6 +1,7 @@
 ﻿.idea/
 logs/
 .vs/
+launchSettings.json
 
 **/*.idea/
 **/obj/
