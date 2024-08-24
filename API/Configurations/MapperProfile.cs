@@ -39,9 +39,9 @@ public class MapperProfile : Profile
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
         CreateMap<User, UserDTO>()
-            .ForMember(x => x.OsuId, opt => opt.MapFrom(y => y.Player.OsuId))
-            .ForMember(x => x.Country, opt => opt.MapFrom(y => y.Player.Country))
-            .ForMember(x => x.Username, opt => opt.MapFrom(y => y.Player.Username));
+            .ForMember(x => x.OsuId, opt => opt.MapFrom(y => y.Player == null ? (long?)null : y.Player.OsuId))
+            .ForMember(x => x.Country, opt => opt.MapFrom(y => y.Player == null ? null : y.Player.Country))
+            .ForMember(x => x.Username, opt => opt.MapFrom(y => y.Player == null ? null : y.Player.Username));
         CreateMap<UserSettings, UserSettingsDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(us => us.DefaultRuleset))
             .ForMember(x => x.RulesetIsControlled, opt => opt.MapFrom(us => us.DefaultRulesetIsControlled));
