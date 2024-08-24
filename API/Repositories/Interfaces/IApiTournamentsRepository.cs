@@ -17,7 +17,7 @@ public interface IApiTournamentsRepository : ITournamentsRepository
     /// <param name="mode">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
-    public Task<PlayerTournamentTeamSizeCountDTO> GetTeamSizeStatsAsync(
+    public Task<PlayerTournamentLobbySizeCountDTO> GetTeamSizeStatsAsync(
         int playerId,
         int mode,
         DateTime dateMin,
