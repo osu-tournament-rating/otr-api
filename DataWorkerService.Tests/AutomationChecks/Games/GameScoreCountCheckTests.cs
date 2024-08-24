@@ -89,14 +89,14 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
 
         // Assert
         Assert.False(actualPass);
-        Assert.Equal(GameRejectionReason.TeamSizeMismatch, game.RejectionReason);
+        Assert.Equal(GameRejectionReason.LobbySizeMismatch, game.RejectionReason);
     }
 
     [Theory]
     [InlineData(0, 0, 1, false, GameRejectionReason.NoScores)]
     [InlineData(0, 2, 1, false, GameRejectionReason.NoValidScores)]
-    [InlineData(1, 3, 1, false, GameRejectionReason.TeamSizeMismatch)]
-    [InlineData(9, 0, 4, false, GameRejectionReason.TeamSizeMismatch)]
+    [InlineData(1, 3, 1, false, GameRejectionReason.LobbySizeMismatch)]
+    [InlineData(9, 0, 4, false, GameRejectionReason.LobbySizeMismatch)]
     [InlineData(2, 7, 1, true, GameRejectionReason.None)]
     [InlineData(4, 1, 2, true, GameRejectionReason.None)]
     [InlineData(6, 0, 3, true, GameRejectionReason.None)]

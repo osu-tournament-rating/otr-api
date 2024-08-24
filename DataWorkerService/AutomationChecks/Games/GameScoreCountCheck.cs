@@ -33,7 +33,7 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
             return true;
         }
 
-        entity.RejectionReason |= GameRejectionReason.TeamSizeMismatch;
+        entity.RejectionReason |= GameRejectionReason.LobbySizeMismatch;
         return false;
     }
 }
