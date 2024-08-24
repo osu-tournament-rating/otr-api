@@ -82,7 +82,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         SeededScore.Generate(verificationStatus: VerificationStatus.PreVerified, game: game);
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, game: game);
 
-        game.Match.Tournament.TeamSize = 4;
+        game.Match.Tournament.LobbySize = 4;
 
         // Act
         var actualPass = AutomationCheck.Check(game);
@@ -128,7 +128,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
             }
         }
 
-        game.Match.Tournament.TeamSize = tournamentTeamSize;
+        game.Match.Tournament.LobbySize = tournamentTeamSize;
 
         // Act
         var actualPass = AutomationCheck.Check(game);
