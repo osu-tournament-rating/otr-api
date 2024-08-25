@@ -1,4 +1,5 @@
 using OsuApiClient.Enums;
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
 namespace DataWorkerService.Configurations;
 

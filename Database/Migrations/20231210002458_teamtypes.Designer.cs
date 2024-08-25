@@ -10,7 +10,9 @@ namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
     [Migration("20231210002458_teamtypes")]
+#pragma warning disable CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
     partial class teamtypes
+#pragma warning restore CS8981 // The type name only contains lower-cased ascii characters. Such names may become reserved for the language.
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -1,7 +1,7 @@
 {
   "Logging": {
     "LogLevel": {
-      "Default": "Trace",
+      "Default": "Information",
       "Microsoft.AspNetCore": "Warning"
     }
   },
@@ -11,11 +11,8 @@
     "RedisConnection": ""
   },
   "Osu": {
-    "ApiKey": "",
     "ClientId": "",
-    "ClientSecret": "",
-    "AutoUpdateUsers": false,
-    "AllowDataFetching": false
+    "ClientSecret": ""
   },
   "Jwt": {
     "Key": "",

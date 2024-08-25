@@ -1,12 +1,21 @@
 version: '3.8'
 services:
-  app:
+  api:
     image: "stagecodes/otr-api-staging:latest"
     container_name: api
     ports:
       - "3700:8080"
     env_file:
-      - app.env
+      - api.env
+    depends_on:
+      - db
+      - redis
+    restart: always
+  dataworkerservice:
+    image: "stagecodes/otr-data-worker-service-staging:latest"
+    container_name: dataworkerservice
+    env_file:
+      - dataworkerservice.env
     depends_on:
       - db
       - redis

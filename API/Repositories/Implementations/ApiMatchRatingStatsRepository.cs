@@ -12,7 +12,10 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
 {
     private readonly OtrContext _context = context;
 
+    // TODO: remove pragma after rewrite
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
     public async Task<PlayerRatingChartDTO> GetRatingChartAsync(
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         int playerId,
         int mode,
         DateTime? dateMin = null,

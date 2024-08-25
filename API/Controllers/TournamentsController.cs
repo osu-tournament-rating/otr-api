@@ -13,7 +13,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class TournamentsController(ITournamentsService tournamentsService, IMatchesService matchesService) : Controller
+public class TournamentsController(ITournamentsService tournamentsService) : Controller
 {
     /// <summary>
     /// List all tournaments
