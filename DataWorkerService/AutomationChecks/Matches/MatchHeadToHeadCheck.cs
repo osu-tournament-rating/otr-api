@@ -6,7 +6,7 @@ namespace DataWorkerService.AutomationChecks.Matches;
 
 /// <summary>
 /// Checks (and attempts to fix) <see cref="Match"/>es played in a <see cref="Tournament"/> with a
-/// <see cref="Tournament.TeamSize"/> of 1 where all <see cref="Match.Games"/> were played with a
+/// <see cref="Tournament.LobbySize"/> of 1 where all <see cref="Match.Games"/> were played with a
 /// <see cref="Database.Enums.TeamType"/> of <see cref="Database.Enums.TeamType.HeadToHead"/>
 /// instead of <see cref="Database.Enums.TeamType.TeamVs"/>
 /// </summary>
@@ -26,9 +26,9 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
             return true;
         }
 
-        if (entity.Tournament.TeamSize != 1)
+        if (entity.Tournament.LobbySize != 1)
         {
-            logger.LogDebug("Match's tournament team size is not 1 [Team size: {TeamSize}]", entity.Tournament.TeamSize);
+            logger.LogDebug("Match's tournament team size is not 1 [Team size: {TeamSize}]", entity.Tournament.LobbySize);
             return true;
         }
 

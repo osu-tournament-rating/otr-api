@@ -1,3 +1,5 @@
+using Database.Entities;
+
 namespace Database.Enums.Verification;
 
 /// <summary>
@@ -51,9 +53,9 @@ public enum GameRejectionReason
     /// <summary>
     /// The <see cref="Entities.Game"/>'s number of <see cref="Entities.Game.Scores"/> with a <see cref="VerificationStatus"/>
     /// of <see cref="VerificationStatus.Verified"/> or <see cref="VerificationStatus.PreVerified"/> divided by 2 is
-    /// not equal to the <see cref="Entities.Tournament.TeamSize"/> of the parent <see cref="Entities.Tournament"/>
+    /// not equal to the <see cref="Tournament.LobbySize"/> of the parent <see cref="Entities.Tournament"/>
     /// </summary>
-    TeamSizeMismatch = 1 << 7,
+    LobbySizeMismatch = 1 << 7,
 
     /// <summary>
     /// The <see cref="Entities.Game"/>'s <see cref="Entities.Game.EndTime"/> could not be determined

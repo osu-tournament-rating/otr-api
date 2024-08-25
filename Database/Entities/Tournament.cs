@@ -49,10 +49,10 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAuditableEn
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// Expected in-game team size
+    /// Expected in-match team size
     /// </summary>
-    [Column("team_size")]
-    public int TeamSize { get; set; }
+    [Column("lobby_size")]
+    public int LobbySize { get; set; }
 
     /// <summary>
     /// Verification status

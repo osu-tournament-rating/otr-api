@@ -38,7 +38,7 @@ public class TournamentSubmissionDTO
     /// </summary>
     /// <example>For a 2v2 team size 4 tournament, this value should be 2</example>
     [Range(1, 8)]
-    public int Format { get; set; }
+    public int LobbySize { get; set; }
 
     /// <summary>
     /// osu! ruleset

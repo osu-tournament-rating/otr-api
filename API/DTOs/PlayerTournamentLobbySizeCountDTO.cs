@@ -3,7 +3,7 @@ namespace API.DTOs;
 /// <summary>
 /// Represents counts of participation in tournaments of differing team sizes
 /// </summary>
-public class PlayerTournamentTeamSizeCountDTO
+public class PlayerTournamentLobbySizeCountDTO
 {
     /// <summary>
     /// Number of 1v1 tournaments played

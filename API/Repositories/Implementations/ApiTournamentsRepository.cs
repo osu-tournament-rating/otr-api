@@ -25,14 +25,14 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
             {
                 Id = t.Id,
                 Ruleset = t.Ruleset,
-                TeamSize = t.TeamSize,
+                LobbySize = t.LobbySize,
                 Name = t.Name
             })
             .Take(30)
             .ToListAsync();
     }
 
-    public async Task<PlayerTournamentTeamSizeCountDTO> GetTeamSizeStatsAsync(
+    public async Task<PlayerTournamentLobbySizeCountDTO> GetLobbySizeStatsAsync(
     int playerId,
     int mode,
     DateTime dateMin,
@@ -41,11 +41,11 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
     {
         var participatedTournaments =
             await QueryForParticipation(playerId, mode, dateMin, dateMax)
-            .Select(t => new { TournamentId = t.Id, t.TeamSize })
+            .Select(t => new { TournamentId = t.Id, TeamSize = t.LobbySize })
             .Distinct() // Ensures each tournament is counted once
             .ToListAsync();
 
-        return new PlayerTournamentTeamSizeCountDTO
+        return new PlayerTournamentLobbySizeCountDTO
         {
             Count1v1 = participatedTournaments.Count(x => x.TeamSize == 1),
             Count2v2 = participatedTournaments.Count(x => x.TeamSize == 2),

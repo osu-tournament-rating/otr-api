@@ -29,7 +29,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
             ForumUrl = submission.ForumUrl,
             RankRangeLowerBound = submission.RankRangeLowerBound,
             Ruleset = submission.Ruleset,
-            TeamSize = submission.Format,
+            LobbySize = submission.LobbySize,
             ProcessingStatus = preApprove ? TournamentProcessingStatus.NeedsMatchData : TournamentProcessingStatus.NeedsApproval,
             SubmittedByUserId = submitterUserId,
             Matches = enumerableMatchIds
@@ -77,7 +77,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
         existing.ForumUrl = wrapper.ForumUrl;
         existing.Ruleset = (Ruleset)wrapper.Ruleset;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
-        existing.TeamSize = wrapper.TeamSize;
+        existing.LobbySize = wrapper.LobbySize;
 
         await tournamentsRepository.UpdateAsync(existing);
         return mapper.Map<TournamentDTO>(existing);

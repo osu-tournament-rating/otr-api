@@ -74,7 +74,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
     }
 
     [Fact]
-    public void Check_GivenVerifiedScoresCount_LessThanTournamentTeamSize_FailsWith_TeamSizeMissMatch()
+    public void Check_GivenVerifiedScoresCount_LessThanTournamentLobbySize_FailsWith_LobbySizeMissMatch()
     {
         // Arrange
         Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);
@@ -82,21 +82,21 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         SeededScore.Generate(verificationStatus: VerificationStatus.PreVerified, game: game);
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, game: game);
 
-        game.Match.Tournament.TeamSize = 4;
+        game.Match.Tournament.LobbySize = 4;
 
         // Act
         var actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.False(actualPass);
-        Assert.Equal(GameRejectionReason.TeamSizeMismatch, game.RejectionReason);
+        Assert.Equal(GameRejectionReason.LobbySizeMismatch, game.RejectionReason);
     }
 
     [Theory]
     [InlineData(0, 0, 1, false, GameRejectionReason.NoScores)]
     [InlineData(0, 2, 1, false, GameRejectionReason.NoValidScores)]
-    [InlineData(1, 3, 1, false, GameRejectionReason.TeamSizeMismatch)]
-    [InlineData(9, 0, 4, false, GameRejectionReason.TeamSizeMismatch)]
+    [InlineData(1, 3, 1, false, GameRejectionReason.LobbySizeMismatch)]
+    [InlineData(9, 0, 4, false, GameRejectionReason.LobbySizeMismatch)]
     [InlineData(2, 7, 1, true, GameRejectionReason.None)]
     [InlineData(4, 1, 2, true, GameRejectionReason.None)]
     [InlineData(6, 0, 3, true, GameRejectionReason.None)]
@@ -128,7 +128,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
             }
         }
 
-        game.Match.Tournament.TeamSize = tournamentTeamSize;
+        game.Match.Tournament.LobbySize = tournamentTeamSize;
 
         // Act
         var actualPass = AutomationCheck.Check(game);

@@ -28,12 +28,12 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
         }
 
         // Number of scores matches expected team size
-        if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.TeamSize)
+        if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.LobbySize)
         {
             return true;
         }
 
-        entity.RejectionReason |= GameRejectionReason.TeamSizeMismatch;
+        entity.RejectionReason |= GameRejectionReason.LobbySizeMismatch;
         return false;
     }
 }

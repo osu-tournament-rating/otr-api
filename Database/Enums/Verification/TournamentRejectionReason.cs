@@ -43,13 +43,13 @@ public enum TournamentRejectionReason
     AbnormalFormat = 1 << 3,
 
     /// <summary>
-    /// The <see cref="Entities.Tournament"/>'s team sizes are not consistent.
+    /// The <see cref="Entities.Tournament"/>'s lobby sizes are not consistent.
     /// </summary>
     /// <remarks>
     /// Only assigned via a "rejected submission". <br/>
     /// Covers cases such as &gt; 2 teams in lobby at once, async lobbies, team size gimmicks, varying team sizes, etc
     /// </remarks>
-    VaryingTeamSize = 1 << 4,
+    VaryingLobbySize = 1 << 4,
 
     /// <summary>
     /// The <see cref="Entities.Tournament"/>'s data is incomplete or not recoverable
