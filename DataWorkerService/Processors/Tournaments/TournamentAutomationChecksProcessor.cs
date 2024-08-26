@@ -19,7 +19,7 @@ public class TournamentAutomationChecksProcessor(
         if (entity.ProcessingStatus is not TournamentProcessingStatus.NeedsAutomationChecks)
         {
             logger.LogDebug(
-                "Match does not require processing [Id: {Id} | Processing Status: {Status}]",
+                "Tournament does not require processing [Id: {Id} | Processing Status: {Status}]",
                 entity.Id,
                 entity.ProcessingStatus
             );
