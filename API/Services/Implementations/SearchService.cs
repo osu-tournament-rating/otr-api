@@ -13,7 +13,7 @@ public class SearchService(
     IMatchesService matchesService,
     IPlayersRepository playerRepository,
     ICacheHandler cacheHandler
-    ) : ISearchService
+) : ISearchService
 {
     public async Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey) =>
         new()
@@ -26,7 +26,8 @@ public class SearchService(
     private async Task<IEnumerable<TournamentSearchResultDTO>> SearchTournamentsByNameAsync(string tournamentName)
     {
         IEnumerable<TournamentSearchResultDTO>? result =
-            await cacheHandler.Cache.GetObjectAsync<IEnumerable<TournamentSearchResultDTO>>(CacheUtils.TournamentSearchKey(tournamentName));
+            await cacheHandler.Cache.GetObjectAsync<IEnumerable<TournamentSearchResultDTO>>(
+                CacheUtils.TournamentSearchKey(tournamentName));
 
         if (result is not null)
         {
@@ -42,7 +43,8 @@ public class SearchService(
     private async Task<IEnumerable<MatchSearchResultDTO>> SearchMatchesByNameAsync(string matchName)
     {
         IEnumerable<MatchSearchResultDTO>? result =
-            await cacheHandler.Cache.GetObjectAsync<IEnumerable<MatchSearchResultDTO>>(CacheUtils.MatchSearchKey(matchName));
+            await cacheHandler.Cache.GetObjectAsync<IEnumerable<MatchSearchResultDTO>>(
+                CacheUtils.MatchSearchKey(matchName));
 
         if (result is not null)
         {
@@ -57,10 +59,11 @@ public class SearchService(
 
     private async Task<IEnumerable<PlayerSearchResultDTO>> SearchPlayersByNameAsync(string username)
     {
-        IEnumerable<PlayerSearchResultDTO>? result =
-            await cacheHandler.Cache.GetObjectAsync<IEnumerable<PlayerSearchResultDTO>>(CacheUtils.PlayerSearchKey(username));
+        var result =
+            (await cacheHandler.Cache.GetObjectAsync<IEnumerable<PlayerSearchResultDTO>>(
+                CacheUtils.PlayerSearchKey(username)))?.ToList();
 
-        if (result is not null)
+        if (result != null && result.Count != 0)
         {
             return result;
         }
