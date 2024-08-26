@@ -71,7 +71,7 @@ public static class SeededScore
 
         seededScore.Grade = grade ?? seededScore.Ruleset switch
         {
-            Ruleset.Standard => ScoreGradeUtils.DetermineStandardGrade(seededScore.Accuracy / 100, seededScore.Mods, seededScore),
+            Ruleset.Osu => ScoreGradeUtils.DetermineStandardGrade(seededScore.Accuracy / 100, seededScore.Mods, seededScore),
             Ruleset.Taiko => ScoreGradeUtils.DetermineTaikoGrade(seededScore.Accuracy / 100, seededScore.Mods, seededScore),
             Ruleset.Catch => ScoreGradeUtils.DetermineCatchGrade(seededScore.Accuracy / 100, seededScore.Mods),
             _ => ScoreGradeUtils.DetermineManiaGrade(seededScore.Accuracy / 100, seededScore.Mods)

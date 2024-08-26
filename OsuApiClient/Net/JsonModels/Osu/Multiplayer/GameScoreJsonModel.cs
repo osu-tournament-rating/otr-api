@@ -27,7 +27,7 @@ public class GameScoreJsonModel : JsonModelBase
     [JsonProperty("max_combo")]
     public int MaxCombo { get; set; }
 
-    [JsonProperty("mode")]
+    [JsonProperty("ruleset")]
     public string Mode { get; set; } = null!;
 
     [JsonProperty("mode_int")]

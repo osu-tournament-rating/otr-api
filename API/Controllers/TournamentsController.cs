@@ -35,7 +35,7 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     /// <param name="tournamentSubmission">Tournament submission data</param>
     /// <response code="400">
     /// If the given <see cref="tournamentSubmission"/> is malformed
-    /// If a tournament matching the given name and mode already exists
+    /// If a tournament matching the given name and ruleset already exists
     /// </response>
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
@@ -58,7 +58,7 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
 
         if (await tournamentsService.ExistsAsync(tournamentSubmission.Name, tournamentSubmission.Ruleset))
         {
-            return BadRequest($"A tournament with name {tournamentSubmission.Name} for mode {tournamentSubmission.Ruleset} already exists");
+            return BadRequest($"A tournament with name {tournamentSubmission.Name} for ruleset {tournamentSubmission.Ruleset} already exists");
         }
 
         // Create tournament

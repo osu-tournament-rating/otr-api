@@ -1,6 +1,7 @@
 using API.Enums;
 using API.Repositories.Interfaces;
 using APITests.SeedData.DTOs;
+using Database.Enums;
 using Moq;
 
 namespace APITests.MockRepositories;
@@ -12,7 +13,7 @@ public class MockRatingStatsRepository : Mock<IApiMatchRatingStatsRepository>
         Setup(x =>
                 x.HighestGlobalRankAsync(
                     It.IsAny<int>(),
-                    It.IsAny<int>(),
+                    It.IsAny<Ruleset>(),
                     It.IsAny<DateTime?>(),
                     It.IsAny<DateTime?>()
                 )
@@ -27,7 +28,7 @@ public class MockRatingStatsRepository : Mock<IApiMatchRatingStatsRepository>
         Setup(x =>
                 x.HighestCountryRankAsync(
                     It.IsAny<int>(),
-                    It.IsAny<int>(),
+                    It.IsAny<Ruleset>(),
                     It.IsAny<DateTime?>(),
                     It.IsAny<DateTime?>()
                 )
@@ -42,7 +43,7 @@ public class MockRatingStatsRepository : Mock<IApiMatchRatingStatsRepository>
         Setup(x =>
                 x.GetRankChartAsync(
                     It.IsAny<int>(),
-                    It.IsAny<int>(),
+                    It.IsAny<Ruleset>(),
                     It.IsAny<LeaderboardChartType>(),
                     It.IsAny<DateTime?>(),
                     It.IsAny<DateTime?>()

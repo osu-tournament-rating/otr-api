@@ -161,7 +161,7 @@ public class MatchesRepository(
 
     public async Task<IEnumerable<Match>> GetPlayerMatchesAsync(
         long osuId,
-        int mode,
+        Ruleset ruleset,
         DateTime before,
         DateTime after
     ) =>
@@ -169,7 +169,7 @@ public class MatchesRepository(
             .WhereFiltered(QueryFilterType.Verified | QueryFilterType.ProcessingCompleted)
             .IncludeChildren(QueryFilterType.Verified | QueryFilterType.ProcessingCompleted)
             .WherePlayerParticipated(osuId)
-            .WhereRuleset((Ruleset)mode)
+            .WhereRuleset(ruleset)
             .WhereDateRange(after, before)
             .ToListAsync();
 }

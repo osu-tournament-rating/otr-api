@@ -18,7 +18,7 @@ public class ApiMatchWinRecordRepository(
 
     public async Task<IEnumerable<PlayerFrequencyDTO>> GetFrequentTeammatesAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null,
         int limit = 5
@@ -26,7 +26,7 @@ public class ApiMatchWinRecordRepository(
     {
         List<MatchWinRecord> redTeams = await _context
             .MatchWinRecords.Where(x =>
-                x.Match.Tournament.Ruleset == (Ruleset)mode
+                x.Match.Tournament.Ruleset == (Ruleset)ruleset
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
                 && x.WinnerRoster.Contains(playerId)
@@ -35,7 +35,7 @@ public class ApiMatchWinRecordRepository(
 
         List<MatchWinRecord> blueTeams = await _context
             .MatchWinRecords.Where(x =>
-                x.Match.Tournament.Ruleset == (Ruleset)mode
+                x.Match.Tournament.Ruleset == (Ruleset)ruleset
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
                 && x.LoserRoster.Contains(playerId)
@@ -61,7 +61,7 @@ public class ApiMatchWinRecordRepository(
 
     public async Task<IEnumerable<PlayerFrequencyDTO>> GetFrequentOpponentsAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null,
         int limit = 5
@@ -73,7 +73,7 @@ public class ApiMatchWinRecordRepository(
                 || (!x.LoserRoster.Contains(playerId) && x.WinnerRoster.Contains(playerId))
             )
             .Where(x =>
-                x.Match.Tournament.Ruleset == (Ruleset)mode
+                x.Match.Tournament.Ruleset == (Ruleset)ruleset
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
             )

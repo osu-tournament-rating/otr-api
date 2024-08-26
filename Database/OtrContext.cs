@@ -653,7 +653,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(us => us.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
-            entity.Property(us => us.DefaultRuleset).HasDefaultValue(Ruleset.Standard);
+            entity.Property(us => us.DefaultRuleset).HasDefaultValue(Ruleset.Osu);
 
             // Relation: User
             entity

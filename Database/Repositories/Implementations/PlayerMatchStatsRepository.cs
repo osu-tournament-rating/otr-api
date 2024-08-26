@@ -12,7 +12,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
 {
     public async Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     )
@@ -20,7 +20,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         return await context
             .PlayerMatchStats.Where(stats =>
                 stats.PlayerId == playerId
-                && stats.Match.Tournament.Ruleset == (Ruleset)mode
+                && stats.Match.Tournament.Ruleset == ruleset
                 && stats.Match.StartTime >= dateMin
                 && stats.Match.StartTime <= dateMax
             )
@@ -31,7 +31,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
     public async Task<IEnumerable<PlayerMatchStats>> TeammateStatsAsync(
         int playerId,
         int teammateId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     ) =>
@@ -39,7 +39,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .PlayerMatchStats.Where(stats =>
                 stats.PlayerId == playerId
                 && stats.TeammateIds.Contains(teammateId)
-                && stats.Match.Tournament.Ruleset == (Ruleset)mode
+                && stats.Match.Tournament.Ruleset == ruleset
                 && stats.Match.StartTime >= dateMin
                 && stats.Match.StartTime <= dateMax
             )
@@ -49,7 +49,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
     public async Task<IEnumerable<PlayerMatchStats>> OpponentStatsAsync(
         int playerId,
         int opponentId,
-        int mode,
+        Ruleset mode,
         DateTime dateMin,
         DateTime dateMax
     ) =>
@@ -57,7 +57,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .PlayerMatchStats.Where(stats =>
                 stats.PlayerId == playerId
                 && stats.OpponentIds.Contains(opponentId)
-                && stats.Match.Tournament.Ruleset == (Ruleset)mode
+                && stats.Match.Tournament.Ruleset == mode
                 && stats.Match.StartTime >= dateMin
                 && stats.Match.StartTime <= dateMax
             )
@@ -75,7 +75,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
 
     public async Task<int> CountMatchesPlayedAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     )
@@ -86,7 +86,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         return await context
             .PlayerMatchStats.Where(x =>
                 x.PlayerId == playerId
-                && x.Match.Tournament.Ruleset == (Ruleset)mode
+                && x.Match.Tournament.Ruleset == ruleset
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
             )
@@ -95,7 +95,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
 
     public async Task<int> CountMatchesWonAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     )
@@ -106,7 +106,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         return await context
             .PlayerMatchStats.Where(x =>
                 x.PlayerId == playerId
-                && x.Match.Tournament.Ruleset == (Ruleset)mode
+                && x.Match.Tournament.Ruleset == ruleset
                 && x.Won
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
@@ -116,7 +116,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
 
     public async Task<double> GlobalWinrateAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     )
@@ -124,8 +124,8 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        var matchesPlayed = await CountMatchesPlayedAsync(playerId, mode, dateMin, dateMax);
-        var matchesWon = await CountMatchesWonAsync(playerId, mode, dateMin, dateMax);
+        var matchesPlayed = await CountMatchesPlayedAsync(playerId, ruleset, dateMin, dateMax);
+        var matchesWon = await CountMatchesWonAsync(playerId, ruleset, dateMin, dateMax);
 
         if (matchesPlayed == 0)
         {

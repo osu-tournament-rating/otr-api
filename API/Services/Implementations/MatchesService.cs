@@ -151,12 +151,12 @@ public class MatchesService(
 
     public async Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(
         long osuPlayerId,
-        int mode,
+        Ruleset ruleset,
         DateTime start,
         DateTime end
     )
     {
-        IEnumerable<Match> matches = await matchesRepository.GetPlayerMatchesAsync(osuPlayerId, mode, start, end);
+        IEnumerable<Match> matches = await matchesRepository.GetPlayerMatchesAsync(osuPlayerId, ruleset, start, end);
         return mapper.Map<IEnumerable<MatchDTO>>(matches);
     }
 

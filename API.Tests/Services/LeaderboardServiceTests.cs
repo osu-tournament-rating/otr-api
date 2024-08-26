@@ -3,6 +3,7 @@ using API.Enums;
 using API.Services.Implementations;
 using API.Utilities;
 using APITests.MockRepositories;
+using Database.Enums;
 
 namespace APITests.Services;
 
@@ -73,21 +74,23 @@ public class LeaderboardServiceTests
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    [InlineData(2)]
-    [InlineData(3)]
-    public async Task GetLeaderboardAsync_ReturnsLeaderboard_WithCorrectMode(int mode)
+    [InlineData(Ruleset.Osu)]
+    [InlineData(Ruleset.Taiko)]
+    [InlineData(Ruleset.Catch)]
+    [InlineData(Ruleset.ManiaOther)]
+    [InlineData(Ruleset.Mania4k)]
+    [InlineData(Ruleset.Mania7k)]
+    public async Task GetLeaderboardAsync_ReturnsLeaderboard_WithCorrectMode(Ruleset ruleset)
     {
         // Arrange
         LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(
-            new LeaderboardRequestQueryDTO { Mode = mode }
+            new LeaderboardRequestQueryDTO { Ruleset = ruleset }
         );
         // Act
 
         // Assert
 
-        Assert.Equal(mode, lb.Mode);
+        Assert.Equal(ruleset, lb.Ruleset);
     }
 
     [Fact]
@@ -96,7 +99,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -120,7 +123,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -144,7 +147,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -168,7 +171,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -192,7 +195,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -216,7 +219,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -240,7 +243,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -264,7 +267,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -288,7 +291,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
@@ -312,7 +315,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             Filter = new LeaderboardFilterDTO
             {
                 TierFilters = new LeaderboardTierFilterDTO
@@ -352,7 +355,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             Filter = new LeaderboardFilterDTO
             {
                 TierFilters = new LeaderboardTierFilterDTO
@@ -384,7 +387,7 @@ public class LeaderboardServiceTests
         // Arrange
         var filter = new LeaderboardRequestQueryDTO
         {
-            Mode = 0,
+            Ruleset = 0,
             Filter = new LeaderboardFilterDTO
             {
                 TierFilters = new LeaderboardTierFilterDTO

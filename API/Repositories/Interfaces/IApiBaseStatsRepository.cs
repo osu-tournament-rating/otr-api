@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Enums;
 using Database.Entities.Processor;
+using Database.Enums;
 using Database.Repositories.Interfaces;
 
 namespace API.Repositories.Interfaces;
@@ -10,14 +11,14 @@ public interface IApiBaseStatsRepository : IBaseStatsRepository
     Task<IEnumerable<PlayerRating>> GetLeaderboardAsync(
         int page,
         int pageSize,
-        int mode,
+        Ruleset ruleset,
         LeaderboardChartType chartType,
         LeaderboardFilterDTO? filter,
         int? playerId
     );
 
     Task<int> LeaderboardCountAsync(
-        int requestQueryMode,
+        Ruleset requestQueryRuleset,
         LeaderboardChartType requestQueryChartType,
         LeaderboardFilterDTO requestQueryFilter,
         int? playerId

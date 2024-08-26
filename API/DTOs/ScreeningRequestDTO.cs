@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using API.Controllers;
+using Database.Enums;
 
 namespace API.DTOs;
 
@@ -12,9 +13,10 @@ public class ScreeningRequestDTO
     /// <summary>
     /// The ruleset by which data will be referenced, required
     /// </summary>
-    [Range(0, 3, ErrorMessage = "Invalid ruleset (0 = osu!, " +
-                                "1 = osu!Taiko, 2 = osu!Catch, 3 = osu!Mania)")]
-    public required int Ruleset { get; set; }
+    [Range(0, 5, ErrorMessage = "Invalid ruleset (0 = osu!, " +
+                                "1 = osu!Taiko, 2 = osu!Catch, 3 = osu!Mania (Other), " +
+                                "4 = osu!mania 4K, 5 = osu!mania 7K)")]
+    public required Ruleset Ruleset { get; set; }
     /// <summary>
     /// Players with a current rating below this value will be screened
     /// </summary>

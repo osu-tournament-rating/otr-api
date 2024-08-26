@@ -366,7 +366,7 @@ public sealed class OsuClient(
         var queryParams = new Dictionary<string, string>
         {
             ["user"] = id.ToString(),
-            ["mode"] = ((int)ruleset).ToString()
+            ["ruleset"] = ((int)ruleset).ToString()
         };
 
         if (fromDate.HasValue)

@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Enums;
+using Database.Enums;
 using Database.Repositories.Interfaces;
 
 namespace API.Repositories.Interfaces;
@@ -11,14 +12,14 @@ public interface IApiMatchRatingStatsRepository : IMatchRatingStatsRepository
     /// </summary>
     Task<PlayerRatingChartDTO> GetRatingChartAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
 
     Task<PlayerRankChartDTO> GetRankChartAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         LeaderboardChartType chartType,
         DateTime? dateMin = null,
         DateTime? dateMax = null

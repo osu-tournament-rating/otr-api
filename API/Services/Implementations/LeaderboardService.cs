@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Enums;
 using API.Services.Interfaces;
+using Database.Enums;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -24,15 +25,15 @@ public class LeaderboardService(
 
         var leaderboard = new LeaderboardDTO
         {
-            Mode = requestQuery.Mode,
+            Ruleset = requestQuery.Ruleset,
             TotalPlayerCount = await baseStatsService.LeaderboardCountAsync(
-                requestQuery.Mode,
+                requestQuery.Ruleset,
                 requestQuery.ChartType,
                 requestQuery.Filter,
                 authorizedPlayerId
             ),
             FilterDefaults = await baseStatsService.LeaderboardFilterDefaultsAsync(
-                requestQuery.Mode,
+                requestQuery.Ruleset,
                 requestQuery.ChartType
             )
         };
@@ -45,14 +46,14 @@ public class LeaderboardService(
             {
                 leaderboard.PlayerChart = await GetPlayerChartAsync(
                     authorizedPlayerId.Value,
-                    requestQuery.Mode,
+                    requestQuery.Ruleset,
                     requestQuery.ChartType
                 );
             }
         }
 
         IEnumerable<PlayerRatingDTO?> baseStats = await baseStatsService.GetLeaderboardAsync(
-            requestQuery.Mode,
+            requestQuery.Ruleset,
             requestQuery.Page,
             requestQuery.PageSize,
             requestQuery.ChartType,
@@ -84,7 +85,7 @@ public class LeaderboardService(
                     Rating = baseStat.Rating,
                     Tier = baseStat.RankProgress.CurrentTier,
                     WinRate = baseStat.WinRate,
-                    Mode = baseStat.Mode,
+                    Ruleset = baseStat.Ruleset,
                     Country = country
                 }
             );
@@ -168,11 +169,11 @@ public class LeaderboardService(
 
     private async Task<LeaderboardPlayerChartDTO?> GetPlayerChartAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         LeaderboardChartType chartType
     )
     {
-        PlayerRatingDTO? baseStats = await baseStatsService.GetAsync(null, playerId, mode);
+        PlayerRatingDTO? baseStats = await baseStatsService.GetAsync(null, playerId, ruleset);
 
         if (baseStats == null)
         {
@@ -189,13 +190,13 @@ public class LeaderboardService(
         var highestRank = chartType switch
         {
             LeaderboardChartType.Global
-                => await ratingStatsRepository.HighestGlobalRankAsync(playerId, mode),
+                => await ratingStatsRepository.HighestGlobalRankAsync(playerId, ruleset),
             LeaderboardChartType.Country
-                => await ratingStatsRepository.HighestCountryRankAsync(playerId, mode),
+                => await ratingStatsRepository.HighestCountryRankAsync(playerId, ruleset),
             _ => throw new ArgumentOutOfRangeException(nameof(chartType), chartType, null)
         };
 
-        PlayerRankChartDTO rankChart = await playerStatsService.GetRankChartAsync(playerId, mode, chartType);
+        PlayerRankChartDTO rankChart = await playerStatsService.GetRankChartAsync(playerId, ruleset, chartType);
 
         return new LeaderboardPlayerChartDTO
         {

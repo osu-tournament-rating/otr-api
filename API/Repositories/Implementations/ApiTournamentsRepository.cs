@@ -1,7 +1,9 @@
 using API.DTOs;
+using API.Enums;
 using API.Repositories.Interfaces;
 using Database;
 using Database.Enums;
+using Database.Enums.Verification;
 using Database.Repositories.Implementations;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,13 +36,13 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
 
     public async Task<PlayerTournamentLobbySizeCountDTO> GetLobbySizeStatsAsync(
     int playerId,
-    int mode,
+    Ruleset ruleset,
     DateTime dateMin,
     DateTime dateMax
 )
     {
         var participatedTournaments =
-            await QueryForParticipation(playerId, mode, dateMin, dateMax)
+            await QueryForParticipation(playerId, ruleset, dateMin, dateMax)
             .Select(t => new { TournamentId = t.Id, TeamSize = t.LobbySize })
             .Distinct() // Ensures each tournament is counted once
             .ToListAsync();
@@ -56,36 +58,35 @@ public class ApiTournamentsRepository(OtrContext context) : TournamentsRepositor
     }
 
     public async Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax,
         int count,
-        bool bestPerformances)
+        TournamentPerformanceResultType performanceType)
     {
         IQueryable<PlayerTournamentMatchCostDTO> query =
-            QueryForParticipation(playerId, mode, dateMin, dateMax)
-            .Select(t => new PlayerTournamentMatchCostDTO()
+            QueryForParticipation(playerId, ruleset, dateMin, dateMax)
+            .Select(t => new PlayerTournamentMatchCostDTO
             {
                 PlayerId = playerId,
-                Mode = mode,
+                Ruleset = ruleset,
                 TournamentId = t.Id,
                 TournamentName = t.Name,
                 TournamentAcronym = t.Abbreviation,
-                // TODO
-                // Calc average match cost
-                // MatchCost = t.Matches
-                //     // Filter invalid matches (Above filter uses Any, so invalid matches can still be included)
-                //     .Where(m => m.VerificationStatus == VerificationStatus.Verified)
-                //     // Filter for ratings belonging to target player
-                //     .SelectMany(m => m.MatchRatingAdjustments)
-                //     .Where(mrs => mrs.PlayerId == playerId)
-                //     .Average(mrs => mrs.MatchCost)
+                MatchCost = t.Matches
+                    .Where(m => m.VerificationStatus == VerificationStatus.Verified)
+                    .SelectMany(m => m.PlayerMatchStats)
+                    .Where(pms => pms.PlayerId == playerId)
+                    .Average(pms => pms.MatchCost)
             });
 
-        // Sort
-        query = bestPerformances
-            ? query.OrderByDescending(d => d.MatchCost)
-            : query.OrderBy(d => d.MatchCost);
+        query = performanceType switch
+        {
+            TournamentPerformanceResultType.Best => query.OrderByDescending(d => d.MatchCost),
+            TournamentPerformanceResultType.Worst => query.OrderBy(d => d.MatchCost),
+            TournamentPerformanceResultType.Recent => query,
+            _ => throw new ArgumentOutOfRangeException(nameof(performanceType), performanceType, null)
+        };
 
         return await query.Take(count).ToListAsync();
     }

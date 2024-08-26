@@ -37,27 +37,27 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
     public async Task<int> CountPlayedAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
-    ) => await QueryForParticipation(playerId, mode, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
+    ) => await QueryForParticipation(playerId, ruleset, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
 
     /// <summary>
-    /// Returns a queryable containing tournaments for <see cref="mode"/>
+    /// Returns a queryable containing tournaments for <see cref="ruleset"/>
     /// with *any* match applicable to all of the following criteria:
     /// - Is verified
     /// - Started between <paramref name="dateMin"/> and <paramref name="dateMax"/>
     /// - Contains a <see cref="RatingAdjustment"/> for given <paramref name="playerId"/> (Denotes participation)
     /// </summary>
     /// <param name="playerId">Id (primary key) of target player</param>
-    /// <param name="mode">Ruleset</param>
+    /// <param name="ruleset">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
     /// <remarks>Since filter uses Any, invalid matches can still exist in the resulting query</remarks>
     /// <returns></returns>
     protected IQueryable<Tournament> QueryForParticipation(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin,
         DateTime? dateMax
     )
@@ -69,7 +69,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .Include(t => t.Matches)
             .ThenInclude(m => m.PlayerRatingAdjustments)
             .Where(t =>
-                t.Ruleset == (Ruleset)mode
+                t.Ruleset == ruleset
                 // Contains *any* match that is:
                 && t.Matches.Any(m =>
                     // Within time range

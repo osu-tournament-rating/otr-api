@@ -15,7 +15,7 @@ namespace OsuApiClient.Domain.Osu.Users.Attributes;
 public class RankHistory : IModel
 {
     /// <summary>
-    /// The mode the history data is for
+    /// The ruleset the history data is for
     /// </summary>
     [ValueConverter(typeof(RulesetConverter))]
     [SourceMember(nameof(RankHistoryJsonModel.Mode))]

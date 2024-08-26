@@ -44,7 +44,7 @@
 //             new()
 //             {
 //                 BeatmapId = 1,
-//                 Ruleset = Ruleset.Standard,
+//                 Ruleset = Ruleset.Osu,
 //                 StartTime = new DateTime(2023, 1, 1, 0, 0, 0),
 //                 EndTime = new DateTime(2023, 1, 1, 0, 1, 0),
 //                 GameId = 1,

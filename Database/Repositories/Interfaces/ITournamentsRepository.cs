@@ -28,8 +28,8 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Count number of tournaments played for a player
     /// </summary>
     /// <param name="playerId">Id of target player</param>
-    /// <param name="mode">Ruleset</param>
+    /// <param name="ruleset">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
-    Task<int> CountPlayedAsync(int playerId, int mode, DateTime dateMin, DateTime dateMax);
+    Task<int> CountPlayedAsync(int playerId, Ruleset ruleset, DateTime dateMin, DateTime dateMax);
 }

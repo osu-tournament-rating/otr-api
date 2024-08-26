@@ -1,4 +1,5 @@
 using API.Utilities;
+using Database.Enums;
 
 namespace API.DTOs;
 
@@ -25,7 +26,7 @@ public class PlayerRatingDTO
     /// <summary>
     /// osu! ruleset the statistics are derived from
     /// </summary>
-    public int Mode { get; set; }
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Current rating percentile

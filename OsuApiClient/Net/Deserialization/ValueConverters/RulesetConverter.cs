@@ -20,14 +20,14 @@ public class RulesetConverter : IValueConverter<string, Ruleset>
 
         return (value, variant) switch
         {
-            ("osu", null) => Ruleset.Standard,
+            ("osu", null) => Ruleset.Osu,
             ("taiko", null) => Ruleset.Taiko,
             ("fruits", null) => Ruleset.Catch,
             ("mania", null) => Ruleset.ManiaOther,
             ("mania", "4k") => Ruleset.Mania4k,
             ("mania", "7k") => Ruleset.Mania7k,
             // This should never happen, but using standard as a fallback is ok for our use case
-            _ => Ruleset.Standard
+            _ => Ruleset.Osu
         };
     }
 }

@@ -1,3 +1,4 @@
+using Database.Enums;
 using Database.Repositories.Interfaces;
 using Moq;
 
@@ -10,7 +11,7 @@ public class MockTournamentsRepository : Mock<ITournamentsRepository>
         Setup(x =>
                 x.CountPlayedAsync(
                     It.IsAny<int>(),
-                    It.IsAny<int>(),
+                    It.IsAny<Ruleset>(),
                     It.IsAny<DateTime>(),
                     It.IsAny<DateTime>()
                 )

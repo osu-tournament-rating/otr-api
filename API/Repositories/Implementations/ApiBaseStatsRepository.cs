@@ -26,13 +26,13 @@ public class ApiBaseStatsRepository(
     public async Task<IEnumerable<PlayerRating>> GetLeaderboardAsync(
         int page,
         int pageSize,
-        int mode,
+        Ruleset ruleset,
         LeaderboardChartType chartType,
         LeaderboardFilterDTO? filter,
         int? playerId
     )
     {
-        IQueryable<PlayerRating> query = await LeaderboardQuery(mode, chartType, filter, playerId);
+        IQueryable<PlayerRating> query = await LeaderboardQuery(ruleset, chartType, filter, playerId);
 
         return await query
             .OrderByRatingDescending()
@@ -43,25 +43,25 @@ public class ApiBaseStatsRepository(
     }
 
     public async Task<int> LeaderboardCountAsync(
-        int mode,
+        Ruleset requestQueryRuleset,
         LeaderboardChartType chartType,
         LeaderboardFilterDTO filter,
         int? playerId
     )
     {
-        IQueryable<PlayerRating> query = await LeaderboardQuery(mode, chartType, filter, playerId);
+        IQueryable<PlayerRating> query = await LeaderboardQuery(requestQueryRuleset, chartType, filter, playerId);
 
         return await query.CountAsync();
     }
 
     private async Task<IQueryable<PlayerRating>> LeaderboardQuery(
-        int mode,
+        Ruleset ruleset,
         LeaderboardChartType chartType,
         LeaderboardFilterDTO? filter,
         int? playerId
     )
     {
-        IQueryable<PlayerRating> baseQuery = _context.PlayerRatings.WhereRuleset((Ruleset)mode);
+        IQueryable<PlayerRating> baseQuery = _context.PlayerRatings.WhereRuleset((Ruleset)ruleset);
 
         if (chartType == LeaderboardChartType.Country && playerId.HasValue)
         {
@@ -90,7 +90,7 @@ public class ApiBaseStatsRepository(
             return baseQuery;
         }
 
-        baseQuery = FilterByRank((Ruleset)mode, baseQuery, filter.MinRank, filter.MaxRank);
+        baseQuery = FilterByRank((Ruleset)ruleset, baseQuery, filter.MinRank, filter.MaxRank);
         baseQuery = FilterByRating(baseQuery, filter.MinRating, filter.MaxRating);
         baseQuery = FilterByMatchesPlayed(baseQuery, filter.MinMatches, filter.MaxMatches);
 

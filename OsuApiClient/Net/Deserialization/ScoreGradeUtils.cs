@@ -17,7 +17,7 @@ public static class ScoreGradeUtils
         {
             Ruleset.Taiko => DbScoreGradeUtils.DetermineTaikoGrade(rawScore.Accuracy, mods, rawScore.Statistics),
             Ruleset.Catch => DbScoreGradeUtils.DetermineCatchGrade(rawScore.Accuracy, mods),
-            Ruleset.Standard => DbScoreGradeUtils.DetermineStandardGrade(rawScore.Accuracy, mods, rawScore.Statistics),
+            Ruleset.Osu => DbScoreGradeUtils.DetermineStandardGrade(rawScore.Accuracy, mods, rawScore.Statistics),
             _ => DbScoreGradeUtils.DetermineManiaGrade(rawScore.Accuracy, mods)
         };
     }

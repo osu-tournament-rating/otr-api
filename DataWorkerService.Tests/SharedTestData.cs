@@ -82,10 +82,10 @@ public static class SharedTestData
             {
                 yield return [ruleset, ruleset, true];
             }
-            yield return [Ruleset.Standard, Ruleset.Taiko, false];
+            yield return [Ruleset.Osu, Ruleset.Taiko, false];
             yield return [Ruleset.Taiko, Ruleset.Catch, false];
             yield return [Ruleset.Catch, Ruleset.ManiaOther, false];
-            yield return [Ruleset.ManiaOther, Ruleset.Standard, false];
+            yield return [Ruleset.ManiaOther, Ruleset.Osu, false];
             yield return [Ruleset.ManiaOther, Ruleset.Mania4k, false];
             yield return [Ruleset.ManiaOther, Ruleset.Mania7k, false];
         }

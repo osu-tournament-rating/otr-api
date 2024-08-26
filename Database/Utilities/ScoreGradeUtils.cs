@@ -15,7 +15,7 @@ public static class ScoreGradeUtils
 {
     /// <summary>
     /// Determines the <see cref="ScoreGrade"/> of a <see cref="GameScore"/>
-    /// played in <see cref="Ruleset.Standard"/>
+    /// played in <see cref="Ruleset.Osu"/>
     /// </summary>
     /// <param name="accuracy">Accuracy</param>
     /// <param name="mods">Enabled mods</param>
