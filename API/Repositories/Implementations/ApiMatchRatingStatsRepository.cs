@@ -17,7 +17,7 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
     public async Task<PlayerRatingChartDTO> GetRatingChartAsync(
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     )
@@ -31,7 +31,7 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
         // var matchRatingStats = await _context
         //     .MatchRatingStats.Where(mrs =>
         //         mrs.PlayerId == playerId
-        //         && mrs.Match.Tournament.Ruleset == (Ruleset)mode
+        //         && mrs.Match.Tournament.Ruleset == (Ruleset)ruleset
         //         && mrs.Match.StartTime >= dateMin
         //         && mrs.Match.StartTime <= dateMax
         //     )
@@ -60,7 +60,7 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
         //     .RatingAdjustments
         //     .Where(ra =>
         //         ra.PlayerId == playerId
-        //         && ra.Ruleset == (Ruleset)mode
+        //         && ra.Ruleset == (Ruleset)ruleset
         //         && ra.Timestamp >= dateMin
         //         && ra.Timestamp <= dateMax
         //     )
@@ -95,7 +95,7 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
 
     public async Task<PlayerRankChartDTO> GetRankChartAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         LeaderboardChartType chartType,
         DateTime? dateMin = null,
         DateTime? dateMax = null
@@ -108,7 +108,7 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
             .Where(x =>
                 x.PlayerId == playerId
                 && x.AdjustmentType == RatingAdjustmentType.Match
-                && x.Match!.Tournament.Ruleset == (Ruleset)mode
+                && x.Match!.Tournament.Ruleset == (Ruleset)ruleset
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
             )

@@ -14,7 +14,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
 
     public async Task<IEnumerable<IEnumerable<RatingAdjustment>>> GetForPlayerAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     )
@@ -26,7 +26,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
             .Where(x =>
                 x.PlayerId == playerId
                 && x.AdjustmentType == RatingAdjustmentType.Match
-                && x.Match!.Tournament.Ruleset == (Ruleset)mode
+                && x.Match!.Tournament.Ruleset == ruleset
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
             )
@@ -41,7 +41,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
 
     public async Task<int> HighestGlobalRankAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin,
         DateTime? dateMax
     )
@@ -53,7 +53,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
             .Where(x =>
                 x.PlayerId == playerId
                 && x.AdjustmentType == RatingAdjustmentType.Match
-                && x.Match!.Tournament.Ruleset == (Ruleset)mode
+                && x.Match!.Tournament.Ruleset == ruleset
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
             )
@@ -64,7 +64,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
 
     public async Task<int> HighestCountryRankAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     )
@@ -76,7 +76,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
             .Where(x =>
                 x.PlayerId == playerId
                 && x.AdjustmentType == RatingAdjustmentType.Match
-                && x.Match!.Tournament.Ruleset == (Ruleset)mode
+                && x.Match!.Tournament.Ruleset == ruleset
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
             )
@@ -88,7 +88,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
     public async Task<IEnumerable<RatingAdjustment>> TeammateRatingStatsAsync(
         int playerId,
         int teammateId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     ) =>
@@ -98,7 +98,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
                 _context.PlayerMatchStats.Any(pms =>
                     pms.PlayerId == mrs.PlayerId
                     && pms.TeammateIds.Contains(teammateId)
-                    && pms.Match.Tournament.Ruleset == (Ruleset)mode
+                    && pms.Match.Tournament.Ruleset == ruleset
                     && pms.Match.StartTime >= dateMin
                     && pms.Match.StartTime <= dateMax
                 )
@@ -109,7 +109,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
     public async Task<IEnumerable<RatingAdjustment>> OpponentRatingStatsAsync(
         int playerId,
         int opponentId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     ) =>
@@ -119,7 +119,7 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
                 _context.PlayerMatchStats.Any(pms =>
                     pms.PlayerId == ra.PlayerId
                     && pms.OpponentIds.Contains(opponentId)
-                    && pms.Match.Tournament.Ruleset == (Ruleset)mode
+                    && pms.Match.Tournament.Ruleset == ruleset
                     && pms.Match.StartTime >= dateMin
                     && pms.Match.StartTime <= dateMax
                 )

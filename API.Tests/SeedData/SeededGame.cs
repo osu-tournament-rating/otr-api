@@ -27,7 +27,7 @@ public static class SeededGame
             Id = s_rand.Next(),
             MatchId = matchId,
             BeatmapId = 24245,
-            Ruleset = Ruleset.Standard,
+            Ruleset = Ruleset.Osu,
             ScoringType = ScoringType.ScoreV2,
             TeamType = TeamType.HeadToHead,
             Mods = Mods.None,

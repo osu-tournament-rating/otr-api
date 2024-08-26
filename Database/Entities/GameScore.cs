@@ -146,7 +146,7 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAuditableEnt
             double divisor;
             switch (Ruleset)
             {
-                case Ruleset.Standard:
+                case Ruleset.Osu:
                     divisor = 300d * (Count300 + Count100 + Count50 + CountMiss);
                     return divisor != 0
                         ? 100 * (300d * Count300 + 100d * Count100 + 50d * Count50) / divisor

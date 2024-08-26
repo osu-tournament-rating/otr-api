@@ -7,7 +7,7 @@ namespace Database.Enums;
 /// </summary>
 /// <remarks>
 /// See <a href="https://osu.ppy.sh/wiki/en/Gameplay/Grade">osu! Grade</a>
-/// Summaries are provided as per the <see cref="Ruleset.Standard"/> requirements, but are calculated by <see cref="Ruleset"/>
+/// Summaries are provided as per the <see cref="Ruleset.Osu"/> requirements, but are calculated by <see cref="Ruleset"/>
 /// </remarks>
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public enum ScoreGrade

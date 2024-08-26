@@ -1,4 +1,5 @@
 using API.Repositories.Interfaces;
+using Database.Enums;
 using Moq;
 
 namespace APITests.MockRepositories;
@@ -10,7 +11,7 @@ public class MockMatchStatsRepository : Mock<IApiPlayerMatchStatsRepository>
         Setup(x =>
                 x.CountMatchesPlayedAsync(
                     It.IsAny<int>(),
-                    It.IsAny<int>(),
+                    It.IsAny<Ruleset>(),
                     It.IsAny<DateTime?>(),
                     It.IsAny<DateTime?>()
                 )
@@ -25,7 +26,7 @@ public class MockMatchStatsRepository : Mock<IApiPlayerMatchStatsRepository>
         Setup(x =>
                 x.GlobalWinrateAsync(
                     It.IsAny<int>(),
-                    It.IsAny<int>(),
+                    It.IsAny<Ruleset>(),
                     It.IsAny<DateTime?>(),
                     It.IsAny<DateTime?>()
                 )

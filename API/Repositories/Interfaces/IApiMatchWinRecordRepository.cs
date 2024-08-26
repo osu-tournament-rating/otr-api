@@ -1,4 +1,5 @@
 using API.DTOs;
+using Database.Enums;
 using Database.Repositories.Interfaces;
 
 namespace API.Repositories.Interfaces;
@@ -7,7 +8,7 @@ public interface IApiMatchWinRecordRepository : IMatchWinRecordRepository
 {
     Task<IEnumerable<PlayerFrequencyDTO>> GetFrequentTeammatesAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? maxDate = null,
         int limit = 5
@@ -15,7 +16,7 @@ public interface IApiMatchWinRecordRepository : IMatchWinRecordRepository
 
     Task<IEnumerable<PlayerFrequencyDTO>> GetFrequentOpponentsAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? maxDate = null,
         int limit = 5

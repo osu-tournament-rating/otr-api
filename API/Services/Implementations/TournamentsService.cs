@@ -59,10 +59,10 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
 
     public async Task<int> CountPlayedAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
-    ) => await tournamentsRepository.CountPlayedAsync(playerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.MaxValue);
+    ) => await tournamentsRepository.CountPlayedAsync(playerId, ruleset, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.MaxValue);
 
     public async Task<TournamentDTO?> UpdateAsync(int id, TournamentDTO wrapper)
     {
@@ -75,7 +75,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
         existing.Name = wrapper.Name;
         existing.Abbreviation = wrapper.Abbreviation;
         existing.ForumUrl = wrapper.ForumUrl;
-        existing.Ruleset = (Ruleset)wrapper.Ruleset;
+        existing.Ruleset = wrapper.Ruleset;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
         existing.LobbySize = wrapper.LobbySize;
 

@@ -19,7 +19,7 @@ public interface ITournamentsService
     );
 
     /// <summary>
-    /// Denotes a tournament with matching name and mode exists
+    /// Denotes a tournament with matching name and ruleset exists
     /// </summary>
     Task<bool> ExistsAsync(string name, Ruleset ruleset);
 
@@ -39,7 +39,7 @@ public interface ITournamentsService
     /// <summary>
     /// Gets the number of tournaments played by the given player
     /// </summary>
-    Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
+    Task<int> CountPlayedAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
 
     /// <summary>
     /// Updates a tournament entity with values from a <see cref="TournamentDTO"/>

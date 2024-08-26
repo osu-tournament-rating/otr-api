@@ -1,18 +1,19 @@
 using Database.Entities.Processor;
+using Database.Enums;
 
 namespace Database.Repositories.Interfaces;
 
 public interface IBaseStatsRepository : IRepository<PlayerRating>
 {
     /// <summary>
-    ///  Returns all ratings for a player, one for each game mode (if available)
+    ///  Returns all ratings for a player, one for each game ruleset (if available)
     /// </summary>
     /// <param name="playerId"></param>
     /// <returns></returns>
     Task<IEnumerable<PlayerRating>> GetForPlayerAsync(long osuPlayerId);
 
 
-    Task<PlayerRating?> GetForPlayerAsync(int playerId, int mode);
+    Task<PlayerRating?> GetForPlayerAsync(int playerId, Ruleset ruleset);
 
 
     Task<int> BatchInsertAsync(IEnumerable<PlayerRating> baseStats);
@@ -21,7 +22,7 @@ public interface IBaseStatsRepository : IRepository<PlayerRating>
     Task TruncateAsync();
 
 
-    Task<int> GetGlobalRankAsync(long osuPlayerId, int mode);
+    Task<int> GetGlobalRankAsync(long osuPlayerId, Ruleset ruleset);
 
 
     /// <summary>
@@ -29,20 +30,20 @@ public interface IBaseStatsRepository : IRepository<PlayerRating>
     /// </summary>
     /// <param name="country"></param>
     /// <returns></returns>
-    Task<int> HighestRankAsync(int mode, string? country = null);
+    Task<int> HighestRankAsync(Ruleset ruleset, string? country = null);
 
 
-    Task<double> HighestRatingAsync(int mode, string? country = null);
+    Task<double> HighestRatingAsync(Ruleset ruleset, string? country = null);
 
 
-    Task<int> HighestMatchesAsync(int mode, string? country = null);
+    Task<int> HighestMatchesAsync(Ruleset ruleset, string? country = null);
 
     /// <summary>
     /// </summary>
-    /// <param name="mode"></param>
+    /// <param name="ruleset"></param>
     /// <returns>
     ///  A dictionary with the keys equal to the 'bucket' of rating displayed
     ///  in the histogram, and the values being how many players have ratings within the buckets.
     /// </returns>
-    Task<IDictionary<int, int>> GetHistogramAsync(int mode);
+    Task<IDictionary<int, int>> GetHistogramAsync(Ruleset ruleset);
 }

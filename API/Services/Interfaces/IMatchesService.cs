@@ -46,7 +46,7 @@ public interface IMatchesService
 
     Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(
         long osuPlayerId,
-        int mode,
+        Ruleset ruleset,
         DateTime start,
         DateTime end
     );

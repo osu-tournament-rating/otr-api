@@ -14,7 +14,7 @@ public class ApiPlayerMatchStatsRepository(OtrContext context) : PlayerMatchStat
 
     public async Task<PlayerModStatsDTO> GetModStatsAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     )
@@ -26,13 +26,13 @@ public class ApiPlayerMatchStatsRepository(OtrContext context) : PlayerMatchStat
             .ThenInclude(m => m.Tournament)
             .Include(ms => ms.Game)
             .ThenInclude(g => g.WinRecord)
-            // Filter for player, verified, mode, date range
+            // Filter for player, verified, ruleset, date range
             .Where(ms =>
                 ms.PlayerId == playerId
                 && ms.Game.VerificationStatus == VerificationStatus.Verified
                 && ms.Game.Match.VerificationStatus == VerificationStatus.Verified
                 && ms.Game.WinRecord != null
-                && ms.Game.Match.Tournament.Ruleset == (Ruleset)mode
+                && ms.Game.Match.Tournament.Ruleset == (Ruleset)ruleset
                 && ms.Game.Match.StartTime >= dateMin
                 && ms.Game.Match.EndTime <= dateMax
             )

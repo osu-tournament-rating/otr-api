@@ -4,6 +4,7 @@ using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
+using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -69,6 +70,6 @@ public class MatchesController(IMatchesService matchesService) : Controller
     // TODO: Should be /player/{osuId}/matches instead.
     [HttpGet("player/{osuId:long}")]
     [Authorize(Roles = $"{OtrClaims.Admin}, {OtrClaims.System}")]
-    public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatchesAsync(long osuId, int mode) =>
-        Ok(await matchesService.GetAllForPlayerAsync(osuId, mode, DateTime.MinValue, DateTime.MaxValue));
+    public async Task<ActionResult<IEnumerable<MatchDTO>>> GetMatchesAsync(long osuId, Ruleset ruleset) =>
+        Ok(await matchesService.GetAllForPlayerAsync(osuId, ruleset, DateTime.MinValue, DateTime.MaxValue));
 }

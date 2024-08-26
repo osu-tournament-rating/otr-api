@@ -11,7 +11,7 @@ public interface IPlayerStatsService
     /// </summary>
     /// <remarks>
     /// Gets player by versatile search.
-    /// If no ruleset is provided, the player's default is used. <see cref="Ruleset.Standard"/> is used as a fallback
+    /// If no ruleset is provided, the player's default is used. <see cref="Ruleset.Osu"/> is used as a fallback
     /// If no date range is provided, gets all stats without considering date
     /// </remarks>
     /// <param name="key">Key used in versatile search</param>
@@ -34,7 +34,7 @@ public interface IPlayerStatsService
     Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(
         int playerId,
         int teammateId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     );
@@ -42,14 +42,14 @@ public interface IPlayerStatsService
     Task<PlayerOpponentComparisonDTO> GetOpponentComparisonAsync(
         int playerId,
         int opponentId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     );
 
     Task<PlayerRankChartDTO> GetRankChartAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         LeaderboardChartType chartType,
         DateTime? dateMin = null,
         DateTime? dateMax = null
@@ -68,12 +68,12 @@ public interface IPlayerStatsService
     Task TruncateRatingAdjustmentsAsync();
 
     /// <summary>
-    /// Returns the peak rating of a player for a given mode and date range.
+    /// Returns the peak rating of a player for a given ruleset and date range.
     /// </summary>
     /// <param name="playerId">The player id</param>
-    /// <param name="mode">The osu! ruleset</param>
+    /// <param name="ruleset">The osu! ruleset</param>
     /// <param name="dateMin">The minimum of the date range</param>
     /// <param name="dateMax">The maximum of the date range</param>
     /// <returns></returns>
-    Task<double> GetPeakRatingAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
+    Task<double> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
 }

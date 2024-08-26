@@ -66,5 +66,5 @@ public interface IMatchesRepository : IRepository<Match>
         VerificationStatus verificationStatus,
         int? verifierId = null
     );
-    Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, int mode, DateTime before, DateTime after);
+    Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, Ruleset ruleset, DateTime before, DateTime after);
 }

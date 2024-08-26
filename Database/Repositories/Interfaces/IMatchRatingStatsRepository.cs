@@ -1,4 +1,5 @@
 using Database.Entities.Processor;
+using Database.Enums;
 
 namespace Database.Repositories.Interfaces;
 
@@ -10,13 +11,13 @@ public interface IMatchRatingStatsRepository : IRepository<RatingAdjustment>
     ///  there will be multiple items in the list.
     /// </summary>
     /// <param name="playerId"></param>
-    /// <param name="mode"></param>
+    /// <param name="ruleset"></param>
     /// <param name="dateMin"></param>
     /// <param name="dateMax"></param>
     /// <returns></returns>
     Task<IEnumerable<IEnumerable<RatingAdjustment>>> GetForPlayerAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
@@ -25,14 +26,14 @@ public interface IMatchRatingStatsRepository : IRepository<RatingAdjustment>
 
     Task<int> HighestGlobalRankAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
 
     Task<int> HighestCountryRankAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
@@ -40,7 +41,7 @@ public interface IMatchRatingStatsRepository : IRepository<RatingAdjustment>
     Task<IEnumerable<RatingAdjustment>> TeammateRatingStatsAsync(
         int playerId,
         int teammateId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     );
@@ -48,7 +49,7 @@ public interface IMatchRatingStatsRepository : IRepository<RatingAdjustment>
     Task<IEnumerable<RatingAdjustment>> OpponentRatingStatsAsync(
         int playerId,
         int opponentId,
-        int mode,
+        Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     );

@@ -16,7 +16,7 @@ public class GetUserStatsHistoryTest(IOsuClient client) : IOsuClientTest
     {
         IEnumerable<UserStatUpdate>? statsHistory = await client.GetUserStatsHistoryAsync(
             StageUserId,
-            Ruleset.Standard,
+            Ruleset.Osu,
             DateTime.Today.AddMonths(-1),
             DateTime.Today,
             cancellationToken

@@ -11,10 +11,10 @@ namespace Database.Enums;
 public enum Ruleset
 {
     /// <summary>
-    /// osu! Standard
+    /// osu! (standard)
     /// </summary>
     [Description("osu")]
-    Standard = 0,
+    Osu = 0,
 
     /// <summary>
     /// osu! Taiko
