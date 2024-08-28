@@ -19,15 +19,17 @@ public class MatchesController(IMatchesService matchesService) : Controller
     /// Gets all matches
     /// </summary>
     /// <remarks>
-    /// Results are ordered by id and support pagination. All match data is included.
+    /// By default will return 100 of the most recently submitted matches
     /// </remarks>
     /// <param name="limit">
     /// Controls the number of matches to return. Functions as a "page size".
-    /// Default: 100 Constraints: Minimum 1, Maximum 5000
+    /// Default: 100
+    /// Constraints: Minimum 1, Maximum 5000
     /// </param>
     /// <param name="page">
-    /// Controls which block of size <paramref name="limit"/> to return.
-    /// Default: 1, Constraints: Minimum 1
+    /// Controls which page of size <paramref name="limit"/> to return.
+    /// Default: 1
+    /// Constraints: Minimum 1
     /// </param>
     /// <response code="200">Returns the desired page of matches</response>
     [HttpGet]
