@@ -26,7 +26,10 @@ public interface ITournamentsService
     /// <summary>
     /// Gets all tournaments
     /// </summary>
-    Task<IEnumerable<TournamentDTO>> ListAsync();
+    /// <param name="limit"></param>
+    /// <param name="page"></param>
+    /// <param name="filter"></param>
+    Task<PagedResultDTO<TournamentDTO>> GetAsync(int limit, int page, TournamentsFilterDTO filter);
 
     /// <summary>
     /// Gets a tournament by id

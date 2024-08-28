@@ -5,8 +5,7 @@ using Database.Enums.Verification;
 namespace API.DTOs;
 
 /// <summary>
-/// Filtering options for querying <see cref="Database.Entities.Match"/>es
-/// used by <see cref="Controllers.MatchesController.ListAsync"/>
+/// Filtering options for querying a page of <see cref="Database.Entities.Match"/>es
 /// </summary>
 public class MatchesFilterDTO
 {

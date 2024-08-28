@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
@@ -15,17 +16,38 @@ namespace API.Controllers;
 public class TournamentsController(ITournamentsService tournamentsService) : Controller
 {
     /// <summary>
-    /// List all tournaments
+    /// Gets all tournaments
     /// </summary>
-    /// <remarks>Will not include match data</remarks>
-    /// <response code="200">Returns all tournaments</response>
+    /// <remarks>
+    /// By default will return 50 of the most recently submitted tournaments
+    /// </remarks>
+    /// <param name="limit">
+    /// Controls the number of matches to return. Functions as a "page size".
+    /// Default: 50
+    /// Constraints: Minimum 1, Maximum 250
+    /// </param>
+    /// <param name="page">
+    /// Controls which page of size <paramref name="limit"/> to return.
+    /// Default: 1
+    /// Constraints: Minimum 1
+    /// </param>
+    /// <response code="200">Returns the desired page of tournaments</response>
     [HttpGet]
-    [Authorize(Roles = OtrClaims.System)]
-    [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ListAsync()
+    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
+    [ProducesResponseType<PagedResultDTO<TournamentDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListAsync(
+        [FromQuery] TournamentsFilterDTO filter,
+        [FromQuery][Range(1, int.MaxValue)] int limit = 50,
+        [FromQuery][Range(1, int.MaxValue)] int page = 1
+    )
     {
-        IEnumerable<TournamentDTO> result = await tournamentsService.ListAsync();
-        return Ok(result);
+        // Clamp page size for non-admin users
+        if (limit > 250 && !(User.IsAdmin() || User.IsSystem()))
+        {
+            limit = 250;
+        }
+
+        return Ok(await tournamentsService.GetAsync(limit, page, filter));
     }
 
     /// <summary>

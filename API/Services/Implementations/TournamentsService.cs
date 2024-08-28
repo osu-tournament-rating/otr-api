@@ -46,12 +46,9 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
     public async Task<bool> ExistsAsync(string name, Ruleset ruleset)
         => await tournamentsRepository.ExistsAsync(name, ruleset);
 
-    public async Task<IEnumerable<TournamentDTO>> ListAsync()
+    public async Task<PagedResultDTO<TournamentDTO>> GetAsync(int limit, int page, TournamentsFilterDTO filter)
     {
-        IEnumerable<Tournament> items = await tournamentsRepository.GetAllAsync();
-        items = items.OrderBy(x => x.Name);
-
-        return mapper.Map<IEnumerable<TournamentDTO>>(items);
+        return new PagedResultDTO<TournamentDTO> { Count = 0, Results = new List<TournamentDTO>() };
     }
 
     public async Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true) =>
