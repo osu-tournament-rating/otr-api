@@ -6,7 +6,6 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace API.Controllers;
 
@@ -41,7 +40,7 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     [HttpPost]
     [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateAsync([FromBody] TournamentSubmissionDTO tournamentSubmission)
     {
@@ -53,7 +52,7 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
 
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState);
+            return BadRequest(ModelState.ErrorMessage());
         }
 
         if (await tournamentsService.ExistsAsync(tournamentSubmission.Name, tournamentSubmission.Ruleset))
@@ -103,7 +102,7 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     [Authorize(Roles = OtrClaims.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateAsync(
         int id,
@@ -127,7 +126,7 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
         patch.ApplyTo(tournament, ModelState);
         if (!TryValidateModel(tournament))
         {
-            return BadRequest(ModelState);
+            return BadRequest(ModelState.ErrorMessage());
         }
 
         // Apply patched values to entity
