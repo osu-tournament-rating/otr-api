@@ -7,7 +7,6 @@ using Database.Entities;
 using Database.Enums;
 using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
-using NuGet.Protocol;
 
 namespace API.Services.Implementations;
 
@@ -18,11 +17,12 @@ public class MatchesService(
     IMapper mapper
 ) : IMatchesService
 {
-    // TODO: Refactor to use enums for param "verificationSource"
-    public async Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(int tournamentId,
+    public async Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(
+        int tournamentId,
         int submitterId,
         IEnumerable<long> matchIds,
-        bool verify)
+        bool verify
+    )
     {
         Tournament? tournament = await tournamentsRepository.GetAsync(tournamentId);
         if (tournament is null)
@@ -104,38 +104,6 @@ public class MatchesService(
                         new KeyValuePair<string, string>(nameof(limit), limit.ToString()),
                         new KeyValuePair<string, string>(nameof(page), (page - 1).ToString())
                     })
-                })
-                : null,
-            Count = count,
-            Results = mapper.Map<IEnumerable<MatchDTO>>(result).ToList()
-        };
-    }
-
-    public async Task<PagedResultDTO<MatchDTO>> GetAsync(
-        int limit,
-        int page,
-        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
-    )
-    {
-        IEnumerable<Match> result = await matchesRepository.GetAsync(limit, page, filterType);
-        var count = result.Count();
-
-        return new PagedResultDTO<MatchDTO>
-        {
-            Next = count == limit
-                ? urlHelperService.Action(new CreatedAtRouteValues
-                {
-                    Controller = nameof(MatchesController),
-                    Action = nameof(MatchesController.ListAsync),
-                    RouteValues = new { limit, page = page + 1 }
-                })
-                : null,
-            Previous = page > 1
-                ? urlHelperService.Action(new CreatedAtRouteValues
-                {
-                    Controller = nameof(MatchesController),
-                    Action = nameof(MatchesController.ListAsync),
-                    RouteValues = new { limit, page = page - 1 }
                 })
                 : null,
             Count = count,

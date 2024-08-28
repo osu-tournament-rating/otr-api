@@ -20,23 +20,16 @@ public interface IMatchesService
         bool verify
     );
 
+    /// <summary>
+    /// Gets a paged list of matches
+    /// </summary>
+    /// <param name="limit">Amount of matches to return. Functions as the "page size"</param>
+    /// <param name="page">Which block of matches to return</param>
+    /// <param name="filter">Filtering options</param>
     Task<PagedResultDTO<MatchDTO>> GetAsync(
         int limit,
         int page,
         MatchesFilterDTO filter
-    );
-
-    /// <summary>
-    /// Gets a paged list of matches
-    /// </summary>
-    /// <remarks>Matches are ordered by primary key</remarks>
-    /// <param name="limit">Amount of matches to return. Functions as the "page size"</param>
-    /// <param name="page">Which block of matches to return</param>
-    /// <param name="filterUnverified">If unverified matches should be excluded from the results</param>
-    Task<PagedResultDTO<MatchDTO>> GetAsync(
-        int limit,
-        int page,
-        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
     );
 
     Task<MatchDTO?> GetAsync(
