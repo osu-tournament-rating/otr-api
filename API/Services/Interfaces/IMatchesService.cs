@@ -1,5 +1,6 @@
 using API.DTOs;
 using Database.Enums;
+using Database.Queries.Filters;
 
 namespace API.Services.Interfaces;
 
@@ -29,7 +30,7 @@ public interface IMatchesService
     Task<PagedResultDTO<MatchDTO>> GetAsync(
         int limit,
         int page,
-        MatchesFilterDTO filter
+        MatchesQueryFilter filter
     );
 
     Task<MatchDTO?> GetAsync(

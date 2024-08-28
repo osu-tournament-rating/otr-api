@@ -4,6 +4,7 @@ using AutoMapper;
 using Database.Entities;
 using Database.Enums;
 using Database.Enums.Verification;
+using Database.Queries.Filters;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -46,7 +47,7 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
     public async Task<bool> ExistsAsync(string name, Ruleset ruleset)
         => await tournamentsRepository.ExistsAsync(name, ruleset);
 
-    public async Task<PagedResultDTO<TournamentDTO>> GetAsync(int limit, int page, TournamentsFilterDTO filter)
+    public async Task<PagedResultDTO<TournamentDTO>> GetAsync(int limit, int page, TournamentsQueryFilter filter)
     {
         return new PagedResultDTO<TournamentDTO> { Count = 0, Results = new List<TournamentDTO>() };
     }

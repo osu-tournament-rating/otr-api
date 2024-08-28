@@ -4,6 +4,7 @@ using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
+using Database.Queries.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +37,7 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [ProducesResponseType<PagedResultDTO<TournamentDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAsync(
-        [FromQuery] TournamentsFilterDTO filter,
+        [FromQuery] TournamentsQueryFilter filter,
         [FromQuery][Range(1, int.MaxValue)] int limit = 50,
         [FromQuery][Range(1, int.MaxValue)] int page = 1
     )

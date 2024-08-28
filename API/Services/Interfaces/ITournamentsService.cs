@@ -1,5 +1,6 @@
 using API.DTOs;
 using Database.Enums;
+using Database.Queries.Filters;
 
 namespace API.Services.Interfaces;
 
@@ -29,7 +30,7 @@ public interface ITournamentsService
     /// <param name="limit"></param>
     /// <param name="page"></param>
     /// <param name="filter"></param>
-    Task<PagedResultDTO<TournamentDTO>> GetAsync(int limit, int page, TournamentsFilterDTO filter);
+    Task<PagedResultDTO<TournamentDTO>> GetAsync(int limit, int page, TournamentsQueryFilter filter);
 
     /// <summary>
     /// Gets a tournament by id

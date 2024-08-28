@@ -5,6 +5,7 @@ using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using Database.Enums;
+using Database.Queries.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,7 +37,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [ProducesResponseType<PagedResultDTO<MatchDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAsync(
-        [FromQuery] MatchesFilterDTO filter,
+        [FromQuery] MatchesQueryFilter filter,
         [FromQuery][Range(1, int.MaxValue)] int limit = 100,
         [FromQuery][Range(1, int.MaxValue)] int page = 1
     )

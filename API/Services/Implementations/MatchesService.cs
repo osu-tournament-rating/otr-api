@@ -6,6 +6,7 @@ using AutoMapper;
 using Database.Entities;
 using Database.Enums;
 using Database.Enums.Verification;
+using Database.Queries.Filters;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -58,7 +59,7 @@ public class MatchesService(
     public async Task<PagedResultDTO<MatchDTO>> GetAsync(
         int limit,
         int page,
-        MatchesFilterDTO filter
+        MatchesQueryFilter filter
     )
     {
         IEnumerable<Match> result = await matchesRepository.GetAsync(
