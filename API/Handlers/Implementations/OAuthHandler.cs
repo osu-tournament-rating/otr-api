@@ -1,14 +1,14 @@
-using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using API.Configurations;
 using API.DTOs;
-using API.Entities;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
-using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
+using Database.Entities;
+using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -22,7 +22,7 @@ namespace API.Handlers.Implementations;
 public class OAuthHandler(
     ILogger<OAuthHandler> logger,
     IOAuthClientRepository clientRepository,
-    IPlayerRepository playerRepository,
+    IPlayersRepository playerRepository,
     IUserRepository userRepository,
     IOsuClient osuClient,
     IPasswordHasher<OAuthClient> clientSecretHasher,

@@ -1,55 +1,50 @@
 using API.DTOs;
-using API.Entities;
-using API.Enums;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
+using Database.Entities;
+using Database.Enums;
+using Database.Enums.Verification;
+using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
 public class TournamentsService(ITournamentsRepository tournamentsRepository, IMatchesRepository matchesRepository, IMapper mapper) : ITournamentsService
 {
-    // TODO: Refactor to use enum for param "verificationSource"
-    public async Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify, int? verificationSource)
+    public async Task<TournamentCreatedResultDTO> CreateAsync(
+        TournamentSubmissionDTO submission,
+        int submitterUserId,
+        bool preApprove
+    )
     {
-        MatchVerificationStatus verificationStatus = verify
-            ? MatchVerificationStatus.Verified
-            : MatchVerificationStatus.PendingVerification;
-
         // Only create matches that dont already exist
-        IEnumerable<long> enumerableMatchIds = wrapper.Ids.ToList();
+        IEnumerable<long> enumerableMatchIds = submission.Ids.ToList();
         IEnumerable<long> existingMatchIds = (await matchesRepository.GetAsync(enumerableMatchIds))
-            .Select(m => m.MatchId)
+            .Select(m => m.OsuId)
             .ToList();
 
         Tournament tournament = await tournamentsRepository.CreateAsync(new Tournament
         {
-            Name = wrapper.TournamentName,
-            Abbreviation = wrapper.Abbreviation,
-            ForumUrl = wrapper.ForumPost,
-            RankRangeLowerBound = wrapper.RankRangeLowerBound,
-            Mode = wrapper.Mode,
-            TeamSize = wrapper.TeamSize,
-            SubmitterUserId = wrapper.SubmitterId,
+            Name = submission.Name,
+            Abbreviation = submission.Abbreviation,
+            ForumUrl = submission.ForumUrl,
+            RankRangeLowerBound = submission.RankRangeLowerBound,
+            Ruleset = submission.Ruleset,
+            LobbySize = submission.LobbySize,
+            ProcessingStatus = preApprove ? TournamentProcessingStatus.NeedsMatchData : TournamentProcessingStatus.NeedsApproval,
+            SubmittedByUserId = submitterUserId,
             Matches = enumerableMatchIds
                 .Except(existingMatchIds)
                 .Select(matchId => new Match
                 {
-                    MatchId = matchId,
-                    VerificationStatus = verificationStatus,
-                    NeedsAutoCheck = true,
-                    IsApiProcessed = false,
-                    VerificationSource = (MatchVerificationSource?)verificationSource,
-                    VerifierUserId = verify ? wrapper.SubmitterId : null,
-                    SubmitterUserId = wrapper.SubmitterId
+                    OsuId = matchId,
+                    SubmittedByUserId = submitterUserId
                 }).ToList()
         });
         return mapper.Map<TournamentCreatedResultDTO>(tournament);
     }
 
-    public async Task<bool> ExistsAsync(int id) => await tournamentsRepository.ExistsAsync(id);
-
-    public async Task<bool> ExistsAsync(string name, int mode) => await tournamentsRepository.ExistsAsync(name, mode);
+    public async Task<bool> ExistsAsync(string name, Ruleset ruleset)
+        => await tournamentsRepository.ExistsAsync(name, ruleset);
 
     public async Task<IEnumerable<TournamentDTO>> ListAsync()
     {
@@ -64,10 +59,10 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
 
     public async Task<int> CountPlayedAsync(
         int playerId,
-        int mode,
+        Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
-    ) => await tournamentsRepository.CountPlayedAsync(playerId, mode, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.MaxValue);
+    ) => await tournamentsRepository.CountPlayedAsync(playerId, ruleset, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.MaxValue);
 
     public async Task<TournamentDTO?> UpdateAsync(int id, TournamentDTO wrapper)
     {
@@ -80,9 +75,9 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
         existing.Name = wrapper.Name;
         existing.Abbreviation = wrapper.Abbreviation;
         existing.ForumUrl = wrapper.ForumUrl;
-        existing.Mode = wrapper.Mode;
+        existing.Ruleset = wrapper.Ruleset;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
-        existing.TeamSize = wrapper.TeamSize;
+        existing.LobbySize = wrapper.LobbySize;
 
         await tournamentsRepository.UpdateAsync(existing);
         return mapper.Map<TournamentDTO>(existing);

@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using API.Enums;
-using API.Osu.Enums;
+using Database.Enums;
+using Database.Enums.Verification;
 
 namespace API.DTOs;
 
@@ -11,39 +11,54 @@ namespace API.DTOs;
 public class MatchDTO
 {
     /// <summary>
-    /// Id of the match
+    /// Id
     /// </summary>
     public int Id { get; set; }
 
     /// <summary>
-    /// osu! id of the match
+    /// osu! id
     /// </summary>
-    public long MatchId { get; set; }
+    public long OsuId { get; set; }
 
     /// <summary>
     /// Title of the lobby
     /// </summary>
-    public string? Name { get; set; }
+    public string Name { get; set; } = null!;
 
     /// <summary>
-    /// Ruleset of the match
+    /// Ruleset
     /// </summary>
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// Start time of the match
+    /// Start time
     /// </summary>
     public DateTime? StartTime { get; set; }
 
     /// <summary>
-    /// End time of the match
+    /// End time
     /// </summary>
     public DateTime? EndTime { get; set; }
 
     /// <summary>
-    /// Current verification status of the match
+    /// Verification status
     /// </summary>
-    public MatchVerificationStatus? VerificationStatus { get; set; }
+    public VerificationStatus VerificationStatus { get; set; }
+
+    /// <summary>
+    /// Rejection reason
+    /// </summary>
+    public MatchRejectionReason RejectionReason { get; set; }
+
+    /// <summary>
+    /// Processing status
+    /// </summary>
+    public MatchProcessingStatus ProcessingStatus { get; set; }
+
+    /// <summary>
+    /// Timestamp of the last time the match was processed
+    /// </summary>
+    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// List of games played during the match

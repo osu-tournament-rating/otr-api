@@ -1,23 +1,25 @@
 using API.DTOs;
-using API.Entities;
 using API.Enums;
+using API.Repositories.Interfaces;
+using Database.Entities.Processor;
+using Database.Enums;
 
 namespace API.Services.Interfaces;
 
 public interface IBaseStatsService
 {
     /// <summary>
-    ///  Returns a list of all ratings for a player, one for each game mode (if available)
+    ///  Returns a list of all ratings for a player, one for each game ruleset (if available)
     /// </summary>
     /// <param name="playerId"></param>
     /// <returns></returns>
-    Task<IEnumerable<BaseStatsDTO?>> GetAsync(long osuPlayerId);
+    Task<IEnumerable<PlayerRatingDTO?>> GetAsync(long osuPlayerId);
 
-    Task<BaseStatsDTO?> GetAsync(BaseStats? currentStats, int playerId, int mode);
+    Task<PlayerRatingDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset);
     Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats);
 
-    Task<IEnumerable<BaseStatsDTO?>> GetLeaderboardAsync(
-        int mode,
+    Task<IEnumerable<PlayerRatingDTO?>> GetLeaderboardAsync(
+        Ruleset ruleset,
         int page,
         int pageSize,
         LeaderboardChartType chartType,
@@ -27,20 +29,20 @@ public interface IBaseStatsService
 
     Task TruncateAsync();
     Task<int> LeaderboardCountAsync(
-        int requestQueryMode,
+        Ruleset requestQueryRuleset,
         LeaderboardChartType requestQueryChartType,
         LeaderboardFilterDTO requestQueryFilter,
         int? playerId
     );
     Task<LeaderboardFilterDefaultsDTO> LeaderboardFilterDefaultsAsync(
-        int requestQueryMode,
+        Ruleset requestQueryRuleset,
         LeaderboardChartType requestQueryChartType
     );
 
     /// <summary>
-    /// See <see cref="IBaseStatsRepository.GetHistogramAsync"/>
+    /// See <see cref="IApiBaseStatsRepository.GetHistogramAsync"/>
     /// </summary>
-    /// <param name="mode"></param>
+    /// <param name="ruleset"></param>
     /// <returns></returns>
-    Task<IDictionary<int, int>> GetHistogramAsync(int mode);
+    Task<IDictionary<int, int>> GetHistogramAsync(Ruleset ruleset);
 }

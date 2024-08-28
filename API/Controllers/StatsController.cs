@@ -1,8 +1,8 @@
 using API.DTOs;
-using API.Osu.Enums;
 using API.Services.Interfaces;
 using API.Utilities;
 using Asp.Versioning;
+using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,7 +21,7 @@ public class StatsController(
     /// </summary>
     /// <remarks>
     /// Gets player by versatile search.
-    /// If no ruleset is provided, the player's default is used. <see cref="Ruleset.Standard"/> is used as a fallback.
+    /// If no ruleset is provided, the player's default is used. <see cref="Ruleset.Osu"/> is used as a fallback.
     /// If a ruleset is provided but the player has no data for it, all optional fields of the response will be null.
     /// <see cref="PlayerStatsDTO.PlayerInfo"/> will always be populated as long as a player is found.
     /// If no date range is provided, gets all stats without considering date
@@ -58,8 +58,8 @@ public class StatsController(
     [HttpGet("histogram")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     public async Task<ActionResult<IDictionary<int, int>>> GetRatingHistogramAsync(
-        [FromQuery] int mode = 0
-    ) => Ok(await baseStatsService.GetHistogramAsync(mode));
+        [FromQuery] Ruleset ruleset = Ruleset.Osu
+    ) => Ok(await baseStatsService.GetHistogramAsync(ruleset));
 
     [HttpPost("ratingadjustments")]
     [Authorize(Roles = OtrClaims.System)]
@@ -77,33 +77,9 @@ public class StatsController(
         return Ok();
     }
 
-    [HttpPost("ratingstats")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchRatingStatsDTO> postBody)
-    {
-        await playerStatsService.BatchInsertAsync(postBody);
-        return Ok();
-    }
-
     [HttpPost("basestats")]
     [Authorize(Roles = OtrClaims.System)]
     public async Task<IActionResult> PostAsync([FromBody] IEnumerable<BaseStatsPostDTO> postBody)
-    {
-        await playerStatsService.BatchInsertAsync(postBody);
-        return Ok();
-    }
-
-    [HttpPost("gamewinrecords")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> PostAsync([FromBody] IEnumerable<GameWinRecordDTO> postBody)
-    {
-        await playerStatsService.BatchInsertAsync(postBody);
-        return Ok();
-    }
-
-    [HttpPost("matchwinrecords")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> PostAsync([FromBody] IEnumerable<MatchWinRecordDTO> postBody)
     {
         await playerStatsService.BatchInsertAsync(postBody);
         return Ok();

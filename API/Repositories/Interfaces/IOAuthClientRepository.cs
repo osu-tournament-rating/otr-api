@@ -1,4 +1,5 @@
-using API.Entities;
+using Database.Entities;
+using Database.Repositories.Interfaces;
 
 namespace API.Repositories.Interfaces;
 

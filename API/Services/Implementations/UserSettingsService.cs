@@ -1,7 +1,7 @@
-using API.Entities;
-using API.Osu.Enums;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using Database.Entities;
+using Database.Enums;
+using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
@@ -32,7 +32,7 @@ public class UserSettingsService(IUserSettingsRepository userSettingsRepository,
             return false;
         }
 
-        user.Settings.DefaultRuleset = user.Player.Ruleset ?? Ruleset.Standard;
+        user.Settings.DefaultRuleset = user.Player!.Ruleset;
         user.Settings.DefaultRulesetIsControlled = false;
         await userRepository.UpdateAsync(user);
 

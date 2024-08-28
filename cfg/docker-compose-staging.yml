@@ -1,0 +1,98 @@
+version: '3.8'
+services:
+  api:
+    image: "stagecodes/otr-api-staging:latest"
+    container_name: api
+    ports:
+      - "3700:8080"
+    env_file:
+      - api.env
+    depends_on:
+      - db
+      - redis
+    restart: always
+  dataworkerservice:
+    image: "stagecodes/otr-data-worker-service-staging:latest"
+    container_name: dataworkerservice
+    env_file:
+      - dataworkerservice.env
+    depends_on:
+      - db
+      - redis
+    restart: always
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - collector
+      - clickhouse
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clickhouse-datasource
+    volumes:
+      - 'grafana_storage:/var/lib/grafana'
+    restart: always
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: always
+  db:
+    container_name: db
+    image: postgres:latest
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    env_file:
+      - db.env
+    ports:
+      - "5432:5432"
+    restart: always
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    restart: always
+    volumes:
+      - redis:/data
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres-exporter
+    ports:
+      - "9187:9187"
+    env_file:
+      - ./postgres_exporter.env
+    links:
+      - db
+      - prometheus
+    restart: always
+  collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: collector
+    command: [ "--config=/etc/collector.yml" ]
+    ports:
+      - "4317:4317"
+    volumes:
+      - ./otel-collector-config.yml:/etc/collector.yml:ro
+    depends_on:
+      - clickhouse
+    restart: always
+  clickhouse:
+    image: clickhouse/clickhouse-server:head
+    container_name: clickhouse
+    ports:
+      - "9000:9000"
+      - "8143:8143"
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    restart: always
+volumes:
+  db_data:
+  grafana_storage:
+  redis:

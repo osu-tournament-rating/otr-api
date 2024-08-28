@@ -1,4 +1,4 @@
-using API.Enums;
+using Database.Enums.Verification;
 
 namespace API.DTOs;
 
@@ -15,7 +15,7 @@ public class MatchSubmissionStatusDTO
     /// <summary>
     /// osu! match id of the match
     /// </summary>
-    public long MatchId { get; set; }
+    public long OsuId { get; set; }
 
     /// <summary>
     /// Lobby title of the match
@@ -25,7 +25,7 @@ public class MatchSubmissionStatusDTO
     /// <summary>
     /// Current verification status of the match
     /// </summary>
-    public MatchVerificationStatus? VerificationStatus { get; set; }
+    public VerificationStatus? VerificationStatus { get; set; }
 
     /// <summary>
     /// Date that the match was submitted

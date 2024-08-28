@@ -3,26 +3,27 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
-using API;
 using API.Authorization;
 using API.Authorization.Handlers;
 using API.Authorization.Requirements;
-using API.BackgroundWorkers;
 using API.Configurations;
-using API.Entities;
 using API.Handlers.Implementations;
 using API.Handlers.Interfaces;
 using API.Middlewares;
 using API.ModelBinders.Providers;
-using API.Osu.Multiplayer;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
 using Dapper;
+using Database;
+using Database.Entities;
+using Database.Repositories.Implementations;
+using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -131,7 +132,6 @@ builder
             .AddProcessInstrumentation()
             .AddPrometheusExporter(o => o.DisableTotalNameSuffixForCounters = true)
     );
-;
 
 #endregion
 
@@ -249,15 +249,14 @@ builder
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.OperationFilter<HttpResultsOperationFilter>();
     options.SchemaGeneratorOptions.SupportNonNullableReferenceTypes = true;
     options.SwaggerDoc(
         "v1",
-        new OpenApiInfo()
+        new OpenApiInfo
         {
             Version = "v1",
             Title = "osu! Tournament Rating API",
-            Description = "An API for interacting with the o!TR database",
+            Description = "The official resource for reading and writing data within the osu! Tournament Rating platform.",
             TermsOfService = new Uri(
                 "https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/usage/limits/en.md"
             )
@@ -412,15 +411,6 @@ builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthCli
 
 #endregion
 
-#region Hosted Services
-
-builder.Services.AddHostedService<MatchDuplicateDataWorker>();
-builder.Services.AddHostedService<OsuPlayerDataWorker>();
-builder.Services.AddHostedService<OsuMatchDataWorker>();
-builder.Services.AddHostedService<OsuTrackApiWorker>();
-
-#endregion
-
 #region Handlers
 
 builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
@@ -429,19 +419,23 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 
 #region Repositories
 
-builder.Services.AddScoped<IApiMatchRepository, ApiMatchRepository>();
+builder.Services.AddScoped<IApiBaseStatsRepository, ApiBaseStatsRepository>();
+builder.Services.AddScoped<IApiMatchRatingStatsRepository, ApiMatchRatingStatsRepository>();
+builder.Services.AddScoped<IApiMatchWinRecordRepository, ApiMatchWinRecordRepository>();
+builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRepository>();
+builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
+
 builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
-builder.Services.AddScoped<IBeatmapRepository, BeatmapRepository>();
+builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
-builder.Services.AddScoped<IMatchDuplicateRepository, MatchDuplicateRepository>();
 builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
-builder.Services.AddScoped<IMatchScoresRepository, MatchScoresRepository>();
+builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
 builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
-builder.Services.AddScoped<IPlayerRepository, PlayerRepository>();
+builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
 builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
 builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -453,11 +447,13 @@ builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
 
 builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
+builder.Services.AddScoped<IGameWinRecordsService, GameWinRecordsService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
+builder.Services.AddScoped<IRatingAdjustmentsService, RatingAdjustmentsesService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IScreeningService, ScreeningService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
@@ -480,8 +476,6 @@ builder.Services.AddOsuSharp(options =>
         ClientSecret = osuConfiguration.ClientSecret
     };
 });
-
-builder.Services.AddSingleton<IOsuApiService, OsuApiService>();
 
 builder.Host.ConfigureOsuSharp(
     (_, options) =>
@@ -539,7 +533,7 @@ if (app.Environment.IsDevelopment())
     mapper.ConfigurationProvider.AssertConfigurationIsValid();
 
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(x => { x.SwaggerEndpoint("/swagger/v1/swagger.json", "osu! Tournament Rating API"); });
     app.MapControllers().AllowAnonymous();
 }
 else

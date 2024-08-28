@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using API.Osu.Enums;
+using Database.Enums;
 
 namespace API.DTOs;
 
@@ -12,7 +12,7 @@ public class PlayerStatsDTO
     /// <summary>
     /// Player info
     /// </summary>
-    public PlayerInfoDTO PlayerInfo { get; init; } = null!;
+    public PlayerCompactDTO PlayerInfo { get; init; } = null!;
 
     /// <summary>
     /// Ruleset the statistics were calculated for
@@ -22,7 +22,7 @@ public class PlayerStatsDTO
     /// <summary>
     /// Base stats for the player
     /// </summary>
-    public BaseStatsDTO? BaseStats { get; init; }
+    public PlayerRatingDTO? Rating { get; init; }
 
     /// <summary>
     /// Match stats for the player

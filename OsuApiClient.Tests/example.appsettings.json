@@ -1,0 +1,14 @@
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Trace"
+        }
+    },
+    "OsuApiClient": {
+        "ClientId": 0,
+        "ClientSecret": "",
+        "RedirectUrl": "",
+        "RefreshToken": "",
+        "AuthCode": ""
+    }
+}

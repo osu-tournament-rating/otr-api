@@ -1,23 +1,20 @@
 using API.DTOs;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
+using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class BeatmapService(IBeatmapRepository beatmapRepository, IMapper mapper) : IBeatmapService
+public class BeatmapService(IBeatmapsRepository beatmapsRepository, IMapper mapper) : IBeatmapService
 {
-    private readonly IBeatmapRepository _beatmapRepository = beatmapRepository;
-    private readonly IMapper _mapper = mapper;
-
     public async Task<IEnumerable<BeatmapDTO>> ListAsync() =>
-        _mapper.Map<IEnumerable<BeatmapDTO>>(await _beatmapRepository.GetAllAsync());
+        mapper.Map<IEnumerable<BeatmapDTO>>(await beatmapsRepository.GetAllAsync());
 
     public async Task<BeatmapDTO?> GetAsync(int id) =>
-        _mapper.Map<BeatmapDTO?>(await _beatmapRepository.GetAsync(id: id));
+        mapper.Map<BeatmapDTO?>(await beatmapsRepository.GetAsync(id: id));
 
     public async Task<BeatmapDTO?> GetAsync(long beatmapId) =>
-        _mapper.Map<BeatmapDTO?>(await _beatmapRepository.GetAsync(beatmapId: beatmapId));
+        mapper.Map<BeatmapDTO?>(await beatmapsRepository.GetAsync(osuId: beatmapId));
 
     public async Task<BeatmapDTO?> GetVersatileAsync(long key)
     {

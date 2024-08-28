@@ -11,7 +11,7 @@ public class PlayerTournamentStatsDTO
     /// <summary>
     /// Counts of participation in tournaments of differing team sizes for the player
     /// </summary>
-    public PlayerTournamentTeamSizeCountDTO TeamSizeCounts { get; set; } = new();
+    public PlayerTournamentLobbySizeCountDTO LobbySizeCounts { get; set; } = new();
 
     /// <summary>
     /// List of best tournament performances for the player

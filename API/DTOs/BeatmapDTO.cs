@@ -18,7 +18,7 @@ public class BeatmapDTO
     /// <summary>
     /// osu! id of the beatmap
     /// </summary>
-    public long BeatmapId { get; set; }
+    public long OsuId { get; set; }
 
     /// <summary>
     /// Beats per minute
@@ -59,11 +59,6 @@ public class BeatmapDTO
     /// Overall difficulty
     /// </summary>
     public double Od { get; set; }
-
-    /// <summary>
-    /// Drain time
-    /// </summary>
-    public double DrainTime { get; set; }
 
     /// <summary>
     /// Song length

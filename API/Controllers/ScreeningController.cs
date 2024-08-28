@@ -1,10 +1,10 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace API.Controllers;
 
@@ -22,13 +22,13 @@ public class ScreeningController(IScreeningService screeningService) : Controlle
     /// <response code="200">The screening result</response>
     [HttpPost]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
-    [ProducesResponseType<ModelStateDictionary>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ScreeningResultDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ScreenAsync([FromBody] ScreeningRequestDTO screeningRequest)
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(ModelState);
+            return BadRequest(ModelState.ErrorMessage());
         }
 
         // Filter out duplicate ids

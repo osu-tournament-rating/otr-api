@@ -1,8 +1,8 @@
 using API.DTOs;
-using API.Entities;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
+using Database.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace API.Services.Implementations;

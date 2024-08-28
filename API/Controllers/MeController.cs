@@ -1,7 +1,9 @@
-using API.Osu.Enums;
+using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
+using API.Utilities.Extensions;
 using Asp.Versioning;
+using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,7 +38,7 @@ public class MeController(IUserService userService) : Controller
     /// Get player stats for the currently logged in user
     /// </summary>
     /// <remarks>
-    /// If no ruleset is provided, the player's default is used. <see cref="Ruleset.Standard"/> is used as a fallback.
+    /// If no ruleset is provided, the player's default is used. <see cref="Ruleset.Osu"/> is used as a fallback.
     /// If a ruleset is provided but the player has no data for it, all optional fields of the response will be null.
     /// <see cref="PlayerStatsDTO.PlayerInfo"/> will always be populated as long as a player is found.
     /// If no date range is provided, gets all stats without considering date
@@ -56,7 +58,7 @@ public class MeController(IUserService userService) : Controller
         [FromQuery] DateTime? dateMax = null
     )
     {
-        var userId = HttpContext.AuthorizedUserIdentity();
+        var userId = User.AuthorizedIdentity();
         if (!userId.HasValue)
         {
             return Unauthorized();
@@ -88,7 +90,7 @@ public class MeController(IUserService userService) : Controller
     [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
     public IActionResult UpdateRuleset([FromBody] Ruleset ruleset)
     {
-        var userId = HttpContext.AuthorizedUserIdentity();
+        var userId = User.AuthorizedIdentity();
         if (!userId.HasValue)
         {
             return Unauthorized();
@@ -108,7 +110,7 @@ public class MeController(IUserService userService) : Controller
     [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
     public IActionResult SyncRuleset()
     {
-        var userId = HttpContext.AuthorizedUserIdentity();
+        var userId = User.AuthorizedIdentity();
         if (!userId.HasValue)
         {
             return Unauthorized();

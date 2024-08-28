@@ -1,28 +1,27 @@
 using API.DTOs;
-using API.Enums;
+using Database.Enums;
 
 namespace API.Services.Interfaces;
 
 public interface ITournamentsService
 {
     /// <summary>
-    /// Creates a tournament from a <see cref="TournamentWebSubmissionDTO"/>.
+    /// Creates a tournament from a <see cref="TournamentSubmissionDTO"/>.
     /// </summary>
-    /// <param name="wrapper">Submission data</param>
-    /// <param name="verify">Verify all included matches</param>
-    /// <param name="verificationSource">Source of verification (int representation of <see cref="MatchVerificationSource"/></param>
+    /// <param name="submission">Tournament submission data</param>
+    /// <param name="submitterUserId">Id of the User that created the submission</param>
+    /// <param name="preApprove">Denotes if the tournament should be pre-approved</param>
     /// <returns>Location information for the created tournament</returns>
-    Task<TournamentCreatedResultDTO> CreateAsync(TournamentWebSubmissionDTO wrapper, bool verify, int? verificationSource);
+    Task<TournamentCreatedResultDTO> CreateAsync(
+        TournamentSubmissionDTO submission,
+        int submitterUserId,
+        bool preApprove
+    );
 
     /// <summary>
-    /// Denotes a tournament with matching id exists
+    /// Denotes a tournament with matching name and ruleset exists
     /// </summary>
-    Task<bool> ExistsAsync(int id);
-
-    /// <summary>
-    /// Denotes a tournament with matching name and mode exists
-    /// </summary>
-    Task<bool> ExistsAsync(string name, int mode);
+    Task<bool> ExistsAsync(string name, Ruleset ruleset);
 
     /// <summary>
     /// Gets all tournaments
@@ -40,7 +39,7 @@ public interface ITournamentsService
     /// <summary>
     /// Gets the number of tournaments played by the given player
     /// </summary>
-    Task<int> CountPlayedAsync(int playerId, int mode, DateTime? dateMin = null, DateTime? dateMax = null);
+    Task<int> CountPlayedAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
 
     /// <summary>
     /// Updates a tournament entity with values from a <see cref="TournamentDTO"/>

@@ -1,29 +1,28 @@
 using API.Controllers;
 using API.DTOs;
-using API.Entities;
-using API.Enums;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
+using API.Utilities.Extensions;
 using AutoMapper;
+using Database.Entities;
+using Database.Enums;
+using Database.Enums.Verification;
+using Database.Repositories.Interfaces;
+using NuGet.Protocol;
 
 namespace API.Services.Implementations;
 
 public class MatchesService(
     IMatchesRepository matchesRepository,
-    IMatchDuplicateRepository duplicateRepository,
     ITournamentsRepository tournamentsRepository,
     IUrlHelperService urlHelperService,
     IMapper mapper
 ) : IMatchesService
 {
     // TODO: Refactor to use enums for param "verificationSource"
-    public async Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(
-        int tournamentId,
+    public async Task<IEnumerable<MatchCreatedResultDTO>?> CreateAsync(int tournamentId,
         int submitterId,
         IEnumerable<long> matchIds,
-        bool verify,
-        int? verificationSource
-    )
+        bool verify)
     {
         Tournament? tournament = await tournamentsRepository.GetAsync(tournamentId);
         if (tournament is null)
@@ -31,14 +30,10 @@ public class MatchesService(
             return null;
         }
 
-        MatchVerificationStatus verificationStatus = verify
-            ? MatchVerificationStatus.Verified
-            : MatchVerificationStatus.PendingVerification;
-
         // Only create matches that dont already exist
         IEnumerable<long> enumerableMatchIds = matchIds.ToList();
         IEnumerable<long> existingMatchIds = (await matchesRepository.GetAsync(enumerableMatchIds))
-            .Select(m => m.MatchId)
+            .Select(m => m.OsuId)
             .ToList();
 
         // Create matches directly on the tournament because we can't access their ids until after the entity is updated
@@ -47,25 +42,82 @@ public class MatchesService(
         {
             tournament.Matches.Add(new Match
             {
-                MatchId = matchId,
-                VerificationStatus = verificationStatus,
-                NeedsAutoCheck = true,
-                IsApiProcessed = false,
-                VerificationSource = (MatchVerificationSource?)verificationSource,
-                VerifierUserId = verify ? submitterId : null,
-                SubmitterUserId = submitterId
+                OsuId = matchId,
+                VerificationStatus = VerificationStatus.None,
+                VerifiedByUserId = verify ? submitterId : null,
+                SubmittedByUserId = submitterId
             });
         }
 
         await tournamentsRepository.UpdateAsync(tournament);
-        IEnumerable<Match> createdMatches = tournament.Matches.Where(m => createdMatchIds.Contains(m.MatchId));
+        IEnumerable<Match> createdMatches = tournament.Matches.Where(m => createdMatchIds.Contains(m.OsuId));
 
         return mapper.Map<IEnumerable<MatchCreatedResultDTO>>(createdMatches);
     }
 
-    public async Task<PagedResultDTO<MatchDTO>> GetAsync(int limit, int page, bool filterUnverified = true)
+    public async Task<PagedResultDTO<MatchDTO>> GetAsync(
+        int limit,
+        int page,
+        MatchesFilterDTO filter
+    )
     {
-        IEnumerable<Match> result = await matchesRepository.GetAsync(limit, page, filterUnverified);
+        IEnumerable<Match> result = await matchesRepository.GetAsync(
+            limit,
+            page - 1,
+            ruleset: filter.Ruleset,
+            name: filter.Name,
+            dateMin: filter.DateMin,
+            dateMax: filter.DateMax,
+            verificationStatus: filter.VerificationStatus,
+            rejectionReason: filter.RejectionReason,
+            processingStatus: filter.ProcessingStatus,
+            submittedBy: filter.SubmittedBy,
+            verifiedBy: filter.VerifiedBy,
+            querySortType: filter.Sort,
+            sortDescending: filter.SortDescending
+        );
+        var count = result.Count();
+
+        IDictionary<string, string> filterQuery = filter.ToDictionary();
+
+        return new PagedResultDTO<MatchDTO>
+        {
+            Next = count == limit
+                ? urlHelperService.Action(new CreatedAtRouteValues
+                {
+                    Controller = nameof(MatchesController),
+                    Action = nameof(MatchesController.ListAsync),
+                    RouteValues = filterQuery.Concat(new[]
+                    {
+                        new KeyValuePair<string, string>(nameof(limit), limit.ToString()),
+                        new KeyValuePair<string, string>(nameof(page), (page + 1).ToString())
+                    })
+                })
+                : null,
+            Previous = page > 1
+                ? urlHelperService.Action(new CreatedAtRouteValues
+                {
+                    Controller = nameof(MatchesController),
+                    Action = nameof(MatchesController.ListAsync),
+                    RouteValues = filterQuery.Concat(new[]
+                    {
+                        new KeyValuePair<string, string>(nameof(limit), limit.ToString()),
+                        new KeyValuePair<string, string>(nameof(page), (page - 1).ToString())
+                    })
+                })
+                : null,
+            Count = count,
+            Results = mapper.Map<IEnumerable<MatchDTO>>(result).ToList()
+        };
+    }
+
+    public async Task<PagedResultDTO<MatchDTO>> GetAsync(
+        int limit,
+        int page,
+        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
+    )
+    {
+        IEnumerable<Match> result = await matchesRepository.GetAsync(limit, page, filterType);
         var count = result.Count();
 
         return new PagedResultDTO<MatchDTO>
@@ -75,7 +127,7 @@ public class MatchesService(
                 {
                     Controller = nameof(MatchesController),
                     Action = nameof(MatchesController.ListAsync),
-                    RouteValues = new { limit, page = page + 1, filterUnverified }
+                    RouteValues = new { limit, page = page + 1 }
                 })
                 : null,
             Previous = page > 1
@@ -83,7 +135,7 @@ public class MatchesService(
                 {
                     Controller = nameof(MatchesController),
                     Action = nameof(MatchesController.ListAsync),
-                    RouteValues = new { limit, page = page - 1, filterUnverified }
+                    RouteValues = new { limit, page = page - 1 }
                 })
                 : null,
             Count = count,
@@ -91,94 +143,23 @@ public class MatchesService(
         };
     }
 
-    public async Task<MatchDTO?> GetAsync(int id, bool filterInvalid = true) =>
-            mapper.Map<MatchDTO?>(await matchesRepository.GetAsync(id, filterInvalid));
+    public async Task<MatchDTO?> GetAsync(
+        int id,
+        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
+    ) =>
+        mapper.Map<MatchDTO?>(await matchesRepository.GetAsync(id, filterType));
 
     public async Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(
         long osuPlayerId,
-        int mode,
+        Ruleset ruleset,
         DateTime start,
         DateTime end
     )
     {
-        IEnumerable<Match> matches = await matchesRepository.GetPlayerMatchesAsync(osuPlayerId, mode, start, end);
+        IEnumerable<Match> matches = await matchesRepository.GetPlayerMatchesAsync(osuPlayerId, ruleset, start, end);
         return mapper.Map<IEnumerable<MatchDTO>>(matches);
     }
 
-    public async Task VerifyDuplicatesAsync(int verifierUserId, int matchRootId, bool confirmedDuplicate)
-    {
-        // Mark the items as confirmed / denied duplicates
-        await matchesRepository.VerifyDuplicatesAsync(matchRootId, verifierUserId, confirmedDuplicate);
-
-        // If confirmedDuplicate, trigger the update process.
-        if (confirmedDuplicate)
-        {
-            await matchesRepository.MergeDuplicatesAsync(matchRootId);
-        }
-    }
-
-    public async Task<IEnumerable<MatchDuplicateCollectionDTO>> GetAllDuplicatesAsync()
-    {
-        var collections = new List<MatchDuplicateCollectionDTO>();
-        IEnumerable<IGrouping<int, MatchDuplicate>> duplicateGroups = (await duplicateRepository.GetAllUnknownStatusAsync()).GroupBy(x =>
-            x.SuspectedDuplicateOf
-        );
-        foreach (IGrouping<int, MatchDuplicate> dupeGroup in duplicateGroups)
-        {
-            MatchDTO? root = await GetAsync(dupeGroup.First().SuspectedDuplicateOf, false) ?? throw new Exception("Failed to find root from lookup.");
-            var collection = new MatchDuplicateCollectionDTO
-            {
-                Id = root.Id,
-                Name = root.Name ?? string.Empty,
-                OsuMatchId = root.MatchId,
-                SuspectedDuplicates = new List<MatchDuplicateDTO>()
-            };
-
-            foreach (MatchDuplicate? item in dupeGroup)
-            {
-                if (root == null || item.MatchId == root.Id)
-                {
-                    continue;
-                }
-
-                MatchDTO? duplicateMatchData = await GetByOsuIdAsync(item.OsuMatchId);
-                if (duplicateMatchData == null)
-                {
-                    continue;
-                }
-
-                collection.SuspectedDuplicates.Add(
-                    new MatchDuplicateDTO
-                    {
-                        Name = duplicateMatchData.Name ?? string.Empty,
-                        OsuMatchId = duplicateMatchData.MatchId,
-                        VerifiedByUsername = item.Verifier?.Player.Username,
-                        VerifiedAsDuplicate = item.VerifiedAsDuplicate,
-                        VerifiedByUserId = item.VerifiedBy
-                    }
-                );
-            }
-
-            collections.Add(collection);
-        }
-
-        return collections;
-    }
-
-    public async Task RefreshAutomationChecks(bool invalidOnly = true) =>
-        await matchesRepository.SetRequireAutoCheckAsync(invalidOnly);
-
-    public async Task<MatchDTO?> GetByOsuIdAsync(long osuMatchId)
-    {
-        Match? match = await matchesRepository.GetByMatchIdAsync(osuMatchId);
-        return mapper.Map<MatchDTO?>(match);
-    }
-
-    public async Task<MatchDTO?> UpdateVerificationStatusAsync(int id,
-        MatchVerificationStatus verificationStatus,
-        MatchVerificationSource verificationSource,
-        string? info = null,
-        int? verifierId = null) =>
-        mapper.Map<MatchDTO?>(await matchesRepository
-            .UpdateVerificationStatusAsync(id, verificationStatus, verificationSource, info, verifierId));
+    public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name) =>
+        mapper.Map<IEnumerable<MatchSearchResultDTO>>(await matchesRepository.SearchAsync(name));
 }
