@@ -1,6 +1,6 @@
 using Database.Enums;
-using Database.Enums.Queries;
 using Database.Enums.Verification;
+using Database.Queries.Enums;
 
 namespace Database.Queries.Filters;
 

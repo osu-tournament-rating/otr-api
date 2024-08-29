@@ -30,4 +30,8 @@
       <None Remove="Database\**" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Enums\Queries\" />
+    </ItemGroup>
+
 </Project>

@@ -1,6 +1,6 @@
 using Database.Enums;
-using Database.Enums.Queries;
 using Database.Enums.Verification;
+using Database.Queries.Enums;
 
 namespace Database.Queries.Filters;
 
@@ -67,7 +67,7 @@ public class TournamentsQueryFilter
     /// <summary>
     /// Controls the manner in which results are sorted
     /// </summary>
-    public MatchesQuerySortType? Sort { get; set; } = MatchesQuerySortType.Id;
+    public TournamentsQuerySortType? Sort { get; set; } = TournamentsQuerySortType.Id;
 
     /// <summary>
     /// Denotes whether to sort results in ascending or descending order

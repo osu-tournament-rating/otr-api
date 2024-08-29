@@ -1,7 +1,7 @@
-namespace Database.Enums.Queries;
+namespace Database.Queries.Enums;
 
 /// <summary>
-/// Denotes which property a query for <see cref="Database.Entities.Match"/>es will be sorted by
+/// Denotes which property a query for <see cref="Entities.Match"/>es will be sorted by
 /// </summary>
 public enum MatchesQuerySortType
 {
