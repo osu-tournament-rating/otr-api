@@ -25,8 +25,11 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
     [Column("created")]
     public DateTime Created { get; }
 
+    [Column("ref_id_lock")]
+    public int ReferenceIdLock { get; set; }
+
     [Column("ref_id")]
-    public int ReferenceId { get; set; }
+    public int? ReferenceId { get; set; }
 
     [Column("action_user_id")]
     public int? ActionUserId { get; init; }
