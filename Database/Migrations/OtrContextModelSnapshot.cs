@@ -1113,6 +1113,9 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("ForumUrl")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1150,6 +1153,9 @@ namespace Database.Migrations
                     b.Property<int>("Ruleset")
                         .HasColumnType("integer")
                         .HasColumnName("ruleset");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("SubmittedByUserId")
                         .HasColumnType("integer")
