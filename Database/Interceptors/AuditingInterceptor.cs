@@ -51,6 +51,11 @@ public class AuditingInterceptor : ISaveChangesInterceptor
             )
             .ToList();
 
+        // Changes have already been detected once at this point, so it is being disabled for performance
+        // This prevents the change tracker from detecting changes for each entity eligible for an audit
+        // when looking for an existing (blamed) audit in the context
+        context.ChangeTracker.AutoDetectChangesEnabled = false;
+
         // Create audits
         foreach (EntityEntry entry in auditableEntries)
         {
@@ -109,5 +114,8 @@ public class AuditingInterceptor : ISaveChangesInterceptor
             auditEntry.Property(nameof(IAuditEntity.ActionType)).CurrentValue = auditAction;
             ((IAuditEntity)auditEntry.Entity).GenerateAudit(entry, auditEntry);
         }
+
+        // Re-enable change detection once audits have been created
+        context.ChangeTracker.AutoDetectChangesEnabled = true;
     }
 }
