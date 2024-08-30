@@ -131,6 +131,9 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAuditableEnt
 
     public ICollection<GameScoreAudit> Audits { get; set; } = new List<GameScoreAudit>();
 
+    [NotMapped]
+    public int? ActionBlamedOnUserId { get; set; }
+
     /// <summary>
     /// Accuracy
     /// </summary>

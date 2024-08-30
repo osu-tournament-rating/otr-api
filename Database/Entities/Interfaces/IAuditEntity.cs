@@ -11,7 +11,21 @@ public interface IAuditEntity : IEntity
     /// <summary>
     /// Id of the entity being audited
     /// </summary>
-    public int ReferenceId { get; set; }
+    /// <remarks>
+    /// Stored as a concrete copy of the primary key of the original entity.
+    /// This exists so that an original entity may be deleted but it's audits will still exist
+    /// </remarks>
+    public int ReferenceIdLock { get; }
+
+    /// <summary>
+    /// Id of the entity being audited
+    /// </summary>
+    /// <remarks>
+    /// Used as the foreign key that navigates back to the existing original entity.
+    /// If this property is null, that means the original entity has since been deleted and
+    /// <see cref="ReferenceIdLock"/> should be used instead
+    /// </remarks>
+    public int? ReferenceId { get; }
 
     /// <summary>
     /// Id of the <see cref="User"/> that took action on the record
@@ -33,7 +47,6 @@ public interface IAuditEntity : IEntity
     /// Populates the audit with values from the given <see cref="EntityEntry"/>
     /// </summary>
     /// <param name="origEntityEntry">The <see cref="EntityEntry"/> for the entity being audited</param>
-    /// <param name="auditEntityEntry">The <see cref="EntityEntry"/> for the audit entity</param>
     /// <remarks>Allows the implementation of custom logic for the way the audit is generated</remarks>
-    public void GenerateAudit(EntityEntry origEntityEntry, EntityEntry auditEntityEntry);
+    public void GenerateAudit(EntityEntry origEntityEntry);
 }
