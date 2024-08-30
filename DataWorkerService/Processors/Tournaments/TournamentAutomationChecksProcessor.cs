@@ -1,3 +1,4 @@
+using Database;
 using Database.Entities;
 using Database.Enums.Verification;
 using DataWorkerService.AutomationChecks;
@@ -11,7 +12,8 @@ namespace DataWorkerService.Processors.Tournaments;
 public class TournamentAutomationChecksProcessor(
     ILogger<TournamentAutomationChecksProcessor> logger,
     IEnumerable<IAutomationCheck<Tournament>> tournamentAutomationChecks,
-    IMatchProcessorResolver matchProcessorResolver
+    IMatchProcessorResolver matchProcessorResolver,
+    OtrContext context
 ) : ProcessorBase<Tournament>(logger)
 {
     protected override async Task OnProcessingAsync(Tournament entity, CancellationToken cancellationToken)
@@ -43,6 +45,8 @@ public class TournamentAutomationChecksProcessor(
             ? VerificationStatus.PreVerified
             : VerificationStatus.PreRejected;
 
-        entity.ProcessingStatus += 1;
+        entity.ProcessingStatus = TournamentProcessingStatus.NeedsVerification;
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 }
