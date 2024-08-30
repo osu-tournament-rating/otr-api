@@ -40,8 +40,11 @@ public class AuditingInterceptor : ISaveChangesInterceptor
 
     private static void OnSavingChanges(DbContext context)
     {
+        // Cache the current change list to avoid detecting changes multiple times
+        var trackedEntries = context.ChangeTracker.Entries().ToList();
+
         // Get all entities in the change tracker that implement IAuditableEntity<>
-        IEnumerable<EntityEntry> auditableEntries = context.ChangeTracker.Entries()
+        IEnumerable<EntityEntry> auditableEntries = trackedEntries
             .Where(entry =>
                 entry.Entity.GetType().GetInterfaces().Any(i =>
                     i.IsGenericType
@@ -50,11 +53,6 @@ public class AuditingInterceptor : ISaveChangesInterceptor
                 && entry.State is EntityState.Modified
             )
             .ToList();
-
-        // Changes have already been detected once at this point, so it is being disabled for performance
-        // This prevents the change tracker from detecting changes for each entity eligible for an audit
-        // when looking for an existing (blamed) audit in the context
-        context.ChangeTracker.AutoDetectChangesEnabled = false;
 
         // Create audits
         foreach (EntityEntry entry in auditableEntries)
@@ -89,12 +87,17 @@ public class AuditingInterceptor : ISaveChangesInterceptor
                 continue;
             }
 
-            // Find an existing audit ("blamed" on a user, handled by the repo)
-            EntityEntry? auditEntry = context.ChangeTracker.Entries()
-                .FirstOrDefault(e =>
-                    e.Entity.GetType() == auditType
-                    && ((IAuditEntity)e.Entity).ReferenceId == entity.Id
-                );
+            EntityEntry? auditEntry = null;
+            // Suppression: Using a LINQ statement here will cause a huge memory allocation
+            // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+            foreach (EntityEntry trackedEntry in trackedEntries)
+            {
+                // Find an existing audit ("blamed" on a user, handled by the repo)
+                if (trackedEntry.GetType() == auditType && ((IAuditEntity)trackedEntry.Entity).ReferenceId == entity.Id)
+                {
+                    auditEntry = trackedEntry;
+                }
+            }
 
             if (auditEntry is null)
             {
@@ -114,8 +117,5 @@ public class AuditingInterceptor : ISaveChangesInterceptor
             auditEntry.Property(nameof(IAuditEntity.ActionType)).CurrentValue = auditAction;
             ((IAuditEntity)auditEntry.Entity).GenerateAudit(entry, auditEntry);
         }
-
-        // Re-enable change detection once audits have been created
-        context.ChangeTracker.AutoDetectChangesEnabled = true;
     }
 }
