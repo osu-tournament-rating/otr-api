@@ -93,8 +93,11 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
     [Theory]
     [InlineData(0, 0, false, MatchRejectionReason.NoGames)]
     [InlineData(0, 2, false, MatchRejectionReason.NoValidGames)]
-    [InlineData(4, 3, false, MatchRejectionReason.UnexpectedGameCount)]
-    [InlineData(10, 0, false, MatchRejectionReason.UnexpectedGameCount)]
+    [InlineData(1, 1, false, MatchRejectionReason.UnexpectedGameCount)]
+    [InlineData(2, 2, false, MatchRejectionReason.UnexpectedGameCount)]
+    [InlineData(3, 3, true, MatchRejectionReason.None)]
+    [InlineData(4, 3, true, MatchRejectionReason.None)]
+    [InlineData(10, 0, true, MatchRejectionReason.None)]
     [InlineData(7, 7, true, MatchRejectionReason.None)]
     [InlineData(9, 1, true, MatchRejectionReason.None)]
     public void Check_PassesWhenExpected(
