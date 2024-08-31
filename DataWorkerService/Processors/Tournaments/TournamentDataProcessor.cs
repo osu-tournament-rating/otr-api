@@ -1,3 +1,4 @@
+using Database;
 using Database.Entities;
 using Database.Enums.Verification;
 using DataWorkerService.Processors.Resolvers.Interfaces;
@@ -9,7 +10,8 @@ namespace DataWorkerService.Processors.Tournaments;
 /// </summary>
 public class TournamentDataProcessor(
     ILogger<TournamentDataProcessor> logger,
-    IMatchProcessorResolver matchProcessorResolver
+    IMatchProcessorResolver matchProcessorResolver,
+    OtrContext context
 ) : ProcessorBase<Tournament>(logger)
 {
     protected override async Task OnProcessingAsync(Tournament entity, CancellationToken cancellationToken)
@@ -47,7 +49,9 @@ public class TournamentDataProcessor(
         // If all matches completed data processing, advance processing status
         if (entity.Matches.All(m => m.ProcessingStatus > MatchProcessingStatus.NeedsData))
         {
-            entity.ProcessingStatus += 1;
+            entity.ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
         }
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

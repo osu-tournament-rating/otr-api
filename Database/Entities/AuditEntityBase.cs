@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Interfaces;
 using Database.Enums;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Database.Entities;
@@ -14,7 +15,7 @@ namespace Database.Entities;
 /// <typeparam name="TAudit">Entity to be audited</typeparam>
 [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
 public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
-    where TAuditable : IAuditableEntity<TAudit>
+    where TAuditable : IAuditableEntity<TAudit>, IEntity
     where TAudit : IAuditEntity
 {
     [Key]
@@ -25,26 +26,53 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
     [Column("created")]
     public DateTime Created { get; }
 
+    [Column("ref_id_lock")]
+    public int ReferenceIdLock { get; private set; }
+
     [Column("ref_id")]
-    public int ReferenceId { get; set; }
+    public int? ReferenceId { get; private set; }
 
     [Column("action_user_id")]
-    public int? ActionUserId { get; init; }
+    public int? ActionUserId { get; private set; }
 
     [Column("action_type")]
-    public AuditActionType ActionType { get; }
+    public AuditActionType ActionType { get; private set; }
 
     [Column("changes", TypeName = "jsonb")]
     public IDictionary<string, AuditChangelogEntry> Changes { get; } = new Dictionary<string, AuditChangelogEntry>();
 
-    public virtual void GenerateAudit(EntityEntry origEntityEntry, EntityEntry auditEntityEntry)
+    public virtual void GenerateAudit(EntityEntry origEntityEntry)
     {
-        if (origEntityEntry.Entity is not TAuditable || auditEntityEntry.Entity is not TAudit)
+        if (origEntityEntry.Entity is not TAuditable origEntity)
         {
             return;
         }
 
-        // No need to store a changelog for created entities
+        // Determine action type
+        AuditActionType? auditAction = origEntityEntry.State switch
+        {
+            EntityState.Added => AuditActionType.Created,
+            EntityState.Modified => AuditActionType.Updated,
+            EntityState.Deleted => AuditActionType.Deleted,
+            _ => null
+        };
+
+        if (!auditAction.HasValue)
+        {
+            return;
+        }
+
+        // Populate audit metadata and navigations
+        ReferenceId = origEntity.Id;
+        ReferenceIdLock = origEntity.Id;
+        ActionType = auditAction.Value;
+
+        if (origEntity.ActionBlamedOnUserId.HasValue)
+        {
+            ActionUserId = origEntity.ActionBlamedOnUserId.Value;
+        }
+
+        // No need to store a changelog for created or deleted entities
         if (ActionType is not AuditActionType.Updated)
         {
             return;
@@ -56,20 +84,16 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
             .Select(prop => prop.Name)
             .ToList();
 
-        var newChanges = new Dictionary<string, AuditChangelogEntry>();
-
+        // Create changelog
         foreach (PropertyEntry? prop in origEntityEntry.Properties.Where(p => p.IsModified && !excludePropNames.Contains(p.Metadata.Name)))
         {
             if (prop.OriginalValue is not null && prop.CurrentValue is not null && prop.OriginalValue != prop.CurrentValue)
             {
-                newChanges.Add(
+                Changes.Add(
                     prop.Metadata.Name,
                     new AuditChangelogEntry { OriginalValue = prop.OriginalValue, NewValue = prop.CurrentValue }
                 );
             }
         }
-
-        // Setting the current value from the entry makes the change tracker aware of the change
-        auditEntityEntry.Property(nameof(Changes)).CurrentValue = newChanges;
     }
 }
