@@ -1,6 +1,7 @@
 using Database.Entities;
 using Database.Enums;
 using Database.Enums.Verification;
+using Database.Queries.Enums;
 using Database.Queries.Filters;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,9 @@ namespace Database.Queries.Extensions;
 
 public static class TournamentQueryExtensions
 {
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query based on the given <see cref="TournamentsQueryFilter"/>
+    /// </summary>
     public static IQueryable<Tournament> WhereFiltered(this IQueryable<Tournament> query, TournamentsQueryFilter filter)
     {
         if (filter.Ruleset.HasValue)
@@ -28,6 +32,36 @@ public static class TournamentQueryExtensions
         if (filter.RankRangeLowerBound.HasValue)
         {
             query = query.WhereRankRange(filter.RankRangeLowerBound.Value);
+        }
+
+        if (filter.VerificationStatus.HasValue)
+        {
+            query = query.WhereVerificationStatus(filter.VerificationStatus.Value);
+        }
+
+        if (filter.RejectionReason.HasValue)
+        {
+            query = query.WhereRejectionReason(filter.RejectionReason.Value);
+        }
+
+        if (filter.ProcessingStatus.HasValue)
+        {
+            query = query.WhereProcessingStatus(filter.ProcessingStatus.Value);
+        }
+
+        if (filter.SubmittedBy.HasValue)
+        {
+            query = query.WhereSubmittedBy(filter.SubmittedBy.Value);
+        }
+
+        if (filter.VerifiedBy.HasValue)
+        {
+            query = query.WhereVerifiedBy(filter.VerifiedBy.Value);
+        }
+
+        if (filter.Sort.HasValue)
+        {
+            query = query.OrderBy(filter.Sort.Value, filter.SortDescending ?? false);
         }
 
         return query;
@@ -67,16 +101,59 @@ public static class TournamentQueryExtensions
         query.Where(t => t.RankRangeLowerBound == rangeRange);
 
     /// <summary>
-    /// Filters a <see cref="Tournament"/> query for those with a <see cref="VerificationStatus"/>
-    /// of <see cref="VerificationStatus.Verified"/>
+    /// Filters a <see cref="Tournament"/> query for those with a <see cref="Tournament.VerificationStatus"/>
+    /// matching the given verification status
     /// </summary>
-    public static IQueryable<Tournament> WhereVerified(this IQueryable<Tournament> query) =>
-        query.Where(x => x.VerificationStatus == VerificationStatus.Verified);
+    public static IQueryable<Tournament> WhereVerificationStatus(
+        this IQueryable<Tournament> query,
+        VerificationStatus verificationStatus
+    ) =>
+        query.Where(t => t.VerificationStatus == verificationStatus);
 
     /// <summary>
-    /// Filters a <see cref="Tournament"/> query for those with a <see cref="TournamentProcessingStatus"/>
-    /// of <see cref="TournamentProcessingStatus.Done"/>
+    /// Filters a <see cref="Tournament"/> query for those with a <see cref="Tournament.RejectionReason"/>
+    /// matching the given rejection reason
     /// </summary>
-    public static IQueryable<Tournament> WhereProcessingCompleted(this IQueryable<Tournament> query) =>
-        query.Where(x => x.ProcessingStatus == TournamentProcessingStatus.Done);
+    public static IQueryable<Tournament> WhereRejectionReason(
+        this IQueryable<Tournament> query,
+        TournamentRejectionReason rejectionReason
+    ) =>
+        query.Where(t => t.RejectionReason == rejectionReason);
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those with a <see cref="Tournament.ProcessingStatus"/>
+    /// matching the given processing status
+    /// </summary>
+    public static IQueryable<Tournament> WhereProcessingStatus(
+        this IQueryable<Tournament> query,
+        TournamentProcessingStatus processingStatus
+    ) =>
+        query.Where(t => t.ProcessingStatus == processingStatus);
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those with a <see cref="Tournament.SubmittedByUser"/>
+    /// with an <see cref="User.Id"/> matching the given id
+    /// </summary>
+    public static IQueryable<Tournament> WhereSubmittedBy(this IQueryable<Tournament> query, int id) =>
+        query.Where(t => t.SubmittedByUserId == id);
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those with a <see cref="Tournament.VerifiedByUser"/>
+    /// with an <see cref="User.Id"/> matching the given id
+    /// </summary>
+    public static IQueryable<Tournament> WhereVerifiedBy(this IQueryable<Tournament> query, int id) =>
+        query.Where(t => t.VerifiedByUserId == id);
+
+    /// <summary>
+    /// Orders a <see cref="Tournament"/> query by the given <see cref="TournamentsQuerySortType"/>
+    /// </summary>
+    public static IQueryable<Tournament> OrderBy(
+        this IQueryable<Tournament> query,
+        TournamentsQuerySortType sortType,
+        bool descending = false
+    ) =>
+        sortType switch
+        {
+            _ => descending ? query.OrderByDescending(t => t.Id) : query.OrderBy(t => t.Id)
+        };
 }

@@ -73,9 +73,4 @@ public class TournamentsQueryFilter
     /// Denotes whether to sort results in ascending or descending order
     /// </summary>
     public bool? SortDescending { get; set; }
-
-    /// <summary>
-    /// Controls the filtering options for the included <see cref="Entities.Match"/>es
-    /// </summary>
-    public MatchesQueryFilter? Matches { get; set; }
 }
