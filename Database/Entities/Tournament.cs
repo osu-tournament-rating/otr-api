@@ -108,4 +108,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAuditableEn
     public ICollection<PlayerTournamentStats> PlayerTournamentStats { get; set; } = new List<PlayerTournamentStats>();
 
     public ICollection<TournamentAudit> Audits { get; set; } = new List<TournamentAudit>();
+
+    [NotMapped]
+    public int? ActionBlamedOnUserId { get; set; }
 }

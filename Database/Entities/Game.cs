@@ -117,6 +117,9 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAuditableEntity<G
 
     public ICollection<GameAudit> Audits { get; set; } = new List<GameAudit>();
 
+    [NotMapped]
+    public int? ActionBlamedOnUserId { get; set; }
+
     /// <summary>
     /// Denotes if the mod setting was "free mod"
     /// </summary>

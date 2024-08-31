@@ -118,4 +118,7 @@ public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>, IProces
     public ICollection<RatingAdjustment> PlayerRatingAdjustments { get; set; } = new List<RatingAdjustment>();
 
     public ICollection<MatchAudit> Audits { get; set; } = new List<MatchAudit>();
+
+    [NotMapped]
+    public int? ActionBlamedOnUserId { get; set; }
 }

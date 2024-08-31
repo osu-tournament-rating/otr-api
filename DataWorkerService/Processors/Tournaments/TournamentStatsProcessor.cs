@@ -1,3 +1,4 @@
+using Database;
 using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums.Verification;
@@ -10,7 +11,8 @@ namespace DataWorkerService.Processors.Tournaments;
 /// </summary>
 public class TournamentStatsProcessor(
     ILogger<TournamentStatsProcessor> logger,
-    IMatchProcessorResolver matchProcessorResolver
+    IMatchProcessorResolver matchProcessorResolver,
+    OtrContext context
 ) : ProcessorBase<Tournament>(logger)
 {
     protected override async Task OnProcessingAsync(Tournament entity, CancellationToken cancellationToken)
@@ -24,7 +26,7 @@ public class TournamentStatsProcessor(
         if (
             entity.ProcessingStatus is not TournamentProcessingStatus.NeedsStatCalculation
             || entity.Matches.Any(m => m.ProcessingStatus is not MatchProcessingStatus.Done)
-            )
+        )
         {
             logger.LogDebug(
                 "Tournament does not require processing [Id: {Id} | Processing Status: {Status}]",
@@ -36,16 +38,16 @@ public class TournamentStatsProcessor(
         }
 
         IEnumerable<Match> verifiedMatches = entity.Matches.Where(m =>
-            m is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done }
-        )
-        .ToList();
+                m is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done }
+            )
+            .ToList();
 
         // Create a PlayerTournamentStats for each Player
         foreach (Player player in verifiedMatches
                      .SelectMany(m => m.PlayerMatchStats)
                      .Select(pms => pms.Player)
                      .DistinctBy(p => p.Id)
-                 )
+                )
         {
             IEnumerable<PlayerMatchStats> matchStats = verifiedMatches
                 .SelectMany(m => m.PlayerMatchStats)
@@ -75,5 +77,9 @@ public class TournamentStatsProcessor(
                 TournamentId = entity.Id
             });
         }
+
+        entity.ProcessingStatus = TournamentProcessingStatus.Done;
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 }
