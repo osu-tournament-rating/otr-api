@@ -1,7 +1,6 @@
-// ReSharper disable CommentTypo
-
-using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace API.DTOs;
 
@@ -10,15 +9,24 @@ namespace API.DTOs;
 /// </summary>
 public class TournamentDTO
 {
-    public int Id { get; set; }
     /// <summary>
-    /// The name of the tournament
+    /// Id
+    /// </summary>
+    public int Id { get; set; }
+
+    /// <summary>
+    /// Timestamp of submission
+    /// </summary>
+    public DateTime Created { get; set; }
+
+    /// <summary>
+    /// Name
     /// </summary>
     public string Name { get; set; } = null!;
 
     /// <summary>
-    /// Acronym / shortened name of the tournament
-    /// <example>For osu! World Cup 2023, this value would be "OWC23"</example>
+    /// Acronym / shortened name
+    /// <example>For osu! World Cup 2023, this value would be "OWC2023"</example>
     /// </summary>
     public string Abbreviation { get; set; } = null!;
 
@@ -28,32 +36,50 @@ public class TournamentDTO
     public string ForumUrl { get; set; } = null!;
 
     /// <summary>
-    /// Lowest rank a player can be to participate in the tournament
+    /// Lowest rank a player can be to participate
     /// </summary>
     /// <example>For a 10,000-50,000 tournament, this value would be 10,000</example>
     public int RankRangeLowerBound { get; set; }
 
     /// <summary>
-    /// osu! ruleset
+    /// The ruleset the tournament was played in
     /// </summary>
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Expected in-match team size
     /// </summary>
-    /// <example>For a 2v2 team size 4 tournament, this value should be 2</example>
+    /// <example>For a 2v2 team size 4 tournament, this value would be 2</example>
     public int LobbySize { get; set; }
 
-    // Requested by Cytusine, normally we don't return this info.
     /// <summary>
-    /// The timestamp of submission for the tournament
+    /// Verification status
     /// </summary>
-    [SuppressMessage("ReSharper", "UnusedMember.Global")]
-    public DateTime Created { get; set; }
+    public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
-    /// All associated match data
+    /// Rejection reason
     /// </summary>
-    /// <remarks>Will be empty for bulk requests such as List</remarks>
+    public TournamentRejectionReason RejectionReason { get; set; }
+
+    /// <summary>
+    /// Processing status
+    /// </summary>
+    public TournamentProcessingStatus ProcessingStatus { get; set; }
+
+    /// <summary>
+    /// Id of the user that submitted the tournament
+    /// </summary>
+    public int? SubmittedByUserId { get; set; }
+
+    /// <summary>
+    /// Id of the user that verified the tournament
+    /// </summary>
+    public int? VerifiedByUserId { get; set; }
+
+    /// <summary>
+    /// Associated match data
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public ICollection<MatchDTO> Matches { get; set; } = new List<MatchDTO>();
 }
