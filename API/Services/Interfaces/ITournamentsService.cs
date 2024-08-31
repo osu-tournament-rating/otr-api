@@ -25,12 +25,10 @@ public interface ITournamentsService
     Task<bool> ExistsAsync(string name, Ruleset ruleset);
 
     /// <summary>
-    /// Gets all tournaments
+    /// Gets a collection of tournaments
     /// </summary>
-    /// <param name="limit"></param>
-    /// <param name="page"></param>
     /// <param name="filter"></param>
-    Task<PagedResultDTO<TournamentDTO>> GetAsync(int limit, int page, TournamentsQueryFilter filter);
+    Task<PagedResultDTO<TournamentDTO>> GetAsync(TournamentsQueryFilter filter);
 
     /// <summary>
     /// Gets a tournament by id

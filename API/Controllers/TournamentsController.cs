@@ -36,19 +36,15 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     [HttpGet]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [ProducesResponseType<PagedResultDTO<TournamentDTO>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ListAsync(
-        [FromQuery] TournamentsQueryFilter filter,
-        [FromQuery][Range(1, int.MaxValue)] int limit = 50,
-        [FromQuery][Range(1, int.MaxValue)] int page = 1
-    )
+    public async Task<IActionResult> ListAsync([FromQuery] TournamentsQueryFilter filter)
     {
         // Clamp page size for non-admin users
-        if (limit > 250 && !(User.IsAdmin() || User.IsSystem()))
+        if (filter.Limit > 250 && !(User.IsAdmin() || User.IsSystem()))
         {
-            limit = 250;
+            filter.Limit = 250;
         }
 
-        return Ok(await tournamentsService.GetAsync(limit, page, filter));
+        return Ok(await tournamentsService.GetAsync(filter));
     }
 
     /// <summary>

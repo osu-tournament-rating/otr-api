@@ -1,5 +1,7 @@
+using API.Controllers;
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities.Extensions;
 using AutoMapper;
 using Database.Entities;
 using Database.Enums;
@@ -9,7 +11,12 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class TournamentsService(ITournamentsRepository tournamentsRepository, IMatchesRepository matchesRepository, IMapper mapper) : ITournamentsService
+public class TournamentsService(
+    ITournamentsRepository tournamentsRepository,
+    IMatchesRepository matchesRepository,
+    IUrlHelperService urlHelperService,
+    IMapper mapper
+) : ITournamentsService
 {
     public async Task<TournamentCreatedResultDTO> CreateAsync(
         TournamentSubmissionDTO submission,
@@ -47,9 +54,49 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
     public async Task<bool> ExistsAsync(string name, Ruleset ruleset)
         => await tournamentsRepository.ExistsAsync(name, ruleset);
 
-    public async Task<PagedResultDTO<TournamentDTO>> GetAsync(int limit, int page, TournamentsQueryFilter filter)
+    public async Task<PagedResultDTO<TournamentDTO>> GetAsync(TournamentsQueryFilter filter)
     {
-        return new PagedResultDTO<TournamentDTO> { Count = 0, Results = new List<TournamentDTO>() };
+        IEnumerable<Tournament> results = (await tournamentsRepository.GetAsync(
+            filter.Limit,
+            filter.Page - 1,
+            filter,
+            false
+        )).ToList();
+
+        var count = results.Count();
+        var origPage = filter.Page;
+
+        string? next = null;
+        if (count == filter.Limit)
+        {
+            filter.Page = origPage + 1;
+            next = urlHelperService.Action(new CreatedAtRouteValues
+            {
+                Action = nameof(TournamentsController.ListAsync),
+                Controller = nameof(TournamentsController),
+                RouteValues = filter.ToDictionary()
+            });
+        }
+
+        string? previous = null;
+        if (origPage > 1)
+        {
+            filter.Page = origPage - 1;
+            previous = urlHelperService.Action(new CreatedAtRouteValues
+            {
+                Action = nameof(TournamentsController.ListAsync),
+                Controller = nameof(TournamentsController),
+                RouteValues = filter.ToDictionary()
+            });
+        }
+
+        return new PagedResultDTO<TournamentDTO>
+        {
+            Next = next,
+            Previous = previous,
+            Count = count,
+            Results = mapper.Map<IEnumerable<TournamentDTO>>(results).ToList()
+        };
     }
 
     public async Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true) =>

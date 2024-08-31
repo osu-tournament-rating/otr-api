@@ -7,7 +7,7 @@ namespace Database.Queries.Filters;
 /// <summary>
 /// Filtering options for querying a page of <see cref="Database.Entities.Tournament"/>s
 /// </summary>
-public class TournamentsQueryFilter
+public class TournamentsQueryFilter : PagedFilterBase
 {
     /// <summary>
     /// Filters results for <see cref="Database.Entities.Tournament"/>s with a
@@ -36,7 +36,7 @@ public class TournamentsQueryFilter
 
     /// <summary>
     /// Filters results for <see cref="Entities.Tournament"/>s with a
-    /// matching <see cref="Enums.Verification.VerificationStatus"/>
+    /// matching <see cref="Database.Enums.Verification.VerificationStatus"/>
     /// </summary>
     public VerificationStatus? VerificationStatus { get; set; }
 
@@ -67,7 +67,7 @@ public class TournamentsQueryFilter
     /// <summary>
     /// Controls the manner in which results are sorted
     /// </summary>
-    public TournamentsQuerySortType? Sort { get; set; } = TournamentsQuerySortType.Id;
+    public TournamentsQuerySortType? Sort { get; set; }
 
     /// <summary>
     /// Denotes whether to sort results in ascending or descending order

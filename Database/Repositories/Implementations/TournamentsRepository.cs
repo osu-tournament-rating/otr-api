@@ -3,6 +3,8 @@ using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
+using Database.Queries.Extensions;
+using Database.Queries.Filters;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +18,19 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
         eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
+
+    public async Task<IEnumerable<Tournament>> GetAsync(
+        int limit,
+        int page,
+        TournamentsQueryFilter filter,
+        bool tracked = true
+    )
+    {
+        IQueryable<Tournament> query = _context.Tournaments.WhereFiltered(filter).Page(limit, page);
+        query = tracked ? query : query.AsNoTracking();
+
+        return await query.ToListAsync();
+    }
 
     public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
         await _context.Tournaments
