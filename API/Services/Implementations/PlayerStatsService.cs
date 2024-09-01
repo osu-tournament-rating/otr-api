@@ -129,7 +129,7 @@ public class PlayerStatsService(
 
         PlayerCompactDTO playerInfo = mapper.Map<PlayerCompactDTO>(player);
 
-        PlayerRatingDTO? baseStats = await GetBaseStatsAsync(player.Id, ruleset.Value);
+        PlayerRatingStatsDTO? baseStats = await GetBaseStatsAsync(player.Id, ruleset.Value);
 
         if (baseStats is null)
         {
@@ -208,7 +208,7 @@ public class PlayerStatsService(
         await matchStatsRepository.InsertAsync(items);
     }
 
-    public async Task BatchInsertAsync(IEnumerable<PlayerRatingBaseDTO> postBody) =>
+    public async Task BatchInsertAsync(IEnumerable<PlayerRatingDTO> postBody) =>
         await baseStatsService.BatchInsertAsync(postBody);
 
     public async Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody) =>
@@ -235,9 +235,9 @@ public class PlayerStatsService(
     }
 
     // Returns overall stats for the player, no need to filter by date.
-    private async Task<PlayerRatingDTO?> GetBaseStatsAsync(int playerId, Ruleset ruleset)
+    private async Task<PlayerRatingStatsDTO?> GetBaseStatsAsync(int playerId, Ruleset ruleset)
     {
-        PlayerRatingDTO? dto = await baseStatsService.GetAsync(null, playerId, ruleset);
+        PlayerRatingStatsDTO? dto = await baseStatsService.GetAsync(null, playerId, ruleset);
 
         if (dto == null)
         {
@@ -246,11 +246,10 @@ public class PlayerStatsService(
 
         var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
         var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
-        var highestRank = await ratingStatsRepository.HighestGlobalRankAsync(playerId, ruleset);
+        _ = await ratingStatsRepository.HighestGlobalRankAsync(playerId, ruleset);
 
         dto.MatchesPlayed = matchesPlayed;
         dto.WinRate = winRate;
-        dto.HighestGlobalRank = highestRank;
 
         dto.RankProgress = new RankProgressDTO
         {
