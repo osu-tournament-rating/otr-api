@@ -2,6 +2,7 @@ using Database.Entities;
 using Database.Enums;
 using Database.Enums.Verification;
 using Database.Queries.Enums;
+using Database.Queries.Filters;
 
 namespace Database.Repositories.Interfaces;
 
@@ -21,17 +22,8 @@ public interface IMatchesRepository : IRepository<Match>
     Task<IEnumerable<Match>> GetAsync(
         int limit,
         int page,
-        Ruleset? ruleset = null,
-        string? name = null,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null,
-        VerificationStatus? verificationStatus = null,
-        MatchRejectionReason? rejectionReason = null,
-        MatchProcessingStatus? processingStatus = null,
-        int? submittedBy = null,
-        int? verifiedBy = null,
-        MatchesQuerySortType? querySortType = null,
-        bool? sortDescending = null
+        MatchesQueryFilter filter,
+        bool tracking = true
     );
 
     /// <summary>

@@ -24,14 +24,8 @@ public interface IMatchesService
     /// <summary>
     /// Gets a paged list of matches
     /// </summary>
-    /// <param name="limit">Amount of matches to return. Functions as the "page size"</param>
-    /// <param name="page">Which block of matches to return</param>
     /// <param name="filter">Filtering options</param>
-    Task<PagedResultDTO<MatchDTO>> GetAsync(
-        int limit,
-        int page,
-        MatchesQueryFilter filter
-    );
+    Task<PagedResultDTO<MatchDTO>> GetAsync(MatchesQueryFilter filter);
 
     Task<MatchDTO?> GetAsync(
         int id,

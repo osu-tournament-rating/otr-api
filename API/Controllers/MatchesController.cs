@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
@@ -22,33 +21,19 @@ public class MatchesController(IMatchesService matchesService) : Controller
     /// <remarks>
     /// By default will return 100 of the most recently submitted matches
     /// </remarks>
-    /// <param name="limit">
-    /// Controls the number of matches to return. Functions as a "page size".
-    /// Default: 100
-    /// Constraints: Minimum 1, Maximum 5000
-    /// </param>
-    /// <param name="page">
-    /// Controls which page of size <paramref name="limit"/> to return.
-    /// Default: 1
-    /// Constraints: Minimum 1
-    /// </param>
     /// <response code="200">Returns the desired page of matches</response>
     [HttpGet]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [ProducesResponseType<PagedResultDTO<MatchDTO>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ListAsync(
-        [FromQuery] MatchesQueryFilter filter,
-        [FromQuery][Range(1, int.MaxValue)] int limit = 100,
-        [FromQuery][Range(1, int.MaxValue)] int page = 1
-    )
+    public async Task<IActionResult> ListAsync([FromQuery] MatchesQueryFilter filter)
     {
         // Clamp page size for non-admin users
-        if (limit > 5000 && !(User.IsAdmin() || User.IsSystem()))
+        if (filter.Limit > 5000 && !(User.IsAdmin() || User.IsSystem()))
         {
-            limit = 5000;
+            filter.Limit = 5000;
         }
 
-        return Ok(await matchesService.GetAsync(limit, page, filter));
+        return Ok(await matchesService.GetAsync(filter));
     }
 
     /// <summary>

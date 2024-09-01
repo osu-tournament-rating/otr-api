@@ -1,12 +1,78 @@
 using Database.Entities;
 using Database.Enums;
 using Database.Enums.Verification;
+using Database.Queries.Enums;
+using Database.Queries.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Queries.Extensions;
 
 public static class MatchQueryExtensions
 {
+    public static IQueryable<Match> WhereFiltered(this IQueryable<Match> query, MatchesQueryFilter filter)
+    {
+        if (filter.Ruleset.HasValue)
+        {
+            query = query.WhereRuleset(filter.Ruleset.Value);
+        }
+
+        if (!string.IsNullOrEmpty(filter.Name))
+        {
+            query = query.WhereName(filter.Name);
+        }
+
+        if (filter.DateMin.HasValue)
+        {
+            query = query.AfterDate(filter.DateMin.Value);
+        }
+
+        if (filter.DateMax.HasValue)
+        {
+            query = query.BeforeDate(filter.DateMax.Value);
+        }
+
+        if (filter.VerificationStatus.HasValue)
+        {
+            query = query.Where(m => m.VerificationStatus == filter.VerificationStatus.Value);
+        }
+
+        if (filter.RejectionReason.HasValue)
+        {
+            query = query.Where(m => m.RejectionReason == filter.RejectionReason.Value);
+        }
+
+        if (filter.ProcessingStatus.HasValue)
+        {
+            query = query.Where(m => m.ProcessingStatus == filter.ProcessingStatus.Value);
+        }
+
+        if (filter.SubmittedBy.HasValue)
+        {
+            query = query.Where(m => m.SubmittedByUserId == filter.SubmittedBy.Value);
+        }
+
+        if (filter.VerifiedBy.HasValue)
+        {
+            query = query.Where(m => m.VerifiedByUserId == filter.VerifiedBy.Value);
+        }
+
+        query = query.OrderBy(filter.Sort ?? MatchesQuerySortType.Id, filter.SortDescending ?? false);
+
+        return query;
+    }
+
+    /// <summary>
+    /// Filters a <see cref="Match"/> query based on the given <see cref="QueryFilterType"/>
+    /// </summary>
+    public static IQueryable<Match> WhereFiltered(this IQueryable<Match> query, QueryFilterType filterType) =>
+        filterType switch
+        {
+            QueryFilterType.Verified => query.AsQueryable().WhereVerified(),
+            QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereProcessingCompleted(),
+            QueryFilterType.Verified | QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereVerified().WhereProcessingCompleted(),
+            _ => query
+        };
+
     /// <summary>
     /// Filters a <see cref="Match"/> query for those with a <see cref="VerificationStatus"/>
     /// of <see cref="VerificationStatus.Verified"/>
@@ -20,18 +86,6 @@ public static class MatchQueryExtensions
     /// </summary>
     public static IQueryable<Match> WhereProcessingCompleted(this IQueryable<Match> query) =>
         query.AsQueryable().Where(x => x.ProcessingStatus == MatchProcessingStatus.Done);
-
-    /// <summary>
-    /// Filters a <see cref="Match"/> query based on the given <see cref="QueryFilterType"/>
-    /// </summary>
-    public static IQueryable<Match> WhereFiltered(this IQueryable<Match> query, QueryFilterType filterType) =>
-        filterType switch
-        {
-            QueryFilterType.Verified => query.AsQueryable().WhereVerified(),
-            QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereProcessingCompleted(),
-            QueryFilterType.Verified | QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereVerified().WhereProcessingCompleted(),
-            _ => query
-        };
 
     /// <summary>
     /// Includes child navigation properties for a <see cref="Match"/> query based on the given <see cref="QueryFilterType"/>
@@ -91,6 +145,28 @@ public static class MatchQueryExtensions
             .AsQueryable()
             .Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\"));
     }
+
+    /// <summary>
+    /// Orders a <see cref="Match"/> query by the given <see cref="MatchesQuerySortType"/>
+    /// </summary>
+    public static IQueryable<Match> OrderBy(
+        this IQueryable<Match> query,
+        MatchesQuerySortType sortType,
+        bool descending = false
+    ) =>
+        sortType switch
+        {
+            MatchesQuerySortType.OsuId => descending
+                ? query.OrderByDescending(m => m.OsuId)
+                : query.OrderBy(m => m.OsuId),
+            MatchesQuerySortType.StartTime => descending
+                ? query.OrderByDescending(m => m.StartTime)
+                : query.OrderBy(m => m.StartTime),
+            MatchesQuerySortType.EndTime => descending
+                ? query.OrderByDescending(m => m.EndTime)
+                : query.OrderBy(m => m.EndTime),
+            _ => descending ? query.OrderByDescending(m => m.Id) : query.OrderBy(m => m.Id)
+        };
 
     /// <summary>
     /// Filters a <see cref="Match"/> query for those where a <see cref="Player"/> with the given osu! id participated

@@ -2,10 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Enums;
 using Database.Enums.Verification;
-using Database.Queries.Enums;
 using Database.Queries.Extensions;
+using Database.Queries.Filters;
 using Database.Repositories.Interfaces;
-using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
@@ -30,80 +29,12 @@ public class MatchesRepository(
     public async Task<IEnumerable<Match>> GetAsync(
         int limit,
         int page,
-        Ruleset? ruleset = null,
-        string? name = null,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null,
-        VerificationStatus? verificationStatus = null,
-        MatchRejectionReason? rejectionReason = null,
-        MatchProcessingStatus? processingStatus = null,
-        int? submittedBy = null,
-        int? verifiedBy = null,
-        MatchesQuerySortType? querySortType = null,
-        bool? sortDescending = null
+        MatchesQueryFilter filter,
+        bool tracking = true
     )
     {
-        IQueryable<Match> query = _context.Matches.AsQueryable();
-
-        if (ruleset.HasValue)
-        {
-            query = query.WhereRuleset(ruleset.Value);
-        }
-
-        if (!string.IsNullOrEmpty(name))
-        {
-            query = query.WhereName(name);
-        }
-
-        if (dateMin.HasValue)
-        {
-            query = query.AfterDate(dateMin.Value);
-        }
-
-        if (dateMax.HasValue)
-        {
-            query = query.BeforeDate(dateMax.Value);
-        }
-
-        if (verificationStatus.HasValue)
-        {
-            query = query.Where(m => m.VerificationStatus == verificationStatus.Value);
-        }
-
-        if (rejectionReason.HasValue)
-        {
-            query = query.Where(m => m.RejectionReason == rejectionReason.Value);
-        }
-
-        if (processingStatus.HasValue)
-        {
-            query = query.Where(m => m.ProcessingStatus == processingStatus.Value);
-        }
-
-        if (submittedBy.HasValue)
-        {
-            query = query.Where(m => m.SubmittedByUserId == submittedBy.Value);
-        }
-
-        if (verifiedBy.HasValue)
-        {
-            query = query.Where(m => m.VerifiedByUserId == verifiedBy.Value);
-        }
-
-        if (querySortType.HasValue)
-        {
-            query = querySortType switch
-            {
-                MatchesQuerySortType.OsuId => sortDescending != null && sortDescending.Value
-                    ? query.OrderByDescending(m => m.OsuId) : query.OrderBy(m => m.OsuId),
-                MatchesQuerySortType.StartTime => sortDescending != null && sortDescending.Value
-                    ? query.OrderByDescending(m => m.StartTime) : query.OrderBy(m => m.StartTime),
-                MatchesQuerySortType.EndTime => sortDescending != null && sortDescending.Value
-                    ? query.OrderByDescending(m => m.EndTime) : query.OrderBy(m => m.EndTime),
-                _ => sortDescending != null && sortDescending.Value
-                    ? query.OrderByDescending(m => m.Id) : query.OrderBy(m => m.Id),
-            };
-        }
+        IQueryable<Match> query = _context.Matches.WhereFiltered(filter);
+        query = tracking ? query : query.AsNoTracking();
 
         return await query.Page(limit, page).ToListAsync();
     }
