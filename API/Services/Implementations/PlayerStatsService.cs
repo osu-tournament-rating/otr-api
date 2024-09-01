@@ -208,7 +208,7 @@ public class PlayerStatsService(
         await matchStatsRepository.InsertAsync(items);
     }
 
-    public async Task BatchInsertAsync(IEnumerable<BaseStatsPostDTO> postBody) =>
+    public async Task BatchInsertAsync(IEnumerable<PlayerRatingBaseDTO> postBody) =>
         await baseStatsService.BatchInsertAsync(postBody);
 
     public async Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody) =>

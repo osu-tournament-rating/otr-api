@@ -79,10 +79,10 @@ public class BaseStatsService(
         };
     }
 
-    public async Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats)
+    public async Task<int> BatchInsertAsync(IEnumerable<PlayerRatingBaseDTO> stats)
     {
         var toInsert = new List<PlayerRating>();
-        foreach (BaseStatsPostDTO item in stats)
+        foreach (PlayerRatingBaseDTO item in stats)
         {
             toInsert.Add(
                 new PlayerRating

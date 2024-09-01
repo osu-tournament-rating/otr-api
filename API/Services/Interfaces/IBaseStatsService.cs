@@ -16,7 +16,7 @@ public interface IBaseStatsService
     Task<IEnumerable<PlayerRatingDTO?>> GetAsync(long osuPlayerId);
 
     Task<PlayerRatingDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset);
-    Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats);
+    Task<int> BatchInsertAsync(IEnumerable<PlayerRatingBaseDTO> stats);
 
     Task<IEnumerable<PlayerRatingDTO?>> GetLeaderboardAsync(
         Ruleset ruleset,

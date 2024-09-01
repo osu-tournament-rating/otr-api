@@ -79,7 +79,7 @@ public class StatsController(
 
     [HttpPost("basestats")]
     [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> PostAsync([FromBody] IEnumerable<BaseStatsPostDTO> postBody)
+    public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerRatingBaseDTO> postBody)
     {
         await playerStatsService.BatchInsertAsync(postBody);
         return Ok();
