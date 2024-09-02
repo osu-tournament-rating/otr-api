@@ -12,7 +12,6 @@ namespace API.Services.Implementations;
 public class BaseStatsService(
     IApiBaseStatsRepository baseStatsRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
-    IMatchRatingStatsRepository ratingStatsRepository,
     IPlayersRepository playerRepository,
     ITournamentsService tournamentsService
     ) : IBaseStatsService
@@ -49,7 +48,6 @@ public class BaseStatsService(
 
         var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
         var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
-        _ = await ratingStatsRepository.HighestGlobalRankAsync(playerId, ruleset);
         var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset);
         var rankProgress = new RankProgressDTO
         {

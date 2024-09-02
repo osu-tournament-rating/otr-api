@@ -100,14 +100,6 @@ public class PlayerStatsService(
         };
     }
 
-    public async Task<PlayerRankChartDTO> GetRankChartAsync(
-        int playerId,
-        Ruleset ruleset,
-        LeaderboardChartType chartType,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null
-    ) => await ratingStatsRepository.GetRankChartAsync(playerId, ruleset, chartType, dateMin, dateMax);
-
     public async Task<PlayerStatsDTO?> GetAsync(
         string key,
         Ruleset? ruleset = null,
@@ -246,7 +238,6 @@ public class PlayerStatsService(
 
         var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
         var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
-        _ = await ratingStatsRepository.HighestGlobalRankAsync(playerId, ruleset);
 
         dto.MatchesPlayed = matchesPlayed;
         dto.WinRate = winRate;
@@ -333,9 +324,6 @@ public class PlayerStatsService(
             // TODO: Different way of calcing this
             // AverageMatchCostAggregate = ratingStats.Average(x => x.MatchCost),
             HighestRating = adjustments.Max(x => x.RatingAfter),
-            HighestGlobalRank = adjustments.Min(x => x.GlobalRankAfter),
-            HighestCountryRank = adjustments.Min(x => x.CountryRankAfter),
-            HighestPercentile = adjustments.Max(x => x.PercentileAfter),
             RatingGained = adjustments.Last().RatingAfter - adjustments.First().RatingAfter,
             GamesWon = matchStats.Sum(x => x.GamesWon),
             GamesLost = matchStats.Sum(x => x.GamesLost),
