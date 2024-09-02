@@ -52,6 +52,16 @@ public class TournamentDTO
     public DateTime Created { get; set; }
 
     /// <summary>
+    /// The start date of the first match played in the tournament
+    /// </summary>
+    public DateTime StartTime { get; set; }
+
+    /// <summary>
+    /// The end date of the last match played in the tournament
+    /// </summary>
+    public DateTime EndTime { get; set; }
+
+    /// <summary>
     /// All associated match data
     /// </summary>
     /// <remarks>Will be empty for bulk requests such as List</remarks>
