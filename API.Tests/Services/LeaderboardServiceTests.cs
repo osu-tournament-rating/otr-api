@@ -52,7 +52,7 @@ public class LeaderboardServiceTests
 
         var baseStatsService = new BaseStatsService(
             baseStatsRepository.Object,
-            null,
+            matchStatsRepository.Object,
             playerRepository.Object,
             tournamentsService
         );
