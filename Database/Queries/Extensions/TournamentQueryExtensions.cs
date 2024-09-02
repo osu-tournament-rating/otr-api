@@ -159,4 +159,53 @@ public static class TournamentQueryExtensions
                 : query.OrderBy(t => t.EndTime),
             _ => descending ? query.OrderByDescending(t => t.Id) : query.OrderBy(t => t.Id)
         };
+
+    /// <summary>
+    /// Includes all navigations on a <see cref="Tournament"/> query
+    /// </summary>
+    /// <param name="filtered">
+    /// Denotes if the included navigations should be limited to only entities that have a
+    /// <see cref="VerificationStatus"/> of <see cref="VerificationStatus.Verified"/> and have completed processing
+    /// </param>
+    public static IQueryable<Tournament> IncludeAll(this IQueryable<Tournament> query, bool filtered = true)
+    {
+        query = query.AsSplitQuery();
+
+        if (filtered)
+        {
+            query = query
+                .Include(t => t.Matches.Where(m =>
+                    m.VerificationStatus == VerificationStatus.Verified
+                    && m.ProcessingStatus == MatchProcessingStatus.Done))
+                .ThenInclude(m => m.Games.Where(g =>
+                    g.VerificationStatus == VerificationStatus.Verified
+                    && g.ProcessingStatus == GameProcessingStatus.Done))
+                .ThenInclude(g => g.Scores.Where(s =>
+                    s.VerificationStatus == VerificationStatus.Verified
+                    && s.ProcessingStatus == ScoreProcessingStatus.Done
+                ));
+        }
+        else
+        {
+            query = query
+                .Include(t => t.Matches)
+                .ThenInclude(m => m.Games)
+                .ThenInclude(g => g.Scores);
+        }
+
+        return query
+            .Include(t => t.PlayerTournamentStats)
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.WinRecord)
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.PlayerMatchStats)
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.PlayerRatingAdjustments)
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.Games)
+            .ThenInclude(g => g.Beatmap)
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.Games)
+            .ThenInclude(g => g.WinRecord);
+    }
 }

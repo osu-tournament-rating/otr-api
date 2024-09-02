@@ -16,8 +16,27 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 {
     private readonly OtrContext _context = context;
 
-    public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
-        eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
+    public async Task<Tournament?> GetAsync(
+        int id,
+        bool eagerLoad = false,
+        bool filtered = false,
+        bool tracked = true
+    )
+    {
+        IQueryable<Tournament> query = _context.Tournaments;
+
+        if (eagerLoad)
+        {
+            query = query.IncludeAll(filtered);
+        }
+
+        if (!tracked)
+        {
+            query = query.AsNoTracking();
+        }
+
+        return await query.FirstOrDefaultAsync(t => t.Id == id);
+    }
 
     public async Task<IEnumerable<Tournament>> GetAsync(
         int limit,
@@ -95,18 +114,5 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
                     // Participated in by player
                     && m.PlayerRatingAdjustments.Any(stat => stat.PlayerId == playerId)
                 ));
-    }
-
-    private IQueryable<Tournament> TournamentsBaseQuery()
-    {
-        return _context.Tournaments
-            .Include(e => e.Matches)
-            .ThenInclude(m => m.Games)
-            .ThenInclude(g => g.Scores)
-            .Include(e => e.Matches)
-            .ThenInclude(m => m.Games)
-            .ThenInclude(g => g.Beatmap)
-            .Include(e => e.SubmittedByUser)
-            .AsSplitQuery();
     }
 }

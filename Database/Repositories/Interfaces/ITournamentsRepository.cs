@@ -10,8 +10,23 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Get a <see cref="Tournament"/> entity
     /// </summary>
     /// <param name="id">Primary key</param>
-    /// <param name="eagerLoad">Whether to eagerly load navigational properties</param>
-    Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
+    /// <param name="eagerLoad">
+    /// Denotes if the tournament's navigational properties should be loaded
+    /// </param>
+    /// <param name="filtered">
+    /// Denotes if the tournament's navigations should be filtered to only include those that have a
+    /// <see cref="Enums.Verification.VerificationStatus"/> of <see cref="Enums.Verification.VerificationStatus.Verified"/>
+    /// and have completed processing. Has no effect if <paramref name="eagerLoad"/> is `false`
+    /// </param>
+    /// <param name="tracked">
+    /// Denotes if the tournament (including navigations if requested) should be added to the Change Tracker
+    /// </param>
+    Task<Tournament?> GetAsync(
+        int id,
+        bool eagerLoad = false,
+        bool filtered = false,
+        bool tracked = true
+    );
 
     /// <summary>
     /// Get a collection of tournaments
