@@ -33,6 +33,9 @@ public class TournamentDataProcessor(
             await matchDataProcessor.ProcessAsync(match, cancellationToken);
         }
 
+        entity.StartTime = entity.Matches.Min(x => x.StartTime);
+        entity.EndTime = entity.Matches.Max(x => x.EndTime);
+
         logger.LogInformation(
             "Tournament data processing summary " +
             "[Matches: {MCnt} | Games: {GCnt} | Beatmaps: {BCnt} | Scores: {SCnt} | Players: {PCnt}]",

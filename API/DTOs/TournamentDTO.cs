@@ -68,6 +68,16 @@ public class TournamentDTO
     public TournamentProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
+    /// The start date of the first match played in the tournament
+    /// </summary>
+    public DateTime StartTime { get; set; }
+
+    /// <summary>
+    /// The end date of the last match played in the tournament
+    /// </summary>
+    public DateTime EndTime { get; set; }
+
+    /// <summary>
     /// Id of the user that submitted the tournament
     /// </summary>
     public int? SubmittedByUserId { get; set; }
