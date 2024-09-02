@@ -38,6 +38,8 @@ public class OsuApiDataParserService(
             match.Games.Add(newGame);
         }
 
+        match.EndTime = DetermineMatchEndTime(apiMatch) ?? default;
+
         logger.LogDebug("Finished parsing match [Id: {Id} | osu! Id: {OsuId}]", match.Id, match.OsuId);
     }
 

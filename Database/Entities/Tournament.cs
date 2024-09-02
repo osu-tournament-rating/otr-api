@@ -98,12 +98,12 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAuditableEn
     public User? VerifiedByUser { get; set; }
 
     /// <summary>
-    /// The date of the first match of the tournament
+    /// The start date of the first <see cref="Match"/> played in the tournament
     /// </summary>
     public DateTime StartTime { get; set; }
 
     /// <summary>
-    /// The date of the last match of the tournament
+    /// The end date of the last <see cref="Match"/> played in the tournament
     /// </summary>
     public DateTime EndTime { get; set; }
 

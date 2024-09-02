@@ -52,12 +52,12 @@ public class TournamentDTO
     public DateTime Created { get; set; }
 
     /// <summary>
-    /// The date of the first match of the tournament
+    /// The start date of the first match played in the tournament
     /// </summary>
     public DateTime StartTime { get; set; }
 
     /// <summary>
-    /// The date of the last match of the tournament
+    /// The end date of the last match played in the tournament
     /// </summary>
     public DateTime EndTime { get; set; }
 
