@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240829174303_Tournament_StartTime_EndTime")]
+    partial class Tournament_StartTime_EndTime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -258,13 +261,9 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int?>("ReferenceId")
+                    b.Property<int>("ReferenceId")
                         .HasColumnType("integer")
                         .HasColumnName("ref_id");
-
-                    b.Property<int>("ReferenceIdLock")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
 
                     b.HasKey("Id");
 
@@ -418,13 +417,9 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int?>("ReferenceId")
+                    b.Property<int>("ReferenceId")
                         .HasColumnType("integer")
                         .HasColumnName("ref_id");
-
-                    b.Property<int>("ReferenceIdLock")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
 
                     b.HasKey("Id");
 
@@ -601,13 +596,9 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int?>("ReferenceId")
+                    b.Property<int>("ReferenceId")
                         .HasColumnType("integer")
                         .HasColumnName("ref_id");
-
-                    b.Property<int>("ReferenceIdLock")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
 
                     b.HasKey("Id");
 
@@ -1227,13 +1218,9 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int?>("ReferenceId")
+                    b.Property<int>("ReferenceId")
                         .HasColumnType("integer")
                         .HasColumnName("ref_id");
-
-                    b.Property<int>("ReferenceIdLock")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
 
                     b.HasKey("Id");
 
@@ -1346,7 +1333,8 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Game", null)
                         .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Entities.GameScore", b =>
@@ -1373,7 +1361,8 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.GameScore", null)
                         .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Entities.GameWinRecord", b =>
@@ -1417,7 +1406,8 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Match", null)
                         .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Entities.MatchWinRecord", b =>
@@ -1604,7 +1594,8 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Tournament", null)
                         .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Entities.User", b =>
