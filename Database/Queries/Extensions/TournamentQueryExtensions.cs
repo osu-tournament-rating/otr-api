@@ -151,6 +151,12 @@ public static class TournamentQueryExtensions
     ) =>
         sortType switch
         {
+            TournamentsQuerySortType.StartTime => descending
+                ? query.OrderByDescending(t => t.StartTime)
+                : query.OrderBy(t => t.StartTime),
+            TournamentsQuerySortType.EndTime => descending
+                ? query.OrderByDescending(t => t.EndTime)
+                : query.OrderBy(t => t.EndTime),
             _ => descending ? query.OrderByDescending(t => t.Id) : query.OrderBy(t => t.Id)
         };
 }
