@@ -59,10 +59,7 @@ public static class TournamentQueryExtensions
             query = query.WhereVerifiedBy(filter.VerifiedBy.Value);
         }
 
-        if (filter.Sort.HasValue)
-        {
-            query = query.OrderBy(filter.Sort.Value, filter.SortDescending ?? false);
-        }
+        query = query.OrderBy(filter.Sort ?? TournamentsQuerySortType.Id, filter.SortDescending ?? false);
 
         return query;
     }

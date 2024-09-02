@@ -7,7 +7,7 @@ namespace Database.Queries.Filters;
 /// <summary>
 /// Filtering options for querying a page of <see cref="Entities.Match"/>es
 /// </summary>
-public class MatchesQueryFilter
+public class MatchesQueryFilter : PagedFilterBase
 {
     /// <summary>
     /// Filters results for <see cref="Entities.Match"/>es with a

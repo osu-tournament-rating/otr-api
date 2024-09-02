@@ -56,59 +56,48 @@ public class MatchesService(
         return mapper.Map<IEnumerable<MatchCreatedResultDTO>>(createdMatches);
     }
 
-    public async Task<PagedResultDTO<MatchDTO>> GetAsync(
-        int limit,
-        int page,
-        MatchesQueryFilter filter
-    )
+    public async Task<PagedResultDTO<MatchDTO>> GetAsync(MatchesQueryFilter filter)
     {
-        IEnumerable<Match> result = await matchesRepository.GetAsync(
-            limit,
-            page - 1,
-            ruleset: filter.Ruleset,
-            name: filter.Name,
-            dateMin: filter.DateMin,
-            dateMax: filter.DateMax,
-            verificationStatus: filter.VerificationStatus,
-            rejectionReason: filter.RejectionReason,
-            processingStatus: filter.ProcessingStatus,
-            submittedBy: filter.SubmittedBy,
-            verifiedBy: filter.VerifiedBy,
-            querySortType: filter.Sort,
-            sortDescending: filter.SortDescending
-        );
-        var count = result.Count();
+        IEnumerable<Match> results = (await matchesRepository.GetAsync(
+            filter.Limit,
+            filter.Page - 1,
+            filter,
+            false
+        )).ToList();
 
-        IDictionary<string, string> filterQuery = filter.ToDictionary();
+        var count = results.Count();
+        var origPage = filter.Page;
+
+        string? next = null;
+        if (count == filter.Limit)
+        {
+            filter.Page = origPage + 1;
+            next = urlHelperService.Action(new CreatedAtRouteValues
+            {
+                Action = nameof(MatchesController.ListAsync),
+                Controller = nameof(MatchesController),
+                RouteValues = filter.ToDictionary()
+            });
+        }
+
+        string? previous = null;
+        if (origPage > 1)
+        {
+            filter.Page = origPage - 1;
+            previous = urlHelperService.Action(new CreatedAtRouteValues
+            {
+                Action = nameof(MatchesController.ListAsync),
+                Controller = nameof(MatchesController),
+                RouteValues = filter.ToDictionary()
+            });
+        }
 
         return new PagedResultDTO<MatchDTO>
         {
-            Next = count == limit
-                ? urlHelperService.Action(new CreatedAtRouteValues
-                {
-                    Controller = nameof(MatchesController),
-                    Action = nameof(MatchesController.ListAsync),
-                    RouteValues = filterQuery.Concat(new[]
-                    {
-                        new KeyValuePair<string, string>(nameof(limit), limit.ToString()),
-                        new KeyValuePair<string, string>(nameof(page), (page + 1).ToString())
-                    })
-                })
-                : null,
-            Previous = page > 1
-                ? urlHelperService.Action(new CreatedAtRouteValues
-                {
-                    Controller = nameof(MatchesController),
-                    Action = nameof(MatchesController.ListAsync),
-                    RouteValues = filterQuery.Concat(new[]
-                    {
-                        new KeyValuePair<string, string>(nameof(limit), limit.ToString()),
-                        new KeyValuePair<string, string>(nameof(page), (page - 1).ToString())
-                    })
-                })
-                : null,
+            Next = next,
+            Previous = previous,
             Count = count,
-            Results = mapper.Map<IEnumerable<MatchDTO>>(result).ToList()
+            Results = mapper.Map<IEnumerable<MatchDTO>>(results).ToList()
         };
     }
 
