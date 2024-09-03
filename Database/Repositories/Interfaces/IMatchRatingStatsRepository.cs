@@ -24,20 +24,6 @@ public interface IMatchRatingStatsRepository : IRepository<RatingAdjustment>
 
     Task TruncateAsync();
 
-    Task<int> HighestGlobalRankAsync(
-        int playerId,
-        Ruleset ruleset,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null
-    );
-
-    Task<int> HighestCountryRankAsync(
-        int playerId,
-        Ruleset ruleset,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null
-    );
-
     Task<IEnumerable<RatingAdjustment>> TeammateRatingStatsAsync(
         int playerId,
         int teammateId,

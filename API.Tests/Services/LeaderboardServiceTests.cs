@@ -32,44 +32,24 @@ public class LeaderboardServiceTests
             .SetupGlobalWinRate()
             .SetupCountMatchesPlayed();
 
-        MockRatingStatsRepository ratingStatsRepository = new MockRatingStatsRepository()
-            .SetupHighestGlobalRank()
-            .SetupHighestCountryRank()
-            .SetupGetRankChart();
-
         MockTournamentsRepository tournamentsRepository = new MockTournamentsRepository().SetupCountPlayed();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-        var playerService = new PlayerService(playerRepository.Object, null);
-        var playerStatsService = new PlayerStatsService(
-            null,
-            null,
-            null,
-            matchStatsRepository.Object,
-            playerRepository.Object,
-            null,
-            ratingStatsRepository.Object,
-            null,
-            null
-        );
 
         var tournamentsService = new TournamentsService(tournamentsRepository.Object, null, null);
+
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         var baseStatsService = new BaseStatsService(
             baseStatsRepository.Object,
             matchStatsRepository.Object,
-            ratingStatsRepository.Object,
             playerRepository.Object,
             tournamentsService
         );
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         _leaderboardService = new LeaderboardService(
             playerRepository.Object,
-            baseStatsService,
-            ratingStatsRepository.Object,
-            playerService,
-            playerStatsService
+            baseStatsService
         );
     }
 

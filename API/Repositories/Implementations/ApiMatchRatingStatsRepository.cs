@@ -1,21 +1,14 @@
 using API.DTOs;
-using API.Enums;
 using API.Repositories.Interfaces;
 using Database;
 using Database.Enums;
 using Database.Repositories.Implementations;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
 public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStatsRepository(context), IApiMatchRatingStatsRepository
 {
-    private readonly OtrContext _context = context;
-
-    // TODO: remove pragma after rewrite
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-    public async Task<PlayerRatingChartDTO> GetRatingChartAsync(
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+    public Task<PlayerRatingChartDTO> GetRatingChartAsync(
         int playerId,
         Ruleset ruleset,
         DateTime? dateMin = null,
@@ -43,7 +36,6 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
         //             Name = mrs.Match.Name ?? "<Unknown>",
         //             MatchId = mrs.MatchId,
         //             MatchOsuId = mrs.Match.OsuId,
-        //             // TODO
         //             // MatchCost = mrs.MatchCost,
         //             RatingBefore = mrs.RatingBefore,
         //             RatingAfter = mrs.RatingAfter,
@@ -90,38 +82,6 @@ public class ApiMatchRatingStatsRepository(OtrContext context) : MatchRatingStat
         //     .ToList();
 
         // Prepare and return the DTO
-        return new PlayerRatingChartDTO { ChartData = new List<List<PlayerRatingChartDataPointDTO>>() };
-    }
-
-    public async Task<PlayerRankChartDTO> GetRankChartAsync(
-        int playerId,
-        Ruleset ruleset,
-        LeaderboardChartType chartType,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null
-    )
-    {
-        dateMin ??= DateTime.MinValue;
-        dateMax ??= DateTime.MaxValue;
-
-        List<RankChartDataPointDTO> chartData = await _context.RatingAdjustments
-            .Where(x =>
-                x.PlayerId == playerId
-                && x.AdjustmentType == RatingAdjustmentType.Match
-                && x.Match!.Tournament.Ruleset == (Ruleset)ruleset
-                && x.Match.StartTime >= dateMin
-                && x.Match.StartTime <= dateMax
-            )
-            .Select(x => new RankChartDataPointDTO
-            {
-                TournamentName = x.Match!.Tournament.Name,
-                MatchName = x.Match.Name,
-                Rank = chartType == LeaderboardChartType.Global ? x.GlobalRankAfter : x.CountryRankAfter,
-                RankChange =
-                    chartType == LeaderboardChartType.Global ? x.GlobalRankDelta : x.CountryRankDelta
-            })
-            .ToListAsync();
-
-        return new PlayerRankChartDTO { ChartData = chartData };
+        return Task.FromResult(new PlayerRatingChartDTO { ChartData = new List<List<PlayerRatingChartDataPointDTO>>() });
     }
 }

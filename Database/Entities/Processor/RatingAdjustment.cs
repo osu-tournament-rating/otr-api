@@ -45,12 +45,6 @@ public class RatingAdjustment : EntityBase
     public double RatingAfter { get; init; }
 
     /// <summary>
-    /// Total change in rating
-    /// </summary>
-    [Column("rating_delta")]
-    public double RatingDelta { get; init; }
-
-    /// <summary>
     /// Volatility before the adjustment was considered
     /// </summary>
     [Column("volatility_before")]
@@ -61,66 +55,6 @@ public class RatingAdjustment : EntityBase
     /// </summary>
     [Column("volatility_after")]
     public double VolatilityAfter { get; init; }
-
-    /// <summary>
-    /// Total change in volatility
-    /// </summary>
-    [Column("volatility_delta")]
-    public double VolatilityDelta { get; init; }
-
-    /// <summary>
-    /// Rating percentile before the adjustment was considered
-    /// </summary>
-    [Column("percentile_before")]
-    public double PercentileBefore { get; init; }
-
-    /// <summary>
-    /// Rating percentile after the adjustment was considered
-    /// </summary>
-    [Column("percentile_after")]
-    public double PercentileAfter { get; init; }
-
-    /// <summary>
-    /// Total change in rating percentile
-    /// </summary>
-    [Column("percentile_delta")]
-    public double PercentileDelta { get; init; }
-
-    /// <summary>
-    /// Global rank before the adjustment was considered
-    /// </summary>
-    [Column("global_rank_before")]
-    public int GlobalRankBefore { get; init; }
-
-    /// <summary>
-    /// Global rank after the adjustment was considered
-    /// </summary>
-    [Column("global_rank_after")]
-    public int GlobalRankAfter { get; init; }
-
-    /// <summary>
-    /// Total change in global rank
-    /// </summary>
-    [Column("global_rank_delta")]
-    public int GlobalRankDelta { get; init; }
-
-    /// <summary>
-    /// Country rank before the adjustment was considered
-    /// </summary>
-    [Column("country_rank_before")]
-    public int CountryRankBefore { get; init; }
-
-    /// <summary>
-    /// Country rank after the adjustment was considered
-    /// </summary>
-    [Column("country_rank_after")]
-    public int CountryRankAfter { get; init; }
-
-    /// <summary>
-    /// Total change in country rank
-    /// </summary>
-    [Column("country_rank_delta")]
-    public int CountryRankDelta { get; init; }
 
     /// <summary>
     /// Id of the <see cref="Processor.PlayerRating"/> that the adjustment affects
@@ -160,4 +94,16 @@ public class RatingAdjustment : EntityBase
     /// Optional. Only populated if <see cref="AdjustmentType"/> is <see cref="RatingAdjustmentType.Match"/>
     /// </remarks>
     public Match? Match { get; init; }
+
+    /// <summary>
+    /// Total change in rating
+    /// </summary>
+    [NotMapped]
+    public double RatingDelta => RatingBefore - RatingAfter;
+
+    /// <summary>
+    /// Total change in volatility
+    /// </summary>
+    [NotMapped]
+    public double VolatilityDelta => VolatilityBefore - VolatilityAfter;
 }

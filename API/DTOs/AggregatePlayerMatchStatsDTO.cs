@@ -16,21 +16,6 @@ public class AggregatePlayerMatchStatsDTO
     public double HighestRating { get; set; }
 
     /// <summary>
-    /// The peak global rank achieved by the player during the period
-    /// </summary>
-    public int HighestGlobalRank { get; set; }
-
-    /// <summary>
-    /// The peak country rank achieved by the player during the period
-    /// </summary>
-    public int HighestCountryRank { get; set; }
-
-    /// <summary>
-    /// The peak rating percentile achieved by the player during the period
-    /// </summary>
-    public double HighestPercentile { get; set; }
-
-    /// <summary>
     /// The amount of rating gained from the start of the period to the end of the period
     /// </summary>
     public double RatingGained { get; set; }

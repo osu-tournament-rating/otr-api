@@ -1,8 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
-using API.Enums;
 using API.Services.Interfaces;
-using Database.Enums;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -10,10 +8,7 @@ namespace API.Services.Implementations;
 [SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly")]
 public class LeaderboardService(
     IPlayersRepository playerRepository,
-    IBaseStatsService baseStatsService,
-    IMatchRatingStatsRepository ratingStatsRepository,
-    IPlayerService playerService,
-    IPlayerStatsService playerStatsService
+    IBaseStatsService baseStatsService
     ) : ILeaderboardService
 {
     public async Task<LeaderboardDTO> GetLeaderboardAsync(
@@ -38,21 +33,7 @@ public class LeaderboardService(
             )
         };
 
-        if (authorizedPlayerId.HasValue)
-        {
-            var playerId = await playerService.GetIdAsync(authorizedPlayerId.Value);
-
-            if (playerId.HasValue)
-            {
-                leaderboard.PlayerChart = await GetPlayerChartAsync(
-                    authorizedPlayerId.Value,
-                    requestQuery.Ruleset,
-                    requestQuery.ChartType
-                );
-            }
-        }
-
-        IEnumerable<PlayerRatingDTO?> baseStats = await baseStatsService.GetLeaderboardAsync(
+        IEnumerable<PlayerRatingStatsDTO?> baseStats = await baseStatsService.GetLeaderboardAsync(
             requestQuery.Ruleset,
             requestQuery.Page,
             requestQuery.PageSize,
@@ -63,7 +44,7 @@ public class LeaderboardService(
 
         var leaderboardPlayerInfo = new List<LeaderboardPlayerInfoDTO>();
 
-        foreach (PlayerRatingDTO? baseStat in baseStats)
+        foreach (PlayerRatingStatsDTO? baseStat in baseStats)
         {
             if (baseStat == null)
             {
@@ -165,48 +146,5 @@ public class LeaderboardService(
         {
             throw new ArgumentException("Winrate must be between 0 and 1", nameof(query.Filter.MinWinRate));
         }
-    }
-
-    private async Task<LeaderboardPlayerChartDTO?> GetPlayerChartAsync(
-        int playerId,
-        Ruleset ruleset,
-        LeaderboardChartType chartType
-    )
-    {
-        PlayerRatingDTO? baseStats = await baseStatsService.GetAsync(null, playerId, ruleset);
-
-        if (baseStats == null)
-        {
-            return null;
-        }
-
-        var rank = chartType switch
-        {
-            LeaderboardChartType.Global => baseStats.GlobalRank,
-            LeaderboardChartType.Country => baseStats.CountryRank,
-            _ => throw new ArgumentOutOfRangeException(nameof(chartType), chartType, null)
-        };
-
-        var highestRank = chartType switch
-        {
-            LeaderboardChartType.Global
-                => await ratingStatsRepository.HighestGlobalRankAsync(playerId, ruleset),
-            LeaderboardChartType.Country
-                => await ratingStatsRepository.HighestCountryRankAsync(playerId, ruleset),
-            _ => throw new ArgumentOutOfRangeException(nameof(chartType), chartType, null)
-        };
-
-        PlayerRankChartDTO rankChart = await playerStatsService.GetRankChartAsync(playerId, ruleset, chartType);
-
-        return new LeaderboardPlayerChartDTO
-        {
-            Rank = rank,
-            HighestRank = highestRank,
-            Percentile = baseStats.Percentile,
-            Rating = baseStats.Rating,
-            Matches = baseStats.MatchesPlayed,
-            WinRate = baseStats.WinRate,
-            RankChart = rankChart
-        };
     }
 }
