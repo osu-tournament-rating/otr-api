@@ -28,15 +28,10 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
         // Arrange
         Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None);
 
-        foreach (var _ in Enumerable.Range(0, 2))
-        {
-            SeededGame.Generate(verificationStatus: VerificationStatus.Rejected, match: match);
-        }
-
-        foreach (var _ in Enumerable.Range(0, 2))
-        {
-            SeededGame.Generate(verificationStatus: VerificationStatus.PreRejected, match: match);
-        }
+        SeededGame.Generate(verificationStatus: VerificationStatus.Rejected, match: match);
+        SeededGame.Generate(verificationStatus: VerificationStatus.Rejected, match: match);
+        SeededGame.Generate(verificationStatus: VerificationStatus.PreRejected, match: match);
+        SeededGame.Generate(verificationStatus: VerificationStatus.PreRejected, match: match);
 
         // Act
         var actualPass = AutomationCheck.Check(match);
@@ -55,15 +50,10 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
         // Arrange
         Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None);
 
-        foreach (var _ in Enumerable.Range(0, 2))
-        {
-            SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-        }
-
-        foreach (var _ in Enumerable.Range(0, 2))
-        {
-            SeededGame.Generate(verificationStatus: VerificationStatus.PreVerified, match: match);
-        }
+        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
+        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
+        SeededGame.Generate(verificationStatus: VerificationStatus.PreVerified, match: match);
+        SeededGame.Generate(verificationStatus: VerificationStatus.PreVerified, match: match);
 
         // Act
         AutomationCheck.Check(match);
@@ -73,29 +63,13 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
         Assert.NotEqual(MatchRejectionReason.NoValidGames, match.RejectionReason);
     }
 
-    [Fact]
-    public void Check_GivenVerifiedGamesCount_IsEven_FailsWith_UnexpectedGameCount()
-    {
-        // Arrange
-        Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None);
-
-        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-
-        // Act
-        var actualPass = AutomationCheck.Check(match);
-
-        // Assert
-        Assert.False(actualPass);
-        Assert.Equal(MatchRejectionReason.UnexpectedGameCount, match.RejectionReason);
-    }
-
     [Theory]
     [InlineData(0, 0, false, MatchRejectionReason.NoGames)]
     [InlineData(0, 2, false, MatchRejectionReason.NoValidGames)]
     [InlineData(1, 1, false, MatchRejectionReason.UnexpectedGameCount)]
     [InlineData(2, 2, false, MatchRejectionReason.UnexpectedGameCount)]
     [InlineData(3, 3, true, MatchRejectionReason.None)]
+    [InlineData(3, 7, true, MatchRejectionReason.None)]
     [InlineData(4, 3, true, MatchRejectionReason.None)]
     [InlineData(10, 0, true, MatchRejectionReason.None)]
     [InlineData(7, 7, true, MatchRejectionReason.None)]
