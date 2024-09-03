@@ -35,20 +35,10 @@ public class LeaderboardServiceTests
         MockTournamentsRepository tournamentsRepository = new MockTournamentsRepository().SetupCountPlayed();
 
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-        _ = new PlayerService(playerRepository.Object, null);
-        _ = new PlayerStatsService(
-            null,
-            null,
-            null,
-            matchStatsRepository.Object,
-            playerRepository.Object,
-            null,
-            null,
-            null,
-            null
-        );
 
         var tournamentsService = new TournamentsService(tournamentsRepository.Object, null, null);
+
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         var baseStatsService = new BaseStatsService(
             baseStatsRepository.Object,
@@ -56,7 +46,6 @@ public class LeaderboardServiceTests
             playerRepository.Object,
             tournamentsService
         );
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         _leaderboardService = new LeaderboardService(
             playerRepository.Object,
