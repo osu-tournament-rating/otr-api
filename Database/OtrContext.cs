@@ -367,8 +367,12 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(p => p.OsuLastFetch).HasDefaultValueSql(SqlPlaceholderDate);
             entity.Property(p => p.OsuTrackLastFetch).HasDefaultValueSql(SqlPlaceholderDate);
 
-            entity.OwnsMany(p => p.RulesetData,
-                rd => rd.ToJson("ruleset_data"));
+            // Relation: RulesetData
+            entity
+                .HasMany(p => p.RulesetData)
+                .WithOne(rd => rd.Player)
+                .HasForeignKey(rd => rd.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: User
             entity
@@ -438,6 +442,22 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.HasIndex(pms => pms.PlayerId);
             entity.HasIndex(pms => new { pms.PlayerId, pms.Won });
             entity.HasIndex(pms => new { pms.PlayerId, pms.MatchId }).IsUnique();
+        });
+
+        modelBuilder.Entity<PlayerOsuRulesetData>(entity =>
+        {
+            entity.Property(rd => rd.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(rd => rd.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Player
+            entity
+                .HasOne(rd => rd.Player)
+                .WithMany(p => p.RulesetData)
+                .HasForeignKey(rd => rd.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(rd => new { rd.PlayerId, rd.Ruleset }).IsUnique();
         });
 
         modelBuilder.Entity<PlayerTournamentStats>(entity =>
