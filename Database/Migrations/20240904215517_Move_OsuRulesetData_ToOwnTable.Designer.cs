@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240904215517_Move_OsuRulesetData_ToOwnTable")]
+    partial class Move_OsuRulesetData_ToOwnTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -517,10 +520,8 @@ namespace Database.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
-                        .HasDefaultValue("")
                         .HasColumnName("name");
 
                     b.Property<long>("OsuId")
@@ -528,15 +529,11 @@ namespace Database.Migrations
                         .HasColumnName("osu_id");
 
                     b.Property<int>("ProcessingStatus")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("processing_status");
 
                     b.Property<int>("RejectionReason")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("rejection_reason");
 
                     b.Property<DateTime>("StartTime")
@@ -558,9 +555,7 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.Property<int>("VerificationStatus")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("verification_status");
 
                     b.Property<int?>("VerifiedByUserId")
@@ -733,10 +728,8 @@ namespace Database.Migrations
 
                     b.Property<string>("Country")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(4)
                         .HasColumnType("character varying(4)")
-                        .HasDefaultValue("")
                         .HasColumnName("country");
 
                     b.Property<DateTime>("Created")
@@ -762,9 +755,7 @@ namespace Database.Migrations
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<int>("Ruleset")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("default_ruleset");
 
                     b.Property<DateTime?>("Updated")
@@ -773,10 +764,8 @@ namespace Database.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
-                        .HasDefaultValue("")
                         .HasColumnName("username");
 
                     b.HasKey("Id");
@@ -1071,8 +1060,7 @@ namespace Database.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdjustmentType")
-                        .HasColumnType("integer")
-                        .HasColumnName("adjustment_type");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -1148,10 +1136,7 @@ namespace Database.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("EndTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_time")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ForumUrl")
                         .IsRequired()
@@ -1176,9 +1161,7 @@ namespace Database.Migrations
                         .HasColumnName("name");
 
                     b.Property<int>("ProcessingStatus")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("processing_status");
 
                     b.Property<int>("RankRangeLowerBound")
@@ -1186,9 +1169,7 @@ namespace Database.Migrations
                         .HasColumnName("rank_range_lower_bound");
 
                     b.Property<int>("RejectionReason")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("rejection_reason");
 
                     b.Property<int>("Ruleset")
@@ -1196,10 +1177,7 @@ namespace Database.Migrations
                         .HasColumnName("ruleset");
 
                     b.Property<DateTime>("StartTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_time")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("SubmittedByUserId")
                         .HasColumnType("integer")
@@ -1210,9 +1188,7 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.Property<int>("VerificationStatus")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("verification_status");
 
                     b.Property<int?>("VerifiedByUserId")
@@ -1301,9 +1277,7 @@ namespace Database.Migrations
 
                     b.Property<string[]>("Scopes")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("text[]")
-                        .HasDefaultValue(new string[0])
                         .HasColumnName("scopes");
 
                     b.Property<DateTime?>("Updated")
@@ -1340,9 +1314,7 @@ namespace Database.Migrations
                         .HasColumnName("default_ruleset");
 
                     b.Property<bool>("DefaultRulesetIsControlled")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(false)
                         .HasColumnName("default_ruleset_controlled");
 
                     b.Property<DateTime?>("Updated")
