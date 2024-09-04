@@ -131,21 +131,27 @@ public class PlayersService(
 
     public async Task SetAllOutdatedOsuTrackApiAsync(PlayerFetchPlatformConfiguration config)
     {
-        DateTime newTime = DateTime.UtcNow - TimeSpan.FromDays(config.PlayerOutdatedAfterDays);
-        await context.Players.ExecuteUpdateAsync(x => x.SetProperty(p => p.OsuTrackLastFetch, newTime));
-
-        logger.LogInformation("Set all players' OsuTrackLastFetch value to {}", newTime);
+        await playersRepository.SetOutdatedOsuTrackAsync(TimeSpan.FromDays(config.PlayerOutdatedAfterDays));
     }
 
     public async Task UpdateOutdatedFromOsuTrackApiAsync(PlayerFetchPlatformConfiguration config)
     {
         var outdatedPlayers = (await playersRepository.GetOutdatedOsuTrackAsync(
-            TimeSpan.FromDays(config.PlayerOutdatedAfterDays), config.BatchSize)).ToList();
+            TimeSpan.FromDays(config.PlayerOutdatedAfterDays),
+            config.BatchSize
+        )).ToList();
 
         foreach (Player player in outdatedPlayers)
         {
             await UpdateFromOsuTrackApiAsync(player);
         }
+
+        await context.SaveChangesAsync();
+
+        logger.LogDebug(
+            "Updated Players with outdated osu! API data [Count: {Count}]",
+            outdatedPlayers.Count
+        );
     }
 
     public async Task UpdateFromOsuTrackApiAsync(Player player)
@@ -177,13 +183,12 @@ public class PlayersService(
                 .DefaultIfEmpty()
                 .Min(pms => pms?.Match.StartTime);
 
-            if (earliestMatchDate is not null)
-            {
-                result = [.. result.OrderBy(s => Math.Abs((s.Timestamp - earliestMatchDate.Value).Ticks))];
-            }
+            UserStatUpdate statUpdate = earliestMatchDate is not null
+                ? result.OrderBy(s => Math.Abs((s.Timestamp - earliestMatchDate.Value).Ticks)).First()
+                : result.First();
 
-            rulesetData.EarliestGlobalRank = result.First().Rank;
-            rulesetData.EarliestGlobalRankDate = result.First().Timestamp;
+            rulesetData.EarliestGlobalRank = statUpdate.Rank;
+            rulesetData.EarliestGlobalRankDate = statUpdate.Timestamp;
 
             logger.LogDebug("Updated Player osu!track API data [Id: {Id} | Ruleset: {Ruleset}]", player.Id, r);
         }
