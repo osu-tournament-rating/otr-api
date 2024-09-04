@@ -131,7 +131,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
             .Include(p => p.RulesetData)
             .Include(p => p.MatchStats)
             .ThenInclude(pms => pms.Match)
-            .Where(p => DateTime.UtcNow - p.OsuLastFetch > outdatedAfter)
+            .Where(p => DateTime.UtcNow - p.OsuTrackLastFetch > outdatedAfter)
             .OrderBy(p => p.Id)
             .Take(limit)
             .ToListAsync();
