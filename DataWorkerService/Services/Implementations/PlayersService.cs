@@ -5,7 +5,6 @@ using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
 using DataWorkerService.Configurations;
 using DataWorkerService.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
 using OsuApiClient.Domain.Osu.Users;
 using OsuApiClient.Domain.Osu.Users.Attributes;
@@ -183,9 +182,15 @@ public class PlayersService(
                 .DefaultIfEmpty()
                 .Min(pms => pms?.Match.StartTime);
 
-            UserStatUpdate statUpdate = earliestMatchDate is not null
+            UserStatUpdate? statUpdate = earliestMatchDate is not null
                 ? result.OrderBy(s => Math.Abs((s.Timestamp - earliestMatchDate.Value).Ticks)).First()
-                : result.First();
+                : result.FirstOrDefault();
+
+            if (statUpdate is null)
+            {
+                logger.LogTrace("No osu!track stats found for Player [Id: {Id} | Ruleset: {Ruleset}]", player.Id, r);
+                continue;
+            }
 
             rulesetData.EarliestGlobalRank = statUpdate.Rank;
             rulesetData.EarliestGlobalRankDate = statUpdate.Timestamp;
