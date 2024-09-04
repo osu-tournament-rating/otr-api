@@ -173,6 +173,15 @@ public class PlayersService(
                 continue;
             }
 
+            DateTime? earliestMatchDate = player.MatchStats
+                .DefaultIfEmpty()
+                .Min(pms => pms?.Match.StartTime);
+
+            if (earliestMatchDate is not null)
+            {
+                result = [.. result.OrderBy(s => Math.Abs((s.Timestamp - earliestMatchDate.Value).Ticks))];
+            }
+
             rulesetData.EarliestGlobalRank = result.First().Rank;
             rulesetData.EarliestGlobalRankDate = result.First().Timestamp;
 
