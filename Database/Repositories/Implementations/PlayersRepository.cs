@@ -129,6 +129,8 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
     public async Task<IEnumerable<Player>> GetOutdatedOsuTrackAsync(TimeSpan outdatedAfter, int limit) =>
         await _context.Players
             .Include(p => p.RulesetData)
+            .Include(p => p.MatchStats)
+            .ThenInclude(pms => pms.Match)
             .Where(p => DateTime.UtcNow - p.OsuLastFetch > outdatedAfter)
             .OrderBy(p => p.Id)
             .Take(limit)
