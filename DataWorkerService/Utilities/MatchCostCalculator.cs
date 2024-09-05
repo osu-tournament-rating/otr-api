@@ -48,7 +48,7 @@ public static class MatchCostCalculator
         var gamesCount = enumerableGames.Count();
 
         // Calculate match costs
-        return (IDictionary<int, double>)zScores.Select(pair =>
+        return zScores.Select(pair =>
             new KeyValuePair<int, double>(
                 pair.Key,
                 // Average z-score percentile
@@ -57,6 +57,6 @@ public static class MatchCostCalculator
                 // Performance bonus
                 (1 + 0.3 * Math.Sqrt((enumerableGames.Count(g => g.Scores.Any(s => s.Player.Id == pair.Key)) - 1) - (gamesCount - 1)))
             )
-        );
+        ).ToDictionary();
     }
 }
