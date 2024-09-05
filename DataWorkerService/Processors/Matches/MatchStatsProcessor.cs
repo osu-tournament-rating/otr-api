@@ -121,6 +121,6 @@ public class MatchStatsProcessor(
             });
         }
 
-        entity.ProcessingStatus += 1;
+        entity.ProcessingStatus = MatchProcessingStatus.NeedsRatingProcessorData;
     }
 }
