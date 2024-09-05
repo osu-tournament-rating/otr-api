@@ -1,6 +1,7 @@
 using Database.Entities;
 using Database.Enums;
 using Database.Enums.Verification;
+using Database.Utilities.Extensions;
 
 namespace DataWorkerService.Processors.Games;
 
@@ -24,45 +25,56 @@ public class GameStatsProcessor(
             return Task.CompletedTask;
         }
 
-        // Assign placements
         IEnumerable<GameScore> verifiedScores = entity.Scores
             .Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done })
             .OrderByDescending(s => s.Score)
             .ToList();
 
-        foreach (var placement in verifiedScores.Select((s, idx) => new { Score = s, Index = idx + 1 }))
-        {
-            placement.Score.Placement = placement.Index;
-        }
+        AssignScorePlacements(verifiedScores);
+        entity.WinRecord = GenerateWinRecord(verifiedScores);
 
-        IEnumerable<GameScore> blueTeamScores = verifiedScores.Where(s => s.Team is Team.Blue).ToList();
-        IEnumerable<GameScore> redTeamScores = verifiedScores.Where(s => s.Team is Team.Red).ToList();
-
-        entity.WinRecord = blueTeamScores.Sum(gs => gs.Score) > redTeamScores.Sum(gs => gs.Score)
-            ? GenerateWinRecord(blueTeamScores, redTeamScores)
-            : GenerateWinRecord(redTeamScores, blueTeamScores);
-
-        entity.ProcessingStatus += 1;
+        entity.ProcessingStatus = GameProcessingStatus.Done;
 
         return Task.CompletedTask;
     }
 
-    public static GameWinRecord GenerateWinRecord(
-        IEnumerable<GameScore> winnerTeamScores,
-        IEnumerable<GameScore> loserTeamScores
-    )
+    /// <summary>
+    /// Assigns a <see cref="GameScore.Placement"/> for a given list of <see cref="GameScore"/>s
+    /// </summary>
+    /// <param name="scores">List of <see cref="GameScore"/>s</param>
+    public static void AssignScorePlacements(IEnumerable<GameScore> scores)
     {
-        IEnumerable<GameScore> winnerScores = winnerTeamScores as GameScore[] ?? winnerTeamScores.ToArray();
-        IEnumerable<GameScore> loserScores = loserTeamScores as GameScore[] ?? loserTeamScores.ToArray();
+        foreach (var p in scores.Select((s, idx) => new { Score = s, Index = idx + 1 }))
+        {
+            p.Score.Placement = p.Index;
+        }
+    }
+
+    /// <summary>
+    /// Generates a <see cref="GameWinRecord"/> for a given list of <see cref="GameScore"/>s
+    /// </summary>
+    /// <param name="scores">List of <see cref="GameScore"/>s</param>
+    public static GameWinRecord GenerateWinRecord(IEnumerable<GameScore> scores)
+    {
+        var eScores = scores.ToList();
+
+        Team winningTeam = eScores
+            .GroupBy(s => s.Team)
+            .Select(g => new { Team = g.Key, TotalScore = g.Sum(s => s.Score) })
+            .OrderByDescending(t => t.TotalScore)
+            .Select(t => t.Team)
+            .First();
+
+        Team losingTeam = winningTeam.OppositeTeam();
 
         return new GameWinRecord
         {
-            WinnerRoster = winnerScores.Select(gs => gs.Player.Id).ToArray(),
-            LoserRoster = loserScores.Select(gs => gs.Player.Id).ToArray(),
-            WinnerTeam = winnerScores.First().Team,
-            LoserTeam = loserScores.First().Team,
-            WinnerScore = winnerScores.Sum(gs => gs.Score),
-            LoserScore = loserScores.Sum(gs => gs.Score)
+            WinnerTeam = winningTeam,
+            LoserTeam = losingTeam,
+            WinnerRoster = eScores.Where(s => s.Team == winningTeam).Select(s => s.PlayerId).ToArray(),
+            LoserRoster = eScores.Where(s => s.Team == losingTeam).Select(s => s.PlayerId).ToArray(),
+            WinnerScore = eScores.Where(s => s.Team == winningTeam).Sum(s => s.Score),
+            LoserScore = eScores.Where(s => s.Team == losingTeam).Sum(s => s.Score)
         };
     }
 }
