@@ -18,4 +18,9 @@ public interface IProcessorResolver<TEntity> where TEntity : class, IProcessable
     /// Gets the <see cref="IProcessor{TEntity}"/> implementation of the <typeparamref name="TEntity"/> Automation Checks Processor
     /// </summary>
     IProcessor<TEntity> GetAutomationChecksProcessor();
+
+    /// <summary>
+    /// Gets the <see cref="IProcessor{TEntity}"/> implementation of the <typeparamref name="TEntity"/> Verification Processor
+    /// </summary>
+    IProcessor<TEntity> GetVerificationProcessor();
 }

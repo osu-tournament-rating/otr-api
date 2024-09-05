@@ -151,20 +151,24 @@ builder.Services.AddSingleton<IAutomationCheck<Tournament>, TournamentMatchCount
 
 builder.Services.AddScoped<IScoreProcessorResolver, ScoreProcessorResolver>();
 builder.Services.AddScoped<IProcessor<GameScore>, ScoreAutomationChecksProcessor>();
+builder.Services.AddScoped<IProcessor<GameScore>, ScoreVerificationProcessor>();
 
 builder.Services.AddScoped<IGameProcessorResolver, GameProcessorResolver>();
 builder.Services.AddScoped<IProcessor<Game>, GameAutomationChecksProcessor>();
 builder.Services.AddScoped<IProcessor<Game>, GameStatsProcessor>();
+builder.Services.AddScoped<IProcessor<Game>, GameVerificationProcessor>();
 
 builder.Services.AddScoped<IMatchProcessorResolver, MatchProcessorResolver>();
 builder.Services.AddScoped<IProcessor<Match>, MatchDataProcessor>();
 builder.Services.AddScoped<IProcessor<Match>, MatchAutomationChecksProcessor>();
 builder.Services.AddScoped<IProcessor<Match>, MatchStatsProcessor>();
+builder.Services.AddScoped<IProcessor<Match>, MatchVerificationProcessor>();
 
 builder.Services.AddScoped<ITournamentProcessorResolver, TournamentProcessorResolver>();
 builder.Services.AddScoped<IProcessor<Tournament>, TournamentDataProcessor>();
 builder.Services.AddScoped<IProcessor<Tournament>, TournamentAutomationChecksProcessor>();
 builder.Services.AddScoped<IProcessor<Tournament>, TournamentStatsProcessor>();
+builder.Services.AddScoped<IProcessor<Tournament>, TournamentVerificationProcessor>();
 
 #endregion
 

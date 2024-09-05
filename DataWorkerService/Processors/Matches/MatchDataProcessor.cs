@@ -43,7 +43,8 @@ public class MatchDataProcessor(
             entity.VerificationStatus = VerificationStatus.PreRejected;
             entity.RejectionReason |= MatchRejectionReason.NoData;
 
-            entity.ProcessingStatus = MatchProcessingStatus.Done;
+            // Match skips automation checks and proceeds to manual review
+            entity.ProcessingStatus = MatchProcessingStatus.NeedsVerification;
 
             return;
         }
