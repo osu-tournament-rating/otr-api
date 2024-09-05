@@ -57,6 +57,6 @@ public class MatchDataProcessor(
 
         await parserService.ParseMatchAsync(entity, response);
 
-        entity.ProcessingStatus += 1;
+        entity.ProcessingStatus = MatchProcessingStatus.NeedsAutomationChecks;
     }
 }
