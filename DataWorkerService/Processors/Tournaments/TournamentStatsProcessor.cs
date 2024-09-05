@@ -17,16 +17,7 @@ public class TournamentStatsProcessor(
 {
     protected override async Task OnProcessingAsync(Tournament entity, CancellationToken cancellationToken)
     {
-        IProcessor<Match> matchStatsProcessor = matchProcessorResolver.GetStatsProcessor();
-        foreach (Match match in entity.Matches)
-        {
-            await matchStatsProcessor.ProcessAsync(match, cancellationToken);
-        }
-
-        if (
-            entity.ProcessingStatus is not TournamentProcessingStatus.NeedsStatCalculation
-            || entity.Matches.Any(m => m.ProcessingStatus is not MatchProcessingStatus.Done)
-        )
+        if (entity.ProcessingStatus is not TournamentProcessingStatus.NeedsStatCalculation)
         {
             logger.LogDebug(
                 "Tournament does not require processing [Id: {Id} | Processing Status: {Status}]",
@@ -37,10 +28,56 @@ public class TournamentStatsProcessor(
             return;
         }
 
-        IEnumerable<Match> verifiedMatches = entity.Matches.Where(m =>
-                m is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done }
-            )
+        if (!entity.Matches.All(m => m.ProcessingStatus is MatchProcessingStatus.Done))
+        {
+            IProcessor<Match> matchStatsProcessor = matchProcessorResolver.GetStatsProcessor();
+            foreach (Match match in entity.Matches)
+            {
+                await matchStatsProcessor.ProcessAsync(match, cancellationToken);
+            }
+
+            if (!entity.Matches.All(m => m.ProcessingStatus is MatchProcessingStatus.Done))
+            {
+                logger.LogDebug(
+                    "Tournament's matches are still awaiting stat generation [Id: {Id} | Processing Status: {Status}]",
+                    entity.Id,
+                    entity.ProcessingStatus
+                );
+
+                return;
+            }
+        }
+
+        IEnumerable<Match> verifiedMatches = entity.Matches
+            .Where(m => m is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done })
             .ToList();
+
+        // Sanity check
+        // If any processor data or stat objects are missing we cannot generate tournament stats
+        foreach (Match match in verifiedMatches)
+        {
+            if (match.PlayerMatchStats.Count != 0
+                && match.PlayerRatingAdjustments.Count != 0
+                && match.PlayerMatchStats.Count == match.PlayerRatingAdjustments.Count
+                && match.WinRecord is not null
+            )
+            {
+                continue;
+            }
+
+            logger.LogWarning(
+                "A verified match that has completed processing contains unexpected stats, aborting" +
+                " [Match Id: {Id} | {Stat1}: {Stat1C} | {Stat2}: {Stat2C} | Has WinRecord: {HasWinRecord}]",
+                match.Id,
+                nameof(Match.PlayerMatchStats),
+                match.PlayerMatchStats.Count,
+                nameof(match.PlayerRatingAdjustments),
+                match.PlayerRatingAdjustments.Count,
+                match.WinRecord is not null
+            );
+
+            return;
+        }
 
         // Create a PlayerTournamentStats for each Player
         foreach (Player player in verifiedMatches
