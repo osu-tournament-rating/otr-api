@@ -24,6 +24,7 @@ public class RatingAdjustment : EntityBase
     /// <summary>
     /// The <see cref="RatingAdjustmentType"/> of the adjustment
     /// </summary>
+    [Column("adjustment_type")]
     public RatingAdjustmentType AdjustmentType { get; init; }
 
     /// <summary>
