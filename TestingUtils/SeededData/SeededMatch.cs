@@ -56,6 +56,11 @@ public static class SeededMatch
         return seededMatch;
     }
 
+    /// <summary>
+    /// Creates a full real <see cref="Match"/> including all <see cref="Game"/>s, <see cref="GameScore"/>s,
+    /// <see cref="Player"/>s, and <see cref="Beatmap"/>s
+    /// </summary>
+    /// <remarks>The example match is a best of 9 played between United States and Canada in OWC 2023</remarks>
     [SuppressMessage("ReSharper", "IdentifierTypo")]
     [SuppressMessage("ReSharper", "StringLiteralTypo")]
     public static Match ExampleMatch()
@@ -155,28 +160,28 @@ public static class SeededMatch
         );
 
         Player wudci = SeededPlayer.Generate(
-            id: 12,
+            id: 13,
             osuId: 2590257,
             username: "wudci",
             country: "US"
         );
 
         Player window = SeededPlayer.Generate(
-            id: 12,
+            id: 14,
             osuId: 4108547,
             username: "WindowLife",
             country: "US"
         );
 
         Player kama = SeededPlayer.Generate(
-            id: 13,
+            id: 15,
             osuId: 13380270,
             username: "Kama",
             country: "US"
         );
 
         Player yip = SeededPlayer.Generate(
-            id: 14,
+            id: 16,
             osuId: 5177569,
             username: "Yip",
             country: "CA"
@@ -396,6 +401,7 @@ public static class SeededMatch
             postModSr: 6.38,
             startTime: new DateTime(2023, 11, 12, 19, 13, 54),
             endTime: new DateTime(2023, 11, 12, 19, 15, 45),
+            match: match,
             beatmap: SeededBeatmap.Generate(
                 id: 2,
                 osuId: 3257371,
@@ -595,6 +601,7 @@ public static class SeededMatch
             postModSr: 6.52,
             startTime: new DateTime(2023, 11, 12, 19, 19, 36),
             endTime: new DateTime(2023, 11, 12, 19, 22, 43),
+            match: match,
             beatmap: SeededBeatmap.Generate(
                 id: 3,
                 osuId: 4368609,
@@ -794,6 +801,7 @@ public static class SeededMatch
             postModSr: 4.43,
             startTime: new DateTime(2023, 11, 12, 19, 26, 3),
             endTime: new DateTime(2023, 11, 12, 19, 28, 43),
+            match: match,
             beatmap: SeededBeatmap.Generate(
                 id: 4,
                 osuId: 4368554,
@@ -993,6 +1001,7 @@ public static class SeededMatch
             postModSr: 7.3,
             startTime: new DateTime(2023, 11, 12, 19, 32, 0),
             endTime: new DateTime(2023, 11, 12, 19, 35, 45),
+            match: match,
             beatmap: SeededBeatmap.Generate(
                 id: 5,
                 osuId: 4368565,
@@ -1192,6 +1201,7 @@ public static class SeededMatch
             postModSr: 6.16,
             startTime: new DateTime(2023, 11, 12, 19, 39, 13),
             endTime: new DateTime(2023, 11, 12, 19, 43, 1),
+            match: match,
             beatmap: SeededBeatmap.Generate(
                 id: 6,
                 osuId: 2040486,
@@ -1391,6 +1401,7 @@ public static class SeededMatch
             postModSr: 6.35,
             startTime: new DateTime(2023, 11, 12, 19, 45, 57),
             endTime: new DateTime(2023, 11, 12, 19, 47, 45),
+            match: match,
             beatmap: SeededBeatmap.Generate(
                 id: 59,
                 osuId: 4158054,

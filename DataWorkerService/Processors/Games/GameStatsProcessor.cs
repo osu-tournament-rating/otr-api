@@ -44,7 +44,7 @@ public class GameStatsProcessor(
     /// <param name="scores">List of <see cref="GameScore"/>s</param>
     public static void AssignScorePlacements(IEnumerable<GameScore> scores)
     {
-        foreach (var p in scores.Select((s, idx) => new { Score = s, Index = idx + 1 }))
+        foreach (var p in scores.OrderByDescending(s => s.Score).Select((s, idx) => new { Score = s, Index = idx + 1 }))
         {
             p.Score.Placement = p.Index;
         }

@@ -45,12 +45,7 @@ public static class MatchCostCalculator
             }
         }
 
-        // Create a normal distribution with z-score mean (mu) and z-score stdev (sigma)
-        var zScoresNormal = new Normal(
-            zScores.SelectMany(pair => pair.Value).Mean(),
-            zScores.SelectMany(pair => pair.Value).StandardDeviation()
-        );
-
+        var normal = new Normal(0, 1);
         var gamesCount = eGames.Count();
 
         // Calculate match costs
@@ -58,10 +53,10 @@ public static class MatchCostCalculator
             new KeyValuePair<int, double>(
                 pair.Key,
                 // Average z-score percentile
-                (zScoresNormal.CumulativeDistribution(pair.Value.Average()) + 0.5)
+                (pair.Value.Select(normal.CumulativeDistribution).Average() + 0.5)
                 *
                 // Performance bonus
-                (1 + 0.3 * Math.Sqrt(eGames.Count(g => g.Scores.WhereValid().Any(s => s.Player.Id == pair.Key)) - 1 - (gamesCount - 1)))
+                (1 + 0.3 * Math.Sqrt((pair.Value.Count - 1) / (double)(gamesCount - 1)))
             )
         ).ToDictionary();
     }
