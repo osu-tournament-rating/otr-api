@@ -62,7 +62,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "api.env,dataworkerservice.env,db.env,postgres_exporter.env,docker-compose-staging.yml,otel-collector-config.yml,prometheus.yml"
+          source: "api.env,dataworkerservice.env,db.env,postgres_exporter.env,./cfg/docker-compose-staging.yml,./cfg/otel-collector-config.yml,./cfg/prometheus.yml"
           target: "~/otr-api-dataworker/"
       - name: Deploy
         uses: appleboy/ssh-action@master
