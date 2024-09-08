@@ -73,5 +73,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd ~/otr-api-dataworker
+            mv ./cfg/* .
+            rm -r ./cfg
             docker compose -f docker-compose-prod.yml pull
             docker compose -f docker-compose-prod.yml up -d --build
