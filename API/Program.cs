@@ -47,6 +47,8 @@ using Serilog.Events;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+#endregion
+
 #region Configuration Bindings
 
 builder
@@ -491,8 +493,6 @@ builder.Host.ConfigureOsuSharp(
         };
     }
 );
-
-#endregion
 
 #endregion
 
