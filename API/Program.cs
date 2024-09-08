@@ -540,23 +540,8 @@ else
 {
     app.MapControllers();
 }
+#endregion
 
 app.Logger.LogInformation("Running!");
-
-#region Database Migrations
-
-using IServiceScope scope = app.Services.CreateScope();
-OtrContext context = scope.ServiceProvider.GetRequiredService<OtrContext>();
-
-var migrationsCount = context.Database.GetPendingMigrations().Count();
-if (migrationsCount > 0)
-{
-    await context.Database.MigrateAsync();
-    app.Logger.LogInformation("Applied {MigrationsCount} pending migration(s).", migrationsCount);
-}
-
-#endregion
-
-#endregion
 
 app.Run();
