@@ -1,5 +1,6 @@
 using Database.Entities;
 using Database.Enums.Verification;
+using DataWorkerService.Processors.Games;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 
 namespace DataWorkerService.Processors.Matches;
@@ -57,10 +58,25 @@ public class MatchVerificationProcessor(
                 break;
             case VerificationStatus.Rejected:
                 entity.ProcessingStatus = MatchProcessingStatus.Done;
+                RejectAllChildren(entity);
                 break;
             case VerificationStatus.Verified:
                 entity.ProcessingStatus = MatchProcessingStatus.NeedsStatCalculation;
                 break;
+        }
+    }
+
+    /// <summary>
+    /// Rejects all child entities in a <see cref="Match"/>
+    /// </summary>
+    public static void RejectAllChildren(Match match)
+    {
+        foreach (Game game in match.Games)
+        {
+            game.VerificationStatus = VerificationStatus.Rejected;
+            game.ProcessingStatus = GameProcessingStatus.Done;
+
+            GameVerificationProcessor.RejectAllChildren(game);
         }
     }
 }

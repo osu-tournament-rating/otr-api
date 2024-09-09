@@ -1,6 +1,7 @@
 using Database;
 using Database.Entities;
 using Database.Enums.Verification;
+using DataWorkerService.Processors.Matches;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 
 namespace DataWorkerService.Processors.Tournaments;
@@ -59,6 +60,7 @@ public class TournamentVerificationProcessor(
                 break;
             case VerificationStatus.Rejected:
                 entity.ProcessingStatus = TournamentProcessingStatus.Done;
+                RejectAllChildren(entity);
                 break;
             case VerificationStatus.Verified:
                 entity.ProcessingStatus = TournamentProcessingStatus.NeedsStatCalculation;
@@ -66,5 +68,19 @@ public class TournamentVerificationProcessor(
         }
 
         await context.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Rejects all child entities in a <see cref="Tournament"/>
+    /// </summary>
+    public static void RejectAllChildren(Tournament tournament)
+    {
+        foreach (Match match in tournament.Matches)
+        {
+            match.VerificationStatus = VerificationStatus.Rejected;
+            match.ProcessingStatus = MatchProcessingStatus.Done;
+
+            MatchVerificationProcessor.RejectAllChildren(match);
+        }
     }
 }
