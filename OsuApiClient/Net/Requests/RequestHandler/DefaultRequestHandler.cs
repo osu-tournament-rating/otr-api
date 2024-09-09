@@ -3,6 +3,7 @@ using System.Text;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using OsuApiClient.Configurations.Interfaces;
 using OsuApiClient.Domain;
 using OsuApiClient.Enums;
 using OsuApiClient.Extensions;
@@ -15,7 +16,10 @@ namespace OsuApiClient.Net.Requests.RequestHandler;
 /// <summary>
 /// The default implementation of the handler that makes direct requests to the osu! API
 /// </summary>
-internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logger) : IRequestHandler
+internal sealed class DefaultRequestHandler(
+    ILogger<DefaultRequestHandler> logger,
+    IOsuClientConfiguration configuration
+) : IRequestHandler
 {
     private readonly HttpClient _httpClient = new()
     {
@@ -36,8 +40,8 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
     private readonly IDictionary<FetchPlatform, FixedWindowRateLimit> _rateLimits =
         new Dictionary<FetchPlatform, FixedWindowRateLimit>
         {
-            [FetchPlatform.Osu] = new(FetchPlatform.Osu),
-            [FetchPlatform.OsuTrack] = new(FetchPlatform.OsuTrack)
+            [FetchPlatform.Osu] = new(FetchPlatform.Osu, configuration.OsuRateLimit),
+            [FetchPlatform.OsuTrack] = new(FetchPlatform.OsuTrack, configuration.OsuTrackRateLimit)
         };
 
     private bool _disposed;
