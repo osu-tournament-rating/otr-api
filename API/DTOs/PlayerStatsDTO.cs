@@ -22,7 +22,7 @@ public class PlayerStatsDTO
     /// <summary>
     /// Base stats for the player
     /// </summary>
-    public PlayerRatingDTO? Rating { get; init; }
+    public PlayerRatingStatsDTO? Rating { get; init; }
 
     /// <summary>
     /// Match stats for the player

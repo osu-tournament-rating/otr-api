@@ -39,52 +39,6 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
     public async Task TruncateAsync() =>
         await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE match_rating_stats RESTART IDENTITY");
 
-    public async Task<int> HighestGlobalRankAsync(
-        int playerId,
-        Ruleset ruleset,
-        DateTime? dateMin,
-        DateTime? dateMax
-    )
-    {
-        dateMin ??= DateTime.MinValue;
-        dateMax ??= DateTime.MaxValue;
-
-        return await _context.RatingAdjustments
-            .Where(x =>
-                x.PlayerId == playerId
-                && x.AdjustmentType == RatingAdjustmentType.Match
-                && x.Match!.Tournament.Ruleset == ruleset
-                && x.Match.StartTime >= dateMin
-                && x.Match.StartTime <= dateMax
-            )
-            .Select(x => x.GlobalRankAfter)
-            .DefaultIfEmpty()
-            .MaxAsync();
-    }
-
-    public async Task<int> HighestCountryRankAsync(
-        int playerId,
-        Ruleset ruleset,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null
-    )
-    {
-        dateMin ??= DateTime.MinValue;
-        dateMax ??= DateTime.MaxValue;
-
-        return await _context.RatingAdjustments
-            .Where(x =>
-                x.PlayerId == playerId
-                && x.AdjustmentType == RatingAdjustmentType.Match
-                && x.Match!.Tournament.Ruleset == ruleset
-                && x.Match.StartTime >= dateMin
-                && x.Match.StartTime <= dateMax
-            )
-            .Select(x => x.CountryRankAfter)
-            .DefaultIfEmpty()
-            .MaxAsync();
-    }
-
     public async Task<IEnumerable<RatingAdjustment>> TeammateRatingStatsAsync(
         int playerId,
         int teammateId,

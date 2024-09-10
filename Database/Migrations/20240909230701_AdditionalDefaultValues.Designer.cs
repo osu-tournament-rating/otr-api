@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240909230701_AdditionalDefaultValues")]
+    partial class AdditionalDefaultValues
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -517,10 +520,8 @@ namespace Database.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
-                        .HasDefaultValue("")
                         .HasColumnName("name");
 
                     b.Property<long>("OsuId")
@@ -1097,10 +1098,7 @@ namespace Database.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("EndTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_time")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ForumUrl")
                         .IsRequired()
@@ -1145,10 +1143,7 @@ namespace Database.Migrations
                         .HasColumnName("ruleset");
 
                     b.Property<DateTime>("StartTime")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_time")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("SubmittedByUserId")
                         .HasColumnType("integer")

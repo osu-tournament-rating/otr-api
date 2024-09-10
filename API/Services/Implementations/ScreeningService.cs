@@ -69,7 +69,7 @@ public class ScreeningService(IPlayerService playerService, IBaseStatsService ba
             return (result, failReason);
         }
 
-        PlayerRatingDTO? baseStats = await baseStatsService.GetAsync(null, playerInfo.Id, screeningRequest.Ruleset);
+        PlayerRatingStatsDTO? baseStats = await baseStatsService.GetAsync(null, playerInfo.Id, screeningRequest.Ruleset);
 
         if (baseStats == null)
         {

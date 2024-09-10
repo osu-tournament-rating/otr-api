@@ -1,5 +1,4 @@
 using API.DTOs;
-using API.Enums;
 using Database.Enums;
 
 namespace API.Services.Interfaces;
@@ -47,16 +46,8 @@ public interface IPlayerStatsService
         DateTime dateMax
     );
 
-    Task<PlayerRankChartDTO> GetRankChartAsync(
-        int playerId,
-        Ruleset ruleset,
-        LeaderboardChartType chartType,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null
-    );
-
     Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody);
-    Task BatchInsertAsync(IEnumerable<BaseStatsPostDTO> postBody);
+    Task BatchInsertAsync(IEnumerable<PlayerRatingDTO> postBody);
     Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody);
 
     /// <summary>

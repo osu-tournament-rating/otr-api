@@ -9,9 +9,4 @@ public class LeaderboardDTO
     public LeaderboardFilterDefaultsDTO FilterDefaults { get; set; } = new();
     public IEnumerable<LeaderboardPlayerInfoDTO> Leaderboard { get; set; } =
         new List<LeaderboardPlayerInfoDTO>();
-
-    /// <summary>
-    ///  Data displayed if the user is logged in
-    /// </summary>
-    public LeaderboardPlayerChartDTO? PlayerChart { get; set; }
 }

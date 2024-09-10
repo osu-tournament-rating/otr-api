@@ -13,12 +13,12 @@ public interface IBaseStatsService
     /// </summary>
     /// <param name="playerId"></param>
     /// <returns></returns>
-    Task<IEnumerable<PlayerRatingDTO?>> GetAsync(long osuPlayerId);
+    Task<IEnumerable<PlayerRatingStatsDTO?>> GetAsync(long osuPlayerId);
 
-    Task<PlayerRatingDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset);
-    Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats);
+    Task<PlayerRatingStatsDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset);
+    Task<int> BatchInsertAsync(IEnumerable<PlayerRatingDTO> stats);
 
-    Task<IEnumerable<PlayerRatingDTO?>> GetLeaderboardAsync(
+    Task<IEnumerable<PlayerRatingStatsDTO?>> GetLeaderboardAsync(
         Ruleset ruleset,
         int page,
         int pageSize,
