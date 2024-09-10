@@ -232,6 +232,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
         {
             entity.Property(m => m.Id).UseIdentityAlwaysColumn();
 
+            entity.Property(m => m.Name).HasDefaultValue(string.Empty);
             entity.Property(m => m.VerificationStatus).HasDefaultValue(VerificationStatus.None);
             entity.Property(m => m.RejectionReason).HasDefaultValue(MatchRejectionReason.None);
             entity.Property(m => m.ProcessingStatus).HasDefaultValue(MatchProcessingStatus.NeedsData);
