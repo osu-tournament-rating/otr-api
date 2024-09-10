@@ -246,7 +246,7 @@ public class OsuApiDataParserService(
         beatmap.CircleCount = fullApiBeatmap.CountCircles;
         beatmap.SliderCount = fullApiBeatmap.CountSliders;
         beatmap.SpinnerCount = fullApiBeatmap.CountSpinners;
-        beatmap.MaxCombo = fullApiBeatmap.MaxCombo;
+        beatmap.MaxCombo = fullApiBeatmap.MaxCombo ?? default;
 
         beatmap.HasData = true;
     }
