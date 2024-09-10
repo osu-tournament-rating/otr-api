@@ -30,4 +30,8 @@
       <None Remove="Database\**" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Migrations\" />
+    </ItemGroup>
+
 </Project>
