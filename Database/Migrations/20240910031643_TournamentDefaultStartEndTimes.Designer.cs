@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240910031643_TournamentDefaultStartEndTimes")]
+    partial class TournamentDefaultStartEndTimes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1097,7 +1100,6 @@ namespace Database.Migrations
                     b.Property<DateTime>("EndTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_time")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<string>("ForumUrl")
@@ -1145,7 +1147,6 @@ namespace Database.Migrations
                     b.Property<DateTime>("StartTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_time")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<int?>("SubmittedByUserId")

@@ -528,6 +528,9 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(t => t.RejectionReason).HasDefaultValue(TournamentRejectionReason.None);
             entity.Property(t => t.ProcessingStatus).HasDefaultValue(TournamentProcessingStatus.NeedsApproval);
 
+            entity.Property(t => t.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
+            entity.Property(t => t.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
+
             entity.Property(t => t.Created).HasDefaultValueSql(SqlCurrentTimestamp);
             entity.Property(t => t.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
 
