@@ -64,7 +64,6 @@ public class Player : UpdateableEntityBase
     [Column("osu_track_last_fetch")]
     public DateTime OsuTrackLastFetch { get; set; }
 
-    // Column name and value initialization is handled via OtrContext
     /// <summary>
     /// A collection of <see cref="PlayerOsuRulesetData"/>, one for each <see cref="Enums.Ruleset"/>
     /// </summary>
