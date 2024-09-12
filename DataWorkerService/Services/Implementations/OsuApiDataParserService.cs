@@ -36,9 +36,7 @@ public class OsuApiDataParserService(
 
         // Load players and beatmaps
         await LoadPlayersAsync(apiMatch.Users);
-#pragma warning disable CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
         await LoadBeatmapsAsync(apiMatch.Events.Where(e => e.Game != null).Select(e => e.Game));
-#pragma warning restore CS8620 // Argument cannot be used for parameter due to differences in the nullability of reference types.
 
         // Parse games
         match.Games = CreateGames(apiMatch).ToList();
@@ -85,12 +83,12 @@ public class OsuApiDataParserService(
         }
     }
 
-    public async Task LoadBeatmapsAsync(IEnumerable<MultiplayerGame> apiGames)
+    public async Task LoadBeatmapsAsync(IEnumerable<MultiplayerGame?> apiGames)
     {
         var eGames = apiGames.ToList();
 
         var uncachedBeatmapOsuIds = eGames
-            .Select(g => g.BeatmapId)
+            .Select(g => g!.BeatmapId)
             .Distinct()
             .Where(osuId => !_beatmapsCache.Select(b => b.OsuId).Contains(osuId))
             .ToList();
@@ -111,7 +109,7 @@ public class OsuApiDataParserService(
                 beatmap = new Beatmap { OsuId = beatmapOsuId };
 
                 ApiBeatmap? apiBeatmap = eGames
-                    .Select(g => g.Beatmap)
+                    .Select(g => g?.Beatmap)
                     .FirstOrDefault(b => b?.Id == beatmapOsuId);
                 BeatmapExtended? fullApiBeatmap = await osuClient.GetBeatmapAsync(beatmapOsuId);
                 if (fullApiBeatmap is not null)
@@ -164,6 +162,7 @@ public class OsuApiDataParserService(
 
             var game = new Game
             {
+                OsuId = gameEvent.Game.Id,
                 Ruleset = gameEvent.Game.Ruleset,
                 ScoringType = gameEvent.Game.ScoringType,
                 TeamType = gameEvent.Game.TeamType,
@@ -174,9 +173,9 @@ public class OsuApiDataParserService(
                 Scores = CreateScores(gameEvent.Game.Scores).ToList()
             };
 
-            // Scale up scores set with EZ
             foreach (GameScore score in game.Scores)
             {
+                // Scale up scores set with EZ
                 if (game.Mods.HasFlag(Mods.Easy) || score.Mods.HasFlag(Mods.Easy))
                 {
                     score.Score = (int)(score.Score * 1.75);
