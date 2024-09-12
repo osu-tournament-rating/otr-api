@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240910032352_TournamentStartTimeEndTime_ColumnDefinition")]
+    partial class TournamentStartTimeEndTime_ColumnDefinition
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -517,10 +520,8 @@ namespace Database.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
-                        .HasDefaultValue("")
                         .HasColumnName("name");
 
                     b.Property<long>("OsuId")
@@ -868,57 +869,6 @@ namespace Database.Migrations
                     b.HasIndex("PlayerId", "Won");
 
                     b.ToTable("player_match_stats");
-                });
-
-            modelBuilder.Entity("Database.Entities.PlayerOsuRulesetData", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int?>("EarliestGlobalRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("earliest_global_rank");
-
-                    b.Property<DateTime?>("EarliestGlobalRankDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("earliest_global_rank_date");
-
-                    b.Property<int>("GlobalRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("global_rank");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
-
-                    b.Property<double>("Pp")
-                        .HasColumnType("double precision")
-                        .HasColumnName("pp");
-
-                    b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
-
-                    b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerId", "Ruleset")
-                        .IsUnique();
-
-                    b.ToTable("player_osu_ruleset_data");
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerTournamentStats", b =>
@@ -1506,6 +1456,45 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Database.Entities.Player", b =>
+                {
+                    b.OwnsMany("Database.Entities.PlayerOsuRulesetData", "RulesetData", b1 =>
+                        {
+                            b1.Property<int>("PlayerId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer");
+
+                            b1.Property<int?>("EarliestGlobalRank")
+                                .HasColumnType("integer");
+
+                            b1.Property<DateTime?>("EarliestGlobalRankDate")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<int>("GlobalRank")
+                                .HasColumnType("integer");
+
+                            b1.Property<double>("Pp")
+                                .HasColumnType("double precision");
+
+                            b1.Property<int>("Ruleset")
+                                .HasColumnType("integer");
+
+                            b1.HasKey("PlayerId", "Id");
+
+                            b1.ToTable("players");
+
+                            b1.ToJson("ruleset_data");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PlayerId");
+                        });
+
+                    b.Navigation("RulesetData");
+                });
+
             modelBuilder.Entity("Database.Entities.PlayerMatchStats", b =>
                 {
                     b.HasOne("Database.Entities.Match", "Match")
@@ -1521,17 +1510,6 @@ namespace Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Match");
-
-                    b.Navigation("Player");
-                });
-
-            modelBuilder.Entity("Database.Entities.PlayerOsuRulesetData", b =>
-                {
-                    b.HasOne("Database.Entities.Player", "Player")
-                        .WithMany("RulesetData")
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("Player");
                 });
@@ -1701,8 +1679,6 @@ namespace Database.Migrations
                     b.Navigation("RatingAdjustments");
 
                     b.Navigation("Ratings");
-
-                    b.Navigation("RulesetData");
 
                     b.Navigation("Scores");
 
