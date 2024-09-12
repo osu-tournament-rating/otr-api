@@ -1,5 +1,6 @@
 using Database;
 using Database.Entities;
+using Database.Enums.Verification;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
 using DataWorkerService.AutomationChecks;
