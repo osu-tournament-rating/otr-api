@@ -74,6 +74,7 @@ public class MatchVerificationProcessor(
         foreach (Game game in match.Games)
         {
             game.VerificationStatus = VerificationStatus.Rejected;
+            game.RejectionReason |= GameRejectionReason.RejectedMatch;
             game.ProcessingStatus = GameProcessingStatus.Done;
 
             GameVerificationProcessor.RejectAllChildren(game);

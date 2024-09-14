@@ -73,6 +73,7 @@ public class GameVerificationProcessor(
         foreach (GameScore score in game.Scores)
         {
             score.VerificationStatus = VerificationStatus.Rejected;
+            score.RejectionReason |= ScoreRejectionReason.RejectedGame;
             score.ProcessingStatus = ScoreProcessingStatus.Done;
         }
     }

@@ -78,6 +78,7 @@ public class TournamentVerificationProcessor(
         foreach (Match match in tournament.Matches)
         {
             match.VerificationStatus = VerificationStatus.Rejected;
+            match.RejectionReason |= MatchRejectionReason.RejectedTournament;
             match.ProcessingStatus = MatchProcessingStatus.Done;
 
             MatchVerificationProcessor.RejectAllChildren(match);

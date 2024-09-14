@@ -48,5 +48,10 @@ public enum MatchRejectionReason
     /// <summary>
     /// The <see cref="Entities.Match"/>'s <see cref="Entities.Match.EndTime"/> could not be determined
     /// </summary>
-    NoEndTime = 1 << 6
+    NoEndTime = 1 << 6,
+
+    /// <summary>
+    /// The <see cref="Entities.Tournament"/> the <see cref="Entities.Match"/> was played in was rejected
+    /// </summary>
+    RejectedTournament = 1 << 7
 }

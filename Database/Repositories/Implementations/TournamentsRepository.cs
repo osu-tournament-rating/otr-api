@@ -37,7 +37,8 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .Include(t => t.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.WinRecord)
-            .Where(t => t.ProcessingStatus != TournamentProcessingStatus.Done && t.ProcessingStatus != TournamentProcessingStatus.NeedsApproval)
+            .Where(t => t.Id == 986)
+            // .Where(t => t.ProcessingStatus != TournamentProcessingStatus.Done && t.ProcessingStatus != TournamentProcessingStatus.NeedsApproval)
             .OrderBy(t => t.LastProcessingDate)
             .Take(limit)
             .ToListAsync();
