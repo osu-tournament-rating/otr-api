@@ -158,7 +158,8 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         const string readMore =
-            "Read more about our rate limits at https://github.com/osu-tournament-rating"; // Stage will change this when there is an actual link for this./
+            // TODO: 
+            "Read more about our rate limits at https://github.com/osu-tournament-rating";
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
         {
             await context.HttpContext.Response.WriteAsync(
