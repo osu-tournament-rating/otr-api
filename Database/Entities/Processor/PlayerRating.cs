@@ -13,7 +13,7 @@ namespace Database.Entities.Processor;
 /// A <see cref="Player"/> may only have one <see cref="PlayerRating"/> per <see cref="Enums.Ruleset"/> at any given time.
 /// <br/><br/>
 /// For more in depth documentation, see
-/// <a href="https://github.com/osu-tournament-rating/otr-wiki/blob/master/algorithm/ratings/en.md">
+/// <a href="https://docs.otr.stagec.xyz/rating-calculation.html#rating">
 /// o!TR Ratings Wiki
 /// </a>
 /// </remarks>
