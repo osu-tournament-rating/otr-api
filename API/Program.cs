@@ -158,8 +158,8 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         const string readMore =
-            // TODO:
-            "Read more about our rate limits at https://github.com/osu-tournament-rating";
+            // TODO: Link to the API Terms of Service Document
+            "Read more about our rate limits at https://docs.otr.stagec.xyz/o-tr-api.html";
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
         {
             await context.HttpContext.Response.WriteAsync(
