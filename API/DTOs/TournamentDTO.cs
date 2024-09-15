@@ -36,12 +36,12 @@ public class TournamentDTO
     public int RankRangeLowerBound { get; set; }
 
     /// <summary>
-    ///     The current state of verification
+    /// The current state of verification
     /// </summary>
     public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
-    ///     The current state of processing
+    /// The current state of processing
     /// </summary>
     public TournamentProcessingStatus ProcessingStatus { get; set; }
 
