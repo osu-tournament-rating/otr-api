@@ -436,7 +436,6 @@ builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>(
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
 builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
-builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
 builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
@@ -453,7 +452,6 @@ builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
-builder.Services.AddScoped<IRatingAdjustmentsService, RatingAdjustmentsesService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IScreeningService, ScreeningService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();

@@ -46,18 +46,6 @@ public interface IPlayerStatsService
         DateTime dateMax
     );
 
-    Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody);
-    Task BatchInsertAsync(IEnumerable<PlayerRatingDTO> postBody);
-    Task BatchInsertAsync(IEnumerable<RatingAdjustmentDTO> postBody);
-
-    /// <summary>
-    ///  Truncates both player_match_statistics and match_rating_statistics.
-    /// </summary>
-    /// <returns></returns>
-    Task TruncateAsync();
-
-    Task TruncateRatingAdjustmentsAsync();
-
     /// <summary>
     /// Returns the peak rating of a player for a given ruleset and date range.
     /// </summary>

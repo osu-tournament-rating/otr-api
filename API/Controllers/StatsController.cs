@@ -60,36 +60,4 @@ public class StatsController(
     public async Task<ActionResult<IDictionary<int, int>>> GetRatingHistogramAsync(
         [FromQuery] Ruleset ruleset = Ruleset.Osu
     ) => Ok(await baseStatsService.GetHistogramAsync(ruleset));
-
-    [HttpPost("ratingadjustments")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> PostAsync([FromBody] IEnumerable<RatingAdjustmentDTO> postBody)
-    {
-        await playerStatsService.BatchInsertAsync(postBody);
-        return Ok();
-    }
-
-    [HttpPost("matchstats")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerMatchStatsDTO> postBody)
-    {
-        await playerStatsService.BatchInsertAsync(postBody);
-        return Ok();
-    }
-
-    [HttpPost("basestats")]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> PostAsync([FromBody] IEnumerable<PlayerRatingDTO> postBody)
-    {
-        await playerStatsService.BatchInsertAsync(postBody);
-        return Ok();
-    }
-
-    [HttpDelete]
-    [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> TruncateAsync()
-    {
-        await playerStatsService.TruncateAsync();
-        return Ok();
-    }
 }
