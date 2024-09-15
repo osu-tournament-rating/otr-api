@@ -160,6 +160,17 @@ public class OsuApiDataParserService(
                 continue;
             }
 
+            if (gameEvent.Game.Scores.Length == 0)
+            {
+                logger.LogDebug(
+                    "Game contains no scores and was likely aborted, skipping [Match osu! Id: {OsuId} | Event Id: {EvId}]",
+                    apiMatch.Match.Id,
+                    gameEvent.Id
+                );
+
+                continue;
+            }
+
             var game = new Game
             {
                 OsuId = gameEvent.Game.Id,
