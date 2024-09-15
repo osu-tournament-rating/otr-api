@@ -158,7 +158,7 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         const string readMore =
-            // TODO: 
+            // TODO:
             "Read more about our rate limits at https://github.com/osu-tournament-rating";
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
         {
@@ -260,8 +260,8 @@ builder.Services.AddSwaggerGen(options =>
             Version = "v1",
             Title = "osu! Tournament Rating API",
             Description = "The official resource for reading and writing data within the osu! Tournament Rating platform.",
-            TermsOfService = new Uri( // Stage will change this later when there is actually a link for TOS
-                "https://github.com/osu-tournament-rating"
+            TermsOfService = new Uri(
+                "https://docs.otr.stagec.xyz/o-tr-api.html"
             )
         }
     );
