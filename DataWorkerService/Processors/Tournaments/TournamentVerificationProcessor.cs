@@ -32,10 +32,9 @@ public class TournamentVerificationProcessor(
         if (!entity.Matches.All(m => m.ProcessingStatus > MatchProcessingStatus.NeedsVerification))
         {
             IProcessor<Match> matchVerificationProcessor = matchProcessorResolver.GetVerificationProcessor();
-            foreach (Match match in entity.Matches)
-            {
-                await matchVerificationProcessor.ProcessAsync(match, cancellationToken);
-            }
+            IEnumerable<Task> tasks = entity.Matches
+                .Select(m => matchVerificationProcessor.ProcessAsync(m, cancellationToken));
+            await Task.WhenAll(tasks);
 
             if (!entity.Matches.All(m => m.ProcessingStatus > MatchProcessingStatus.NeedsVerification))
             {
