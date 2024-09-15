@@ -92,6 +92,7 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
 
             game.TeamType = TeamType.TeamVs;
             game.RejectionReason = GameRejectionReason.None;
+            game.VerificationStatus = VerificationStatus.PreVerified;
         }
 
         logger.LogInformation("Successfully converted HeadToHead games to TeamVs [Id: {Id}]", entity.Id);
