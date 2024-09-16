@@ -75,7 +75,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
         Ok(await matchesService.GetAllForPlayerAsync(osuId, ruleset, DateTime.MinValue, DateTime.MaxValue));
 
     /// <summary>
-    ///     Amend match data
+    ///  Amend match data
     /// </summary>
     /// <param name="id">The match id</param>
     /// <param name="patch">JsonPatch data</param>

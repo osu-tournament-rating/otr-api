@@ -15,7 +15,7 @@ namespace API.Controllers;
 public class GameScoresController(IGameScoresService gameScoresService) : Controller
 {
     /// <summary>
-    ///     Amend score data
+    ///  Amend score data
     /// </summary>
     /// <param name="id">The score id</param>
     /// <param name="patch">JsonPatch data</param>
