@@ -41,17 +41,17 @@ public class GameDTO
     public long OsuId { get; set; }
 
     /// <summary>
-    ///     The current state of verification
+    /// The current state of verification
     /// </summary>
     public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
-    ///     The current state of processing
+    /// The current state of processing
     /// </summary>
     public GameProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
-    ///     The rejection reason
+    /// The rejection reason
     /// </summary>
     public GameRejectionReason RejectionReason { get; set; }
 
