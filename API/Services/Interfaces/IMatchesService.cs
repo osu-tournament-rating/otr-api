@@ -59,7 +59,7 @@ public interface IMatchesService
     Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name);
 
     /// <summary>
-    ///     Updates a match entity with values from a <see cref="MatchDTO" />
+    /// Updates a match entity with values from a <see cref="MatchDTO" />
     /// </summary>
     /// <param name="id">The match id</param>
     /// <param name="match">The DTO containing the new values</param>

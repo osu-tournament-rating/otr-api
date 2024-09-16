@@ -79,7 +79,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     /// </summary>
     /// <param name="id">The match id</param>
     /// <param name="patch">JsonPatch data</param>
-    /// <response code="404">If the provided id does not belong to a Match</response>
+    /// <response code="404">If the provided id does not belong to a match</response>
     /// <response code="400">If JsonPatch data is malformed</response>
     /// <response code="200">Returns the patched match</response>
     /// <returns></returns>
