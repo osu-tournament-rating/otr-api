@@ -5,7 +5,6 @@ using API.Utilities.Extensions;
 using AutoMapper;
 using Database.Entities;
 using Database.Enums;
-using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -91,7 +90,7 @@ public class MatchesService(
 
     public async Task<MatchDTO?> UpdateAsync(int id, MatchDTO match)
     {
-        Match? existing = await matchesRepository.GetAsync(id, QueryFilterType.None);
+        Match? existing = await matchesRepository.GetAsync(id);
         if (existing is null)
         {
             return null;
