@@ -55,7 +55,7 @@ public class BeatmapExtendedJsonModel : BeatmapJsonModel
     public DateTime LastUpdated { get; set; }
 
     [JsonProperty("max_combo")]
-    public int MaxCombo { get; set; }
+    public int? MaxCombo { get; set; }
 
     [JsonProperty("passcount")]
     public long PassCount { get; set; }

@@ -17,4 +17,8 @@ public class OsuConfiguration : IOsuClientConfiguration
     public string ClientSecret { get; set; } = null!;
 
     public string RedirectUrl { get; set; } = string.Empty;
+
+    public int? OsuRateLimit { get; set; }
+
+    public int? OsuTrackRateLimit { get; set; }
 }

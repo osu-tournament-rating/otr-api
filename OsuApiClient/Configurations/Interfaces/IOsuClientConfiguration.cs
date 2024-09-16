@@ -19,4 +19,14 @@ public interface IOsuClientConfiguration
     /// Gets or sets the client redirect url
     /// </summary>
     string RedirectUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the client rate limit for <see cref="Enums.FetchPlatform.Osu"/>
+    /// </summary>
+    int? OsuRateLimit { get; set; }
+
+    /// <summary>
+    /// Gets or sets the client rate limit for <see cref="Enums.FetchPlatform.OsuTrack"/>
+    /// </summary>
+    int? OsuTrackRateLimit { get; set; }
 }

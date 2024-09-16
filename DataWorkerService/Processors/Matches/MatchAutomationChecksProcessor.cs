@@ -43,6 +43,6 @@ public class MatchAutomationChecksProcessor(
             ? VerificationStatus.PreVerified
             : VerificationStatus.PreRejected;
 
-        entity.ProcessingStatus += 1;
+        entity.ProcessingStatus = MatchProcessingStatus.NeedsVerification;
     }
 }

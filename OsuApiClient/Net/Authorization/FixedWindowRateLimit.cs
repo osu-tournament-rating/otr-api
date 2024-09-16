@@ -5,7 +5,7 @@ namespace OsuApiClient.Net.Authorization;
 /// <summary>
 /// Represents a fixed window rate limit
 /// </summary>
-internal sealed class FixedWindowRateLimit(FetchPlatform platform)
+internal sealed class FixedWindowRateLimit(FetchPlatform platform, int? rateLimitOverride)
 {
     /// <summary>
     /// Timestamp that the window was created
@@ -25,7 +25,7 @@ internal sealed class FixedWindowRateLimit(FetchPlatform platform)
     /// <summary>
     /// Maximum number of tokens available in the bucket
     /// </summary>
-    public int TokenLimit { get; } = platform switch
+    public int TokenLimit { get; } = rateLimitOverride ?? platform switch
     {
         FetchPlatform.Osu => 60,
         FetchPlatform.OsuTrack => 30,
@@ -35,7 +35,7 @@ internal sealed class FixedWindowRateLimit(FetchPlatform platform)
     /// <summary>
     /// Number of tokens remaining in the bucket
     /// </summary>
-    public int RemainingTokens { get; private set; } = platform switch
+    public int RemainingTokens { get; private set; } = rateLimitOverride ?? platform switch
     {
         FetchPlatform.Osu => 60,
         FetchPlatform.OsuTrack => 30,

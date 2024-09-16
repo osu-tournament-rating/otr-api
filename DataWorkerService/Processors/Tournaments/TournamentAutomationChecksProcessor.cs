@@ -30,11 +30,9 @@ public class TournamentAutomationChecksProcessor(
         }
 
         IProcessor<Match> matchAutomationChecksProcessor = matchProcessorResolver.GetAutomationChecksProcessor();
-
-        foreach (Match match in entity.Matches)
-        {
-            await matchAutomationChecksProcessor.ProcessAsync(match, cancellationToken);
-        }
+        IEnumerable<Task> tasks = entity.Matches
+            .Select(m => matchAutomationChecksProcessor.ProcessAsync(m, cancellationToken));
+        await Task.WhenAll(tasks);
 
         foreach (IAutomationCheck<Tournament> automationCheck in tournamentAutomationChecks.OrderBy(ac => ac.Order))
         {

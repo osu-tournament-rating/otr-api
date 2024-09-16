@@ -25,7 +25,7 @@ public class MultiplayerGameJsonModel : JsonModelBase
     [JsonProperty("end_time")]
     public DateTime? EndTime { get; set; }
 
-    [JsonProperty("ruleset")]
+    [JsonProperty("mode")]
     public string Mode { get; set; } = null!;
 
     [JsonProperty("mode_int")]

@@ -34,7 +34,7 @@ public class ScoreAutomationChecksProcessor(
             ? VerificationStatus.PreVerified
             : VerificationStatus.PreRejected;
 
-        entity.ProcessingStatus += 1;
+        entity.ProcessingStatus = ScoreProcessingStatus.NeedsVerification;
 
         return Task.CompletedTask;
     }
