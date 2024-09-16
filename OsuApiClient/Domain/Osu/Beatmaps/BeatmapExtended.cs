@@ -51,7 +51,7 @@ public class BeatmapExtended : Beatmap
     /// <summary>
     /// Max achievable combo
     /// </summary>
-    public int MaxCombo { get; init; }
+    public int? MaxCombo { get; init; }
 
     /// <summary>
     /// Denotes if the beatmap was converted from another <see cref="Database.Enums.Ruleset"/>

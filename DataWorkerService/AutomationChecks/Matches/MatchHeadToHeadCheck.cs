@@ -36,7 +36,7 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
                 g.VerificationStatus is VerificationStatus.PreRejected
                 && g.RejectionReason is GameRejectionReason.InvalidTeamType
                 && g.TeamType is TeamType.HeadToHead
-                && g.Scores.Count == 2
+                && g.Scores.Count(s => s.VerificationStatus is VerificationStatus.PreVerified) == 2
             )
         )
         {
@@ -51,12 +51,16 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
             .ToList();
 
         // Decide which players are Red and Blue
-        Game firstGame = preRejectedGames.First();
+        var firstGameScores = preRejectedGames.First().Scores
+            .Where(s => s.VerificationStatus is VerificationStatus.PreVerified)
+            .ToList();
 
-        var bluePlayerOsuId = firstGame.Scores.ElementAt(0).Player.OsuId;
-        var redPlayerOsuId = firstGame.Scores.ElementAt(1).Player.OsuId;
+        var bluePlayerOsuId = firstGameScores.ElementAt(0).Player.OsuId;
+        var redPlayerOsuId = firstGameScores.ElementAt(1).Player.OsuId;
 
-        if (preRejectedGames.Any(g => g.Scores.Any(s => s.Player.OsuId != redPlayerOsuId && s.Player.OsuId != bluePlayerOsuId)))
+        if (preRejectedGames.Any(g => g.Scores
+                .Where(s => s.VerificationStatus is VerificationStatus.PreVerified)
+                .Any(s => s.Player.OsuId != redPlayerOsuId && s.Player.OsuId != bluePlayerOsuId)))
         {
             logger.LogInformation(
                 "Match's participants contain more than two unique osu! ids, aborting TeamVs conversion [Id: {Id}]",
@@ -76,14 +80,19 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
         // Convert games to TeamVs by assigning teams
         foreach (Game game in preRejectedGames)
         {
-            GameScore blueScore = game.Scores.First(s => s.Player.OsuId == bluePlayerOsuId);
-            GameScore redScore = game.Scores.First(s => s.Player.OsuId == redPlayerOsuId);
+            var scores = game.Scores
+                .Where(s => s.VerificationStatus is VerificationStatus.PreVerified)
+                .ToList();
+
+            GameScore blueScore = scores.First(s => s.Player.OsuId == bluePlayerOsuId);
+            GameScore redScore = scores.First(s => s.Player.OsuId == redPlayerOsuId);
 
             blueScore.Team = Team.Blue;
             redScore.Team = Team.Red;
 
             game.TeamType = TeamType.TeamVs;
             game.RejectionReason = GameRejectionReason.None;
+            game.VerificationStatus = VerificationStatus.PreVerified;
         }
 
         logger.LogInformation("Successfully converted HeadToHead games to TeamVs [Id: {Id}]", entity.Id);

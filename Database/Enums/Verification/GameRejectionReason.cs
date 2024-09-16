@@ -60,5 +60,10 @@ public enum GameRejectionReason
     /// <summary>
     /// The <see cref="Entities.Game"/>'s <see cref="Entities.Game.EndTime"/> could not be determined
     /// </summary>
-    NoEndTime = 1 << 8
+    NoEndTime = 1 << 8,
+
+    /// <summary>
+    /// The <see cref="Entities.Match"/> the <see cref="Entities.Game"/> was played in was rejected
+    /// </summary>
+    RejectedMatch = 1 << 9
 }

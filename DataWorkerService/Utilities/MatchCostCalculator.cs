@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
+using Database.Enums.Verification;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.Statistics;
 
@@ -14,49 +14,53 @@ public static class MatchCostCalculator
     /// Calculates the match cost for each player in a given list of games using the o!TR Match Cost formula
     /// </summary>
     /// <param name="games">Games to calculate match costs for</param>
-    /// <returns>A dictionary of <see cref="Player"/>.<see cref="Player.Id"/>, match cost</returns>
-    [SuppressMessage("ReSharper", "IdentifierTypo")]
+    /// <returns>A dictionary of { <see cref="Player"/>.<see cref="Player.Id"/>, match cost }</returns>
+    /// <remarks>
+    /// Only <see cref="GameScore"/>s with a <see cref="VerificationStatus"/> of <see cref="VerificationStatus.Verified"/>
+    /// and a <see cref="ScoreProcessingStatus"/> of <see cref="ScoreProcessingStatus.Done"/> are considered
+    /// </remarks>
     public static IDictionary<int, double> CalculateOtrMatchCosts(IEnumerable<Game> games)
     {
-        IEnumerable<Game> enumerableGames = games as Game[] ?? games.ToArray();
+        games = games.ToList();
 
-        var zScores = enumerableGames
+        var zScores = games
             .SelectMany(g => g.Scores)
+            .WhereValid()
             .Select(s => s.Player.Id)
             .Distinct()
             .Select(id => new KeyValuePair<int, List<double>>(id, []))
             .ToDictionary();
 
-        foreach (Game game in enumerableGames)
+        foreach (Game game in games)
         {
-            var gameScoresAvg = game.Scores.Average(s => s.Score);
-            var gameScoresStdev = game.Scores.Select(s => (double)s.Score).StandardDeviation();
+            var scores = game.Scores.WhereValid().ToList();
+
+            var gameScoresAvg = scores.Average(s => s.Score);
+            var gameScoresStdev = scores.Select(s => (double)s.Score).StandardDeviation();
 
             // Calculate z-scores
-            foreach (GameScore score in game.Scores)
+            foreach (GameScore score in scores)
             {
                 zScores[score.Player.Id].Add((score.Score - gameScoresAvg) / gameScoresStdev);
             }
         }
 
-        // Create a normal distribution with z-score mean (mu) and z-score stdev (sigma)
-        var zScoresNormal = new Normal(
-            zScores.SelectMany(pair => pair.Value).Mean(),
-            zScores.SelectMany(pair => pair.Value).StandardDeviation()
-        );
-
-        var gamesCount = enumerableGames.Count();
+        var normal = new Normal(0, 1);
+        var gamesCount = games.Count();
 
         // Calculate match costs
         return zScores.Select(pair =>
             new KeyValuePair<int, double>(
                 pair.Key,
                 // Average z-score percentile
-                (zScoresNormal.CumulativeDistribution(pair.Value.Average()) + 0.5)
+                (pair.Value.Select(normal.CumulativeDistribution).Average() + 0.5)
                 *
                 // Performance bonus
-                (1 + 0.3 * Math.Sqrt((enumerableGames.Count(g => g.Scores.Any(s => s.Player.Id == pair.Key)) - 1) - (gamesCount - 1)))
+                (1 + 0.3 * Math.Sqrt((pair.Value.Count - 1) / (double)(gamesCount - 1)))
             )
         ).ToDictionary();
     }
+
+    private static IEnumerable<GameScore> WhereValid(this IEnumerable<GameScore> scores) =>
+        scores.Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done });
 }

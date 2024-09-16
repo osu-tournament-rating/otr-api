@@ -14,4 +14,13 @@ public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(co
     public async Task<Beatmap?> GetAsync(long osuId) =>
         LocalView.FirstOrDefault(b => b.OsuId == osuId)
         ?? await _context.Beatmaps.FirstOrDefaultAsync(x => x.OsuId == osuId);
+
+    public async Task<IEnumerable<Beatmap>> GetAsync(IEnumerable<long> osuIds)
+    {
+        // Load local instances
+        IEnumerable<Beatmap> result = LocalView.Where(b => osuIds.Contains(b.OsuId)).ToList();
+        // Query db for non-local instances
+        IEnumerable<long> remainingIds = osuIds.Except(result.Select(p => p.OsuId));
+        return (await _context.Beatmaps.Where(b => remainingIds.Contains(b.OsuId)).ToListAsync()).Concat(result);
+    }
 }

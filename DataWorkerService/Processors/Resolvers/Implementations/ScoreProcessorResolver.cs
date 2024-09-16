@@ -11,4 +11,8 @@ public class ScoreProcessorResolver(
     public override IProcessor<GameScore> GetAutomationChecksProcessor() =>
         Processors.FirstOrDefault(p => p is ScoreAutomationChecksProcessor)
         ?? throw new InvalidOperationException($"Processor was not registered: {nameof(ScoreAutomationChecksProcessor)}");
+
+    public override IProcessor<GameScore> GetVerificationProcessor() =>
+        Processors.FirstOrDefault(p => p is ScoreVerificationProcessor)
+        ?? throw new InvalidOperationException($"Processor was not registered: {nameof(ScoreVerificationProcessor)}");
 }

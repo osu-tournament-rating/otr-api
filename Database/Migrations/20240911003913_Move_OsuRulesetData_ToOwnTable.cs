@@ -9,7 +9,7 @@ namespace Database.Migrations
     /// <inheritdoc />
     public partial class Move_OsuRulesetData_ToOwnTable : Migration
     {
-        private static readonly string[] columns = new[] { "player_id", "ruleset" };
+        private static readonly string[] columns = ["player_id", "ruleset"];
 
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

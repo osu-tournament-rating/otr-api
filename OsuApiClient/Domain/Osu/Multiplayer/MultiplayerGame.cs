@@ -38,8 +38,7 @@ public class MultiplayerGame : IModel
     /// <summary>
     /// The <see cref="Database.Enums.Ruleset"/> the game was played in
     /// </summary>
-    [ValueConverter(typeof(RulesetConverter))]
-    [SourceMember(nameof(MultiplayerGameJsonModel.Mode))]
+    [SourceMember(nameof(MultiplayerGameJsonModel.ModeInt))]
     public Ruleset Ruleset { get; init; }
 
     /// <summary>
