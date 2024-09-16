@@ -97,29 +97,24 @@ public static class QueryExtensions
         query.AsQueryable().Where(x => x.ProcessingStatus == MatchProcessingStatus.Done);
 
     /// <summary>
-    /// Filters a <see cref="Match"/> query based on the given <see cref="QueryFilterType"/>
+    /// Includes navigation properties for a <see cref="Match"/>
+    /// <br/>Includes: <see cref="Match.WinRecord"/>, <see cref="Match.PlayerMatchStats"/>,
+    /// <see cref="Match.PlayerRatingAdjustments"/>, <see cref="Match.Games"/>
+    /// (<see cref="Game.Scores"/>, <see cref="Game.Beatmap"/>, <see cref="Game.WinRecord"/>)
     /// </summary>
-    public static IQueryable<Match> WhereFiltered(this IQueryable<Match> query, QueryFilterType filterType) =>
-        filterType switch
-        {
-            QueryFilterType.Verified => query.AsQueryable().WhereVerified(),
-            QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereProcessingCompleted(),
-            QueryFilterType.Verified | QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereVerified().WhereProcessingCompleted(),
-            _ => query
-        };
-
-    /// <summary>
-    /// Includes child navigation properties for a <see cref="Match"/> query based on the given <see cref="QueryFilterType"/>
-    /// <br/>Includes: <see cref="Match.Games"/> (<see cref="Game.Scores"/>, <see cref="Game.Beatmap"/>)
-    /// </summary>
-    /// <param name="filterType">A <see cref="QueryFilterType"/> that controls the way children are included</param>
-    public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query, QueryFilterType filterType) =>
+    public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query) =>
         query
             .AsQueryable()
-            .Include(x => x.Games.AsQueryable().WhereFiltered(filterType))
-            .ThenInclude(x => x.Scores.AsQueryable().WhereFiltered(filterType))
+            .Include(m => m.WinRecord)
+            .Include(m => m.PlayerMatchStats)
+            .Include(m => m.PlayerRatingAdjustments)
+            .Include(m => m.Games)
+            .ThenInclude(g => g.Scores)
+            .ThenInclude(s => s.Player)
             .Include(x => x.Games)
-            .ThenInclude(x => x.Beatmap);
+            .ThenInclude(x => x.Beatmap)
+            .Include(x => x.Games)
+            .ThenInclude(x => x.WinRecord);
 
     /// <summary>
     /// Filters a <see cref="Match"/> query for those with a <see cref="Match.StartTime"/> that is greater than
@@ -197,18 +192,6 @@ public static class QueryExtensions
         query.AsQueryable().Where(x => x.ProcessingStatus == GameProcessingStatus.Done);
 
     /// <summary>
-    /// Filters a <see cref="Game"/> query based on the given <see cref="QueryFilterType"/>
-    /// </summary>
-    public static IQueryable<Game> WhereFiltered(this IQueryable<Game> query, QueryFilterType filterType) =>
-        filterType switch
-        {
-            QueryFilterType.Verified => query.AsQueryable().WhereVerified(),
-            QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereProcessingCompleted(),
-            QueryFilterType.Verified | QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereVerified().WhereProcessingCompleted(),
-            _ => query
-        };
-
-    /// <summary>
     /// Filters a <see cref="Game"/> query for those with a <see cref="Game.StartTime"/> that is greater than
     /// the given date
     /// </summary>
@@ -252,18 +235,6 @@ public static class QueryExtensions
     /// </summary>
     public static IQueryable<GameScore> WhereProcessingCompleted(this IQueryable<GameScore> query) =>
         query.AsQueryable().Where(x => x.ProcessingStatus == ScoreProcessingStatus.Done);
-
-    /// <summary>
-    /// Filters a <see cref="GameScore"/> query based on the given <see cref="QueryFilterType"/>
-    /// </summary>
-    public static IQueryable<GameScore> WhereFiltered(this IQueryable<GameScore> query, QueryFilterType filterType) =>
-        filterType switch
-        {
-            QueryFilterType.Verified => query.AsQueryable().WhereVerified(),
-            QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereProcessingCompleted(),
-            QueryFilterType.Verified | QueryFilterType.ProcessingCompleted => query.AsQueryable().WhereVerified().WhereProcessingCompleted(),
-            _ => query
-        };
 
     /// <summary>
     /// Filters a <see cref="GameScore"/> query for those set after a given date
