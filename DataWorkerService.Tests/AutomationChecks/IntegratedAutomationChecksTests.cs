@@ -12,7 +12,7 @@ public class IntegratedAutomationChecksTests
 {
     [Fact]
     [SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Local")]
-    public async void AutomationChecksProcessor_CompletesFullMatch()
+    public async void Processor_Integrated_ProcessesGameSuccessfully()
     {
         // Arrange
         IProcessor<Match> processor = MockResolvers.MatchProcessorResolver.GetAutomationChecksProcessor();

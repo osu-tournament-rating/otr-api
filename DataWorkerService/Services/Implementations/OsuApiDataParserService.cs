@@ -48,8 +48,8 @@ public class OsuApiDataParserService(
 
     public async Task LoadPlayersAsync(IEnumerable<MatchUser> apiPlayers)
     {
-        var eApiPlayers = apiPlayers.ToList();
-        var uncachedPlayerOsuIds = eApiPlayers
+        apiPlayers = apiPlayers.ToList();
+        var uncachedPlayerOsuIds = apiPlayers
             .Select(p => p.Id)
             .Distinct()
             .Where(osuId => !_playersCache.Select(p => p.OsuId).Contains(osuId))
@@ -67,7 +67,7 @@ public class OsuApiDataParserService(
             Player? player = fetchedPlayers.FirstOrDefault(p => p.OsuId == playerOsuId);
             if (player is null)
             {
-                MatchUser? apiPlayer = eApiPlayers.FirstOrDefault(p => p.Id == playerOsuId);
+                MatchUser? apiPlayer = apiPlayers.FirstOrDefault(p => p.Id == playerOsuId);
 
                 player = new Player
                 {
@@ -85,9 +85,9 @@ public class OsuApiDataParserService(
 
     public async Task LoadBeatmapsAsync(IEnumerable<MultiplayerGame?> apiGames)
     {
-        var eGames = apiGames.ToList();
+        apiGames = apiGames.ToList();
 
-        var uncachedBeatmapOsuIds = eGames
+        var uncachedBeatmapOsuIds = apiGames
             .Select(g => g!.BeatmapId)
             .Distinct()
             .Where(osuId => !_beatmapsCache.Select(b => b.OsuId).Contains(osuId))
@@ -108,7 +108,7 @@ public class OsuApiDataParserService(
             {
                 beatmap = new Beatmap { OsuId = beatmapOsuId };
 
-                ApiBeatmap? apiBeatmap = eGames
+                ApiBeatmap? apiBeatmap = apiGames
                     .Select(g => g?.Beatmap)
                     .FirstOrDefault(b => b?.Id == beatmapOsuId);
                 BeatmapExtended? fullApiBeatmap = await osuClient.GetBeatmapAsync(beatmapOsuId);

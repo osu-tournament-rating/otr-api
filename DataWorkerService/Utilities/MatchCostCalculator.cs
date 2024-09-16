@@ -21,9 +21,9 @@ public static class MatchCostCalculator
     /// </remarks>
     public static IDictionary<int, double> CalculateOtrMatchCosts(IEnumerable<Game> games)
     {
-        IEnumerable<Game> eGames = games.ToList();
+        games = games.ToList();
 
-        var zScores = eGames
+        var zScores = games
             .SelectMany(g => g.Scores)
             .WhereValid()
             .Select(s => s.Player.Id)
@@ -31,7 +31,7 @@ public static class MatchCostCalculator
             .Select(id => new KeyValuePair<int, List<double>>(id, []))
             .ToDictionary();
 
-        foreach (Game game in eGames)
+        foreach (Game game in games)
         {
             var scores = game.Scores.WhereValid().ToList();
 
@@ -46,7 +46,7 @@ public static class MatchCostCalculator
         }
 
         var normal = new Normal(0, 1);
-        var gamesCount = eGames.Count();
+        var gamesCount = games.Count();
 
         // Calculate match costs
         return zScores.Select(pair =>
