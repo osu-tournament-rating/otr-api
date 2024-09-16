@@ -31,8 +31,8 @@ public class GameScoresController(IGameScoresService gameScoresService) : Contro
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<GameScoreDTO> patch)
     {
         // Ensure target game score exists
-        GameScoreDTO? game = await gameScoresService.GetAsync(id);
-        if (game is null)
+        GameScoreDTO? score = await gameScoresService.GetAsync(id);
+        if (score is null)
         {
             return NotFound();
         }
@@ -44,14 +44,14 @@ public class GameScoresController(IGameScoresService gameScoresService) : Contro
         }
 
         // Patch and validate
-        patch.ApplyTo(game, ModelState);
-        if (!TryValidateModel(game))
+        patch.ApplyTo(score, ModelState);
+        if (!TryValidateModel(score))
         {
             return BadRequest(ModelState.ErrorMessage());
         }
 
         // Apply patched values to entity
-        GameScoreDTO? updatedGame = await gameScoresService.UpdateAsync(id, game);
-        return Ok(updatedGame!);
+        GameScoreDTO? updatedScore = await gameScoresService.UpdateAsync(id, score);
+        return Ok(updatedScore!);
     }
 }
