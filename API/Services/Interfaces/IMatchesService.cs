@@ -57,4 +57,12 @@ public interface IMatchesService
     /// <param name="name">The partial search key for the match name</param>
     /// <returns>Up to 30 results if any matches are found</returns>
     Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name);
+
+    /// <summary>
+    ///     Updates a match entity with values from a <see cref="MatchDTO" />
+    /// </summary>
+    /// <param name="id">The match id</param>
+    /// <param name="match">The DTO containing the new values</param>
+    /// <returns>The updated DTO</returns>
+    Task<MatchDTO?> UpdateAsync(int id, MatchDTO match);
 }
