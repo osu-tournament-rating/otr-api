@@ -158,7 +158,8 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         const string readMore =
-            "Read more about our rate limits at https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/limits/en.md";
+            // TODO: Link to the API Terms of Service Document
+            "Currently, information about API ratelimits is unavailable.";
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
         {
             await context.HttpContext.Response.WriteAsync(
@@ -259,9 +260,6 @@ builder.Services.AddSwaggerGen(options =>
             Version = "v1",
             Title = "osu! Tournament Rating API",
             Description = "The official resource for reading and writing data within the osu! Tournament Rating platform.",
-            TermsOfService = new Uri(
-                "https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/usage/limits/en.md"
-            )
         }
     );
     options.IncludeXmlComments($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
