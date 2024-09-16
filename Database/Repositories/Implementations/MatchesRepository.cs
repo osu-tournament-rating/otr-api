@@ -11,20 +11,9 @@ namespace Database.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class MatchesRepository(
-    OtrContext context
-) : RepositoryBase<Match>(context), IMatchesRepository
+public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(context), IMatchesRepository
 {
     private readonly OtrContext _context = context;
-
-    public async Task<Match?> GetAsync(
-        int id,
-        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
-    ) =>
-        await _context.Matches
-            .WhereFiltered(filterType)
-            .IncludeChildren(filterType)
-            .FirstOrDefaultAsync(x => x.Id == id);
 
     public async Task<IEnumerable<Match>> GetAsync(
         int limit,
@@ -104,30 +93,17 @@ public class MatchesRepository(
             };
         }
 
-        return await query.Page(limit, page).ToListAsync();
+        return await query.Page(limit, page).AsNoTracking().ToListAsync();
     }
-
-    public async Task<IEnumerable<Match>> GetAsync(
-        int limit,
-        int page,
-        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
-    ) =>
-        await _context.Matches
-            .WhereFiltered(filterType)
-            .IncludeChildren(filterType)
-            .Include(m => m.Tournament)
-            .OrderBy(m => m.Id)
-            .Page(limit, page)
-            .ToListAsync();
 
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
         await _context.Matches.Where(x => matchIds.Contains(x.OsuId)).ToListAsync();
 
-    public async Task<Match?> GetByOsuIdAsync(long osuId) =>
-        await _context
-            .Matches
-            .IncludeChildren(QueryFilterType.None)
-            .FirstOrDefaultAsync(x => x.OsuId == osuId);
+    public async Task<Match?> GetFullAsync(int id) =>
+        await _context.Matches
+            .AsNoTracking()
+            .IncludeChildren()
+            .FirstOrDefaultAsync(m => m.Id == id);
 
     public async Task<IEnumerable<Match>> SearchAsync(string name)
     {
@@ -135,7 +111,8 @@ public class MatchesRepository(
         name = name.Replace("_", @"\_");
         return await _context.Matches
             .AsNoTracking()
-            .WhereFiltered(QueryFilterType.Verified | QueryFilterType.ProcessingCompleted)
+            .WhereVerified()
+            .WhereProcessingCompleted()
             .Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\"))
             .Take(30)
             .ToListAsync();
@@ -147,7 +124,7 @@ public class MatchesRepository(
         int? verifierId = null
     )
     {
-        Match? match = await GetAsync(id, QueryFilterType.None);
+        Match? match = await GetAsync(id);
         if (match is null)
         {
             return null;
@@ -166,8 +143,8 @@ public class MatchesRepository(
         DateTime after
     ) =>
         await _context.Matches
-            .WhereFiltered(QueryFilterType.Verified | QueryFilterType.ProcessingCompleted)
-            .IncludeChildren(QueryFilterType.Verified | QueryFilterType.ProcessingCompleted)
+            .WhereVerified()
+            .WhereProcessingCompleted()
             .WherePlayerParticipated(osuId)
             .WhereRuleset(ruleset)
             .WhereDateRange(after, before)
