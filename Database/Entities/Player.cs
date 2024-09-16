@@ -98,4 +98,9 @@ public class Player : UpdateableEntityBase
     /// A collection of <see cref="PlayerTournamentStats"/> generated for the <see cref="Player"/>
     /// </summary>
     public ICollection<PlayerTournamentStats> TournamentStats { get; set; } = new List<PlayerTournamentStats>();
+
+    /// <summary>
+    /// A collection of <see cref="PlayerHighestRanks"/> generated for the <see cref="Player"/>
+    /// </summary>
+    public ICollection<PlayerHighestRanks> HighestRanks { get; set; } = new List<PlayerHighestRanks>();
 }

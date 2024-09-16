@@ -490,6 +490,28 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.HasIndex(pts => new { pts.PlayerId, pts.TournamentId }).IsUnique();
         });
 
+        modelBuilder.Entity<PlayerHighestRanks>(entity =>
+        {
+            entity.Property(pr => pr.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(pr => pr.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Player
+            entity
+                .HasOne(pr => pr.Player)
+                .WithMany(p => p.HighestRanks)
+                .HasForeignKey(pr => pr.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(pr => pr.Ruleset);
+            entity.HasIndex(pr => pr.PlayerId);
+            entity.HasIndex(pr => pr.GlobalRank).IsDescending(true);
+            entity.HasIndex(pr => pr.CountryRank).IsDescending(true);
+            entity.HasIndex(pr => pr.GlobalRankDate).IsDescending(true);
+            entity.HasIndex(pr => pr.CountryRankDate).IsDescending(true);
+            entity.HasIndex(pr => new { pr.PlayerId, pr.Ruleset }).IsUnique();
+        });
+
         modelBuilder.Entity<PlayerRating>(entity =>
         {
             entity.Property(pr => pr.Id).UseIdentityAlwaysColumn();
