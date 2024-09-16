@@ -21,4 +21,6 @@ public abstract class ProcessorResolver<TEntity> : IProcessorResolver<TEntity> w
     public IEnumerable<IProcessor<TEntity>> GetAll() => Processors.OrderBy(p => p.Order);
 
     public abstract IProcessor<TEntity> GetAutomationChecksProcessor();
+
+    public abstract IProcessor<TEntity> GetVerificationProcessor();
 }

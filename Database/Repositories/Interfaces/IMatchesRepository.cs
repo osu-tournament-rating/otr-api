@@ -8,16 +8,12 @@ namespace Database.Repositories.Interfaces;
 public interface IMatchesRepository : IRepository<Match>
 {
     /// <summary>
-    /// Gets a match with children for the given id
+    /// Gets a paged list of matches
     /// </summary>
-    /// <param name="id">Match id</param>
-    /// <param name="filterType">Determines the way matches and children are filtered</param>
-    /// <returns>A match, or null if one does not exist</returns>
-    Task<Match?> GetAsync(
-        int id,
-        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
-    );
-
+    /// <remarks>Matches are ordered by primary key</remarks>
+    /// <param name="limit">Amount of matches to return. Functions as the "page size"</param>
+    /// <param name="page">Which block of matches to return</param>
+    /// <returns>A list of matches of size <paramref name="limit"/> indexed by <paramref name="page"/></returns>
     Task<IEnumerable<Match>> GetAsync(
         int limit,
         int page,
@@ -34,23 +30,14 @@ public interface IMatchesRepository : IRepository<Match>
         bool? sortDescending = null
     );
 
-    /// <summary>
-    /// Gets a paged list of matches
-    /// </summary>
-    /// <remarks>Matches are ordered by primary key</remarks>
-    /// <param name="limit">Amount of matches to return. Functions as the "page size"</param>
-    /// <param name="page">Which block of matches to return</param>
-    /// <param name="filterType">Determines the way matches are filtered</param>
-    /// <returns>A list of matches of size <paramref name="limit"/> indexed by <paramref name="page"/></returns>
-    Task<IEnumerable<Match>> GetAsync(
-        int limit,
-        int page,
-        QueryFilterType filterType = QueryFilterType.Verified | QueryFilterType.ProcessingCompleted
-    );
-
     Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds);
 
-    Task<Match?> GetByOsuIdAsync(long osuId);
+    /// <summary>
+    /// Gets a match for the given id including all navigation properties.
+    /// </summary>
+    /// <remarks>The match and included navigations will not be tracked in the context</remarks>
+    /// <param name="id">Match id</param>
+    Task<Match?> GetFullAsync(int id);
 
     Task<IEnumerable<Match>> SearchAsync(string name);
 
@@ -66,5 +53,6 @@ public interface IMatchesRepository : IRepository<Match>
         VerificationStatus verificationStatus,
         int? verifierId = null
     );
+
     Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, Ruleset ruleset, DateTime before, DateTime after);
 }

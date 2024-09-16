@@ -13,6 +13,15 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
         LocalView.FirstOrDefault(p => p.OsuId == osuId)
         ?? await _context.Players.FirstOrDefaultAsync(p => p.OsuId == osuId);
 
+    public async Task<IEnumerable<Player>> GetByOsuIdAsync(IEnumerable<long> osuIds)
+    {
+        // Load local instances
+        IEnumerable<Player> result = LocalView.Where(p => osuIds.Contains(p.OsuId)).ToList();
+        // Query db for non-local instances
+        IEnumerable<long> remainingIds = osuIds.Except(result.Select(p => p.OsuId));
+        return (await _context.Players.Where(p => remainingIds.Contains(p.OsuId)).ToListAsync()).Concat(result);
+    }
+
     public async Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds) =>
         await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
@@ -110,6 +119,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
 
     public async Task<IEnumerable<Player>> GetOutdatedOsuAsync(TimeSpan outdatedAfter, int limit) =>
         await _context.Players
+            .Include(p => p.RulesetData)
             .Include(p => p.User)
             .ThenInclude(u => u!.Settings)
             .Where(p => DateTime.UtcNow - p.OsuLastFetch > outdatedAfter)
@@ -127,10 +137,10 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
 
     public async Task<IEnumerable<Player>> GetOutdatedOsuTrackAsync(TimeSpan outdatedAfter, int limit) =>
         await _context.Players
-            .Where(p =>
-                p.RulesetData.Count > 0
-                && DateTime.UtcNow - p.OsuLastFetch > outdatedAfter
-            )
+            .Include(p => p.RulesetData)
+            .Include(p => p.MatchStats)
+            .ThenInclude(pms => pms.Match)
+            .Where(p => DateTime.UtcNow - p.OsuTrackLastFetch > outdatedAfter)
             .OrderBy(p => p.Id)
             .Take(limit)
             .ToListAsync();

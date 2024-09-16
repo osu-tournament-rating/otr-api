@@ -22,6 +22,9 @@ public class OsuApiDataParserService(
     IOsuClient osuClient
 ) : IOsuApiDataParserService
 {
+    private readonly List<Player> _playersCache = [];
+    private readonly List<Beatmap> _beatmapsCache = [];
+
     public async Task ParseMatchAsync(Match match, MultiplayerMatch apiMatch)
     {
         logger.LogDebug("Parsing match [Id: {Id} | osu! Id: {OsuId}]", match.Id, match.OsuId);
@@ -31,21 +34,110 @@ public class OsuApiDataParserService(
         match.Name = apiMatch.Match.Name;
         match.StartTime = apiMatch.Match.StartTime.DateTime;
 
+        // Load players and beatmaps
+        await LoadPlayersAsync(apiMatch.Users);
+        await LoadBeatmapsAsync(apiMatch.Events.Where(e => e.Game != null).Select(e => e.Game));
+
         // Parse games
-        IEnumerable<Game> newGames = await ParseGamesAsync(apiMatch);
-        foreach (Game newGame in newGames)
-        {
-            match.Games.Add(newGame);
-        }
+        match.Games = CreateGames(apiMatch).ToList();
 
         match.EndTime = DetermineMatchEndTime(apiMatch) ?? default;
 
         logger.LogDebug("Finished parsing match [Id: {Id} | osu! Id: {OsuId}]", match.Id, match.OsuId);
     }
 
-    public async Task<IEnumerable<Game>> ParseGamesAsync(MultiplayerMatch apiMatch)
+    public async Task LoadPlayersAsync(IEnumerable<MatchUser> apiPlayers)
     {
-        var newGames = new List<Game>();
+        apiPlayers = apiPlayers.ToList();
+        var uncachedPlayerOsuIds = apiPlayers
+            .Select(p => p.Id)
+            .Distinct()
+            .Where(osuId => !_playersCache.Select(p => p.OsuId).Contains(osuId))
+            .ToList();
+
+        if (uncachedPlayerOsuIds.Count == 0)
+        {
+            return;
+        }
+
+        IEnumerable<Player> fetchedPlayers = (await playersRepository.GetByOsuIdAsync(uncachedPlayerOsuIds)).ToList();
+
+        foreach (var playerOsuId in uncachedPlayerOsuIds)
+        {
+            Player? player = fetchedPlayers.FirstOrDefault(p => p.OsuId == playerOsuId);
+            if (player is null)
+            {
+                MatchUser? apiPlayer = apiPlayers.FirstOrDefault(p => p.Id == playerOsuId);
+
+                player = new Player
+                {
+                    OsuId = playerOsuId,
+                    Username = apiPlayer?.Username ?? string.Empty,
+                    Country = apiPlayer?.CountryCode ?? string.Empty
+                };
+
+                playersRepository.Add(player);
+            }
+
+            _playersCache.Add(player);
+        }
+    }
+
+    public async Task LoadBeatmapsAsync(IEnumerable<MultiplayerGame?> apiGames)
+    {
+        apiGames = apiGames.ToList();
+
+        var uncachedBeatmapOsuIds = apiGames
+            .Select(g => g!.BeatmapId)
+            .Distinct()
+            .Where(osuId => !_beatmapsCache.Select(b => b.OsuId).Contains(osuId))
+            .ToList();
+
+        if (uncachedBeatmapOsuIds.Count == 0)
+        {
+            return;
+        }
+
+        IEnumerable<Beatmap> fetchedBeatmaps = (await beatmapsRepository.GetAsync(uncachedBeatmapOsuIds)).ToList();
+
+        foreach (var beatmapOsuId in uncachedBeatmapOsuIds)
+        {
+            Beatmap? beatmap = fetchedBeatmaps.FirstOrDefault(b => b.OsuId == beatmapOsuId);
+
+            if (beatmap is null)
+            {
+                beatmap = new Beatmap { OsuId = beatmapOsuId };
+
+                ApiBeatmap? apiBeatmap = apiGames
+                    .Select(g => g?.Beatmap)
+                    .FirstOrDefault(b => b?.Id == beatmapOsuId);
+                BeatmapExtended? fullApiBeatmap = await osuClient.GetBeatmapAsync(beatmapOsuId);
+                if (fullApiBeatmap is not null)
+                {
+                    ParseBeatmap(beatmap, fullApiBeatmap);
+                    logger.LogInformation("Created a new beatmap with full data: [Osu Id: {OsuId}]", beatmap.OsuId);
+                }
+                // Use given partial data if available
+                else if (apiBeatmap is not null)
+                {
+                    ParseBeatmapPartial(beatmap, apiBeatmap);
+                    logger.LogInformation("Created a new beatmap with partial data: [Osu Id: {OsuId}]", beatmap.OsuId);
+                }
+                else
+                {
+                    logger.LogInformation("Created a new beatmap with no data: [Osu Id: {OsuId}]", beatmap.OsuId);
+                }
+
+                beatmapsRepository.Add(beatmap);
+            }
+
+            _beatmapsCache.Add(beatmap);
+        }
+    }
+
+    public IEnumerable<Game> CreateGames(MultiplayerMatch apiMatch)
+    {
+        var games = new List<Game>();
 
         foreach (MatchEvent gameEvent in apiMatch.Events.Where(ev => ev.Detail.Type == MultiplayerEventType.Game))
         {
@@ -68,52 +160,33 @@ public class OsuApiDataParserService(
                 continue;
             }
 
-            // Try to edit an existing game
-            Game? game = await gamesRepository.GetAsync(gameEvent.Game.Id);
-
-            // Create a new game
-            if (game is null)
+            if (gameEvent.Game.Scores.Length == 0)
             {
-                game = new Game { OsuId = gameEvent.Game.Id };
-                newGames.Add(game);
-
                 logger.LogDebug(
-                    "Created a new game [Match osu! Id: {MOsuId} | Event Id: {EvId} | Game osu! Id: {GOsuId}]",
+                    "Game contains no scores and was likely aborted, skipping [Match osu! Id: {OsuId} | Event Id: {EvId}]",
                     apiMatch.Match.Id,
-                    gameEvent.Id,
-                    gameEvent.Game.Id
+                    gameEvent.Id
                 );
+
+                continue;
             }
-            else
+
+            var game = new Game
             {
-                logger.LogDebug(
-                    "Parsing osu! API data into an existing game [Match Id: {MId} | Match osu! Id: {MOsuId} | Game Id: {GId} | Game osu! Id: {GOsuId}]",
-                    game.Match.Id,
-                    game.Match.OsuId,
-                    game.Id,
-                    game.OsuId
-                );
-            }
+                OsuId = gameEvent.Game.Id,
+                Ruleset = gameEvent.Game.Ruleset,
+                ScoringType = gameEvent.Game.ScoringType,
+                TeamType = gameEvent.Game.TeamType,
+                Mods = gameEvent.Game.Mods,
+                PostModSr = gameEvent.Game.Beatmap?.StarRating ?? default,
+                StartTime = gameEvent.Game.StartTime,
+                Beatmap = _beatmapsCache.FirstOrDefault(b => b.OsuId == gameEvent.Game.BeatmapId),
+                Scores = CreateScores(gameEvent.Game.Scores).ToList()
+            };
 
-            // Set static game data
-            game.Ruleset = gameEvent.Game.Ruleset;
-            game.ScoringType = gameEvent.Game.ScoringType;
-            game.TeamType = gameEvent.Game.TeamType;
-            game.Mods = gameEvent.Game.Mods;
-            game.PostModSr = gameEvent.Game.Beatmap?.StarRating ?? default;
-
-            game.StartTime = gameEvent.Game.StartTime;
-
-            // Determine beatmap or create a new one
-            game.Beatmap ??= await beatmapsRepository.GetAsync(gameEvent.Game.BeatmapId)
-                             ?? await CreateBeatmapAsync(gameEvent.Game.BeatmapId, gameEvent.Game.Beatmap);
-
-            // Create scores
-            game.Scores = (await CreateScoresAsync(gameEvent.Game.Scores, apiMatch.Users)).ToList();
-
-            // Scale up scores set with EZ
             foreach (GameScore score in game.Scores)
             {
+                // Scale up scores set with EZ
                 if (game.Mods.HasFlag(Mods.Easy) || score.Mods.HasFlag(Mods.Easy))
                 {
                     score.Score = (int)(score.Score * 1.75);
@@ -132,21 +205,28 @@ public class OsuApiDataParserService(
                 apiMatch.Match.Id,
                 gameEvent.Id
             );
+
+            games.Add(game);
         }
 
-        gamesRepository.AddRange(newGames);
-        return newGames;
+        gamesRepository.AddRange(games);
+        return games;
     }
 
-    public async Task<IEnumerable<GameScore>> CreateScoresAsync(
-        IEnumerable<ApiGameScore> apiScores,
-        IList<MatchUser> apiPlayers
-    )
+    public IEnumerable<GameScore> CreateScores(IEnumerable<ApiGameScore> apiScores)
     {
         var scores = new List<GameScore>();
 
         foreach (ApiGameScore apiScore in apiScores)
         {
+            Player? player = _playersCache.FirstOrDefault(p => p.OsuId == apiScore.UserId);
+            if (player is null)
+            {
+                logger.LogError("Player was not loaded correctly, skipping score [Player osu! id: {osuId}]", apiScore.UserId);
+
+                continue;
+            }
+
             var score = new GameScore
             {
                 Score = apiScore.Score,
@@ -163,9 +243,7 @@ public class OsuApiDataParserService(
                 Mods = apiScore.Mods,
                 Ruleset = apiScore.Ruleset,
                 Team = apiScore.SlotInfo.Team,
-                // Determine player
-                Player = await playersRepository.GetByOsuIdAsync(apiScore.UserId)
-                         ?? CreatePlayer(apiScore.UserId, apiPlayers.FirstOrDefault(p => p.Id == apiScore.UserId))
+                Player = player
             };
 
             scores.Add(score);
@@ -173,45 +251,6 @@ public class OsuApiDataParserService(
 
         gameScoresRepository.AddRange(scores);
         return scores;
-    }
-
-    public async Task<Beatmap> CreateBeatmapAsync(long osuBeatmapId, ApiBeatmap? apiBeatmap)
-    {
-        var beatmap = new Beatmap { OsuId = osuBeatmapId };
-
-        // Try to fetch full beatmap data
-        BeatmapExtended? fullApiBeatmap = await osuClient.GetBeatmapAsync(osuBeatmapId);
-        if (fullApiBeatmap is not null)
-        {
-            ParseBeatmap(beatmap, fullApiBeatmap);
-            logger.LogInformation("Created a new beatmap with full data: [Osu Id: {OsuId}]", beatmap.OsuId);
-        }
-        // Use given partial data if available
-        else if (apiBeatmap is not null)
-        {
-            ParseBeatmapPartial(beatmap, apiBeatmap);
-            logger.LogInformation("Created a new beatmap with partial data: [Osu Id: {OsuId}]", beatmap.OsuId);
-        }
-        else
-        {
-            logger.LogInformation("Created a new beatmap with no data: [Osu Id: {OsuId}]", beatmap.OsuId);
-        }
-
-        beatmapsRepository.Add(beatmap);
-        return beatmap;
-    }
-
-    public Player CreatePlayer(long osuPlayerId, MatchUser? apiPlayer)
-    {
-        var player = new Player
-        {
-            OsuId = osuPlayerId,
-            Username = apiPlayer?.Username ?? string.Empty,
-            Country = apiPlayer?.CountryCode ?? string.Empty
-        };
-
-        playersRepository.Add(player);
-        return player;
     }
 
     public static void ParseBeatmapPartial(Beatmap beatmap, ApiBeatmap apiBeatmap)
@@ -246,7 +285,7 @@ public class OsuApiDataParserService(
         beatmap.CircleCount = fullApiBeatmap.CountCircles;
         beatmap.SliderCount = fullApiBeatmap.CountSliders;
         beatmap.SpinnerCount = fullApiBeatmap.CountSpinners;
-        beatmap.MaxCombo = fullApiBeatmap.MaxCombo;
+        beatmap.MaxCombo = fullApiBeatmap.MaxCombo ?? default;
 
         beatmap.HasData = true;
     }

@@ -100,11 +100,13 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAuditableEn
     /// <summary>
     /// The start date of the first <see cref="Match"/> played in the tournament
     /// </summary>
+    [Column("start_time")]
     public DateTime StartTime { get; set; }
 
     /// <summary>
     /// The end date of the last <see cref="Match"/> played in the tournament
     /// </summary>
+    [Column("end_time")]
     public DateTime EndTime { get; set; }
 
     /// <summary>

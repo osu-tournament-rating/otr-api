@@ -22,20 +22,20 @@ public class MatchGameCountCheck(ILogger<MatchGameCountCheck> logger) : Automati
         var validGamesCount = entity.Games
             .Count(g => g.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified);
 
-        // Match has no valid games
-        if (validGamesCount == 0)
+        switch (validGamesCount)
         {
-            entity.RejectionReason |= MatchRejectionReason.NoValidGames;
-            return false;
+            // Match has no valid games
+            case 0:
+                entity.RejectionReason |= MatchRejectionReason.NoValidGames;
+                return false;
+            case < 3:
+                entity.RejectionReason |= MatchRejectionReason.UnexpectedGameCount;
+                return false;
+            // Number of games satisfies a "best of X" situation
+            // This turned out to be not that worth to calculate, so as long as there are >= 3 games,
+            // it is at least good enough to be sent to manual review
+            default:
+                return true;
         }
-
-        // Number of games satisfies a "best of X" situation
-        if (int.IsOddInteger(validGamesCount))
-        {
-            return true;
-        }
-
-        entity.RejectionReason |= MatchRejectionReason.UnexpectedGameCount;
-        return false;
     }
 }

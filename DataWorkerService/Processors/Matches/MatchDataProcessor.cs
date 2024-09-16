@@ -1,8 +1,10 @@
 using Database.Entities;
+using Database.Enums;
 using Database.Enums.Verification;
 using DataWorkerService.Services.Interfaces;
 using OsuApiClient;
 using OsuApiClient.Domain.Osu.Multiplayer;
+using GameScore = Database.Entities.GameScore;
 
 namespace DataWorkerService.Processors.Matches;
 
@@ -43,7 +45,8 @@ public class MatchDataProcessor(
             entity.VerificationStatus = VerificationStatus.PreRejected;
             entity.RejectionReason |= MatchRejectionReason.NoData;
 
-            entity.ProcessingStatus = MatchProcessingStatus.Done;
+            // Match skips automation checks and proceeds to manual review
+            entity.ProcessingStatus = MatchProcessingStatus.NeedsVerification;
 
             return;
         }
@@ -57,6 +60,20 @@ public class MatchDataProcessor(
 
         await parserService.ParseMatchAsync(entity, response);
 
-        entity.ProcessingStatus += 1;
+        // Set mania variant ruleset
+        if (entity.Tournament.Ruleset is Ruleset.Mania4k or Ruleset.Mania7k)
+        {
+            foreach (Game game in entity.Games.Where(g => g.Ruleset is Ruleset.ManiaOther))
+            {
+                game.Ruleset = entity.Tournament.Ruleset;
+
+                foreach (GameScore score in game.Scores.Where(s => s.Ruleset is Ruleset.ManiaOther))
+                {
+                    score.Ruleset = entity.Tournament.Ruleset;
+                }
+            }
+        }
+
+        entity.ProcessingStatus = MatchProcessingStatus.NeedsAutomationChecks;
     }
 }

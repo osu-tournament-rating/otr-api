@@ -1,75 +1,49 @@
-using API.Utilities;
 using Database.Enums;
 
 namespace API.DTOs;
 
 /// <summary>
-/// Represents general statistics for a player that are current and not time specific
+/// Describes tournament rating based information for a player in a ruleset that are current and not time specific
 /// </summary>
 public class PlayerRatingDTO
 {
     /// <summary>
-    /// Id of the player
-    /// </summary>
-    public int PlayerId { get; set; }
-
-    /// <summary>
-    /// Current rating
-    /// </summary>
-    public double Rating { get; set; }
-
-    /// <summary>
-    /// Current rating volatility measure
-    /// </summary>
-    public double Volatility { get; set; }
-
-    /// <summary>
-    /// osu! ruleset the statistics are derived from
+    /// Ruleset
     /// </summary>
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// Current rating percentile
+    /// Rating
+    /// </summary>
+    public double Rating { get; set; }
+
+    /// <summary>
+    /// Rating volatility
+    /// </summary>
+    public double Volatility { get; set; }
+
+    /// <summary>
+    /// Global rating percentile
     /// </summary>
     public double Percentile { get; set; }
 
     /// <summary>
-    /// Total number of matches played
-    /// </summary>
-    public int MatchesPlayed { get; set; }
-
-    /// <summary>
-    /// Current match win rate
-    /// </summary>
-    public double WinRate { get; set; }
-
-    /// <summary>
-    /// Highest o!tr global ranking
-    /// </summary>
-    public int HighestGlobalRank { get; set; }
-
-    /// <summary>
-    /// Current o!tr global rank
+    /// Global rank
     /// </summary>
     public int GlobalRank { get; set; }
 
     /// <summary>
-    /// Current o!tr country rank
+    /// Country rank
     /// </summary>
     public int CountryRank { get; set; }
 
     /// <summary>
-    /// Total number of tournaments played
+    /// Player id
     /// </summary>
-    public int TournamentsPlayed { get; set; }
+    public int PlayerId { get; set; }
 
     /// <summary>
-    /// Rating tier progress data
+    /// A collection of adjustments that describe the changes resulting in the final rating
     /// </summary>
-    public RankProgressDTO RankProgress { get; set; } = new();
-
-    /// <summary>
-    /// Denotes the current rating as being provisional
-    /// </summary>
-    public bool IsProvisional => RatingUtils.IsProvisional(Volatility, MatchesPlayed, TournamentsPlayed);
+    public ICollection<RatingAdjustmentDTO> Adjustments { get; set; } = new List<RatingAdjustmentDTO>();
 }

@@ -15,4 +15,8 @@ public class GameProcessorResolver(
     public IProcessor<Game> GetStatsProcessor() =>
         Processors.FirstOrDefault(p => p is GameStatsProcessor)
         ?? throw new InvalidOperationException($"Processor was not registered: {nameof(GameStatsProcessor)}");
+
+    public override IProcessor<Game> GetVerificationProcessor() =>
+        Processors.FirstOrDefault(p => p is GameVerificationProcessor)
+        ?? throw new InvalidOperationException($"Processor was not registered: {nameof(GameVerificationProcessor)}");
 }

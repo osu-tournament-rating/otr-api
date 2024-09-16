@@ -47,6 +47,8 @@ using Serilog.Events;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+#endregion
+
 #region Configuration Bindings
 
 builder
@@ -156,7 +158,8 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         const string readMore =
-            "Read more about our rate limits at https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/limits/en.md";
+            // TODO: Link to the API Terms of Service Document
+            "Currently, information about API ratelimits is unavailable.";
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
         {
             await context.HttpContext.Response.WriteAsync(
@@ -257,9 +260,6 @@ builder.Services.AddSwaggerGen(options =>
             Version = "v1",
             Title = "osu! Tournament Rating API",
             Description = "The official resource for reading and writing data within the osu! Tournament Rating platform.",
-            TermsOfService = new Uri(
-                "https://github.com/osu-tournament-rating/otr-wiki/blob/master/api/usage/limits/en.md"
-            )
         }
     );
     options.IncludeXmlComments($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
@@ -436,7 +436,6 @@ builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>(
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
 builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
-builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
 builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
@@ -453,7 +452,6 @@ builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
-builder.Services.AddScoped<IRatingAdjustmentsService, RatingAdjustmentsesService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IScreeningService, ScreeningService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
@@ -491,8 +489,6 @@ builder.Host.ConfigureOsuSharp(
         };
     }
 );
-
-#endregion
 
 #endregion
 
@@ -540,23 +536,8 @@ else
 {
     app.MapControllers();
 }
+#endregion
 
 app.Logger.LogInformation("Running!");
-
-#region Database Migrations
-
-using IServiceScope scope = app.Services.CreateScope();
-OtrContext context = scope.ServiceProvider.GetRequiredService<OtrContext>();
-
-var migrationsCount = context.Database.GetPendingMigrations().Count();
-if (migrationsCount > 0)
-{
-    await context.Database.MigrateAsync();
-    app.Logger.LogInformation("Applied {MigrationsCount} pending migration(s).", migrationsCount);
-}
-
-#endregion
-
-#endregion
 
 app.Run();

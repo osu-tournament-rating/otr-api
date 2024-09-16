@@ -2,6 +2,7 @@
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
+using Database.Enums.Verification;
 using Database.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -91,7 +92,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(g => g.Id).UseIdentityAlwaysColumn();
 
             entity.Property(g => g.Created).HasDefaultValueSql(SqlCurrentTimestamp);
-
             entity.Property(g => g.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
             entity.Property(g => g.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
 
@@ -231,8 +231,12 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
         {
             entity.Property(m => m.Id).UseIdentityAlwaysColumn();
 
-            entity.Property(m => m.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+            entity.Property(m => m.Name).HasDefaultValue(string.Empty);
+            entity.Property(m => m.VerificationStatus).HasDefaultValue(VerificationStatus.None);
+            entity.Property(m => m.RejectionReason).HasDefaultValue(MatchRejectionReason.None);
+            entity.Property(m => m.ProcessingStatus).HasDefaultValue(MatchProcessingStatus.NeedsData);
 
+            entity.Property(m => m.Created).HasDefaultValueSql(SqlCurrentTimestamp);
             entity.Property(m => m.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
             entity.Property(m => m.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
 
@@ -364,11 +368,18 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(p => p.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
+            entity.Property(p => p.Username).HasDefaultValue(string.Empty);
+            entity.Property(p => p.Country).HasDefaultValue(string.Empty);
+            entity.Property(p => p.Ruleset).HasDefaultValue(Ruleset.Osu);
             entity.Property(p => p.OsuLastFetch).HasDefaultValueSql(SqlPlaceholderDate);
             entity.Property(p => p.OsuTrackLastFetch).HasDefaultValueSql(SqlPlaceholderDate);
 
-            entity.OwnsMany(p => p.RulesetData,
-                rd => rd.ToJson("ruleset_data"));
+            // Relation: RulesetData
+            entity
+                .HasMany(p => p.RulesetData)
+                .WithOne(rd => rd.Player)
+                .HasForeignKey(rd => rd.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: User
             entity
@@ -438,6 +449,22 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.HasIndex(pms => pms.PlayerId);
             entity.HasIndex(pms => new { pms.PlayerId, pms.Won });
             entity.HasIndex(pms => new { pms.PlayerId, pms.MatchId }).IsUnique();
+        });
+
+        modelBuilder.Entity<PlayerOsuRulesetData>(entity =>
+        {
+            entity.Property(rd => rd.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(rd => rd.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Player
+            entity
+                .HasOne(rd => rd.Player)
+                .WithMany(p => p.RulesetData)
+                .HasForeignKey(rd => rd.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(rd => new { rd.PlayerId, rd.Ruleset }).IsUnique();
         });
 
         modelBuilder.Entity<PlayerTournamentStats>(entity =>
@@ -517,8 +544,14 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
         {
             entity.Property(t => t.Id).UseIdentityAlwaysColumn();
 
-            entity.Property(t => t.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+            entity.Property(t => t.VerificationStatus).HasDefaultValue(VerificationStatus.None);
+            entity.Property(t => t.RejectionReason).HasDefaultValue(TournamentRejectionReason.None);
+            entity.Property(t => t.ProcessingStatus).HasDefaultValue(TournamentProcessingStatus.NeedsApproval);
 
+            entity.Property(t => t.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
+            entity.Property(t => t.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
+
+            entity.Property(t => t.Created).HasDefaultValueSql(SqlCurrentTimestamp);
             entity.Property(t => t.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
 
             // Relation: User (Submitter)
@@ -583,7 +616,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
         modelBuilder.Entity<User>(entity =>
         {
             entity.Property(u => u.Id).UseIdentityColumn();
-
+            entity.Property(u => u.Scopes).HasDefaultValue(Array.Empty<string>());
             entity.Property(u => u.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
             // RateLimitOverrides as an object is stored in a column as JSON
@@ -650,10 +683,9 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
         modelBuilder.Entity<UserSettings>(entity =>
         {
             entity.Property(us => us.Id).UseIdentityAlwaysColumn();
-
             entity.Property(us => us.Created).HasDefaultValueSql(SqlCurrentTimestamp);
-
             entity.Property(us => us.DefaultRuleset).HasDefaultValue(Ruleset.Osu);
+            entity.Property(us => us.DefaultRulesetIsControlled).HasDefaultValue(false);
 
             // Relation: User
             entity

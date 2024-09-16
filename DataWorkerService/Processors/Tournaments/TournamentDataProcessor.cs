@@ -33,9 +33,6 @@ public class TournamentDataProcessor(
             await matchDataProcessor.ProcessAsync(match, cancellationToken);
         }
 
-        entity.StartTime = entity.Matches.Min(x => x.StartTime);
-        entity.EndTime = entity.Matches.Max(x => x.EndTime);
-
         logger.LogInformation(
             "Tournament data processing summary " +
             "[Matches: {MCnt} | Games: {GCnt} | Beatmaps: {BCnt} | Scores: {SCnt} | Players: {PCnt}]",
@@ -49,6 +46,9 @@ public class TournamentDataProcessor(
         // If all matches completed data processing, advance processing status
         if (entity.Matches.All(m => m.ProcessingStatus > MatchProcessingStatus.NeedsData))
         {
+            entity.StartTime = entity.Matches.Min(x => x.StartTime);
+            entity.EndTime = entity.Matches.Max(x => x.EndTime);
+
             entity.ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
         }
 

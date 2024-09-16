@@ -12,22 +12,21 @@ namespace API.Services.Implementations;
 public class BaseStatsService(
     IApiBaseStatsRepository baseStatsRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
-    IMatchRatingStatsRepository ratingStatsRepository,
     IPlayersRepository playerRepository,
     ITournamentsService tournamentsService
     ) : IBaseStatsService
 {
-    public async Task<IEnumerable<PlayerRatingDTO?>> GetAsync(long osuPlayerId)
+    public async Task<IEnumerable<PlayerRatingStatsDTO?>> GetAsync(long osuPlayerId)
     {
         var id = await playerRepository.GetIdAsync(osuPlayerId);
 
         if (!id.HasValue)
         {
-            return new List<PlayerRatingDTO?>();
+            return new List<PlayerRatingStatsDTO?>();
         }
 
         IEnumerable<PlayerRating> baseStats = await baseStatsRepository.GetForPlayerAsync(osuPlayerId);
-        var ret = new List<PlayerRatingDTO?>();
+        var ret = new List<PlayerRatingStatsDTO?>();
 
         foreach (PlayerRating stat in baseStats)
         {
@@ -38,7 +37,7 @@ public class BaseStatsService(
         return ret;
     }
 
-    public async Task<PlayerRatingDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset)
+    public async Task<PlayerRatingStatsDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset)
     {
         currentStats ??= await baseStatsRepository.GetForPlayerAsync(playerId, ruleset);
 
@@ -49,7 +48,6 @@ public class BaseStatsService(
 
         var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
         var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
-        var highestGlobalRank = await ratingStatsRepository.HighestGlobalRankAsync(playerId, ruleset);
         var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset);
         var rankProgress = new RankProgressDTO
         {
@@ -62,7 +60,7 @@ public class BaseStatsService(
             MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(currentStats.Rating)
         };
 
-        return new PlayerRatingDTO
+        return new PlayerRatingStatsDTO
         {
             PlayerId = playerId,
             CountryRank = currentStats.CountryRank,
@@ -73,16 +71,15 @@ public class BaseStatsService(
             Rating = currentStats.Rating,
             Volatility = currentStats.Volatility,
             WinRate = winRate,
-            HighestGlobalRank = highestGlobalRank,
             TournamentsPlayed = tournamentsPlayed,
             RankProgress = rankProgress
         };
     }
 
-    public async Task<int> BatchInsertAsync(IEnumerable<BaseStatsPostDTO> stats)
+    public async Task<int> BatchInsertAsync(IEnumerable<PlayerRatingDTO> stats)
     {
         var toInsert = new List<PlayerRating>();
-        foreach (BaseStatsPostDTO item in stats)
+        foreach (PlayerRatingDTO item in stats)
         {
             toInsert.Add(
                 new PlayerRating
@@ -101,7 +98,7 @@ public class BaseStatsService(
         return await baseStatsRepository.BatchInsertAsync(toInsert);
     }
 
-    public async Task<IEnumerable<PlayerRatingDTO?>> GetLeaderboardAsync(
+    public async Task<IEnumerable<PlayerRatingStatsDTO?>> GetLeaderboardAsync(
         Ruleset ruleset,
         int page,
         int pageSize,
@@ -119,7 +116,7 @@ public class BaseStatsService(
             playerId
         );
 
-        var leaderboard = new List<PlayerRatingDTO?>();
+        var leaderboard = new List<PlayerRatingStatsDTO?>();
 
         foreach (PlayerRating baseStat in baseStats)
         {

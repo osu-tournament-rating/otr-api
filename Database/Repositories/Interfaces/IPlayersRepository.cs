@@ -12,6 +12,13 @@ public interface IPlayersRepository : IRepository<Player>
     Task<Player?> GetByOsuIdAsync(long osuId);
 
     /// <summary>
+    /// Gets a player for each given osu! id
+    /// </summary>
+    /// <param name="osuIds">Player osu! ids</param>
+    /// <returns>A list containing a player for each osu! id. If one is not found, it will not be returned.</returns>
+    Task<IEnumerable<Player>> GetByOsuIdAsync(IEnumerable<long> osuIds);
+
+    /// <summary>
     /// Returns a list of players that matches the given username. Case insensitive
     /// </summary>
     /// <param name="username"></param>

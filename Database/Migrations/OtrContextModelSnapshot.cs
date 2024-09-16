@@ -517,8 +517,10 @@ namespace Database.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
+                        .HasDefaultValue("")
                         .HasColumnName("name");
 
                     b.Property<long>("OsuId")
@@ -526,11 +528,15 @@ namespace Database.Migrations
                         .HasColumnName("osu_id");
 
                     b.Property<int>("ProcessingStatus")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("processing_status");
 
                     b.Property<int>("RejectionReason")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("rejection_reason");
 
                     b.Property<DateTime>("StartTime")
@@ -552,7 +558,9 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.Property<int>("VerificationStatus")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("verification_status");
 
                     b.Property<int?>("VerifiedByUserId")
@@ -725,8 +733,10 @@ namespace Database.Migrations
 
                     b.Property<string>("Country")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(4)
                         .HasColumnType("character varying(4)")
+                        .HasDefaultValue("")
                         .HasColumnName("country");
 
                     b.Property<DateTime>("Created")
@@ -752,7 +762,9 @@ namespace Database.Migrations
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<int>("Ruleset")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("default_ruleset");
 
                     b.Property<DateTime?>("Updated")
@@ -761,8 +773,10 @@ namespace Database.Migrations
 
                     b.Property<string>("Username")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
+                        .HasDefaultValue("")
                         .HasColumnName("username");
 
                     b.HasKey("Id");
@@ -854,6 +868,57 @@ namespace Database.Migrations
                     b.HasIndex("PlayerId", "Won");
 
                     b.ToTable("player_match_stats");
+                });
+
+            modelBuilder.Entity("Database.Entities.PlayerOsuRulesetData", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("EarliestGlobalRank")
+                        .HasColumnType("integer")
+                        .HasColumnName("earliest_global_rank");
+
+                    b.Property<DateTime?>("EarliestGlobalRankDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("earliest_global_rank_date");
+
+                    b.Property<int>("GlobalRank")
+                        .HasColumnType("integer")
+                        .HasColumnName("global_rank");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("integer")
+                        .HasColumnName("player_id");
+
+                    b.Property<double>("Pp")
+                        .HasColumnType("double precision")
+                        .HasColumnName("pp");
+
+                    b.Property<int>("Ruleset")
+                        .HasColumnType("integer")
+                        .HasColumnName("ruleset");
+
+                    b.Property<DateTime?>("Updated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlayerId", "Ruleset")
+                        .IsUnique();
+
+                    b.ToTable("player_osu_ruleset_data");
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerTournamentStats", b =>
@@ -1006,19 +1071,8 @@ namespace Database.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdjustmentType")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("CountryRankAfter")
                         .HasColumnType("integer")
-                        .HasColumnName("country_rank_after");
-
-                    b.Property<int>("CountryRankBefore")
-                        .HasColumnType("integer")
-                        .HasColumnName("country_rank_before");
-
-                    b.Property<int>("CountryRankDelta")
-                        .HasColumnType("integer")
-                        .HasColumnName("country_rank_delta");
+                        .HasColumnName("adjustment_type");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -1026,33 +1080,9 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("GlobalRankAfter")
-                        .HasColumnType("integer")
-                        .HasColumnName("global_rank_after");
-
-                    b.Property<int>("GlobalRankBefore")
-                        .HasColumnType("integer")
-                        .HasColumnName("global_rank_before");
-
-                    b.Property<int>("GlobalRankDelta")
-                        .HasColumnType("integer")
-                        .HasColumnName("global_rank_delta");
-
                     b.Property<int?>("MatchId")
                         .HasColumnType("integer")
                         .HasColumnName("match_id");
-
-                    b.Property<double>("PercentileAfter")
-                        .HasColumnType("double precision")
-                        .HasColumnName("percentile_after");
-
-                    b.Property<double>("PercentileBefore")
-                        .HasColumnType("double precision")
-                        .HasColumnName("percentile_before");
-
-                    b.Property<double>("PercentileDelta")
-                        .HasColumnType("double precision")
-                        .HasColumnName("percentile_delta");
 
                     b.Property<int>("PlayerId")
                         .HasColumnType("integer")
@@ -1070,10 +1100,6 @@ namespace Database.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("rating_before");
 
-                    b.Property<double>("RatingDelta")
-                        .HasColumnType("double precision")
-                        .HasColumnName("rating_delta");
-
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("timestamp");
@@ -1085,10 +1111,6 @@ namespace Database.Migrations
                     b.Property<double>("VolatilityBefore")
                         .HasColumnType("double precision")
                         .HasColumnName("volatility_before");
-
-                    b.Property<double>("VolatilityDelta")
-                        .HasColumnType("double precision")
-                        .HasColumnName("volatility_delta");
 
                     b.HasKey("Id");
 
@@ -1126,7 +1148,10 @@ namespace Database.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("EndTime")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("end_time")
+                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<string>("ForumUrl")
                         .IsRequired()
@@ -1151,7 +1176,9 @@ namespace Database.Migrations
                         .HasColumnName("name");
 
                     b.Property<int>("ProcessingStatus")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("processing_status");
 
                     b.Property<int>("RankRangeLowerBound")
@@ -1159,7 +1186,9 @@ namespace Database.Migrations
                         .HasColumnName("rank_range_lower_bound");
 
                     b.Property<int>("RejectionReason")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("rejection_reason");
 
                     b.Property<int>("Ruleset")
@@ -1167,7 +1196,10 @@ namespace Database.Migrations
                         .HasColumnName("ruleset");
 
                     b.Property<DateTime>("StartTime")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_time")
+                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<int?>("SubmittedByUserId")
                         .HasColumnType("integer")
@@ -1178,7 +1210,9 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.Property<int>("VerificationStatus")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("verification_status");
 
                     b.Property<int?>("VerifiedByUserId")
@@ -1267,7 +1301,9 @@ namespace Database.Migrations
 
                     b.Property<string[]>("Scopes")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("text[]")
+                        .HasDefaultValue(new string[0])
                         .HasColumnName("scopes");
 
                     b.Property<DateTime?>("Updated")
@@ -1304,7 +1340,9 @@ namespace Database.Migrations
                         .HasColumnName("default_ruleset");
 
                     b.Property<bool>("DefaultRulesetIsControlled")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
+                        .HasDefaultValue(false)
                         .HasColumnName("default_ruleset_controlled");
 
                     b.Property<DateTime?>("Updated")
@@ -1468,45 +1506,6 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Database.Entities.Player", b =>
-                {
-                    b.OwnsMany("Database.Entities.PlayerOsuRulesetData", "RulesetData", b1 =>
-                        {
-                            b1.Property<int>("PlayerId")
-                                .HasColumnType("integer");
-
-                            b1.Property<int>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("integer");
-
-                            b1.Property<int?>("EarliestGlobalRank")
-                                .HasColumnType("integer");
-
-                            b1.Property<DateTime?>("EarliestGlobalRankDate")
-                                .HasColumnType("timestamp with time zone");
-
-                            b1.Property<int>("GlobalRank")
-                                .HasColumnType("integer");
-
-                            b1.Property<double>("Pp")
-                                .HasColumnType("double precision");
-
-                            b1.Property<int>("Ruleset")
-                                .HasColumnType("integer");
-
-                            b1.HasKey("PlayerId", "Id");
-
-                            b1.ToTable("players");
-
-                            b1.ToJson("ruleset_data");
-
-                            b1.WithOwner()
-                                .HasForeignKey("PlayerId");
-                        });
-
-                    b.Navigation("RulesetData");
-                });
-
             modelBuilder.Entity("Database.Entities.PlayerMatchStats", b =>
                 {
                     b.HasOne("Database.Entities.Match", "Match")
@@ -1522,6 +1521,17 @@ namespace Database.Migrations
                         .IsRequired();
 
                     b.Navigation("Match");
+
+                    b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("Database.Entities.PlayerOsuRulesetData", b =>
+                {
+                    b.HasOne("Database.Entities.Player", "Player")
+                        .WithMany("RulesetData")
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Player");
                 });
@@ -1691,6 +1701,8 @@ namespace Database.Migrations
                     b.Navigation("RatingAdjustments");
 
                     b.Navigation("Ratings");
+
+                    b.Navigation("RulesetData");
 
                     b.Navigation("Scores");
 
