@@ -12,26 +12,26 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class GamesController(IGamesService gamesService) : Controller
+public class GameScoresController(IGameScoresService gameScoresService) : Controller
 {
     /// <summary>
-    /// Amend game data
+    ///     Amend score data
     /// </summary>
-    /// <param name="id">The game id</param>
+    /// <param name="id">The score id</param>
     /// <param name="patch">JsonPatch data</param>
-    /// <response code="404">If the provided id does not belong to a game</response>
+    /// <response code="404">If the provided id does not belong to a score</response>
     /// <response code="400">If JsonPatch data is malformed</response>
-    /// <response code="200">Returns the patched game</response>
+    /// <response code="200">Returns the patched score</response>
     [Authorize(Roles = OtrClaims.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<GameDTO>(StatusCodes.Status200OK)]
+    [ProducesResponseType<GameScoreDTO>(StatusCodes.Status200OK)]
     [HttpPatch("{id:int}")]
-    public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<GameDTO> patch)
+    public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<GameScoreDTO> patch)
     {
-        // Ensure target tournament exists
-        GameDTO? game = await gamesService.GetAsync(id);
+        // Ensure target game score exists
+        GameScoreDTO? game = await gameScoresService.GetAsync(id);
         if (game is null)
         {
             return NotFound();
@@ -51,7 +51,7 @@ public class GamesController(IGamesService gamesService) : Controller
         }
 
         // Apply patched values to entity
-        GameDTO? updatedGame = await gamesService.UpdateAsync(id, game);
+        GameScoreDTO? updatedGame = await gameScoresService.UpdateAsync(id, game);
         return Ok(updatedGame!);
     }
 }
