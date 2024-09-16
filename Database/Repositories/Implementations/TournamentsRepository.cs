@@ -8,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance",
+    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class TournamentsRepository(OtrContext context) : RepositoryBase<Tournament>(context), ITournamentsRepository
 {
@@ -16,6 +17,18 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
         eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
+
+    public async Task<Tournament?> GetVerifiedAsync(int id) =>
+        await _context.Tournaments
+            .AsSplitQuery()
+            .Include(t => t.Matches.Where(m => m.VerificationStatus == VerificationStatus.Verified))
+            .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified))
+            .ThenInclude(g => g.Beatmap)
+            .Include(t => t.Matches.Where(m => m.VerificationStatus == VerificationStatus.Verified))
+            .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified))
+            .ThenInclude(g => g.Scores.Where(gs => gs.VerificationStatus == VerificationStatus.Verified))
+            .ThenInclude(gs => gs.Player)
+            .FirstOrDefaultAsync(t => t.Id == id);
 
     public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
         await _context.Tournaments
