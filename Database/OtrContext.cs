@@ -590,6 +590,13 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(ta => ta.ReferenceId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Relation: Admin Notes
+            entity
+                .HasMany(t => t.AdminNotes)
+                .WithOne(an => an.Tournament)
+                .HasForeignKey(an => an.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity.HasIndex(t => t.Ruleset);
             entity.HasIndex(t => new { t.Name, t.Abbreviation }).IsUnique();
         });
