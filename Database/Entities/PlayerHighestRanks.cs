@@ -1,7 +1,5 @@
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using Database.Entities.Processor;
 using Database.Enums;
 
 namespace Database.Entities;
@@ -13,8 +11,7 @@ namespace Database.Entities;
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class PlayerHighestRanks : EntityBase
+public class PlayerHighestRanks : UpdateableEntityBase
 {
     /// <summary>
     /// <see cref="Enums.Ruleset"/> as set on the <see cref="Player"/>'s osu! profile
@@ -25,7 +22,7 @@ public class PlayerHighestRanks : EntityBase
     /// <summary>
     /// Global rank at the current time
     /// </summary>
-    [Column("current_global_rank")]
+    [Column("global_rank")]
     public int GlobalRank { get; set; }
 
     /// <summary>
@@ -37,7 +34,7 @@ public class PlayerHighestRanks : EntityBase
     /// <summary>
     /// Country rank at the current time
     /// </summary>
-    [Column("current_country_rank")]
+    [Column("country_rank")]
     public int CountryRank { get; set; }
 
     /// <summary>
@@ -47,7 +44,9 @@ public class PlayerHighestRanks : EntityBase
     public DateTime CountryRankDate { get; set; }
 
     // FK, required
+    [Column("player_id")]
     public int PlayerId { get; set; }
+
     // Backwards navigation
     public Player Player { get; set; } = null!;
 }

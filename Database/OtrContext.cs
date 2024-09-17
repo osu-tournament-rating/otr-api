@@ -40,6 +40,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
     public virtual DbSet<OAuthClient> OAuthClients { get; set; }
     public virtual DbSet<Player> Players { get; set; }
+    public virtual DbSet<PlayerHighestRanks> PlayerHighestRanks { get; set; }
     public virtual DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
     public virtual DbSet<PlayerTournamentStats> PlayerTournamentStats { get; set; }
     public virtual DbSet<PlayerRating> PlayerRatings { get; set; }
@@ -395,6 +396,13 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(pr => pr.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: PlayerHighestRanks
+            entity
+                .HasMany(pr => pr.HighestRanks)
+                .WithOne(p => p.Player)
+                .HasForeignKey(pr => pr.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Relation: RatingAdjustments
             entity
                 .HasMany(e => e.RatingAdjustments)
@@ -503,12 +511,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(pr => pr.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(pr => pr.Ruleset);
-            entity.HasIndex(pr => pr.PlayerId);
             entity.HasIndex(pr => pr.GlobalRank).IsDescending(true);
             entity.HasIndex(pr => pr.CountryRank).IsDescending(true);
-            entity.HasIndex(pr => pr.GlobalRankDate).IsDescending(true);
-            entity.HasIndex(pr => pr.CountryRankDate).IsDescending(true);
             entity.HasIndex(pr => new { pr.PlayerId, pr.Ruleset }).IsUnique();
         });
 
