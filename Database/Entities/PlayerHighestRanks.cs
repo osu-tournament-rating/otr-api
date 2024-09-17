@@ -10,7 +10,6 @@ namespace Database.Entities;
 [Table(name: "player_highest_ranks")]
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class PlayerHighestRanks : UpdateableEntityBase
 {
     /// <summary>

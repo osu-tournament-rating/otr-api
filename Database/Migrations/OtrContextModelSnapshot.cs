@@ -787,44 +787,6 @@ namespace Database.Migrations
                     b.ToTable("players");
                 });
 
-            modelBuilder.Entity("Database.Entities.PlayerHighestRanks", b =>
-            {
-                b.Property<int>("Ruleset")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("integer")
-                    .HasDefaultValue(0)
-                    .HasColumnName("default_ruleset");
-
-                b.Property<int>("GlobalRank")
-                    .HasColumnType("integer")
-                    .HasColumnName("global_rank");
-
-                b.Property<int>("CountryRank")
-                    .HasColumnType("integer")
-                    .HasColumnName("country_rank");
-
-                b.Property<DateTime?>("GlobalRankDate")
-                    .HasColumnType("timestamp with time zone")
-                    .HasColumnName("global_rank_date");
-
-                b.Property<DateTime?>("CountryRankDate")
-                    .HasColumnType("timestamp with time zone")
-                    .HasColumnName("country_rank_date");
-
-                b.Property<int>("PlayerId")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("integer")
-                    .HasColumnName("player_id");
-
-                NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                b.Property<string>("Player")
-                    .HasColumnType("string")
-                    .HasColumnName("player");
-
-                b.ToTable("player_highest_ranks");
-            });
-
             modelBuilder.Entity("Database.Entities.PlayerMatchStats", b =>
                 {
                     b.Property<int>("Id")
