@@ -117,7 +117,16 @@ public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>, IProces
     /// </summary>
     public ICollection<RatingAdjustment> PlayerRatingAdjustments { get; set; } = new List<RatingAdjustment>();
 
+    /// <summary>
+    /// A collection of <see cref="MatchAudit"/>s, one for each change made to this entity
+    /// </summary>
     public ICollection<MatchAudit> Audits { get; set; } = new List<MatchAudit>();
+
+    /// <summary>
+    /// A collection of <see cref="AdminNotes"/>s. Admins may leave notes on matches detailing
+    /// important information
+    /// </summary>
+    public ICollection<MatchAdminNote> AdminNotes { get; set; } = new List<MatchAdminNote>();
 
     [NotMapped]
     public int? ActionBlamedOnUserId { get; set; }

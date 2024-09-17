@@ -36,6 +36,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     public virtual DbSet<GameScoreAudit> GameScoreAudits { get; set; }
     public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
     public virtual DbSet<Match> Matches { get; set; }
+    public virtual DbSet<MatchAdminNote> MatchAdminNotes { get; set; }
     public virtual DbSet<MatchAudit> MatchAudits { get; set; }
     public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
     public virtual DbSet<OAuthClient> OAuthClients { get; set; }
@@ -299,7 +300,22 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(a => a.ReferenceId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Relation: Admin Notes
+            entity
+                .HasMany(m => m.AdminNotes)
+                .WithOne(an => an.Match)
+                .HasForeignKey(an => an.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity.HasIndex(m => m.OsuId).IsUnique();
+        });
+
+        modelBuilder.Entity<MatchAdminNote>(entity =>
+        {
+            entity.HasOne(m => m.Match)
+                .WithMany(m => m.AdminNotes)
+                .HasForeignKey(m => m.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<MatchAudit>(entity =>
