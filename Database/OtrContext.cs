@@ -593,6 +593,20 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.HasIndex(t => new { t.Name, t.Abbreviation }).IsUnique();
         });
 
+        modelBuilder.Entity<TournamentAdminNote>(entity =>
+        {
+            entity.Property(tan => tan.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(tan => tan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Tournament
+            entity
+                .HasOne(tan => tan.Tournament)
+                .WithMany(t => t.AdminNotes)
+                .HasForeignKey(tan => tan.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<TournamentAudit>(entity =>
         {
             entity.Property(ta => ta.Id).UseIdentityAlwaysColumn();

@@ -13,7 +13,8 @@ namespace Database.Entities;
 [Table("tournaments")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Tournament : UpdateableEntityBase, IProcessableEntity, IAuditableEntity<TournamentAudit>
+public class Tournament : UpdateableEntityBase, IProcessableEntity, IAuditableEntity<TournamentAudit>,
+    IAdminNotableEntity<TournamentAdminNote>
 {
     /// <summary>
     /// Name
@@ -123,4 +124,6 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAuditableEn
 
     [NotMapped]
     public int? ActionBlamedOnUserId { get; set; }
+
+    public ICollection<TournamentAdminNote> AdminNotes { get; set; }
 }
