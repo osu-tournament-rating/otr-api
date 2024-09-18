@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    [Migration("20240918214600_PlayerHighestRanks")]
+    [Migration("20240918224546_PlayerHighestRanks")]
     partial class PlayerHighestRanks
     {
         /// <inheritdoc />
