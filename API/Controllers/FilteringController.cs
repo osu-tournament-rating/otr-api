@@ -11,20 +11,20 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class ScreeningController(IScreeningService screeningService) : Controller
+public class FilteringController(IFilteringService filteringService) : Controller
 {
     /// <summary>
-    /// Screen a list of users based on the criteria as described in
-    /// <see cref="ScreeningResultDTO"/>
+    /// Filter a list of users based on the criteria as described in
+    /// <see cref="FilteringResultDTO"/>
     /// </summary>
-    /// <param name="screeningRequest">The screening request</param>
+    /// <param name="filteringRequest">The filtering request</param>
     /// <response code="400">Errors encountered during validation</response>
-    /// <response code="200">The screening result</response>
+    /// <response code="200">The filtering result</response>
     [HttpPost]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<ScreeningResultDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ScreenAsync([FromBody] ScreeningRequestDTO screeningRequest)
+    [ProducesResponseType<FilteringResultDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> FilterAsync([FromBody] FilteringRequestDTO filteringRequest)
     {
         if (!ModelState.IsValid)
         {
@@ -32,9 +32,9 @@ public class ScreeningController(IScreeningService screeningService) : Controlle
         }
 
         // Filter out duplicate ids
-        screeningRequest.OsuPlayerIds = screeningRequest.OsuPlayerIds.Distinct();
+        filteringRequest.OsuPlayerIds = filteringRequest.OsuPlayerIds.Distinct();
 
-        ScreeningResultDTO screeningResult = await screeningService.ScreenAsync(screeningRequest);
-        return Ok(screeningResult);
+        FilteringResultDTO filteringResult = await filteringService.FilterAsync(filteringRequest);
+        return Ok(filteringResult);
     }
 }

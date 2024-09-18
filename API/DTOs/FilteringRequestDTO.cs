@@ -5,10 +5,10 @@ using Database.Enums;
 namespace API.DTOs;
 
 /// <summary>
-/// Represents a set of criteria used by the <see cref="ScreeningController"/>
+/// Represents a set of criteria used by the <see cref="FilteringController"/>
 /// to determine player eligibility for a tournament
 /// </summary>
-public class ScreeningRequestDTO
+public class FilteringRequestDTO
 {
     /// <summary>
     /// The ruleset by which data will be referenced, required
@@ -18,17 +18,17 @@ public class ScreeningRequestDTO
                                 "4 = osu!mania 4K, 5 = osu!mania 7K)")]
     public required Ruleset Ruleset { get; set; }
     /// <summary>
-    /// Players with a current rating below this value will be screened
+    /// Players with a current rating below this value will be filtered
     /// </summary>
     [Range(100, int.MaxValue, ErrorMessage = "Minimum rating value is 100")]
     public int? MinRating { get; set; }
     /// <summary>
-    /// Players with a current rating above this value will be screened
+    /// Players with a current rating above this value will be filtered
     /// </summary>
     [Range(100, int.MaxValue, ErrorMessage = "Minimum rating value is 100")]
     public int? MaxRating { get; set; }
     /// <summary>
-    /// Whether to screen players that currently have a provisional rating
+    /// Whether to filter players that currently have a provisional rating
     /// </summary>
     public bool AllowProvisional { get; set; } = true;
     /// <summary>
@@ -50,7 +50,7 @@ public class ScreeningRequestDTO
     [Range(1, int.MaxValue, ErrorMessage = "Matches played must be at least 1.")]
     public int? MatchesPlayed { get; set; }
     /// <summary>
-    /// A list of osu! player ids that will be screened
+    /// A list of osu! player ids that will be filtered
     /// </summary>
     public required IEnumerable<long> OsuPlayerIds { get; set; } = new List<long>();
 }
