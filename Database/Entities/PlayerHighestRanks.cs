@@ -19,25 +19,25 @@ public class PlayerHighestRanks : UpdateableEntityBase
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// The highest global rank for this user in the given ruleset
+    /// The highest global rank for this user
     /// </summary>
     [Column("global_rank")]
     public int GlobalRank { get; set; }
 
     /// <summary>
-    /// Date this player's peak global rank was achieved in the given ruleset
+    /// Date this player's peak global rank was achieved
     /// </summary>
     [Column("global_rank_date")]
     public DateTime GlobalRankDate { get; set; }
 
     /// <summary>
-    /// The highest country rank for this user in the given ruleset
+    /// The highest country rank for this user
     /// </summary>
     [Column("country_rank")]
     public int CountryRank { get; set; }
 
     /// <summary>
-    /// Date this player's peak country rank was achieved in the given ruleset
+    /// Date this player's peak country rank was achieved
     /// </summary>
     [Column("country_rank_date")]
     public DateTime CountryRankDate { get; set; }
