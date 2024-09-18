@@ -42,10 +42,14 @@ public class PlayerHighestRanks : UpdateableEntityBase
     [Column("country_rank_date")]
     public DateTime CountryRankDate { get; set; }
 
-    // FK, required
+    /// <summary>
+    /// The id of the player this record belongs to
+    /// </summary>
     [Column("player_id")]
     public int PlayerId { get; set; }
 
-    // Backwards navigation
+    /// <summary>
+    /// The <see cref="Player"/>
+    /// </summary>
     public Player Player { get; set; } = null!;
 }
