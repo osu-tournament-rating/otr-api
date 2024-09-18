@@ -37,13 +37,13 @@ public interface ITournamentsService
     Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true);
 
     /// <summary>
-    ///     Gets a verified tournament that matches the provided id. All child navigations are
-    ///     verified.
+    /// Gets a verified tournament that matches the provided id. All child navigations are
+    /// verified.
     /// </summary>
     /// <param name="id">The id of the verified tournament</param>
     /// <returns>
-    ///     Null if the tournament is not found.
-    ///     Returns a tournament with verified child navigations if found.
+    /// Null if the tournament is not found.
+    /// Returns a tournament with verified child navigations if found.
     /// </returns>
     Task<TournamentDTO?> GetVerifiedAsync(int id);
 

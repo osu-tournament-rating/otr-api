@@ -13,12 +13,12 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
 
     /// <summary>
-    ///     Gets a <see cref="Tournament" /> by id with verified child navigations
+    /// Gets a <see cref="Tournament" /> by id with verified child navigations
     /// </summary>
     /// <param name="id">The id of the tournament</param>
     /// <returns>
-    ///     Null if the tournament is not found.
-    ///     Returns a tournament with verified child navigations if found.
+    /// Null if the tournament is not found.
+    /// Returns a tournament with verified child navigations if found.
     /// </returns>
     Task<Tournament?> GetVerifiedAsync(int id);
 
