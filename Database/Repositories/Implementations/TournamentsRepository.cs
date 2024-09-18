@@ -21,12 +21,12 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     public async Task<Tournament?> GetVerifiedAsync(int id) =>
         await _context.Tournaments
             .AsSplitQuery()
-            .Include(t => t.Matches.Where(m => m.VerificationStatus == VerificationStatus.Verified))
-            .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified))
+            .Include(t => t.Matches.Where(m => m.VerificationStatus == VerificationStatus.Verified && m.ProcessingStatus == MatchProcessingStatus.Done))
+            .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
             .ThenInclude(g => g.Beatmap)
-            .Include(t => t.Matches.Where(m => m.VerificationStatus == VerificationStatus.Verified))
-            .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified))
-            .ThenInclude(g => g.Scores.Where(gs => gs.VerificationStatus == VerificationStatus.Verified))
+            .Include(t => t.Matches.Where(m => m.VerificationStatus == VerificationStatus.Verified && m.ProcessingStatus == MatchProcessingStatus.Done))
+            .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
+            .ThenInclude(g => g.Scores.Where(gs => gs.VerificationStatus == VerificationStatus.Verified && gs.ProcessingStatus == ScoreProcessingStatus.Done))
             .ThenInclude(gs => gs.Player)
             .FirstOrDefaultAsync(t => t.Id == id);
 
