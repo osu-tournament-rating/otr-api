@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    [Migration("20240917204247_202409170000")]
-    partial class _202409170000
+    [Migration("20240918214600_PlayerHighestRanks")]
+    partial class PlayerHighestRanks
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -827,7 +827,7 @@ namespace Database.Migrations
 
                     b.Property<int>("Ruleset")
                         .HasColumnType("integer")
-                        .HasColumnName("default_ruleset");
+                        .HasColumnName("ruleset");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
