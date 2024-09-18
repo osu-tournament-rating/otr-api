@@ -398,8 +398,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             // Relation: PlayerHighestRanks
             entity
-                .HasMany(pr => pr.HighestRanks)
-                .WithOne(p => p.Player)
+                .HasMany(p => p.HighestRanks)
+                .WithOne(pr => pr.Player)
                 .HasForeignKey(pr => pr.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 

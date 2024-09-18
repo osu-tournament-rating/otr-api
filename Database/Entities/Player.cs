@@ -100,7 +100,8 @@ public class Player : UpdateableEntityBase
     public ICollection<PlayerTournamentStats> TournamentStats { get; set; } = new List<PlayerTournamentStats>();
 
     /// <summary>
-    /// A collection of <see cref="PlayerHighestRanks"/> generated for the <see cref="Player"/>
+    /// A collection of <see cref="PlayerHighestRanks"/> for the <see cref="Player"/>
+    /// representing the peak global & country ranks for each ruleset
     /// </summary>
     public ICollection<PlayerHighestRanks> HighestRanks { get; set; } = new List<PlayerHighestRanks>();
 }
