@@ -77,7 +77,8 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     /// <param name="id">Tournament id</param>
     /// <param name="unfiltered">If true, includes all match data, regardless of verification status.
     /// Also includes all child navigations if true.
-    /// Default false (strictly verified data with limited navigation properties). </param>
+    /// Default false (strictly verified data with limited navigation properties)
+    /// </param>
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="200">Returns the tournament</response>
     [HttpGet("{id:int}")]
