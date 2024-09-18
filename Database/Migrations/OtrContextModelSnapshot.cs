@@ -787,63 +787,6 @@ namespace Database.Migrations
                     b.ToTable("players");
                 });
 
-            modelBuilder.Entity("Database.Entities.PlayerHighestRanks", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CountryRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("country_rank");
-
-                    b.Property<DateTime>("CountryRankDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("country_rank_date");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int>("GlobalRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("global_rank");
-
-                    b.Property<DateTime>("GlobalRankDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("global_rank_date");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
-
-                    b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
-
-                    b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CountryRank")
-                        .IsDescending();
-
-                    b.HasIndex("GlobalRank")
-                        .IsDescending();
-
-                    b.HasIndex("PlayerId", "Ruleset")
-                        .IsUnique();
-
-                    b.ToTable("player_highest_ranks");
-                });
-
             modelBuilder.Entity("Database.Entities.PlayerMatchStats", b =>
                 {
                     b.Property<int>("Id")
@@ -1563,17 +1506,6 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Database.Entities.PlayerHighestRanks", b =>
-                {
-                    b.HasOne("Database.Entities.Player", "Player")
-                        .WithMany("HighestRanks")
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Player");
-                });
-
             modelBuilder.Entity("Database.Entities.PlayerMatchStats", b =>
                 {
                     b.HasOne("Database.Entities.Match", "Match")
@@ -1764,8 +1696,6 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.Player", b =>
                 {
-                    b.Navigation("HighestRanks");
-
                     b.Navigation("MatchStats");
 
                     b.Navigation("RatingAdjustments");
