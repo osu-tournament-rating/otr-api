@@ -2,6 +2,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace API.DTOs;
 
@@ -11,6 +12,7 @@ namespace API.DTOs;
 public class TournamentDTO
 {
     public int Id { get; set; }
+
     /// <summary>
     /// The name of the tournament
     /// </summary>
@@ -32,6 +34,16 @@ public class TournamentDTO
     /// </summary>
     /// <example>For a 10,000-50,000 tournament, this value would be 10,000</example>
     public int RankRangeLowerBound { get; set; }
+
+    /// <summary>
+    /// The current state of verification
+    /// </summary>
+    public VerificationStatus VerificationStatus { get; set; }
+
+    /// <summary>
+    /// The current state of processing
+    /// </summary>
+    public TournamentProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
     /// osu! ruleset

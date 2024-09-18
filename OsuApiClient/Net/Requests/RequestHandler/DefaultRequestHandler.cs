@@ -3,6 +3,7 @@ using System.Text;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using OsuApiClient.Configurations.Interfaces;
 using OsuApiClient.Domain;
 using OsuApiClient.Enums;
 using OsuApiClient.Extensions;
@@ -15,7 +16,10 @@ namespace OsuApiClient.Net.Requests.RequestHandler;
 /// <summary>
 /// The default implementation of the handler that makes direct requests to the osu! API
 /// </summary>
-internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logger) : IRequestHandler
+internal sealed class DefaultRequestHandler(
+    ILogger<DefaultRequestHandler> logger,
+    IOsuClientConfiguration configuration
+) : IRequestHandler
 {
     private readonly HttpClient _httpClient = new()
     {
@@ -36,8 +40,8 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
     private readonly IDictionary<FetchPlatform, FixedWindowRateLimit> _rateLimits =
         new Dictionary<FetchPlatform, FixedWindowRateLimit>
         {
-            [FetchPlatform.Osu] = new(FetchPlatform.Osu),
-            [FetchPlatform.OsuTrack] = new(FetchPlatform.OsuTrack)
+            [FetchPlatform.Osu] = new(FetchPlatform.Osu, configuration.OsuRateLimit),
+            [FetchPlatform.OsuTrack] = new(FetchPlatform.OsuTrack, configuration.OsuTrackRateLimit)
         };
 
     private bool _disposed;
@@ -99,8 +103,24 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
     )
     {
         HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
-        HttpResponseMessage response = await _httpClient.SendAsync(requestMessage, cancellationToken);
-        return await OnResponseReceivedAsync(request.Platform, response, cancellationToken);
+
+        HttpResponseMessage? response = null;
+        try
+        {
+            response = await _httpClient.SendAsync(requestMessage, cancellationToken);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(
+                "Http request exception while fetching platform [{platform}]: {ex}",
+                request.Platform.ToString(),
+                ex
+            );
+        }
+
+        return response is not null
+            ? await OnResponseReceivedAsync(request.Platform, response, cancellationToken)
+            : null;
     }
 
     /// <summary>
@@ -278,6 +298,21 @@ internal sealed class DefaultRequestHandler(ILogger<DefaultRequestHandler> logge
     /// <param name="responseContent"><see cref="HttpResponseMessage"/>.Content as a string</param>
     /// <typeparam name="TModel">The desired JSON model</typeparam>
     /// <returns>Response content deserialized into the desired JSON model, or null if not successful</returns>
-    private TModel? DeserializeResponseContent<TModel>(string responseContent) where TModel : class =>
-        _serializer.Deserialize<TModel?>(new JsonTextReader(new StringReader(responseContent)));
+    private TModel? DeserializeResponseContent<TModel>(string responseContent) where TModel : class
+    {
+        try
+        {
+            return _serializer.Deserialize<TModel?>(new JsonTextReader(new StringReader(responseContent)));
+        }
+        catch (JsonSerializationException ex)
+        {
+            logger.LogError(
+                "Serialization exception while processing response of target type [{type}]: {ex}",
+                nameof(TModel),
+                ex
+            );
+        }
+
+        return null;
+    }
 }

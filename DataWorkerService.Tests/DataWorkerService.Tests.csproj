@@ -27,12 +27,4 @@
       <ProjectReference Include="..\TestingUtils\TestingUtils.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Services\Implementations\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Services\Implementations\PlayersServiceTests.cs" />
-    </ItemGroup>
-
 </Project>

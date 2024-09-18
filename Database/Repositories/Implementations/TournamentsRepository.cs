@@ -32,7 +32,14 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
     public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
         await _context.Tournaments
-            .AsSplitQuery()
+            .AsSingleQuery()
+            .Include(t => t.PlayerTournamentStats)
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.WinRecord)
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.PlayerMatchStats)
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.PlayerRatingAdjustments)
             .Include(t => t.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Beatmap)
@@ -40,7 +47,10 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Scores)
             .ThenInclude(s => s.Player)
-            .Where(t => t.ProcessingStatus != TournamentProcessingStatus.Done)
+            .Include(t => t.Matches)
+            .ThenInclude(m => m.Games)
+            .ThenInclude(g => g.WinRecord)
+            .Where(t => t.ProcessingStatus != TournamentProcessingStatus.Done && t.ProcessingStatus != TournamentProcessingStatus.NeedsApproval)
             .OrderBy(t => t.LastProcessingDate)
             .Take(limit)
             .ToListAsync();

@@ -10,8 +10,7 @@ namespace DataWorkerService.AutomationChecks.Matches;
 public class MatchNameCheck(ILogger<MatchNameCheck> logger) : AutomationCheckBase<Match>(logger)
 {
     protected override bool OnChecking(Match entity) =>
-        entity.Name.StartsWith(entity.Tournament.Abbreviation, StringComparison.OrdinalIgnoreCase)
-        && Constants.MatchNamePatterns.Any(pattern => Regex.IsMatch(entity.Name, pattern, RegexOptions.IgnoreCase));
+        entity.Name.StartsWith(entity.Tournament.Abbreviation, StringComparison.OrdinalIgnoreCase);
 
     protected override void OnFail(Match entity)
     {

@@ -43,6 +43,6 @@ public class GameAutomationChecksProcessor(
             ? VerificationStatus.PreVerified
             : VerificationStatus.PreRejected;
 
-        entity.ProcessingStatus += 1;
+        entity.ProcessingStatus = GameProcessingStatus.NeedsVerification;
     }
 }
