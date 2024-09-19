@@ -11,27 +11,29 @@
   "Osu": {
     "ClientId": "",
     "ClientSecret": "",
-    "RedirectUrl": ""
+    "RedirectUrl": "",
+    "OsuRateLimit": 60,
+    "OsuTrackRateLimit": 60
   },
   "Players": {
     "Osu": {
       "Enabled": true,
       "MarkAllOutdated": false,
       "BatchSize": 30,
-      "BatchIntervalSeconds": 120,
+      "BatchIntervalSeconds": 30,
       "PlayerOutdatedAfterDays": 7
     },
     "OsuTrack": {
       "Enabled": true,
       "MarkAllOutdated": false,
-      "BatchSize": 10,
-      "BatchIntervalSeconds": 300,
+      "BatchSize": 30,
+      "BatchIntervalSeconds": 30,
       "PlayerOutdatedAfterDays": 14
     }
   },
   "Tournaments": {
     "Enabled": true,
-    "BatchSize": 1,
-    "BatchIntervalSeconds": 60
+    "BatchSize": 3,
+    "BatchIntervalSeconds": 15
   }
 }
