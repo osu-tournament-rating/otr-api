@@ -5,7 +5,7 @@ using Database.Enums;
 namespace Database.Entities;
 
 /// <summary>
-/// Represents the highest ranks of a player for a given ruleset
+/// Represents the highest o!TR ranks of a <see cref="Entities.Player"/> in a <see cref="Enums.Ruleset"/>
 /// </summary>
 [Table("player_highest_ranks")]
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
@@ -13,43 +13,43 @@ namespace Database.Entities;
 public class PlayerHighestRanks : UpdateableEntityBase
 {
     /// <summary>
-    /// The ruleset in which this highest rank record occurred in
+    /// The <see cref="Enums.Ruleset"/> in which the ranks were recorded in
     /// </summary>
     [Column("ruleset")]
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// The highest global rank for this user
+    /// Highest global rank achieved
     /// </summary>
     [Column("global_rank")]
     public int GlobalRank { get; set; }
 
     /// <summary>
-    /// Date this player's peak global rank was achieved
+    /// Timestamp of when the <see cref="GlobalRank"/> was achieved
     /// </summary>
     [Column("global_rank_date")]
     public DateTime GlobalRankDate { get; set; }
 
     /// <summary>
-    /// The highest country rank for this user
+    /// Highest country rank achieved
     /// </summary>
     [Column("country_rank")]
     public int CountryRank { get; set; }
 
     /// <summary>
-    /// Date this player's peak country rank was achieved
+    /// Timestamp of when the <see cref="CountryRank"/> was achieved
     /// </summary>
     [Column("country_rank_date")]
     public DateTime CountryRankDate { get; set; }
 
     /// <summary>
-    /// The id of the player this record belongs to
+    /// The id of the <see cref="Player"/> this record belongs to
     /// </summary>
     [Column("player_id")]
     public int PlayerId { get; set; }
 
     /// <summary>
-    /// The <see cref="Player"/>
+    /// The <see cref="Player"/> this record belongs to
     /// </summary>
     public Player Player { get; set; } = null!;
 }
