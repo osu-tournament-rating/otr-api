@@ -102,9 +102,9 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     /// <summary>
     /// Amend tournament data
     /// </summary>
-    /// <param name="id">Tournament id</param>
+    /// <param name="id">The tournament id</param>
     /// <param name="patch">JsonPatch data</param>
-    /// <response code="404">If a tournament matching the given id does not exist</response>
+    /// <response code="404">If the provided id does not belong to a tournament</response>
     /// <response code="400">If JsonPatch data is malformed</response>
     /// <response code="200">Returns the patched tournament</response>
     [HttpPatch("{id:int}")]
