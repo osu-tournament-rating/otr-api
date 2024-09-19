@@ -5,9 +5,7 @@ using API.Utilities.Extensions;
 using AutoMapper;
 using Database.Entities;
 using Database.Enums;
-using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
-using NuGet.Protocol;
 
 namespace API.Services.Implementations;
 
@@ -89,4 +87,23 @@ public class MatchesService(
 
     public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name) =>
         mapper.Map<IEnumerable<MatchSearchResultDTO>>(await matchesRepository.SearchAsync(name));
+
+    public async Task<MatchDTO?> UpdateAsync(int id, MatchDTO match)
+    {
+        Match? existing = await matchesRepository.GetAsync(id);
+        if (existing is null)
+        {
+            return null;
+        }
+
+        existing.Name = match.Name;
+        existing.StartTime = match.StartTime ?? existing.StartTime;
+        existing.EndTime = match.EndTime ?? existing.EndTime;
+        existing.VerificationStatus = match.VerificationStatus;
+        existing.RejectionReason = match.RejectionReason;
+        existing.ProcessingStatus = match.ProcessingStatus;
+
+        await matchesRepository.UpdateAsync(existing);
+        return mapper.Map<MatchDTO>(existing);
+    }
 }

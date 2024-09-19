@@ -8,7 +8,10 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class TournamentsService(ITournamentsRepository tournamentsRepository, IMatchesRepository matchesRepository, IMapper mapper) : ITournamentsService
+public class TournamentsService(
+    ITournamentsRepository tournamentsRepository,
+    IMatchesRepository matchesRepository,
+    IMapper mapper) : ITournamentsService
 {
     public async Task<TournamentCreatedResultDTO> CreateAsync(
         TournamentSubmissionDTO submission,
@@ -30,15 +33,12 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
             RankRangeLowerBound = submission.RankRangeLowerBound,
             Ruleset = submission.Ruleset,
             LobbySize = submission.LobbySize,
-            ProcessingStatus = preApprove ? TournamentProcessingStatus.NeedsMatchData : TournamentProcessingStatus.NeedsApproval,
+            ProcessingStatus =
+                preApprove ? TournamentProcessingStatus.NeedsMatchData : TournamentProcessingStatus.NeedsApproval,
             SubmittedByUserId = submitterUserId,
             Matches = enumerableMatchIds
                 .Except(existingMatchIds)
-                .Select(matchId => new Match
-                {
-                    OsuId = matchId,
-                    SubmittedByUserId = submitterUserId
-                }).ToList()
+                .Select(matchId => new Match { OsuId = matchId, SubmittedByUserId = submitterUserId }).ToList()
         });
         return mapper.Map<TournamentCreatedResultDTO>(tournament);
     }
@@ -55,14 +55,18 @@ public class TournamentsService(ITournamentsRepository tournamentsRepository, IM
     }
 
     public async Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true) =>
-        mapper.Map<TournamentDTO>(await tournamentsRepository.GetAsync(id, eagerLoad));
+        mapper.Map<TournamentDTO?>(await tournamentsRepository.GetAsync(id, eagerLoad));
+
+    public async Task<TournamentDTO?> GetVerifiedAsync(int id) =>
+        mapper.Map<TournamentDTO?>(await tournamentsRepository.GetVerifiedAsync(id));
 
     public async Task<int> CountPlayedAsync(
         int playerId,
         Ruleset ruleset,
         DateTime? dateMin = null,
         DateTime? dateMax = null
-    ) => await tournamentsRepository.CountPlayedAsync(playerId, ruleset, dateMin ?? DateTime.MinValue, dateMax ?? DateTime.MaxValue);
+    ) => await tournamentsRepository.CountPlayedAsync(playerId, ruleset, dateMin ?? DateTime.MinValue,
+        dateMax ?? DateTime.MaxValue);
 
     public async Task<TournamentDTO?> UpdateAsync(int id, TournamentDTO wrapper)
     {

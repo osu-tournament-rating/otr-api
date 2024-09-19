@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace API.DTOs;
 
@@ -38,6 +39,21 @@ public class GameDTO
     /// osu! id of the game
     /// </summary>
     public long OsuId { get; set; }
+
+    /// <summary>
+    /// The current state of verification
+    /// </summary>
+    public VerificationStatus VerificationStatus { get; set; }
+
+    /// <summary>
+    /// The current state of processing
+    /// </summary>
+    public GameProcessingStatus ProcessingStatus { get; set; }
+
+    /// <summary>
+    /// The rejection reason
+    /// </summary>
+    public GameRejectionReason RejectionReason { get; set; }
 
     /// <summary>
     /// Timestamp of the beginning of the game

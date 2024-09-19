@@ -1,13 +1,13 @@
 namespace Database.Enums;
 
 /// <summary>
-/// Explains why the player failed screening
+/// Explains why the player failed filtering
 /// </summary>
 [Flags]
-public enum ScreeningFailReason
+public enum FilteringFailReason
 {
     /// <summary>
-    /// The player passed screening, thus there is no failure reason
+    /// The player passed filtering, thus there is no failure reason
     /// </summary>
     None = 0,
     /// <summary>
@@ -23,7 +23,7 @@ public enum ScreeningFailReason
     /// </summary>
     MaxRating = 1 << 2,
     /// <summary>
-    /// The player is provisional and the screening criteria specifies
+    /// The player is provisional and the filtering criteria specifies
     /// exclusion of provisional players
     /// </summary>
     IsProvisional = 1 << 3,
