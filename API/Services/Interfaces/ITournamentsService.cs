@@ -31,10 +31,21 @@ public interface ITournamentsService
     /// <summary>
     /// Gets a tournament by id
     /// </summary>
-    /// <param name="id">Primary key</param>
+    /// <param name="id">The tournament id</param>
     /// <param name="eagerLoad">Whether to include child resources of the tournament</param>
     /// <returns>The tournament, or null if not found</returns>
     Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true);
+
+    /// <summary>
+    /// Gets a verified tournament that matches the provided id. All child navigations are
+    /// verified.
+    /// </summary>
+    /// <param name="id">The id of the verified tournament</param>
+    /// <returns>
+    /// Null if the tournament is not found.
+    /// Returns a tournament with verified child navigations if found.
+    /// </returns>
+    Task<TournamentDTO?> GetVerifiedAsync(int id);
 
     /// <summary>
     /// Gets the number of tournaments played by the given player

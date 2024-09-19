@@ -75,15 +75,22 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     /// Get a tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
+    /// <param name="unfiltered">If true, includes all match data, regardless of verification status.
+    /// Also includes all child navigations if true.
+    /// Default false (strictly verified data with limited navigation properties)
+    /// </param>
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="200">Returns the tournament</response>
     [HttpGet("{id:int}")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAsync(int id)
+    public async Task<IActionResult> GetAsync(int id, [FromQuery] bool unfiltered = false)
     {
-        TournamentDTO? result = await tournamentsService.GetAsync(id);
+        TournamentDTO? result = unfiltered
+            ? await tournamentsService.GetAsync(id)
+            : await tournamentsService.GetVerifiedAsync(id);
+
         if (result is null)
         {
             return NotFound();
