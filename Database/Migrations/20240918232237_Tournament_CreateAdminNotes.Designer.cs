@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    [Migration("20240917023200_Tournament_AdminNotes_Fix")]
-    partial class Tournament_AdminNotes_Fix
+    [Migration("20240918232237_Tournament_CreateAdminNotes")]
+    partial class Tournament_CreateAdminNotes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

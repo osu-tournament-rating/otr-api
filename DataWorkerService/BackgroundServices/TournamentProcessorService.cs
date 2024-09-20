@@ -59,6 +59,15 @@ public class TournamentProcessorService(
                 tournament.LastProcessingDate
             );
 
+            if (tournament.Matches.Count == 0)
+            {
+                tournament.LastProcessingDate = DateTime.Now;
+                await context.SaveChangesAsync(stoppingToken);
+
+                logger.LogWarning("Skipping processing for tournament with no matches [Id: {Id}]", tournament.Id);
+                continue;
+            }
+
             foreach (IProcessor<Tournament> processor in tournamentProcessorResolver.GetAll())
             {
                 await processor.ProcessAsync(tournament, stoppingToken);

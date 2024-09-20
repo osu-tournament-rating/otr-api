@@ -164,7 +164,7 @@ builder.Services.AddRateLimiter(options =>
         {
             await context.HttpContext.Response.WriteAsync(
                 $"Too many requests. Please try again after {retryAfter.TotalSeconds} second(s). "
-                    + readMore,
+                + readMore,
                 token
             );
         }
@@ -218,6 +218,7 @@ builder.Services.AddRateLimiter(options =>
                 _ => anonymousRateLimiterOptions
             );
         }
+
         return RateLimitPartition.GetFixedWindowLimiter(
             $"{prefix}_{jwtToken.Issuer}",
             _ => new FixedWindowRateLimiterOptions()
@@ -259,7 +260,8 @@ builder.Services.AddSwaggerGen(options =>
         {
             Version = "v1",
             Title = "osu! Tournament Rating API",
-            Description = "The official resource for reading and writing data within the osu! Tournament Rating platform.",
+            Description =
+                "The official resource for reading and writing data within the osu! Tournament Rating platform."
         }
     );
     options.IncludeXmlComments($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
@@ -446,6 +448,8 @@ builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
 
 builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
+builder.Services.AddScoped<IGamesService, GamesService>();
+builder.Services.AddScoped<IGameScoresService, GameScoresService>();
 builder.Services.AddScoped<IGameWinRecordsService, GameWinRecordsService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
@@ -453,7 +457,7 @@ builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
-builder.Services.AddScoped<IScreeningService, ScreeningService>();
+builder.Services.AddScoped<IFilteringService, FilteringService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
@@ -536,6 +540,7 @@ else
 {
     app.MapControllers();
 }
+
 #endregion
 
 app.Logger.LogInformation("Running!");
