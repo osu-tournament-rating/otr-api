@@ -104,4 +104,6 @@ public class Player : UpdateableEntityBase
     /// representing the peak global & country ranks for each ruleset
     /// </summary>
     public ICollection<PlayerHighestRanks> HighestRanks { get; set; } = new List<PlayerHighestRanks>();
+
+    public ICollection<PlayerAdminNote> AdminNotes { get; set; } = new List<PlayerAdminNote>();
 }
