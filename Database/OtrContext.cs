@@ -42,6 +42,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     public virtual DbSet<OAuthClient> OAuthClients { get; set; }
     public virtual DbSet<Player> Players { get; set; }
     public virtual DbSet<PlayerHighestRanks> PlayerHighestRanks { get; set; }
+    public virtual DbSet<PlayerAdminNote> PlayerAdminNotes { get; set; }
     public virtual DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
     public virtual DbSet<PlayerTournamentStats> PlayerTournamentStats { get; set; }
     public virtual DbSet<PlayerRating> PlayerRatings { get; set; }
