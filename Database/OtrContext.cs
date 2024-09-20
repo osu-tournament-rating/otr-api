@@ -421,6 +421,13 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(pr => pr.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: Admin Notes
+            entity
+                .HasMany(m => m.AdminNotes)
+                .WithOne(an => an.Player)
+                .HasForeignKey(r => r.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Relation: RatingAdjustments
             entity
                 .HasMany(e => e.RatingAdjustments)
@@ -532,6 +539,14 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.HasIndex(pr => pr.GlobalRank).IsDescending(true);
             entity.HasIndex(pr => pr.CountryRank).IsDescending(true);
             entity.HasIndex(pr => new { pr.PlayerId, pr.Ruleset }).IsUnique();
+        });
+
+        modelBuilder.Entity<PlayerAdminNote>(entity =>
+        {
+            entity.HasOne(r => r.Player)
+                .WithMany(p => p.AdminNotes)
+                .HasForeignKey(r => r.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<PlayerRating>(entity =>
