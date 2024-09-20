@@ -41,6 +41,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
     public virtual DbSet<OAuthClient> OAuthClients { get; set; }
     public virtual DbSet<Player> Players { get; set; }
+    public virtual DbSet<PlayerHighestRanks> PlayerHighestRanks { get; set; }
     public virtual DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
     public virtual DbSet<PlayerTournamentStats> PlayerTournamentStats { get; set; }
     public virtual DbSet<PlayerRating> PlayerRatings { get; set; }
@@ -412,6 +413,13 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(pr => pr.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: PlayerHighestRanks
+            entity
+                .HasMany(p => p.HighestRanks)
+                .WithOne(pr => pr.Player)
+                .HasForeignKey(pr => pr.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Relation: RatingAdjustments
             entity
                 .HasMany(e => e.RatingAdjustments)
@@ -505,6 +513,24 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(pts => new { pts.PlayerId, pts.TournamentId }).IsUnique();
+        });
+
+        modelBuilder.Entity<PlayerHighestRanks>(entity =>
+        {
+            entity.Property(pr => pr.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(pr => pr.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Player
+            entity
+                .HasOne(pr => pr.Player)
+                .WithMany(p => p.HighestRanks)
+                .HasForeignKey(pr => pr.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(pr => pr.GlobalRank).IsDescending(true);
+            entity.HasIndex(pr => pr.CountryRank).IsDescending(true);
+            entity.HasIndex(pr => new { pr.PlayerId, pr.Ruleset }).IsUnique();
         });
 
         modelBuilder.Entity<PlayerRating>(entity =>

@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240918231526_PlayerHighestRanks")]
+    partial class PlayerHighestRanks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -579,43 +582,6 @@ namespace Database.Migrations
                     b.HasIndex("VerifiedByUserId");
 
                     b.ToTable("matches");
-                });
-
-            modelBuilder.Entity("Database.Entities.MatchAdminNote", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created");
-
-                    b.Property<string>("Note")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
-
-                    b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
-
-                    b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReferenceId");
-
-                    b.ToTable("match_admin_notes");
                 });
 
             modelBuilder.Entity("Database.Entities.MatchAudit", b =>
@@ -1327,45 +1293,6 @@ namespace Database.Migrations
                     b.ToTable("tournaments");
                 });
 
-            modelBuilder.Entity("Database.Entities.TournamentAdminNote", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("Note")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
-
-                    b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
-
-                    b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReferenceId");
-
-                    b.ToTable("tournament_admin_notes");
-                });
-
             modelBuilder.Entity("Database.Entities.TournamentAudit", b =>
                 {
                     b.Property<int>("Id")
@@ -1583,17 +1510,6 @@ namespace Database.Migrations
                     b.Navigation("VerifiedByUser");
                 });
 
-            modelBuilder.Entity("Database.Entities.MatchAdminNote", b =>
-                {
-                    b.HasOne("Database.Entities.Match", "Match")
-                        .WithMany("AdminNotes")
-                        .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Match");
-                });
-
             modelBuilder.Entity("Database.Entities.MatchAudit", b =>
                 {
                     b.HasOne("Database.Entities.Match", null)
@@ -1764,17 +1680,6 @@ namespace Database.Migrations
                     b.Navigation("VerifiedByUser");
                 });
 
-            modelBuilder.Entity("Database.Entities.TournamentAdminNote", b =>
-                {
-                    b.HasOne("Database.Entities.Tournament", "Tournament")
-                        .WithMany("AdminNotes")
-                        .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Tournament");
-                });
-
             modelBuilder.Entity("Database.Entities.TournamentAudit", b =>
                 {
                     b.HasOne("Database.Entities.Tournament", null)
@@ -1849,8 +1754,6 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.Match", b =>
                 {
-                    b.Navigation("AdminNotes");
-
                     b.Navigation("Audits");
 
                     b.Navigation("Games");
@@ -1888,8 +1791,6 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.Tournament", b =>
                 {
-                    b.Navigation("AdminNotes");
-
                     b.Navigation("Audits");
 
                     b.Navigation("Matches");
