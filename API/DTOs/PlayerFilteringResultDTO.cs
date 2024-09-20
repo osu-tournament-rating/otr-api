@@ -3,9 +3,9 @@ using Database.Enums;
 namespace API.DTOs;
 
 /// <summary>
-/// Represents one player's screening result
+/// Represents one player's filtering result
 /// </summary>
-public class PlayerScreeningResultDTO
+public class PlayerFilteringResultDTO
 {
     /// <summary>
     /// The id of the player, if found
@@ -20,19 +20,19 @@ public class PlayerScreeningResultDTO
     /// </summary>
     public long OsuId { get; set; }
     /// <summary>
-    /// The screening result
+    /// The filtering result
     /// </summary>
-    public ScreeningResult ScreeningResult { get; set; }
+    public FilteringResult FilteringResult { get; set; }
     /// <summary>
-    /// If the user failed screening, the fail reason
+    /// If the user failed filtering, the fail reason
     /// </summary>
-    public ScreeningFailReason? ScreeningFailReason { get; set; }
+    public FilteringFailReason? FilteringFailReason { get; set; }
     /// <summary>
-    /// The <see cref="ScreeningResult"/> in string form
+    /// The <see cref="FilteringResult"/> in string form
     /// </summary>
-    public string? ScreeningResultMessage => ScreeningResult.ToString();
+    public string? FilteringResultMessage => FilteringResult.ToString();
     /// <summary>
-    /// The <see cref="ScreeningFailReason"/> in string form
+    /// The <see cref="FilteringFailReason"/> in string form
     /// </summary>
-    public string? ScreeningFailReasonMessage => ScreeningFailReason.ToString();
+    public string? FilteringFailReasonMessage => FilteringFailReason.ToString();
 }

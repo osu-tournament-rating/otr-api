@@ -6,11 +6,21 @@ namespace Database.Repositories.Interfaces;
 public interface ITournamentsRepository : IRepository<Tournament>
 {
     /// <summary>
-    /// Get a <see cref="Tournament"/> entity
+    /// Gets a <see cref="Tournament"/> by id
     /// </summary>
-    /// <param name="id">Primary key</param>
+    /// <param name="id">The tournament id</param>
     /// <param name="eagerLoad">Whether to eagerly load navigational properties</param>
     Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
+
+    /// <summary>
+    /// Gets a <see cref="Tournament" /> by id with verified child navigations
+    /// </summary>
+    /// <param name="id">The id of the tournament</param>
+    /// <returns>
+    /// Null if the tournament is not found.
+    /// Returns a tournament with verified child navigations if found.
+    /// </returns>
+    Task<Tournament?> GetVerifiedAsync(int id);
 
     /// <summary>
     /// Gets tournaments with a <see cref="Enums.Verification.TournamentProcessingStatus"/>
