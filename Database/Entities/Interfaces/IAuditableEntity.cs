@@ -17,7 +17,7 @@ public interface IAuditableEntity<TAudit> where TAudit : IAuditEntity
     public int? ActionBlamedOnUserId { get; set; }
 
     /// <summary>
-    /// A collection of <typeparamref name="TAudit"/> that serve as a changelog for the entity
+    /// A collection of <typeparamref name="TAudit"/>s that serve as a changelog for the entity
     /// </summary>
     public ICollection<TAudit> Audits { get; set; }
 }
