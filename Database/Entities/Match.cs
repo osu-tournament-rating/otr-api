@@ -61,8 +61,7 @@ public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>, IProces
     [Column("processing_status")]
     public MatchProcessingStatus ProcessingStatus { get; set; }
 
-    [Column("last_processing_date")]
-    public DateTime LastProcessingDate { get; set; }
+    [Column("last_processing_date")] public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Tournament"/> the match was played in
@@ -119,6 +118,7 @@ public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>, IProces
 
     public ICollection<MatchAudit> Audits { get; set; } = new List<MatchAudit>();
 
-    [NotMapped]
-    public int? ActionBlamedOnUserId { get; set; }
+    public ICollection<MatchAdminNote> AdminNotes { get; set; } = new List<MatchAdminNote>();
+
+    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
 }
