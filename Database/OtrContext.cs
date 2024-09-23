@@ -182,6 +182,13 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(gs => gs.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: Admin Notes
+            entity
+                .HasMany(gs => gs.AdminNotes)
+                .WithOne(an => an.Score)
+                .HasForeignKey(an => an.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Relation: Audits
             entity
                 .HasMany(gs => gs.Audits)
@@ -191,6 +198,14 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.HasIndex(gs => gs.PlayerId);
             entity.HasIndex(gs => new { gs.PlayerId, gs.GameId }).IsUnique();
+        });
+
+        modelBuilder.Entity<GameScoreAdminNote>(entity =>
+        {
+            entity.HasOne(gsan => gsan.Score)
+                .WithMany(gs => gs.AdminNotes)
+                .HasForeignKey(gsan => gsan.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<GameScoreAudit>(entity =>
