@@ -14,7 +14,7 @@ namespace Database.Entities;
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Match : UpdateableEntityBase, IAuditableEntity<MatchAudit>, IProcessableEntity
+public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>, IAuditableEntity<MatchAudit>, IProcessableEntity
 {
     /// <summary>
     /// osu! id
