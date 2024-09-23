@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240923013609_GameScoreAdminNote")]
+    partial class GameScoreAdminNote
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -796,45 +799,6 @@ namespace Database.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("oauth_clients");
-                });
-
-            modelBuilder.Entity("Database.Entities.OAuthClientAdminNote", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("Note")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
-
-                    b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
-
-                    b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReferenceId");
-
-                    b.ToTable("oauth_client_admin_notes");
                 });
 
             modelBuilder.Entity("Database.Entities.Player", b =>
@@ -1739,17 +1703,6 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Database.Entities.OAuthClientAdminNote", b =>
-                {
-                    b.HasOne("Database.Entities.OAuthClient", "OAuthClient")
-                        .WithMany("AdminNotes")
-                        .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("OAuthClient");
-                });
-
             modelBuilder.Entity("Database.Entities.PlayerHighestRanks", b =>
                 {
                     b.HasOne("Database.Entities.Player", "Player")
@@ -1962,11 +1915,6 @@ namespace Database.Migrations
                     b.Navigation("PlayerRatingAdjustments");
 
                     b.Navigation("WinRecord");
-                });
-
-            modelBuilder.Entity("Database.Entities.OAuthClient", b =>
-                {
-                    b.Navigation("AdminNotes");
                 });
 
             modelBuilder.Entity("Database.Entities.Player", b =>
