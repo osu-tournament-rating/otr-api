@@ -201,6 +201,13 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(gs => gs.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: Admin Notes
+            entity
+                .HasMany(gs => gs.AdminNotes)
+                .WithOne(an => an.Score)
+                .HasForeignKey(an => an.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Relation: Audits
             entity
                 .HasMany(gs => gs.Audits)
@@ -210,6 +217,18 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.HasIndex(gs => gs.PlayerId);
             entity.HasIndex(gs => new { gs.PlayerId, gs.GameId }).IsUnique();
+        });
+
+        modelBuilder.Entity<GameScoreAdminNote>(entity =>
+        {
+            entity.Property(gsan => gsan.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(gsan => gsan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            entity.HasOne(gsan => gsan.Score)
+                .WithMany(gs => gs.AdminNotes)
+                .HasForeignKey(gsan => gsan.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<GameScoreAudit>(entity =>
@@ -391,11 +410,32 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                     rlo.Property(p => p.Window).HasDefaultValue(null);
                 });
 
+            // Relation: Admin Notes
+            entity
+                .HasMany(c => c.AdminNotes)
+                .WithOne(an => an.OAuthClient)
+                .HasForeignKey(an => an.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Relation: User
             entity
                 .HasOne(c => c.User)
                 .WithMany(u => u.Clients)
                 .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<OAuthClientAdminNote>(entity =>
+        {
+            entity.Property(oacan => oacan.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(oacan => oacan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: OAuthClient
+            entity
+                .HasOne(oacan => oacan.OAuthClient)
+                .WithMany(oac => oac.AdminNotes)
+                .HasForeignKey(oacan => oacan.ReferenceId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
