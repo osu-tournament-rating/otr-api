@@ -149,6 +149,10 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
         modelBuilder.Entity<GameAdminNote>(entity =>
         {
+            entity.Property(gan => gan.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(gan => gan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
             entity.HasOne(g => g.Game)
                 .WithMany(g => g.AdminNotes)
                 .HasForeignKey(g => g.ReferenceId)

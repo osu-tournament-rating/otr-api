@@ -17,8 +17,8 @@ namespace Database.Migrations
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     note = table.Column<string>(type: "text", nullable: false),
                     ref_id = table.Column<int>(type: "integer", nullable: false),
