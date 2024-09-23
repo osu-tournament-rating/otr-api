@@ -70,5 +70,5 @@ public class MatchDTO
     /// The admin notes attached to this match. Null if the user is not an admin.
     /// Empty collection if the user is an admin but there are no notes.
     /// </summary>
-    public ICollection<MatchAdminNoteDTO>? AdminNotes { get; set; }
+    public ICollection<AdminNoteDTO>? AdminNotes { get; set; }
 }

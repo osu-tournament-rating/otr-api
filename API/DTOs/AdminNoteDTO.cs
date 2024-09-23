@@ -1,9 +1,9 @@
 namespace API.DTOs;
 
 /// <summary>
-/// Represents an admin note for a match
+/// Basic information for presenting an admin note
 /// </summary>
-public class MatchAdminNoteDTO
+public class AdminNoteDTO
 {
     /// <summary>
     /// The content of the note

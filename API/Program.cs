@@ -427,6 +427,7 @@ builder.Services.AddScoped<IApiMatchWinRecordRepository, ApiMatchWinRecordReposi
 builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRepository>();
 builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
 
+builder.Services.AddScoped<IMatchAdminNoteRepository, MatchAdminNoteRepository>();
 builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
