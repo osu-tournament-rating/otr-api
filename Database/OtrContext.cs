@@ -372,11 +372,32 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                     rlo.Property(p => p.Window).HasDefaultValue(null);
                 });
 
+            // Relation: Admin Notes
+            entity
+                .HasMany(c => c.AdminNotes)
+                .WithOne(an => an.OAuthClient)
+                .HasForeignKey(an => an.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Relation: User
             entity
                 .HasOne(c => c.User)
                 .WithMany(u => u.Clients)
                 .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<OAuthClientAdminNote>(entity =>
+        {
+            entity.Property(oacan => oacan.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(oacan => oacan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: OAuthClient
+            entity
+                .HasOne(oacan => oacan.OAuthClient)
+                .WithMany(oac => oac.AdminNotes)
+                .HasForeignKey(oacan => oacan.ReferenceId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
