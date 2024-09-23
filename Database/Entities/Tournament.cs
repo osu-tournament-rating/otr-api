@@ -13,8 +13,8 @@ namespace Database.Entities;
 [Table("tournaments")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Tournament : UpdateableEntityBase, IProcessableEntity, IAuditableEntity<TournamentAudit>,
-    IAdminNotableEntity<TournamentAdminNote>
+public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>,
+    IAuditableEntity<TournamentAudit>
 {
     /// <summary>
     /// Name
