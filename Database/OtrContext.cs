@@ -543,7 +543,11 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
         modelBuilder.Entity<PlayerAdminNote>(entity =>
         {
-            entity.HasOne(r => r.Player)
+            entity.Property(pan => pan.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(pan => pan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            entity.HasOne(pan => pan.Player)
                 .WithMany(p => p.AdminNotes)
                 .HasForeignKey(r => r.ReferenceId)
                 .OnDelete(DeleteBehavior.Cascade);
