@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
 
@@ -13,7 +14,7 @@ namespace Database.Entities;
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Player : UpdateableEntityBase
+public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
 {
     private string _username = string.Empty;
     private string _country = string.Empty;
