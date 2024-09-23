@@ -42,6 +42,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     public virtual DbSet<OAuthClient> OAuthClients { get; set; }
     public virtual DbSet<Player> Players { get; set; }
     public virtual DbSet<PlayerHighestRanks> PlayerHighestRanks { get; set; }
+    public virtual DbSet<PlayerAdminNote> PlayerAdminNotes { get; set; }
     public virtual DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
     public virtual DbSet<PlayerTournamentStats> PlayerTournamentStats { get; set; }
     public virtual DbSet<PlayerRating> PlayerRatings { get; set; }
@@ -479,6 +480,13 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(pr => pr.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: Admin Notes
+            entity
+                .HasMany(m => m.AdminNotes)
+                .WithOne(an => an.Player)
+                .HasForeignKey(r => r.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Relation: RatingAdjustments
             entity
                 .HasMany(e => e.RatingAdjustments)
@@ -590,6 +598,18 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.HasIndex(pr => pr.GlobalRank).IsDescending(true);
             entity.HasIndex(pr => pr.CountryRank).IsDescending(true);
             entity.HasIndex(pr => new { pr.PlayerId, pr.Ruleset }).IsUnique();
+        });
+
+        modelBuilder.Entity<PlayerAdminNote>(entity =>
+        {
+            entity.Property(pan => pan.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(pan => pan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            entity.HasOne(pan => pan.Player)
+                .WithMany(p => p.AdminNotes)
+                .HasForeignKey(r => r.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<PlayerRating>(entity =>
