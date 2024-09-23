@@ -12,7 +12,7 @@ namespace Database.Entities;
 [Table("games")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Game : UpdateableEntityBase, IProcessableEntity, IAuditableEntity<GameAudit>
+public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>, IAuditableEntity<GameAudit>
 {
     /// <summary>
     /// osu! id
