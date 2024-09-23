@@ -824,46 +824,6 @@ namespace Database.Migrations
                     b.ToTable("players");
                 });
 
-            modelBuilder.Entity("Database.Entities.PlayerAdminNote", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created");
-
-                    b.Property<string>("Note")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
-
-                    b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerId");
-
-                    b.ToTable("player_admin_notes");
-                });
-
             modelBuilder.Entity("Database.Entities.PlayerHighestRanks", b =>
                 {
                     b.Property<int>("Id")
@@ -1690,17 +1650,6 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Database.Entities.PlayerAdminNote", b =>
-                {
-                    b.HasOne("Database.Entities.Player", "Player")
-                        .WithMany("AdminNotes")
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Player");
-                });
-
             modelBuilder.Entity("Database.Entities.PlayerHighestRanks", b =>
                 {
                     b.HasOne("Database.Entities.Player", "Player")
@@ -1915,8 +1864,6 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.Player", b =>
                 {
-                    b.Navigation("AdminNotes");
-
                     b.Navigation("HighestRanks");
 
                     b.Navigation("MatchStats");
