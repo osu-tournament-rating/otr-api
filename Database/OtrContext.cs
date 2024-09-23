@@ -135,9 +135,28 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(ga => ga.ReferenceId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // Relation: Admin Notes
+            entity
+                .HasMany(g => g.AdminNotes)
+                .WithOne(an => an.Game)
+                .HasForeignKey(an => an.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             entity.HasIndex(g => g.MatchId);
             entity.HasIndex(g => g.StartTime);
             entity.HasIndex(g => g.OsuId).IsUnique();
+        });
+
+        modelBuilder.Entity<GameAdminNote>(entity =>
+        {
+            entity.Property(gan => gan.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(gan => gan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            entity.HasOne(g => g.Game)
+                .WithMany(g => g.AdminNotes)
+                .HasForeignKey(g => g.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<GameAudit>(entity =>

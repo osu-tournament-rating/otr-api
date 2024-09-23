@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240923012912_GameAdminNotes")]
+    partial class GameAdminNotes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -429,45 +432,6 @@ namespace Database.Migrations
                     b.ToTable("game_scores");
                 });
 
-            modelBuilder.Entity("Database.Entities.GameScoreAdminNote", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("Note")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
-
-                    b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
-
-                    b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReferenceId");
-
-                    b.ToTable("game_score_admin_notes");
-                });
-
             modelBuilder.Entity("Database.Entities.GameScoreAudit", b =>
                 {
                     b.Property<int>("Id")
@@ -835,45 +799,6 @@ namespace Database.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("oauth_clients");
-                });
-
-            modelBuilder.Entity("Database.Entities.OAuthClientAdminNote", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("Note")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
-
-                    b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
-
-                    b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReferenceId");
-
-                    b.ToTable("oauth_client_admin_notes");
                 });
 
             modelBuilder.Entity("Database.Entities.Player", b =>
@@ -1667,17 +1592,6 @@ namespace Database.Migrations
                     b.Navigation("Player");
                 });
 
-            modelBuilder.Entity("Database.Entities.GameScoreAdminNote", b =>
-                {
-                    b.HasOne("Database.Entities.GameScore", "Score")
-                        .WithMany("AdminNotes")
-                        .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Score");
-                });
-
             modelBuilder.Entity("Database.Entities.GameScoreAudit", b =>
                 {
                     b.HasOne("Database.Entities.GameScore", null)
@@ -1787,17 +1701,6 @@ namespace Database.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Database.Entities.OAuthClientAdminNote", b =>
-                {
-                    b.HasOne("Database.Entities.OAuthClient", "OAuthClient")
-                        .WithMany("AdminNotes")
-                        .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("OAuthClient");
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerHighestRanks", b =>
@@ -1996,8 +1899,6 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.GameScore", b =>
                 {
-                    b.Navigation("AdminNotes");
-
                     b.Navigation("Audits");
                 });
 
@@ -2014,11 +1915,6 @@ namespace Database.Migrations
                     b.Navigation("PlayerRatingAdjustments");
 
                     b.Navigation("WinRecord");
-                });
-
-            modelBuilder.Entity("Database.Entities.OAuthClient", b =>
-                {
-                    b.Navigation("AdminNotes");
                 });
 
             modelBuilder.Entity("Database.Entities.Player", b =>
