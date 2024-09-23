@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Database.Entities.Interfaces;
 
 namespace Database.Entities;
 
@@ -9,7 +10,7 @@ namespace Database.Entities;
 /// </summary>
 [Table("oauth_clients")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-public class OAuthClient : UpdateableEntityBase
+public class OAuthClient : UpdateableEntityBase, IAdminNotableEntity<OAuthClientAdminNote>
 {
     /// <summary>
     /// Authorization secret
@@ -43,4 +44,6 @@ public class OAuthClient : UpdateableEntityBase
     /// The <see cref="Entities.User"/> that owns the <see cref="OAuthClient"/>
     /// </summary>
     public User User { get; set; } = null!;
+
+    public ICollection<OAuthClientAdminNote> AdminNotes { get; set; } = new List<OAuthClientAdminNote>();
 }

@@ -12,7 +12,8 @@ namespace Database.Entities;
 [Table("game_scores")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class GameScore : UpdateableEntityBase, IProcessableEntity, IAuditableEntity<GameScoreAudit>, IScoreStatistics
+public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameScoreAdminNote>,
+    IAuditableEntity<GameScoreAudit>, IScoreStatistics
 {
     /// <summary>
     /// Total score
@@ -128,6 +129,8 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAuditableEnt
     /// The <see cref="Entities.Player"/> that set the <see cref="GameScore"/>
     /// </summary>
     public Player Player { get; set; } = null!;
+
+    public ICollection<GameScoreAdminNote> AdminNotes { get; set; } = new List<GameScoreAdminNote>();
 
     public ICollection<GameScoreAudit> Audits { get; set; } = new List<GameScoreAudit>();
 
