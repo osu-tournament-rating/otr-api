@@ -12,7 +12,7 @@ namespace Database.Entities;
 [Table("games")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Game : UpdateableEntityBase, IProcessableEntity, IAuditableEntity<GameAudit>
+public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>, IAuditableEntity<GameAudit>
 {
     /// <summary>
     /// osu! id
@@ -115,7 +115,10 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAuditableEntity<G
     /// </summary>
     public ICollection<GameScore> Scores { get; set; } = new List<GameScore>();
 
+    public ICollection<GameAdminNote> AdminNotes { get; set; } = new List<GameAdminNote>();
+
     public ICollection<GameAudit> Audits { get; set; } = new List<GameAudit>();
+
 
     [NotMapped]
     public int? ActionBlamedOnUserId { get; set; }

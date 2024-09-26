@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
 
@@ -13,7 +14,7 @@ namespace Database.Entities;
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Player : UpdateableEntityBase
+public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
 {
     private string _username = string.Empty;
     private string _country = string.Empty;
@@ -104,4 +105,6 @@ public class Player : UpdateableEntityBase
     /// representing the peak global & country ranks for each ruleset
     /// </summary>
     public ICollection<PlayerHighestRanks> HighestRanks { get; set; } = new List<PlayerHighestRanks>();
+
+    public ICollection<PlayerAdminNote> AdminNotes { get; set; } = new List<PlayerAdminNote>();
 }
