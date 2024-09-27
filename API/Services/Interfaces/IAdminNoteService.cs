@@ -28,7 +28,7 @@ public interface IAdminNoteService
     /// </summary>
     /// <param name="id">Id of the <typeparamref name="TAdminNote"/></param>
     /// <typeparam name="TAdminNote">The type of admin note being retrieved</typeparam>
-    /// <returns>The <typeparamref name="AdminNoteDTO"/>, or null if not found</returns>
+    /// <returns>The <see cref="AdminNoteDTO"/>, or null if not found</returns>
     Task<AdminNoteDTO?> GetAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase;
 
     /// <summary>
@@ -54,7 +54,7 @@ public interface IAdminNoteService
     /// <param name="id">Id of the <typeparamref name="TAdminNote"/></param>
     /// <typeparam name="TAdminNote">The type of admin note being deleted</typeparam>
     /// <returns>
-    /// True if successful, false if a <typeparamref name="TAdminNote"/> for the given id does not exist
+    /// True if successful, false if a <see cref="AdminNoteDTO"/> for the given id does not exist
     /// </returns>
     Task<bool> DeleteAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase;
 }
