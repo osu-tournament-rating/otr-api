@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace Database.Interceptors;
 
 /// <summary>
-/// An implementation of <see cref="ISaveChangesInterceptor"/> that creates audits of entities that support it
+/// An implementation of <see cref="ISaveChangesInterceptor"/> that audits changes to database entities
 /// </summary>
 public class AuditingInterceptor : ISaveChangesInterceptor
 {
@@ -133,7 +133,10 @@ public class AuditingInterceptor : ISaveChangesInterceptor
         }
 
         // Populate the audit's properties and attach it to the context for creation
-        newAudit.GenerateAudit(entry);
-        context.Attach(newAudit);
+        var success = newAudit.GenerateAudit(entry);
+        if (success)
+        {
+            context.Attach(newAudit);
+        }
     }
 }
