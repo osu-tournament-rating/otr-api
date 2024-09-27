@@ -15,9 +15,7 @@ public class OtrDbContextFactory : IDesignTimeDbContextFactory<OtrContext>
             IConfigurationRoot configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json", false).Build();
 
             var builder = new DbContextOptionsBuilder<OtrContext>();
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
-
-            builder.UseNpgsql(connectionString);
+            builder.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
 
             return new OtrContext(builder.Options);
         }
