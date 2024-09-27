@@ -124,7 +124,7 @@ public partial class TournamentsController
     /// </response>
     /// <response code="403">If the requester did not create the admin note</response>
     /// <response code="200">Returns the updated admin note</response>
-    [HttpPatch("{id:int}/notes/{noteId:int}")]
+    [HttpDelete("{id:int}/notes/{noteId:int}")]
     [Authorize(Roles = $"{OtrClaims.Admin}")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
