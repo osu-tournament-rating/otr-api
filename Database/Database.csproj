@@ -34,11 +34,4 @@
     <ItemGroup>
       <Folder Include="Migrations\" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Microsoft.Extensions.Configuration">
-        <HintPath>..\..\..\..\..\.nuget\packages\microsoft.aspnetcore.app.ref\8.0.8\ref\net8.0\Microsoft.Extensions.Configuration.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
 </Project>
