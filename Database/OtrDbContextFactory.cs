@@ -1,4 +1,3 @@
-using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -36,6 +35,5 @@ public class OtrDbContextFactory : IDesignTimeDbContextFactory<OtrContext>
 
             return new OtrContext(new DbContextOptionsBuilder<OtrContext>().UseNpgsql().Options);
         }
-
     }
 }
