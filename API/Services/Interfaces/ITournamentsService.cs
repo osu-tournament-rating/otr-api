@@ -19,6 +19,12 @@ public interface ITournamentsService
     );
 
     /// <summary>
+    /// Denotes a tournament exists for the given id
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    Task<bool> ExistsAsync(int id);
+
+    /// <summary>
     /// Denotes a tournament with matching name and ruleset exists
     /// </summary>
     Task<bool> ExistsAsync(string name, Ruleset ruleset);
