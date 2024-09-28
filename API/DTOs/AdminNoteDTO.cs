@@ -6,7 +6,7 @@ namespace API.DTOs;
 public class AdminNoteDTO
 {
     /// <summary>
-    /// Id
+    /// The id of the admin note
     /// </summary>
     public int Id { get; init; }
 
