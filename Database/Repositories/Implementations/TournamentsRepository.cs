@@ -4,6 +4,7 @@ using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
+using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
@@ -64,6 +65,20 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         DateTime dateMin,
         DateTime dateMax
     ) => await QueryForParticipation(playerId, ruleset, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
+
+    public async Task<ICollection<Tournament>> GetAsync(int page, int pageSize, bool verified)
+    {
+        IQueryable<Tournament> query = _context.Tournaments
+            .OrderByDescending(x => x.Created)
+            .Page(pageSize, page);
+
+        if (verified)
+        {
+            query = query.WhereVerified().WhereProcessingCompleted();
+        }
+
+        return await query.ToListAsync();
+    }
 
     /// <summary>
     /// Returns a queryable containing tournaments for <see cref="ruleset"/>

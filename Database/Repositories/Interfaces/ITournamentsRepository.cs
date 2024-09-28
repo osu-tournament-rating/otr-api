@@ -42,4 +42,13 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
     Task<int> CountPlayedAsync(int playerId, Ruleset ruleset, DateTime dateMin, DateTime dateMax);
+
+    /// <summary>
+    /// Gets all tournaments with pagination
+    /// </summary>
+    /// <param name="page">The page</param>
+    /// <param name="pageSize">The size of the collection</param>
+    /// <param name="verified">Whether the resulting tournaments must be verified and
+    /// have completed processing</param>
+    Task<ICollection<Tournament>> GetAsync(int page, int pageSize, bool verified = true);
 }

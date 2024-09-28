@@ -37,6 +37,13 @@ public interface ITournamentsService
     Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true);
 
     /// <summary>
+    /// Gets a collection of tournaments that match the provided query
+    /// </summary>
+    /// <param name="requestQuery">The tournament request query</param>
+    /// <returns>A collection of <see cref="TournamentDTO"/>s which align with the request query</returns>
+    Task<ICollection<TournamentDTO>> GetAsync(TournamentRequestQueryDTO requestQuery);
+
+    /// <summary>
     /// Gets a verified tournament that matches the provided id. All child navigations are
     /// verified.
     /// </summary>

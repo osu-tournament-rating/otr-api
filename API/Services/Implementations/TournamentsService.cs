@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -8,6 +9,7 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
+[SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly")]
 public class TournamentsService(
     ITournamentsRepository tournamentsRepository,
     IMatchesRepository matchesRepository,
@@ -57,6 +59,14 @@ public class TournamentsService(
     public async Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true) =>
         mapper.Map<TournamentDTO?>(await tournamentsRepository.GetAsync(id, eagerLoad));
 
+    public async Task<ICollection<TournamentDTO>> GetAsync(TournamentRequestQueryDTO requestQuery)
+    {
+        ValidateRequest(requestQuery);
+
+        return mapper.Map<ICollection<TournamentDTO>>(await tournamentsRepository.GetAsync(requestQuery.Page, requestQuery.PageSize,
+            requestQuery.Verified));
+    }
+
     public async Task<TournamentDTO?> GetVerifiedAsync(int id) =>
         mapper.Map<TournamentDTO?>(await tournamentsRepository.GetVerifiedAsync(id));
 
@@ -85,5 +95,18 @@ public class TournamentsService(
 
         await tournamentsRepository.UpdateAsync(existing);
         return mapper.Map<TournamentDTO>(existing);
+    }
+
+    private static void ValidateRequest(TournamentRequestQueryDTO requestQuery)
+    {
+        if (requestQuery.Page < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(requestQuery.Page), "Page must be greater than 0");
+        }
+
+        if (requestQuery.PageSize < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(requestQuery.PageSize), "PageSize must be greater than 0");
+        }
     }
 }
