@@ -7,6 +7,14 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
 {
     public async Task Invoke(HttpContext context)
     {
+#if DEBUG
+        if (context.Request.Path.StartsWithSegments("/swagger"))
+        {
+            await next(context);
+            return;
+        }
+#endif
+
         await LogRequest(context.Request);
 
         Stream originalBodyStream = context.Response.Body;
