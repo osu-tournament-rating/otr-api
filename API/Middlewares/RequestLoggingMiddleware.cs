@@ -10,6 +10,7 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
 #if DEBUG
         if (context.Request.Path.StartsWithSegments("/swagger"))
         {
+            await next(context);
             return;
         }
 #endif

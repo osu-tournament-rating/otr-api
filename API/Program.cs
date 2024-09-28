@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -33,6 +34,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Writers;
 using Npgsql;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
@@ -42,6 +44,8 @@ using OsuSharp;
 using OsuSharp.Extensions;
 using Serilog;
 using Serilog.Events;
+using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 #region WebApplicationBuilder Configuration
 
@@ -251,6 +255,7 @@ builder
     });
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SchemaGeneratorOptions.SupportNonNullableReferenceTypes = true;
@@ -264,7 +269,28 @@ builder.Services.AddSwaggerGen(options =>
                 "The official resource for reading and writing data within the osu! Tournament Rating platform."
         }
     );
+
     options.IncludeXmlComments($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
+
+    var unknownMethodCount = 0;
+    options.CustomOperationIds(description =>
+    {
+        var controller = description.ActionDescriptor.RouteValues["controller"] ?? "undocumented";
+        string method;
+
+        if (description.TryGetMethodInfo(out MethodInfo info))
+        {
+            var methodName = info.Name.Replace("Async", string.Empty, StringComparison.OrdinalIgnoreCase);
+            method = char.ToLower(methodName[0]) + methodName[1..];
+        }
+        else
+        {
+            method = $"method_{unknownMethodCount}";
+            unknownMethodCount++;
+        }
+
+        return $"{controller}_{method}";
+    });
 });
 
 #endregion
@@ -539,6 +565,35 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.MapControllers();
+}
+
+#endregion
+
+#region Swagger Doc Generation
+
+if (args.Contains("--swagger-to-file"))
+{
+    app.Logger.LogInformation("Saving Swagger spec to file");
+
+    // Get the swagger document provider from the service container
+    OpenApiDocument? swagger = app.Services.GetRequiredService<ISwaggerProvider>().GetSwagger("v1");
+    if (swagger is null)
+    {
+        app.Logger.LogError("Could not resolve the swagger spec, exiting");
+        return;
+    }
+
+    // Serialize the swagger doc to JSON
+    var stringWriter = new StringWriter();
+    swagger.SerializeAsV3(new OpenApiJsonWriter(stringWriter));
+
+    // Write to base path
+    var path = $"{AppDomain.CurrentDomain.BaseDirectory}swagger.json";
+    File.WriteAllText(path, stringWriter.ToString());
+
+    app.Logger.LogInformation("Swagger spec saved to: {Path}", path);
+
+    return;
 }
 
 #endregion
