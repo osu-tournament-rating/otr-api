@@ -14,7 +14,10 @@ public class AdminNoteRepository(OtrContext context) : IAdminNoteRepository
     }
 
     public async Task<TAdminNote?> GetAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase =>
-        await context.Set<TAdminNote>().FirstOrDefaultAsync(an => an.Id == id);
+        await context.Set<TAdminNote>()
+            .Include(an => an.AdminUser.Player)
+            .AsSingleQuery()
+            .FirstOrDefaultAsync(an => an.Id == id);
 
     public async Task<IEnumerable<TAdminNote>> ListAsync<TAdminNote>(int referenceId) where TAdminNote : AdminNoteEntityBase =>
         await context.Set<TAdminNote>()
