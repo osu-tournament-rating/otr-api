@@ -48,5 +48,6 @@ public interface IAuditEntity : IEntity
     /// </summary>
     /// <param name="origEntityEntry">The <see cref="EntityEntry"/> for the entity being audited</param>
     /// <remarks>Allows the implementation of custom logic for the way the audit is generated</remarks>
-    public void GenerateAudit(EntityEntry origEntityEntry);
+    /// <returns>A boolean that indicates whether the audit should be saved or not</returns>
+    public bool GenerateAudit(EntityEntry origEntityEntry);
 }
