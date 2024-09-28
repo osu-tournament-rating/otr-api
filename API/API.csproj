@@ -53,6 +53,7 @@
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="Serilog.Sinks.PostgreSQL" Version="2.3.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Unchase.Swashbuckle.AspNetCore.Extensions" Version="2.7.1" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\.dockerignore">

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 namespace Database.Entities;
 
 /// <summary>
-/// Base class for a <typeparamref name="TAudit"/> entity that serves as an audit for a <see cref="TAuditable"/> entity
+/// Base class for a <typeparamref name="TAudit"/> entity that serves as an audit for an auditable entity
 /// </summary>
 /// <typeparam name="TAuditable">Derived audit</typeparam>
 /// <typeparam name="TAudit">Entity to be audited</typeparam>

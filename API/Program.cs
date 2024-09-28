@@ -16,6 +16,7 @@ using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Implementations;
 using API.Services.Interfaces;
+using API.SwaggerGen;
 using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
@@ -46,6 +47,8 @@ using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
+using Unchase.Swashbuckle.AspNetCore.Extensions.Options;
 
 #region WebApplicationBuilder Configuration
 
@@ -237,7 +240,7 @@ builder.Services.AddRateLimiter(options =>
 
 #endregion
 
-#region Swagger Configuration
+#region SwaggerGen Configuration
 
 builder
     .Services.AddApiVersioning(options =>
@@ -270,7 +273,16 @@ builder.Services.AddSwaggerGen(options =>
         }
     );
 
-    options.IncludeXmlComments($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
+    string[] xmlDocPaths =
+    [
+        $"{AppDomain.CurrentDomain.BaseDirectory}API.xml",
+        $"{AppDomain.CurrentDomain.BaseDirectory}Database.xml"
+    ];
+
+    foreach (var xmlDoc in xmlDocPaths)
+    {
+        options.IncludeXmlCommentsWithRemarks(xmlDoc);
+    }
 
     var unknownMethodCount = 0;
     options.CustomOperationIds(description =>
@@ -291,6 +303,24 @@ builder.Services.AddSwaggerGen(options =>
 
         return $"{controller}_{method}";
     });
+
+    options.AddEnumsWithValuesFixFilters(enumsOptions =>
+    {
+        enumsOptions.IncludeDescriptions = true;
+        enumsOptions.IncludeXEnumRemarks = true;
+        enumsOptions.DescriptionSource = DescriptionSources.XmlComments;
+
+        enumsOptions.ApplySchemaFilter = true;
+        enumsOptions.ApplyParameterFilter = true;
+        enumsOptions.ApplyDocumentFilter = true;
+
+        foreach (var xmlDoc in xmlDocPaths)
+        {
+            enumsOptions.IncludeXmlCommentsFrom(xmlDoc);
+        }
+    });
+
+    options.SchemaFilter<BitwiseFlagEnumSchemaFilter>();
 });
 
 #endregion
