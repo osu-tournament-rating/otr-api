@@ -17,12 +17,16 @@ public interface IAdminNoteRepository
     /// <param name="id">Id of the <typeparamref name="TAdminNote"/></param>
     /// <typeparam name="TAdminNote">The type of admin note being retrieved</typeparam>
     /// <returns>The <typeparamref name="TAdminNote"/>, or null if not found</returns>
+    /// <remarks>
+    /// Includes the <see cref="AdminNoteEntityBase.AdminUser"/> and <see cref="User.Player"/>.
+    /// Returned entities are tracked by the context
+    /// </remarks>
     Task<TAdminNote?> GetAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase;
 
     /// <summary>
     /// Gets a collection of <typeparamref name="TAdminNote"/> entities by their parent reference Id.
     /// </summary>
-    /// <param name="referenceId">The id of the parent entity.</param>
+    /// <param name="referenceId">Id of the parent entity.</param>
     /// <typeparam name="TAdminNote">The type of admin note being retrieved</typeparam>
     /// <returns>A collection of <typeparamref name="TAdminNote"/>s for the given referenceId</returns>
     /// <remarks>
