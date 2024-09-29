@@ -22,7 +22,7 @@ public class PlayersController(IPlayerService playerService) : Controller
         return Ok(players);
     }
 
-    [HttpGet("{key}/info")]
+    [HttpGet("{key}")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [EndpointSummary("Get player info by versatile search")]
     [EndpointDescription("Get player info searching first by id, then osuId, then username")]
