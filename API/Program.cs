@@ -311,8 +311,6 @@ builder.Services.AddSwaggerGen(options =>
         enumsOptions.DescriptionSource = DescriptionSources.XmlComments;
 
         enumsOptions.ApplySchemaFilter = true;
-        enumsOptions.ApplyParameterFilter = true;
-        enumsOptions.ApplyDocumentFilter = true;
 
         foreach (var xmlDoc in xmlDocPaths)
         {
