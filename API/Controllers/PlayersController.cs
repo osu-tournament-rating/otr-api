@@ -16,7 +16,7 @@ namespace API.Controllers;
 public class PlayersController(IPlayerService playerService) : Controller
 {
     [HttpGet("all")]
-    [Authorize(Roles = OtrClaims.System)]
+    [Authorize(Roles = OtrJwtRoles.System)]
     public async Task<IActionResult> GetAllAsync()
     {
         IEnumerable<PlayerCompactDTO> players = await playerService.GetAllAsync();
@@ -24,7 +24,7 @@ public class PlayersController(IPlayerService playerService) : Controller
     }
 
     [HttpGet("{key}/info")]
-    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
+    [Authorize(Roles = $"{OtrJwtRoles.User}, {OtrJwtRoles.Client}")]
     [EndpointSummary("Get player info by versatile search")]
     [EndpointDescription("Get player info searching first by id, then osuId, then username")]
     public async Task<ActionResult<PlayerCompactDTO?>> GetAsync(string key)

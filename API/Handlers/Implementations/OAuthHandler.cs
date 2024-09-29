@@ -57,7 +57,7 @@ public class OAuthHandler(
         return new OAuthResponseDTO
         {
             AccessToken = GenerateAccessToken(user),
-            RefreshToken = GenerateRefreshToken(user.Id.ToString(), OtrClaims.User),
+            RefreshToken = GenerateRefreshToken(user.Id.ToString(), OtrJwtRoles.User),
             AccessExpiration = AccessDurationSeconds
         };
     }
@@ -88,7 +88,7 @@ public class OAuthHandler(
         return new OAuthResponseDTO
         {
             AccessToken = GenerateAccessToken(client),
-            RefreshToken = GenerateRefreshToken(clientId.ToString(), OtrClaims.Client),
+            RefreshToken = GenerateRefreshToken(clientId.ToString(), OtrJwtRoles.Client),
             AccessExpiration = AccessDurationSeconds
         };
     }
@@ -159,14 +159,14 @@ public class OAuthHandler(
     /// <remarks>Handles the encoding of rate limit overrides</remarks>
     private string GenerateAccessToken(OAuthClient client)
     {
-        client.Scopes = [.. client.Scopes, OtrClaims.Client];
+        client.Scopes = [.. client.Scopes, OtrJwtRoles.Client];
         IEnumerable<Claim> claims = client.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
         var serializedOverrides = RateLimitOverridesSerializer.Serialize(client.RateLimitOverrides);
         if (!string.IsNullOrEmpty(serializedOverrides))
         {
             claims = [.. claims,
                 new Claim(
-                    OtrClaims.RateLimitOverrides,
+                    OtrJwtRoles.RateLimitOverrides,
                     serializedOverrides
                 )
             ];
@@ -184,14 +184,14 @@ public class OAuthHandler(
     /// <remarks>Handles the encoding of rate limit overrides</remarks>
     private string GenerateAccessToken(User user)
     {
-        user.Scopes = [.. user.Scopes, OtrClaims.User];
+        user.Scopes = [.. user.Scopes, OtrJwtRoles.User];
         IEnumerable<Claim> claims = user.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
         var serializedOverrides = RateLimitOverridesSerializer.Serialize(user.RateLimitOverrides);
         if (!string.IsNullOrEmpty(serializedOverrides))
         {
             claims = [.. claims,
                 new Claim(
-                OtrClaims.RateLimitOverrides,
+                OtrJwtRoles.RateLimitOverrides,
                 serializedOverrides
                 )
             ];
@@ -249,13 +249,13 @@ public class OAuthHandler(
     /// </summary>
     /// <param name="issuer">The id of the user or client this token is generated for</param>
     /// <param name="role">
-    /// The role value to encode to the JWT. This value needs to be either <see cref="OtrClaims.User"/>
-    /// or <see cref="OtrClaims.Client"/> depending on what type of entity this token is generated for
+    /// The role value to encode to the JWT. This value needs to be either <see cref="OtrJwtRoles.User"/>
+    /// or <see cref="OtrJwtRoles.Client"/> depending on what type of entity this token is generated for
     /// </param>
     /// <returns>A new refresh token</returns>
     private string GenerateRefreshToken(string issuer, string role)
     {
-        if (role != OtrClaims.User && role != OtrClaims.Client)
+        if (role != OtrJwtRoles.User && role != OtrJwtRoles.Client)
         {
             throw new ArgumentException("Role must be either 'user' or 'client'");
         }

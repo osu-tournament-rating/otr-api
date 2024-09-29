@@ -23,7 +23,7 @@ public class GamesController(IGamesService gamesService) : Controller
     /// <response code="404">If the provided id does not belong to a game</response>
     /// <response code="400">If JsonPatch data is malformed</response>
     /// <response code="200">Returns the patched game</response>
-    [Authorize(Roles = OtrClaims.Admin)]
+    [Authorize(Roles = OtrJwtRoles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]

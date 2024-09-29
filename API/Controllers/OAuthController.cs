@@ -63,7 +63,7 @@ public class OAuthController(IOAuthHandler oAuthHandler, IOAuthClientService oAu
     /// <response code="401">If the user is not properly authenticated</response>
     /// <response code="200">Returns created client credentials</response>
     [HttpPost("client")]
-    [Authorize(Roles = OtrClaims.User)]
+    [Authorize(Roles = OtrJwtRoles.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<OAuthClientCreatedDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateClientAsync()

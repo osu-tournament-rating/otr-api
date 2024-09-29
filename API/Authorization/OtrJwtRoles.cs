@@ -1,33 +1,34 @@
 namespace API.Authorization;
 
 /// <summary>
-/// String values that represent valid claims for authorized users
+/// String values that represent valid roles for users and clients that serve as an access control
+/// system for resource routes
 /// </summary>
-public static class OtrClaims
+public static class OtrJwtRoles
 {
     /// <summary>
-    /// Claim granted to all users
+    /// Role for all users
     /// </summary>
     public const string User = "user";
 
     /// <summary>
-    /// Claim granted to all clients
+    /// Role for all clients
     /// </summary>
     public const string Client = "client";
 
     /// <summary>
-    /// Claim granted to internal privileged clients
+    /// Role for internal privileged clients
     /// </summary>
     /// <example>o!TR processor</example>
     public const string System = "system";
 
     /// <summary>
-    /// Claim granted to privileged users
+    /// Role for privileged users
     /// </summary>
     public const string Admin = "admin";
 
     /// <summary>
-    /// Claim granted to users with permission to verify matches
+    /// Role for users with permission to verify matches
     /// </summary>
     public const string Verifier = "verifier";
 
@@ -35,12 +36,12 @@ public static class OtrClaims
     // Instead of granting all users "submit", we can grant restricted users "restricted" which would
     // flag the submission flow to check the user for potential submission restriction
     /// <summary>
-    /// Claim granted to users with permission to submit matches
+    /// Role for users with permission to submit matches
     /// </summary>
     public const string Submitter = "submit";
 
     /// <summary>
-    /// Claim granted to users and clients to restrict api access
+    /// Role for users and clients to restrict api access
     /// </summary>
     public const string Whitelist = "whitelist";
 
