@@ -64,7 +64,7 @@ public class TournamentsService(
         ValidateRequest(requestQuery);
 
         return mapper.Map<ICollection<TournamentDTO>>(await tournamentsRepository.GetAsync(requestQuery.Page, requestQuery.PageSize,
-            requestQuery.Verified));
+            requestQuery.Verified, requestQuery.Ruleset));
     }
 
     public async Task<TournamentDTO?> GetVerifiedAsync(int id) =>

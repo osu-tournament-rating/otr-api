@@ -50,5 +50,6 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="pageSize">The size of the collection</param>
     /// <param name="verified">Whether the resulting tournaments must be verified and
     /// have completed processing</param>
-    Task<ICollection<Tournament>> GetAsync(int page, int pageSize, bool verified = true);
+    /// <param name="ruleset">An optional ruleset to filter by</param>
+    Task<ICollection<Tournament>> GetAsync(int page, int pageSize, bool verified = true, Ruleset? ruleset = null);
 }

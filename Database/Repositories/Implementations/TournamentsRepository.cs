@@ -66,18 +66,24 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         DateTime dateMax
     ) => await QueryForParticipation(playerId, ruleset, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
 
-    public async Task<ICollection<Tournament>> GetAsync(int page, int pageSize, bool verified)
+    public async Task<ICollection<Tournament>> GetAsync(int page, int pageSize, bool verified, Ruleset? ruleset)
     {
-        IQueryable<Tournament> query = _context.Tournaments
-            .OrderByDescending(x => x.Created)
-            .Page(pageSize, page);
+        IQueryable<Tournament> query = _context.Tournaments;
 
         if (verified)
         {
             query = query.WhereVerified().WhereProcessingCompleted();
         }
 
-        return await query.ToListAsync();
+        if (ruleset.HasValue)
+        {
+            query = query.Where(x => x.Ruleset == ruleset.Value);
+        }
+
+        return await query
+                .OrderByDescending(x => x.Created)
+                .Page(pageSize, page)
+                .ToListAsync();
     }
 
     /// <summary>

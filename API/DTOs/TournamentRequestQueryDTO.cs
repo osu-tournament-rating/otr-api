@@ -1,3 +1,5 @@
+using Database.Enums;
+
 namespace API.DTOs;
 
 // Can be expanded to support filters like leaderboards if needed
@@ -15,4 +17,8 @@ public class TournamentRequestQueryDTO
     /// Whether the tournaments must be verified
     /// </summary>
     public bool Verified { get; set; } = true;
+    /// <summary>
+    /// An optional ruleset to filter by
+    /// </summary>
+    public Ruleset? Ruleset { get; set; }
 }
