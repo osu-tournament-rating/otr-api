@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace API.Utilities;
 
 /// <summary>
@@ -27,7 +29,7 @@ public static class OtrClaims
     public const string Admin = "admin";
 
     /// <summary>
-    /// Claim granted to users with permission to verify matches
+    /// Claim granted to users with permission to verify submission data
     /// </summary>
     public const string Verifier = "verifier";
 
@@ -35,12 +37,12 @@ public static class OtrClaims
     // Instead of granting all users "submit", we can grant restricted users "restricted" which would
     // flag the submission flow to check the user for potential submission restriction
     /// <summary>
-    /// Claim granted to users with permission to submit matches
+    /// Claim granted to users with permission to submit tournament data
     /// </summary>
     public const string Submitter = "submit";
 
     /// <summary>
-    /// Claim granted to users and clients to restrict api access
+    /// Claim granted to users and clients to allow access during times of restricted use
     /// </summary>
     public const string Whitelist = "whitelist";
 
@@ -48,6 +50,22 @@ public static class OtrClaims
     /// Claim granted to users or clients to denote overrides to the default rate limit
     /// </summary>
     public const string RateLimitOverrides = "ratelimitoverrides";
+
+    /// <summary>
+    /// Gets the description for the given claim
+    /// </summary>
+    public static string GetDescription(string claim) =>
+        claim switch
+        {
+            User => "Claim granted to all users",
+            Client => "Claim granted to all users",
+            System => "Claim granted to internal privileged clients",
+            Admin => "Claim granted to privileged users",
+            Verifier => "Claim granted to users with permission to verify submission data",
+            Submitter => "Claim granted to users with permission to submit tournament data",
+            Whitelist => "Claim granted to users and clients to allow access during times of restricted use",
+            _ => "Undocumented"
+        };
 
     /// <summary>
     /// Denotes the given claim is assignable to a user

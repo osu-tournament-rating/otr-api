@@ -311,6 +311,8 @@ builder.Services.AddSwaggerGen(options =>
         enumsOptions.DescriptionSource = DescriptionSources.XmlComments;
 
         enumsOptions.ApplySchemaFilter = true;
+        enumsOptions.ApplyDocumentFilter = false;
+        enumsOptions.ApplyParameterFilter = false;
 
         foreach (var xmlDoc in xmlDocPaths)
         {
@@ -319,6 +321,52 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     options.SchemaFilter<BitwiseFlagEnumSchemaFilter>();
+
+    options.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Description = "JWT Authorization header using the Bearer scheme",
+        Scheme = "BearerAuth",
+        BearerFormat = "JWT"
+    });
+
+    var oauthScopes = new Dictionary<string, string>
+    {
+        [OtrClaims.User] = OtrClaims.GetDescription(OtrClaims.User),
+        [OtrClaims.Client] = OtrClaims.GetDescription(OtrClaims.Client),
+        [OtrClaims.System] = OtrClaims.GetDescription(OtrClaims.System),
+        [OtrClaims.Admin] = OtrClaims.GetDescription(OtrClaims.Admin),
+        [OtrClaims.Verifier] = OtrClaims.GetDescription(OtrClaims.Verifier),
+        [OtrClaims.Submitter] = OtrClaims.GetDescription(OtrClaims.Submitter),
+        [OtrClaims.Whitelist] = OtrClaims.GetDescription(OtrClaims.Whitelist),
+    };
+
+    options.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.OAuth2,
+        Description = "OAuth2 Authorization",
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri("api/v1.0/OAuth/authorize", UriKind.Relative),
+                RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
+                Scopes = oauthScopes
+            },
+            ClientCredentials = new OpenApiOAuthFlow
+            {
+                TokenUrl = new Uri("api/v1.0/OAuth/token", UriKind.Relative),
+                RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
+                Scopes = oauthScopes
+            }
+        }
+    });
+
+    options.OperationFilter<ActionSecurityOperationFilter>();
 });
 
 #endregion
