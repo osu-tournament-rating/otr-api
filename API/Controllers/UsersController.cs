@@ -53,7 +53,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
         scopes = scopes.Select(s => s.ToLower()).ToList();
         foreach (var scope in scopes)
         {
-            if (!OtrJwtRoles.IsUserAssignableClaim(scope))
+            if (!OtrJwtRoles.IsUserAssignableRole(scope))
             {
                 return BadRequest($"Given scope \"{scope}\" is invalid");
             }

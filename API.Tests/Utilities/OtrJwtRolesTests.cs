@@ -20,7 +20,7 @@ public class OtrJwtRolesTests
         // Arrange
 
         // Act
-        var actual = OtrJwtRoles.IsUserAssignableClaim(claim);
+        var actual = OtrJwtRoles.IsUserAssignableRole(claim);
 
         // Assert
         Assert.Equal(expected, actual);
@@ -39,7 +39,7 @@ public class OtrJwtRolesTests
         // Arrange
 
         // Act
-        var actual = OtrJwtRoles.IsClientAssignableClaim(claim);
+        var actual = OtrJwtRoles.IsClientAssignableRole(claim);
 
         // Assert
         Assert.Equal(expected, actual);
@@ -62,7 +62,7 @@ public class OtrJwtRolesTests
         // Arrange
 
         // Act
-        var actual = OtrJwtRoles.IsValidClaim(claim);
+        var actual = OtrJwtRoles.IsValidRole(claim);
 
         // Assert
         Assert.Equal(expected, actual);

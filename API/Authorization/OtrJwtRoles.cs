@@ -51,13 +51,13 @@ public static class OtrJwtRoles
     public const string RateLimitOverrides = "ratelimitoverrides";
 
     /// <summary>
-    /// Denotes the given claim is assignable to a user
+    /// Denotes the given role is assignable to a user
     /// </summary>
-    public static bool IsUserAssignableClaim(string claim)
+    public static bool IsUserAssignableRole(string role)
     {
-        return claim switch
+        return role switch
         {
-            // 'User' not included because we only encode that claim to the JWT
+            // 'User' not included because we only encode that role to the JWT
             Admin => true,
             Verifier => true,
             Submitter => true,
@@ -68,13 +68,13 @@ public static class OtrJwtRoles
     }
 
     /// <summary>
-    /// Denotes the given claim is assignable to a client
+    /// Denotes the given role is assignable to a client
     /// </summary>
-    public static bool IsClientAssignableClaim(string claim)
+    public static bool IsClientAssignableRole(string role)
     {
-        return claim switch
+        return role switch
         {
-            // 'Client' not included because we only encode that claim to the JWT
+            // 'Client' not included because we only encode that role to the JWT
             System => true,
             Whitelist => true,
             RateLimitOverrides => true,
@@ -83,11 +83,11 @@ public static class OtrJwtRoles
     }
 
     /// <summary>
-    /// Denotes the given claim is valid
+    /// Denotes the given role is valid
     /// </summary>
-    public static bool IsValidClaim(string claim)
+    public static bool IsValidRole(string role)
     {
-        return claim switch
+        return role switch
         {
             User => true,
             Client => true,
