@@ -14,9 +14,9 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class PlayersController(IPlayerService playerService) : Controller
 {
-    [HttpGet("all")]
+    [HttpGet]
     [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> GetAllAsync()
+    public async Task<IActionResult> ListAsync()
     {
         IEnumerable<PlayerCompactDTO> players = await playerService.GetAllAsync();
         return Ok(players);
