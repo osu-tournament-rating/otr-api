@@ -5,6 +5,7 @@ using API.Services.Interfaces;
 using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
+using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -199,13 +200,38 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     }
 
     /// <summary>
+    /// Update the ruleset of a user
+    /// </summary>
+    /// <response code="404">If a user does not exist</response>
+    /// <response code="400">If the operation was not successful</response>
+    /// <response code="200">If the operation was successful</response>
+    [HttpPost("{id:int}/settings/ruleset")]
+    [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateRulesetAsync(int id, [FromBody] Ruleset ruleset)
+    {
+        if (!await userService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        return await userSettingsService.UpdateRulesetAsync(id, ruleset)
+            ? Ok()
+            : BadRequest();
+    }
+
+    /// <summary>
     /// Sync the ruleset of a user with their osu! ruleset
     /// </summary>
     /// <response code="404">If a user does not exist</response>
+    /// <response code="400">If the operation was not successful</response>
     /// <response code="200">If the operation was successful</response>
     [HttpPost("{id:int}/settings/ruleset:sync")]
     [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> SyncRulesetAsync(int id)
     {
