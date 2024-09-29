@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using API.Authorization;
 using API.Configurations;
 using API.DTOs;
 using API.Handlers.Interfaces;

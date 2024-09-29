@@ -1,3 +1,4 @@
+using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;

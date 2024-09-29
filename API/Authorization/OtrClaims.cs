@@ -1,4 +1,4 @@
-namespace API.Utilities;
+namespace API.Authorization;
 
 /// <summary>
 /// String values that represent valid claims for authorized users

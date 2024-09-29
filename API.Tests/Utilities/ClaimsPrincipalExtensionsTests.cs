@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using API.Authorization;
 using API.Utilities;
 using API.Utilities.Extensions;
 

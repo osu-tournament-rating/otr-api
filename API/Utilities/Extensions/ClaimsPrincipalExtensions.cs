@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using API.Authorization;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace API.Utilities.Extensions;
