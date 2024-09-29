@@ -16,11 +16,14 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     private readonly OtrContext _context = context;
 
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
-        eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
+        eagerLoad ? await TournamentsBaseQuery()
+            .Include(x => x.SubmittedByUser).ThenInclude(y => y.Player)
+            .FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
 
     public async Task<Tournament?> GetVerifiedAsync(int id) =>
         await _context.Tournaments
             .AsSplitQuery()
+            .Include(x => x.SubmittedByUser).ThenInclude(y => y.Player)
             .Include(t => t.Matches.Where(m => m.VerificationStatus == VerificationStatus.Verified && m.ProcessingStatus == MatchProcessingStatus.Done))
             .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
             .ThenInclude(g => g.Beatmap)

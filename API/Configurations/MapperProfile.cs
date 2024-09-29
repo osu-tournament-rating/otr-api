@@ -34,7 +34,8 @@ public class MapperProfile : Profile
         CreateMap<Player, PlayerCompactDTO>();
         CreateMap<PlayerOsuRulesetData, PlayerOsuRulesetDataDTO>();
 
-        CreateMap<Tournament, TournamentDTO>();
+        CreateMap<Tournament, TournamentDTO>()
+            .ForMember(x => x.Submitter, opt => opt.MapFrom(y => y.SubmittedByUser));
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();

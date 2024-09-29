@@ -79,6 +79,11 @@ public class TournamentDTO
     public DateTime EndTime { get; set; }
 
     /// <summary>
+    /// The user who submitted this tournament
+    /// </summary>
+    public UserDTO Submitter { get; set; }
+
+    /// <summary>
     /// All associated match data
     /// </summary>
     /// <remarks>Will be empty for bulk requests such as List</remarks>
