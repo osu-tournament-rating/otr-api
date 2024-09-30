@@ -107,7 +107,33 @@ public static class OtrClaims
     }
 
     /// <summary>
-    /// Claim granted to users or clients to denote overrides to the default rate limit
+    /// Claim that describes the type of the JWT
     /// </summary>
-    public const string RateLimitOverrides = "ratelimitoverrides";
+    public const string TokenType = "tktyp";
+
+    /// <summary>
+    /// Valid values for the <see cref="OtrClaims.TokenType"/> claim
+    /// </summary>
+    public static class TokenTypes
+    {
+        /// <summary>
+        /// Denotes the JWT as being an access token
+        /// </summary>
+        public const string AccessToken = "acc";
+
+        /// <summary>
+        /// Denotes the JWT as being a refresh token
+        /// </summary>
+        public const string RefreshToken = "ref";
+    }
+
+    /// <summary>
+    /// Claim encoded into all JWTs to induce randomness in the payload
+    /// </summary>
+    public const string Instance = "inst";
+
+    /// <summary>
+    /// Claim that describes an override to the default rate limit
+    /// </summary>
+    public const string RateLimitOverrides = "rlo";
 }
