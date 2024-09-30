@@ -10,7 +10,7 @@ namespace Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-
+            migrationBuilder.DropColumn("post_mod_sr", "games");
         }
 
         /// <inheritdoc />
