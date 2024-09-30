@@ -206,7 +206,7 @@ builder.Services.AddRateLimiter(options =>
 
         // Try to parse rate limit override claim
         var overrideClaimValue = principal
-            .Claims.FirstOrDefault(c => c.Type == OtrJwtRoles.RateLimitOverrides)
+            .Claims.FirstOrDefault(c => c.Type == OtrClaims.RateLimitOverrides)
             ?.Value;
         RateLimitOverrides? overrides = null;
         if (!string.IsNullOrEmpty(overrideClaimValue))

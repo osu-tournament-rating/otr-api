@@ -44,7 +44,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <response code="400">If any of the given scopes are invalid, or the update was not successful</response>
     /// <response code="200">Returns an updated user</response>
     [HttpPatch("{id:int}/scopes")]
-    [Authorize(Roles = OtrJwtRoles.Admin)]
+    [Authorize(Roles = OtrClaims.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
@@ -53,7 +53,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
         scopes = scopes.Select(s => s.ToLower()).ToList();
         foreach (var scope in scopes)
         {
-            if (!OtrJwtRoles.IsUserAssignableRole(scope))
+            if (!OtrClaims.IsUserAssignableRole(scope))
             {
                 return BadRequest($"Given scope \"{scope}\" is invalid");
             }
@@ -99,7 +99,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <response code="400">If the operation was not successful</response>
     /// <response code="200">Denotes the operation was successful</response>
     [HttpPost("{id:int}/submissions:reject")]
-    [Authorize(Roles = OtrJwtRoles.Admin)]
+    [Authorize(Roles = OtrClaims.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RejectSubmissionsAsync(int id)

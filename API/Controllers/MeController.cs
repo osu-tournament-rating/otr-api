@@ -21,7 +21,7 @@ public class MeController(IUserService userService) : Controller
     /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="302">Redirects to `GET` `/users/{id}`</response>
     [HttpGet]
-    [Authorize(Roles = OtrJwtRoles.User)]
+    [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public IActionResult Get()
@@ -50,7 +50,7 @@ public class MeController(IUserService userService) : Controller
     /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="302">Redirects to `GET` `/stats/{key}`</response>
     [HttpGet("stats")]
-    [Authorize(Roles = OtrJwtRoles.User)]
+    [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> GetStatsAsync(
@@ -86,7 +86,7 @@ public class MeController(IUserService userService) : Controller
     /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="307">Redirects to `POST` `/users/{id}/settings/ruleset`</response>
     [HttpPost("settings/ruleset")]
-    [Authorize(Roles = OtrJwtRoles.User)]
+    [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
     public IActionResult UpdateRuleset([FromBody] Ruleset ruleset)
@@ -106,7 +106,7 @@ public class MeController(IUserService userService) : Controller
     /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="307">Redirects to `POST` `/users/{id}/settings/ruleset:sync`</response>
     [HttpPost("settings/ruleset:sync")]
-    [Authorize(Roles = OtrJwtRoles.User)]
+    [Authorize(Roles = OtrClaims.User)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
     public IActionResult SyncRuleset()

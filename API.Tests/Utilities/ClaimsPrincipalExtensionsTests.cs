@@ -21,7 +21,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_IsAdmin()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, OtrJwtRoles.Admin) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, OtrClaims.Admin) }));
 
         Assert.True(claims.IsAdmin());
     }
@@ -30,7 +30,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_IsMatchVerifier()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, OtrJwtRoles.Verifier) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, OtrClaims.Verifier) }));
 
         Assert.True(claims.IsMatchVerifier());
     }
@@ -39,7 +39,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_IsUser()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, OtrJwtRoles.User) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, OtrClaims.User) }));
 
         Assert.True(claims.IsUser());
     }
@@ -48,7 +48,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrinciple_IsWhitelisted()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, OtrJwtRoles.Whitelist) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(ClaimTypes.Role, OtrClaims.Whitelist) }));
 
         Assert.True(claims.IsWhitelisted());
     }
@@ -57,7 +57,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_IsAdmin_WhenClaimTypeMapped()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("role", OtrJwtRoles.Admin) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("role", OtrClaims.Admin) }));
 
         Assert.True(claims.IsAdmin());
     }
@@ -66,7 +66,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_IsMatchVerifier_WhenClaimTypeMapped()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("role", OtrJwtRoles.Verifier) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("role", OtrClaims.Verifier) }));
 
         Assert.True(claims.IsMatchVerifier());
         Assert.False(claims.IsAdmin());
@@ -77,7 +77,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_IsUser_WhenClaimTypeMapped()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("role", OtrJwtRoles.User) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("role", OtrClaims.User) }));
 
         Assert.True(claims.IsUser());
     }
@@ -86,7 +86,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrinciple_IsWhitelisted_WhenClaimTypeMapped()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("role", OtrJwtRoles.Whitelist) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("role", OtrClaims.Whitelist) }));
 
         Assert.True(claims.IsWhitelisted());
     }
@@ -95,7 +95,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_IsNotAdmin_WhenClaimTypeInvalid()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("123", OtrJwtRoles.Admin) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("123", OtrClaims.Admin) }));
 
         Assert.False(claims.IsAdmin());
     }
@@ -104,7 +104,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_IsNotMatchVerifier_WhenClaimTypeInvalid()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("123", OtrJwtRoles.Verifier) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("123", OtrClaims.Verifier) }));
 
         Assert.False(claims.IsMatchVerifier());
     }
@@ -113,7 +113,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrincipal_IsNotUser_WhenClaimTypeInvalid()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("123", OtrJwtRoles.User) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("123", OtrClaims.User) }));
 
         Assert.False(claims.IsUser());
     }
@@ -122,7 +122,7 @@ public class ClaimsPrincipalExtensionsTests
     public void ClaimsPrinciple_IsNotWhitelisted_WhenClaimTypeInvalid()
     {
         var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("123", OtrJwtRoles.Whitelist) }));
+        claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new("123", OtrClaims.Whitelist) }));
 
         Assert.False(claims.IsWhitelisted());
     }

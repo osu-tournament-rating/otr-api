@@ -23,7 +23,7 @@ public class GameScoresController(IGameScoresService gameScoresService) : Contro
     /// <response code="404">If the provided id does not belong to a score</response>
     /// <response code="400">If JsonPatch data is malformed</response>
     /// <response code="200">Returns the patched score</response>
-    [Authorize(Roles = OtrJwtRoles.Admin)]
+    [Authorize(Roles = OtrClaims.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]

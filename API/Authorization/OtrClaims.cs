@@ -4,7 +4,7 @@ namespace API.Authorization;
 /// String values that represent valid roles for users and clients that serve as an access control
 /// system for resource routes
 /// </summary>
-public static class OtrJwtRoles
+public static class OtrClaims
 {
     /// <summary>
     /// Role for all users

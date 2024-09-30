@@ -10,34 +10,34 @@ public static class ClaimsPrincipalExtensions
     /// Denotes the principal as having the admin role.
     /// </summary>
     public static bool IsAdmin(this ClaimsPrincipal claimsPrincipal) =>
-        IsInRole(claimsPrincipal, OtrJwtRoles.Admin);
+        IsInRole(claimsPrincipal, OtrClaims.Admin);
 
     /// <summary>
     /// Denotes the principal as having the system role.
     /// </summary>
-    public static bool IsSystem(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrJwtRoles.System);
+    public static bool IsSystem(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrClaims.System);
 
     /// <summary>
     /// Denotes the principal as having the user role.
     /// </summary>
-    public static bool IsUser(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrJwtRoles.User);
+    public static bool IsUser(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrClaims.User);
 
     /// <summary>
     /// Denotes the principal as having the client role.
     /// </summary>
-    public static bool IsClient(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrJwtRoles.Client);
+    public static bool IsClient(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrClaims.Client);
 
     /// <summary>
     /// Denotes the principal as having the verifier role.
     /// </summary>
     public static bool IsMatchVerifier(this ClaimsPrincipal claimsPrincipal) =>
-        IsInRole(claimsPrincipal, OtrJwtRoles.Verifier);
+        IsInRole(claimsPrincipal, OtrClaims.Verifier);
 
     /// <summary>
     /// Denotes the principle as having the whitelist role
     /// </summary>
     public static bool IsWhitelisted(this ClaimsPrincipal claimsPrincipal) =>
-        IsInRole(claimsPrincipal, OtrJwtRoles.Whitelist);
+        IsInRole(claimsPrincipal, OtrClaims.Whitelist);
 
     /// <summary>
     /// Gets the issuer id of the principle
