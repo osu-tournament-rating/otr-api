@@ -22,7 +22,6 @@ public static class SeededGame
         ScoringType? scoringType = null,
         TeamType? teamType = null,
         Mods? mods = null,
-        double? postModSr = null,
         DateTime? startTime = null,
         DateTime? endTime = null,
         VerificationStatus? verificationStatus = null,

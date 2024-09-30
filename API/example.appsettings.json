@@ -1,0 +1,29 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "",
+    "CollectorConnection": "",
+    "RedisConnection": ""
+  },
+  "Osu": {
+    "ClientId": "",
+    "ClientSecret": ""
+  },
+  "Jwt": {
+    "Key": "",
+    "Audience": ""
+  },
+  "Auth": {
+    "ClientCallbackUrl": "",
+    "EnforceWhitelist": false
+  },
+  "RateLimit": {
+    "PermitLimit": 30,
+    "Window": 60
+  }
+}
