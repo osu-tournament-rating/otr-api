@@ -249,8 +249,8 @@ public class OAuthHandler(
     /// </summary>
     /// <param name="issuer">The id of the user or client this token is generated for</param>
     /// <param name="role">
-    /// The role value to encode to the JWT. This value needs to be either <see cref="OtOtrClaimsser"/>
-    /// or <see cref="OtOtrClaimslient"/> depending on what type of entity this token is generated for
+    /// The role value to encode to the JWT. This value needs to be either <see cref="OtrClaims.Roles.User"/>
+    /// or <see cref="OtrClaims.Roles.Client"/> depending on what type of entity this token is generated for
     /// </param>
     /// <returns>A new refresh token</returns>
     private string GenerateRefreshToken(string issuer, string role)
