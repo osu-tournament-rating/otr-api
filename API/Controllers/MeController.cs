@@ -64,11 +64,9 @@ public class MeController(IUserService userService) : Controller
     /// <summary>
     /// Update the ruleset for the currently logged in user
     /// </summary>
-    /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="307">Redirects to `POST` `/users/{id}/settings/ruleset`</response>
     [HttpPost("settings/ruleset")]
     [Authorize(Roles = OtrClaims.Roles.User)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
     public IActionResult UpdateRuleset([FromBody] Ruleset ruleset) =>
         RedirectToActionPreserveMethod("UpdateRuleset", "Users", new { id = User.GetSubjectId(), ruleset });

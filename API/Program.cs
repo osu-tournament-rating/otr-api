@@ -610,8 +610,17 @@ if (app.Environment.IsDevelopment())
 
     app.UseSwagger();
     app.UseSwaggerUI(x => { x.SwaggerEndpoint("/swagger/v1/swagger.json", "osu! Tournament Rating API"); });
-    app.MapControllers();
-    // .AllowAnonymous();
+
+    // Endpoints expecting authentication WILL throw exceptions if used anonymously
+    // Example: `GET` `/me`
+    if (args.Contains("--allow-anonymous"))
+    {
+        app.MapControllers().AllowAnonymous();
+    }
+    else
+    {
+        app.MapControllers();
+    }
 }
 else
 {
