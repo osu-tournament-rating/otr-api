@@ -50,7 +50,7 @@ public class ClaimsPrincipalExtensionsTests
         var claims = new ClaimsPrincipal();
         claims.AddIdentity(new ClaimsIdentity(new List<Claim> { new(OtrClaims.Role, OtrClaims.Roles.Client) }));
 
-        Assert.True(claims.IsUser());
+        Assert.True(claims.IsClient());
     }
 
     [Fact]
