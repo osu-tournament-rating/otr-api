@@ -388,7 +388,9 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 #region Authentication Configuration
 
 JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
+JsonWebTokenHandler.DefaultMapInboundClaims = false;
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
 
 builder.Services

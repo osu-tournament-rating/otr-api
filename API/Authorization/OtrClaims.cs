@@ -71,7 +71,6 @@ public static class OtrClaims
                 Verifier => true,
                 Submitter => true,
                 Whitelist => true,
-                RateLimitOverrides => true,
                 _ => false
             };
         }
@@ -86,7 +85,6 @@ public static class OtrClaims
                 // 'Client' not included because we only encode that role to the JWT
                 System => true,
                 Whitelist => true,
-                RateLimitOverrides => true,
                 _ => false
             };
         }
@@ -105,7 +103,6 @@ public static class OtrClaims
                 Verifier => true,
                 Submitter => true,
                 Whitelist => true,
-                RateLimitOverrides => true,
                 _ => false
             };
         }
