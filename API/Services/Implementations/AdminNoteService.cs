@@ -28,7 +28,7 @@ public class AdminNoteService(
         };
 
         await adminNoteRepository.CreateAsync(entity);
-        return mapper.Map<AdminNoteDTO>(entity);
+        return mapper.Map<AdminNoteDTO>(adminNoteRepository.GetAsync<TAdminNote>(entity.Id));
     }
 
     public async Task<AdminNoteDTO?> GetAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase =>
