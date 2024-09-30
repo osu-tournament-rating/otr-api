@@ -178,10 +178,6 @@ namespace Database.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("osu_id");
 
-                    b.Property<double>("PostModSr")
-                        .HasColumnType("double precision")
-                        .HasColumnName("post_mod_sr");
-
                     b.Property<int>("ProcessingStatus")
                         .HasColumnType("integer")
                         .HasColumnName("processing_status");
@@ -1828,7 +1824,7 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Database.Entities.PlayerAdminNote", b => 
+            modelBuilder.Entity("Database.Entities.PlayerAdminNote", b =>
             {
                 b.HasOne("Database.Entities.Player", "Player")
                 .WithMany("AdminNotes")

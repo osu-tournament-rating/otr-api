@@ -43,7 +43,6 @@ public static class SeededGame
             ScoringType = scoringType ?? s_rand.NextEnum<ScoringType>(),
             TeamType = teamType ?? s_rand.NextEnum<TeamType>(),
             Mods = mods ?? (Mods)s_rand.NextInclusive((int)Mods.Perfect),
-            PostModSr = postModSr ?? s_rand.NextDouble(SeededBeatmap.SrMin, SeededBeatmap.SrMax),
             VerificationStatus = verificationStatus ?? s_rand.NextEnum<VerificationStatus>(),
             RejectionReason = rejectionReason ?? s_rand.NextEnum<GameRejectionReason>(),
             ProcessingStatus = processingStatus ?? s_rand.NextEnum<GameProcessingStatus>(),
