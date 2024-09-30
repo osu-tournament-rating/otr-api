@@ -1,7 +1,6 @@
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
@@ -15,15 +14,15 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class PlayersController(IPlayerService playerService) : Controller
 {
-    [HttpGet("all")]
+    [HttpGet]
     [Authorize(Roles = OtrClaims.Roles.System)]
-    public async Task<IActionResult> GetAllAsync()
+    public async Task<IActionResult> ListAsync()
     {
         IEnumerable<PlayerCompactDTO> players = await playerService.GetAllAsync();
         return Ok(players);
     }
 
-    [HttpGet("{key}/info")]
+    [HttpGet("{key}")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [EndpointSummary("Get player info by versatile search")]
     [EndpointDescription("Get player info searching first by id, then osuId, then username")]
