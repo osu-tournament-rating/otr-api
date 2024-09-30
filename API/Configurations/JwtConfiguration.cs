@@ -13,4 +13,7 @@ public class JwtConfiguration
 
     [Required(ErrorMessage = "Audience is required!")]
     public string Audience { get; init; } = string.Empty;
+
+    [Required(ErrorMessage = "Issuer is required!")]
+    public string Issuer { get; init; } = string.Empty;
 }

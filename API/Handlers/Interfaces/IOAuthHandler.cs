@@ -13,7 +13,7 @@ public interface IOAuthHandler
     /// osu! Authorization Code Grant documentation</a>
     /// </param>
     /// <returns>Access credentials for the associated user, or null if there was a problem with authorization</returns>
-    Task<OAuthResponseDTO?> AuthorizeAsync(string osuAuthCode);
+    Task<AccessCredentialsDTO?> AuthorizeAsync(string osuAuthCode);
 
     /// <summary>
     /// Authorize an OAuth client via client credentials
@@ -21,7 +21,7 @@ public interface IOAuthHandler
     /// <param name="clientId">The id of the OAuth client</param>
     /// <param name="clientSecret">The client secret</param>
     /// <returns>Access credentials for the associated client, or null if there was a problem with authorization</returns>
-    Task<OAuthResponseDTO?> AuthorizeAsync(int clientId, string clientSecret);
+    Task<DetailedResponseDTO<AccessCredentialsDTO>> AuthorizeAsync(int clientId, string clientSecret);
 
     /// <summary>
     /// Issues a new access token using the given refresh token
@@ -32,5 +32,5 @@ public interface IOAuthHandler
     /// <returns>
     /// Access credentials containing a new access token, or null if the given refresh token is invalid
     /// </returns>
-    Task<OAuthResponseDTO?> RefreshAsync(string refreshToken);
+    Task<DetailedResponseDTO<AccessCredentialsDTO>> RefreshAsync(string refreshToken);
 }

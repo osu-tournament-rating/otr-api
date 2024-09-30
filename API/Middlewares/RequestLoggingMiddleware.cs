@@ -109,9 +109,7 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
             text += "...";
         }
 
-        var ident = response
-            .HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Iss)
-            ?.Value;
+        var ident = response.HttpContext.User.Identity.Name ?? string.Empty;
 
         if (response.StatusCode >= 400)
         {
