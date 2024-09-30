@@ -17,7 +17,7 @@ namespace API.Controllers;
 public class ClientsController(IOAuthClientService clientService) : Controller
 {
     [HttpPatch("{id:int}/ratelimit")]
-    [Authorize(Roles = OtrClaims.Admin)]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
     [EndpointSummary("Patches the ratelimit for a given client")]
     public async Task<Results<BadRequest, NotFound, Ok<OAuthClientDTO>>> PatchRatelimitAsync(int id, [FromBody] JsonPatchDocument<RateLimitOverrides> patchedOverrides)
     {

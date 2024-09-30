@@ -57,7 +57,7 @@ public class OAuthHandler(
         return new OAuthResponseDTO
         {
             AccessToken = GenerateAccessToken(user),
-            RefreshToken = GenerateRefreshToken(user.Id.ToString(), OtrClaims.User),
+            RefreshToken = GenerateRefreshToken(user.Id.ToString(), OtrClaims.Roles.User),
             AccessExpiration = AccessDurationSeconds
         };
     }
@@ -88,7 +88,7 @@ public class OAuthHandler(
         return new OAuthResponseDTO
         {
             AccessToken = GenerateAccessToken(client),
-            RefreshToken = GenerateRefreshToken(clientId.ToString(), OtrClaims.Client),
+            RefreshToken = GenerateRefreshToken(clientId.ToString(), OtrClaims.Roles.Client),
             AccessExpiration = AccessDurationSeconds
         };
     }
@@ -159,7 +159,7 @@ public class OAuthHandler(
     /// <remarks>Handles the encoding of rate limit overrides</remarks>
     private string GenerateAccessToken(OAuthClient client)
     {
-        client.Scopes = [.. client.Scopes, OtrClaims.Client];
+        client.Scopes = [.. client.Scopes, OtrClaims.Roles.Client];
         IEnumerable<Claim> claims = client.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
         var serializedOverrides = RateLimitOverridesSerializer.Serialize(client.RateLimitOverrides);
         if (!string.IsNullOrEmpty(serializedOverrides))
@@ -184,7 +184,7 @@ public class OAuthHandler(
     /// <remarks>Handles the encoding of rate limit overrides</remarks>
     private string GenerateAccessToken(User user)
     {
-        user.Scopes = [.. user.Scopes, OtrClaims.User];
+        user.Scopes = [.. user.Scopes, OtrClaims.Roles.User];
         IEnumerable<Claim> claims = user.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
         var serializedOverrides = RateLimitOverridesSerializer.Serialize(user.RateLimitOverrides);
         if (!string.IsNullOrEmpty(serializedOverrides))
@@ -255,7 +255,7 @@ public class OAuthHandler(
     /// <returns>A new refresh token</returns>
     private string GenerateRefreshToken(string issuer, string role)
     {
-        if (role != OtrClaims.User && role != OtrClaims.Client)
+        if (role != OtrClaims.Roles.User && role != OtrClaims.Roles.Client)
         {
             throw new ArgumentException("Role must be either 'user' or 'client'");
         }

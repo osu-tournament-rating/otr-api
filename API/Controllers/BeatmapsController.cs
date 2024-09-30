@@ -10,7 +10,7 @@ namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[Authorize(Roles = $"{OtrClaims.System}, {OtrClaims.Admin}")] // Internal access only at this time
+[Authorize(Roles = $"{OtrClaims.Roles.System}, {OtrClaims.Roles.Admin}")] // Internal access only at this time
 [Route("api/v{version:apiVersion}/[controller]")]
 public class BeatmapsController(IBeatmapService beatmapService) : Controller
 {
