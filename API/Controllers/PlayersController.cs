@@ -14,15 +14,15 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class PlayersController(IPlayerService playerService) : Controller
 {
-    [HttpGet("all")]
+    [HttpGet]
     [Authorize(Roles = OtrClaims.System)]
-    public async Task<IActionResult> GetAllAsync()
+    public async Task<IActionResult> ListAsync()
     {
         IEnumerable<PlayerCompactDTO> players = await playerService.GetAllAsync();
         return Ok(players);
     }
 
-    [HttpGet("{key}/info")]
+    [HttpGet("{key}")]
     [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
     [EndpointSummary("Get player info by versatile search")]
     [EndpointDescription("Get player info searching first by id, then osuId, then username")]
