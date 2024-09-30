@@ -408,6 +408,20 @@ builder.Services
             jwtConfiguration.Key,
             jwtConfiguration.Audience
         );
+
+        options.Events = new JwtBearerEvents
+        {
+            // Reject authentication challenges not using an access token (or that don't contain a token type)
+            OnTokenValidated = context =>
+            {
+                if (context.Principal?.GetTokenType() is not OtrClaims.TokenTypes.AccessToken)
+                {
+                    context.Fail("Invalid token type. Only access tokens are accepted.");
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
 
 #endregion
@@ -596,7 +610,8 @@ if (app.Environment.IsDevelopment())
 
     app.UseSwagger();
     app.UseSwaggerUI(x => { x.SwaggerEndpoint("/swagger/v1/swagger.json", "osu! Tournament Rating API"); });
-    app.MapControllers().AllowAnonymous();
+    app.MapControllers();
+    // .AllowAnonymous();
 }
 else
 {

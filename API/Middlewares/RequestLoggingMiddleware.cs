@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 namespace API.Middlewares;
@@ -109,7 +108,7 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
             text += "...";
         }
 
-        var ident = response.HttpContext.User.Identity.Name ?? string.Empty;
+        var ident = response.HttpContext.User.Identity?.Name ?? "unknown";
 
         if (response.StatusCode >= 400)
         {
