@@ -6,7 +6,6 @@ using API.Configurations;
 using API.DTOs;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
-using API.Utilities;
 using API.Utilities.Extensions;
 using Database.Entities;
 using Database.Repositories.Interfaces;
@@ -18,7 +17,7 @@ using OsuSharp.Interfaces;
 namespace API.Handlers.Implementations;
 
 /// <summary>
-/// Handles API access from clients
+/// Handles reading and serving access credentials
 /// </summary>
 public class OAuthHandler(
     ILogger<OAuthHandler> logger,
@@ -31,7 +30,14 @@ public class OAuthHandler(
     IOptions<AuthConfiguration> authConfiguration
     ) : IOAuthHandler
 {
+    /// <summary>
+    /// Lifetime of an access token in seconds
+    /// </summary>
     private const int AccessDurationSeconds = 3600;
+
+    /// <summary>
+    /// Lifetime of a refresh token in seconds
+    /// </summary>
     private const int RefreshDurationSeconds = 1_209_600;
 
     public async Task<OAuthResponseDTO?> AuthorizeAsync(string osuAuthCode)
@@ -154,67 +160,92 @@ public class OAuthHandler(
     }
 
     /// <summary>
-    /// Wrapper for generating a JSON Web Token (JWT) for a given client
+    /// Generates an access token for an <see cref="OAuthClient"/>
     /// </summary>
-    /// <remarks>Handles the encoding of rate limit overrides</remarks>
-    private string GenerateAccessToken(OAuthClient client)
-    {
-        client.Scopes = [.. client.Scopes, OtrClaims.Roles.Client];
-        IEnumerable<Claim> claims = client.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
-        var serializedOverrides = RateLimitOverridesSerializer.Serialize(client.RateLimitOverrides);
-        if (!string.IsNullOrEmpty(serializedOverrides))
-        {
-            claims = [.. claims,
-                new Claim(
-                    OtrClaims.RateLimitOverrides,
-                    serializedOverrides
-                )
-            ];
-        }
-
-        return GenerateAccessToken(
+    private string GenerateAccessToken(OAuthClient client) =>
+        GenerateAccessToken(
             client.Id.ToString(),
-            claims
+            [.. client.Scopes, OtrClaims.Roles.Client],
+            client.RateLimitOverrides
         );
-    }
 
     /// <summary>
-    /// Wrapper for generating a JSON Web Token (JWT) for a given user
+    /// Generates an access token for a <see cref="User"/>
     /// </summary>
-    /// <remarks>Handles the encoding of rate limit overrides</remarks>
-    private string GenerateAccessToken(User user)
+    private string GenerateAccessToken(User user) =>
+        GenerateAccessToken(
+            user.Id.ToString(),
+            [.. user.Scopes, OtrClaims.Roles.User],
+            user.RateLimitOverrides
+        );
+
+    /// <summary>
+    /// Generates an access token
+    /// </summary>
+    /// <param name="issuer">Id of the recipient as a string</param>
+    /// <param name="roles">Any <see cref="OtrClaims.Roles"/> the recipient belongs to</param>
+    /// <param name="rateLimitOverrides">Any <see cref="RateLimitOverrides"/>, if applicable</param>
+    private string GenerateAccessToken(
+        string issuer,
+        IEnumerable<string> roles,
+        RateLimitOverrides? rateLimitOverrides = null
+    )
     {
-        user.Scopes = [.. user.Scopes, OtrClaims.Roles.User];
-        IEnumerable<Claim> claims = user.Scopes.Select(role => new Claim(ClaimTypes.Role, role));
-        var serializedOverrides = RateLimitOverridesSerializer.Serialize(user.RateLimitOverrides);
-        if (!string.IsNullOrEmpty(serializedOverrides))
+        var claims = new List<Claim> { new(OtrClaims.TokenType, OtrClaims.TokenTypes.AccessToken) };
+
+        // Encode roles
+        claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+        // Handle rate limit overrides
+        if (rateLimitOverrides is not null)
         {
-            claims = [.. claims,
-                new Claim(
-                OtrClaims.RateLimitOverrides,
-                serializedOverrides
-                )
-            ];
+            var serializedOverrides = RateLimitOverridesSerializer.Serialize(rateLimitOverrides);
+            if (!string.IsNullOrEmpty(serializedOverrides))
+            {
+                claims.Add(new Claim(OtrClaims.RateLimitOverrides, serializedOverrides));
+            }
         }
 
-        return GenerateAccessToken(
-            user.Id.ToString(),
-            claims
-        );
-    }
-
-    /// <summary>
-    /// Generates a JSON Web Token (JWT) for a given issuer and set of roles (claims) to act as the OAuth2 access token.
-    /// </summary>
-    /// <param name="issuer">The id of the user or client this token is generated for</param>
-    /// <param name="claims">The claims used to form the <see cref="ClaimsIdentity"/></param>
-    private string GenerateAccessToken(string issuer, IEnumerable<Claim> claims)
-    {
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
             IssuedAt = DateTime.UtcNow,
             Expires = DateTime.UtcNow.AddSeconds(AccessDurationSeconds),
+            Issuer = issuer
+        };
+
+        return WriteToken(tokenDescriptor);
+    }
+
+    /// <summary>
+    /// Generates a refresh token
+    /// </summary>
+    /// <param name="issuer">Id of the recipient as a string</param>
+    /// <param name="role">
+    /// The <see cref="ClaimTypes.Role"/> of the recipient.
+    /// Must be of either <see cref="OtrClaims.Roles.User"/> or <see cref="OtrClaims.Roles.Client"/>
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// If <paramref name="role"/> is not of
+    /// either <see cref="OtrClaims.Roles.User"/> or <see cref="OtrClaims.Roles.Client"/>
+    /// </exception>
+    private string GenerateRefreshToken(string issuer, string role)
+    {
+        if (role is not OtrClaims.Roles.User && role is not OtrClaims.Roles.Client)
+        {
+            throw new ArgumentException(
+                $"Role must be of either ${OtrClaims.Roles.User} or ${OtrClaims.Roles.Client}"
+            );
+        }
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity([
+                new Claim(ClaimTypes.Role, role),
+                new Claim(OtrClaims.TokenType, OtrClaims.TokenTypes.RefreshToken)
+            ]),
+            IssuedAt = DateTime.UtcNow,
+            Expires = DateTime.UtcNow.AddSeconds(RefreshDurationSeconds),
             Issuer = issuer
         };
 
@@ -228,47 +259,27 @@ public class OAuthHandler(
         new JwtSecurityTokenHandler().ReadJwtToken(token);
 
     /// <summary>
-    /// Serializes a token descriptor into a string
+    /// Creates, signs, and writes a <see cref="SecurityToken"/> into a string from a
+    /// given <see cref="SecurityTokenDescriptor"/>
     /// </summary>
-    /// <remarks>Adds a unique GUID to each token to ensure randomness</remarks>
+    /// <remarks>
+    /// Handles encoding the <see cref="OtrClaims.Instance"/> and <see cref="SecurityTokenDescriptor.Audience"/> claims
+    /// </remarks>
     private string WriteToken(SecurityTokenDescriptor tokenDescriptor)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.Value.Key));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-        tokenDescriptor.SigningCredentials = credentials;
+        // Assign signing credentials and audience
+        tokenDescriptor.SigningCredentials = new SigningCredentials(
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfiguration.Value.Key)),
+            SecurityAlgorithms.HmacSha256
+        );
         tokenDescriptor.Audience = jwtConfiguration.Value.Audience;
-        tokenDescriptor.Claims = new Dictionary<string, object> { { "instance", Guid.NewGuid().ToString() } };
 
+        // Encode instance
+        tokenDescriptor.Claims.Add(OtrClaims.Instance, new Guid().ToString());
+
+        // Create and write the token
         var tokenHandler = new JwtSecurityTokenHandler();
         return tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
-    }
-
-    /// <summary>
-    /// Generates a JSON Web Token (JWT) for a given issuer to act as an OAuth2 refresh token.
-    /// </summary>
-    /// <param name="issuer">The id of the user or client this token is generated for</param>
-    /// <param name="role">
-    /// The role value to encode to the JWT. This value needs to be either <see cref="OtOtrClaimsser"/>
-    /// or <see cref="OtOtrClaimslient"/> depending on what type of entity this token is generated for
-    /// </param>
-    /// <returns>A new refresh token</returns>
-    private string GenerateRefreshToken(string issuer, string role)
-    {
-        if (role != OtrClaims.Roles.User && role != OtrClaims.Roles.Client)
-        {
-            throw new ArgumentException("Role must be either 'user' or 'client'");
-        }
-
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity([new Claim(ClaimTypes.Role, role)]),
-            IssuedAt = DateTime.UtcNow,
-            Expires = DateTime.UtcNow.AddSeconds(RefreshDurationSeconds),
-            Issuer = issuer
-        };
-
-        return WriteToken(tokenDescriptor);
     }
 
     /// <summary>
