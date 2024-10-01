@@ -1,3 +1,4 @@
+using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
@@ -21,7 +22,7 @@ public class FilteringController(IFilteringService filteringService) : Controlle
     /// <response code="400">Errors encountered during validation</response>
     /// <response code="200">The filtering result</response>
     [HttpPost]
-    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<FilteringResultDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> FilterAsync([FromBody] FilteringRequestDTO filteringRequest)
