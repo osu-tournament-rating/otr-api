@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Database.Entities;
 
-namespace API.Utilities;
+namespace API.Authorization;
 
 /// <summary>
 /// Custom serializer for encoding / decoding <see cref="RateLimitOverrides"/>
