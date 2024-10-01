@@ -21,24 +21,14 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     /// <remarks>Will not include match data</remarks>
     /// <response code="200">Returns all tournaments which fit the request query</response>
     /// <returns>
-    /// All tournaments if the <param name="requestQuery">requestQuery</param> is null,
-    /// else returns all tournaments which fit the query
+    /// A page of tournaments
     /// </returns>
     [HttpGet]
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> ListAsync([FromQuery] TournamentRequestQueryDTO? requestQuery)
     {
-        if (requestQuery is null)
-        {
-            if (!HttpContext.User.IsSystem())
-            {
-                return Unauthorized();
-            }
-
-            IEnumerable<TournamentDTO> result = await tournamentsService.ListAsync();
-            return Ok(result);
-        }
+        requestQuery ??= new TournamentRequestQueryDTO();
 
         ICollection<TournamentDTO> tournaments = await tournamentsService.GetAsync(requestQuery);
         return Ok(tournaments);
