@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using API.Authorization;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace API.Utilities.Extensions;
@@ -9,34 +10,34 @@ public static class ClaimsPrincipalExtensions
     /// Denotes the principal as having the admin role.
     /// </summary>
     public static bool IsAdmin(this ClaimsPrincipal claimsPrincipal) =>
-        IsInRole(claimsPrincipal, OtrClaims.Admin);
+        IsInRole(claimsPrincipal, OtrClaims.Roles.Admin);
 
     /// <summary>
     /// Denotes the principal as having the system role.
     /// </summary>
-    public static bool IsSystem(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrClaims.System);
+    public static bool IsSystem(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrClaims.Roles.System);
 
     /// <summary>
     /// Denotes the principal as having the user role.
     /// </summary>
-    public static bool IsUser(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrClaims.User);
+    public static bool IsUser(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrClaims.Roles.User);
 
     /// <summary>
     /// Denotes the principal as having the client role.
     /// </summary>
-    public static bool IsClient(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrClaims.Client);
+    public static bool IsClient(this ClaimsPrincipal claimsPrincipal) => IsInRole(claimsPrincipal, OtrClaims.Roles.Client);
 
     /// <summary>
     /// Denotes the principal as having the verifier role.
     /// </summary>
     public static bool IsMatchVerifier(this ClaimsPrincipal claimsPrincipal) =>
-        IsInRole(claimsPrincipal, OtrClaims.Verifier);
+        IsInRole(claimsPrincipal, OtrClaims.Roles.Verifier);
 
     /// <summary>
     /// Denotes the principle as having the whitelist role
     /// </summary>
     public static bool IsWhitelisted(this ClaimsPrincipal claimsPrincipal) =>
-        IsInRole(claimsPrincipal, OtrClaims.Whitelist);
+        IsInRole(claimsPrincipal, OtrClaims.Roles.Whitelist);
 
     /// <summary>
     /// Gets the issuer id of the principle
