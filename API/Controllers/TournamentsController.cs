@@ -20,10 +20,10 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     /// <param name="requestQuery">The optional request query filter</param>
     /// <remarks>Will not include match data</remarks>
     /// <response code="200">Returns all tournaments which fit the request query</response>
-    /// <response code="401">If a request is made to fetch all tournaments without
-    /// the system claim</response>
-    /// <returns>All tournaments if the <param name="requestQuery">requestQuery</param> is null,
+    /// <returns>
+    /// All tournaments if the <param name="requestQuery">requestQuery</param> is null,
     /// else returns all tournaments which fit the query
+    /// </returns>
     [HttpGet]
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
