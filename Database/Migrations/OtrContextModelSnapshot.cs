@@ -1824,27 +1824,27 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Database.Entities.OAuthClientAdminNote", b =>
-                {
-                    b.HasOne("Database.Entities.OAuthClient", "OAuthClient")
-                        .WithMany("AdminNotes")
-                        .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("OAuthClient");
-                });
-
             modelBuilder.Entity("Database.Entities.PlayerAdminNote", b =>
-                {
-                    b.HasOne("Database.Entities.Player", "Player")
-                        .WithMany("AdminNotes")
-                        .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            {
+                b.HasOne("Database.Entities.Player", "Player")
+                .WithMany("AdminNotes")
+                .HasForeignKey("ReferenceId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
 
-                    b.Navigation("Player");
-                });
+                b.Navigation("Player");
+            });
+
+            modelBuilder.Entity("Database.Entities.OAuthClientAdminNote", b =>
+            {
+                b.HasOne("Database.Entities.OAuthClient", "OAuthClient")
+                .WithMany("AdminNotes")
+                .HasForeignKey("ReferenceId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+                b.Navigation("OAuthClient");
+            });
 
             modelBuilder.Entity("Database.Entities.PlayerHighestRanks", b =>
                 {
