@@ -61,8 +61,6 @@ public class TournamentsService(
 
     public async Task<ICollection<TournamentDTO>> GetAsync(TournamentRequestQueryDTO requestQuery)
     {
-        ValidateRequest(requestQuery);
-
         return mapper.Map<ICollection<TournamentDTO>>(await tournamentsRepository.GetAsync(requestQuery.Page, requestQuery.PageSize,
             requestQuery.Verified, requestQuery.Ruleset));
     }
@@ -95,18 +93,5 @@ public class TournamentsService(
 
         await tournamentsRepository.UpdateAsync(existing);
         return mapper.Map<TournamentDTO>(existing);
-    }
-
-    private static void ValidateRequest(TournamentRequestQueryDTO requestQuery)
-    {
-        if (requestQuery.Page < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(requestQuery.Page), "Page must be greater than 0");
-        }
-
-        if (requestQuery.PageSize < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(requestQuery.PageSize), "PageSize must be greater than 0");
-        }
     }
 }
