@@ -26,10 +26,9 @@ public static class Program
 
         # endregion
 
-        Parser.Default.ParseArguments<GeneratorOptions, ReadOptions, WriteOptions>(args)
+        Parser.Default.ParseArguments<GeneratorOptions, ReadOptions>(args)
             .WithParsed<GeneratorOptions>(Generate)
             .WithParsed<ReadOptions>(Read)
-            .WithParsed<WriteOptions>(Write)
             .WithNotParsed(HandleParseErrors);
     }
 
@@ -91,11 +90,6 @@ public static class Program
     }
 
     private static void Read(ReadOptions o)
-    {
-        o.PostConfigure();
-    }
-
-    private static void Write(WriteOptions o)
     {
         o.PostConfigure();
     }

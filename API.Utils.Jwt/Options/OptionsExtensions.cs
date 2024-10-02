@@ -113,6 +113,30 @@ public static class OptionsExtensions
             return;
         }
 
+        if (!o.ValidateJwtConfig())
+        {
+            return;
+        }
+
+        // All validations passed, configuration can be used to generate an o!TR compliant JWT
+        o.IsValid = true;
+    }
+
+    /// <summary>
+    /// Performs input validation on an instance of <see cref="ReadOptions"/>.
+    /// Will log errors and set <see cref="ReadOptions.IsValid"/> based on the result
+    /// </summary>
+    public static void PostConfigure(this ReadOptions o)
+    {
+
+    }
+
+    /// <summary>
+    /// Validates the config-file based properties of an instance of <see cref="JwtUtilsOptionsBase"/>
+    /// </summary>
+    /// <returns>True if config is valid, false if not</returns>
+    private static bool ValidateJwtConfig(this JwtUtilsOptionsBase o)
+    {
         // Try to load JWT configuration values from file
         var jwtCfgFromFile = new JwtConfiguration();
         if (!string.IsNullOrEmpty(o.ConfigFile))
@@ -158,7 +182,7 @@ public static class OptionsExtensions
                 o.GetArgLongName(nameof(o.Key)),
                 ex
             );
-            return;
+            return false;
         }
 
         // Copy validated values back to the config
@@ -166,26 +190,7 @@ public static class OptionsExtensions
         o.Issuer = jwtCfg.Issuer;
         o.Key = jwtCfg.Key;
 
-        // All validations passed, configuration can be used to generate an o!TR compliant JWT
-        o.IsValid = true;
-    }
-
-    /// <summary>
-    /// Performs input validation on an instance of <see cref="ReadOptions"/>.
-    /// Will log errors and set <see cref="ReadOptions.IsValid"/> based on the result
-    /// </summary>
-    public static void PostConfigure(this ReadOptions o)
-    {
-
-    }
-
-    /// <summary>
-    /// Performs input validation on an instance of <see cref="WriteOptions"/>.
-    /// Will log errors and set <see cref="WriteOptions.IsValid"/> based on the result
-    /// </summary>
-    public static void PostConfigure(this WriteOptions o)
-    {
-
+        return true;
     }
 
     /// <summary>
@@ -214,9 +219,9 @@ public static class OptionsExtensions
     }
 
     /// <summary>
-    /// Gets the <see cref="OptionAttribute.LongName"/> of an <see cref="IJwtUtilsOptions"/> property
+    /// Gets the <see cref="OptionAttribute.LongName"/> of an <see cref="JwtUtilsOptionsBase"/> property
     /// </summary>
-    private static string GetArgLongName(this IJwtUtilsOptions options, string propName) =>
+    private static string GetArgLongName(this JwtUtilsOptionsBase options, string propName) =>
         options.GetType().GetProperty(propName)?.GetCustomAttribute<OptionAttribute>()?.LongName ?? string.Empty;
 
     /// <summary>
