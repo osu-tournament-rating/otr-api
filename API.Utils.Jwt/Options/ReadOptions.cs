@@ -1,6 +1,9 @@
+using CommandLine;
+
 namespace API.Utils.Jwt.Options;
 
-public class ReadOptions
+[Verb("read", aliases: ["r"], HelpText = "Read an encoded JWT")]
+public class ReadOptions : IJwtUtilsOptions
 {
-
+    public bool IsValid { get; set; }
 }

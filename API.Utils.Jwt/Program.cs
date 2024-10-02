@@ -1,35 +1,107 @@
-﻿using API.Utils.Jwt.Options;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using API.Authorization;
+using API.Utils.Jwt.Options;
 using CommandLine;
+using Database.Entities;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
+using Serilog;
 
 namespace API.Utils.Jwt;
 
-class Program
+public static class Program
 {
-    static int Main(string[] args)
+    public static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        # region Static Config
 
-        return Parser.Default.ParseArguments<GeneratorOptions, ReadOptions, WriteOptions>(args)
-            .MapResult(
-                (GeneratorOptions options) => Generate(options),
-                (ReadOptions options) => Read(options),
-                (WriteOptions options) => Write(options),
-                errors => 1
-            );
+        Log.Logger = new LoggerConfiguration().Enrich.FromLogContext().WriteTo.Console().CreateLogger();
+        JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        JsonWebTokenHandler.DefaultMapInboundClaims = false;
+        JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+        JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+        JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
+
+        # endregion
+
+        Parser.Default.ParseArguments<GeneratorOptions, ReadOptions, WriteOptions>(args)
+            .WithParsed<GeneratorOptions>(Generate)
+            .WithParsed<ReadOptions>(Read)
+            .WithParsed<WriteOptions>(Write)
+            .WithNotParsed(HandleParseErrors);
     }
 
-    private static int Generate(GeneratorOptions options)
+    private static void Generate(GeneratorOptions o)
     {
-        return 0;
+        Log.Information("Validating options...");
+        o.PostConfigure();
+
+        if (!o.IsValid)
+        {
+            Log.Error("Could not validate given options, exiting...");
+            return;
+        }
+
+        // Build claims
+        var claims = new List<Claim>
+        {
+            new(OtrClaims.TokenType, o.TokenType),
+            new(OtrClaims.Subject, o.Subject.ToString()),
+            new(OtrClaims.Role, o.SubjectType),
+            new(OtrClaims.Instance, Guid.NewGuid().ToString())
+        };
+        claims.AddRange(o.Roles.Select(r => new Claim(OtrClaims.Role, r)));
+
+        if (o.PermitLimit.HasValue || o.Window.HasValue)
+        {
+            claims.Add(new Claim(
+                OtrClaims.RateLimitOverrides,
+                RateLimitOverridesSerializer.Serialize(new RateLimitOverrides
+                {
+                    PermitLimit = o.PermitLimit,
+                    Window = o.Window
+                }
+                )
+            ));
+        }
+
+        Log.Information("Writing a JWT with options:\n{Opts}", o.ToString());
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.WriteToken(tokenHandler.CreateToken(new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            IssuedAt = DateTime.UtcNow,
+            Expires = DateTime.UtcNow.AddSeconds(o.ExpiresIn!.Value),
+            Audience = o.Audience,
+            Issuer = o.Issuer,
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(o.Key)),
+                SecurityAlgorithms.HmacSha256
+            ),
+        }));
+
+        Log.Information("");
+        Log.Information("Token Created");
+        Log.Information("----------------------------------------");
+        Log.Information(token);
+        Log.Information("----------------------------------------");
     }
 
-    private static int Read(ReadOptions options)
+    private static void Read(ReadOptions o)
     {
-        return 0;
+        o.PostConfigure();
     }
 
-    private static int Write(WriteOptions options)
+    private static void Write(WriteOptions o)
     {
-        return 0;
+        o.PostConfigure();
+    }
+
+    private static void HandleParseErrors(IEnumerable<Error> errors)
+    {
+
     }
 }
