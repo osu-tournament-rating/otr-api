@@ -45,12 +45,6 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     public Mods Mods { get; set; }
 
     /// <summary>
-    /// Star rating of the <see cref="Beatmap"/> after applying mods
-    /// </summary>
-    [Column("post_mod_sr")]
-    public double PostModSr { get; set; }
-
-    /// <summary>
     /// Timestamp for the beginning of the game
     /// </summary>
     [Column("start_time")]

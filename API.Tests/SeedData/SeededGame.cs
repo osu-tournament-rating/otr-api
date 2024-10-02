@@ -31,7 +31,6 @@ public static class SeededGame
             ScoringType = ScoringType.ScoreV2,
             TeamType = TeamType.HeadToHead,
             Mods = Mods.None,
-            PostModSr = 6.36389,
             OsuId = 502333236,
             VerificationStatus = VerificationStatus.PreVerified,
             RejectionReason = GameRejectionReason.None,
