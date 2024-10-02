@@ -7,6 +7,7 @@ using CommandLine;
 using Database.Entities;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using Serilog;
 
 namespace API.Utils.Jwt;
@@ -79,7 +80,7 @@ public static class Program
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(o.Key)),
                 SecurityAlgorithms.HmacSha256
-            ),
+            )
         }));
 
         Log.Information("");
@@ -91,7 +92,61 @@ public static class Program
 
     private static void Read(ReadOptions o)
     {
+        Log.Information("Validating options...");
         o.PostConfigure();
+
+        if (!o.IsValid)
+        {
+            Log.Error("Could not validate given options, exiting...");
+            return;
+        }
+
+        Log.Information("Reading token...");
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        JwtSecurityToken token = tokenHandler.ReadJwtToken(o.Token);
+
+        Log.Information("");
+        Log.Information("Header: '{Header}'", token.RawHeader);
+        Log.Information("-------------------------------------------------------");
+        Log.Information("\n" + JsonConvert.SerializeObject(token.Header, Formatting.Indented));
+        Log.Information("");
+        Log.Information("Payload: '{Payload}'", token.RawPayload);
+        Log.Information("-------------------------------------------------------");
+        Log.Information("\n" + JsonConvert.SerializeObject(token.Payload, Formatting.Indented));
+        Log.Information("");
+        Log.Information("Sig: '{Sig}'", token.RawSignature);
+
+        if (!o.Validate)
+        {
+            return;
+        }
+
+        Log.Information("");
+        Log.Information("Attempting to validate token...");
+
+        ClaimsPrincipal? principal = null;
+        try
+        {
+            principal = tokenHandler.ValidateToken(
+                o.Token,
+                DefaultTokenValidationParameters.Get(o.Issuer, o.Key, o.Audience),
+                out SecurityToken _
+            );
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Token could not be validated!");
+            Log.Error(ex.Message);
+        }
+
+        if (principal?.Identity is { IsAuthenticated: true })
+        {
+            Log.Information("Token is valid!");
+            return;
+        }
+
+        Log.Error("Token could not be validated!");
     }
 
     private static void HandleParseErrors(IEnumerable<Error> errors)

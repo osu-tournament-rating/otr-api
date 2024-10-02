@@ -55,4 +55,7 @@ public abstract class JwtUtilsOptionsBase
     )]
     [JsonIgnore]
     public string ConfigFile { get; set; } = string.Empty;
+
+    public override string ToString() =>
+        JsonConvert.SerializeObject(this, Formatting.Indented);
 }

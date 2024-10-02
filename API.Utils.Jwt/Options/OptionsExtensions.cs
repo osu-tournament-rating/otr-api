@@ -128,7 +128,15 @@ public static class OptionsExtensions
     /// </summary>
     public static void PostConfigure(this ReadOptions o)
     {
+        if (o.Validate)
+        {
+            if (!o.ValidateJwtConfig())
+            {
+                return;
+            }
+        }
 
+        o.IsValid = true;
     }
 
     /// <summary>

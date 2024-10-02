@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using API.Authorization;
 using CommandLine;
-using Newtonsoft.Json;
 
 namespace API.Utils.Jwt.Options;
 
@@ -69,7 +68,4 @@ public class GeneratorOptions : JwtUtilsOptionsBase
                    "\nDefault: 3600 (1 hour) for access tokens, 1_209_600 (2 weeks) for refresh tokens"
     )]
     public int? ExpiresIn { get; set; }
-
-    public override string ToString() =>
-        JsonConvert.SerializeObject(this, Formatting.Indented);
 }
