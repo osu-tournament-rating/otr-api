@@ -21,7 +21,7 @@ public class AccessUserResourcesAuthorizationHandler : AuthorizationHandler<Acce
             return Task.CompletedTask;
         }
 
-        // Reject if the request has no user id or does not pass "id" in route
+        // Reject if the request does not pass "id" in route
         if (!int.TryParse(httpContext.Request.RouteValues["id"]?.ToString(), out var routeId))
         {
             context.Fail();
