@@ -29,8 +29,7 @@ public static class Program
 
         Parser.Default.ParseArguments<GeneratorOptions, ReadOptions>(args)
             .WithParsed<GeneratorOptions>(Generate)
-            .WithParsed<ReadOptions>(Read)
-            .WithNotParsed(HandleParseErrors);
+            .WithParsed<ReadOptions>(Read);
     }
 
     private static void Generate(GeneratorOptions o)
@@ -146,11 +145,6 @@ public static class Program
             return;
         }
 
-        Log.Error("Token could not be validated!");
-    }
-
-    private static void HandleParseErrors(IEnumerable<Error> errors)
-    {
-
+        Log.Error("Token is not valid!");
     }
 }
