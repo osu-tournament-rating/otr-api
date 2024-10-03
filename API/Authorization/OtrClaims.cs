@@ -3,7 +3,7 @@ using System.Security.Claims;
 namespace API.Authorization;
 
 /// <summary>
-/// String values that represent claims encoded into JWTs produced for API access
+/// String values that represent claims encoded into JWTs produced for authentication
 /// </summary>
 /// <remarks>
 /// Functionally these serve as custom <see cref="ClaimTypes"/> consumed by the API
@@ -11,7 +11,12 @@ namespace API.Authorization;
 public static class OtrClaims
 {
     /// <summary>
-    /// <see cref="ClaimTypes.Role"/>s encoded into JWTs that control access to resources
+    /// Claim that describes a permission granted to a subject
+    /// </summary>
+    public const string Role = "role";
+
+    /// <summary>
+    /// Valid values for the <see cref="OtrClaims.Role"/> claim
     /// </summary>
     public static class Roles
     {
@@ -66,7 +71,6 @@ public static class OtrClaims
                 Verifier => true,
                 Submitter => true,
                 Whitelist => true,
-                RateLimitOverrides => true,
                 _ => false
             };
         }
@@ -81,7 +85,6 @@ public static class OtrClaims
                 // 'Client' not included because we only encode that role to the JWT
                 System => true,
                 Whitelist => true,
-                RateLimitOverrides => true,
                 _ => false
             };
         }
@@ -100,14 +103,48 @@ public static class OtrClaims
                 Verifier => true,
                 Submitter => true,
                 Whitelist => true,
-                RateLimitOverrides => true,
                 _ => false
             };
         }
     }
 
     /// <summary>
-    /// Claim granted to users or clients to denote overrides to the default rate limit
+    /// Claim that describes the functional type of the JWT
     /// </summary>
-    public const string RateLimitOverrides = "ratelimitoverrides";
+    public const string TokenType = "token-typ";
+
+    /// <summary>
+    /// Valid values for the <see cref="OtrClaims.TokenType"/> claim
+    /// </summary>
+    public static class TokenTypes
+    {
+        /// <summary>
+        /// Denotes the JWT as being an access token
+        /// </summary>
+        public const string AccessToken = "access";
+
+        /// <summary>
+        /// Denotes the JWT as being a refresh token
+        /// </summary>
+        public const string RefreshToken = "refresh";
+    }
+
+    /// <summary>
+    /// Claim that describes the subject of the JWT
+    /// </summary>
+    /// <remarks>
+    /// In our case, this is the id of the <see cref="Database.Entities.User"/>
+    /// or <see cref="Database.Entities.OAuthClient"/>
+    /// </remarks>
+    public const string Subject = "sub";
+
+    /// <summary>
+    /// Claim encoded into all JWTs to induce randomness in the payload
+    /// </summary>
+    public const string Instance = "inst";
+
+    /// <summary>
+    /// Claim that describes an override to the default rate limit
+    /// </summary>
+    public const string RateLimitOverrides = "rlo";
 }

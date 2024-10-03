@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
-using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API.Authorization;
@@ -17,7 +16,6 @@ using API.Repositories.Interfaces;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.SwaggerGen;
-using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
@@ -33,7 +31,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 using Npgsql;
@@ -389,24 +387,40 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 #region Authentication Configuration
 
-builder
-    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
+JsonWebTokenHandler.DefaultMapInboundClaims = false;
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         JwtConfiguration jwtConfiguration = builder.Configuration.BindAndValidate<JwtConfiguration>(
             JwtConfiguration.Position
         );
 
-        options.TokenValidationParameters = new TokenValidationParameters
+        options.MapInboundClaims = false;
+
+        options.TokenValidationParameters = DefaultTokenValidationParameters.Get(
+            jwtConfiguration.Issuer,
+            jwtConfiguration.Key,
+            jwtConfiguration.Audience
+        );
+
+        options.Events = new JwtBearerEvents
         {
-            ValidateIssuer = false,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidAudience = jwtConfiguration.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtConfiguration.Key)
-            )
+            // Reject authentication challenges not using an access token (or that don't contain a token type)
+            OnTokenValidated = context =>
+            {
+                if (context.Principal?.GetTokenType() is not OtrClaims.TokenTypes.AccessToken)
+                {
+                    context.Fail("Invalid token type. Only access tokens are accepted.");
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -428,6 +442,12 @@ builder.Services.AddSingleton<IAuthorizationHandler, AccessUserResourcesAuthoriz
 
 #endregion
 
+#region Context Accessors
+
+builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
+#endregion
+
 #region Dapper
 
 DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -436,7 +456,6 @@ DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 #region AutoMapper
 
-builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 #endregion
@@ -507,6 +526,7 @@ builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();
 builder.Services.AddScoped<IGameWinRecordsService, GameWinRecordsService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
@@ -590,7 +610,17 @@ if (app.Environment.IsDevelopment())
 
     app.UseSwagger();
     app.UseSwaggerUI(x => { x.SwaggerEndpoint("/swagger/v1/swagger.json", "osu! Tournament Rating API"); });
-    app.MapControllers().AllowAnonymous();
+
+    // Endpoints expecting authentication WILL throw exceptions if used anonymously
+    // Example: `GET` `/me`
+    if (args.Contains("--allow-anonymous"))
+    {
+        app.MapControllers().AllowAnonymous();
+    }
+    else
+    {
+        app.MapControllers();
+    }
 }
 else
 {

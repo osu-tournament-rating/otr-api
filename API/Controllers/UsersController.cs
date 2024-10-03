@@ -109,7 +109,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
             return NotFound();
         }
 
-        return await userService.RejectSubmissionsAsync(id, User.AuthorizedIdentity())
+        return await userService.RejectSubmissionsAsync(id, User.GetSubjectId())
             ? Ok()
             : BadRequest();
     }

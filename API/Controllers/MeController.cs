@@ -1,7 +1,6 @@
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using Database.Enums;
@@ -18,22 +17,12 @@ public class MeController(IUserService userService) : Controller
     /// <summary>
     /// Get the currently logged in user
     /// </summary>
-    /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="302">Redirects to `GET` `/users/{id}`</response>
     [HttpGet]
     [Authorize(Roles = OtrClaims.Roles.User)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status302Found)]
-    public IActionResult Get()
-    {
-        var id = User.AuthorizedIdentity();
-        if (!id.HasValue)
-        {
-            return Unauthorized();
-        }
-
-        return RedirectToAction("Get", "Users", new { id });
-    }
+    public IActionResult Get() =>
+        RedirectToAction("Get", "Users", new { id = User.GetSubjectId() });
 
     /// <summary>
     /// Get player stats for the currently logged in user
@@ -47,11 +36,9 @@ public class MeController(IUserService userService) : Controller
     /// <param name="ruleset">Ruleset to filter for</param>
     /// <param name="dateMin">Filter from earliest date</param>
     /// <param name="dateMax">Filter to latest date</param>
-    /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="302">Redirects to `GET` `/stats/{key}`</response>
     [HttpGet("stats")]
     [Authorize(Roles = OtrClaims.Roles.User)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     public async Task<IActionResult> GetStatsAsync(
         [FromQuery] Ruleset? ruleset = null,
@@ -59,13 +46,7 @@ public class MeController(IUserService userService) : Controller
         [FromQuery] DateTime? dateMax = null
     )
     {
-        var userId = User.AuthorizedIdentity();
-        if (!userId.HasValue)
-        {
-            return Unauthorized();
-        }
-
-        var playerId = await userService.GetPlayerIdAsync(userId.Value);
+        var playerId = await userService.GetPlayerIdAsync(User.GetSubjectId());
         if (!playerId.HasValue)
         {
             return NotFound();
@@ -83,40 +64,20 @@ public class MeController(IUserService userService) : Controller
     /// <summary>
     /// Update the ruleset for the currently logged in user
     /// </summary>
-    /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="307">Redirects to `POST` `/users/{id}/settings/ruleset`</response>
     [HttpPost("settings/ruleset")]
     [Authorize(Roles = OtrClaims.Roles.User)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
-    public IActionResult UpdateRuleset([FromBody] Ruleset ruleset)
-    {
-        var userId = User.AuthorizedIdentity();
-        if (!userId.HasValue)
-        {
-            return Unauthorized();
-        }
-
-        return RedirectToActionPreserveMethod("UpdateRuleset", "Users", new { id = userId, ruleset });
-    }
+    public IActionResult UpdateRuleset([FromBody] Ruleset ruleset) =>
+        RedirectToActionPreserveMethod("UpdateRuleset", "Users", new { id = User.GetSubjectId(), ruleset });
 
     /// <summary>
     /// Sync the ruleset of the currently logged in user to their osu! ruleset
     /// </summary>
-    /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="307">Redirects to `POST` `/users/{id}/settings/ruleset:sync`</response>
     [HttpPost("settings/ruleset:sync")]
     [Authorize(Roles = OtrClaims.Roles.User)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
-    public IActionResult SyncRuleset()
-    {
-        var userId = User.AuthorizedIdentity();
-        if (!userId.HasValue)
-        {
-            return Unauthorized();
-        }
-
-        return RedirectToActionPreserveMethod("SyncRuleset", "Users", new { id = userId });
-    }
+    public IActionResult SyncRuleset() =>
+        RedirectToActionPreserveMethod("SyncRuleset", "Users", new { id = User.GetSubjectId() });
 }

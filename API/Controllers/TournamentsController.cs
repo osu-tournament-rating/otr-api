@@ -1,7 +1,6 @@
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -46,17 +45,10 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
     [Authorize(Roles = OtrClaims.Roles.User)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateAsync([FromBody] TournamentSubmissionDTO tournamentSubmission)
     {
-        var submitterId = User.AuthorizedIdentity();
-        if (!submitterId.HasValue)
-        {
-            return Unauthorized();
-        }
-
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState.ErrorMessage());
@@ -73,7 +65,7 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
         // Create tournament
         TournamentCreatedResultDTO result = await tournamentsService.CreateAsync(
             tournamentSubmission,
-            submitterId.Value,
+            User.GetSubjectId(),
             User.IsAdmin() || User.IsSystem()
         );
 
