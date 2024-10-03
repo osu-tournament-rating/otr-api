@@ -30,11 +30,11 @@ public class OAuthHandler(
 {
     public async Task<AccessCredentialsDTO?> AuthorizeAsync(string osuAuthCode)
     {
-        logger.LogDebug("Attempting authorization via osuAuthToken");
+        logger.LogDebug("Attempting authorization via osu! Auth Code");
 
         if (string.IsNullOrEmpty(osuAuthCode))
         {
-            logger.LogDebug("osuAuthCode null or empty, cannot authorize");
+            logger.LogDebug("osu! Auth Code null or empty, cannot authorize");
             return null;
         }
 
