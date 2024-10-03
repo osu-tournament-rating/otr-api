@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 namespace API.Middlewares;
@@ -7,6 +6,14 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
 {
     public async Task Invoke(HttpContext context)
     {
+#if DEBUG
+        if (context.Request.Path.StartsWithSegments("/swagger"))
+        {
+            await next(context);
+            return;
+        }
+#endif
+
         await LogRequest(context.Request);
 
         Stream originalBodyStream = context.Response.Body;
@@ -101,9 +108,7 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
             text += "...";
         }
 
-        var ident = response
-            .HttpContext.User.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Iss)
-            ?.Value;
+        var ident = response.HttpContext.User.Identity?.Name ?? "unknown";
 
         if (response.StatusCode >= 400)
         {

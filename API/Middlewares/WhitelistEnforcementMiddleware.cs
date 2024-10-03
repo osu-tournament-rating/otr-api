@@ -24,7 +24,7 @@ public class WhitelistEnforcementMiddleware(RequestDelegate next, ILogger<Whitel
             return;
         }
 
-        logger.LogInformation("Rejecting client with identity {id} for whitelist violation", context.User.AuthorizedIdentity());
+        logger.LogInformation("Rejecting client with identity {id} for whitelist violation", context.User.GetSubjectId());
         context.Response.StatusCode = StatusCodes.Status403Forbidden;
     }
 }

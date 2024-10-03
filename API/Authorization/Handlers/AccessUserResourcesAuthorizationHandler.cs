@@ -21,16 +21,15 @@ public class AccessUserResourcesAuthorizationHandler : AuthorizationHandler<Acce
             return Task.CompletedTask;
         }
 
-        var userId = context.User.AuthorizedIdentity();
-        // Reject if the request has no user id or does not pass "id" in route
-        if (!int.TryParse(httpContext.Request.RouteValues["id"]?.ToString(), out var routeId) || !userId.HasValue)
+        // Reject if the request does not pass "id" in route
+        if (!int.TryParse(httpContext.Request.RouteValues["id"]?.ToString(), out var routeId))
         {
             context.Fail();
             return Task.CompletedTask;
         }
 
         // Allow requests that are privileged or have matching user id and target route id
-        if (context.User.IsAdmin() || context.User.IsSystem() || (requirement.AllowSelf && userId == routeId))
+        if (context.User.IsAdmin() || context.User.IsSystem() || (requirement.AllowSelf && context.User.GetSubjectId() == routeId))
         {
             context.Succeed(requirement);
         }

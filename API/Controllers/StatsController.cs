@@ -1,3 +1,4 @@
+using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
@@ -33,7 +34,7 @@ public class StatsController(
     /// <response code="404">If a player does not exist</response>
     /// <response code="200">Returns a player's stats</response>
     [HttpGet("{key}")]
-    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<PlayerStatsDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(
@@ -56,7 +57,7 @@ public class StatsController(
     }
 
     [HttpGet("histogram")]
-    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     public async Task<ActionResult<IDictionary<int, int>>> GetRatingHistogramAsync(
         [FromQuery] Ruleset ruleset = Ruleset.Osu
     ) => Ok(await baseStatsService.GetHistogramAsync(ruleset));

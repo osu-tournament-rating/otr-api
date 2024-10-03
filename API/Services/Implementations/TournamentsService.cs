@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -8,6 +9,7 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
+[SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly")]
 public class TournamentsService(
     ITournamentsRepository tournamentsRepository,
     IMatchesRepository matchesRepository,
@@ -59,6 +61,12 @@ public class TournamentsService(
 
     public async Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true) =>
         mapper.Map<TournamentDTO?>(await tournamentsRepository.GetAsync(id, eagerLoad));
+
+    public async Task<ICollection<TournamentDTO>> GetAsync(TournamentRequestQueryDTO requestQuery)
+    {
+        return mapper.Map<ICollection<TournamentDTO>>(await tournamentsRepository.GetAsync(requestQuery.Page, requestQuery.PageSize,
+            requestQuery.Verified, requestQuery.Ruleset));
+    }
 
     public async Task<TournamentDTO?> GetVerifiedAsync(int id) =>
         mapper.Map<TournamentDTO?>(await tournamentsRepository.GetVerifiedAsync(id));

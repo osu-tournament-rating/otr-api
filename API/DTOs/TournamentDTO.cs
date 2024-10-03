@@ -46,6 +46,11 @@ public class TournamentDTO
     public TournamentProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
+    /// The tournament rejection reason
+    /// </summary>
+    public TournamentRejectionReason RejectionReason { get; set; }
+
+    /// <summary>
     /// osu! ruleset
     /// </summary>
     public Ruleset Ruleset { get; set; }

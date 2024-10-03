@@ -3,13 +3,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Interfaces;
 using Database.Enums;
+using Database.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Database.Entities;
 
 /// <summary>
-/// Base class for a <typeparamref name="TAudit"/> entity that serves as an audit for a <see cref="TAuditable"/> entity
+/// Base class for a <typeparamref name="TAudit"/> entity that serves as an audit for an auditable entity
 /// </summary>
 /// <typeparam name="TAuditable">Derived audit</typeparam>
 /// <typeparam name="TAudit">Entity to be audited</typeparam>
@@ -41,17 +42,18 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
     [Column("changes", TypeName = "jsonb")]
     public IDictionary<string, AuditChangelogEntry> Changes { get; } = new Dictionary<string, AuditChangelogEntry>();
 
-    public virtual void GenerateAudit(EntityEntry origEntityEntry)
+    public virtual bool GenerateAudit(EntityEntry origEntityEntry)
     {
         if (origEntityEntry.Entity is not TAuditable origEntity)
         {
-            return;
+            return false;
         }
 
         // Determine action type
         AuditActionType? auditAction = origEntityEntry.State switch
         {
-            EntityState.Added => AuditActionType.Created,
+            // TODO: Investigate auditing entities in the created state (no primary key)
+            // EntityState.Added => AuditActionType.Created,
             EntityState.Modified => AuditActionType.Updated,
             EntityState.Deleted => AuditActionType.Deleted,
             _ => null
@@ -59,7 +61,7 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
 
         if (!auditAction.HasValue)
         {
-            return;
+            return false;
         }
 
         // Populate audit metadata and navigations
@@ -75,17 +77,14 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
         // No need to store a changelog for created or deleted entities
         if (ActionType is not AuditActionType.Updated)
         {
-            return;
+            return true;
         }
 
-        // Exclude common props like Id, Created, Updated
-        IEnumerable<string> excludePropNames = typeof(IUpdateableEntity)
-            .GetProperties()
-            .Select(prop => prop.Name)
-            .ToList();
-
         // Create changelog
-        foreach (PropertyEntry? prop in origEntityEntry.Properties.Where(p => p.IsModified && !excludePropNames.Contains(p.Metadata.Name)))
+        foreach (PropertyEntry? prop in origEntityEntry.Properties.Where(p =>
+                     p.IsModified
+                     && !AuditingUtils.BlacklistedPropNames.Contains(p.Metadata.Name))
+                 )
         {
             if (prop.OriginalValue is not null && prop.CurrentValue is not null && prop.OriginalValue != prop.CurrentValue)
             {
@@ -95,5 +94,7 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
                 );
             }
         }
+
+        return Changes.Count > 0;
     }
 }

@@ -1,6 +1,6 @@
+using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -18,17 +18,23 @@ public partial class TournamentsController(
 ) : Controller
 {
     /// <summary>
-    /// List all tournaments
+    /// Get all tournaments which fit an optional request query
     /// </summary>
+    /// <param name="requestQuery">The optional request query filter</param>
     /// <remarks>Will not include match data</remarks>
-    /// <response code="200">Returns all tournaments</response>
+    /// <response code="200">Returns all tournaments which fit the request query</response>
+    /// <returns>
+    /// A page of tournaments
+    /// </returns>
     [HttpGet]
-    [Authorize(Roles = OtrClaims.System)]
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ListAsync()
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ListAsync([FromQuery] TournamentRequestQueryDTO? requestQuery)
     {
-        IEnumerable<TournamentDTO> result = await tournamentsService.ListAsync();
-        return Ok(result);
+        requestQuery ??= new TournamentRequestQueryDTO();
+
+        ICollection<TournamentDTO> tournaments = await tournamentsService.GetAsync(requestQuery);
+        return Ok(tournaments);
     }
 
     /// <summary>
@@ -41,18 +47,11 @@ public partial class TournamentsController(
     /// </response>
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
-    [Authorize(Roles = OtrClaims.User)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateAsync([FromBody] TournamentSubmissionDTO tournamentSubmission)
     {
-        var submitterId = User.AuthorizedIdentity();
-        if (!submitterId.HasValue)
-        {
-            return Unauthorized();
-        }
-
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState.ErrorMessage());
@@ -64,10 +63,12 @@ public partial class TournamentsController(
                 $"A tournament with name {tournamentSubmission.Name} for ruleset {tournamentSubmission.Ruleset} already exists");
         }
 
+        tournamentSubmission.ForumUrl = new Uri(tournamentSubmission.ForumUrl).GetLeftPart(UriPartial.Path); // Remove query string
+
         // Create tournament
         TournamentCreatedResultDTO result = await tournamentsService.CreateAsync(
             tournamentSubmission,
-            submitterId.Value,
+            User.GetSubjectId(),
             User.IsAdmin() || User.IsSystem()
         );
 
@@ -78,21 +79,22 @@ public partial class TournamentsController(
     /// Get a tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <param name="unfiltered">If true, includes all match data, regardless of verification status.
-    /// Also includes all child navigations if true.
-    /// Default false (strictly verified data with limited navigation properties)
+    /// <param name="verified">If true, specifically includes verified match data. If false,
+    /// includes all data, regardless of verification status.
+    /// Also includes all child navigations if false.
+    /// Default true (strictly verified data with limited navigation properties)
     /// </param>
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="200">Returns the tournament</response>
     [HttpGet("{id:int}")]
-    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAsync(int id, [FromQuery] bool unfiltered = false)
+    public async Task<IActionResult> GetAsync(int id, [FromQuery] bool verified = true)
     {
-        TournamentDTO? result = unfiltered
-            ? await tournamentsService.GetAsync(id)
-            : await tournamentsService.GetVerifiedAsync(id);
+        TournamentDTO? result = verified
+            ? await tournamentsService.GetVerifiedAsync(id)
+            : await tournamentsService.GetAsync(id);
 
         if (result is null)
         {
@@ -111,7 +113,7 @@ public partial class TournamentsController(
     /// <response code="400">If JsonPatch data is malformed</response>
     /// <response code="200">Returns the patched tournament</response>
     [HttpPatch("{id:int}")]
-    [Authorize(Roles = OtrClaims.Admin)]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
@@ -153,7 +155,7 @@ public partial class TournamentsController(
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="200">Returns all matches from a tournament</response>
     [HttpGet("{id:int}/matches")]
-    [Authorize(Roles = $"{OtrClaims.User}, {OtrClaims.Client}")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<IEnumerable<MatchDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListMatchesAsync(int id)
