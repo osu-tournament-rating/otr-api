@@ -10,10 +10,15 @@ public class OtrDbContextFactory : IDesignTimeDbContextFactory<OtrContext>
     {
         try
         {
-            // Load the startup project appsettings.json file, not optional.
+            // Load the startup project appsettings.json or
+            // appsettings.Development.json files, not optional.
             // If missing, an exception is raised.
             IConfigurationRoot configuration =
+#if DEBUG
+                new ConfigurationBuilder().AddJsonFile("appsettings.Development.json", false).Build();
+#else
                 new ConfigurationBuilder().AddJsonFile("appsettings.json", false).Build();
+#endif
 
             var builder = new DbContextOptionsBuilder<OtrContext>();
             builder.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));

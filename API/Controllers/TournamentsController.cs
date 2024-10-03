@@ -68,6 +68,8 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
                 $"A tournament with name {tournamentSubmission.Name} for ruleset {tournamentSubmission.Ruleset} already exists");
         }
 
+        tournamentSubmission.ForumUrl = new Uri(tournamentSubmission.ForumUrl).GetLeftPart(UriPartial.Path); // Remove query string
+
         // Create tournament
         TournamentCreatedResultDTO result = await tournamentsService.CreateAsync(
             tournamentSubmission,
