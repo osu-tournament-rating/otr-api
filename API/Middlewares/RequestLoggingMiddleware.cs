@@ -1,4 +1,5 @@
 using System.Text;
+using API.Utilities.Extensions;
 
 namespace API.Middlewares;
 
@@ -108,7 +109,16 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILogger<RequestLoggi
             text += "...";
         }
 
-        var ident = response.HttpContext.User.Identity?.Name ?? "unknown";
+        string? ident = null;
+        try
+        {
+            ident = response.HttpContext.User.GetSubjectId().ToString();
+        }
+        catch
+        {
+            // ignored, we can expect null ids here
+        }
+        ident ??= "unknown";
 
         if (response.StatusCode >= 400)
         {
