@@ -323,7 +323,7 @@ builder.Services.AddSwaggerGen(options =>
 
     options.SchemaFilter<BitwiseFlagEnumSchemaFilter>();
 
-    // Adds documentation to swagger about authentication
+    // Adds documentation to swagger about authentication and the ability to authenticate from swagger ui
     var oauthScopes = new Dictionary<string, string>
     {
         [OtrClaims.Roles.User] = OtrClaims.GetDescription(OtrClaims.Roles.User),
@@ -335,22 +335,22 @@ builder.Services.AddSwaggerGen(options =>
         [OtrClaims.Roles.Whitelist] = OtrClaims.GetDescription(OtrClaims.Roles.Whitelist),
     };
 
-    options.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
+    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Name = "Authorization",
+        Name = "JWT Authentication",
         Type = SecuritySchemeType.Http,
-        Description = "JWT Authorization header using the Bearer scheme",
-        Scheme = "BearerAuth",
+        Description = "JWT Authorization using the Bearer scheme. Paste **ONLY** your JWT in the text box below",
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
         BearerFormat = "JWT"
     });
 
     options.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
     {
-        Name = "Authorization",
+        Name = "OAuth2 Authentication",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.OAuth2,
-        Description = "OAuth2 Authorization",
+        Description = "OAuth2 Authentication",
         Flows = new OpenApiOAuthFlows
         {
             AuthorizationCode = new OpenApiOAuthFlow
@@ -368,7 +368,6 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
-    // Adds the ability to authenticate from swagger ui
     options.AddSecurityRequirement(SecurityRequirements.BearerSecurityRequirement);
 
     options.OperationFilter<ActionSecurityOperationFilter>();
