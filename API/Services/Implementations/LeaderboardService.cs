@@ -13,7 +13,7 @@ public class LeaderboardService(
 {
     public async Task<LeaderboardDTO> GetLeaderboardAsync(
         LeaderboardRequestQueryDTO requestQuery,
-        int? authorizedPlayerId = null
+        int? authorizedUserId = null
     )
     {
         ValidateRequest(requestQuery);
@@ -25,7 +25,7 @@ public class LeaderboardService(
                 requestQuery.Ruleset,
                 requestQuery.ChartType,
                 requestQuery.Filter,
-                authorizedPlayerId
+                authorizedUserId
             ),
             FilterDefaults = await baseStatsService.LeaderboardFilterDefaultsAsync(
                 requestQuery.Ruleset,
@@ -39,7 +39,7 @@ public class LeaderboardService(
             requestQuery.PageSize,
             requestQuery.ChartType,
             requestQuery.Filter,
-            authorizedPlayerId
+            authorizedUserId
         );
 
         var leaderboardPlayerInfo = new List<LeaderboardPlayerInfoDTO>();

@@ -43,7 +43,7 @@ services:
     restart: always
   db:
     container_name: db
-    image: postgres:latest
+    image: postgres:16
     volumes:
       - db_data:/var/lib/postgresql/data
     env_file:

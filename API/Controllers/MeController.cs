@@ -1,7 +1,6 @@
+using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
-using API.Utilities.Extensions;
 using Asp.Versioning;
 using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -17,24 +16,13 @@ public class MeController(IUserService userService) : Controller
     /// <summary>
     /// Get the currently logged in user
     /// </summary>
-    /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="302">Redirects to `GET` `/users/{id}`</response>
     /// <response code="200">Returns the currently logged in user</response>
     [HttpGet]
-    [Authorize(Roles = OtrClaims.User)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType(StatusCodes.Status302Found)]
-    [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
-    public IActionResult Get()
-    {
-        var id = User.AuthorizedIdentity();
-        if (!id.HasValue)
-        {
-            return Unauthorized();
-        }
-
-        return RedirectToAction("Get", "Users", new { id });
-    }
+    public IActionResult Get() =>
+        RedirectToAction("Get", "Users", new { id = User.GetSubjectId() });
 
     /// <summary>
     /// Get player stats for the currently logged in user
@@ -48,12 +36,10 @@ public class MeController(IUserService userService) : Controller
     /// <param name="ruleset">Ruleset to filter for</param>
     /// <param name="dateMin">Filter from earliest date</param>
     /// <param name="dateMax">Filter to latest date</param>
-    /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="302">Redirects to `GET` `/stats/{key}`</response>
     /// <response code="200">Returns the currently logged in user's player stats</response>
     [HttpGet("stats")]
-    [Authorize(Roles = OtrClaims.User)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType(StatusCodes.Status302Found)]
     [ProducesResponseType<PlayerStatsDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStatsAsync(
@@ -62,13 +48,7 @@ public class MeController(IUserService userService) : Controller
         [FromQuery] DateTime? dateMax = null
     )
     {
-        var userId = User.AuthorizedIdentity();
-        if (!userId.HasValue)
-        {
-            return Unauthorized();
-        }
-
-        var playerId = await userService.GetPlayerIdAsync(userId.Value);
+        var playerId = await userService.GetPlayerIdAsync(User.GetSubjectId());
         if (!playerId.HasValue)
         {
             return NotFound();
@@ -86,56 +66,36 @@ public class MeController(IUserService userService) : Controller
     /// <summary>
     /// Update the ruleset for the currently logged in user
     /// </summary>
-    /// <response code="401">If the requester is not properly authenticated</response>
     /// <response code="308">Redirects to `POST` `/users/{id}/settings/ruleset`</response>
     /// <response code="400">If the operation was not successful</response>
     /// <response code="200">If the operation was successful</response>
     [HttpPost("settings/ruleset")]
-    [Authorize(Roles = OtrClaims.User)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType(StatusCodes.Status308PermanentRedirect)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public IActionResult UpdateRuleset([FromBody] Ruleset ruleset)
-    {
-        var userId = User.AuthorizedIdentity();
-        if (!userId.HasValue)
-        {
-            return Unauthorized();
-        }
-
-        return RedirectToActionPermanentPreserveMethod(
+    public IActionResult UpdateRuleset([FromBody] Ruleset ruleset) =>
+        RedirectToActionPermanentPreserveMethod(
             nameof(UsersController.UpdateRulesetAsync),
             nameof(UsersController),
-            new { id = userId, ruleset }
+            new { id = User.GetSubjectId(), ruleset }
         );
-    }
 
     /// <summary>
     /// Sync the ruleset of the currently logged in user to their osu! ruleset
     /// </summary>
-    /// <response code="401">If the requester is not properly authenticated</response>
-    /// <response code="308">Redirects to `POST` `/users/{id}/settings/ruleset:sync`</response>
+    /// <response code="307">Redirects to `POST` `/users/{id}/settings/ruleset:sync`</response>
     /// <response code="400">If the operation was not successful</response>
     /// <response code="200">If the operation was successful</response>
     [HttpPost("settings/ruleset:sync")]
-    [Authorize(Roles = OtrClaims.User)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType(StatusCodes.Status308PermanentRedirect)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public IActionResult SyncRuleset()
-    {
-        var userId = User.AuthorizedIdentity();
-        if (!userId.HasValue)
-        {
-            return Unauthorized();
-        }
-
-        return RedirectToActionPermanentPreserveMethod(
+    public IActionResult SyncRuleset() =>
+        RedirectToActionPermanentPreserveMethod(
             nameof(UsersController.SyncRulesetAsync),
             nameof(UsersController),
-            new { id = userId }
+            new { id = User.GetSubjectId() }
         );
-    }
 }

@@ -1,3 +1,4 @@
+using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
@@ -9,7 +10,7 @@ namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[Authorize(Roles = OtrClaims.User)]
+[Authorize(Roles = OtrClaims.Roles.User)]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class SearchController(ISearchService service) : Controller
 {
