@@ -18,6 +18,7 @@ public class MeController(IUserService userService) : Controller
     /// Get the currently logged in user
     /// </summary>
     /// <response code="302">Redirects to `GET` `/users/{id}`</response>
+    /// <response code="200">Returns the currently logged in user</response>
     [HttpGet]
     [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType(StatusCodes.Status302Found)]
@@ -37,9 +38,11 @@ public class MeController(IUserService userService) : Controller
     /// <param name="dateMin">Filter from earliest date</param>
     /// <param name="dateMax">Filter to latest date</param>
     /// <response code="302">Redirects to `GET` `/stats/{key}`</response>
+    /// <response code="200">Returns the currently logged in user's player stats</response>
     [HttpGet("stats")]
     [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType<PlayerStatsDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStatsAsync(
         [FromQuery] Ruleset? ruleset = null,
         [FromQuery] DateTime? dateMin = null,
@@ -64,20 +67,36 @@ public class MeController(IUserService userService) : Controller
     /// <summary>
     /// Update the ruleset for the currently logged in user
     /// </summary>
-    /// <response code="307">Redirects to `POST` `/users/{id}/settings/ruleset`</response>
+    /// <response code="308">Redirects to `POST` `/users/{id}/settings/ruleset`</response>
+    /// <response code="400">If the operation was not successful</response>
+    /// <response code="200">If the operation was successful</response>
     [HttpPost("settings/ruleset")]
     [Authorize(Roles = OtrClaims.Roles.User)]
-    [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
+    [ProducesResponseType(StatusCodes.Status308PermanentRedirect)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult UpdateRuleset([FromBody] Ruleset ruleset) =>
-        RedirectToActionPreserveMethod("UpdateRuleset", "Users", new { id = User.GetSubjectId(), ruleset });
+        RedirectToActionPermanentPreserveMethod(
+            nameof(UsersController.UpdateRulesetAsync),
+            nameof(UsersController),
+            new { id = User.GetSubjectId(), ruleset }
+        );
 
     /// <summary>
     /// Sync the ruleset of the currently logged in user to their osu! ruleset
     /// </summary>
     /// <response code="307">Redirects to `POST` `/users/{id}/settings/ruleset:sync`</response>
+    /// <response code="400">If the operation was not successful</response>
+    /// <response code="200">If the operation was successful</response>
     [HttpPost("settings/ruleset:sync")]
     [Authorize(Roles = OtrClaims.Roles.User)]
-    [ProducesResponseType(StatusCodes.Status307TemporaryRedirect)]
+    [ProducesResponseType(StatusCodes.Status308PermanentRedirect)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public IActionResult SyncRuleset() =>
-        RedirectToActionPreserveMethod("SyncRuleset", "Users", new { id = User.GetSubjectId() });
+        RedirectToActionPermanentPreserveMethod(
+            nameof(UsersController.SyncRulesetAsync),
+            nameof(UsersController),
+            new { id = User.GetSubjectId() }
+        );
 }

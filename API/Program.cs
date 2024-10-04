@@ -271,6 +271,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     );
 
+    // Allow swagger to use in-code XML documentation tags like <summary> and <remarks>
     string[] xmlDocPaths =
     [
         $"{AppDomain.CurrentDomain.BaseDirectory}API.xml",
@@ -282,6 +283,7 @@ builder.Services.AddSwaggerGen(options =>
         options.IncludeXmlCommentsWithRemarks(xmlDoc);
     }
 
+    // Generate custom descriptors for endpoints using method names
     var unknownMethodCount = 0;
     options.CustomOperationIds(description =>
     {
@@ -302,6 +304,7 @@ builder.Services.AddSwaggerGen(options =>
         return $"{controller}_{method}";
     });
 
+    // Applies a fix to the way that swagger parses descriptions for enums
     options.AddEnumsWithValuesFixFilters(enumsOptions =>
     {
         enumsOptions.IncludeDescriptions = true;
@@ -309,8 +312,8 @@ builder.Services.AddSwaggerGen(options =>
         enumsOptions.DescriptionSource = DescriptionSources.XmlComments;
 
         enumsOptions.ApplySchemaFilter = true;
-        enumsOptions.ApplyParameterFilter = true;
-        enumsOptions.ApplyDocumentFilter = true;
+        enumsOptions.ApplyDocumentFilter = false;
+        enumsOptions.ApplyParameterFilter = false;
 
         foreach (var xmlDoc in xmlDocPaths)
         {
@@ -319,6 +322,55 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     options.SchemaFilter<BitwiseFlagEnumSchemaFilter>();
+
+    // Adds documentation to swagger about authentication and the ability to authenticate from swagger ui
+    var oauthScopes = new Dictionary<string, string>
+    {
+        [OtrClaims.Roles.User] = OtrClaims.GetDescription(OtrClaims.Roles.User),
+        [OtrClaims.Roles.Client] = OtrClaims.GetDescription(OtrClaims.Roles.Client),
+        [OtrClaims.Roles.System] = OtrClaims.GetDescription(OtrClaims.Roles.System),
+        [OtrClaims.Roles.Admin] = OtrClaims.GetDescription(OtrClaims.Roles.Admin),
+        [OtrClaims.Roles.Verifier] = OtrClaims.GetDescription(OtrClaims.Roles.Verifier),
+        [OtrClaims.Roles.Submitter] = OtrClaims.GetDescription(OtrClaims.Roles.Submitter),
+        [OtrClaims.Roles.Whitelist] = OtrClaims.GetDescription(OtrClaims.Roles.Whitelist),
+    };
+
+    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Name = "JWT Authentication",
+        Type = SecuritySchemeType.Http,
+        Description = "JWT Authorization using the Bearer scheme. Paste **ONLY** your JWT in the text box below",
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
+    {
+        Name = "OAuth2 Authentication",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.OAuth2,
+        Description = "OAuth2 Authentication",
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri("api/v1.0/OAuth/authorize", UriKind.Relative),
+                RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
+                Scopes = oauthScopes
+            },
+            ClientCredentials = new OpenApiOAuthFlow
+            {
+                TokenUrl = new Uri("api/v1.0/OAuth/token", UriKind.Relative),
+                RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
+                Scopes = oauthScopes
+            }
+        }
+    });
+
+    options.AddSecurityRequirement(SecurityRequirements.BearerSecurityRequirement);
+
+    options.OperationFilter<ActionSecurityOperationFilter>();
 });
 
 #endregion
