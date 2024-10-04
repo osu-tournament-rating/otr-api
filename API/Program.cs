@@ -271,6 +271,7 @@ builder.Services.AddSwaggerGen(options =>
         }
     );
 
+    // Allow swagger to use in-code XML documentation tags like <summary> and <remarks>
     string[] xmlDocPaths =
     [
         $"{AppDomain.CurrentDomain.BaseDirectory}API.xml",
@@ -282,6 +283,7 @@ builder.Services.AddSwaggerGen(options =>
         options.IncludeXmlCommentsWithRemarks(xmlDoc);
     }
 
+    // Generate custom descriptors for endpoints using method names
     var unknownMethodCount = 0;
     options.CustomOperationIds(description =>
     {
@@ -302,6 +304,7 @@ builder.Services.AddSwaggerGen(options =>
         return $"{controller}_{method}";
     });
 
+    // Applies a fix to the way that swagger parses descriptions for enums
     options.AddEnumsWithValuesFixFilters(enumsOptions =>
     {
         enumsOptions.IncludeDescriptions = true;
@@ -320,6 +323,18 @@ builder.Services.AddSwaggerGen(options =>
 
     options.SchemaFilter<BitwiseFlagEnumSchemaFilter>();
 
+    // Adds documentation to swagger about authentication
+    var oauthScopes = new Dictionary<string, string>
+    {
+        [OtrClaims.Roles.User] = OtrClaims.GetDescription(OtrClaims.Roles.User),
+        [OtrClaims.Roles.Client] = OtrClaims.GetDescription(OtrClaims.Roles.Client),
+        [OtrClaims.Roles.System] = OtrClaims.GetDescription(OtrClaims.Roles.System),
+        [OtrClaims.Roles.Admin] = OtrClaims.GetDescription(OtrClaims.Roles.Admin),
+        [OtrClaims.Roles.Verifier] = OtrClaims.GetDescription(OtrClaims.Roles.Verifier),
+        [OtrClaims.Roles.Submitter] = OtrClaims.GetDescription(OtrClaims.Roles.Submitter),
+        [OtrClaims.Roles.Whitelist] = OtrClaims.GetDescription(OtrClaims.Roles.Whitelist),
+    };
+
     options.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -329,17 +344,6 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "BearerAuth",
         BearerFormat = "JWT"
     });
-
-    var oauthScopes = new Dictionary<string, string>
-    {
-        [OtrClaims.User] = OtrClaims.GetDescription(OtrClaims.User),
-        [OtrClaims.Client] = OtrClaims.GetDescription(OtrClaims.Client),
-        [OtrClaims.System] = OtrClaims.GetDescription(OtrClaims.System),
-        [OtrClaims.Admin] = OtrClaims.GetDescription(OtrClaims.Admin),
-        [OtrClaims.Verifier] = OtrClaims.GetDescription(OtrClaims.Verifier),
-        [OtrClaims.Submitter] = OtrClaims.GetDescription(OtrClaims.Submitter),
-        [OtrClaims.Whitelist] = OtrClaims.GetDescription(OtrClaims.Whitelist),
-    };
 
     options.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
     {
@@ -363,6 +367,9 @@ builder.Services.AddSwaggerGen(options =>
             }
         }
     });
+
+    // Adds the ability to authenticate from swagger ui
+    options.AddSecurityRequirement(SecurityRequirements.BearerSecurityRequirement);
 
     options.OperationFilter<ActionSecurityOperationFilter>();
 });

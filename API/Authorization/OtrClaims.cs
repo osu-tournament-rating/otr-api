@@ -55,7 +55,7 @@ public static class OtrClaims
         public const string Submitter = "submit";
 
         /// <summary>
-        /// Role for users and clients to restrict api access
+        /// Role granted to users and clients to allow access during times of restricted use
         /// </summary>
         public const string Whitelist = "whitelist";
 
@@ -147,4 +147,26 @@ public static class OtrClaims
     /// Claim that describes an override to the default rate limit
     /// </summary>
     public const string RateLimitOverrides = "rlo";
+
+    /// <summary>
+    /// Gets the description of a claim or role
+    /// </summary>
+    public static string GetDescription(string claim) =>
+        claim switch
+        {
+            Roles.User => "Role granted to all users.",
+            Roles.Client => "Role granted to all clients.",
+            Roles.System => "Role granted to internal privileged clients.",
+            Roles.Admin => "Role granted to privileged users.",
+            Roles.Verifier => "Role granted to users with permission to verify submission data.",
+            Roles.Submitter => "Role granted to users with permission to submit tournament data.",
+            Roles.Whitelist => "Role granted to users and clients to allow access during times of restricted use.",
+            TokenType => "Claim that describes the functional type of the JWT.",
+            TokenTypes.AccessToken => "Denotes the JWT as being an access token.",
+            TokenTypes.RefreshToken => "Denotes the JWT as being a refresh token.",
+            Subject => "Claim that describes the subject of the JWT.",
+            Instance => "Claim encoded into all JWTs to induce randomness in the payload.",
+            RateLimitOverrides => "Claim that describes an override to the default rate limit.",
+            _ => "No description available."
+        };
 }
