@@ -106,12 +106,10 @@ public static class Program
         JwtSecurityToken token = tokenHandler.ReadJwtToken(o.Token);
 
         Log.Information("");
-        Log.Information("Header: '{Header}'", token.RawHeader);
-        Log.Information("-------------------------------------------------------");
+        Log.Information("Header:");
         Log.Information("\n" + JsonConvert.SerializeObject(token.Header, Formatting.Indented));
         Log.Information("");
-        Log.Information("Payload: '{Payload}'", token.RawPayload);
-        Log.Information("-------------------------------------------------------");
+        Log.Information("Payload:");
         Log.Information("\n" + JsonConvert.SerializeObject(token.Payload, Formatting.Indented));
         Log.Information("");
         Log.Information("Sig: '{Sig}'", token.RawSignature);
