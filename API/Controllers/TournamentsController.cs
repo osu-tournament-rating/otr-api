@@ -15,17 +15,23 @@ namespace API.Controllers;
 public class TournamentsController(ITournamentsService tournamentsService) : Controller
 {
     /// <summary>
-    /// List all tournaments
+    /// Get all tournaments which fit an optional request query
     /// </summary>
+    /// <param name="requestQuery">The optional request query filter</param>
     /// <remarks>Will not include match data</remarks>
-    /// <response code="200">Returns all tournaments</response>
+    /// <response code="200">Returns all tournaments which fit the request query</response>
+    /// <returns>
+    /// A page of tournaments
+    /// </returns>
     [HttpGet]
-    [Authorize(Roles = OtrClaims.Roles.System)]
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ListAsync()
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ListAsync([FromQuery] TournamentRequestQueryDTO? requestQuery)
     {
-        IEnumerable<TournamentDTO> result = await tournamentsService.ListAsync();
-        return Ok(result);
+        requestQuery ??= new TournamentRequestQueryDTO();
+
+        ICollection<TournamentDTO> tournaments = await tournamentsService.GetAsync(requestQuery);
+        return Ok(tournaments);
     }
 
     /// <summary>
@@ -54,6 +60,8 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
                 $"A tournament with name {tournamentSubmission.Name} for ruleset {tournamentSubmission.Ruleset} already exists");
         }
 
+        tournamentSubmission.ForumUrl = new Uri(tournamentSubmission.ForumUrl).GetLeftPart(UriPartial.Path); // Remove query string
+
         // Create tournament
         TournamentCreatedResultDTO result = await tournamentsService.CreateAsync(
             tournamentSubmission,
@@ -68,9 +76,10 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     /// Get a tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <param name="unfiltered">If true, includes all match data, regardless of verification status.
-    /// Also includes all child navigations if true.
-    /// Default false (strictly verified data with limited navigation properties)
+    /// <param name="verified">If true, specifically includes verified match data. If false,
+    /// includes all data, regardless of verification status.
+    /// Also includes all child navigations if false.
+    /// Default true (strictly verified data with limited navigation properties)
     /// </param>
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="200">Returns the tournament</response>
@@ -78,11 +87,11 @@ public class TournamentsController(ITournamentsService tournamentsService) : Con
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAsync(int id, [FromQuery] bool unfiltered = false)
+    public async Task<IActionResult> GetAsync(int id, [FromQuery] bool verified = true)
     {
-        TournamentDTO? result = unfiltered
-            ? await tournamentsService.GetAsync(id)
-            : await tournamentsService.GetVerifiedAsync(id);
+        TournamentDTO? result = verified
+            ? await tournamentsService.GetVerifiedAsync(id)
+            : await tournamentsService.GetAsync(id);
 
         if (result is null)
         {

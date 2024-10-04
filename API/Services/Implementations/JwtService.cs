@@ -17,7 +17,10 @@ public class JwtService(
 {
     private readonly JwtConfiguration _jwtConfiguration = jwtConfiguration.Value;
 
+    // Default: 1 hour
     public int AccessDurationSeconds => 3600;
+
+    // Default: 2 weeks
     public int RefreshDurationSeconds => 1_209_600;
 
     public string GenerateAccessToken(OAuthClient client) =>

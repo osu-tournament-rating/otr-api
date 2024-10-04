@@ -178,7 +178,6 @@ public class OsuApiDataParserService(
                 ScoringType = gameEvent.Game.ScoringType,
                 TeamType = gameEvent.Game.TeamType,
                 Mods = gameEvent.Game.Mods,
-                PostModSr = gameEvent.Game.Beatmap?.StarRating ?? default,
                 StartTime = gameEvent.Game.StartTime,
                 Beatmap = _beatmapsCache.FirstOrDefault(b => b.OsuId == gameEvent.Game.BeatmapId),
                 Scores = CreateScores(gameEvent.Game.Scores).ToList()

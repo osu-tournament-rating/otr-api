@@ -55,7 +55,10 @@ public class OAuthController(IOAuthHandler oAuthHandler, IOAuthClientService oAu
 
         return result.Response is not null
             ? Ok(result.Response)
-            : BadRequest("Unknown error");
+            : Problem(
+                detail: "Unknown error: Authorization attempt was not successful and did not include error detail.",
+                statusCode: StatusCodes.Status500InternalServerError
+            );
     }
 
     /// <summary>
@@ -97,6 +100,9 @@ public class OAuthController(IOAuthHandler oAuthHandler, IOAuthClientService oAu
 
         return result.Response is not null
             ? Ok(result.Response)
-            : BadRequest("Unknown error");
+            : Problem(
+                detail: "Unknown error: Authorization attempt was not successful and did not include error detail.",
+                statusCode: StatusCodes.Status500InternalServerError
+            );
     }
 }

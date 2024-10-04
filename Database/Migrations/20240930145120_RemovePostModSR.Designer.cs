@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20240930145120_RemovePostModSR")]
+    partial class RemovePostModSR
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1824,27 +1827,27 @@ namespace Database.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Database.Entities.PlayerAdminNote", b =>
-            {
-                b.HasOne("Database.Entities.Player", "Player")
-                .WithMany("AdminNotes")
-                .HasForeignKey("ReferenceId")
-                .OnDelete(DeleteBehavior.Cascade)
-                .IsRequired();
-
-                b.Navigation("Player");
-            });
-
             modelBuilder.Entity("Database.Entities.OAuthClientAdminNote", b =>
-            {
-                b.HasOne("Database.Entities.OAuthClient", "OAuthClient")
-                .WithMany("AdminNotes")
-                .HasForeignKey("ReferenceId")
-                .OnDelete(DeleteBehavior.Cascade)
-                .IsRequired();
+                {
+                    b.HasOne("Database.Entities.OAuthClient", "OAuthClient")
+                        .WithMany("AdminNotes")
+                        .HasForeignKey("ReferenceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                b.Navigation("OAuthClient");
-            });
+                    b.Navigation("OAuthClient");
+                });
+
+            modelBuilder.Entity("Database.Entities.PlayerAdminNote", b =>
+                {
+                    b.HasOne("Database.Entities.Player", "Player")
+                        .WithMany("AdminNotes")
+                        .HasForeignKey("ReferenceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Player");
+                });
 
             modelBuilder.Entity("Database.Entities.PlayerHighestRanks", b =>
                 {
