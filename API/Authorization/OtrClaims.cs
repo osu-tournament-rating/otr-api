@@ -55,57 +55,69 @@ public static class OtrClaims
         public const string Submitter = "submit";
 
         /// <summary>
-        /// Role for users and clients to restrict api access
+        /// Role granted to users and clients to allow access during times of restricted use
         /// </summary>
         public const string Whitelist = "whitelist";
 
         /// <summary>
+        /// Collection of all valid <see cref="Roles"/>
+        /// </summary>
+        public static readonly string[] ValidRoles =
+        [
+            User,
+            Client,
+            System,
+            Admin,
+            Verifier,
+            Submitter,
+            Whitelist
+        ];
+
+        /// <summary>
+        /// Collection of <see cref="Roles"/> assignable to <see cref="User"/>s
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="User"/> role itself is not considered assignable because it is only used in the JWT
+        /// as an identifier and is not saved in the database in <see cref="Database.Entities.User.Scopes"/>
+        /// </remarks>
+        public static readonly string[] UserAssignableRoles =
+        [
+            Admin,
+            Verifier,
+            Submitter,
+            Whitelist
+        ];
+
+        /// <summary>
         /// Denotes the given role is assignable to a user
         /// </summary>
-        public static bool IsUserAssignableRole(string role)
-        {
-            return role switch
-            {
-                // 'User' not included because we only encode that role to the JWT
-                Admin => true,
-                Verifier => true,
-                Submitter => true,
-                Whitelist => true,
-                _ => false
-            };
-        }
+        public static bool IsUserAssignableRole(string role) =>
+            UserAssignableRoles.Contains(role);
+
+        /// <summary>
+        /// Collection of <see cref="Roles"/> assignable to <see cref="Client"/>s
+        /// </summary>
+        /// <remarks>
+        /// The <see cref="Client"/> role itself is not considered assignable because it is only used in the JWT
+        /// as an identifier and is not saved in the database in <see cref="Database.Entities.OAuthClient.Scopes"/>
+        /// </remarks>
+        public static readonly string[] ClientAssignableRoles =
+        [
+            System,
+            Whitelist
+        ];
 
         /// <summary>
         /// Denotes the given role is assignable to a client
         /// </summary>
-        public static bool IsClientAssignableRole(string role)
-        {
-            return role switch
-            {
-                // 'Client' not included because we only encode that role to the JWT
-                System => true,
-                Whitelist => true,
-                _ => false
-            };
-        }
+        public static bool IsClientAssignableRole(string role) =>
+            ClientAssignableRoles.Contains(role);
 
         /// <summary>
         /// Denotes the given role is valid
         /// </summary>
-        public static bool IsValidRole(string role)
-        {
-            return role switch
-            {
-                User => true,
-                Client => true,
-                System => true,
-                Admin => true,
-                Verifier => true,
-                Submitter => true,
-                Whitelist => true,
-                _ => false
-            };
-        }
+        public static bool IsValidRole(string role) =>
+            ValidRoles.Contains(role);
     }
 
     /// <summary>
@@ -147,4 +159,26 @@ public static class OtrClaims
     /// Claim that describes an override to the default rate limit
     /// </summary>
     public const string RateLimitOverrides = "rlo";
+
+    /// <summary>
+    /// Gets the description of a claim or role
+    /// </summary>
+    public static string GetDescription(string claim) =>
+        claim switch
+        {
+            Roles.User => "Role granted to all users.",
+            Roles.Client => "Role granted to all clients.",
+            Roles.System => "Role granted to internal privileged clients.",
+            Roles.Admin => "Role granted to privileged users.",
+            Roles.Verifier => "Role granted to users with permission to verify submission data.",
+            Roles.Submitter => "Role granted to users with permission to submit tournament data.",
+            Roles.Whitelist => "Role granted to users and clients to allow access during times of restricted use.",
+            TokenType => "Claim that describes the functional type of the JWT.",
+            TokenTypes.AccessToken => "Denotes the JWT as being an access token.",
+            TokenTypes.RefreshToken => "Denotes the JWT as being a refresh token.",
+            Subject => "Claim that describes the subject of the JWT.",
+            Instance => "Claim encoded into all JWTs to induce randomness in the payload.",
+            RateLimitOverrides => "Claim that describes an override to the default rate limit.",
+            _ => "No description available."
+        };
 }
