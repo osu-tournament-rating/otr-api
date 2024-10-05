@@ -154,9 +154,16 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(gan => gan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
-            entity.HasOne(g => g.Game)
+            // Relationship: Game
+            entity.HasOne(gan => gan.Game)
                 .WithMany(g => g.AdminNotes)
-                .HasForeignKey(g => g.ReferenceId)
+                .HasForeignKey(gan => gan.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relationship: User
+            entity.HasOne(gan => gan.AdminUser)
+                .WithMany(u => u.GameAdminNotes)
+                .HasForeignKey(gan => gan.ReferenceId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -827,6 +834,11 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasMany(u => u.Clients)
                 .WithOne(c => c.User)
                 .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(u => u.GameAdminNotes)
+                .WithOne(gan => gan.AdminUser)
+                .HasForeignKey(gan => gan.AdminUserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

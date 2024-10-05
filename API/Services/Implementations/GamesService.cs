@@ -32,4 +32,7 @@ public class GamesService(IGamesRepository gamesRepository, IMapper mapper) : IG
         await gamesRepository.UpdateAsync(existing);
         return mapper.Map<GameDTO>(existing);
     }
+
+    public async Task<bool> ExistsAsync(int id) =>
+        await gamesRepository.ExistsAsync(id);
 }
