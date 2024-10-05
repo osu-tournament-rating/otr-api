@@ -46,4 +46,7 @@ public class PlayerService(IPlayersRepository playerRepository, IMapper mapper) 
 
         return dtos;
     }
+
+    public async Task<bool> ExistsAsync(int id) =>
+        await playerRepository.ExistsAsync(id);
 }
