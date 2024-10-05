@@ -6,7 +6,7 @@ namespace API.DTOs;
 public class AdminNoteDTO
 {
     /// <summary>
-    /// Id
+    /// The id of the admin note
     /// </summary>
     public int Id { get; init; }
 
@@ -38,5 +38,5 @@ public class AdminNoteDTO
     /// <summary>
     /// Content of the note
     /// </summary>
-    public string Note { get; init; } = string.Empty;
+    public string Note { get; set; } = string.Empty;
 }

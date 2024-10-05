@@ -28,7 +28,7 @@ public class AdminNoteService(
         };
 
         await adminNoteRepository.CreateAsync(entity);
-        return mapper.Map<AdminNoteDTO>(entity);
+        return mapper.Map<AdminNoteDTO>(await adminNoteRepository.GetAsync<TAdminNote>(entity.Id));
     }
 
     public async Task<AdminNoteDTO?> GetAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase =>
@@ -37,16 +37,16 @@ public class AdminNoteService(
     public async Task<IEnumerable<AdminNoteDTO>> ListAsync<TAdminNote>(int referenceId) where TAdminNote : AdminNoteEntityBase =>
         mapper.Map<IEnumerable<AdminNoteDTO>>(await adminNoteRepository.ListAsync<TAdminNote>(referenceId));
 
-    public async Task<AdminNoteDTO?> UpdateAsync<TAdminNote>(int id, string note) where TAdminNote : AdminNoteEntityBase
+    public async Task<AdminNoteDTO?> UpdateAsync<TAdminNote>(AdminNoteDTO updatedNote) where TAdminNote : AdminNoteEntityBase
     {
-        TAdminNote? adminNote = await adminNoteRepository.GetAsync<TAdminNote>(id);
+        TAdminNote? adminNote = await adminNoteRepository.GetAsync<TAdminNote>(updatedNote.Id);
 
         if (adminNote is null)
         {
             return null;
         }
 
-        adminNote.Note = note;
+        adminNote.Note = updatedNote.Note;
         await adminNoteRepository.UpdateAsync(adminNote);
 
         return mapper.Map<AdminNoteDTO>(adminNote);

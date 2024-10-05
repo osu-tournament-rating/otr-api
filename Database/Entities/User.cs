@@ -63,4 +63,9 @@ public class User : UpdateableEntityBase
     /// A collection of <see cref="Tournament"/>s submitted by the user
     /// </summary>
     public ICollection<Tournament> SubmittedTournaments { get; set; } = new List<Tournament>();
+
+    /// <summary>
+    /// A collection of <see cref="TournamentAdminNote"/>s created by the user
+    /// </summary>
+    public ICollection<TournamentAdminNote> TournamentAdminNotes { get; set; } = new List<TournamentAdminNote>();
 }

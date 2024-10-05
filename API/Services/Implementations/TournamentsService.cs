@@ -45,6 +45,9 @@ public class TournamentsService(
         return mapper.Map<TournamentCreatedResultDTO>(tournament);
     }
 
+    public async Task<bool> ExistsAsync(int id) =>
+        await tournamentsRepository.ExistsAsync(id);
+
     public async Task<bool> ExistsAsync(string name, Ruleset ruleset)
         => await tournamentsRepository.ExistsAsync(name, ruleset);
 

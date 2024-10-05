@@ -12,7 +12,10 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class TournamentsController(ITournamentsService tournamentsService) : Controller
+public partial class TournamentsController(
+    ITournamentsService tournamentsService,
+    IAdminNoteService adminNoteService
+) : Controller
 {
     /// <summary>
     /// Get all tournaments which fit an optional request query

@@ -11,6 +11,10 @@ public class MapperProfile : Profile
 {
     public MapperProfile()
     {
+        CreateMap<AdminNoteEntityBase, AdminNoteDTO>()
+            .ForMember(x => x.AdminUsername,
+                opt => opt.MapFrom(x => x.AdminUser.Player == null ? null : x.AdminUser.Player.Username));
+
         CreateMap<Beatmap, BeatmapDTO>();
         CreateMap<Game, GameDTO>();
         CreateMap<GameWinRecord, GameWinRecordDTO>();

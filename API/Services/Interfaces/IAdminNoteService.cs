@@ -42,11 +42,10 @@ public interface IAdminNoteService
     /// <summary>
     /// Updates the <see cref="AdminNoteEntityBase.Note"/> of a <typeparamref name="TAdminNote"/>
     /// </summary>
-    /// <param name="id">Id of the <typeparamref name="TAdminNote"/></param>
-    /// <param name="note">The new note</param>
+    /// <param name="updatedNote">The updated admin note</param>
     /// <typeparam name="TAdminNote">The type of admin note being updated</typeparam>
     /// <returns>The updated <see cref="AdminNoteDTO"/>, or null if not found</returns>
-    Task<AdminNoteDTO?> UpdateAsync<TAdminNote>(int id, string note) where TAdminNote : AdminNoteEntityBase;
+    Task<AdminNoteDTO?> UpdateAsync<TAdminNote>(AdminNoteDTO updatedNote) where TAdminNote : AdminNoteEntityBase;
 
     /// <summary>
     /// Deletes a <typeparamref name="TAdminNote"/>
