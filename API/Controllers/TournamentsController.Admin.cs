@@ -53,7 +53,7 @@ public partial class TournamentsController
             return NotFound();
         }
 
-        return Ok(await adminNoteService.GetAsync<TournamentAdminNote>(id));
+        return Ok(await adminNoteService.ListAsync<TournamentAdminNote>(id));
     }
 
     /// <summary>
