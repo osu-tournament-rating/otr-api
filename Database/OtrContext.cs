@@ -734,6 +734,13 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .WithMany(t => t.AdminNotes)
                 .HasForeignKey(tan => tan.ReferenceId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: User
+            entity
+                .HasOne(tan => tan.AdminUser)
+                .WithMany(u => u.TournamentAdminNotes)
+                .HasForeignKey(tan => tan.AdminUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<TournamentAudit>(entity =>
