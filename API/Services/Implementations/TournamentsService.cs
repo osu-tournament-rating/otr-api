@@ -21,7 +21,7 @@ public class TournamentsService(
         bool preApprove
     )
     {
-        // Only create matches that dont already exist
+        // Only create matches that don't already exist
         IEnumerable<long> enumerableMatchIds = submission.Ids.ToList();
         IEnumerable<long> existingMatchIds = (await matchesRepository.GetAsync(enumerableMatchIds))
             .Select(m => m.OsuId)
@@ -40,7 +40,13 @@ public class TournamentsService(
             SubmittedByUserId = submitterUserId,
             Matches = enumerableMatchIds
                 .Except(existingMatchIds)
-                .Select(matchId => new Match { OsuId = matchId, SubmittedByUserId = submitterUserId }).ToList()
+                .Select(matchId => new Match { OsuId = matchId, SubmittedByUserId = submitterUserId }).ToList(),
+            PooledBeatmaps = submission.BeatmapIds
+                .Select(beatmapId => new Beatmap
+                {
+                    OsuId = beatmapId
+                })
+                .ToList()
         });
         return mapper.Map<TournamentCreatedResultDTO>(tournament);
     }
