@@ -13,13 +13,11 @@ public partial class GamesController
     /// Creates an admin note for a game
     /// </summary>
     /// <param name="id">Game id</param>
-    /// <response code="401">If the requester is not properly authorized</response>
     /// <response code="404">If a game matching the given id does not exist</response>
     /// <response code="400">If the authorized user does not exist</response>
     /// <response code="200">Returns the created admin note</response>
     [HttpPost("{id:int}/notes")]
     [Authorize(Roles = $"{OtrClaims.Roles.Admin}")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status200OK)]
@@ -61,7 +59,6 @@ public partial class GamesController
     /// </summary>
     /// <param name="id">Game id</param>
     /// <param name="noteId">Admin note id</param>
-    /// <response code="401">If the requester is not properly authorized</response>
     /// <response code="404">
     /// If a game matching the given id does not exist.
     /// If an admin note matching the given noteId does not exist
@@ -70,7 +67,6 @@ public partial class GamesController
     /// <response code="200">Returns the updated admin note</response>
     [HttpPatch("{id:int}/notes/{noteId:int}")]
     [Authorize(Roles = $"{OtrClaims.Roles.Admin}")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status200OK)]
@@ -100,7 +96,6 @@ public partial class GamesController
     /// </summary>
     /// <param name="id">Game id</param>
     /// <param name="noteId">Admin note id</param>
-    /// <response code="401">If the requester is not properly authorized</response>
     /// <response code="404">
     /// If a game matching the given id does not exist.
     /// If an admin note matching the given noteId does not exist
@@ -108,7 +103,6 @@ public partial class GamesController
     /// <response code="200">Returns the updated admin note</response>
     [HttpDelete("{id:int}/notes/{noteId:int}")]
     [Authorize(Roles = $"{OtrClaims.Roles.Admin}")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status200OK)]
