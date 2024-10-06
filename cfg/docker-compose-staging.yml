@@ -20,7 +20,8 @@ services:
       - db
       - redis
     restart: always
-    driver: "json-file"
+    logging:
+      driver: "json-file"
       options:
         max-size: "50m"
         max-file: "3"
