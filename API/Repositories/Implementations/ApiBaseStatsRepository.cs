@@ -61,7 +61,7 @@ public class ApiBaseStatsRepository(
         int? playerId
     )
     {
-        IQueryable<PlayerRating> baseQuery = _context.PlayerRatings.WhereRuleset((Ruleset)ruleset);
+        IQueryable<PlayerRating> baseQuery = _context.PlayerRatings.WhereRuleset(ruleset);
 
         if (chartType == LeaderboardChartType.Country && playerId.HasValue)
         {
@@ -90,7 +90,7 @@ public class ApiBaseStatsRepository(
             return baseQuery;
         }
 
-        baseQuery = FilterByRank((Ruleset)ruleset, baseQuery, filter.MinRank, filter.MaxRank);
+        baseQuery = FilterByRank(ruleset, baseQuery, filter.MinRank, filter.MaxRank);
         baseQuery = FilterByRating(baseQuery, filter.MinRating, filter.MaxRating);
         baseQuery = FilterByMatchesPlayed(baseQuery, filter.MinMatches, filter.MaxMatches);
 

@@ -1,5 +1,4 @@
 using API.Authorization;
-using API.Utilities;
 
 namespace APITests.Utilities;
 

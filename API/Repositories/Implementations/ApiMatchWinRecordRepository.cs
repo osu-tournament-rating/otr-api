@@ -26,7 +26,7 @@ public class ApiMatchWinRecordRepository(
     {
         List<MatchWinRecord> redTeams = await _context
             .MatchWinRecords.Where(x =>
-                x.Match.Tournament.Ruleset == (Ruleset)ruleset
+                x.Match.Tournament.Ruleset == ruleset
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
                 && x.WinnerRoster.Contains(playerId)
@@ -35,7 +35,7 @@ public class ApiMatchWinRecordRepository(
 
         List<MatchWinRecord> blueTeams = await _context
             .MatchWinRecords.Where(x =>
-                x.Match.Tournament.Ruleset == (Ruleset)ruleset
+                x.Match.Tournament.Ruleset == ruleset
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
                 && x.LoserRoster.Contains(playerId)
@@ -73,7 +73,7 @@ public class ApiMatchWinRecordRepository(
                 || (!x.LoserRoster.Contains(playerId) && x.WinnerRoster.Contains(playerId))
             )
             .Where(x =>
-                x.Match.Tournament.Ruleset == (Ruleset)ruleset
+                x.Match.Tournament.Ruleset == ruleset
                 && x.Match.StartTime >= dateMin
                 && x.Match.StartTime <= dateMax
             )

@@ -43,47 +43,47 @@ public static class SeededBaseStats
         }
 
         // Add all of the tiers that are true
-        if (tiers.FilterEliteGrandmaster == true)
+        if (tiers.FilterEliteGrandmaster)
         {
             lb.Add(Get().SetEliteGrandmaster());
         }
 
-        if (tiers.FilterGrandmaster == true)
+        if (tiers.FilterGrandmaster)
         {
             lb.Add(Get().SetGrandmaster());
         }
 
-        if (tiers.FilterMaster == true)
+        if (tiers.FilterMaster)
         {
             lb.Add(Get().SetMaster());
         }
 
-        if (tiers.FilterDiamond == true)
+        if (tiers.FilterDiamond)
         {
             lb.Add(Get().SetDiamond());
         }
 
-        if (tiers.FilterEmerald == true)
+        if (tiers.FilterEmerald)
         {
             lb.Add(Get().SetEmerald());
         }
 
-        if (tiers.FilterPlatinum == true)
+        if (tiers.FilterPlatinum)
         {
             lb.Add(Get().SetPlatinum());
         }
 
-        if (tiers.FilterGold == true)
+        if (tiers.FilterGold)
         {
             lb.Add(Get().SetGold());
         }
 
-        if (tiers.FilterSilver == true)
+        if (tiers.FilterSilver)
         {
             lb.Add(Get().SetSilver());
         }
 
-        if (tiers.FilterBronze == true)
+        if (tiers.FilterBronze)
         {
             lb.Add(Get().SetBronze());
         }

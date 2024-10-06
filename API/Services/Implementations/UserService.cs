@@ -26,7 +26,7 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
 
     public async Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId)
     {
-        IEnumerable<Match>? submissions = (await userRepository.GetAsync(id))?.SubmittedMatches?.ToList();
+        IEnumerable<Match>? submissions = (await userRepository.GetAsync(id))?.SubmittedMatches.ToList();
         if (submissions is null)
         {
             // Return in the affirmative if the user has no submissions
