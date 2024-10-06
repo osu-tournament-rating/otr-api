@@ -120,9 +120,21 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// </summary>
     public ICollection<PlayerTournamentStats> PlayerTournamentStats { get; set; } = new List<PlayerTournamentStats>();
 
+    /// <summary>
+    /// A collection of <see cref="TournamentAudit"/>s which are used to track the changes
+    /// to this entity over time
+    /// </summary>
     public ICollection<TournamentAudit> Audits { get; set; } = new List<TournamentAudit>();
 
+    /// <summary>
+    /// A collection of <see cref="TournamentAdminNote"/>s for the tournament
+    /// </summary>
     public ICollection<TournamentAdminNote> AdminNotes { get; set; } = new List<TournamentAdminNote>();
+
+    /// <summary>
+    /// A collection of <see cref="Beatmap"/>s pooled in the tournament
+    /// </summary>
+    public ICollection<Beatmap> PooledBeatmaps { get; set; } = new List<Beatmap>();
 
     [NotMapped]
     public int? ActionBlamedOnUserId { get; set; }
