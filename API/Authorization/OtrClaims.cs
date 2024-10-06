@@ -31,12 +31,6 @@ public static class OtrClaims
         public const string Client = "client";
 
         /// <summary>
-        /// Role for internal privileged clients
-        /// </summary>
-        /// <example>o!TR processor</example>
-        public const string System = "system";
-
-        /// <summary>
         /// Role for privileged users
         /// </summary>
         public const string Admin = "admin";
@@ -66,7 +60,6 @@ public static class OtrClaims
         [
             User,
             Client,
-            System,
             Admin,
             Verifier,
             Submitter,
@@ -103,7 +96,6 @@ public static class OtrClaims
         /// </remarks>
         public static readonly string[] ClientAssignableRoles =
         [
-            System,
             Whitelist
         ];
 
@@ -168,7 +160,6 @@ public static class OtrClaims
         {
             Roles.User => "Role granted to all users.",
             Roles.Client => "Role granted to all clients.",
-            Roles.System => "Role granted to internal privileged clients.",
             Roles.Admin => "Role granted to privileged users.",
             Roles.Verifier => "Role granted to users with permission to verify submission data.",
             Roles.Submitter => "Role granted to users with permission to submit tournament data.",

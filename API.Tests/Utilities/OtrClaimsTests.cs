@@ -27,7 +27,6 @@ public class OtrClaimsTests
     }
 
     [Theory]
-    [InlineData(OtrClaims.Roles.System, true)]
     [InlineData(OtrClaims.Roles.Whitelist, true)]
     [InlineData(OtrClaims.RateLimitOverrides, false)]
     [InlineData(OtrClaims.Roles.User, false)]
@@ -48,7 +47,6 @@ public class OtrClaimsTests
     [Theory]
     [InlineData(OtrClaims.Roles.User, true)]
     [InlineData(OtrClaims.Roles.Client, true)]
-    [InlineData(OtrClaims.Roles.System, true)]
     [InlineData(OtrClaims.Roles.Admin, true)]
     [InlineData(OtrClaims.Roles.Verifier, true)]
     [InlineData(OtrClaims.Roles.Submitter, true)]
