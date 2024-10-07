@@ -106,4 +106,7 @@ public class MatchesService(
         await matchesRepository.UpdateAsync(existing);
         return mapper.Map<MatchDTO>(existing);
     }
+
+    public async Task<bool> ExistsAsync(int id) =>
+        await matchesRepository.ExistsAsync(id);
 }
