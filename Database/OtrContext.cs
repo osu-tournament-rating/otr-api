@@ -861,7 +861,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .WithOne(pan => pan.AdminUser)
                 .HasForeignKey(pan => pan.AdminUserId)
                 .OnDelete(DeleteBehavior.Cascade);
-          
+
             // Relation: TournamentAdminNotes
             entity
                 .HasMany(u => u.TournamentAdminNotes)
@@ -876,9 +876,12 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(man => man.AdminUserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasMany(u => u.GameAdminNotes)
+            // Relation: User
+            entity
+                .HasMany(u => u.GameAdminNotes)
                 .WithOne(gan => gan.AdminUser)
                 .HasForeignKey(gan => gan.AdminUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<UserSettings>(entity =>
