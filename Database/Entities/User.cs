@@ -80,6 +80,11 @@ public class User : UpdateableEntityBase
     public ICollection<GameAdminNote> GameAdminNotes { get; set; } = new List<GameAdminNote>();
 
     /// <summary>
+    /// A collection of <see cref="GameScoreAdminNote"/>s created by the user
+    /// </summary>
+    public ICollection<GameScoreAdminNote> GameScoreAdminNotes { get; set; } = new List<GameScoreAdminNote>();
+
+    /// <summary>
     /// A collection of <see cref="MatchAdminNote"/>s created by the user
     /// </summary>
     public ICollection<MatchAdminNote> MatchAdminNotes { get; set; } = new List<MatchAdminNote>();

@@ -233,9 +233,16 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(gsan => gsan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
+            // Relation: Score
             entity.HasOne(gsan => gsan.Score)
                 .WithMany(gs => gs.AdminNotes)
                 .HasForeignKey(gsan => gsan.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: User
+            entity.HasOne(gsan => gsan.AdminUser)
+                .WithMany(gs => gs.GameScoreAdminNotes)
+                .HasForeignKey(gsan => gsan.AdminUserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -876,7 +883,13 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(man => man.AdminUserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Relation: User
+            // Relation: GameScoreAdminNotes
+            entity.HasMany(u => u.GameScoreAdminNotes)
+                .WithOne(gsan => gsan.AdminUser)
+                .HasForeignKey(gsan => gsan.AdminUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: GameAdminNotes
             entity
                 .HasMany(u => u.GameAdminNotes)
                 .WithOne(gan => gan.AdminUser)

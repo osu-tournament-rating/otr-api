@@ -18,4 +18,11 @@ public interface IGameScoresService
     /// <param name="match">The DTO containing the new values</param>
     /// <returns>The updated DTO</returns>
     Task<GameScoreDTO?> UpdateAsync(int id, GameScoreDTO score);
+
+    /// <summary>
+    /// Checks if the score exists
+    /// </summary>
+    /// <param name="id">The score id</param>
+    /// <returns>True if the score exists, false otherwise</returns>
+    Task<bool> ExistsAsync(int id);
 }
