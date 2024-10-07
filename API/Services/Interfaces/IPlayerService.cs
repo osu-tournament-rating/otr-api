@@ -32,4 +32,11 @@ public interface IPlayerService
     /// the <see cref="PlayerCompactDTO"/> will be returned in a default state,
     /// except the <see cref="PlayerCompactDTO.OsuId"/> value will be set</returns>
     Task<IEnumerable<PlayerCompactDTO>> GetAsync(IEnumerable<long> osuIds);
+
+    /// <summary>
+    /// Checks if the player exists
+    /// </summary>
+    /// <param name="id">The player id</param>
+    /// <returns>True if the player exists, false otherwise</returns>
+    Task<bool> ExistsAsync(int id);
 }
