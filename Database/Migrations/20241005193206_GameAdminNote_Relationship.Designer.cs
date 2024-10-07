@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20241005193206_GameAdminNote_Relationship")]
+    partial class GameAdminNote_Relationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -664,17 +667,15 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdminUserId")
                         .HasColumnType("integer")
                         .HasColumnName("admin_user_id");
 
                     b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnName("created");
 
                     b.Property<string>("Note")
                         .IsRequired()
@@ -690,8 +691,6 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AdminUserId");
 
                     b.HasIndex("ReferenceId");
 
@@ -1775,19 +1774,11 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.MatchAdminNote", b =>
                 {
-                    b.HasOne("Database.Entities.User", "AdminUser")
-                        .WithMany("MatchAdminNotes")
-                        .HasForeignKey("AdminUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Database.Entities.Match", "Match")
                         .WithMany("AdminNotes")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("AdminUser");
 
                     b.Navigation("Match");
                 });
@@ -2141,8 +2132,6 @@ namespace Database.Migrations
                     b.Navigation("Clients");
 
                     b.Navigation("GameAdminNotes");
-                    
-                    b.Navigation("MatchAdminNotes");
 
                     b.Navigation("Settings")
                         .IsRequired();

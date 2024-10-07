@@ -18,4 +18,11 @@ public interface IGamesService
     /// <param name="match">The DTO containing the new values</param>
     /// <returns>The updated DTO</returns>
     Task<GameDTO?> UpdateAsync(int id, GameDTO game);
+
+    /// <summary>
+    /// Checks if the game exists
+    /// </summary>
+    /// <param name="id">The game id</param>
+    /// <returns>True if the game exists, false otherwise</returns>
+    Task<bool> ExistsAsync(int id);
 }
