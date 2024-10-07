@@ -73,4 +73,8 @@ public class User : UpdateableEntityBase
     /// A collection of <see cref="GameAdminNote"/>s created by the user
     /// </summary>
     public ICollection<GameAdminNote> GameAdminNotes { get; set; } = new List<GameAdminNote>();
+
+    /// A collection of <see cref="MatchAdminNote"/>s created by the user
+    /// </summary>
+    public ICollection<MatchAdminNote> MatchAdminNotes { get; set; } = new List<MatchAdminNote>();
 }

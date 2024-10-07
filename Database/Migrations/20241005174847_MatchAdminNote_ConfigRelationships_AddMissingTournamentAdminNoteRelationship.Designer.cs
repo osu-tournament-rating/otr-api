@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20241005174847_MatchAdminNote_ConfigRelationships_AddMissingTournamentAdminNoteRelationship")]
+    partial class MatchAdminNote_ConfigRelationships_AddMissingTournamentAdminNoteRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -259,8 +262,6 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AdminUserId");
 
                     b.HasIndex("ReferenceId");
 
@@ -1674,19 +1675,11 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.GameAdminNote", b =>
                 {
-                    b.HasOne("Database.Entities.User", "AdminUser")
-                        .WithMany("GameAdminNotes")
-                        .HasForeignKey("AdminUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Database.Entities.Game", "Game")
                         .WithMany("AdminNotes")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("AdminUser");
 
                     b.Navigation("Game");
                 });
@@ -2140,8 +2133,6 @@ namespace Database.Migrations
                 {
                     b.Navigation("Clients");
 
-                    b.Navigation("GameAdminNotes");
-                    
                     b.Navigation("MatchAdminNotes");
 
                     b.Navigation("Settings")
