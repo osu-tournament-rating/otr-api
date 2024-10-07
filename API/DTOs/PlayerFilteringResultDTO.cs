@@ -30,7 +30,7 @@ public class PlayerFilteringResultDTO
     /// <summary>
     /// The <see cref="FilteringResult"/> in string form
     /// </summary>
-    public string? FilteringResultMessage => FilteringResult.ToString();
+    public string FilteringResultMessage => FilteringResult.ToString();
     /// <summary>
     /// The <see cref="FilteringFailReason"/> in string form
     /// </summary>

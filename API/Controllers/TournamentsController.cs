@@ -69,7 +69,7 @@ public partial class TournamentsController(
         TournamentCreatedResultDTO result = await tournamentsService.CreateAsync(
             tournamentSubmission,
             User.GetSubjectId(),
-            User.IsAdmin() || User.IsSystem()
+            User.IsAdmin()
         );
 
         return CreatedAtAction("Get", new { id = result.Id }, result);

@@ -18,7 +18,7 @@ public class WhitelistEnforcementMiddleware(RequestDelegate next, ILogger<Whitel
         }
 
         // Allow whitelisted and privileged requests
-        if (context.User.IsWhitelisted() || context.User.IsAdmin() || context.User.IsSystem())
+        if (context.User.IsWhitelisted() || context.User.IsAdmin())
         {
             await next(context);
             return;
