@@ -44,4 +44,11 @@ public interface IMatchesService
     /// <param name="match">The DTO containing the new values</param>
     /// <returns>The updated DTO</returns>
     Task<MatchDTO?> UpdateAsync(int id, MatchDTO match);
+
+    /// <summary>
+    /// Checks if the match exists
+    /// </summary>
+    /// <param name="id">The match id</param>
+    /// <returns>True if the match exists, false otherwise</returns>
+    Task<bool> ExistsAsync(int id);
 }
