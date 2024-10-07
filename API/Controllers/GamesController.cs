@@ -12,7 +12,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class GamesController(IGamesService gamesService) : Controller
+public partial class GamesController(IGamesService gamesService, IAdminNoteService adminNoteService) : Controller
 {
     /// <summary>
     /// Amend game data

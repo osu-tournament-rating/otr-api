@@ -12,7 +12,7 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class PlayersController(IPlayerService playerService) : Controller
+public partial class PlayersController(IPlayerService playerService, IAdminNoteService adminNoteService) : Controller
 {
     [HttpGet("{key}")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
