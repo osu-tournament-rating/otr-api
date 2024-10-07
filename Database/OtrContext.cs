@@ -352,9 +352,20 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
         modelBuilder.Entity<MatchAdminNote>(entity =>
         {
-            entity.HasOne(m => m.Match)
+            entity.Property(tan => tan.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(tan => tan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Match
+            entity.HasOne(man => man.Match)
                 .WithMany(m => m.AdminNotes)
                 .HasForeignKey(m => m.ReferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: User
+            entity.HasOne(man => man.AdminUser)
+                .WithMany(u => u.MatchAdminNotes)
+                .HasForeignKey(m => m.AdminUserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -827,6 +838,21 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasMany(u => u.Clients)
                 .WithOne(c => c.User)
                 .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // == Admin Notes ==
+            // Relation: TournamentAdminNotes
+            entity
+                .HasMany(u => u.TournamentAdminNotes)
+                .WithOne(tan => tan.AdminUser)
+                .HasForeignKey(tan => tan.AdminUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: MatchAdminNotes
+            entity
+                .HasMany(u => u.MatchAdminNotes)
+                .WithOne(man => man.AdminUser)
+                .HasForeignKey(man => man.AdminUserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

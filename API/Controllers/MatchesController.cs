@@ -14,7 +14,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class MatchesController(IMatchesService matchesService) : Controller
+public partial class MatchesController(IMatchesService matchesService, IAdminNoteService adminNoteService) : Controller
 {
     /// <summary>
     /// Gets all matches

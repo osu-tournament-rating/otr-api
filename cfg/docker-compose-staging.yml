@@ -20,6 +20,11 @@ services:
       - db
       - redis
     restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
   grafana:
     image: grafana/grafana
     container_name: grafana
