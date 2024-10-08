@@ -56,7 +56,7 @@ public class TournamentsService(
         };
 
         // Handle reject-on-submit cases
-        if (submission.RejectionReason.HasValue)
+        if (submission.RejectionReason.HasValue && submission.RejectionReason.Value is not TournamentRejectionReason.None)
         {
             newTournament.ProcessingStatus = TournamentProcessingStatus.Done;
             newTournament.RejectionReason = submission.RejectionReason.Value;
