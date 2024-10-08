@@ -21,7 +21,7 @@ jobs:
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2024.2
         with:
-          pr-mode: false
+          args: --linter,jetbrains/qodana-dotnet:2024.2
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_903418561 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
