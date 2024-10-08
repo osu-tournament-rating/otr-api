@@ -43,7 +43,6 @@ public class TournamentSubmissionDTO
     /// <summary>
     /// osu! ruleset
     /// </summary>
-    [Range(0, 3)]
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
