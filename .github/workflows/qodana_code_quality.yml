@@ -21,7 +21,9 @@ jobs:
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2024.2
         with:
-          args: --linter,jetbrains/qodana-cdnet:2024.2-eap
+          args: --linter,jetbrains/qodana-cdnet:2024.2-eap --baseline,qodana.sarif.json
+          use-caches: true
+          post-pr-comment: true
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_903418561 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
