@@ -48,7 +48,7 @@ public partial class TournamentsController(
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
     [Authorize(Roles = OtrClaims.Roles.User)]
-    [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateAsync([FromBody] TournamentSubmissionDTO tournamentSubmission)
     {
@@ -60,10 +60,16 @@ public partial class TournamentsController(
         if (await tournamentsService.ExistsAsync(tournamentSubmission.Name, tournamentSubmission.Ruleset))
         {
             return BadRequest(
-                $"A tournament with name {tournamentSubmission.Name} for ruleset {tournamentSubmission.Ruleset} already exists");
+                $"A tournament with name {tournamentSubmission.Name} for ruleset {tournamentSubmission.Ruleset} already exists"
+            );
         }
 
-        tournamentSubmission.ForumUrl = new Uri(tournamentSubmission.ForumUrl).GetLeftPart(UriPartial.Path); // Remove query string
+        // Remove query string
+        tournamentSubmission.ForumUrl = new Uri(tournamentSubmission.ForumUrl).GetLeftPart(UriPartial.Path);
+
+        // Input validation for mp and beatmap ids
+        tournamentSubmission.Ids = tournamentSubmission.Ids.Where(id => id >= 1);
+        tournamentSubmission.BeatmapIds = tournamentSubmission.BeatmapIds.Where(id => id >= 1);
 
         // Create tournament
         TournamentCreatedResultDTO result = await tournamentsService.CreateAsync(
