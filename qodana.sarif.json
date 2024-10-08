@@ -70357,8 +70357,8 @@
       "versionControlProvenance": [
         {
           "repositoryUri": "https://github.com/osu-tournament-rating/otr-api.git",
-          "revisionId": "42f54c2ce068f7503ddc87422517974d146a9686",
-          "branch": "patch-qodana-ver",
+          "revisionId": "1c1c74933ade7ae11515ed361fb1ba131d5d4107",
+          "branch": "master",
           "properties": {
             "repoUrl": "https://github.com/osu-tournament-rating/otr-api.git",
             "lastAuthorName": "hburn7",
@@ -71381,9 +71381,9 @@
       "results": [],
       "automationDetails": {
         "id": "QDNETC/qodana/2024-10-08",
-        "guid": "af67f743-7dc1-428f-9498-49425ade2ddd",
+        "guid": "de9c81af-8fe6-42fa-b029-30d411a306d5",
         "properties": {
-          "jobUrl": "https://github.com/osu-tournament-rating/otr-api/actions/runs/11236036550"
+          "jobUrl": "https://github.com/osu-tournament-rating/otr-api/actions/runs/11236404379"
         }
       },
       "newlineSequences": [
