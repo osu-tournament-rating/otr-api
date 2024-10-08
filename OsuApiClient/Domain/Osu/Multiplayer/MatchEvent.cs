@@ -32,7 +32,8 @@ public class MatchEvent : IModel
     public long? UserId { get; init; }
 
     /// <summary>
-    /// Game details. Populated only if <see cref="Detail"/>.Type is <see cref="Enums.MultiplayerEventType.Game"/>
+    /// Game details. Populated only if <see cref="Detail"/>.<see cref="MatchEventDetail.Type"/>
+    /// is <see cref="Enums.MultiplayerEventType.Game"/>
     /// </summary>
     public MultiplayerGame? Game { get; init; }
 }
