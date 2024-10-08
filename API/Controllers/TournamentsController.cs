@@ -64,6 +64,11 @@ public partial class TournamentsController(
             );
         }
 
+        if (tournamentSubmission.RejectionReason.HasValue && !User.IsAdmin())
+        {
+            return BadRequest("Only admin users may supply a rejection reason");
+        }
+
         // Remove query string
         tournamentSubmission.ForumUrl = new Uri(tournamentSubmission.ForumUrl).GetLeftPart(UriPartial.Path);
 
