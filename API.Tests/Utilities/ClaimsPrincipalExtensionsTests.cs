@@ -12,7 +12,6 @@ public class ClaimsPrincipalExtensionsTests
     {
         var claims = new ClaimsPrincipal();
         Assert.False(claims.IsAdmin());
-        Assert.False(claims.IsSystem());
         Assert.False(claims.IsMatchVerifier());
         Assert.False(claims.IsWhitelisted());
     }

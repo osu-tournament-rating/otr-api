@@ -12,16 +12,8 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class PlayersController(IPlayerService playerService) : Controller
+public partial class PlayersController(IPlayerService playerService, IAdminNoteService adminNoteService) : Controller
 {
-    [HttpGet]
-    [Authorize(Roles = OtrClaims.Roles.System)]
-    public async Task<IActionResult> ListAsync()
-    {
-        IEnumerable<PlayerCompactDTO> players = await playerService.GetAllAsync();
-        return Ok(players);
-    }
-
     [HttpGet("{key}")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [EndpointSummary("Get player info by versatile search")]

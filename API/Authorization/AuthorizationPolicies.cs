@@ -6,7 +6,7 @@ namespace API.Authorization;
 public static class AuthorizationPolicies
 {
     /// <summary>
-    /// Policy that allows access from <see cref="OtrClaims.Roles.Admin"/> and <see cref="OtrClaims.Roles.System"/>
+    /// Policy that allows access from <see cref="OtrClaims.Roles.Admin"/>
     /// requests, as well as redirected requests from unprivileged users to allow accessing their own resources.
     /// </summary>
     public const string AccessUserResources = "AccessUserResources";

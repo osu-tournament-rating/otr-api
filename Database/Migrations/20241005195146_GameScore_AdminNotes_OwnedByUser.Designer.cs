@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20241005195146_GameScore_AdminNotes_OwnedByUser")]
+    partial class GameScore_AdminNotes_OwnedByUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -259,8 +262,6 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AdminUserId");
 
                     b.HasIndex("ReferenceId");
 
@@ -666,17 +667,15 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdminUserId")
                         .HasColumnType("integer")
                         .HasColumnName("admin_user_id");
 
                     b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnName("created");
 
                     b.Property<string>("Note")
                         .IsRequired()
@@ -692,8 +691,6 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AdminUserId");
 
                     b.HasIndex("ReferenceId");
 
@@ -978,8 +975,6 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AdminUserId");
 
                     b.HasIndex("ReferenceId");
 
@@ -1658,21 +1653,6 @@ namespace Database.Migrations
                     b.ToTable("user_settings");
                 });
 
-            modelBuilder.Entity("__join__pooled_beatmaps", b =>
-                {
-                    b.Property<int>("beatmap_id")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("tournament_id")
-                        .HasColumnType("integer");
-
-                    b.HasKey("beatmap_id", "tournament_id");
-
-                    b.HasIndex("tournament_id");
-
-                    b.ToTable("__join__pooled_beatmaps");
-                });
-
             modelBuilder.Entity("Database.Entities.Game", b =>
                 {
                     b.HasOne("Database.Entities.Beatmap", "Beatmap")
@@ -1693,19 +1673,11 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.GameAdminNote", b =>
                 {
-                    b.HasOne("Database.Entities.User", "AdminUser")
-                        .WithMany("GameAdminNotes")
-                        .HasForeignKey("AdminUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Database.Entities.Game", "Game")
                         .WithMany("AdminNotes")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("AdminUser");
 
                     b.Navigation("Game");
                 });
@@ -1802,19 +1774,11 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.MatchAdminNote", b =>
                 {
-                    b.HasOne("Database.Entities.User", "AdminUser")
-                        .WithMany("MatchAdminNotes")
-                        .HasForeignKey("AdminUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Database.Entities.Match", "Match")
                         .WithMany("AdminNotes")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("AdminUser");
 
                     b.Navigation("Match");
                 });
@@ -1888,19 +1852,11 @@ namespace Database.Migrations
 
             modelBuilder.Entity("Database.Entities.PlayerAdminNote", b =>
                 {
-                    b.HasOne("Database.Entities.User", "AdminUser")
-                        .WithMany("PlayerAdminNotes")
-                        .HasForeignKey("AdminUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Database.Entities.Player", "Player")
                         .WithMany("AdminNotes")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("AdminUser");
 
                     b.Navigation("Player");
                 });
@@ -2091,23 +2047,6 @@ namespace Database.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("__join__pooled_beatmaps", b =>
-                {
-                    b.HasOne("Database.Entities.Beatmap", null)
-                        .WithMany()
-                        .HasForeignKey("beatmap_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_JoinTable_Beatmap");
-
-                    b.HasOne("Database.Entities.Tournament", null)
-                        .WithMany()
-                        .HasForeignKey("tournament_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_JoinTable_Tournament");
-                });
-
             modelBuilder.Entity("Database.Entities.Beatmap", b =>
                 {
                     b.Navigation("Games");
@@ -2192,13 +2131,7 @@ namespace Database.Migrations
                 {
                     b.Navigation("Clients");
 
-                    b.Navigation("PlayerAdminNotes");
-
-                    b.Navigation("GameAdminNotes");
-
                     b.Navigation("GameScoreAdminNotes");
-
-                    b.Navigation("MatchAdminNotes");
 
                     b.Navigation("Settings")
                         .IsRequired();

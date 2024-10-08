@@ -1,7 +1,6 @@
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -13,7 +12,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class GamesController(IGamesService gamesService) : Controller
+public partial class GamesController(IGamesService gamesService, IAdminNoteService adminNoteService) : Controller
 {
     /// <summary>
     /// Amend game data
