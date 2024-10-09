@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -9,11 +8,12 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
-[SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly")]
 public class TournamentsService(
     ITournamentsRepository tournamentsRepository,
     IMatchesRepository matchesRepository,
-    IMapper mapper) : ITournamentsService
+    IBeatmapsRepository beatmapsRepository,
+    IMapper mapper
+) : ITournamentsService
 {
     public async Task<TournamentCreatedResultDTO> CreateAsync(
         TournamentSubmissionDTO submission,
@@ -21,11 +21,15 @@ public class TournamentsService(
         bool preApprove
     )
     {
-        // Only create matches that dont already exist
-        IEnumerable<long> enumerableMatchIds = submission.Ids.ToList();
-        IEnumerable<long> existingMatchIds = (await matchesRepository.GetAsync(enumerableMatchIds))
+        // Filter submitted mp ids for those that don't already exist
+        var submittedMatchIds = submission.Ids.Distinct().ToList();
+        var existingMatchIds = (await matchesRepository.GetAsync(submittedMatchIds))
             .Select(m => m.OsuId)
             .ToList();
+
+        // Filter submitted beatmap ids for those that don't already exist
+        var submittedBeatmapIds = submission.BeatmapIds.Distinct().ToList();
+        var existingBeatmaps = (await beatmapsRepository.GetAsync(submittedBeatmapIds)).ToList();
 
         Tournament tournament = await tournamentsRepository.CreateAsync(new Tournament
         {
@@ -35,12 +39,20 @@ public class TournamentsService(
             RankRangeLowerBound = submission.RankRangeLowerBound,
             Ruleset = submission.Ruleset,
             LobbySize = submission.LobbySize,
-            ProcessingStatus =
-                preApprove ? TournamentProcessingStatus.NeedsMatchData : TournamentProcessingStatus.NeedsApproval,
+            ProcessingStatus = preApprove
+                ? TournamentProcessingStatus.NeedsMatchData
+                : TournamentProcessingStatus.NeedsApproval,
             SubmittedByUserId = submitterUserId,
-            Matches = enumerableMatchIds
+            Matches = submittedMatchIds
                 .Except(existingMatchIds)
-                .Select(matchId => new Match { OsuId = matchId, SubmittedByUserId = submitterUserId }).ToList()
+                .Select(matchId => new Match { OsuId = matchId, SubmittedByUserId = submitterUserId })
+                .ToList(),
+            PooledBeatmaps = existingBeatmaps
+                .Concat(submittedBeatmapIds
+                    .Except(existingBeatmaps.Select(b => b.OsuId))
+                    .Select(beatmapId => new Beatmap { OsuId = beatmapId })
+                )
+                .ToList()
         });
         return mapper.Map<TournamentCreatedResultDTO>(tournament);
     }

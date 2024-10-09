@@ -750,6 +750,21 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(an => an.ReferenceId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Relation: Pooled beatmaps
+            entity
+                .HasMany(t => t.PooledBeatmaps)
+                .WithMany(pb => pb.TournamentsPooledIn)
+                .UsingEntity<Dictionary<string, object>>(
+                    "__join__pooled_beatmaps",
+                    r => r.HasOne<Beatmap>()
+                        .WithMany()
+                        .HasForeignKey("beatmap_id")
+                        .HasConstraintName("FK_JoinTable_Beatmap"),
+                    l => l.HasOne<Tournament>()
+                        .WithMany()
+                        .HasForeignKey("tournament_id")
+                        .HasConstraintName("FK_JoinTable_Tournament"));
+
             entity.HasIndex(t => t.Ruleset);
             entity.HasIndex(t => new { t.Name, t.Abbreviation }).IsUnique();
         });

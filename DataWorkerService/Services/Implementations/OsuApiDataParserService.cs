@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Enums;
 using Database.Repositories.Interfaces;
@@ -13,6 +14,7 @@ using GameScore = Database.Entities.GameScore;
 
 namespace DataWorkerService.Services.Implementations;
 
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public class OsuApiDataParserService(
     ILogger<OsuApiDataParserService> logger,
     IGamesRepository gamesRepository,
@@ -36,7 +38,7 @@ public class OsuApiDataParserService(
 
         // Load players and beatmaps
         await LoadPlayersAsync(apiMatch.Users);
-        await LoadBeatmapsAsync(apiMatch.Events.Where(e => e.Game != null).Select(e => e.Game));
+        await LoadBeatmapsAsync(apiMatch.Events.Select(e => e.Game).OfType<MultiplayerGame>());
 
         // Parse games
         match.Games = CreateGames(apiMatch).ToList();
@@ -83,55 +85,65 @@ public class OsuApiDataParserService(
         }
     }
 
-    public async Task LoadBeatmapsAsync(IEnumerable<MultiplayerGame?> apiGames)
+    public async Task LoadBeatmapsAsync(IEnumerable<MultiplayerGame> apiGames)
     {
         apiGames = apiGames.ToList();
 
         var uncachedBeatmapOsuIds = apiGames
-            .Select(g => g!.BeatmapId)
+            .Select(g => g.BeatmapId)
             .Distinct()
             .Where(osuId => !_beatmapsCache.Select(b => b.OsuId).Contains(osuId))
             .ToList();
 
-        if (uncachedBeatmapOsuIds.Count == 0)
+        /**
+         * Sync the cache by pulling existing beatmap entities or creating new entities as needed.
+         * This step ensures that each unique beatmap id we encounter has an entity created for it.
+         */
+        if (uncachedBeatmapOsuIds.Count != 0)
         {
-            return;
+            IEnumerable<Beatmap> fetchedBeatmaps = (await beatmapsRepository.GetAsync(uncachedBeatmapOsuIds)).ToList();
+
+            foreach (var beatmapOsuId in uncachedBeatmapOsuIds)
+            {
+                Beatmap? beatmap = fetchedBeatmaps.FirstOrDefault(b => b.OsuId == beatmapOsuId);
+
+                if (beatmap is null)
+                {
+                    beatmap = new Beatmap { OsuId = beatmapOsuId };
+                    beatmapsRepository.Add(beatmap);
+                }
+
+                _beatmapsCache.Add(beatmap);
+            }
         }
 
-        IEnumerable<Beatmap> fetchedBeatmaps = (await beatmapsRepository.GetAsync(uncachedBeatmapOsuIds)).ToList();
-
-        foreach (var beatmapOsuId in uncachedBeatmapOsuIds)
+        /**
+         * By filtering for only non-null api beatmap objects using `.OfType<ApiBeatmap>()`, we can
+         * efficiently back-fill the cached beatmap entities with API data. This will populate data for
+         * newly created beatmaps, beatmaps created from submission, and even potentially fill in
+         * missing data from beatmaps that were not parsed properly.
+         */
+        foreach (ApiBeatmap apiBeatmap in apiGames.Select(g => g.Beatmap).OfType<ApiBeatmap>())
         {
-            Beatmap? beatmap = fetchedBeatmaps.FirstOrDefault(b => b.OsuId == beatmapOsuId);
+            Beatmap? cachedBeatmap = _beatmapsCache.FirstOrDefault(b => b.OsuId == apiBeatmap.Id);
 
-            if (beatmap is null)
+            // The cached beatmap should never be null but we can't proceed if it is
+            if (cachedBeatmap is null || cachedBeatmap.HasData)
             {
-                beatmap = new Beatmap { OsuId = beatmapOsuId };
-
-                ApiBeatmap? apiBeatmap = apiGames
-                    .Select(g => g?.Beatmap)
-                    .FirstOrDefault(b => b?.Id == beatmapOsuId);
-                BeatmapExtended? fullApiBeatmap = await osuClient.GetBeatmapAsync(beatmapOsuId);
-                if (fullApiBeatmap is not null)
-                {
-                    ParseBeatmap(beatmap, fullApiBeatmap);
-                    logger.LogInformation("Created a new beatmap with full data: [Osu Id: {OsuId}]", beatmap.OsuId);
-                }
-                // Use given partial data if available
-                else if (apiBeatmap is not null)
-                {
-                    ParseBeatmapPartial(beatmap, apiBeatmap);
-                    logger.LogInformation("Created a new beatmap with partial data: [Osu Id: {OsuId}]", beatmap.OsuId);
-                }
-                else
-                {
-                    logger.LogInformation("Created a new beatmap with no data: [Osu Id: {OsuId}]", beatmap.OsuId);
-                }
-
-                beatmapsRepository.Add(beatmap);
+                continue;
             }
 
-            _beatmapsCache.Add(beatmap);
+            // Try to fetch the full beatmap first, fallback by using partial data from the game event
+            BeatmapExtended? fullApiBeatmap = await osuClient.GetBeatmapAsync(apiBeatmap.Id);
+
+            if (fullApiBeatmap is not null)
+            {
+                ParseBeatmap(cachedBeatmap, fullApiBeatmap);
+            }
+            else
+            {
+                ParseBeatmapPartial(cachedBeatmap, apiBeatmap);
+            }
         }
     }
 
@@ -221,8 +233,7 @@ public class OsuApiDataParserService(
             Player? player = _playersCache.FirstOrDefault(p => p.OsuId == apiScore.UserId);
             if (player is null)
             {
-                logger.LogError("Player was not loaded correctly, skipping score [Player osu! id: {osuId}]", apiScore.UserId);
-
+                logger.LogError("Expected player to be loaded, skipping score [Player osu! id: {osuId}]", apiScore.UserId);
                 continue;
             }
 

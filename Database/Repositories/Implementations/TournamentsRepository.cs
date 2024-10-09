@@ -34,6 +34,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
         await _context.Tournaments
             .AsSingleQuery()
+            .Include(t => t.PooledBeatmaps)
             .Include(t => t.PlayerTournamentStats)
             .Include(t => t.Matches)
             .ThenInclude(m => m.WinRecord)
