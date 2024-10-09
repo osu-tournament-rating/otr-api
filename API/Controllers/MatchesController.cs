@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using Database.Enums;
@@ -15,7 +14,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class MatchesController(IMatchesService matchesService) : Controller
+public partial class MatchesController(IMatchesService matchesService, IAdminNoteService adminNoteService) : Controller
 {
     /// <summary>
     /// Gets all matches
@@ -42,7 +41,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     )
     {
         // Clamp page size for non-admin users
-        if (limit > 5000 && !(User.IsAdmin() || User.IsSystem()))
+        if (limit > 5000 && !User.IsAdmin())
         {
             limit = 5000;
         }
@@ -71,7 +70,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
 
     // TODO: Should be /player/{osuId}/matches instead.
     [HttpGet("player/{osuId:long}")]
-    [Authorize(Roles = $"{OtrClaims.Roles.Admin}, {OtrClaims.Roles.System}")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
     public async Task<IActionResult> GetMatchesAsync(long osuId, Ruleset ruleset) =>
         Ok(await matchesService.GetAllForPlayerAsync(osuId, ruleset, DateTime.MinValue, DateTime.MaxValue));
 

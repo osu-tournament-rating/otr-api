@@ -30,4 +30,7 @@ public class GameScoresService(IGameScoresRepository gameScoresRepository, IMapp
         await gameScoresRepository.UpdateAsync(existing);
         return mapper.Map<GameScoreDTO>(existing);
     }
+
+    public async Task<bool> ExistsAsync(int id) =>
+        await gameScoresRepository.ExistsAsync(id);
 }

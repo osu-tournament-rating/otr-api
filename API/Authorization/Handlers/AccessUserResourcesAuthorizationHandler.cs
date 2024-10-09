@@ -29,7 +29,7 @@ public class AccessUserResourcesAuthorizationHandler : AuthorizationHandler<Acce
         }
 
         // Allow requests that are privileged or have matching user id and target route id
-        if (context.User.IsAdmin() || context.User.IsSystem() || (requirement.AllowSelf && context.User.GetSubjectId() == routeId))
+        if (context.User.IsAdmin() || (requirement.AllowSelf && context.User.GetSubjectId() == routeId))
         {
             context.Succeed(requirement);
         }

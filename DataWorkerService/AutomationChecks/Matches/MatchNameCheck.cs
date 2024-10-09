@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Database.Enums.Verification;
 using Match = Database.Entities.Match;
 

@@ -13,12 +13,6 @@ public static class ClaimsPrincipalExtensions
         IsInRole(claimsPrincipal, OtrClaims.Roles.Admin);
 
     /// <summary>
-    /// Denotes the principal as having the <see cref="OtrClaims.Roles.System"/> <see cref="OtrClaims.Role"/>
-    /// </summary>
-    public static bool IsSystem(this ClaimsPrincipal claimsPrincipal) =>
-        IsInRole(claimsPrincipal, OtrClaims.Roles.System);
-
-    /// <summary>
     /// Denotes the principal as having the <see cref="OtrClaims.Roles.User"/> <see cref="OtrClaims.Role"/>
     /// </summary>
     public static bool IsUser(this ClaimsPrincipal claimsPrincipal) =>

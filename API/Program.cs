@@ -327,7 +327,6 @@ builder.Services.AddSwaggerGen(options =>
     {
         [OtrClaims.Roles.User] = OtrClaims.GetDescription(OtrClaims.Roles.User),
         [OtrClaims.Roles.Client] = OtrClaims.GetDescription(OtrClaims.Roles.Client),
-        [OtrClaims.Roles.System] = OtrClaims.GetDescription(OtrClaims.Roles.System),
         [OtrClaims.Roles.Admin] = OtrClaims.GetDescription(OtrClaims.Roles.Admin),
         [OtrClaims.Roles.Verifier] = OtrClaims.GetDescription(OtrClaims.Roles.Verifier),
         [OtrClaims.Roles.Submitter] = OtrClaims.GetDescription(OtrClaims.Roles.Submitter),
