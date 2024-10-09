@@ -39,8 +39,7 @@ using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using OsuSharp;
-using OsuSharp.Extensions;
+using OsuApiClient.Extensions;
 using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
@@ -596,32 +595,7 @@ builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 
 #region osu! Api
 
-builder.Services.AddOsuSharp(options =>
-{
-    OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
-        OsuConfiguration.Position
-    );
-    options.Configuration = new OsuClientConfiguration
-    {
-        ClientId = osuConfiguration.ClientId,
-        ClientSecret = osuConfiguration.ClientSecret
-    };
-});
-
-builder.Host.ConfigureOsuSharp(
-    (_, options) =>
-    {
-        OsuConfiguration osuConfiguration = builder.Configuration.BindAndValidate<OsuConfiguration>(
-            OsuConfiguration.Position
-        );
-
-        options.Configuration = new OsuClientConfiguration
-        {
-            ClientId = osuConfiguration.ClientId,
-            ClientSecret = osuConfiguration.ClientSecret
-        };
-    }
-);
+builder.Services.AddOsuApiClient(builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position));
 
 #endregion
 
