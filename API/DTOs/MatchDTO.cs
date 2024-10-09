@@ -51,6 +51,11 @@ public class MatchDTO
     public MatchRejectionReason RejectionReason { get; set; }
 
     /// <summary>
+    /// Warning flags
+    /// </summary>
+    public MatchWarningFlags WarningFlags { get; set; }
+
+    /// <summary>
     /// Processing status
     /// </summary>
     public MatchProcessingStatus ProcessingStatus { get; set; }
