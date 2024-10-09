@@ -68,7 +68,10 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
     public async Task<ICollection<Tournament>> GetAsync(int page, int pageSize, bool verified, Ruleset? ruleset)
     {
-        IQueryable<Tournament> query = _context.Tournaments;
+        IQueryable<Tournament> query = _context.Tournaments
+            .AsNoTracking()
+            .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
+            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null);
 
         if (verified)
         {
