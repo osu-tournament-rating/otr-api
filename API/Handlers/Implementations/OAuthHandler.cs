@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using API.Authorization;
-using API.Configurations;
 using API.DTOs;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
@@ -9,8 +8,8 @@ using API.Utilities.Extensions;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
-using OsuSharp.Interfaces;
+using OsuApiClient;
+using OsuUser = OsuApiClient.Domain.Osu.Users.UserExtended;
 
 namespace API.Handlers.Implementations;
 
@@ -24,8 +23,7 @@ public class OAuthHandler(
     IPlayersRepository playerRepository,
     IUserRepository userRepository,
     IOsuClient osuClient,
-    IPasswordHasher<OAuthClient> clientSecretHasher,
-    IOptions<AuthConfiguration> authConfiguration
+    IPasswordHasher<OAuthClient> clientSecretHasher
     ) : IOAuthHandler
 {
     public async Task<AccessCredentialsDTO?> AuthorizeAsync(string osuAuthCode)
@@ -38,7 +36,13 @@ public class OAuthHandler(
             return null;
         }
 
-        IGlobalUser osuUser = await AuthorizeOsuUserAsync(osuAuthCode);
+        OsuUser? osuUser = await AuthorizeOsuUserAsync(osuAuthCode);
+        if (osuUser is null)
+        {
+            logger.LogDebug("Could not authorize user with the osu! API");
+            return null;
+        }
+
         Player player = await playerRepository.GetOrCreateAsync(osuUser.Id);
         User user = await AuthenticateUserAsync(player.Id);
 
@@ -155,9 +159,9 @@ public class OAuthHandler(
     /// </summary>
     /// <param name="osuCode">The authorization code for the user</param>
     /// <returns>The authorized user</returns>
-    private async Task<IGlobalUser> AuthorizeOsuUserAsync(string osuCode)
+    private async Task<OsuUser?> AuthorizeOsuUserAsync(string osuCode)
     {
-        await osuClient.GetAccessTokenFromCodeAsync(osuCode, authConfiguration.Value.ClientCallbackUrl);
+        await osuClient.AuthorizeUserWithCodeAsync(osuCode);
         return await osuClient.GetCurrentUserAsync();
     }
 
