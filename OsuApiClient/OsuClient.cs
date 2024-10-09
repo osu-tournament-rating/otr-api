@@ -123,7 +123,7 @@ public sealed class OsuClient(
             ["client_secret"] = Configuration.ClientSecret,
             ["grant_type"] = "authorization_code",
             ["code"] = authorizationCode,
-            ["redirect_url"] = Configuration.RedirectUrl
+            ["redirect_uri"] = Configuration.RedirectUrl
         };
 
         Uri.TryCreate(Endpoints.Osu.Credentials, UriKind.Relative, out Uri? uri);
