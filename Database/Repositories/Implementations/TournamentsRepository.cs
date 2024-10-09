@@ -17,10 +17,13 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     private readonly OtrContext _context = context;
 
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
-        eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
+        eagerLoad
+            ? await TournamentsBaseQuery().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id)
+            : await base.GetAsync(id);
 
     public async Task<Tournament?> GetVerifiedAsync(int id) =>
         await _context.Tournaments
+            .AsNoTracking()
             .AsSplitQuery()
             .Include(t => t.Matches.Where(m => m.VerificationStatus == VerificationStatus.Verified && m.ProcessingStatus == MatchProcessingStatus.Done))
             .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
@@ -29,6 +32,8 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
             .ThenInclude(g => g.Scores.Where(gs => gs.VerificationStatus == VerificationStatus.Verified && gs.ProcessingStatus == ScoreProcessingStatus.Done))
             .ThenInclude(gs => gs.Player)
+            .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
+            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
             .FirstOrDefaultAsync(t => t.Id == id);
 
     public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
@@ -132,13 +137,14 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     private IQueryable<Tournament> TournamentsBaseQuery()
     {
         return _context.Tournaments
+            .AsSplitQuery()
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Scores)
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Beatmap)
-            .Include(e => e.SubmittedByUser)
-            .AsSplitQuery();
+            .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
+            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null);
     }
 }

@@ -9,7 +9,10 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Gets a <see cref="Tournament"/> by id
     /// </summary>
     /// <param name="id">The tournament id</param>
-    /// <param name="eagerLoad">Whether to eagerly load navigational properties</param>
+    /// <param name="eagerLoad">
+    /// Whether to eagerly load navigational properties.
+    /// If true, all returned entities will not be tracked by the context
+    /// </param>
     Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
 
     /// <summary>
@@ -20,6 +23,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Null if the tournament is not found.
     /// Returns a tournament with verified child navigations if found.
     /// </returns>
+    /// <remarks>All returned entities will not be tracked by the context</remarks>
     Task<Tournament?> GetVerifiedAsync(int id);
 
     /// <summary>
@@ -48,8 +52,10 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// </summary>
     /// <param name="page">The page</param>
     /// <param name="pageSize">The size of the collection</param>
-    /// <param name="verified">Whether the resulting tournaments must be verified and
-    /// have completed processing</param>
+    /// <param name="verified">
+    /// Whether the resulting tournaments must be verified and have completed processing
+    /// </param>
     /// <param name="ruleset">An optional ruleset to filter by</param>
+    /// <remarks>All returned entities will not be tracked by the context</remarks>
     Task<ICollection<Tournament>> GetAsync(int page, int pageSize, bool verified = true, Ruleset? ruleset = null);
 }
