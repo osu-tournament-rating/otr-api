@@ -22,9 +22,10 @@ public enum MatchRejectionReason
     NoGames = 1 << 1,
 
     /// <summary>
-    /// The <see cref="Entities.Match"/>'s <see cref="Entities.Match.Name"/> does not follow tournament lobby title conventions
+    /// The <see cref="Entities.Match"/>'s <see cref="Entities.Match.Name"/> does not start with the
+    /// parent <see cref="Entities.Tournament"/>'s <see cref="Entities.Tournament.Abbreviation"/>
     /// </summary>
-    InvalidName = 1 << 2,
+    NamePrefixMismatch = 1 << 2,
 
     /// <summary>
     /// The <see cref="Entities.Match"/>'s <see cref="Entities.Games"/> were eligible for <see cref="TeamType.TeamVs"/>
