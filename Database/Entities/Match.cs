@@ -56,12 +56,19 @@ public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>, 
     public MatchRejectionReason RejectionReason { get; set; }
 
     /// <summary>
+    /// Warning flags
+    /// </summary>
+    [Column("warning_flags")]
+    public MatchWarningFlags WarningFlags { get; set; }
+
+    /// <summary>
     /// Processing status
     /// </summary>
     [Column("processing_status")]
     public MatchProcessingStatus ProcessingStatus { get; set; }
 
-    [Column("last_processing_date")] public DateTime LastProcessingDate { get; set; }
+    [Column("last_processing_date")]
+    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Tournament"/> the match was played in
