@@ -31,7 +31,7 @@ public class TournamentsService(
         var submittedBeatmapIds = submission.BeatmapIds.Distinct().ToList();
         var existingBeatmaps = (await beatmapsRepository.GetAsync(submittedBeatmapIds)).ToList();
 
-        Tournament tournament = await tournamentsRepository.CreateAsync(new Tournament
+        var newTournament = new Tournament
         {
             Name = submission.Name,
             Abbreviation = submission.Abbreviation,
@@ -53,7 +53,28 @@ public class TournamentsService(
                     .Select(beatmapId => new Beatmap { OsuId = beatmapId })
                 )
                 .ToList()
-        });
+        };
+
+        // Handle reject-on-submit cases
+        if (submission.RejectionReason.HasValue && submission.RejectionReason.Value is not TournamentRejectionReason.None)
+        {
+            newTournament.ProcessingStatus = TournamentProcessingStatus.Done;
+            newTournament.RejectionReason = submission.RejectionReason.Value;
+
+            newTournament.VerificationStatus = VerificationStatus.Rejected;
+            newTournament.VerifiedByUserId = submitterUserId;
+
+            foreach (Match match in newTournament.Matches)
+            {
+                match.ProcessingStatus = MatchProcessingStatus.Done;
+                match.RejectionReason = MatchRejectionReason.RejectedTournament;
+
+                match.VerificationStatus = VerificationStatus.Rejected;
+                match.VerifiedByUserId = submitterUserId;
+            }
+        }
+
+        Tournament tournament = await tournamentsRepository.CreateAsync(newTournament);
         return mapper.Map<TournamentCreatedResultDTO>(tournament);
     }
 

@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace API.DTOs;
 
@@ -43,8 +44,14 @@ public class TournamentSubmissionDTO
     /// <summary>
     /// osu! ruleset
     /// </summary>
-    [Range(0, 3)]
     public Ruleset Ruleset { get; set; }
+
+    /// <summary>
+    /// Optional rejection reason. If set, the created tournament and all matches will be rejected
+    /// for this reason and go through no additional processing
+    /// </summary>
+    /// <remarks>Submissions with a rejection reason will only be accepted from admin users</remarks>
+    public TournamentRejectionReason? RejectionReason { get; set; }
 
     /// <summary>
     /// List of osu! match ids
