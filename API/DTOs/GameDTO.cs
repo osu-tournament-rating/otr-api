@@ -51,6 +51,11 @@ public class GameDTO
     public GameProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
+    /// Warning flags
+    /// </summary>
+    public GameWarningFlags WarningFlags { get; set; }
+
+    /// <summary>
     /// The rejection reason
     /// </summary>
     public GameRejectionReason RejectionReason { get; set; }
