@@ -69,6 +69,12 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     public GameRejectionReason RejectionReason { get; set; }
 
     /// <summary>
+    /// Warning flags
+    /// </summary>
+    [Column("warning_flags")]
+    public GameWarningFlags WarningFlags { get; set; }
+
+    /// <summary>
     /// Processing status
     /// </summary>
     [Column("processing_status")]
