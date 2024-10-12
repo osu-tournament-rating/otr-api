@@ -15,32 +15,17 @@ internal sealed class FixedWindowRateLimit(FetchPlatform platform, int? rateLimi
     /// <summary>
     /// Timespan that represents the lifetime of the bucket
     /// </summary>
-    private TimeSpan Window { get; } = platform switch
-    {
-        FetchPlatform.Osu => TimeSpan.FromSeconds(60),
-        FetchPlatform.OsuTrack => TimeSpan.FromSeconds(120),
-        _ => TimeSpan.FromSeconds(120)
-    };
+    private TimeSpan Window { get; } = TimeSpan.FromSeconds(60);
 
     /// <summary>
     /// Maximum number of tokens available in the bucket
     /// </summary>
-    public int TokenLimit { get; } = rateLimitOverride ?? platform switch
-    {
-        FetchPlatform.Osu => 60,
-        FetchPlatform.OsuTrack => 30,
-        _ => 30
-    };
+    public int TokenLimit { get; } = rateLimitOverride ?? 60;
 
     /// <summary>
     /// Number of tokens remaining in the bucket
     /// </summary>
-    public int RemainingTokens { get; private set; } = rateLimitOverride ?? platform switch
-    {
-        FetchPlatform.Osu => 60,
-        FetchPlatform.OsuTrack => 30,
-        _ => 30
-    };
+    public int RemainingTokens { get; private set; } = rateLimitOverride ?? 60;
 
     /// <summary>
     /// Timespan that represents the time the bucket will expire
