@@ -1,11 +1,9 @@
-using OsuApiClient.Enums;
-
 namespace OsuApiClient.Net.Authorization;
 
 /// <summary>
 /// Represents a fixed window rate limit
 /// </summary>
-internal sealed class FixedWindowRateLimit(FetchPlatform platform, int? rateLimitOverride)
+internal sealed class FixedWindowRateLimit(int? rateLimitOverride)
 {
     /// <summary>
     /// Timestamp that the window was created
