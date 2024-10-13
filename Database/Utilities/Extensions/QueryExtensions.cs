@@ -1,4 +1,5 @@
 using Database.Entities;
+using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
@@ -325,6 +326,15 @@ public static class QueryExtensions
 
     public static IQueryable<GameScore> WherePlayerId(this IQueryable<GameScore> query, int playerId) =>
         query.AsQueryable().Where(x => x.PlayerId == playerId);
+
+    #endregion
+
+    #region Admin Notes
+
+    public static IQueryable<TEntity> IncludeAdminNotes<TEntity, TAdminNote>(this IQueryable<TEntity> query)
+        where TEntity : class, IAdminNotableEntity<TAdminNote>
+        where TAdminNote : IAdminNoteEntity
+        => query.Include(e => e.AdminNotes);
 
     #endregion
 }
