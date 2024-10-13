@@ -1,9 +1,5 @@
 // ReSharper disable CommentTypo
 
-using System.Diagnostics.CodeAnalysis;
-using Database.Enums;
-using Database.Enums.Verification;
-
 namespace API.DTOs;
 
 /// <summary>
