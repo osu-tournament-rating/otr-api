@@ -117,6 +117,16 @@ public static class QueryExtensions
             .ThenInclude(x => x.WinRecord);
 
     /// <summary>
+    /// Includes the <see cref="Tournament"/> navigation on this <see cref="Match"/>
+    /// </summary>
+    /// <param name="query">The <see cref="Match"/> query</param>
+    /// <returns>The query with the <see cref="Tournament"/> included</returns>
+    public static IQueryable<Match> IncludeTournament(this IQueryable<Match> query) =>
+        query
+            .AsQueryable()
+            .Include(m => m.Tournament);
+
+    /// <summary>
     /// Filters a <see cref="Match"/> query for those with a <see cref="Match.StartTime"/> that is greater than
     /// the given date
     /// </summary>

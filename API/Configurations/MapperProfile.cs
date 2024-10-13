@@ -38,6 +38,7 @@ public class MapperProfile : Profile
         CreateMap<Player, PlayerCompactDTO>();
         CreateMap<PlayerOsuRulesetData, PlayerOsuRulesetDataDTO>();
 
+        CreateMap<Tournament, TournamentCompactDTO>();
         CreateMap<Tournament, TournamentDTO>();
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()
