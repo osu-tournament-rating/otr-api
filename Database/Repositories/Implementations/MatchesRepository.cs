@@ -104,6 +104,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
             .AsNoTracking()
             .IncludeChildren()
             .IncludeTournament()
+            .IncludeAdminNotes<Match, MatchAdminNote>()
             .FirstOrDefaultAsync(m => m.Id == id);
 
     public async Task<IEnumerable<Match>> SearchAsync(string name)
