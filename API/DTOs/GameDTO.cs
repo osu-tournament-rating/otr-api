@@ -76,6 +76,11 @@ public class GameDTO
     public BeatmapDTO? Beatmap { get; set; }
 
     /// <summary>
+    /// All admin notes associated with the game
+    /// </summary>
+    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = new List<AdminNoteDTO>();
+
+    /// <summary>
     /// All match scores for the game
     /// </summary>
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
