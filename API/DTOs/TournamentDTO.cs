@@ -12,4 +12,9 @@ public class TournamentDTO : TournamentCompactDTO
     /// </summary>
     /// <remarks>Will be empty for bulk requests such as List</remarks>
     public ICollection<MatchDTO> Matches { get; init; } = new List<MatchDTO>();
+
+    /// <summary>
+    /// All admin notes associated with the tournament
+    /// </summary>
+    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = new List<AdminNoteDTO>();
 }
