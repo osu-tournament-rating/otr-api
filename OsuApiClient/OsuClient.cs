@@ -45,7 +45,6 @@ public sealed class OsuClient(
         CheckDisposed();
 
         _disposed = true;
-        _handler.Dispose();
     }
 
     public async Task<OsuCredentials?> UpdateCredentialsAsync(CancellationToken cancellationToken = default)
