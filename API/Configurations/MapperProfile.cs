@@ -11,13 +11,15 @@ public class MapperProfile : Profile
 {
     public MapperProfile()
     {
-        CreateMap<AdminNoteEntityBase, AdminNoteDTO>()
-            .ForMember(x => x.AdminUsername,
-                opt => opt.MapFrom(x => x.AdminUser.Player == null ? null : x.AdminUser.Player.Username));
+        CreateMap<AdminNoteEntityBase, AdminNoteDTO>();
 
         CreateMap<Beatmap, BeatmapDTO>();
+
         CreateMap<Game, GameDTO>();
         CreateMap<GameWinRecord, GameWinRecordDTO>();
+
+        CreateMap<GameScore, GameScoreDTO>().ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
+
         CreateMap<Match, MatchDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset));
         CreateMap<Match, MatchSubmissionStatusDTO>();
@@ -25,7 +27,6 @@ public class MapperProfile : Profile
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
         CreateMap<Match, MatchSearchResultDTO>();
-        CreateMap<GameScore, GameScoreDTO>().ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
 
         CreateMap<OAuthClient, OAuthClientDTO>()
             .ForMember(x => x.ClientId, opt => opt.MapFrom(y => y.Id));
@@ -42,14 +43,13 @@ public class MapperProfile : Profile
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
-        CreateMap<User, UserDTO>()
-            .ForMember(x => x.OsuId, opt => opt.MapFrom(y => y.Player == null ? (long?)null : y.Player.OsuId))
-            .ForMember(x => x.Country, opt => opt.MapFrom(y => y.Player == null ? null : y.Player.Country))
-            .ForMember(x => x.Username, opt => opt.MapFrom(y => y.Player == null ? null : y.Player.Username));
+        CreateMap<Tournament, TournamentSearchResultDTO>()
+            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Ruleset));
+
+        CreateMap<User, UserCompactDTO>();
+        CreateMap<User, UserDTO>();
         CreateMap<UserSettings, UserSettingsDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(us => us.DefaultRuleset))
             .ForMember(x => x.RulesetIsControlled, opt => opt.MapFrom(us => us.DefaultRulesetIsControlled));
-        CreateMap<Tournament, TournamentSearchResultDTO>()
-            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Ruleset));
     }
 }

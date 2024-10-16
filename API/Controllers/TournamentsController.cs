@@ -97,7 +97,8 @@ public partial class TournamentsController(
     /// Get a tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <param name="verified">If true, specifically includes verified match data. If false,
+    /// <param name="verified">
+    /// If true, specifically includes verified match data. If false,
     /// includes all data, regardless of verification status.
     /// Also includes all child navigations if false.
     /// Default true (strictly verified data with limited navigation properties)
