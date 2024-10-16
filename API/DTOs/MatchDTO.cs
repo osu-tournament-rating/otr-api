@@ -77,7 +77,7 @@ public class MatchDTO
     public ICollection<GameDTO> Games { get; set; } = new List<GameDTO>();
 
     /// <summary>
-    /// All admin notes associated with the Match
+    /// All associated Admin notes
     /// </summary>
     public ICollection<AdminNoteDTO> AdminNotes { get; init; } = new List<AdminNoteDTO>();
 }
