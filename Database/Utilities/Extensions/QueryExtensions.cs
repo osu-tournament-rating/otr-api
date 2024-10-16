@@ -112,10 +112,12 @@ public static class QueryExtensions
             .Include(m => m.Games)
             .ThenInclude(g => g.Scores)
             .ThenInclude(s => s.Player)
-            .Include(x => x.Games)
-            .ThenInclude(x => x.Beatmap)
-            .Include(x => x.Games)
-            .ThenInclude(x => x.WinRecord);
+            .Include(m => m.Games)
+            .ThenInclude(g => g.Beatmap)
+            .Include(m => m.Games)
+            .ThenInclude(g => g.WinRecord)
+            .Include(m => m.Games)
+            .ThenInclude(g => g.AdminNotes);
 
     /// <summary>
     /// Includes the <see cref="Tournament"/> navigation on this <see cref="Match"/>
