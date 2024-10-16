@@ -66,6 +66,11 @@ public class MatchDTO
     public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
+    /// The <see cref="TournamentCompactDTO"/> this match was played in
+    /// </summary>
+    public TournamentCompactDTO Tournament { get; set; } = null!;
+
+    /// <summary>
     /// List of games played during the match
     /// </summary>
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
