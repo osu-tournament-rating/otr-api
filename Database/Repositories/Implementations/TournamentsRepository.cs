@@ -29,11 +29,13 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
             .ThenInclude(g => g.Scores.Where(gs => gs.VerificationStatus == VerificationStatus.Verified && gs.ProcessingStatus == ScoreProcessingStatus.Done))
             .ThenInclude(gs => gs.Player)
+            .Include(t => t.AdminNotes)
             .FirstOrDefaultAsync(t => t.Id == id);
 
     public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
         await _context.Tournaments
             .AsSingleQuery()
+            .Include(t => t.PooledBeatmaps)
             .Include(t => t.PlayerTournamentStats)
             .Include(t => t.Matches)
             .ThenInclude(m => m.WinRecord)
@@ -136,6 +138,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Beatmap)
             .Include(e => e.SubmittedByUser)
+            .Include(t => t.AdminNotes)
             .AsSplitQuery();
     }
 }

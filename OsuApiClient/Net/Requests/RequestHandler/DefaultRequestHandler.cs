@@ -40,8 +40,8 @@ internal sealed class DefaultRequestHandler(
     private readonly IDictionary<FetchPlatform, FixedWindowRateLimit> _rateLimits =
         new Dictionary<FetchPlatform, FixedWindowRateLimit>
         {
-            [FetchPlatform.Osu] = new(FetchPlatform.Osu, configuration.OsuRateLimit),
-            [FetchPlatform.OsuTrack] = new(FetchPlatform.OsuTrack, configuration.OsuTrackRateLimit)
+            [FetchPlatform.Osu] = new(configuration.OsuRateLimit),
+            [FetchPlatform.OsuTrack] = new(configuration.OsuTrackRateLimit)
         };
 
     private bool _disposed;

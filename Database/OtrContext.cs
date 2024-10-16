@@ -1,4 +1,5 @@
-﻿using Database.Entities;
+﻿using System.Diagnostics.CodeAnalysis;
+using Database.Entities;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
@@ -14,6 +15,7 @@ using Newtonsoft.Json;
 
 namespace Database;
 
+[SuppressMessage("ReSharper", "IdentifierTypo")]
 public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(options)
 {
     private readonly AuditingInterceptor _auditingInterceptor = new();
@@ -94,6 +96,11 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
         modelBuilder.Entity<Game>(entity =>
         {
             entity.Property(g => g.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(g => g.VerificationStatus).HasDefaultValue(VerificationStatus.None);
+            entity.Property(g => g.RejectionReason).HasDefaultValue(GameRejectionReason.None);
+            entity.Property(g => g.WarningFlags).HasDefaultValue(GameWarningFlags.None);
+            entity.Property(g => g.ProcessingStatus).HasDefaultValue(GameProcessingStatus.NeedsAutomationChecks);
 
             entity.Property(g => g.Created).HasDefaultValueSql(SqlCurrentTimestamp);
             entity.Property(g => g.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
@@ -290,6 +297,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(m => m.Name).HasDefaultValue(string.Empty);
             entity.Property(m => m.VerificationStatus).HasDefaultValue(VerificationStatus.None);
             entity.Property(m => m.RejectionReason).HasDefaultValue(MatchRejectionReason.None);
+            entity.Property(m => m.WarningFlags).HasDefaultValue(MatchWarningFlags.None);
             entity.Property(m => m.ProcessingStatus).HasDefaultValue(MatchProcessingStatus.NeedsData);
 
             entity.Property(m => m.Created).HasDefaultValueSql(SqlCurrentTimestamp);
@@ -749,6 +757,21 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .WithOne(an => an.Tournament)
                 .HasForeignKey(an => an.ReferenceId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: Pooled beatmaps
+            entity
+                .HasMany(t => t.PooledBeatmaps)
+                .WithMany(pb => pb.TournamentsPooledIn)
+                .UsingEntity<Dictionary<string, object>>(
+                    "__join__pooled_beatmaps",
+                    r => r.HasOne<Beatmap>()
+                        .WithMany()
+                        .HasForeignKey("beatmap_id")
+                        .HasConstraintName("FK_JoinTable_Beatmap"),
+                    l => l.HasOne<Tournament>()
+                        .WithMany()
+                        .HasForeignKey("tournament_id")
+                        .HasConstraintName("FK_JoinTable_Tournament"));
 
             entity.HasIndex(t => t.Ruleset);
             entity.HasIndex(t => new { t.Name, t.Abbreviation }).IsUnique();
