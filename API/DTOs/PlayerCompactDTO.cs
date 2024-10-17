@@ -1,3 +1,5 @@
+using Database.Enums;
+
 namespace API.DTOs;
 
 /// <summary>
@@ -8,25 +10,30 @@ public class PlayerCompactDTO
     /// <summary>
     /// Id
     /// </summary>
-    public int Id { get; set; }
+    public int Id { get; init; }
 
     /// <summary>
     /// osu! id
     /// </summary>
-    public long OsuId { get; set; }
+    public long OsuId { get; init; }
 
     /// <summary>
     /// osu! username
     /// </summary>
-    public string Username { get; set; } = null!;
+    public string Username { get; init; } = null!;
 
     /// <summary>
     /// osu! country code
     /// </summary>
-    public string Country { get; set; } = null!;
+    public string Country { get; init; } = null!;
 
     /// <summary>
-    /// A collection of <see cref="PlayerOsuRulesetDataDTO"/>, one for each <see cref="Enums.Ruleset"/>
+    /// The player's primary osu! ruleset
     /// </summary>
-    public PlayerOsuRulesetDataDTO[] RulesetData { get; set; } = [];
+    public Ruleset Ruleset { get; init; }
+
+    /// <summary>
+    /// Id of the associated user, if available
+    /// </summary>
+    public int? UserId { get; init; }
 }

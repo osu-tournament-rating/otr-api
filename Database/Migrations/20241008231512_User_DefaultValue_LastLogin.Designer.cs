@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20241008231512_User_DefaultValue_LastLogin")]
+    partial class User_DefaultValue_LastLogin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -179,15 +182,11 @@ namespace Database.Migrations
                         .HasColumnName("osu_id");
 
                     b.Property<int>("ProcessingStatus")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("processing_status");
 
                     b.Property<int>("RejectionReason")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("rejection_reason");
 
                     b.Property<int>("Ruleset")
@@ -213,16 +212,8 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.Property<int>("VerificationStatus")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
                         .HasColumnName("verification_status");
-
-                    b.Property<int>("WarningFlags")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("warning_flags");
 
                     b.HasKey("Id");
 
@@ -656,12 +647,6 @@ namespace Database.Migrations
                     b.Property<int?>("VerifiedByUserId")
                         .HasColumnType("integer")
                         .HasColumnName("verified_by_user_id");
-
-                    b.Property<int>("WarningFlags")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("warning_flags");
 
                     b.HasKey("Id");
 
@@ -1678,21 +1663,6 @@ namespace Database.Migrations
                     b.ToTable("user_settings");
                 });
 
-            modelBuilder.Entity("__join__pooled_beatmaps", b =>
-                {
-                    b.Property<int>("beatmap_id")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("tournament_id")
-                        .HasColumnType("integer");
-
-                    b.HasKey("beatmap_id", "tournament_id");
-
-                    b.HasIndex("tournament_id");
-
-                    b.ToTable("__join__pooled_beatmaps");
-                });
-
             modelBuilder.Entity("Database.Entities.Game", b =>
                 {
                     b.HasOne("Database.Entities.Beatmap", "Beatmap")
@@ -2110,23 +2080,6 @@ namespace Database.Migrations
                         .HasForeignKey("Database.Entities.UserSettings", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("__join__pooled_beatmaps", b =>
-                {
-                    b.HasOne("Database.Entities.Beatmap", null)
-                        .WithMany()
-                        .HasForeignKey("beatmap_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_JoinTable_Beatmap");
-
-                    b.HasOne("Database.Entities.Tournament", null)
-                        .WithMany()
-                        .HasForeignKey("tournament_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_JoinTable_Tournament");
                 });
 
             modelBuilder.Entity("Database.Entities.Beatmap", b =>
