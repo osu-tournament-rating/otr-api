@@ -20,7 +20,7 @@ public class PlayerStatsDTO
     public Ruleset Ruleset { get; init; }
 
     /// <summary>
-    /// Base stats for the player
+    /// Basic stats for the player
     /// </summary>
     public PlayerRatingStatsDTO? Rating { get; init; }
 
