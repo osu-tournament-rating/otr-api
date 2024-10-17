@@ -7,7 +7,7 @@ using Moq;
 
 namespace APITests.MockRepositories;
 
-public class MockBaseStatsRepository : Mock<IApiBaseStatsRepository>
+public class MockBaseStatsRepository : Mock<IApiPlayerRatingRepository>
 {
     public MockBaseStatsRepository SetupLeaderboardCount()
     {
@@ -54,20 +54,6 @@ public class MockBaseStatsRepository : Mock<IApiBaseStatsRepository>
     public MockBaseStatsRepository SetupHighestMatches()
     {
         Setup(x => x.HighestMatchesAsync(It.IsAny<Ruleset>(), It.IsAny<string?>())).ReturnsAsync(500);
-
-        return this;
-    }
-
-    public MockBaseStatsRepository SetupHighestRank()
-    {
-        Setup(x => x.HighestRankAsync(It.IsAny<Ruleset>(), It.IsAny<string?>())).ReturnsAsync(100_000_000);
-
-        return this;
-    }
-
-    public MockBaseStatsRepository SetupGetForPlayerAsync()
-    {
-        Setup(x => x.GetForPlayerAsync(It.IsAny<int>(), It.IsAny<Ruleset>())).ReturnsAsync(SeededBaseStats.Get());
 
         return this;
     }

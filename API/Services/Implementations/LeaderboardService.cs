@@ -8,7 +8,7 @@ namespace API.Services.Implementations;
 [SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly")]
 public class LeaderboardService(
     IPlayersRepository playerRepository,
-    IBaseStatsService baseStatsService
+    IPlayerRatingService playerRatingService
     ) : ILeaderboardService
 {
     public async Task<LeaderboardDTO> GetLeaderboardAsync(
@@ -21,19 +21,19 @@ public class LeaderboardService(
         var leaderboard = new LeaderboardDTO
         {
             Ruleset = requestQuery.Ruleset,
-            TotalPlayerCount = await baseStatsService.LeaderboardCountAsync(
+            TotalPlayerCount = await playerRatingService.LeaderboardCountAsync(
                 requestQuery.Ruleset,
                 requestQuery.ChartType,
                 requestQuery.Filter,
                 authorizedUserId
             ),
-            FilterDefaults = await baseStatsService.LeaderboardFilterDefaultsAsync(
+            FilterDefaults = await playerRatingService.LeaderboardFilterDefaultsAsync(
                 requestQuery.Ruleset,
                 requestQuery.ChartType
             )
         };
 
-        IEnumerable<PlayerRatingStatsDTO?> baseStats = await baseStatsService.GetLeaderboardAsync(
+        IEnumerable<PlayerRatingStatsDTO?> playerRatingStats = await playerRatingService.GetLeaderboardAsync(
             requestQuery.Ruleset,
             requestQuery.Page,
             requestQuery.PageSize,
@@ -44,7 +44,7 @@ public class LeaderboardService(
 
         var leaderboardPlayerInfo = new List<LeaderboardPlayerInfoDTO>();
 
-        foreach (PlayerRatingStatsDTO? baseStat in baseStats)
+        foreach (PlayerRatingStatsDTO? baseStat in playerRatingStats)
         {
             if (baseStat == null)
             {
