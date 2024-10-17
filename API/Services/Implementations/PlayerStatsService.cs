@@ -11,7 +11,7 @@ using Database.Repositories.Interfaces;
 namespace API.Services.Implementations;
 
 public class PlayerStatsService(
-    IBaseStatsService baseStatsService,
+    IPlayerRatingService playerRatingService,
     IApiMatchWinRecordRepository matchWinRecordRepository,
     IApiPlayerMatchStatsRepository matchStatsRepository,
     IPlayersRepository playerRepository,
@@ -208,7 +208,7 @@ public class PlayerStatsService(
     // Returns overall stats for the player, no need to filter by date.
     private async Task<PlayerRatingStatsDTO?> GetBaseStatsAsync(int playerId, Ruleset ruleset)
     {
-        PlayerRatingStatsDTO? dto = await baseStatsService.GetAsync(null, playerId, ruleset);
+        PlayerRatingStatsDTO? dto = await playerRatingService.GetAsync(null, playerId, ruleset);
 
         if (dto == null)
         {

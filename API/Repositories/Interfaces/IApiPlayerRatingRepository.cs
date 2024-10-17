@@ -6,7 +6,7 @@ using Database.Repositories.Interfaces;
 
 namespace API.Repositories.Interfaces;
 
-public interface IApiBaseStatsRepository : IBaseStatsRepository
+public interface IApiPlayerRatingRepository : IBaseStatsRepository
 {
     Task<IEnumerable<PlayerRating>> GetLeaderboardAsync(
         int page,

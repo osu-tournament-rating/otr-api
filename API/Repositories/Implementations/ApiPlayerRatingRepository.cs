@@ -16,10 +16,10 @@ namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class ApiBaseStatsRepository(
+public class ApiPlayerRatingRepository(
     OtrContext context,
     IPlayersRepository playerRepository
-    ) : BaseStatsRepository(context, playerRepository), IApiBaseStatsRepository
+    ) : BaseStatsRepository(context, playerRepository), IApiPlayerRatingRepository
 {
     private readonly OtrContext _context = context;
 

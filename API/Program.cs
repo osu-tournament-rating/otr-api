@@ -546,7 +546,7 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 
 #region Repositories
 
-builder.Services.AddScoped<IApiBaseStatsRepository, ApiBaseStatsRepository>();
+builder.Services.AddScoped<IApiPlayerRatingRepository, ApiPlayerRatingRepository>();
 builder.Services.AddScoped<IApiMatchRatingStatsRepository, ApiMatchRatingStatsRepository>();
 builder.Services.AddScoped<IApiMatchWinRecordRepository, ApiMatchWinRecordRepository>();
 builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRepository>();
@@ -573,7 +573,7 @@ builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
 #region Services
 
 builder.Services.AddScoped<IAdminNoteService, AdminNoteService>();
-builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
+builder.Services.AddScoped<IPlayerRatingService, PlayerRatingService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();

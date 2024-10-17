@@ -13,7 +13,7 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class StatsController(
     IPlayerStatsService playerStatsService,
-    IBaseStatsService baseStatsService
+    IPlayerRatingService playerRatingService
     ) : Controller
 {
     /// <summary>
@@ -59,5 +59,5 @@ public class StatsController(
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     public async Task<ActionResult<IDictionary<int, int>>> GetRatingHistogramAsync(
         [FromQuery] Ruleset ruleset = Ruleset.Osu
-    ) => Ok(await baseStatsService.GetHistogramAsync(ruleset));
+    ) => Ok(await playerRatingService.GetHistogramAsync(ruleset));
 }
