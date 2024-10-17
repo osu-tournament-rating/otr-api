@@ -33,7 +33,7 @@ public class LeaderboardService(
             )
         };
 
-        IEnumerable<PlayerRatingStatsDTO?> baseStats = await playerRatingService.GetLeaderboardAsync(
+        IEnumerable<PlayerRatingStatsDTO?> playerRatingStats = await playerRatingService.GetLeaderboardAsync(
             requestQuery.Ruleset,
             requestQuery.Page,
             requestQuery.PageSize,
@@ -44,7 +44,7 @@ public class LeaderboardService(
 
         var leaderboardPlayerInfo = new List<LeaderboardPlayerInfoDTO>();
 
-        foreach (PlayerRatingStatsDTO? baseStat in baseStats)
+        foreach (PlayerRatingStatsDTO? baseStat in playerRatingStats)
         {
             if (baseStat == null)
             {

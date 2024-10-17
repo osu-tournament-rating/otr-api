@@ -12,34 +12,12 @@ namespace API.Services.Implementations;
 public class PlayerRatingService(
     IApiPlayerRatingRepository playerRatingRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
-    IPlayersRepository playerRepository,
     ITournamentsService tournamentsService
     ) : IPlayerRatingService
 {
-    public async Task<IEnumerable<PlayerRatingStatsDTO?>> GetAsync(long osuPlayerId)
+    public async Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset)
     {
-        var id = await playerRepository.GetIdAsync(osuPlayerId);
-
-        if (!id.HasValue)
-        {
-            return new List<PlayerRatingStatsDTO?>();
-        }
-
-        IEnumerable<PlayerRating> baseStats = await playerRatingRepository.GetForPlayerAsync(osuPlayerId);
-        var ret = new List<PlayerRatingStatsDTO?>();
-
-        foreach (PlayerRating stat in baseStats)
-        {
-            // One per ruleset
-            ret.Add(await GetAsync(stat, id.Value, stat.Ruleset));
-        }
-
-        return ret;
-    }
-
-    public async Task<PlayerRatingStatsDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset)
-    {
-        currentStats ??= await playerRatingRepository.GetForPlayerAsync(playerId, ruleset);
+        PlayerRating? currentStats = await playerRatingRepository.GetForPlayerAsync(playerId, ruleset);
 
         if (currentStats == null)
         {
@@ -76,28 +54,6 @@ public class PlayerRatingService(
         };
     }
 
-    public async Task<int> BatchInsertAsync(IEnumerable<PlayerRatingDTO> stats)
-    {
-        var toInsert = new List<PlayerRating>();
-        foreach (PlayerRatingDTO item in stats)
-        {
-            toInsert.Add(
-                new PlayerRating
-                {
-                    PlayerId = item.PlayerId,
-                    Rating = item.Rating,
-                    Volatility = item.Volatility,
-                    Ruleset = item.Ruleset,
-                    Percentile = item.Percentile,
-                    GlobalRank = item.GlobalRank,
-                    CountryRank = item.CountryRank
-                }
-            );
-        }
-
-        return await playerRatingRepository.BatchInsertAsync(toInsert);
-    }
-
     public async Task<IEnumerable<PlayerRatingStatsDTO?>> GetLeaderboardAsync(
         Ruleset ruleset,
         int page,
@@ -107,7 +63,7 @@ public class PlayerRatingService(
         int? playerId
     )
     {
-        IEnumerable<PlayerRating> baseStats = await playerRatingRepository.GetLeaderboardAsync(
+        IEnumerable<PlayerRating> playerRatings = await playerRatingRepository.GetLeaderboardAsync(
             page,
             pageSize,
             ruleset,
@@ -118,15 +74,13 @@ public class PlayerRatingService(
 
         var leaderboard = new List<PlayerRatingStatsDTO?>();
 
-        foreach (PlayerRating baseStat in baseStats)
+        foreach (PlayerRating playerRating in playerRatings)
         {
-            leaderboard.Add(await GetAsync(baseStat, baseStat.PlayerId, ruleset));
+            leaderboard.Add(await GetAsync(playerRating.PlayerId, ruleset));
         }
 
         return leaderboard;
     }
-
-    public async Task TruncateAsync() => await playerRatingRepository.TruncateAsync();
 
     public async Task<int> LeaderboardCountAsync(
         Ruleset requestQueryRuleset,

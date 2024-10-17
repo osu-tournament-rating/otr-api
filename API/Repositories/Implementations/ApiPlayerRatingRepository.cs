@@ -19,7 +19,7 @@ namespace API.Repositories.Implementations;
 public class ApiPlayerRatingRepository(
     OtrContext context,
     IPlayersRepository playerRepository
-    ) : BaseStatsRepository(context, playerRepository), IApiPlayerRatingRepository
+    ) : PlayerRatingRepository(context), IApiPlayerRatingRepository
 {
     private readonly OtrContext _context = context;
 

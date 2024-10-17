@@ -208,7 +208,7 @@ public class PlayerStatsService(
     // Returns overall stats for the player, no need to filter by date.
     private async Task<PlayerRatingStatsDTO?> GetBaseStatsAsync(int playerId, Ruleset ruleset)
     {
-        PlayerRatingStatsDTO? dto = await playerRatingService.GetAsync(null, playerId, ruleset);
+        PlayerRatingStatsDTO? dto = await playerRatingService.GetAsync(playerId, ruleset);
 
         if (dto == null)
         {

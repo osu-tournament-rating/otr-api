@@ -8,15 +8,7 @@ namespace API.Services.Interfaces;
 
 public interface IPlayerRatingService
 {
-    /// <summary>
-    ///  Returns a list of all ratings for a player, one for each game ruleset (if available)
-    /// </summary>
-    /// <param name="playerId"></param>
-    /// <returns></returns>
-    Task<IEnumerable<PlayerRatingStatsDTO?>> GetAsync(long osuPlayerId);
-
-    Task<PlayerRatingStatsDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset);
-    Task<int> BatchInsertAsync(IEnumerable<PlayerRatingDTO> stats);
+    Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset);
 
     Task<IEnumerable<PlayerRatingStatsDTO?>> GetLeaderboardAsync(
         Ruleset ruleset,
@@ -27,7 +19,6 @@ public interface IPlayerRatingService
         int? playerId
     );
 
-    Task TruncateAsync();
     Task<int> LeaderboardCountAsync(
         Ruleset requestQueryRuleset,
         LeaderboardChartType requestQueryChartType,

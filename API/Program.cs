@@ -553,7 +553,7 @@ builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRe
 builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
 
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
-builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
+builder.Services.AddScoped<IPlayerRatingRepository, PlayerRatingRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
