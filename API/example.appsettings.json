@@ -12,14 +12,17 @@
   },
   "Osu": {
     "ClientId": "",
-    "ClientSecret": ""
+    "ClientSecret": "",
+    "RedirectUrl": "",
+    "OsuRateLimit": null,
+    "OsuTrackRateLimit": null
   },
   "Jwt": {
     "Key": "",
-    "Audience": ""
+    "Audience": "",
+    "Issuer": ""
   },
   "Auth": {
-    "ClientCallbackUrl": "",
     "EnforceWhitelist": false
   },
   "RateLimit": {
