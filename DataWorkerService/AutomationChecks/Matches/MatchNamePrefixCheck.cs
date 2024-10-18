@@ -4,7 +4,9 @@ using Database.Enums.Verification;
 namespace DataWorkerService.AutomationChecks.Matches;
 
 /// <summary>
-/// Checks for <see cref="Database.Entities.Match"/>es that have inconsistent lobby names
+/// Checks for <see cref="Database.Entities.Match"/> <see cref="Database.Entities.Match.Name"/>s that
+/// do not begin with the parent <see cref="Database.Entities.Tournament"/>'s
+/// <see cref="Database.Entities.Tournament.Abbreviation"/>
 /// </summary>
 public class MatchNamePrefixCheck(ILogger<MatchNamePrefixCheck> logger) : AutomationCheckBase<Match>(logger)
 {
