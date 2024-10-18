@@ -1,4 +1,5 @@
 using Database.Entities;
+using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
@@ -111,10 +112,22 @@ public static class QueryExtensions
             .Include(m => m.Games)
             .ThenInclude(g => g.Scores)
             .ThenInclude(s => s.Player)
-            .Include(x => x.Games)
-            .ThenInclude(x => x.Beatmap)
-            .Include(x => x.Games)
-            .ThenInclude(x => x.WinRecord);
+            .Include(m => m.Games)
+            .ThenInclude(g => g.Beatmap)
+            .Include(m => m.Games)
+            .ThenInclude(g => g.WinRecord)
+            .Include(m => m.Games)
+            .ThenInclude(g => g.AdminNotes);
+
+    /// <summary>
+    /// Includes the <see cref="Tournament"/> navigation on this <see cref="Match"/>
+    /// </summary>
+    /// <param name="query">The <see cref="Match"/> query</param>
+    /// <returns>The query with the <see cref="Tournament"/> included</returns>
+    public static IQueryable<Match> IncludeTournament(this IQueryable<Match> query) =>
+        query
+            .AsQueryable()
+            .Include(m => m.Tournament);
 
     /// <summary>
     /// Filters a <see cref="Match"/> query for those with a <see cref="Match.StartTime"/> that is greater than
@@ -315,6 +328,15 @@ public static class QueryExtensions
 
     public static IQueryable<GameScore> WherePlayerId(this IQueryable<GameScore> query, int playerId) =>
         query.AsQueryable().Where(x => x.PlayerId == playerId);
+
+    #endregion
+
+    #region Admin Notes
+
+    public static IQueryable<TEntity> IncludeAdminNotes<TEntity, TAdminNote>(this IQueryable<TEntity> query)
+        where TEntity : class, IAdminNotableEntity<TAdminNote>
+        where TAdminNote : IAdminNoteEntity
+        => query.Include(e => e.AdminNotes);
 
     #endregion
 }

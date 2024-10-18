@@ -22,7 +22,13 @@ public class OAuthClientService(
     public async Task<OAuthClientCreatedDTO> CreateAsync(int userId, params string[] scopes)
     {
         var secret = oAuthClientRepository.GenerateClientSecret();
-        var client = new OAuthClient { Scopes = scopes, Secret = secret, UserId = userId };
+        var client = new OAuthClient
+        {
+            Scopes = scopes,
+            Secret = secret,
+            UserId = userId,
+            RateLimitOverrides = new RateLimitOverrides()
+        };
 
         OAuthClient newClient = await oAuthClientRepository.CreateAsync(client);
 

@@ -11,44 +11,49 @@ namespace API.DTOs;
 public class GameDTO
 {
     /// <summary>
-    /// Id of the game
+    /// Primary key
     /// </summary>
     public int Id { get; set; }
 
     /// <summary>
-    /// The ruleset for the game
+    /// The ruleset
     /// </summary>
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// The scoring type used for the game
+    /// The scoring type used
     /// </summary>
     public ScoringType ScoringType { get; set; }
 
     /// <summary>
-    /// The team type used for the game
+    /// The team type used
     /// </summary>
     public TeamType TeamType { get; set; }
 
     /// <summary>
-    /// The mods enabled for the game
+    /// The mods enabled
     /// </summary>
     public Mods Mods { get; set; }
 
     /// <summary>
-    /// osu! id of the game
+    /// osu! id
     /// </summary>
     public long OsuId { get; set; }
 
     /// <summary>
-    /// The current state of verification
+    /// The verification status
     /// </summary>
     public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
-    /// The current state of processing
+    /// The processing status
     /// </summary>
     public GameProcessingStatus ProcessingStatus { get; set; }
+
+    /// <summary>
+    /// Warning flags
+    /// </summary>
+    public GameWarningFlags WarningFlags { get; set; }
 
     /// <summary>
     /// The rejection reason
@@ -66,12 +71,17 @@ public class GameDTO
     public DateTime? EndTime { get; set; }
 
     /// <summary>
-    /// The beatmap the game was played on
+    /// The beatmap played
     /// </summary>
     public BeatmapDTO? Beatmap { get; set; }
 
     /// <summary>
-    /// All match scores for the game
+    /// All associated admin notes
+    /// </summary>
+    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = new List<AdminNoteDTO>();
+
+    /// <summary>
+    /// All match scores
     /// </summary>
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public List<GameScoreDTO> Scores { get; set; } = [];

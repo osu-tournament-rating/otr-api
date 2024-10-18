@@ -42,8 +42,8 @@ public partial class TournamentsController(
     /// </summary>
     /// <param name="tournamentSubmission">Tournament submission data</param>
     /// <response code="400">
-    /// If the given <see cref="tournamentSubmission"/> is malformed
-    /// If a tournament matching the given name and ruleset already exists
+    /// If the given <see cref="tournamentSubmission"/> is malformed or
+    /// if a tournament matching the given name and ruleset already exists
     /// </response>
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
@@ -64,8 +64,20 @@ public partial class TournamentsController(
             );
         }
 
+        if (tournamentSubmission.RejectionReason.HasValue && !User.IsAdmin())
+        {
+            return BadRequest("Only admin users may supply a rejection reason");
+        }
+
         // Remove query string
-        tournamentSubmission.ForumUrl = new Uri(tournamentSubmission.ForumUrl).GetLeftPart(UriPartial.Path);
+        try
+        {
+            tournamentSubmission.ForumUrl = new Uri(tournamentSubmission.ForumUrl).GetLeftPart(UriPartial.Path);
+        }
+        catch (UriFormatException)
+        {
+            return BadRequest($"The tournament forum URL is invalid: {tournamentSubmission.ForumUrl}");
+        }
 
         // Input validation for mp and beatmap ids
         tournamentSubmission.Ids = tournamentSubmission.Ids.Where(id => id >= 1);
