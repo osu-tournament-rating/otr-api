@@ -24,7 +24,18 @@ public class WhitelistEnforcementMiddleware(RequestDelegate next, ILogger<Whitel
             return;
         }
 
-        logger.LogInformation("Rejecting client with identity {id} for whitelist violation", context.User.GetSubjectId());
+        string? ident = null;
+        try
+        {
+            ident = context.User.GetSubjectId().ToString();
+        }
+        catch
+        {
+            // ignored, we can expect null ids here
+        }
+        ident ??= "unknown";
+
+        logger.LogInformation("Rejecting client with identity {id} for whitelist violation", ident);
         context.Response.StatusCode = StatusCodes.Status403Forbidden;
     }
 }

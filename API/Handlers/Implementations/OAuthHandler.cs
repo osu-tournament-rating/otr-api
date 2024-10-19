@@ -97,7 +97,7 @@ public class OAuthHandler(
             return new DetailedResponseDTO<AccessCredentialsDTO> { ErrorDetail = "Invalid token" };
         }
 
-        if (claimsPrincipal.GetTokenType() is not OtrClaims.TokenType)
+        if (claimsPrincipal.GetTokenType() is not OtrClaims.TokenTypes.RefreshToken)
         {
             return new DetailedResponseDTO<AccessCredentialsDTO> { ErrorDetail = "Invalid token" };
         }
