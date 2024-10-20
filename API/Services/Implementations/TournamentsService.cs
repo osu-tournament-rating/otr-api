@@ -12,8 +12,9 @@ public class TournamentsService(
     ITournamentsRepository tournamentsRepository,
     IMatchesRepository matchesRepository,
     IBeatmapsRepository beatmapsRepository,
-    IMapper mapper
-) : ITournamentsService
+    IMapper mapper,
+    ILogger<TournamentsService> logger
+    ) : ITournamentsService
 {
     public async Task<TournamentCreatedResultDTO> CreateAsync(
         TournamentSubmissionDTO submission,
@@ -129,5 +130,17 @@ public class TournamentsService(
 
         await tournamentsRepository.UpdateAsync(existing);
         return mapper.Map<TournamentDTO>(existing);
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var rows = await tournamentsRepository.DeleteAsync(id);
+
+        if (rows > 1)
+        {
+            logger.LogWarning("Expected 1 row to be deleted, but {Rows} were deleted", rows);
+        }
+
+        return rows > 0;
     }
 }
