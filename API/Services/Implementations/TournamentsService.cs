@@ -13,7 +13,7 @@ public class TournamentsService(
     IMatchesRepository matchesRepository,
     IBeatmapsRepository beatmapsRepository,
     IMapper mapper
-) : ITournamentsService
+    ) : ITournamentsService
 {
     public async Task<TournamentCreatedResultDTO> CreateAsync(
         TournamentSubmissionDTO submission,
@@ -130,4 +130,6 @@ public class TournamentsService(
         await tournamentsRepository.UpdateAsync(existing);
         return mapper.Map<TournamentDTO>(existing);
     }
+
+    public async Task DeleteAsync(int id) => await tournamentsRepository.DeleteAsync(id);
 }

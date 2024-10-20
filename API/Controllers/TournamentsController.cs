@@ -186,4 +186,25 @@ public partial class TournamentsController(
 
         return Ok(result.Matches);
     }
+
+    /// <summary>
+    /// Delete a tournament
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <response code="404">The tournament does not exist</response>
+    /// <response code="204">The tournament was deleted successfully</response>
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteAsync(int id)
+    {
+        TournamentDTO? result = await tournamentsService.GetAsync(id);
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        await tournamentsService.DeleteAsync(id);
+        return NoContent();
+    }
 }
