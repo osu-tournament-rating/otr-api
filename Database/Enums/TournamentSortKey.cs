@@ -1,4 +1,4 @@
-namespace API.Enums;
+namespace Database.Enums;
 
 /// <summary>
 /// Defines how to sort the results of fetching all tournaments

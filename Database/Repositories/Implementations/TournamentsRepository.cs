@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using API.Enums;
 using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums;
