@@ -1,9 +1,11 @@
+using API.Enums;
 using Database.Entities;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.Replication;
 
 namespace Database.Utilities.Extensions;
 
@@ -78,6 +80,18 @@ public static class QueryExtensions
     /// </summary>
     public static IQueryable<Tournament> WhereProcessingCompleted(this IQueryable<Tournament> query) =>
         query.AsQueryable().Where(x => x.ProcessingStatus == TournamentProcessingStatus.Done);
+
+    public static IQueryable<Tournament> OrderBy(this IQueryable<Tournament> query, TournamentSortKey key) =>
+        key switch
+        {
+            TournamentSortKey.Name => query.OrderBy(x => x.Name),
+            TournamentSortKey.NameDescending => query.OrderByDescending(x => x.Name),
+            TournamentSortKey.StartTime => query.OrderBy(x => x.StartTime),
+            TournamentSortKey.StartTimeDescending => query.OrderByDescending(x => x.StartTime),
+            TournamentSortKey.Created => query.OrderBy(x => x.Created),
+            TournamentSortKey.CreatedDescending => query.OrderByDescending(x => x.Created),
+            _ => query
+        };
 
     #endregion
 
