@@ -24,6 +24,14 @@ public class WhitelistEnforcementMiddleware(RequestDelegate next, ILogger<Whitel
             return;
         }
 
+#if DEBUG
+        if (context.Request.Path.ToString().Contains("swagger"))
+        {
+            await next(context);
+            return;
+        }
+#endif
+
         logger.LogInformation("Rejecting client with identity {id} for whitelist violation", context.User.GetSubjectId());
         context.Response.StatusCode = StatusCodes.Status403Forbidden;
     }

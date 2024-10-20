@@ -26,7 +26,7 @@ public class OAuthClient : UpdateableEntityBase, IAdminNotableEntity<OAuthClient
     /// A collection of string literals denoting special permissions granted to the client
     /// </summary>
     [Column("scopes")]
-    public ICollection<string> Scopes { get; set; } = new List<string>();
+    public string[] Scopes { get; set; } = [];
 
     // NOTE: Column name and value initialization is handled via OtrContext
     /// <summary>
