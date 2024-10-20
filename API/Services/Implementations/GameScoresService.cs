@@ -33,4 +33,7 @@ public class GameScoresService(IGameScoresRepository gameScoresRepository, IMapp
 
     public async Task<bool> ExistsAsync(int id) =>
         await gameScoresRepository.ExistsAsync(id);
+
+    public async Task DeleteAsync(int id) =>
+        await gameScoresRepository.DeleteAsync(id);
 }

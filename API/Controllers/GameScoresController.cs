@@ -54,4 +54,25 @@ public partial class GameScoresController(IGameScoresService gameScoresService, 
         GameScoreDTO? updatedScore = await gameScoresService.UpdateAsync(id, score);
         return Ok(updatedScore!);
     }
+
+    /// <summary>
+    /// Delete a score
+    /// </summary>
+    /// <param name="id">Score id</param>
+    /// <response code="404">The score does not exist</response>
+    /// <response code="204">The score was deleted successfully</response>
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteAsync(int id)
+    {
+        GameScoreDTO? result = await gameScoresService.GetAsync(id);
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        await gameScoresService.DeleteAsync(id);
+        return NoContent();
+    }
 }
