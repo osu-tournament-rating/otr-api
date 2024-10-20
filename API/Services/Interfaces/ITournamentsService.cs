@@ -74,6 +74,5 @@ public interface ITournamentsService
     /// Deletes a tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <returns>True if deleted successfully</returns>
-    Task<bool> DeleteAsync(int id);
+    Task DeleteAsync(int id);
 }
