@@ -112,4 +112,25 @@ public partial class MatchesController(IMatchesService matchesService, IAdminNot
         MatchDTO? updatedMatch = await matchesService.UpdateAsync(id, match);
         return Ok(updatedMatch!);
     }
+
+    /// <summary>
+    /// Delete a match
+    /// </summary>
+    /// <param name="id">Match id</param>
+    /// <response code="404">The match does not exist</response>
+    /// <response code="204">The match was deleted successfully</response>
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteAsync(int id)
+    {
+        MatchDTO? result = await matchesService.GetAsync(id);
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        await matchesService.DeleteAsync(id);
+        return NoContent();
+    }
 }
