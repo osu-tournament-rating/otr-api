@@ -42,12 +42,12 @@ public class User : UpdateableEntityBase
     /// Id of the <see cref="Entities.Player"/> associated to the user
     /// </summary>
     [Column("player_id")]
-    public int? PlayerId { get; set; }
+    public int PlayerId { get; set; }
 
     /// <summary>
     /// The <see cref="Entities.Player"/> associated to the user
     /// </summary>
-    public Player? Player { get; set; }
+    public Player Player { get; set; } = null!;
 
     /// <summary>
     /// A collection of <see cref="OAuthClient"/>s owned by the user
