@@ -42,6 +42,7 @@ public static class MockResolvers
             Logger<GameAutomationChecksProcessor>(),
             new List<IAutomationCheck<Game>>
             {
+                new GameBeatmapUsageCheck(Logger<GameBeatmapUsageCheck>()),
                 new GameEndTimeCheck(Logger<GameEndTimeCheck>()),
                 new GameModCheck(Logger<GameModCheck>()),
                 new GameRulesetCheck(Logger<GameRulesetCheck>()),
