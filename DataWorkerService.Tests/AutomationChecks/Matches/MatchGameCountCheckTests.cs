@@ -107,4 +107,45 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
         Assert.Equal(expectedPass, actualPass);
         Assert.Equal(expectedRejectionReason, match.RejectionReason);
     }
+
+    [Fact]
+    public void Check_Passes_WhenApplyingWarningFlag()
+    {
+        // Arrange
+        Match match = SeededMatch.Generate(warningFlags: MatchWarningFlags.None);
+
+        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
+        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
+        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
+        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
+
+        // Act
+        var passed = AutomationCheck.Check(match);
+
+        // Assert
+        Assert.Equal(MatchWarningFlags.LowGameCount, match.WarningFlags);
+        Assert.True(passed);
+    }
+
+    [Theory]
+    [InlineData(3, false)]
+    [InlineData(4, true)]
+    [InlineData(5, true)]
+    [InlineData(6, false)]
+    public void Check_AppliesWarningFlag_WhenExpected(int gameCount, bool expectedWarning)
+    {
+        // Arrange
+        Match match = SeededMatch.Generate(warningFlags: MatchWarningFlags.None);
+
+        foreach (var _ in Enumerable.Range(1, gameCount))
+        {
+            SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
+        }
+
+        // Act
+        AutomationCheck.Check(match);
+
+        // Assert
+        Assert.Equal(expectedWarning, match.WarningFlags == MatchWarningFlags.LowGameCount);
+    }
 }
