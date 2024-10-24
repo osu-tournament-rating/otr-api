@@ -48,10 +48,13 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// </summary>
     /// <param name="page">The page</param>
     /// <param name="pageSize">The size of the collection</param>
-    /// <param name="sortKey">Determines how the results are sorted</param>
-    /// <param name="verified">Whether the resulting tournaments must be verified and
-    /// have completed processing</param>
+    /// <param name="querySortType">Determines how the results are sorted</param>
+    /// <param name="descending">Whether to sort the results in descending order</param>
+    /// <param name="verified">
+    /// Whether the resulting tournaments must be verified and
+    /// have completed processing
+    /// </param>
     /// <param name="ruleset">An optional ruleset to filter by</param>
-    Task<ICollection<Tournament>> GetAsync(int page, int pageSize, TournamentSortKey sortKey,
-        bool verified = true, Ruleset? ruleset = null);
+    Task<ICollection<Tournament>> GetAsync(int page, int pageSize, TournamentQuerySortType querySortType,
+        bool descending = false, bool verified = true, Ruleset? ruleset = null);
 }

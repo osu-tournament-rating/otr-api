@@ -2,9 +2,9 @@ using Database.Entities;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
+using Database.Enums.Queries;
 using Database.Enums.Verification;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.Replication;
 
 namespace Database.Utilities.Extensions;
 
@@ -14,7 +14,7 @@ public static class QueryExtensions
     /// Gets the desired "page" of a query
     /// </summary>
     /// <param name="limit">Page size</param>
-    /// <param name="page">Desired page</param>
+    /// <param name="page">Desired page (zero-indexed)</param>
     public static IQueryable<T> Page<T>(this IQueryable<T> query, int limit, int page) =>
         query.AsQueryable().Skip(limit * page).Take(limit);
 
@@ -80,15 +80,20 @@ public static class QueryExtensions
     public static IQueryable<Tournament> WhereProcessingCompleted(this IQueryable<Tournament> query) =>
         query.AsQueryable().Where(x => x.ProcessingStatus == TournamentProcessingStatus.Done);
 
-    public static IQueryable<Tournament> OrderBy(this IQueryable<Tournament> query, TournamentSortKey key) =>
-        key switch
+    /// <summary>
+    /// Orders the query based on the specified sort type and direction.
+    /// </summary>
+    /// <param name="query">The query to be ordered.</param>
+    /// <param name="sortType">Defines which key to order the results by</param>
+    /// <param name="descending">A boolean indicating whether the ordering should be in descending order. Defaults to false (ascending).</param>
+    /// <returns>The ordered query</returns>
+    public static IQueryable<Tournament> OrderBy(this IQueryable<Tournament> query, TournamentQuerySortType sortType, bool descending = false) =>
+        sortType switch
         {
-            TournamentSortKey.Name => query.OrderBy(x => x.Name),
-            TournamentSortKey.NameDescending => query.OrderByDescending(x => x.Name),
-            TournamentSortKey.StartTime => query.OrderBy(x => x.StartTime),
-            TournamentSortKey.StartTimeDescending => query.OrderByDescending(x => x.StartTime),
-            TournamentSortKey.Created => query.OrderBy(x => x.Created),
-            TournamentSortKey.CreatedDescending => query.OrderByDescending(x => x.Created),
+            TournamentQuerySortType.Id => descending ? query.OrderByDescending(t => t.Id) : query.OrderBy(t => t.Id),
+            TournamentQuerySortType.Name => descending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name),
+            TournamentQuerySortType.StartTime => descending ? query.OrderByDescending(t => t.StartTime) : query.OrderBy(t => t.StartTime),
+            TournamentQuerySortType.Created => descending ? query.OrderByDescending(t => t.Created) : query.OrderBy(t => t.Created),
             _ => query
         };
 
@@ -187,6 +192,25 @@ public static class QueryExtensions
             .AsQueryable()
             .Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\"));
     }
+
+    /// <summary>
+    /// Orders the query based on the specified sort type and direction.
+    /// </summary>
+    /// <param name="query">The query to be ordered.</param>
+    /// <param name="sortType">Defines which key to order the results by</param>
+    /// <param name="descending">A boolean indicating whether the ordering should be in descending order. Defaults to false (ascending).</param>
+    /// <returns>The ordered query</returns>
+    public static IQueryable<Match> OrderBy(this IQueryable<Match> query, MatchQuerySortType sortType, bool descending = false) =>
+        sortType switch
+        {
+            MatchQuerySortType.Id => descending ? query.OrderByDescending(m => m.Id) : query.OrderBy(m => m.Id),
+            MatchQuerySortType.OsuId => descending ? query.OrderByDescending(m => m.OsuId) : query.OrderBy(m => m.OsuId),
+            MatchQuerySortType.StartTime => descending ? query.OrderByDescending(m => m.StartTime) : query.OrderBy(m => m.StartTime),
+            MatchQuerySortType.EndTime => descending ? query.OrderByDescending(m => m.EndTime) : query.OrderBy(m => m.EndTime),
+            MatchQuerySortType.Created => descending ? query.OrderByDescending(m => m.Created) : query.OrderBy(m => m.Created),
+            _ => query
+        };
+
 
     /// <summary>
     /// Filters a <see cref="Match"/> query for those where a <see cref="Player"/> with the given osu! id participated
