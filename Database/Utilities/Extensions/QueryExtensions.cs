@@ -113,6 +113,8 @@ public static class QueryExtensions
             .ThenInclude(g => g.Scores)
             .ThenInclude(s => s.Player)
             .Include(m => m.Games)
+            .ThenInclude(s => s.AdminNotes)
+            .Include(m => m.Games)
             .ThenInclude(g => g.Beatmap)
             .Include(m => m.Games)
             .ThenInclude(g => g.WinRecord)
