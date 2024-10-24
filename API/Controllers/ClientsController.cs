@@ -34,7 +34,7 @@ public class ClientsController(IOAuthClientService clientService) : Controller
             return NotFound();
         }
 
-        await clientService.SetRateLimitOverrideAsync(id, rateLimitOverride);
+        client = await clientService.SetRateLimitOverrideAsync(id, rateLimitOverride);
         return Ok(client);
     }
 }
