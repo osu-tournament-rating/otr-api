@@ -1,11 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
 using Asp.Versioning;
-using Database.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -15,29 +13,28 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class ClientsController(IOAuthClientService clientService) : Controller
 {
-    [HttpPatch("{id:int}/ratelimit")]
+    /// <summary>
+    /// Set the rate limit for a client
+    /// </summary>
+    /// <param name="id">The client id</param>
+    /// <param name="rateLimitOverride">The new rate limit for the client</param>
+    /// <response code="404">If the provided id does not belong to a client</response>
+    /// <response code="200">Returns the patched client</response>
     [Authorize(Roles = OtrClaims.Roles.Admin)]
-    [EndpointSummary("Patches the ratelimit for a given client")]
-    public async Task<Results<BadRequest, NotFound, Ok<OAuthClientDTO>>> PatchRatelimitAsync(int id, [FromBody] JsonPatchDocument<RateLimitOverrides> patchedOverrides)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<OAuthClientDTO>(StatusCodes.Status200OK)]
+    [SuppressMessage("ReSharper", "StringLiteralTypo")]
+    [HttpPost("{id:int}/ratelimit")]
+    public async Task<IActionResult> PatchRateLimitAsync(int id, int rateLimitOverride)
     {
-        OAuthClientDTO? currentClient = await clientService.GetAsync(id);
+        OAuthClientDTO? client = await clientService.GetAsync(id);
 
-        if (currentClient == null)
+        if (client == null)
         {
-            return TypedResults.NotFound();
+            return NotFound();
         }
 
-        RateLimitOverrides overrides = currentClient.RateLimitOverrides;
-
-        if (patchedOverrides.Operations.Any(op => op.op != "replace"))
-        {
-            return TypedResults.BadRequest();
-        }
-
-        patchedOverrides.ApplyTo(overrides, ModelState);
-
-        // We know client is not null here due to the previous null check
-        OAuthClientDTO? client = await clientService.SetRatelimitOverridesAsync(id, overrides);
-        return TypedResults.Ok(client!);
+        await clientService.SetRateLimitOverrideAsync(id, rateLimitOverride);
+        return Ok(client);
     }
 }

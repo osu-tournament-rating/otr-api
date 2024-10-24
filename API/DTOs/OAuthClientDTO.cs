@@ -20,5 +20,5 @@ public class OAuthClientDTO
     /// <summary>
     /// Possible rate limit overrides for the client
     /// </summary>
-    public RateLimitOverrides RateLimitOverrides { get; set; } = new();
+    public int? RateLimitOverrides { get; set; }
 }

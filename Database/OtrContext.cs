@@ -435,15 +435,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(c => c.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
-            // RateLimitOverrides as an object is stored in a column as JSON
-            entity
-                .OwnsOne(e => e.RateLimitOverrides, rlo =>
-                {
-                    rlo.ToJson("rate_limit_overrides");
-                    rlo.Property(p => p.PermitLimit).HasDefaultValue(null);
-                    rlo.Property(p => p.Window).HasDefaultValue(null);
-                });
-
             // Relation: Admin Notes
             entity
                 .HasMany(c => c.AdminNotes)
