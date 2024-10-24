@@ -27,4 +27,10 @@ public static class Constants
     /// <see cref="Database.Enums.Verification.VerificationStatus.Verified"/> must meet or exceed to be considered valid
     /// </summary>
     public const double TournamentVerifiedMatchesPercentageThreshold = 0.8;
+
+    /// <summary>
+    /// Regex filters that define valid <see cref="Database.Entities.Match"/> <see cref="Database.Entities.Match.Name"/>
+    /// conventions
+    /// </summary>
+    public static readonly List<string> MatchNamePatterns = [@"^[^\n\r]*(\(.+\)\s*vs\.?\s*\(.+\)).*$"];
 }

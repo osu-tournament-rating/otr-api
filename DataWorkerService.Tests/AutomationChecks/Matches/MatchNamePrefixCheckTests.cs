@@ -5,7 +5,7 @@ using TestingUtils.SeededData;
 
 namespace DataWorkerService.Tests.AutomationChecks.Matches;
 
-public class MatchNameCheckTests : AutomationChecksTestBase<MatchNameCheck>
+public class MatchNamePrefixCheckTests : AutomationChecksTestBase<MatchNamePrefixCheck>
 {
     [Theory]
     [InlineData("(Australia) VS (Japan)", "OWC2022", false)]
@@ -19,7 +19,7 @@ public class MatchNameCheckTests : AutomationChecksTestBase<MatchNameCheck>
         // Arrange
         MatchRejectionReason expectedRejectionReason = expectedPass
             ? MatchRejectionReason.None
-            : MatchRejectionReason.InvalidName;
+            : MatchRejectionReason.NamePrefixMismatch;
 
         Match match = SeededMatch.Generate(name: matchName, rejectionReason: MatchRejectionReason.None);
         match.Tournament.Abbreviation = tournamentAbbreviation;
