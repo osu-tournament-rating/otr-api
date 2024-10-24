@@ -33,8 +33,7 @@ public class JwtService(
     public string GenerateAccessToken(User user) =>
         GenerateAccessToken(
             user.Id.ToString(),
-            [.. user.Scopes, OtrClaims.Roles.User],
-            user.RateLimitOverrides
+            [.. user.Scopes, OtrClaims.Roles.User]
         );
 
     public string GenerateRefreshToken(OAuthClient client) =>
