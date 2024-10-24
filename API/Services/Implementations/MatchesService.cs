@@ -109,4 +109,7 @@ public class MatchesService(
 
     public async Task<bool> ExistsAsync(int id) =>
         await matchesRepository.ExistsAsync(id);
+
+    public async Task DeleteAsync(int id) =>
+        await matchesRepository.DeleteAsync(id);
 }

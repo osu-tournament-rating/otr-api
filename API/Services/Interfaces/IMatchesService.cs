@@ -51,4 +51,10 @@ public interface IMatchesService
     /// <param name="id">The match id</param>
     /// <returns>True if the match exists, false otherwise</returns>
     Task<bool> ExistsAsync(int id);
+
+    /// <summary>
+    /// Deletes a match
+    /// </summary>
+    /// <param name="id">Match id</param>
+    Task DeleteAsync(int id);
 }
