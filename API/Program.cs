@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
-using System.Security.Claims;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API.Authorization;
@@ -24,7 +23,6 @@ using Database;
 using Database.Entities;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -150,20 +148,13 @@ builder.Services.AddRateLimiter(options =>
             RateLimitConfiguration.Position
         );
 
-    var anonymousRateLimiterOptions = new FixedWindowRateLimiterOptions()
-    {
-        PermitLimit = 30,
-        Window = TimeSpan.FromSeconds(60),
-        QueueLimit = 0
-    };
-
     // Configure response for rate limited clients
     options.OnRejected = async (context, token) =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         const string readMore =
             // TODO: Link to the API Terms of Service Document
-            "Currently, information about API ratelimits is unavailable.";
+            "Currently, detailed information about API rate limits is unavailable.";
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
         {
             await context.HttpContext.Response.WriteAsync(
@@ -181,58 +172,33 @@ builder.Services.AddRateLimiter(options =>
         }
     };
 
+    // Configure the rate limit partitioning rules
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
     {
-        // Try to get access token
-        var accessToken = context
-            .Features.Get<IAuthenticateResultFeature>()
-            ?.AuthenticateResult?.Properties?.GetTokenValue("access_token")
-            ?.ToString();
-
-        // Shared partition for anonymous users
-        if (string.IsNullOrEmpty(accessToken))
+        // Shared partition for anonymous requests
+        if (context.User.Identity is { IsAuthenticated: false })
         {
             return RateLimitPartition.GetFixedWindowLimiter(
                 "anonymous",
-                _ => anonymousRateLimiterOptions
+                _ => GetRateLimiterOptions()
             );
         }
-
-        JwtSecurityToken jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
-        var principal = new ClaimsPrincipal(new ClaimsIdentity(jwtToken.Claims));
-
-        // Try to parse rate limit override claim
-        var overrideClaimValue = principal
-            .Claims.FirstOrDefault(c => c.Type == OtrClaims.RateLimitOverrides)
-            ?.Value;
-        RateLimitOverrides? overrides = null;
-        if (!string.IsNullOrEmpty(overrideClaimValue))
-        {
-            overrides = RateLimitOverridesSerializer.Deserialize(overrideClaimValue);
-        }
-
-        // Differentiate between client and users, as they can have the same id
-        var prefix = principal.IsUser() ? "user" : "client";
 
         // Partition for each unique user / client
-        if (overrides is null)
-        {
-            return RateLimitPartition.GetFixedWindowLimiter(
-                $"{prefix}_{jwtToken.Issuer}",
-                _ => anonymousRateLimiterOptions
-            );
-        }
-
         return RateLimitPartition.GetFixedWindowLimiter(
-            $"{prefix}_{jwtToken.Issuer}",
-            _ => new FixedWindowRateLimiterOptions()
-            {
-                PermitLimit = overrides.PermitLimit ?? rateLimitConfiguration.PermitLimit,
-                Window = TimeSpan.FromSeconds(overrides.Window ?? rateLimitConfiguration.Window),
-                QueueLimit = 0
-            }
+            $"{(context.User.IsUser() ? OtrClaims.Roles.User : OtrClaims.Roles.Client)}_{context.User.GetSubjectId()}",
+            _ => GetRateLimiterOptions(context.User.GetRateLimitOverrides()?.PermitLimit)
         );
     });
+
+    return;
+
+    FixedWindowRateLimiterOptions GetRateLimiterOptions(int? limitOverride = null) => new()
+    {
+        PermitLimit = limitOverride ?? rateLimitConfiguration.PermitLimit,
+        Window = TimeSpan.FromSeconds(rateLimitConfiguration.Window),
+        QueueLimit = 0,
+    };
 });
 
 #endregion
@@ -628,6 +594,7 @@ if (authConfiguration.Value.EnforceWhitelist)
 app.UseAuthorization();
 
 app.UseRateLimiter();
+app.UseMiddleware<RateLimitHeadersMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
