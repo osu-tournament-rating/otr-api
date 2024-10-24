@@ -95,12 +95,6 @@ public static class OptionsExtensions
             return;
         }
 
-        if (o.Window is <= 0)
-        {
-            LogConfigureError(o.GetArgLongName(nameof(o.Window)), o.Window);
-            return;
-        }
-
         // Validate expiry
         o.ExpiresIn ??= o.TokenType switch
         {

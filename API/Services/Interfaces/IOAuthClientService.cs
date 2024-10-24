@@ -1,5 +1,4 @@
 using API.DTOs;
-using Database.Entities;
 
 namespace API.Services.Interfaces;
 
@@ -29,15 +28,15 @@ public interface IOAuthClientService
     Task<bool> DeleteAsync(int id);
 
     /// <summary>
-    /// Updates the rate limit overrides for a client with the given id
+    /// Updates the rate limit for a client with the given id
     /// </summary>
     /// <param name="id">Id of the client</param>
-    /// <param name="rateLimitOverrides">The new <see cref="RateLimitOverrides"/></param>
+    /// <param name="rateLimitOverride">The new rate limit for the client</param>
     /// <returns>
     /// The client with updated rate limit overrides,
     /// or null if any errors occur
     /// </returns>
-    Task<OAuthClientDTO?> SetRatelimitOverridesAsync(int id, RateLimitOverrides rateLimitOverrides);
+    Task<OAuthClientDTO?> SetRateLimitOverrideAsync(int id, int rateLimitOverride);
 
     /// <summary>
     /// Resets the secret of a client with the given id

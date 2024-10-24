@@ -25,18 +25,18 @@ public class OAuthClientRepository(OtrContext context, IPasswordHasher<OAuthClie
     public async Task<bool> ExistsAsync(int id, int userId) =>
         await _context.OAuthClients.AnyAsync(c => c.Id == id && c.UserId == userId);
 
-    public async Task<OAuthClient?> SetRatelimitOverridesAsync(int clientId, RateLimitOverrides rateLimitOverrides)
+    public async Task<OAuthClient?> SetRateLimitOverrideAsync(int clientId, int rateLimitOverride)
     {
-        OAuthClient? match = await GetAsync(clientId);
+        OAuthClient? client = await GetAsync(clientId);
 
-        if (match == null)
+        if (client is null)
         {
             return null;
         }
 
-        match.RateLimitOverrides = rateLimitOverrides;
-        await UpdateAsync(match);
-        return match;
+        client.RateLimitOverride = rateLimitOverride;
+        await UpdateAsync(client);
+        return client;
     }
 
     [SuppressMessage("ReSharper", "StringLiteralTypo")]

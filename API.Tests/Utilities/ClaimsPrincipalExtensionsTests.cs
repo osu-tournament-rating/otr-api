@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using API.Authorization;
 using API.Utilities.Extensions;
-using Database.Entities;
 
 namespace APITests.Utilities;
 
@@ -71,18 +70,17 @@ public class ClaimsPrincipalExtensionsTests
     }
 
     [Fact]
-    public void ClaimsPrincipal_GetRateLimitOverrides()
+    public void ClaimsPrincipal_GetRateLimitOverride()
     {
+        const int expected = 100;
         var claims = new ClaimsPrincipal();
-        var overrides = new RateLimitOverrides { PermitLimit = 100, Window = 20 };
-        var serializedOverrides = RateLimitOverridesSerializer.Serialize(overrides);
 
         claims.AddIdentity(new ClaimsIdentity(new List<Claim>
         {
-            new(OtrClaims.RateLimitOverrides, serializedOverrides)
+            new(OtrClaims.RateLimitOverrides, expected.ToString())
         }));
 
-        Assert.NotNull(claims.GetRateLimitOverrides());
-        Assert.Equivalent(overrides, claims.GetRateLimitOverrides());
+        Assert.NotNull(claims.GetRateLimitOverride());
+        Assert.Equal(expected, claims.GetRateLimitOverride());
     }
 }

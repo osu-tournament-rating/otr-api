@@ -1,5 +1,3 @@
-using Database.Entities;
-
 namespace API.DTOs;
 
 /// <summary>
@@ -18,7 +16,7 @@ public class OAuthClientDTO
     public string[] Scopes { get; set; } = [];
 
     /// <summary>
-    /// Possible rate limit overrides for the client
+    /// Possible rate limit override for the client
     /// </summary>
-    public RateLimitOverrides RateLimitOverrides { get; set; } = new();
+    public int? RateLimitOverride { get; set; }
 }

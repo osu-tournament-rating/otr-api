@@ -26,8 +26,7 @@ public class OAuthClientService(
         {
             Scopes = scopes,
             Secret = secret,
-            UserId = userId,
-            RateLimitOverrides = new RateLimitOverrides()
+            UserId = userId
         };
 
         OAuthClient newClient = await oAuthClientRepository.CreateAsync(client);
@@ -41,8 +40,8 @@ public class OAuthClientService(
     public async Task<bool> DeleteAsync(int id) =>
         (await oAuthClientRepository.DeleteAsync(id)).HasValue;
 
-    public async Task<OAuthClientDTO?> SetRatelimitOverridesAsync(int id, RateLimitOverrides rateLimitOverrides) =>
-        mapper.Map<OAuthClientDTO>(await oAuthClientRepository.SetRatelimitOverridesAsync(id, rateLimitOverrides));
+    public async Task<OAuthClientDTO?> SetRateLimitOverrideAsync(int id, int rateLimitOverride) =>
+        mapper.Map<OAuthClientDTO>(await oAuthClientRepository.SetRateLimitOverrideAsync(id, rateLimitOverride));
 
     public async Task<OAuthClientCreatedDTO?> ResetSecretAsync(int id)
     {
