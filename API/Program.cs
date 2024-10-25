@@ -197,7 +197,7 @@ builder.Services.AddRateLimiter(options =>
     {
         PermitLimit = limitOverride ?? rateLimitConfiguration.PermitLimit,
         Window = TimeSpan.FromSeconds(rateLimitConfiguration.Window),
-        QueueLimit = 0,
+        QueueLimit = 0
     };
 });
 
@@ -296,7 +296,7 @@ builder.Services.AddSwaggerGen(options =>
         [OtrClaims.Roles.Admin] = OtrClaims.GetDescription(OtrClaims.Roles.Admin),
         [OtrClaims.Roles.Verifier] = OtrClaims.GetDescription(OtrClaims.Roles.Verifier),
         [OtrClaims.Roles.Submitter] = OtrClaims.GetDescription(OtrClaims.Roles.Submitter),
-        [OtrClaims.Roles.Whitelist] = OtrClaims.GetDescription(OtrClaims.Roles.Whitelist),
+        [OtrClaims.Roles.Whitelist] = OtrClaims.GetDescription(OtrClaims.Roles.Whitelist)
     };
 
     options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
