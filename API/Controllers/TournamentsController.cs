@@ -257,12 +257,17 @@ public partial class TournamentsController(
     /// deletes the mapping between a tournament and a pooled beatmap.
     /// </summary>
     /// <param name="id">Tournament id</param>
+    /// <param name="beatmapIds">
+    /// An optional collection of specific beatmap ids to remove from the pooled beatmaps collection
+    /// </param>
     /// <response code="404">The tournament does not exist</response>
-    /// <response code="204">All beatmaps were successfully removed from the list of pooled beatmaps for the tournament</response>
+    /// <response code="204">
+    /// All beatmaps were successfully removed from the list of pooled beatmaps for the tournament
+    /// </response>
     [HttpDelete("{id:int}/beatmaps")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> DeleteBeatmapsAsync(int id)
+    public async Task<IActionResult> DeleteBeatmapsAsync(int id, [FromBody] ICollection<int>? beatmapIds = null)
     {
         TournamentDTO? result = await tournamentsService.GetAsync(id);
         if (result is null)
@@ -270,7 +275,15 @@ public partial class TournamentsController(
             return NotFound();
         }
 
-        await tournamentsService.DeletePooledBeatmapsAsync(id);
+        if (beatmapIds is null || beatmapIds.Count == 0)
+        {
+            await tournamentsService.DeletePooledBeatmapsAsync(id);
+        }
+        else
+        {
+            await tournamentsService.DeletePooledBeatmapsAsync(id, beatmapIds);
+        }
+
         return NoContent();
     }
 }
