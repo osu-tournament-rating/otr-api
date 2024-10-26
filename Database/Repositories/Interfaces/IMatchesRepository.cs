@@ -26,7 +26,7 @@ public interface IMatchesRepository : IRepository<Match>
         MatchProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
-        MatchesQuerySortType? querySortType = null,
+        MatchQuerySortType? querySortType = null,
         bool? sortDescending = null
     );
 

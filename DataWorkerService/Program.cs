@@ -141,7 +141,7 @@ builder.Services.AddSingleton<IAutomationCheck<Game>, GameTeamTypeCheck>();
 builder.Services.AddSingleton<IAutomationCheck<Match>, MatchEndTimeCheck>();
 builder.Services.AddSingleton<IAutomationCheck<Match>, MatchGameCountCheck>();
 builder.Services.AddSingleton<IAutomationCheck<Match>, MatchHeadToHeadCheck>();
-builder.Services.AddSingleton<IAutomationCheck<Match>, MatchNameCheck>();
+builder.Services.AddSingleton<IAutomationCheck<Match>, MatchNamePrefixCheck>();
 
 builder.Services.AddSingleton<IAutomationCheck<Tournament>, TournamentMatchCountCheck>();
 

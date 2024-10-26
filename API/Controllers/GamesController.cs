@@ -54,4 +54,25 @@ public partial class GamesController(IGamesService gamesService, IAdminNoteServi
         GameDTO? updatedGame = await gamesService.UpdateAsync(id, game);
         return Ok(updatedGame!);
     }
+
+    /// <summary>
+    /// Delete a game
+    /// </summary>
+    /// <param name="id">Game id</param>
+    /// <response code="404">The game does not exist</response>
+    /// <response code="204">The game was deleted successfully</response>
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteAsync(int id)
+    {
+        GameDTO? result = await gamesService.GetAsync(id);
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        await gamesService.DeleteAsync(id);
+        return NoContent();
+    }
 }

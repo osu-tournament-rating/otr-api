@@ -38,7 +38,7 @@ public class JwtService(
         );
 
     public string GenerateRefreshToken(OAuthClient client) =>
-        GenerateRefreshToken(client.Id.ToString(), OtrClaims.Roles.User);
+        GenerateRefreshToken(client.Id.ToString(), OtrClaims.Roles.Client);
 
     public string GenerateRefreshToken(User user) =>
         GenerateRefreshToken(user.Id.ToString(), OtrClaims.Roles.User);

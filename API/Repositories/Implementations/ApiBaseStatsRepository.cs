@@ -61,7 +61,10 @@ public class ApiBaseStatsRepository(
         int? playerId
     )
     {
-        IQueryable<PlayerRating> baseQuery = _context.PlayerRatings.WhereRuleset(ruleset);
+        IQueryable<PlayerRating> baseQuery = _context.PlayerRatings
+            .WhereRuleset(ruleset)
+            // Filter out players who only have the initial adjustment
+            .Where(pr => pr.Adjustments.Count > 1);
 
         if (chartType == LeaderboardChartType.Country && playerId.HasValue)
         {

@@ -25,4 +25,10 @@ public interface IGameScoresService
     /// <param name="id">The score id</param>
     /// <returns>True if the score exists, false otherwise</returns>
     Task<bool> ExistsAsync(int id);
+
+    /// <summary>
+    /// Delete a score
+    /// </summary>
+    /// <param name="id">Score id</param>
+    Task DeleteAsync(int id);
 }
