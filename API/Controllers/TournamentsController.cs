@@ -209,6 +209,26 @@ public partial class TournamentsController(
     }
 
     /// <summary>
+    /// Get all beatmaps which are pooled by this tournament
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <returns>A collection of all pooled beatmaps</returns>
+    [HttpGet("{id:int}/beatmaps")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetBeatmapsAsync(int id)
+    {
+        TournamentDTO? result = await tournamentsService.GetAsync(id);
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(await tournamentsService.GetPooledBeatmapsAsync(id));
+    }
+
+    /// <summary>
     /// Adds beatmaps to a tournament by osu! id
     /// </summary>
     /// <param name="id">Tournament id</param>

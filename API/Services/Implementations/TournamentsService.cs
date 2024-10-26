@@ -136,4 +136,10 @@ public class TournamentsService(
 
     public async Task<ICollection<BeatmapDTO>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds) =>
         mapper.Map<ICollection<BeatmapDTO>>(await tournamentsRepository.AddPooledBeatmapsAsync(id, osuBeatmapIds));
+
+    public async Task<ICollection<BeatmapDTO>> GetPooledBeatmapsAsync(int id) =>
+        mapper.Map<ICollection<BeatmapDTO>>(await tournamentsRepository.GetPooledBeatmapsAsync(id));
+
+    public async Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds) =>
+        await tournamentsRepository.DeletePooledBeatmapsAsync(id, beatmapIds);
 }

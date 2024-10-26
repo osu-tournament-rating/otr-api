@@ -59,6 +59,13 @@ public interface ITournamentsRepository : IRepository<Tournament>
         bool descending = false, bool verified = true, Ruleset? ruleset = null);
 
     /// <summary>
+    /// Gets the <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <returns>The <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection</returns>
+    Task<ICollection<Beatmap>> GetPooledBeatmapsAsync(int id);
+
+    /// <summary>
     /// Adds a collection of osu! beatmap ids to the <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/>
     /// collection
     /// </summary>
@@ -66,4 +73,11 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="osuBeatmapIds">A collection of osu! beatmap ids to add</param>
     /// <returns>The tournament's pooled beatmaps</returns>
     Task<ICollection<Beatmap>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds);
+
+    /// <summary>
+    /// Unmaps the provided beatmap ids from being pooled in the given tournament
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <param name="beatmapIds">Collection of beatmap ids to remove from the tournament's collection of pooled beatmaps</param>
+    Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds);
 }
