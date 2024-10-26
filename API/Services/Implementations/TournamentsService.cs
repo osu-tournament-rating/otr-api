@@ -1,3 +1,4 @@
+using System.Collections;
 using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
@@ -132,4 +133,7 @@ public class TournamentsService(
     }
 
     public async Task DeleteAsync(int id) => await tournamentsRepository.DeleteAsync(id);
+
+    public async Task<ICollection<BeatmapDTO>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds) =>
+        mapper.Map<ICollection<BeatmapDTO>>(await tournamentsRepository.AddPooledBeatmapsAsync(id, osuBeatmapIds));
 }

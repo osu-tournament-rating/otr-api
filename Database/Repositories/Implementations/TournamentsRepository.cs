@@ -90,6 +90,42 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
                 .ToListAsync();
     }
 
+    public async Task<ICollection<Beatmap>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds)
+    {
+        Tournament? tournament = await _context.Tournaments
+            .Include(t => t.PooledBeatmaps)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (tournament is null)
+        {
+            return new List<Beatmap>();
+        }
+
+        // Fetch the non-existent beatmap ids
+        var uniqueBeatmapIds = osuBeatmapIds.Except(await _context.Beatmaps
+            .Where(b => osuBeatmapIds.Contains(b.OsuId))
+            .Select(b => b.OsuId)
+            .ToListAsync()).ToList();
+
+        // Insert new beatmaps
+        IEnumerable<Beatmap> newBeatmaps = uniqueBeatmapIds.Select(osuId => new Beatmap { OsuId = osuId });
+        await _context.Beatmaps.AddRangeAsync(newBeatmaps);
+        await _context.SaveChangesAsync();
+
+        // Gather all beatmaps which match this beatmap id collection and add to pooled beatmaps
+        List<Beatmap> beatmaps = await _context.Beatmaps.Where(b => osuBeatmapIds.Contains(b.OsuId)).ToListAsync();
+        beatmaps.ForEach(b =>
+        {
+            if (!tournament.PooledBeatmaps.Contains(b))
+            {
+                tournament.PooledBeatmaps.Add(b);
+            }
+        });
+
+        await UpdateAsync(tournament);
+        return tournament.PooledBeatmaps;
+    }
+
     /// <summary>
     /// Returns a queryable containing tournaments for <see cref="ruleset"/>
     /// with *any* match applicable to all of the following criteria:

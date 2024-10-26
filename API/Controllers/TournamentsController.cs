@@ -207,4 +207,25 @@ public partial class TournamentsController(
         await tournamentsService.DeleteAsync(id);
         return NoContent();
     }
+
+    /// <summary>
+    /// Adds beatmaps to a tournament by osu! id
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <param name="osuBeatmapIds">A collection of osu! beatmap ids</param>
+    /// <returns>The tournament's collection of pooled beatmaps</returns>
+    [HttpPost("{id:int}/beatmaps")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InsertBeatmapsAsync(int id, [FromBody] ICollection<long> osuBeatmapIds)
+    {
+        TournamentDTO? result = await tournamentsService.GetAsync(id);
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        ICollection<BeatmapDTO> pooledBeatmaps = await tournamentsService.AddPooledBeatmapsAsync(id, osuBeatmapIds);
+        return Ok(pooledBeatmaps);
+    }
 }
