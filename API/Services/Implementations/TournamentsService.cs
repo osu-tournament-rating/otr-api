@@ -141,4 +141,7 @@ public class TournamentsService(
 
     public async Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds) =>
         await tournamentsRepository.DeletePooledBeatmapsAsync(id, beatmapIds);
+
+    public async Task DeletePooledBeatmapsAsync(int id) =>
+        await tournamentsRepository.DeletePooledBeatmapsAsync(id);
 }

@@ -97,4 +97,10 @@ public interface ITournamentsService
     /// <param name="id">Tournament id</param>
     /// <param name="beatmapIds">Collection of beatmap ids to remove from the tournament's collection of pooled beatmaps</param>
     Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds);
+
+    /// <summary>
+    /// Removes all pooled beatmaps from a given tournament
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    Task DeletePooledBeatmapsAsync(int id);
 }

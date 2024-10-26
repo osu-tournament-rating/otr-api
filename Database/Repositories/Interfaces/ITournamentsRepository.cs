@@ -75,6 +75,12 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<ICollection<Beatmap>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds);
 
     /// <summary>
+    /// Unmaps all pooled beatmaps from a given tournament
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    Task DeletePooledBeatmapsAsync(int id);
+
+    /// <summary>
     /// Unmaps the provided beatmap ids from being pooled in the given tournament
     /// </summary>
     /// <param name="id">Tournament id</param>

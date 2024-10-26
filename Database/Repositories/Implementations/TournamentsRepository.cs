@@ -130,9 +130,24 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         return tournament.PooledBeatmaps;
     }
 
+    public async Task DeletePooledBeatmapsAsync(int id)
+    {
+        Tournament? tournament = await _context.Tournaments
+            .Include(t => t.PooledBeatmaps)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (tournament is null || tournament.PooledBeatmaps.Count == 0)
+        {
+            return;
+        }
+
+        tournament.PooledBeatmaps = new List<Beatmap>();
+        await UpdateAsync(tournament);
+    }
+
     public async Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds)
     {
-        Tournament? tournament = await context.Tournaments
+        Tournament? tournament = await _context.Tournaments
             .Include(t => t.PooledBeatmaps)
             .FirstOrDefaultAsync(t => t.Id == id);
 

@@ -238,6 +238,7 @@ public partial class TournamentsController(
     /// <response code="200">The beatmaps were added successfully</response>
     [HttpPost("{id:int}/beatmaps")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> InsertBeatmapsAsync(int id, [FromBody] ICollection<long> osuBeatmapIds)
     {
@@ -249,5 +250,27 @@ public partial class TournamentsController(
 
         ICollection<BeatmapDTO> pooledBeatmaps = await tournamentsService.AddPooledBeatmapsAsync(id, osuBeatmapIds);
         return Ok(pooledBeatmaps);
+    }
+
+    /// <summary>
+    /// Deletes all pooled beatmaps from a tournament. This does not alter the beatmaps table. This only
+    /// deletes the mapping between a tournament and a pooled beatmap.
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <response code="404">The tournament does not exist</response>
+    /// <response code="204">All beatmaps were successfully removed from the list of pooled beatmaps for the tournament</response>
+    [HttpDelete("{id:int}/beatmaps")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteBeatmapsAsync(int id)
+    {
+        TournamentDTO? result = await tournamentsService.GetAsync(id);
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        await tournamentsService.DeletePooledBeatmapsAsync(id);
+        return NoContent();
     }
 }
