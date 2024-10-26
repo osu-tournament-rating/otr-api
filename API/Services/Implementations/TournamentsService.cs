@@ -1,4 +1,3 @@
-using System.Collections;
 using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
