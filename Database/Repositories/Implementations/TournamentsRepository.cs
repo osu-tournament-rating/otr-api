@@ -4,6 +4,7 @@ using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
+using Database.Utilities;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
