@@ -27,7 +27,7 @@ public partial class TournamentsController
             return NotFound();
         }
 
-        await tournamentsService.AcceptVerificationStatuses(id);
+        await tournamentsService.AcceptVerificationStatusesAsync(id);
         return Ok();
     }
 
