@@ -57,4 +57,20 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="ruleset">An optional ruleset to filter by</param>
     Task<ICollection<Tournament>> GetAsync(int page, int pageSize, TournamentQuerySortType querySortType,
         bool descending = false, bool verified = true, Ruleset? ruleset = null);
+
+    /// <summary>
+    /// If the tournament is pre-rejected or pre-verified, updates the tournament
+    /// to be rejected or verified respectively. This update strategy is applied
+    /// to all child <see cref="Match"/>es, <see cref="Game"/>s, and
+    /// <see cref="GameScore"/>s
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    Task AcceptVerificationStatuses(int id);
+
+    /// <summary>
+    /// Reruns automation checks for a tournament and all child entities
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <param name="force">Whether to overwrite fully Verified/Rejected data (dangerous)</param>
+    Task RerunAutomationChecks(int id, bool force = false);
 }
