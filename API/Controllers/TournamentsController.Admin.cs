@@ -38,7 +38,7 @@ public partial class TournamentsController
     /// <param name="force">Whether to overwrite data which has already been Verified or Rejected</param>
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="200">The entities were updated successfully</response>
-    [HttpPost("{id:int}:accept-pre-statuses")]
+    [HttpPost("{id:int}:rerun-auto-checks")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status200OK)]
