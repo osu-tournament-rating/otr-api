@@ -10,6 +10,29 @@ namespace API.Controllers;
 public partial class TournamentsController
 {
     /// <summary>
+    /// Marks pre-rejected items as rejected, marks pre-verified
+    /// items as verified. Applies for the tournament and all children.
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <response code="404">If a tournament matching the given id does not exist</response>
+    /// <response code="200">All items were updated successfully</response>
+    [HttpPost("{id:int}:accept-pre-statuses")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> AcceptPreStatusesAsync(int id)
+    {
+        if (!await tournamentsService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        await tournamentsService.AcceptVerificationStatuses(id);
+        return Ok();
+    }
+
+
+    /// <summary>
     /// Creates an admin note for a tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
@@ -18,8 +41,7 @@ public partial class TournamentsController
     /// <response code="400">If the authorized user does not exist</response>
     /// <response code="200">Returns the created admin note</response>
     [HttpPost("{id:int}/notes")]
-    [Authorize(Roles = $"{OtrClaims.Roles.Admin}")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status200OK)]
@@ -43,7 +65,7 @@ public partial class TournamentsController
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="200">Returns all admin notes from a tournament</response>
     [HttpGet("{id:int}/notes")]
-    [Authorize(Roles = $"{OtrClaims.Roles.Admin}")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<IEnumerable<AdminNoteDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAdminNotesAsync(int id)
@@ -69,8 +91,7 @@ public partial class TournamentsController
     /// <response code="403">If the requester did not create the admin note</response>
     /// <response code="200">Returns the updated admin note</response>
     [HttpPatch("{id:int}/notes/{noteId:int}")]
-    [Authorize(Roles = $"{OtrClaims.Roles.Admin}")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status200OK)]
@@ -107,8 +128,7 @@ public partial class TournamentsController
     /// </response>
     /// <response code="200">Returns the updated admin note</response>
     [HttpDelete("{id:int}/notes/{noteId:int}")]
-    [Authorize(Roles = $"{OtrClaims.Roles.Admin}")]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status200OK)]

@@ -132,4 +132,5 @@ public class TournamentsService(
     }
 
     public async Task DeleteAsync(int id) => await tournamentsRepository.DeleteAsync(id);
+    public async Task AcceptVerificationStatuses(int id) => await tournamentsRepository.AcceptVerificationStatuses(id);
 }

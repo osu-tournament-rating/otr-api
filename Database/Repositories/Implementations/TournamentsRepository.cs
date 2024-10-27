@@ -4,6 +4,7 @@ using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
+using Database.Utilities;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -88,6 +89,36 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         return await query
                 .Page(pageSize, page)
                 .ToListAsync();
+    }
+
+    public async Task AcceptVerificationStatuses(int id)
+    {
+        Tournament? tournament = await TournamentsBaseQuery()
+            .Where(t => t.ProcessingStatus == TournamentProcessingStatus.NeedsVerification)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (tournament is null)
+        {
+            return;
+        }
+
+        tournament.VerificationStatus = EnumUtils.ConfirmPreStatus(tournament.VerificationStatus);
+        foreach (Match match in tournament.Matches)
+        {
+            match.VerificationStatus = EnumUtils.ConfirmPreStatus(match.VerificationStatus);
+
+            foreach (Game game in match.Games)
+            {
+                game.VerificationStatus = EnumUtils.ConfirmPreStatus(game.VerificationStatus);
+
+                foreach (GameScore score in game.Scores)
+                {
+                    score.VerificationStatus = EnumUtils.ConfirmPreStatus(score.VerificationStatus);
+                }
+            }
+        }
+
+        await UpdateAsync(tournament);
     }
 
     /// <summary>
