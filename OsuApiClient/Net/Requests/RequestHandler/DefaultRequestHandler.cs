@@ -153,7 +153,7 @@ internal sealed class DefaultRequestHandler(
             }
         };
 
-        logger.LogDebug(
+        logger.LogTrace(
             "Preparing to fetch [Platform: {Platform} | Endpoint: {Endpoint} | Method: {Method}]",
             request.Platform,
             uri.ToString(),
@@ -181,7 +181,7 @@ internal sealed class DefaultRequestHandler(
         if (rateLimit.HasExpired)
         {
             rateLimit.Reset();
-            logger.LogDebug(
+            logger.LogTrace(
                 "Rate limit window elapsed, resetting [Platform: {Platform} | Tokens: {Remaining}/{Limit} " +
                 "| Expires In: {Expiry:mm\\:ss}]",
                 platform,
@@ -194,7 +194,7 @@ internal sealed class DefaultRequestHandler(
         // Throttle when no remaining tokens
         if (rateLimit.RemainingTokens <= 0)
         {
-            logger.LogWarning(
+            logger.LogDebug(
                 "Throttling client for rate limit violation [Platform: {Platform} | Tokens: {Remaining}/{Limit} " +
                 "| Expires In: {Expiry:mm\\:ss}]",
                 platform,
@@ -220,7 +220,7 @@ internal sealed class DefaultRequestHandler(
 
         rateLimit.DecrementRemainingTokens();
 
-        logger.LogDebug(
+        logger.LogTrace(
             "Rate limit updated [Platform: {Platform} | Tokens: {Remaining}/{Limit} | Expires In: {Expiry:mm\\:ss}]",
             platform,
             rateLimit.RemainingTokens,
