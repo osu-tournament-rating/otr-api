@@ -114,10 +114,10 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
         // Arrange
         Match match = SeededMatch.Generate(warningFlags: MatchWarningFlags.None);
 
-        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-        SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
+        foreach (var _ in Enumerable.Range(1, 4))
+        {
+            SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
+        }
 
         // Act
         var passed = AutomationCheck.Check(match);
