@@ -14,7 +14,7 @@ public interface IOAuthClientRepository : IRepository<OAuthClient>
     /// Updates the rate limit overrides of a client for the given id
     /// </summary>
     /// <param name="clientId">Id of the client</param>
-    /// <param name="rateLimitOverride"></param>
+    /// <param name="rateLimitOverride">The new rate limit</param>
     /// <returns>The updated client</returns>
     Task<OAuthClient?> SetRateLimitOverrideAsync(int clientId, int rateLimitOverride);
 

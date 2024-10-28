@@ -46,12 +46,12 @@ public static class ClaimsPrincipalExtensions
     /// </summary>
     public static int? GetRateLimitOverride(this ClaimsPrincipal claimsPrincipal)
     {
-        if (!int.TryParse(claimsPrincipal.FindFirst(OtrClaims.RateLimitOverrides)?.Value, out var rlo))
+        if (!int.TryParse(claimsPrincipal.FindFirst(OtrClaims.RateLimitOverrides)?.Value, out var limit))
         {
             return null;
         }
 
-        return rlo;
+        return limit;
     }
 
     /// <summary>
