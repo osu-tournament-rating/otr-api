@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using API.Authorization;
-using Database.Entities;
 
 namespace API.Utilities.Extensions;
 
@@ -43,12 +42,16 @@ public static class ClaimsPrincipalExtensions
         claimsPrincipal.FindFirst(OtrClaims.TokenType)?.Value;
 
     /// <summary>
-    /// Gets the <see cref="RateLimitOverrides"/> of the principle if available
+    /// Gets the custom rate limit of the principle if available
     /// </summary>
-    public static RateLimitOverrides? GetRateLimitOverrides(this ClaimsPrincipal claimsPrincipal)
+    public static int? GetRateLimitOverride(this ClaimsPrincipal claimsPrincipal)
     {
-        var raw = claimsPrincipal.FindFirst(OtrClaims.RateLimitOverrides)?.Value;
-        return string.IsNullOrEmpty(raw) ? null : RateLimitOverridesSerializer.Deserialize(raw);
+        if (!int.TryParse(claimsPrincipal.FindFirst(OtrClaims.RateLimitOverrides)?.Value, out var limit))
+        {
+            return null;
+        }
+
+        return limit;
     }
 
     /// <summary>

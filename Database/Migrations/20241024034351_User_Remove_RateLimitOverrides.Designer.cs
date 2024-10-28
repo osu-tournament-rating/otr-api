@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20241024034351_User_Remove_RateLimitOverrides")]
+    partial class User_Remove_RateLimitOverrides
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -832,10 +835,6 @@ namespace Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int?>("RateLimitOverride")
-                        .HasColumnType("integer")
-                        .HasColumnName("rate_limit_override");
 
                     b.Property<string[]>("Scopes")
                         .IsRequired()
@@ -1866,6 +1865,32 @@ namespace Database.Migrations
                         .WithMany("Clients")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Database.Entities.RateLimitOverrides", "RateLimitOverrides", b1 =>
+                        {
+                            b1.Property<int>("OAuthClientId")
+                                .HasColumnType("integer");
+
+                            b1.Property<int?>("PermitLimit")
+                                .HasColumnType("integer")
+                                .HasColumnName("permit_limit");
+
+                            b1.Property<int?>("Window")
+                                .HasColumnType("integer")
+                                .HasColumnName("window");
+
+                            b1.HasKey("OAuthClientId");
+
+                            b1.ToTable("oauth_clients");
+
+                            b1.ToJson("rate_limit_overrides");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OAuthClientId");
+                        });
+
+                    b.Navigation("RateLimitOverrides")
                         .IsRequired();
 
                     b.Navigation("User");

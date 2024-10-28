@@ -187,7 +187,7 @@ builder.Services.AddRateLimiter(options =>
         // Partition for each unique user / client
         return RateLimitPartition.GetFixedWindowLimiter(
             $"{(context.User.IsUser() ? OtrClaims.Roles.User : OtrClaims.Roles.Client)}_{context.User.GetSubjectId()}",
-            _ => GetRateLimiterOptions(context.User.GetRateLimitOverrides()?.PermitLimit)
+            _ => GetRateLimiterOptions(context.User.GetRateLimitOverride())
         );
     });
 
