@@ -31,6 +31,9 @@ public class MatchGameCountCheck(ILogger<MatchGameCountCheck> logger) : Automati
             case < 3:
                 entity.RejectionReason |= MatchRejectionReason.UnexpectedGameCount;
                 return false;
+            case 4 or 5:
+                entity.WarningFlags |= MatchWarningFlags.LowGameCount;
+                return true;
             // Number of games satisfies a "best of X" situation
             // This turned out to be not that worth to calculate, so as long as there are >= 3 games,
             // it is at least good enough to be sent to manual review
