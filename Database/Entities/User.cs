@@ -27,12 +27,6 @@ public class User : UpdateableEntityBase
     [Column("scopes")]
     public string[] Scopes { get; set; } = [];
 
-    // Column name and value initialization is handled via OtrContext
-    /// <summary>
-    /// Values that override the default API rate limit configuration for the user
-    /// </summary>
-    public RateLimitOverrides RateLimitOverrides { get; set; } = null!;
-
     /// <summary>
     /// The <see cref="UserSettings"/> owned by the user
     /// </summary>

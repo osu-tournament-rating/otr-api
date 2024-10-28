@@ -4,7 +4,6 @@ using System.Text;
 using API.Authorization;
 using API.Utils.Jwt.Options;
 using CommandLine;
-using Database.Entities;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -53,17 +52,9 @@ public static class Program
         };
         claims.AddRange(o.Roles.Select(r => new Claim(OtrClaims.Role, r)));
 
-        if (o.PermitLimit.HasValue || o.Window.HasValue)
+        if (o.PermitLimit.HasValue)
         {
-            claims.Add(new Claim(
-                OtrClaims.RateLimitOverrides,
-                RateLimitOverridesSerializer.Serialize(new RateLimitOverrides
-                {
-                    PermitLimit = o.PermitLimit,
-                    Window = o.Window
-                }
-                )
-            ));
+            claims.Add(new Claim(OtrClaims.RateLimitOverrides, o.PermitLimit.Value.ToString()));
         }
 
         Log.Information("Writing a JWT with options:\n{Opts}", o.ToString());
