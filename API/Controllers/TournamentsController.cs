@@ -221,8 +221,7 @@ public partial class TournamentsController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> InsertBeatmapsAsync(int id, [FromBody] ICollection<long> osuBeatmapIds)
     {
-        TournamentDTO? result = await tournamentsService.GetAsync(id);
-        if (result is null)
+        if (!await tournamentsService.ExistsAsync(id))
         {
             return NotFound();
         }
