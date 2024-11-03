@@ -17,7 +17,7 @@ public enum MatchWarningFlags
     /// The <see cref="Entities.Match"/>'s <see cref="Entities.Match.Name"/> does not follow common tournament
     /// lobby title conventions
     /// </summary>
-    UnexpectedTitleFormat = 1 << 0,
+    UnexpectedNameFormat = 1 << 0,
 
     /// <summary>
     /// The <see cref="Entities.Match"/>'s number of <see cref="Entities.Match.Games"/> is exactly 3 or 4
