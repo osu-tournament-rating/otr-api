@@ -25,6 +25,7 @@ public static class SeededMatch
         VerificationStatus? verificationStatus = null,
         MatchRejectionReason? rejectionReason = null,
         MatchProcessingStatus? processingStatus = null,
+        MatchWarningFlags? warningFlags = null,
         Tournament? tournament = null
     )
     {
@@ -38,6 +39,7 @@ public static class SeededMatch
             VerificationStatus = verificationStatus ?? s_rand.NextEnum<VerificationStatus>(),
             RejectionReason = rejectionReason ?? s_rand.NextEnum<MatchRejectionReason>(),
             ProcessingStatus = processingStatus ?? s_rand.NextEnum<MatchProcessingStatus>(),
+            WarningFlags = warningFlags ?? s_rand.NextEnum<MatchWarningFlags>(),
             TournamentId = seededTournament.Id,
             Tournament = seededTournament
         };
