@@ -18,36 +18,33 @@ public class GameBeatmapUsageCheck(ILogger<GameBeatmapUsageCheck> logger) : Auto
         Tournament tournament = entity.Match.Tournament;
 
         // If the tournament has a mappool
-        if (tournament.PooledBeatmaps.Count > 0)
+        if (tournament.PooledBeatmaps.Count == 0)
         {
-            // If the game's map is in the pool
-            if (tournament.PooledBeatmaps.Select(b => b.OsuId).Contains(entity.Beatmap.OsuId))
+            /**
+             * Scan all games in the entire tournament.
+             * If there is exactly 1 game which uses this beatmap,
+             * flag it.
+             */
+            if (tournament.Matches
+                    .SelectMany(m => m.Games)
+                    .Select(g => g.Beatmap?.OsuId)
+                    .Count(id => id == entity.Beatmap.OsuId) == 1)
             {
-                return true;
+                entity.WarningFlags |= GameWarningFlags.BeatmapUsedOnce;
             }
 
-            // If the game is not one of the first 2 in the match
-            if (entity.Match.Games
-                    .OrderByDescending(g => g.StartTime)
-                    .Select(g => g.Id)
-                    .ToList()
-                    .IndexOf(entity.Id) > 1
-               )
-            {
-                entity.WarningFlags |= GameWarningFlags.BeatmapNotInMappool;
-            }
             return true;
         }
 
-        if (tournament.Matches
-             .SelectMany(m => m.Games)
-             .Select(g => g.Beatmap?.OsuId)
-             .Count(id => id == entity.Beatmap.OsuId) == 1
-            )
+        // If the game's map is in the pool, don't mark with any flags
+        if (tournament.PooledBeatmaps.Select(b => b.OsuId).Contains(entity.Beatmap.OsuId))
         {
-            entity.WarningFlags |= GameWarningFlags.BeatmapUsedOnce;
+            return true;
         }
 
-        return true;
+        // The tournament has a mappool, but this beatmap is not present in it.
+        // Mark as rejected.
+        entity.RejectionReason |= GameRejectionReason.BeatmapNotPooled;
+        return false;
     }
 }
