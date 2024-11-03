@@ -83,5 +83,6 @@ public interface ITournamentsService
     /// <see cref="GameScore"/>s
     /// </summary>
     /// <param name="id">Tournament id</param>
-    Task AcceptVerificationStatusesAsync(int id);
+    /// <returns>The updated <see cref="TournamentDTO"/></returns>
+    Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id);
 }

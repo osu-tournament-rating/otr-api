@@ -91,7 +91,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
                 .ToListAsync();
     }
 
-    public async Task AcceptVerificationStatuses(int id)
+    public async Task<Tournament?> AcceptPreVerificationStatuses(int id)
     {
         Tournament? tournament = await TournamentsBaseQuery()
             .Where(t => t.ProcessingStatus == TournamentProcessingStatus.NeedsVerification)
@@ -99,7 +99,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
         if (tournament is null)
         {
-            return;
+            return null;
         }
 
         tournament.VerificationStatus = EnumUtils.ConfirmPreStatus(tournament.VerificationStatus);
@@ -119,6 +119,8 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         }
 
         await UpdateAsync(tournament);
+
+        return tournament;
     }
 
     /// <summary>

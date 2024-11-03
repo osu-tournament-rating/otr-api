@@ -16,19 +16,19 @@ public partial class TournamentsController
     /// <param name="id">Tournament id</param>
     /// <response code="404">If a tournament matching the given id does not exist</response>
     /// <response code="200">All items were updated successfully</response>
-    [HttpPost("{id:int}:accept-pre-statuses")]
+    [HttpPost("{id:int}:accept-pre-verification-statuses")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> AcceptPreStatusesAsync(int id)
+    [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> AcceptPreVerificationStatusesAsync(int id)
     {
         if (!await tournamentsService.ExistsAsync(id))
         {
             return NotFound();
         }
 
-        await tournamentsService.AcceptVerificationStatusesAsync(id);
-        return Ok();
+        // Result will never be null here
+        return Ok(await tournamentsService.AcceptPreVerificationStatusesAsync(id));
     }
 
 
