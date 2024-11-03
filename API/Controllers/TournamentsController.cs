@@ -213,7 +213,6 @@ public partial class TournamentsController(
     /// </summary>
     /// <param name="id">Tournament id</param>
     /// <param name="osuBeatmapIds">A collection of osu! beatmap ids</param>
-    /// <returns>The tournament's collection of pooled beatmaps</returns>
     /// <response code="404">The tournament does not exist</response>
     /// <response code="200">The beatmaps were added successfully</response>
     [HttpPost("{id:int}/beatmaps")]
@@ -226,7 +225,7 @@ public partial class TournamentsController(
             return NotFound();
         }
 
-        ICollection<BeatmapDTO> pooledBeatmaps = await tournamentsService.AddPooledBeatmapsAsync(id, osuBeatmapIds);
-        return Ok(pooledBeatmaps);
+        await tournamentsService.AddPooledBeatmapsAsync(id, osuBeatmapIds);
+        return Ok();
     }
 }

@@ -81,6 +81,5 @@ public interface ITournamentsService
     /// </summary>
     /// <param name="id">Tournament id</param>
     /// <param name="osuBeatmapIds">A collection of osu! beatmap ids to add</param>
-    /// <returns>The tournament's pooled beatmaps</returns>
-    Task<ICollection<BeatmapDTO>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds);
+    Task AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds);
 }
