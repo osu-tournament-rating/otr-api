@@ -26,19 +26,17 @@ public class JwtService(
     public string GenerateAccessToken(OAuthClient client) =>
         GenerateAccessToken(
             client.Id.ToString(),
-            [.. client.Scopes, OtrClaims.Roles.Client],
-            client.RateLimitOverrides
+            [.. client.Scopes, OtrClaims.Roles.Client]
         );
 
     public string GenerateAccessToken(User user) =>
         GenerateAccessToken(
             user.Id.ToString(),
-            [.. user.Scopes, OtrClaims.Roles.User],
-            user.RateLimitOverrides
+            [.. user.Scopes, OtrClaims.Roles.User]
         );
 
     public string GenerateRefreshToken(OAuthClient client) =>
-        GenerateRefreshToken(client.Id.ToString(), OtrClaims.Roles.User);
+        GenerateRefreshToken(client.Id.ToString(), OtrClaims.Roles.Client);
 
     public string GenerateRefreshToken(User user) =>
         GenerateRefreshToken(user.Id.ToString(), OtrClaims.Roles.User);
@@ -70,11 +68,11 @@ public class JwtService(
     /// </summary>
     /// <param name="subject">Id of the subject as a string</param>
     /// <param name="roles">Any <see cref="OtrClaims.Roles"/> the subject belongs to</param>
-    /// <param name="rateLimitOverrides">Any <see cref="RateLimitOverrides"/>, if applicable</param>
+    /// <param name="rateLimitOverride">A rate limit override, if applicable</param>
     private string GenerateAccessToken(
         string subject,
         IEnumerable<string> roles,
-        RateLimitOverrides? rateLimitOverrides = null
+        int? rateLimitOverride = null
     )
     {
         var claims = new List<Claim>
@@ -86,14 +84,9 @@ public class JwtService(
         // Encode roles
         claims.AddRange(roles.Select(r => new Claim(OtrClaims.Role, r)));
 
-        // Handle rate limit overrides
-        if (rateLimitOverrides is not null)
+        if (rateLimitOverride.HasValue)
         {
-            var serializedOverrides = RateLimitOverridesSerializer.Serialize(rateLimitOverrides);
-            if (!string.IsNullOrEmpty(serializedOverrides))
-            {
-                claims.Add(new Claim(OtrClaims.RateLimitOverrides, serializedOverrides));
-            }
+            claims.Add(new Claim(OtrClaims.RateLimitOverrides, rateLimitOverride.Value.ToString()));
         }
 
         return WriteToken(claims, AccessDurationSeconds);

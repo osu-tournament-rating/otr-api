@@ -26,13 +26,13 @@ public class OAuthClient : UpdateableEntityBase, IAdminNotableEntity<OAuthClient
     /// A collection of string literals denoting special permissions granted to the client
     /// </summary>
     [Column("scopes")]
-    public ICollection<string> Scopes { get; set; } = new List<string>();
+    public string[] Scopes { get; set; } = [];
 
-    // NOTE: Column name and value initialization is handled via OtrContext
     /// <summary>
-    /// Values that override the default API rate limit configuration for the client
+    /// Value that overrides the default API rate limit for the client
     /// </summary>
-    public RateLimitOverrides RateLimitOverrides { get; set; } = null!;
+    [Column("rate_limit_override")]
+    public int? RateLimitOverride { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.User"/> that owns the <see cref="OAuthClient"/>

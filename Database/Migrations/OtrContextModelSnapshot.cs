@@ -179,11 +179,15 @@ namespace Database.Migrations
                         .HasColumnName("osu_id");
 
                     b.Property<int>("ProcessingStatus")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("processing_status");
 
                     b.Property<int>("RejectionReason")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("rejection_reason");
 
                     b.Property<int>("Ruleset")
@@ -209,8 +213,16 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.Property<int>("VerificationStatus")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
+                        .HasDefaultValue(0)
                         .HasColumnName("verification_status");
+
+                    b.Property<int>("WarningFlags")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("warning_flags");
 
                     b.HasKey("Id");
 
@@ -645,6 +657,12 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("verified_by_user_id");
 
+                    b.Property<int>("WarningFlags")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("warning_flags");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OsuId")
@@ -814,6 +832,10 @@ namespace Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("RateLimitOverride")
+                        .HasColumnType("integer")
+                        .HasColumnName("rate_limit_override");
 
                     b.Property<string[]>("Scopes")
                         .IsRequired()
@@ -1660,6 +1682,21 @@ namespace Database.Migrations
                     b.ToTable("user_settings");
                 });
 
+            modelBuilder.Entity("__join__pooled_beatmaps", b =>
+                {
+                    b.Property<int>("beatmap_id")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("tournament_id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("beatmap_id", "tournament_id");
+
+                    b.HasIndex("tournament_id");
+
+                    b.ToTable("__join__pooled_beatmaps");
+                });
+
             modelBuilder.Entity("Database.Entities.Game", b =>
                 {
                     b.HasOne("Database.Entities.Beatmap", "Beatmap")
@@ -1831,32 +1868,6 @@ namespace Database.Migrations
                         .WithMany("Clients")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("Database.Entities.RateLimitOverrides", "RateLimitOverrides", b1 =>
-                        {
-                            b1.Property<int>("OAuthClientId")
-                                .HasColumnType("integer");
-
-                            b1.Property<int?>("PermitLimit")
-                                .HasColumnType("integer")
-                                .HasColumnName("permit_limit");
-
-                            b1.Property<int?>("Window")
-                                .HasColumnType("integer")
-                                .HasColumnName("window");
-
-                            b1.HasKey("OAuthClientId");
-
-                            b1.ToTable("oauth_clients");
-
-                            b1.ToJson("rate_limit_overrides");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OAuthClientId");
-                        });
-
-                    b.Navigation("RateLimitOverrides")
                         .IsRequired();
 
                     b.Navigation("User");
@@ -2041,33 +2052,7 @@ namespace Database.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
-                    b.OwnsOne("Database.Entities.RateLimitOverrides", "RateLimitOverrides", b1 =>
-                        {
-                            b1.Property<int>("UserId")
-                                .HasColumnType("integer");
-
-                            b1.Property<int?>("PermitLimit")
-                                .HasColumnType("integer")
-                                .HasColumnName("permit_limit");
-
-                            b1.Property<int?>("Window")
-                                .HasColumnType("integer")
-                                .HasColumnName("window");
-
-                            b1.HasKey("UserId");
-
-                            b1.ToTable("users");
-
-                            b1.ToJson("rate_limit_overrides");
-
-                            b1.WithOwner()
-                                .HasForeignKey("UserId");
-                        });
-
                     b.Navigation("Player");
-
-                    b.Navigation("RateLimitOverrides")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Entities.UserSettings", b =>
@@ -2077,6 +2062,23 @@ namespace Database.Migrations
                         .HasForeignKey("Database.Entities.UserSettings", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("__join__pooled_beatmaps", b =>
+                {
+                    b.HasOne("Database.Entities.Beatmap", null)
+                        .WithMany()
+                        .HasForeignKey("beatmap_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_JoinTable_Beatmap");
+
+                    b.HasOne("Database.Entities.Tournament", null)
+                        .WithMany()
+                        .HasForeignKey("tournament_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_JoinTable_Tournament");
                 });
 
             modelBuilder.Entity("Database.Entities.Beatmap", b =>

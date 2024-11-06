@@ -34,11 +34,13 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .ThenInclude(gs => gs.Player)
             .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
             .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
+            .Include(t => t.AdminNotes)
             .FirstOrDefaultAsync(t => t.Id == id);
 
     public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
         await _context.Tournaments
             .AsSingleQuery()
+            .Include(t => t.PooledBeatmaps)
             .Include(t => t.PlayerTournamentStats)
             .Include(t => t.Matches)
             .ThenInclude(m => m.WinRecord)
@@ -71,12 +73,20 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         DateTime dateMax
     ) => await QueryForParticipation(playerId, ruleset, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
 
-    public async Task<ICollection<Tournament>> GetAsync(int page, int pageSize, bool verified, Ruleset? ruleset)
+    public async Task<ICollection<Tournament>> GetAsync(
+        int page,
+        int pageSize,
+        TournamentQuerySortType querySortType,
+        bool descending = false,
+        bool verified = true,
+        Ruleset? ruleset = null
+    )
     {
         IQueryable<Tournament> query = _context.Tournaments
             .AsNoTracking()
             .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
-            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null);
+            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
+            .OrderBy(querySortType, descending);
 
         if (verified)
         {
@@ -89,7 +99,6 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         }
 
         return await query
-                .OrderByDescending(x => x.Created)
                 .Page(pageSize, page)
                 .ToListAsync();
     }
@@ -137,14 +146,16 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
     private IQueryable<Tournament> TournamentsBaseQuery()
     {
         return _context.Tournaments
-            .AsSplitQuery()
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Scores)
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Beatmap)
+            .Include(e => e.SubmittedByUser)
+            .Include(t => t.AdminNotes)
             .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
-            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null);
+            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
+            .AsSplitQuery();
     }
 }

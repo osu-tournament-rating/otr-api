@@ -27,7 +27,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         MatchProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
-        MatchesQuerySortType? querySortType = null,
+        MatchQuerySortType? querySortType = null,
         bool? sortDescending = null
     )
     {
@@ -80,17 +80,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
 
         if (querySortType.HasValue)
         {
-            query = querySortType switch
-            {
-                MatchesQuerySortType.OsuId => sortDescending != null && sortDescending.Value
-                    ? query.OrderByDescending(m => m.OsuId) : query.OrderBy(m => m.OsuId),
-                MatchesQuerySortType.StartTime => sortDescending != null && sortDescending.Value
-                    ? query.OrderByDescending(m => m.StartTime) : query.OrderBy(m => m.StartTime),
-                MatchesQuerySortType.EndTime => sortDescending != null && sortDescending.Value
-                    ? query.OrderByDescending(m => m.EndTime) : query.OrderBy(m => m.EndTime),
-                _ => sortDescending != null && sortDescending.Value
-                    ? query.OrderByDescending(m => m.Id) : query.OrderBy(m => m.Id),
-            };
+            query = query.OrderBy(querySortType.Value, sortDescending ?? false);
         }
 
         return await query.Page(limit, page).AsNoTracking().ToListAsync();
@@ -103,6 +93,8 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         await _context.Matches
             .AsNoTracking()
             .IncludeChildren()
+            .IncludeTournament()
+            .IncludeAdminNotes<Match, MatchAdminNote>()
             .FirstOrDefaultAsync(m => m.Id == id);
 
     public async Task<IEnumerable<Match>> SearchAsync(string name)
