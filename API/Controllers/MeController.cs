@@ -22,6 +22,7 @@ public class MeController(IUserService userService) : Controller
     [HttpGet]
     [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
     public IActionResult Get() =>
         RedirectToAction("Get", "Users", new { id = User.GetSubjectId() });
 
