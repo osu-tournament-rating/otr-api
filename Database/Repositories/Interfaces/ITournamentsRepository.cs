@@ -57,4 +57,13 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="ruleset">An optional ruleset to filter by</param>
     Task<ICollection<Tournament>> GetAsync(int page, int pageSize, TournamentQuerySortType querySortType,
         bool descending = false, bool verified = true, Ruleset? ruleset = null);
+
+    /// <summary>
+    /// Adds a collection of osu! beatmap ids to the <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/>
+    /// collection
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <param name="osuBeatmapIds">A collection of osu! beatmap ids to add</param>
+    /// <returns>The tournament's pooled beatmaps</returns>
+    Task<ICollection<Beatmap>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds);
 }

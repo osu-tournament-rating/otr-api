@@ -75,4 +75,11 @@ public interface ITournamentsService
     /// </summary>
     /// <param name="id">Tournament id</param>
     Task DeleteAsync(int id);
+
+    /// <summary>
+    /// Adds a collection of osu! beatmap ids to the tournament's PooledBeatmaps collection
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <param name="osuBeatmapIds">A collection of osu! beatmap ids to add</param>
+    Task AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds);
 }

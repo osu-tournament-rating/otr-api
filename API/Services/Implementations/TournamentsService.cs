@@ -132,4 +132,7 @@ public class TournamentsService(
     }
 
     public async Task DeleteAsync(int id) => await tournamentsRepository.DeleteAsync(id);
+
+    public async Task AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds) =>
+        await tournamentsRepository.AddPooledBeatmapsAsync(id, osuBeatmapIds);
 }

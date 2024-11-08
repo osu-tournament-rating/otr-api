@@ -12,7 +12,7 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class TournamentsRepository(OtrContext context) : RepositoryBase<Tournament>(context), ITournamentsRepository
+public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository) : RepositoryBase<Tournament>(context), ITournamentsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -88,6 +88,28 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         return await query
                 .Page(pageSize, page)
                 .ToListAsync();
+    }
+
+    public async Task<ICollection<Beatmap>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds)
+    {
+        Tournament? tournament = await _context.Tournaments
+            .Include(t => t.PooledBeatmaps)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (tournament is null)
+        {
+            return [];
+        }
+
+        IEnumerable<int> existingIds = tournament.PooledBeatmaps.Select(b => b.Id);
+        ICollection<Beatmap> beatmaps = await beatmapsRepository.GetOrCreateAsync(osuBeatmapIds, save: false);
+
+        var unmappedBeatmaps = beatmaps.ExceptBy(existingIds, b => b.Id).ToList();
+        unmappedBeatmaps.ForEach(b => tournament.PooledBeatmaps.Add(b));
+
+        await UpdateAsync(tournament);
+
+        return tournament.PooledBeatmaps;
     }
 
     /// <summary>
