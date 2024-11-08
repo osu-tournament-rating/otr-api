@@ -15,6 +15,7 @@ using API.Repositories.Interfaces;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.SwaggerGen;
+using API.SwaggerGen.Filters;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
@@ -309,7 +310,7 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT"
     });
 
-    options.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
+    options.AddSecurityDefinition(SecurityRequirements.OAuthSecurityRequirementId, new OpenApiSecurityScheme
     {
         Name = "OAuth2 Authentication",
         In = ParameterLocation.Header,

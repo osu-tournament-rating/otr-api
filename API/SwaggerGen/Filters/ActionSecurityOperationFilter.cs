@@ -1,28 +1,37 @@
-using System.Reflection;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace API.SwaggerGen;
+namespace API.SwaggerGen.Filters;
 
 /// <summary>
-/// Generates <see cref="OpenApiSecurityRequirement"/>(s) for each route based on any <see cref="AuthorizeAttribute"/>(s)
+/// Enriches the metadata of an <see cref="OpenApiOperation"/> based on any <see cref="AuthorizeAttribute"/>(s).
+/// Adds an extension to each action that denotes if the action requires authorization or not.
+/// If the action requires authorization, adds additional documentation to the description of an action based on
+/// authorization requirement(s).
 /// </summary>
+[UsedImplicitly]
 public class ActionSecurityOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        if (GetControllerAndActionAttributes<AllowAnonymousAttribute>(context).Any())
+        if (context.GetControllerAndActionAttributes<AllowAnonymousAttribute>().Any())
         {
+            operation.AddAuthExtension(false);
             return;
         }
 
-        IEnumerable<AuthorizeAttribute> authAttributes = GetControllerAndActionAttributes<AuthorizeAttribute>(context).ToList();
+        IEnumerable<AuthorizeAttribute> authAttributes = context
+            .GetControllerAndActionAttributes<AuthorizeAttribute>()
+            .ToList();
         if (!authAttributes.Any())
         {
+            operation.AddAuthExtension(false);
             return;
         }
 
+        operation.AddAuthExtension(true);
         operation.Security.Add(SecurityRequirements.BearerSecurityRequirement);
 
         var desc = "\n\nRequires Authorization:";
@@ -38,32 +47,18 @@ public class ActionSecurityOperationFilter : IOperationFilter
 
         if (authAttributes.Any(attr => attr.Roles != null))
         {
-            var claims = authAttributes
+            var roles = authAttributes
                 .Where(attr => attr.Roles != null)
                 .Select(attr => attr.Roles!.Split(", "))
                 .SelectMany(c => c)
                 .Distinct()
                 .ToList();
 
-            operation.Security.Add(SecurityRequirements.OAuthSecurityRequirementFromClaims(claims));
+            operation.Security.Add(SecurityRequirements.OAuthSecurityRequirement(roles));
 
-            desc += "\n\nClaim(s): " + string.Join(", ", claims);
+            desc += "\n\nClaim(s): " + string.Join(", ", roles);
         }
 
         operation.Description += desc;
-    }
-
-    private static IEnumerable<TAttr> GetControllerAndActionAttributes<TAttr>(OperationFilterContext context)
-        where TAttr : Attribute
-    {
-        if (context.MethodInfo is null)
-        {
-            return new List<TAttr>();
-        }
-
-        return context.MethodInfo.GetCustomAttributes<TAttr>()
-            .Concat(
-                context.MethodInfo.DeclaringType?.GetTypeInfo().GetCustomAttributes<TAttr>() ?? Array.Empty<TAttr>()
-            );
     }
 }
