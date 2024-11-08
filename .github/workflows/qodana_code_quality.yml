@@ -20,7 +20,8 @@ jobs:
         with:
           args: --linter,jetbrains/qodana-dotnet:2024.2
           use-caches: true
-          post-pr-comment: true
+          post-pr-comment: false
+          fail-threshold: 0
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_903418561 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
