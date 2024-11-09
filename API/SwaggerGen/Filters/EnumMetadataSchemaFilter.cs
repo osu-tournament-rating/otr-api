@@ -46,9 +46,7 @@ public class EnumMetadataSchemaFilter(string[] xmlDocPaths) : ISchemaFilter
         // Add the enum names extension
         if (!schema.Extensions.ContainsKey(ExtensionKeys.EnumNames))
         {
-            var namesExtensionValue = new OpenApiArray();
-            namesExtensionValue.AddRange(type.GetEnumNames().Select(n => new OpenApiString(n)));
-            schema.Extensions.Add(ExtensionKeys.EnumNames, namesExtensionValue);
+            schema.Extensions.Add(ExtensionKeys.EnumNames, type.GetEnumNames().ToOpenApiArray());
         }
 
         // Add the enum descriptions extension
