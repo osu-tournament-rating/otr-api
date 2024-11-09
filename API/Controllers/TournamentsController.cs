@@ -198,8 +198,7 @@ public partial class TournamentsController(
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
-        TournamentDTO? result = await tournamentsService.GetAsync(id);
-        if (result is null)
+        if (!await tournamentsService.ExistsAsync(id))
         {
             return NotFound();
         }
@@ -209,23 +208,21 @@ public partial class TournamentsController(
     }
 
     /// <summary>
-    /// Adds beatmaps to a tournament by osu! id
+    /// Get all beatmaps which are pooled by this tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <param name="osuBeatmapIds">A collection of osu! beatmap ids</param>
-    /// <response code="404">The tournament does not exist</response>
-    /// <response code="200">The beatmaps were added successfully</response>
-    [HttpPost("{id:int}/beatmaps")]
-    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    /// <returns>A collection of all pooled beatmaps</returns>
+    [HttpGet("{id:int}/beatmaps")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> InsertBeatmapsAsync(int id, [FromBody] ICollection<long> osuBeatmapIds)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetBeatmapsAsync(int id)
     {
         if (!await tournamentsService.ExistsAsync(id))
         {
             return NotFound();
         }
 
-        await tournamentsService.AddPooledBeatmapsAsync(id, osuBeatmapIds);
-        return Ok();
+        return Ok(await tournamentsService.GetPooledBeatmapsAsync(id));
     }
 }

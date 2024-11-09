@@ -124,4 +124,61 @@ public partial class TournamentsController
             ? Ok()
             : NotFound();
     }
+
+    /// <summary>
+    /// Adds beatmaps to a tournament by osu! id
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <param name="osuBeatmapIds">A collection of osu! beatmap ids</param>
+    /// <returns>The tournament's collection of pooled beatmaps</returns>
+    /// <response code="404">The tournament does not exist</response>
+    /// <response code="200">The beatmaps were added successfully</response>
+    [HttpPost("{id:int}/beatmaps")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> InsertBeatmapsAsync(int id, [FromBody] ICollection<long> osuBeatmapIds)
+    {
+        if (!await tournamentsService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        ICollection<BeatmapDTO> pooledBeatmaps = await tournamentsService.AddPooledBeatmapsAsync(id, osuBeatmapIds);
+        return Ok(pooledBeatmaps);
+    }
+
+    /// <summary>
+    /// Deletes all pooled beatmaps from a tournament. This does not alter the beatmaps table. This only
+    /// deletes the mapping between a tournament and a pooled beatmap.
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <param name="beatmapIds">
+    /// An optional collection of specific beatmap ids to remove from the pooled beatmaps collection
+    /// </param>
+    /// <response code="404">The tournament does not exist</response>
+    /// <response code="204">
+    /// All beatmaps were successfully removed from the list of pooled beatmaps for the tournament
+    /// </response>
+    [HttpDelete("{id:int}/beatmaps")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> DeleteBeatmapsAsync(int id, [FromBody] ICollection<int>? beatmapIds = null)
+    {
+        if (!await tournamentsService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        if (beatmapIds is null || beatmapIds.Count == 0)
+        {
+            await tournamentsService.DeletePooledBeatmapsAsync(id);
+        }
+        else
+        {
+            await tournamentsService.DeletePooledBeatmapsAsync(id, beatmapIds);
+        }
+
+        return NoContent();
+    }
 }
