@@ -65,6 +65,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <see cref="GameScore"/>s
     /// </summary>
     /// <param name="id">Tournament id</param>
+    /// <returns>The updated <see cref="Tournament"/></returns>
     Task<Tournament?> AcceptPreVerificationStatusesAsync(int id);
 
     /// <summary>
