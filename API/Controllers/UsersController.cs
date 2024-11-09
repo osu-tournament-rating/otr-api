@@ -118,7 +118,8 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// Get a user's OAuth clients
     /// </summary>
     /// <remarks>
-    /// All users have access to clients that they own. Admin users have access to clients from any user.
+    /// All users have access to clients that they own.
+    /// Admin users have access to clients from any user.
     /// </remarks>
     /// <param name="id">Id of the user</param>
     /// <response code="404">If a user does not exist</response>
@@ -201,6 +202,8 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <summary>
     /// Update the ruleset of a user
     /// </summary>
+    /// <param name="id">Id of the user</param>
+    /// <param name="ruleset">The new ruleset</param>
     /// <response code="404">If a user does not exist</response>
     /// <response code="400">If the operation was not successful</response>
     /// <response code="200">If the operation was successful</response>
@@ -224,6 +227,7 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <summary>
     /// Sync the ruleset of a user with their osu! ruleset
     /// </summary>
+    /// <param name="id">Id of the user</param>
     /// <response code="404">If a user does not exist</response>
     /// <response code="400">If the operation was not successful</response>
     /// <response code="200">If the operation was successful</response>
