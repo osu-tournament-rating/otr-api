@@ -198,8 +198,7 @@ public partial class TournamentsController(
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
-        TournamentDTO? result = await tournamentsService.GetAsync(id);
-        if (result is null)
+        if (!await tournamentsService.ExistsAsync(id))
         {
             return NotFound();
         }
@@ -219,8 +218,7 @@ public partial class TournamentsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetBeatmapsAsync(int id)
     {
-        TournamentDTO? result = await tournamentsService.GetAsync(id);
-        if (result is null)
+        if (!await tournamentsService.ExistsAsync(id))
         {
             return NotFound();
         }
