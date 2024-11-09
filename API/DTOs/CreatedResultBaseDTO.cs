@@ -1,9 +1,11 @@
+using System.Text.Json.Serialization;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a newly created resource
 /// </summary>
-public class CreatedResultBaseDTO
+public abstract class CreatedResultBaseDTO
 {
     /// <summary>
     /// Id of the resource
@@ -11,7 +13,14 @@ public class CreatedResultBaseDTO
     public int Id { get; set; }
 
     /// <summary>
-    /// URL of where the new resource can be accessed
+    /// Location of the resource
     /// </summary>
     public string Location { get; set; } = null!;
+
+    /// <summary>
+    /// Data used to generate the <see cref="Location"/>
+    /// </summary>
+    /// <remarks>This field should always be decorated with a <see cref="JsonIgnoreAttribute"/></remarks>
+    [JsonIgnore]
+    public abstract CreatedAtRouteValues CreatedAtRouteValues { get; }
 }
