@@ -5,11 +5,13 @@ using Database;
 using Database.Enums;
 using Database.Enums.Verification;
 using Database.Repositories.Implementations;
+using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class ApiTournamentsRepository(OtrContext context) : TournamentsRepository(context), IApiTournamentsRepository
+public class ApiTournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository) :
+    TournamentsRepository(context, beatmapsRepository), IApiTournamentsRepository
 {
     private readonly OtrContext _context = context;
 

@@ -12,7 +12,7 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class TournamentsRepository(OtrContext context) : RepositoryBase<Tournament>(context), ITournamentsRepository
+public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository) : RepositoryBase<Tournament>(context), ITournamentsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -102,31 +102,17 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
 
         if (tournament is null)
         {
-            return new List<Beatmap>();
+            return [];
         }
 
-        // Fetch the non-existent beatmap ids
-        var uniqueBeatmapIds = osuBeatmapIds.Except(await _context.Beatmaps
-            .Where(b => osuBeatmapIds.Contains(b.OsuId))
-            .Select(b => b.OsuId)
-            .ToListAsync()).ToList();
+        IEnumerable<int> existingIds = tournament.PooledBeatmaps.Select(b => b.Id);
+        ICollection<Beatmap> beatmaps = await beatmapsRepository.GetOrCreateAsync(osuBeatmapIds, save: false);
 
-        // Insert new beatmaps
-        IEnumerable<Beatmap> newBeatmaps = uniqueBeatmapIds.Select(osuId => new Beatmap { OsuId = osuId });
-        await _context.Beatmaps.AddRangeAsync(newBeatmaps);
-        await _context.SaveChangesAsync();
-
-        // Gather all beatmaps which match this beatmap id collection and add to pooled beatmaps
-        List<Beatmap> beatmaps = await _context.Beatmaps.Where(b => osuBeatmapIds.Contains(b.OsuId)).ToListAsync();
-        beatmaps.ForEach(b =>
-        {
-            if (!tournament.PooledBeatmaps.Contains(b))
-            {
-                tournament.PooledBeatmaps.Add(b);
-            }
-        });
+        var unmappedBeatmaps = beatmaps.ExceptBy(existingIds, b => b.Id).ToList();
+        unmappedBeatmaps.ForEach(b => tournament.PooledBeatmaps.Add(b));
 
         await UpdateAsync(tournament);
+
         return tournament.PooledBeatmaps;
     }
 
