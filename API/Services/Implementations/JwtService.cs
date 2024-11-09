@@ -26,7 +26,8 @@ public class JwtService(
     public string GenerateAccessToken(OAuthClient client) =>
         GenerateAccessToken(
             client.Id.ToString(),
-            [.. client.Scopes, OtrClaims.Roles.Client]
+            [.. client.Scopes, OtrClaims.Roles.Client],
+            client.RateLimitOverride
         );
 
     public string GenerateAccessToken(User user) =>
