@@ -12,7 +12,7 @@ namespace API.SwaggerGen.Filters;
 /// authorization requirement(s).
 /// </summary>
 [UsedImplicitly]
-public class ActionSecurityOperationFilter : IOperationFilter
+public class SecurityMetadataOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {

@@ -16,7 +16,7 @@ public static class SwaggerGenExtensions
     /// </summary>
     /// <param name="value">Whether the operation requires authorization or not</param>
     public static void AddAuthExtension(this OpenApiOperation operation, bool value) =>
-        operation.Extensions.Add("x-requiresAuthorization", new OpenApiBoolean(value));
+        operation.Extensions.Add(ExtensionKeys.OperationRequiresAuthorization, new OpenApiBoolean(value));
 
     /// <summary>
     /// Gets all <see cref="Attribute"/>s of a given type from the action and its controller
