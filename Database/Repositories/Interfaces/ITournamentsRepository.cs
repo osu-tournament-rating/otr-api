@@ -62,7 +62,10 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Gets the <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <returns>The <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection</returns>
+    /// <returns>
+    /// The <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection or an
+    /// empty collection if the tournament does not exist
+    /// </returns>
     Task<ICollection<Beatmap>> GetPooledBeatmapsAsync(int id);
 
     /// <summary>
@@ -71,7 +74,10 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// </summary>
     /// <param name="id">Tournament id</param>
     /// <param name="osuBeatmapIds">A collection of osu! beatmap ids to add</param>
-    /// <returns>The tournament's pooled beatmaps</returns>
+    /// <returns>
+    /// The <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection or an
+    /// empty collection if the tournament does not exist
+    /// </returns>
     Task<ICollection<Beatmap>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds);
 
     /// <summary>
