@@ -1,16 +1,15 @@
-using API.DTOs.Interfaces;
+using System.Text.Json.Serialization;
 using API.Utilities;
-using Newtonsoft.Json;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a created tournament
 /// </summary>
-public class TournamentCreatedResultDTO : CreatedResultBaseDTO, ICreatedResult
+public class TournamentCreatedResultDTO : CreatedResultBaseDTO
 {
     [JsonIgnore]
-    public CreatedAtRouteValues CreatedAtRouteValues => CreatedAtRouteValuesHelper.GetTournament(Id);
+    public override CreatedAtRouteValues CreatedAtRouteValues => CreatedAtRouteValuesHelper.GetTournament(Id);
 
     /// <summary>
     /// The name of the tournament
