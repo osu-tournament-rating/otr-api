@@ -34,4 +34,14 @@ public static class SwaggerGenExtensions
             .GetCustomAttributes<TAttr>()
             .Concat(context.MethodInfo.DeclaringType?.GetTypeInfo().GetCustomAttributes<TAttr>() ?? []);
     }
+
+    /// <summary>
+    /// Creates an <see cref="OpenApiArray"/> of <see cref="OpenApiString"/> from a list of strings
+    /// </summary>
+    public static OpenApiArray ToOpenApiArray(this IEnumerable<string> list)
+    {
+        var output = new OpenApiArray();
+        output.AddRange(list.Select(str => new OpenApiString(str)));
+        return output;
+    }
 }
