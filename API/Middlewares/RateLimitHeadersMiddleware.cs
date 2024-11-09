@@ -35,7 +35,7 @@ public class RateLimitHeadersMiddleware(
 
         context.Response.Headers.Append(
             "X-RateLimit-Limit",
-            (context.User.GetRateLimitOverrides()?.PermitLimit ?? _rateLimitConfiguration.PermitLimit).ToString()
+            (context.User.GetRateLimitOverride() ?? _rateLimitConfiguration.PermitLimit).ToString()
         );
         context.Response.Headers.Append("X-RateLimit-Remaining", statistics.CurrentAvailablePermits.ToString());
 
