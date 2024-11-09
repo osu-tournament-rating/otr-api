@@ -77,6 +77,16 @@ public interface ITournamentsService
     Task DeleteAsync(int id);
 
     /// <summary>
+    /// If the tournament is pre-rejected or pre-verified, updates the tournament
+    /// to be rejected or verified respectively. This update strategy is applied
+    /// to all child <see cref="Match"/>es, <see cref="Game"/>s, and
+    /// <see cref="GameScore"/>s
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <returns>The updated <see cref="TournamentDTO"/></returns>
+    Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id);
+
+    /// <summary>
     /// Adds a collection of osu! beatmap ids to the tournament's PooledBeatmaps collection
     /// </summary>
     /// <param name="id">Tournament id</param>
