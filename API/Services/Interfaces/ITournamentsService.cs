@@ -83,7 +83,42 @@ public interface ITournamentsService
     /// <see cref="GameScore"/>s
     /// </summary>
     /// <param name="id">Tournament id</param>
-    Task AcceptVerificationStatuses(int id);
+    /// <returns>The updated <see cref="TournamentDTO"/></returns>
+    Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id);
+
+    /// <summary>
+    /// Adds a collection of osu! beatmap ids to the tournament's PooledBeatmaps collection
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <param name="osuBeatmapIds">A collection of osu! beatmap ids to add</param>
+    /// <returns>
+    /// The <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection or an
+    /// empty collection if the tournament does not exist
+    /// </returns>
+    Task<ICollection<BeatmapDTO>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds);
+
+    /// <summary>
+    /// Gets the <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <returns>
+    /// The <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection or an
+    /// empty collection if the tournament does not exist
+    /// </returns>
+    Task<ICollection<BeatmapDTO>> GetPooledBeatmapsAsync(int id);
+
+    /// <summary>
+    /// Unmaps the provided beatmap ids from being pooled in the given tournament
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <param name="beatmapIds">Collection of beatmap ids to remove from the tournament's collection of pooled beatmaps</param>
+    Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds);
+
+    /// <summary>
+    /// Removes all pooled beatmaps from a given tournament
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    Task DeletePooledBeatmapsAsync(int id);
 
     /// <summary>
     /// Reruns automation checks for a tournament and all child entities
