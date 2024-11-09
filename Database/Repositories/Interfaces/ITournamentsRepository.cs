@@ -66,7 +66,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// </summary>
     /// <param name="id">Tournament id</param>
     /// <returns>The updated <see cref="Tournament"/></returns>
-    Task<Tournament?> AcceptPreVerificationStatuses(int id);
+    Task<Tournament?> AcceptPreVerificationStatusesAsync(int id);
 
     /// <summary>
     /// Gets the <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection

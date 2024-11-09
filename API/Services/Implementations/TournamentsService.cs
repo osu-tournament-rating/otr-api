@@ -134,7 +134,7 @@ public class TournamentsService(
     public async Task DeleteAsync(int id) => await tournamentsRepository.DeleteAsync(id);
 
     public async Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id) =>
-        mapper.Map<TournamentDTO?>(await tournamentsRepository.AcceptPreVerificationStatuses(id));
+        mapper.Map<TournamentDTO?>(await tournamentsRepository.AcceptPreVerificationStatusesAsync(id));
 
     public async Task<ICollection<BeatmapDTO>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds) =>
         mapper.Map<ICollection<BeatmapDTO>>(await tournamentsRepository.AddPooledBeatmapsAsync(id, osuBeatmapIds));
