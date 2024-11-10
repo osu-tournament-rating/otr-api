@@ -128,4 +128,20 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// </summary>
     [NotMapped]
     public bool IsFreeMod => Mods is Mods.None;
+
+    public void ResetAutomationStatuses(bool force)
+    {
+        var gameUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
+                                   VerificationStatus != VerificationStatus.Verified);
+
+        if (!gameUpdate)
+        {
+            return;
+        }
+
+        VerificationStatus = VerificationStatus.None;
+        WarningFlags = GameWarningFlags.None;
+        RejectionReason = GameRejectionReason.None;
+        ProcessingStatus = GameProcessingStatus.NeedsAutomationChecks;
+    }
 }

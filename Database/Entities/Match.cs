@@ -128,4 +128,20 @@ public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>, 
     public ICollection<MatchAdminNote> AdminNotes { get; set; } = new List<MatchAdminNote>();
 
     [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+
+    public void ResetAutomationStatuses(bool force)
+    {
+        var matchUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
+                                   VerificationStatus != VerificationStatus.Verified);
+
+        if (!matchUpdate)
+        {
+            return;
+        }
+
+        VerificationStatus = VerificationStatus.None;
+        WarningFlags = MatchWarningFlags.None;
+        RejectionReason = MatchRejectionReason.None;
+        ProcessingStatus = MatchProcessingStatus.NeedsAutomationChecks;
+    }
 }

@@ -195,78 +195,22 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             return;
         }
 
-        var update = force || (tournament.VerificationStatus != VerificationStatus.Rejected &&
-                               tournament.VerificationStatus != VerificationStatus.Verified);
-
-        if (update)
-        {
-            tournament.VerificationStatus = VerificationStatus.None;
-            tournament.RejectionReason = TournamentRejectionReason.None;
-            tournament.ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
-        }
-
-        ResetMatchChecks(tournament, force);
-        await UpdateAsync(tournament);
-    }
-
-    private static void ResetMatchChecks(Tournament tournament, bool force)
-    {
+        tournament.ResetAutomationStatuses(force);
         foreach (Match match in tournament.Matches)
         {
-            var matchUpdate = force || (match.VerificationStatus != VerificationStatus.Rejected &&
-                                        match.VerificationStatus != VerificationStatus.Verified);
-
-            if (!matchUpdate)
+            match.ResetAutomationStatuses(force);
+            foreach (Game game in match.Games)
             {
-                continue;
+                game.ResetAutomationStatuses(force);
+
+                foreach (GameScore score in game.Scores)
+                {
+                    score.ResetAutomationStatuses(force);
+                }
             }
-
-            match.VerificationStatus = VerificationStatus.None;
-            match.WarningFlags = MatchWarningFlags.None;
-            match.RejectionReason = MatchRejectionReason.None;
-            match.ProcessingStatus = MatchProcessingStatus.Done;
-
-            ResetGameChecks(match, force);
         }
-    }
 
-    private static void ResetGameChecks(Match match, bool force)
-    {
-        foreach (Game game in match.Games)
-        {
-            var gameUpdate = force || (game.VerificationStatus != VerificationStatus.Rejected &&
-                                        game.VerificationStatus != VerificationStatus.Verified);
-
-            if (!gameUpdate)
-            {
-                continue;
-            }
-
-            game.VerificationStatus = VerificationStatus.None;
-            game.WarningFlags = GameWarningFlags.None;
-            game.RejectionReason = GameRejectionReason.None;
-            game.ProcessingStatus = GameProcessingStatus.Done;
-
-            ResetScoreChecks(game, force);
-        }
-    }
-
-    private static void ResetScoreChecks(Game game, bool force)
-    {
-        foreach (GameScore score in game.Scores)
-        {
-            var scoreUpdate = force || (score.VerificationStatus != VerificationStatus.Rejected &&
-                                        score.VerificationStatus != VerificationStatus.Verified);
-
-            if (!scoreUpdate)
-            {
-                continue;
-            }
-
-            score.VerificationStatus = VerificationStatus.None;
-            score.RejectionReason = ScoreRejectionReason.None;
-            score.ProcessingStatus = ScoreProcessingStatus.Done;
-        }
+        await UpdateAsync(tournament);
     }
 
     /// <summary>

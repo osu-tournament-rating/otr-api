@@ -138,4 +138,19 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
 
     [NotMapped]
     public int? ActionBlamedOnUserId { get; set; }
+
+    public void ResetAutomationStatuses(bool force)
+    {
+        var update = force || (VerificationStatus != VerificationStatus.Rejected &&
+                               VerificationStatus != VerificationStatus.Verified);
+
+        if (!update)
+        {
+            return;
+        }
+
+        VerificationStatus = VerificationStatus.None;
+        RejectionReason = TournamentRejectionReason.None;
+        ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
+    }
 }
