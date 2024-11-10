@@ -69,11 +69,12 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Tournament?> AcceptPreVerificationStatusesAsync(int id);
 
     /// <summary>
-    /// Reruns automation checks for a tournament and all child entities
+    /// Resets the VerificationStatus, ProcessingStatus, WarningFlags (if applicable), and RejectionReasons for
+    /// the tournament and all descendant entities
     /// </summary>
     /// <param name="id">Tournament id</param>
     /// <param name="force">Whether to overwrite fully Verified/Rejected data (dangerous)</param>
-    Task RerunAutomationChecks(int id, bool force = false);
+    Task ResetAutomationStatuses(int id, bool force = false);
 
     /// <summary>
     /// Gets the <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection
