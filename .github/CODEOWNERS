@@ -1,0 +1,11 @@
+* @hburn7
+* @myssto
+
+.github/ @hburn7
+OsuApiClient/ @myssto
+OsuApiClient.Tests/ @myssto
+cfg/ @hburn7
+qodana.yaml @hburn7
+*Dockerfile @hburn7
+.dockerignore @hburn7
+.husky @myssto
