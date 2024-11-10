@@ -65,5 +65,12 @@ public enum GameRejectionReason
     /// <summary>
     /// The <see cref="Entities.Match"/> the <see cref="Entities.Game"/> was played in was rejected
     /// </summary>
-    RejectedMatch = 1 << 9
+    RejectedMatch = 1 << 9,
+
+    /// <summary>
+    /// The <see cref="Tournament"/> has a known collection of PooledBeatmaps
+    /// and the <see cref="Beatmap"/> played in the <see cref="Game"/> is not present
+    /// in said collection
+    /// </summary>
+    BeatmapNotPooled = 1 << 10
 }
