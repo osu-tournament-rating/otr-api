@@ -24,8 +24,8 @@ public static class SeededMatch
         DateTime? endTime = null,
         VerificationStatus? verificationStatus = null,
         MatchRejectionReason? rejectionReason = null,
-        MatchWarningFlags? warningFlags = null,
         MatchProcessingStatus? processingStatus = null,
+        MatchWarningFlags? warningFlags = null,
         Tournament? tournament = null
     )
     {

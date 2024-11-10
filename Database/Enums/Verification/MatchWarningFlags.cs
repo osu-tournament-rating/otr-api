@@ -22,5 +22,11 @@ public enum MatchWarningFlags
     /// <summary>
     /// The <see cref="Entities.Match"/>'s number of <see cref="Entities.Match.Games"/> is exactly 3 or 4
     /// </summary>
-    LowGameCount = 1 << 1
+    LowGameCount = 1 << 1,
+
+    /// <summary>
+    /// The <see cref="Match"/> has 1 or more <see cref="Game"/>s with a <see cref="GameRejectionReason"/>
+    /// of <see cref="GameRejectionReason.BeatmapNotPooled"/> outside of the first two <see cref="Game"/>s
+    /// </summary>
+    UnexpectedBeatmapsFound = 1 << 2
 }
