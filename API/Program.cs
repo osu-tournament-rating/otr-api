@@ -246,10 +246,10 @@ builder.Services.AddSwaggerGen(options =>
     }
 
     // Register custom filters
+    options.OperationFilter<SecurityMetadataOperationFilter>();
+
     options.SchemaFilter<EnumMetadataSchemaFilter>((object)xmlDocPaths);
     options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
-
-    options.OperationFilter<SecurityMetadataOperationFilter>();
 
     // Populate the document's info
     options.SwaggerDoc(
@@ -299,6 +299,7 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT"
     });
 
+    // Register custom enum schemas describing authorization roles and policies
     options.AddSecurityDefinition(SecurityRequirements.OAuthSecurityRequirementId, new OpenApiSecurityScheme
     {
         Name = "OAuth2 Authentication",
