@@ -11,7 +11,7 @@ public class MatchBeatmapCheckTests : AutomationChecksTestBase<MatchBeatmapCheck
     public void Check_Flagged_WhenGamesContainUnexpectedBeatmaps()
     {
         // Arrange
-        MatchWarningFlags expectedWarningFlags = MatchWarningFlags.UnexpectedBeatmapsFound;
+        const MatchWarningFlags expectedWarningFlags = MatchWarningFlags.UnexpectedBeatmapsFound;
         Match match = SeededMatch.Generate(warningFlags: MatchWarningFlags.None);
 
         for (var i = 0; i < 5; i++)
@@ -30,7 +30,7 @@ public class MatchBeatmapCheckTests : AutomationChecksTestBase<MatchBeatmapCheck
 
         // Assert
         Assert.False(actualPass);
-        Assert.Equal(match.WarningFlags, expectedWarningFlags);
+        Assert.Equal(expectedWarningFlags, match.WarningFlags);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class MatchBeatmapCheckTests : AutomationChecksTestBase<MatchBeatmapCheck
     public void Check_NotFlagged_WhenGamesDoNotContainUnexpectedBeatmaps()
     {
         // Arrange
-        MatchWarningFlags expectedWarningFlags = MatchWarningFlags.None;
+        const MatchWarningFlags expectedWarningFlags = MatchWarningFlags.None;
         Match match = SeededMatch.Generate(warningFlags: MatchWarningFlags.None);
 
         for (var i = 0; i < 5; i++)
@@ -80,6 +80,6 @@ public class MatchBeatmapCheckTests : AutomationChecksTestBase<MatchBeatmapCheck
 
         // Assert
         Assert.True(actualPass);
-        Assert.Equal(match.WarningFlags, expectedWarningFlags);
+        Assert.Equal(expectedWarningFlags, match.WarningFlags);
     }
 }
