@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
@@ -18,13 +19,13 @@ public class FilteringController(IFilteringService filteringService) : Controlle
     /// <see cref="FilteringResultDTO"/>
     /// </summary>
     /// <param name="filteringRequest">The filtering request</param>
-    /// <response code="400">Errors encountered during validation</response>
+    /// <response code="400">The request body is invalid</response>
     /// <response code="200">The filtering result</response>
     [HttpPost]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<FilteringResultDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> FilterAsync([FromBody] FilteringRequestDTO filteringRequest)
+    public async Task<IActionResult> FilterAsync([FromBody][Required] FilteringRequestDTO filteringRequest)
     {
         if (!ModelState.IsValid)
         {
