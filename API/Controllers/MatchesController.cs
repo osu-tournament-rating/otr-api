@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
@@ -17,37 +16,15 @@ namespace API.Controllers;
 public partial class MatchesController(IMatchesService matchesService, IAdminNoteService adminNoteService) : Controller
 {
     /// <summary>
-    /// Gets all matches
+    /// Get all matches which fit an optional request query
     /// </summary>
-    /// <remarks>
-    /// Results are ordered by id and support pagination. All match data is included.
-    /// </remarks>
-    /// <param name="limit">
-    /// Controls the number of matches to return. Functions as a "page size".
-    /// Default: 100 Constraints: Minimum 1, Maximum 5000
-    /// </param>
-    /// <param name="page">
-    /// Controls which block of size <paramref name="limit"/> to return.
-    /// Default: 1, Constraints: Minimum 1
-    /// </param>
-    /// <response code="200">Returns the desired page of matches</response>
+    /// <remarks>Will not include game data</remarks>
+    /// <response code="200">Returns all matches which fit the request query</response>
     [HttpGet]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
-    [ProducesResponseType<PagedResultDTO<MatchDTO>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ListAsync(
-        [FromQuery] MatchesFilterDTO filter,
-        [FromQuery][Range(1, int.MaxValue)] int limit = 100,
-        [FromQuery][Range(1, int.MaxValue)] int page = 1
-    )
-    {
-        // Clamp page size for non-admin users
-        if (limit > 5000 && !User.IsAdmin())
-        {
-            limit = 5000;
-        }
-
-        return Ok(await matchesService.GetAsync(limit, page, filter));
-    }
+    [ProducesResponseType<IEnumerable<MatchDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListAsync([FromQuery] MatchRequestQueryDTO requestQuery) =>
+        Ok(await matchesService.GetAsync(requestQuery));
 
     /// <summary>
     /// Get a match

@@ -1,45 +1,38 @@
 using System.ComponentModel.DataAnnotations;
 using Database.Enums;
-using static Database.Enums.Ruleset;
 
 namespace API.DTOs;
 
 /// <summary>
-/// Enables pagination and filtering of tournament requests
+/// Filtering parameters for tournaments requests
 /// </summary>
-public class TournamentRequestQueryDTO
+public class TournamentRequestQueryDTO : PaginatedRequestQueryDTO
 {
-    /// <summary>
-    /// The page number
-    /// </summary>
     [Required]
-    [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
-    public int Page { get; init; } = 1;
+    [Range(1, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    public override int Page { get; init; }
+
+    [Required]
+    [Range(1, 100, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    public override int PageSize { get; init; }
 
     /// <summary>
-    /// The size of the page
-    /// </summary>
-    [Required]
-    [Range(5, 100, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
-    public int PageSize { get; init; } = 20;
-
-    /// <summary>
-    /// Whether the tournaments must be verified
+    /// Filters results for only tournaments that are verified
     /// </summary>
     public bool Verified { get; init; } = true;
 
     /// <summary>
-    /// An optional ruleset to filter by
+    /// Filters results for only tournaments played in a specified ruleset
     /// </summary>
-    public Ruleset? Ruleset { get; init; } = Osu;
+    public Ruleset? Ruleset { get; init; }
 
     /// <summary>
     /// The key used to sort results by
     /// </summary>
-    public TournamentQuerySortType QuerySortType { get; init; } = TournamentQuerySortType.StartTime;
+    public TournamentQuerySortType Sort { get; init; } = TournamentQuerySortType.StartTime;
 
     /// <summary>
-    /// Whether the tournaments are sorted in descending order by the <see cref="QuerySortType"/>
+    /// Whether the results are sorted in descending order by the <see cref="Sort"/>
     /// </summary>
     public bool Descending { get; init; } = false;
 }

@@ -20,22 +20,12 @@ public partial class TournamentsController(
     /// <summary>
     /// Get all tournaments which fit an optional request query
     /// </summary>
-    /// <param name="requestQuery">The optional request query filter</param>
     /// <remarks>Will not include match data</remarks>
     /// <response code="200">Returns all tournaments which fit the request query</response>
-    /// <returns>
-    /// A page of tournaments
-    /// </returns>
     [HttpGet]
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> ListAsync([FromQuery] TournamentRequestQueryDTO? requestQuery)
-    {
-        requestQuery ??= new TournamentRequestQueryDTO();
-
-        ICollection<TournamentDTO> tournaments = await tournamentsService.GetAsync(requestQuery);
-        return Ok(tournaments);
-    }
+    public async Task<IActionResult> ListAsync([FromQuery] TournamentRequestQueryDTO requestQuery) =>
+        Ok(await tournamentsService.GetAsync(requestQuery));
 
     /// <summary>
     /// Submit a tournament

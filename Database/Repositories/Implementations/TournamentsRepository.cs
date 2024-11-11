@@ -99,7 +99,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
         }
 
         return await query
-                .Page(pageSize, page)
+                .Page(pageSize, page - 1)
                 .ToListAsync();
     }
 

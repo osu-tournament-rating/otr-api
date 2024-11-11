@@ -8,14 +8,7 @@ public interface IMatchesService
     /// <summary>
     /// Gets a paged list of matches
     /// </summary>
-    /// <remarks>Matches are ordered by primary key</remarks>
-    /// <param name="limit">Amount of matches to return. Functions as the "page size"</param>
-    /// <param name="page">Which block of matches to return</param>
-    Task<PagedResultDTO<MatchDTO>> GetAsync(
-        int limit,
-        int page,
-        MatchesFilterDTO filter
-    );
+    Task<IEnumerable<MatchDTO>> GetAsync(MatchRequestQueryDTO filter);
 
     /// <summary>
     /// Gets a match for the given id including all navigation properties.
