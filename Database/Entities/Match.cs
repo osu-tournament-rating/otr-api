@@ -14,7 +14,7 @@ namespace Database.Entities;
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>, IAuditableEntity<MatchAudit>, IProcessableEntity
+public class Match : ProcessableEntityBase, IAdminNotableEntity<MatchAdminNote>, IAuditableEntity<MatchAudit>
 {
     /// <summary>
     /// osu! id
@@ -44,12 +44,6 @@ public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>, 
     public DateTime EndTime { get; set; }
 
     /// <summary>
-    /// Verification status
-    /// </summary>
-    [Column("verification_status")]
-    public VerificationStatus VerificationStatus { get; set; }
-
-    /// <summary>
     /// Rejection reason
     /// </summary>
     [Column("rejection_reason")]
@@ -66,9 +60,6 @@ public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>, 
     /// </summary>
     [Column("processing_status")]
     public MatchProcessingStatus ProcessingStatus { get; set; }
-
-    [Column("last_processing_date")]
-    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Tournament"/> the match was played in
@@ -129,7 +120,7 @@ public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>, 
 
     [NotMapped] public int? ActionBlamedOnUserId { get; set; }
 
-    public void ResetAutomationStatuses(bool force)
+    public override void ResetAutomationStatuses(bool force)
     {
         var matchUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
                                    VerificationStatus != VerificationStatus.Verified);

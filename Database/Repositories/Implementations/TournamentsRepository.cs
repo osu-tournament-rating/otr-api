@@ -102,24 +102,25 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             return null;
         }
 
-        tournament.VerificationStatus = EnumUtils.ConfirmPreStatus(tournament.VerificationStatus);
+        #region Confirm "pre" verification statuses
+        tournament.ConfirmPreVerificationStatus();
         foreach (Match match in tournament.Matches)
         {
-            match.VerificationStatus = EnumUtils.ConfirmPreStatus(match.VerificationStatus);
+            match.ConfirmPreVerificationStatus();
 
             foreach (Game game in match.Games)
             {
-                game.VerificationStatus = EnumUtils.ConfirmPreStatus(game.VerificationStatus);
+                game.ConfirmPreVerificationStatus();
 
                 foreach (GameScore score in game.Scores)
                 {
-                    score.VerificationStatus = EnumUtils.ConfirmPreStatus(score.VerificationStatus);
+                    score.ConfirmPreVerificationStatus();
                 }
             }
         }
+        #endregion
 
         await UpdateAsync(tournament);
-
         return tournament;
     }
 

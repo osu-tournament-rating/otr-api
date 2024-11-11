@@ -12,7 +12,7 @@ namespace Database.Entities;
 [Table("games")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>, IAuditableEntity<GameAudit>
+public class Game : ProcessableEntityBase, IAdminNotableEntity<GameAdminNote>, IAuditableEntity<GameAudit>
 {
     /// <summary>
     /// osu! id
@@ -57,12 +57,6 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     public DateTime EndTime { get; set; }
 
     /// <summary>
-    /// Verification status
-    /// </summary>
-    [Column("verification_status")]
-    public VerificationStatus VerificationStatus { get; set; }
-
-    /// <summary>
     /// Rejection reason
     /// </summary>
     [Column("rejection_reason")]
@@ -79,9 +73,6 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// </summary>
     [Column("processing_status")]
     public GameProcessingStatus ProcessingStatus { get; set; }
-
-    [Column("last_processing_date")]
-    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Match"/> that the game was played in
@@ -129,7 +120,7 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     [NotMapped]
     public bool IsFreeMod => Mods is Mods.None;
 
-    public void ResetAutomationStatuses(bool force)
+    public override void ResetAutomationStatuses(bool force)
     {
         var gameUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
                                    VerificationStatus != VerificationStatus.Verified);

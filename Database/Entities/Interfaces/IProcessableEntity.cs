@@ -1,10 +1,16 @@
+using Database.Enums.Verification;
+
 namespace Database.Entities.Interfaces;
 
 /// <summary>
 /// Interfaces an entity that is processed by the Data Worker Service
 /// </summary>
-public interface IProcessableEntity : IEntity
+public interface IProcessableEntity : IUpdateableEntity
 {
+    /// <summary>
+    /// Verification status
+    /// </summary>
+    public VerificationStatus VerificationStatus { get; set; }
     /// <summary>
     /// Timestamp of the last time the entity was processed
     /// </summary>
@@ -20,4 +26,10 @@ public interface IProcessableEntity : IEntity
     /// </example>
     /// <param name="force">Whether to overwrite data which has a VerificationStatus of Verified or Rejected</param>
     public void ResetAutomationStatuses(bool force);
+
+    /// <summary>
+    /// Mark the entity's VerificationStatus
+    /// as "Verified" if "PreVerified" and "Rejected" if "PreRejected"
+    /// </summary>
+    public void ConfirmPreVerificationStatus();
 }

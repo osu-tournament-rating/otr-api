@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Interfaces;
 using Database.Enums;
@@ -12,7 +13,7 @@ namespace Database.Entities;
 [Table("game_scores")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameScoreAdminNote>,
+public class GameScore : ProcessableEntityBase, IAdminNotableEntity<GameScoreAdminNote>,
     IAuditableEntity<GameScoreAudit>, IScoreStatistics
 {
     /// <summary>
@@ -88,12 +89,6 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// Verification status
-    /// </summary>
-    [Column("verification_status")]
-    public VerificationStatus VerificationStatus { get; set; }
-
-    /// <summary>
     /// Rejection reason
     /// </summary>
     [Column("rejection_reason")]
@@ -104,9 +99,6 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     /// </summary>
     [Column("processing_status")]
     public ScoreProcessingStatus ProcessingStatus { get; set; }
-
-    [Column("last_processing_date")]
-    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Game"/> that the <see cref="GameScore"/> was set in
@@ -180,7 +172,7 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
         }
     }
 
-    public void ResetAutomationStatuses(bool force)
+    public override void ResetAutomationStatuses(bool force)
     {
         var scoreUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
                                     VerificationStatus != VerificationStatus.Verified);

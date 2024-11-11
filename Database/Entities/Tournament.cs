@@ -13,7 +13,7 @@ namespace Database.Entities;
 [Table("tournaments")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>,
+public class Tournament : ProcessableEntityBase, IAdminNotableEntity<TournamentAdminNote>,
     IAuditableEntity<TournamentAudit>
 {
     /// <summary>
@@ -56,12 +56,6 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     public int LobbySize { get; set; }
 
     /// <summary>
-    /// Verification status
-    /// </summary>
-    [Column("verification_status")]
-    public VerificationStatus VerificationStatus { get; set; }
-
-    /// <summary>
     /// Rejection reason
     /// </summary>
     [Column("rejection_reason")]
@@ -72,9 +66,6 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// </summary>
     [Column("processing_status")]
     public TournamentProcessingStatus ProcessingStatus { get; set; }
-
-    [Column("last_processing_date")]
-    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="User"/> that submitted the tournament
@@ -139,7 +130,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     [NotMapped]
     public int? ActionBlamedOnUserId { get; set; }
 
-    public void ResetAutomationStatuses(bool force)
+    public override void ResetAutomationStatuses(bool force)
     {
         var update = force || (VerificationStatus != VerificationStatus.Rejected &&
                                VerificationStatus != VerificationStatus.Verified);
