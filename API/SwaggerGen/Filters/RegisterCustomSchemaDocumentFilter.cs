@@ -7,13 +7,13 @@ namespace API.SwaggerGen.Filters;
 /// <summary>
 /// Registers a custom <see cref="OpenApiSchema"/> to an <see cref="OpenApiDocument"/>
 /// </summary>
-/// <param name="type">The type described by the schema</param>
-/// <param name="schema">A schema for the given type</param>
+/// <param name="name">The name for the given schema</param>
+/// <param name="schema">The <see cref="OpenApiSchema"/> to register</param>
 [UsedImplicitly]
-public class RegisterCustomSchemaDocumentFilter(Type type, OpenApiSchema schema) : IDocumentFilter
+public class RegisterCustomSchemaDocumentFilter(string name, OpenApiSchema schema) : IDocumentFilter
 {
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
     {
-        context.SchemaRepository.AddDefinition(type.Name, schema);
+        context.SchemaRepository.AddDefinition(name, schema);
     }
 }
