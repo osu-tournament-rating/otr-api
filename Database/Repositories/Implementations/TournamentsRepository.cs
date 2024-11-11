@@ -4,7 +4,6 @@ using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
-using Database.Utilities;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -216,12 +215,12 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
 
     /// <summary>
     /// Returns a queryable containing tournaments for <see cref="ruleset"/>
-    /// with *any* match applicable to all of the following criteria:
+    /// with *any* match applicable to all the following criteria:
     /// - Is verified
     /// - Started between <paramref name="dateMin"/> and <paramref name="dateMax"/>
     /// - Contains a <see cref="RatingAdjustment"/> for given <paramref name="playerId"/> (Denotes participation)
     /// </summary>
-    /// <param name="playerId">Id (primary key) of target player</param>
+    /// <param name="playerId">Primary key of target player</param>
     /// <param name="ruleset">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
