@@ -11,9 +11,10 @@ namespace API.Controllers;
 public partial class GamesController
 {
     /// <summary>
-    /// Creates an admin note for a game
+    /// Create an admin note for a game
     /// </summary>
     /// <param name="id">Game id</param>
+    /// <param name="note">Content of the admin note</param>
     /// <response code="404">A game matching the given id does not exist</response>
     /// <response code="400">The authorized user does not exist</response>
     /// <response code="200">Returns the created admin note</response>
@@ -36,10 +37,11 @@ public partial class GamesController
     }
 
     /// <summary>
-    /// Updates an admin note for a game
+    /// Update an admin note for a game
     /// </summary>
     /// <param name="id">Game id</param>
     /// <param name="noteId">Admin note id</param>
+    /// <param name="note">New content of the admin note</param>
     /// <response code="404">
     /// A game matching the given id does not exist
     /// or an admin note matching the given noteId does not exist
@@ -75,7 +77,7 @@ public partial class GamesController
     }
 
     /// <summary>
-    /// Deletes an admin note for a game
+    /// Delete an admin note for a game
     /// </summary>
     /// <param name="id">Game id</param>
     /// <param name="noteId">Admin note id</param>

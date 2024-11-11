@@ -2,31 +2,99 @@ using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
 using Asp.Versioning;
+using Database.Entities;
+using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using OsuApiClient.Net.Constants;
 
 namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[EnableCors]
 [Route("api/v{version:apiVersion}/[controller]")]
-public partial class PlayersController(IPlayerService playerService, IAdminNoteService adminNoteService) : Controller
+public partial class PlayersController(
+    IPlayerService playerService,
+    IAdminNoteService adminNoteService,
+    IPlayerStatsService playerStatsService
+) : Controller
 {
+    /// <summary>
+    /// Get a player
+    /// </summary>
+    /// <remarks>Get a player searching first by id, then by osu! id, then osu! username</remarks>
+    /// <param name="key">Search key (o!TR id, osu! id, or osu! username)</param>
+    /// <response code="404">A player matching the given key does not exist</response>
+    /// <response code="200">Returns a player</response>
     [HttpGet("{key}")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
-    [EndpointSummary("Get player info by versatile search")]
-    [EndpointDescription("Get player info searching first by id, then osuId, then username")]
-    public async Task<ActionResult<PlayerCompactDTO?>> GetAsync(string key)
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<PlayerCompactDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAsync(string key)
     {
-        PlayerCompactDTO? info = await playerService.GetVersatileAsync(key);
+        PlayerCompactDTO? result = await playerService.GetVersatileAsync(key);
 
-        if (info == null)
+        return result is not null
+            ? Ok(result)
+            : NotFound();
+    }
+
+    /// <summary>
+    /// Get a player's stats
+    /// </summary>
+    /// <remarks>
+    /// Gets player by versatile search.
+    /// If no ruleset is provided, the player's default is used. <see cref="Endpoints.Osu"/> is used as a fallback.
+    /// If a ruleset is provided but the player has no data for it, all optional fields of the response will be null.
+    /// <see cref="PlayerStatsDTO.PlayerInfo"/> will always be populated as long as a player is found.
+    /// If no date range is provided, gets all stats without considering date
+    /// </remarks>
+    /// <param name="key">Search key</param>
+    /// <param name="ruleset">Ruleset to filter for</param>
+    /// <param name="dateMin">Filter from earliest date</param>
+    /// <param name="dateMax">Filter to latest date</param>
+    /// <response code="404">A player matching the given search key does not exist</response>
+    /// <response code="200">Returns a player's stats</response>
+    [HttpGet("{key}/stats")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<PlayerStatsDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetStatsAsync(
+        string key,
+        [FromQuery] Ruleset? ruleset = null,
+        [FromQuery] DateTime? dateMin = null,
+        [FromQuery] DateTime? dateMax = null
+    )
+    {
+        PlayerStatsDTO? result = await playerStatsService.GetAsync(
+            key,
+            ruleset,
+            dateMin ?? DateTime.MinValue,
+            dateMax ?? DateTime.MaxValue
+        );
+
+        return result is null
+            ? NotFound()
+            : Ok(result);
+    }
+
+    /// <summary>
+    /// List all admin notes for a player
+    /// </summary>
+    /// <param name="id">Player id</param>
+    /// <response code="404">A player matching the given id does not exist</response>
+    /// <response code="200">Returns all admin notes from a player</response>
+    [HttpGet("{id:int}/notes")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<IEnumerable<AdminNoteDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListAdminNotesAsync(int id)
+    {
+        if (!await playerService.ExistsAsync(id))
         {
-            return NotFound($"User with key {key} does not exist");
+            return NotFound();
         }
 
-        return info;
+        return Ok(await adminNoteService.ListAsync<PlayerAdminNote>(id));
     }
 }

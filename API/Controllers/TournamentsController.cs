@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations;
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities.Extensions;
 using Asp.Versioning;
+using Database.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -32,15 +34,15 @@ public partial class TournamentsController(
     /// </summary>
     /// <param name="tournamentSubmission">Tournament submission data</param>
     /// <response code="400">
-    /// If the given <see cref="tournamentSubmission"/> is malformed or
-    /// if a tournament matching the given name and ruleset already exists
+    /// The tournament submission is malformed or
+    /// a tournament matching the given name and ruleset already exists
     /// </response>
     /// <response code="201">Returns location information for the created tournament</response>
     [HttpPost]
     [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
-    public async Task<IActionResult> CreateAsync([FromBody] TournamentSubmissionDTO tournamentSubmission)
+    public async Task<IActionResult> CreateAsync([FromBody][Required] TournamentSubmissionDTO tournamentSubmission)
     {
         if (!ModelState.IsValid)
         {
@@ -50,7 +52,7 @@ public partial class TournamentsController(
         if (await tournamentsService.ExistsAsync(tournamentSubmission.Name, tournamentSubmission.Ruleset))
         {
             return BadRequest(
-                $"A tournament with name {tournamentSubmission.Name} for ruleset {tournamentSubmission.Ruleset} already exists"
+                $"A tournament with name: {tournamentSubmission.Name} for ruleset: {tournamentSubmission.Ruleset} already exists"
             );
         }
 
@@ -59,15 +61,13 @@ public partial class TournamentsController(
             return BadRequest("Only admin users may supply a rejection reason");
         }
 
-        // Remove query string
-        try
-        {
-            tournamentSubmission.ForumUrl = new Uri(tournamentSubmission.ForumUrl).GetLeftPart(UriPartial.Path);
-        }
-        catch (UriFormatException)
+        // Sanitize forum post url
+        Uri.TryCreate(tournamentSubmission.ForumUrl, UriKind.Absolute, out Uri? sanitizedUrl);
+        if (sanitizedUrl is null)
         {
             return BadRequest($"The tournament forum URL is invalid: {tournamentSubmission.ForumUrl}");
         }
+        tournamentSubmission.ForumUrl = sanitizedUrl.GetLeftPart(UriPartial.Path);
 
         // Input validation for mp and beatmap ids
         tournamentSubmission.Ids = tournamentSubmission.Ids.Where(id => id >= 1);
@@ -93,8 +93,8 @@ public partial class TournamentsController(
     /// Also includes all child navigations if false.
     /// Default true (strictly verified data with limited navigation properties)
     /// </param>
-    /// <response code="404">If a tournament matching the given id does not exist</response>
-    /// <response code="200">Returns the tournament</response>
+    /// <response code="404">A tournament matching the given id does not exist</response>
+    /// <response code="200">Returns a tournament</response>
     [HttpGet("{id:int}")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -116,11 +116,11 @@ public partial class TournamentsController(
     /// <summary>
     /// Amend tournament data
     /// </summary>
-    /// <param name="id">The tournament id</param>
+    /// <param name="id">Tournament id</param>
     /// <param name="patch">JsonPatch data</param>
-    /// <response code="404">If the provided id does not belong to a tournament</response>
-    /// <response code="400">If JsonPatch data is malformed</response>
-    /// <response code="200">Returns the patched tournament</response>
+    /// <response code="404">A tournament matching the given id does not exist</response>
+    /// <response code="400">JsonPatch data is malformed</response>
+    /// <response code="200">Returns the updated tournament</response>
     [HttpPatch("{id:int}")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -140,7 +140,7 @@ public partial class TournamentsController(
         }
 
         // Ensure request is only attempting to perform a replace operation.
-        if (!patch.IsReplaceOnly())
+        if (patch.Operations.Count == 0 || !patch.IsReplaceOnly())
         {
             return BadRequest();
         }
@@ -161,7 +161,7 @@ public partial class TournamentsController(
     /// List all matches from a tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <response code="404">If a tournament matching the given id does not exist</response>
+    /// <response code="404">A tournament matching the given id does not exist</response>
     /// <response code="200">Returns all matches from a tournament</response>
     [HttpGet("{id:int}/matches")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
@@ -182,7 +182,7 @@ public partial class TournamentsController(
     /// Delete a tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <response code="404">The tournament does not exist</response>
+    /// <response code="404">A tournament matching the given id does not exist</response>
     /// <response code="204">The tournament was deleted successfully</response>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
@@ -197,5 +197,25 @@ public partial class TournamentsController(
 
         await tournamentsService.DeleteAsync(id);
         return NoContent();
+    }
+
+    /// <summary>
+    /// List all admin notes from a tournament
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <response code="404">A tournament matching the given id does not exist</response>
+    /// <response code="200">Returns all admin notes from a tournament</response>
+    [HttpGet("{id:int}/notes")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<IEnumerable<AdminNoteDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListAdminNotesAsync(int id)
+    {
+        if (!await tournamentsService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        return Ok(await adminNoteService.ListAsync<TournamentAdminNote>(id));
     }
 }
