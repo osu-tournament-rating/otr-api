@@ -185,7 +185,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         await UpdateAsync(tournament);
     }
 
-    public async Task ResetAutomationStatuses(int id, bool force = false)
+    public async Task ResetAutomationStatusesAsync(int id, bool force = false)
     {
         Tournament? tournament = await TournamentsBaseQuery()
             .FirstOrDefaultAsync(t => t.Id == id);

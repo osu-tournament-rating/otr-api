@@ -74,7 +74,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// </summary>
     /// <param name="id">Tournament id</param>
     /// <param name="force">Whether to overwrite fully Verified/Rejected data (dangerous)</param>
-    Task ResetAutomationStatuses(int id, bool force = false);
+    Task ResetAutomationStatusesAsync(int id, bool force = false);
 
     /// <summary>
     /// Gets the <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/> collection
