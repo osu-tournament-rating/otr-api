@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Repositories.Interfaces;
@@ -78,14 +77,25 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
         var idSet = osuIds.ToHashSet();
 
         // Identify all players which we already have
-        List<long> existingPlayerIds = await context.Players
+        List<Player> players = await _context.Players
             .AsNoTracking()
             .Where(p => idSet.Contains(p.Id))
-            .Select(p => p.OsuId)
             .ToListAsync();
 
         // Effectively transforms "idSet" into a "missingIds" set
-        idSet.ExceptWith(existingPlayerIds);
+        idSet.ExceptWith(players.Select(p => p.OsuId));
+
+        // Create players and assign them to the friends list
+        players.AddRange(idSet.Select(osuId => new Player
+        {
+            OsuId = osuId
+        }));
+
+        // Overwrite friends list and update
+        user.Friends = players;
+        await UpdateAsync(user);
+
+        return user;
     }
 
     private IQueryable<User> UserBaseQuery() =>

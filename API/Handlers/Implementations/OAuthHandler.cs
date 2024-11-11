@@ -48,6 +48,8 @@ public class OAuthHandler(
         Player player = await playerRepository.GetOrCreateAsync(osuUser.Id);
         User user = await AuthenticateUserAsync(player.Id);
 
+        await SyncFriendsAsync(user);
+
         logger.LogDebug("Authorized user with id {Id}", user.Id);
 
         return new AccessCredentialsDTO
@@ -57,6 +59,27 @@ public class OAuthHandler(
             AccessExpiration = jwtService.AccessDurationSeconds,
             RefreshExpiration = jwtService.RefreshDurationSeconds
         };
+    }
+
+    /// <summary>
+    /// Sync the user's osu! friends list with the repository
+    /// </summary>
+    /// <param name="user">The user</param>
+    private async Task SyncFriendsAsync(User user)
+    {
+        // Sync the user's friends list
+        // ReSharper disable once SuggestVarOrType_Elsewhere
+        List<long> friendOsuIds = (await osuClient.GetUserFriendsAsync())?.Select(u => u.Id).ToList() ?? [];
+
+        /**
+         * Don't overwrite if the osu! api returns 0 friends.
+         * We don't want to accidentally nuke someone's friends list from an API error.
+         */
+        var overwrite = friendOsuIds.Count > 0;
+        if (overwrite)
+        {
+            await userRepository.SyncFriendsAsync(user.Id, friendOsuIds);
+        }
     }
 
     public async Task<DetailedResponseDTO<AccessCredentialsDTO>> AuthorizeAsync(int clientId, string clientSecret)
