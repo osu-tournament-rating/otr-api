@@ -22,6 +22,8 @@ public static class Endpoints
         public const string Me = Api + "/me";
 
         public const string Beatmaps = Api + "/beatmaps";
+
+        public const string Friends = Api + "/friends";
     }
 
     public static class OsuTrack

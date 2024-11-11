@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Repositories.Interfaces;
@@ -35,7 +36,7 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
         return await query.FirstOrDefaultAsync(u => u.PlayerId == playerId);
     }
 
-    public async Task<User> GetByPlayerIdOrCreateAsync(int playerId)
+    public async Task<User> GetOrCreateByPlayerIdAsync(int playerId)
     {
         User? user = await GetByPlayerIdAsync(playerId);
         if (user is not null)
@@ -64,6 +65,28 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
     public async Task<IEnumerable<Match>> GetSubmissionsAsync(int id) =>
         await _context.Users.Where(u => u.Id == id).Select(u => u.SubmittedMatches).FirstOrDefaultAsync()
         ?? new List<Match>();
+
+    public async Task<User?> SyncFriendsAsync(int id, ICollection<long> osuIds)
+    {
+        User? user = await GetAsync(id);
+
+        if (user is null)
+        {
+            return null;
+        }
+
+        var idSet = osuIds.ToHashSet();
+
+        // Identify all players which we already have
+        List<long> existingPlayerIds = await context.Players
+            .AsNoTracking()
+            .Where(p => idSet.Contains(p.Id))
+            .Select(p => p.OsuId)
+            .ToListAsync();
+
+        // Effectively transforms "idSet" into a "missingIds" set
+        idSet.ExceptWith(existingPlayerIds);
+    }
 
     private IQueryable<User> UserBaseQuery() =>
         _context.Users

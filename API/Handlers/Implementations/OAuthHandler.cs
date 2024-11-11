@@ -43,6 +43,8 @@ public class OAuthHandler(
             return null;
         }
 
+        // Create the Player if they don't exist in our system.
+        // Then, create the User if needed.
         Player player = await playerRepository.GetOrCreateAsync(osuUser.Id);
         User user = await AuthenticateUserAsync(player.Id);
 
@@ -155,7 +157,7 @@ public class OAuthHandler(
     }
 
     /// <summary>
-    /// Uses OsuSharp to authorize the current user via osu! API v2
+    /// Authorizes the current user via osu! API v2
     /// </summary>
     /// <param name="osuCode">The authorization code for the user</param>
     /// <returns>The authorized user</returns>
@@ -170,7 +172,7 @@ public class OAuthHandler(
     /// </summary>
     private async Task<User> AuthenticateUserAsync(int playerId)
     {
-        User user = await userRepository.GetByPlayerIdOrCreateAsync(playerId);
+        User user = await userRepository.GetOrCreateByPlayerIdAsync(playerId);
 
         user.LastLogin = DateTime.UtcNow;
         await userRepository.UpdateAsync(user);

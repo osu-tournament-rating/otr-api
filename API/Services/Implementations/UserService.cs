@@ -7,7 +7,8 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class UserService(IUserRepository userRepository, IMatchesRepository matchesRepository, IMapper mapper) : IUserService
+public class UserService(IUserRepository userRepository,
+    IMatchesRepository matchesRepository, IMapper mapper) : IUserService
 {
     public async Task<bool> ExistsAsync(int id) =>
         await userRepository.ExistsAsync(id);
