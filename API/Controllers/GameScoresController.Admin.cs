@@ -11,9 +11,10 @@ namespace API.Controllers;
 public partial class GameScoresController
 {
     /// <summary>
-    /// Creates an admin note for a score
+    /// Create an admin note for a score
     /// </summary>
     /// <param name="id">Score id</param>
+    /// <param name="note">Content of the admin note</param>
     /// <response code="404">A score matching the given id does not exist</response>
     /// <response code="400">The authorized user does not exist</response>
     /// <response code="200">Returns the created admin note</response>
@@ -36,10 +37,11 @@ public partial class GameScoresController
     }
 
     /// <summary>
-    /// Updates an admin note for a score
+    /// Update an admin note for a score
     /// </summary>
     /// <param name="id">Score id</param>
     /// <param name="noteId">Admin note id</param>
+    /// <param name="note">New content of the admin note</param>
     /// <response code="404">
     /// A score matching the given id does not exist
     /// or an admin note matching the given noteId does not exist
@@ -75,7 +77,7 @@ public partial class GameScoresController
     }
 
     /// <summary>
-    /// Deletes an admin note for a score
+    /// Delete an admin note for a score
     /// </summary>
     /// <param name="id">Score id</param>
     /// <param name="noteId">Admin note id</param>

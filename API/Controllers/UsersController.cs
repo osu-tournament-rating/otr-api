@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using API.Authorization;
 using API.DTOs;
@@ -14,13 +15,17 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
 [SuppressMessage("ReSharper", "RouteTemplates.ActionRoutePrefixCanBeExtractedToControllerRoute")]
-public class UsersController(IUserService userService, IOAuthClientService clientService, IUserSettingsService userSettingsService) : Controller
+public class UsersController(
+    IUserService userService,
+    IOAuthClientService clientService,
+    IUserSettingsService userSettingsService
+) : Controller
 {
     /// <summary>
     /// Get a user
     /// </summary>
-    /// <param name="id">Id of the user</param>
-    /// <response code="404">If a user does not exist</response>
+    /// <param name="id">User id</param>
+    /// <response code="404">A user matching the given id does not exist</response>
     /// <response code="200">Returns a user</response>
     [HttpGet("{id:int}")]
     [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
@@ -38,17 +43,17 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <summary>
     /// Update a user's scopes
     /// </summary>
-    /// <param name="id">Id of the user</param>
+    /// <param name="id">User id</param>
     /// <param name="scopes">List of scopes to assign to the user</param>
-    /// <response code="404">If a user does not exist</response>
-    /// <response code="400">If any of the given scopes are invalid, or the update was not successful</response>
-    /// <response code="200">Returns an updated user</response>
+    /// <response code="404">A user matching the given id does not exist</response>
+    /// <response code="400">A given scope is invalid, or the update was not successful</response>
+    /// <response code="200">Returns the updated user</response>
     [HttpPatch("{id:int}/scopes")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> UpdateScopesAsync(int id, [FromBody] List<string> scopes)
+    public async Task<IActionResult> UpdateScopesAsync(int id, [FromBody][Required] List<string> scopes)
     {
         scopes = scopes.Select(s => s.ToLower()).ToList();
         foreach (var scope in scopes)
@@ -74,8 +79,8 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <summary>
     /// Get a user's match submissions
     /// </summary>
-    /// <param name="id">Id of the user</param>
-    /// <response code="404">If a user does not exist</response>
+    /// <param name="id">User id</param>
+    /// <response code="404">A user matching the given id does not exist</response>
     /// <response code="200">Returns a list of submissions</response>
     [HttpGet("{id:int}/submissions")]
     [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
@@ -92,12 +97,12 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     }
 
     /// <summary>
-    /// Rejects a user's match submissions
+    /// Reject a user's match submissions
     /// </summary>
-    /// <param name="id">Id of the user</param>
-    /// <response code="404">If a user does not exist</response>
-    /// <response code="400">If the operation was not successful</response>
-    /// <response code="200">Denotes the operation was successful</response>
+    /// <param name="id">User id</param>
+    /// <response code="404">A user matching the given id does not exist</response>
+    /// <response code="400">The operation was not successful</response>
+    /// <response code="200">The operation was successful</response>
     [HttpPost("{id:int}/submissions:reject")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -117,12 +122,8 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <summary>
     /// Get a user's OAuth clients
     /// </summary>
-    /// <remarks>
-    /// All users have access to clients that they own.
-    /// Admin users have access to clients from any user.
-    /// </remarks>
-    /// <param name="id">Id of the user</param>
-    /// <response code="404">If a user does not exist</response>
+    /// <param name="id">User id</param>
+    /// <response code="404">A user matching the given id does not exist</response>
     /// <response code="200">Returns a list of OAuth clients</response>
     [HttpGet("{id:int}/clients")]
     [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
@@ -141,15 +142,14 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <summary>
     /// Delete a user's OAuth client
     /// </summary>
-    /// <remarks>
-    /// All users have access to delete clients that they own.
-    /// Admin users have access to clients from any user.
-    /// </remarks>
-    /// <param name="id">Id of the user</param>
-    /// <param name="clientId">Id of the OAuth client</param>
-    /// <response code="404">If a user or client does not exist</response>
-    /// <response code="400">If the deletion was not successful</response>
-    /// <response code="200">If the deletion was successful</response>
+    /// <param name="id">User id</param>
+    /// <param name="clientId">OAuth client id</param>
+    /// <response code="404">
+    /// A user matching the given id does not exist
+    /// or an oauth client matching the given id is not owned by the user
+    /// </response>
+    /// <response code="400">The deletion was not successful</response>
+    /// <response code="200">The deletion was successful</response>
     [HttpDelete("{id:int}/clients/{clientId:int}")]
     [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -170,19 +170,16 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <summary>
     /// Reset the secret of a user's OAuth client
     /// </summary>
-    /// <remarks>
-    /// All users have access to reset secrets of clients that they own.
-    /// Admin users have access to clients from any user.
-    /// </remarks>
-    /// <param name="id">Id of the user</param>
-    /// <param name="clientId">Id of the OAuth client</param>
-    /// <response code="404">If a user or client does not exist</response>
-    /// <response code="400">If the secret reset was not successful</response>
-    /// <response code="200">Returns new client credentials if the secret reset was successful</response>
+    /// <param name="id">User id</param>
+    /// <param name="clientId">OAuth client id</param>
+    /// <response code="404">
+    /// A user matching the given id does not exist
+    /// or an oauth client matching the given id is not owned by the user
+    /// </response>
+    /// <response code="200">Returns new client credentials</response>
     [HttpPost("{id:int}/clients/{clientId:int}/secret:reset")]
     [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<OAuthClientCreatedDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ResetClientSecretAsync(int id, int clientId)
     {
@@ -190,7 +187,6 @@ public class UsersController(IUserService userService, IOAuthClientService clien
         {
             return NotFound();
         }
-
 
         OAuthClientCreatedDTO? result = await clientService.ResetSecretAsync(clientId);
 
@@ -202,17 +198,22 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <summary>
     /// Update the ruleset of a user
     /// </summary>
-    /// <param name="id">Id of the user</param>
+    /// <remarks>
+    /// If a user's preferred ruleset was previously being synced with the one selected on their osu! profile,
+    /// updating it will stop their preferred ruleset from being synced in the future unless it is requested
+    /// to be synced again
+    /// </remarks>
+    /// <param name="id">User id</param>
     /// <param name="ruleset">The new ruleset</param>
-    /// <response code="404">If a user does not exist</response>
-    /// <response code="400">If the operation was not successful</response>
-    /// <response code="200">If the operation was successful</response>
-    [HttpPost("{id:int}/settings/ruleset")]
+    /// <response code="404">A user matching the given id does not exist</response>
+    /// <response code="400">The operation was not successful</response>
+    /// <response code="200">The operation was successful</response>
+    [HttpPatch("{id:int}/settings/ruleset")]
     [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> UpdateRulesetAsync(int id, [FromBody] Ruleset ruleset)
+    public async Task<IActionResult> UpdateRulesetAsync(int id, [FromBody][Required] Ruleset ruleset)
     {
         if (!await userService.ExistsAsync(id))
         {
@@ -227,10 +228,14 @@ public class UsersController(IUserService userService, IOAuthClientService clien
     /// <summary>
     /// Sync the ruleset of a user with their osu! ruleset
     /// </summary>
-    /// <param name="id">Id of the user</param>
-    /// <response code="404">If a user does not exist</response>
-    /// <response code="400">If the operation was not successful</response>
-    /// <response code="200">If the operation was successful</response>
+    /// <remarks>
+    /// Sets the user's preferred ruleset to the one currently selected on their osu! profile
+    /// and in the future will continuously update if the ruleset selected on their osu! profile changes
+    /// </remarks>
+    /// <param name="id">User id</param>
+    /// <response code="404">A user matching the given id does not exist</response>
+    /// <response code="400">The operation was not successful</response>
+    /// <response code="200">The operation was successful</response>
     [HttpPost("{id:int}/settings/ruleset:sync")]
     [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

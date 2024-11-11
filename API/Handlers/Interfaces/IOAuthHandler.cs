@@ -26,9 +26,7 @@ public interface IOAuthHandler
     /// <summary>
     /// Issues a new access token using the given refresh token
     /// </summary>
-    /// <remarks>
-    /// Will not generate a new refresh token. The given refresh token will be returned with the new access token
-    /// </remarks>
+    /// <remarks>Will not generate a new refresh token</remarks>
     /// <returns>
     /// Access credentials containing a new access token, or null if the given refresh token is invalid
     /// </returns>
