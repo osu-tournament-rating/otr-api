@@ -67,6 +67,13 @@ public class OAuthHandler(
     /// <param name="user">The user</param>
     private async Task SyncFriendsAsync(User user)
     {
+        // Do not allow friends list syncs more often than every 24 hours
+        if (user.LastFriendsListUpdate is not null &&
+            (DateTime.UtcNow - user.LastFriendsListUpdate).Value < TimeSpan.FromDays(1))
+        {
+            return;
+        }
+
         // Sync the user's friends list
         // ReSharper disable once SuggestVarOrType_Elsewhere
         List<long> friendOsuIds = (await osuClient.GetUserFriendsAsync())?.Select(u => u.Id).ToList() ?? [];

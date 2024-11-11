@@ -2,12 +2,14 @@ using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Database.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class UserRepository(OtrContext context, IUserSettingsRepository userSettingsRepository) : RepositoryBase<User>(context), IUserRepository
+public class UserRepository(OtrContext context, ILogger<UserRepository> logger,
+    IUserSettingsRepository userSettingsRepository) : RepositoryBase<User>(context), IUserRepository
 {
     private readonly OtrContext _context = context;
 
@@ -67,7 +69,9 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
 
     public async Task<User?> SyncFriendsAsync(int id, ICollection<long> osuIds)
     {
-        User? user = await GetAsync(id);
+        User? user = await _context.Users
+            .Include(u => u.Friends)
+            .FirstOrDefaultAsync(u => u.Id == id);
 
         if (user is null)
         {
@@ -78,8 +82,7 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
 
         // Identify all players which we already have
         List<Player> players = await _context.Players
-            .AsNoTracking()
-            .Where(p => idSet.Contains(p.Id))
+            .Where(p => idSet.Contains(p.OsuId))
             .ToListAsync();
 
         // Effectively transforms "idSet" into a "missingIds" set
@@ -93,7 +96,10 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
 
         // Overwrite friends list and update
         user.Friends = players;
+        user.LastFriendsListUpdate = DateTime.UtcNow;
         await UpdateAsync(user);
+
+        logger.LogInformation("Synced {Count} friends for user {User}", user.Friends.Count, user.Id);
 
         return user;
     }

@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20241111191214_User_Friends")]
+    partial class User_Friends
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1686,13 +1689,13 @@ namespace Database.Migrations
 
             modelBuilder.Entity("__join__friends", b =>
                 {
-                    b.Property<int>("player_id")
-                        .HasColumnType("integer");
-
                     b.Property<int>("user_id")
                         .HasColumnType("integer");
 
-                    b.HasKey("player_id", "user_id");
+                    b.Property<int>("player_id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("user_id", "player_id");
 
                     b.HasIndex("user_id");
 

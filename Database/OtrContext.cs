@@ -815,6 +815,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(u => u.Scopes).HasDefaultValue(Array.Empty<string>());
             entity.Property(u => u.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
+            entity.HasIndex(u => u.PlayerId);
+
             // Relation: UserSettings
             entity
                 .HasOne(u => u.Settings)
@@ -852,7 +854,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .OnDelete(DeleteBehavior.SetNull);
 
             // Relation: Matches (Verifier)
-            // Navigation not mapped
             entity
                 .HasMany<Match>()
                 .WithOne(m => m.VerifiedByUser)
@@ -865,6 +866,21 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .WithOne(c => c.User)
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: Friends
+            entity
+                .HasMany(u => u.Friends)
+                .WithMany(p => p.Followers)
+                .UsingEntity<Dictionary<string, object>>(
+                    "__join__friends",
+                    r => r.HasOne<Player>()
+                        .WithMany()
+                        .HasForeignKey("player_id")
+                        .HasConstraintName("FK___join__friends_player"),
+                    l => l.HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey("user_id")
+                        .HasConstraintName("FK___join__friends_user"));
 
             // == Admin Notes ==
             // Relation: PlayerAdminNotes
