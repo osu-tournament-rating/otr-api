@@ -3,6 +3,7 @@ using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities.Extensions;
 using Asp.Versioning;
+using Database.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -15,19 +16,18 @@ namespace API.Controllers;
 public partial class GameScoresController(IGameScoresService gameScoresService, IAdminNoteService adminNoteService) : Controller
 {
     /// <summary>
-    ///  Amend score data
+    /// Amend score data
     /// </summary>
-    /// <param name="id">The score id</param>
+    /// <param name="id">Score id</param>
     /// <param name="patch">JsonPatch data</param>
-    /// <response code="404">If the provided id does not belong to a score</response>
-    /// <response code="400">If JsonPatch data is malformed</response>
-    /// <response code="200">Returns the patched score</response>
+    /// <response code="404">A score matching the given id does not exist</response>
+    /// <response code="400">The JsonPatch data is malformed</response>
+    /// <response code="200">Returns the updated score</response>
+    [HttpPatch("{id:int}")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<GameScoreDTO>(StatusCodes.Status200OK)]
-    [HttpPatch("{id:int}")]
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<GameScoreDTO> patch)
     {
         // Ensure target game score exists
@@ -38,7 +38,7 @@ public partial class GameScoresController(IGameScoresService gameScoresService, 
         }
 
         // Ensure request is only attempting to perform a replace operation.
-        if (!patch.IsReplaceOnly())
+        if (patch.Operations.Count == 0 || !patch.IsReplaceOnly())
         {
             return BadRequest();
         }
@@ -59,10 +59,11 @@ public partial class GameScoresController(IGameScoresService gameScoresService, 
     /// Delete a score
     /// </summary>
     /// <param name="id">Score id</param>
-    /// <response code="404">The score does not exist</response>
+    /// <response code="404">A score matching the given id does not exist</response>
     /// <response code="204">The score was deleted successfully</response>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
@@ -74,5 +75,25 @@ public partial class GameScoresController(IGameScoresService gameScoresService, 
 
         await gameScoresService.DeleteAsync(id);
         return NoContent();
+    }
+
+    /// <summary>
+    /// List all admin notes for a score
+    /// </summary>
+    /// <param name="id">Score id</param>
+    /// <response code="404">A score matching the given id does not exist</response>
+    /// <response code="200">Returns all admin notes from a score</response>
+    [HttpGet("{id:int}/notes")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<IEnumerable<AdminNoteDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListAdminNotesAsync(int id)
+    {
+        if (!await gameScoresService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        return Ok(await adminNoteService.ListAsync<GameScoreAdminNote>(id));
     }
 }
