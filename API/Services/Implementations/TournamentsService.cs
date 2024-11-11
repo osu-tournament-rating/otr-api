@@ -100,7 +100,7 @@ public class TournamentsService(
         return mapper.Map<ICollection<TournamentDTO>>(await tournamentsRepository.GetAsync(
             requestQuery.Page,
             requestQuery.PageSize,
-            requestQuery.QuerySortType,
+            requestQuery.Sort,
             requestQuery.Descending,
             requestQuery.Verified,
             requestQuery.Ruleset
