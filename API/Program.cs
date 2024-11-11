@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API.Authorization;
@@ -93,6 +94,7 @@ builder
     {
         o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     })
     .AddNewtonsoftJson();
 
@@ -299,7 +301,6 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT"
     });
 
-    // Register custom enum schemas describing authorization roles and policies
     options.AddSecurityDefinition(SecurityRequirements.OAuthSecurityRequirementId, new OpenApiSecurityScheme
     {
         Name = "OAuth2 Authentication",
@@ -323,7 +324,8 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
-    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(typeof(OtrClaims.Roles), new OpenApiSchema
+    // Register custom enum schemas describing authorization roles and policies
+    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(OtrClaims.Roles), new OpenApiSchema
     {
         Type = "string",
         Description = "The possible roles assignable to a user or client",
@@ -335,10 +337,13 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
-    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(typeof(AuthorizationPolicies), new OpenApiSchema
+    // Register custom enum schemas describing authorization roles and policies
+    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(AuthorizationPolicies), new OpenApiSchema
     {
         Type = "string",
-        Description = "The possible authorization policies enforced on a route",
+        Description = "The possible authorization policies enforced on a route. Authorization policies differ from " +
+                      "Roles as they may require special conditions to be satisfied. See the description of a " +
+                      "policy for more information.",
         Enum = AuthorizationPolicies.Policies.ToOpenApiArray(),
         Extensions = new Dictionary<string, IOpenApiExtension>
         {
