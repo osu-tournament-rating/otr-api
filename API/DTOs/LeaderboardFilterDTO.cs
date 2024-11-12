@@ -1,3 +1,7 @@
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+
 namespace API.DTOs;
 
 /// <summary>
@@ -6,47 +10,57 @@ namespace API.DTOs;
 public class LeaderboardFilterDTO
 {
     /// <summary>
-    /// The "better" inclusive bound (ranges from 1+)
+    /// Rank floor
     /// </summary>
-    public int? MinRank { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    public int? MinRank { get; init; }
 
     /// <summary>
-    /// The "worse" inclusive bound (ranges from 1+)
+    /// Rank ceiling
     /// </summary>
-    public int? MaxRank { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    public int? MaxRank { get; init; }
 
     /// <summary>
-    /// The lower-performing rating bound (ranges from 100+)
+    /// Rating floor
     /// </summary>
-    public int? MinRating { get; set; }
+    [Range(100, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    public int? MinRating { get; init; }
 
     /// <summary>
-    /// The higher-performing rating bound (ranges from 100+)
+    /// Rating ceiling
     /// </summary>
-    public int? MaxRating { get; set; }
+    [Range(100, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    public int? MaxRating { get; init; }
 
     /// <summary>
-    /// The minimum number of matches played (ranges from 1-10000)
+    /// Minimum Maximum number of matches played
     /// </summary>
-    public int? MinMatches { get; set; }
+    [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    public int? MinMatches { get; init; }
 
     /// <summary>
-    /// The maximum number of matches played (ranges from 1-10000)
+    /// Maximum number of matches played
     /// </summary>
-    public int? MaxMatches { get; set; }
+    [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    public int? MaxMatches { get; init; }
 
     /// <summary>
-    /// Ranges from 0.00-1.00
+    /// Minimum win rate
     /// </summary>
-    public double? MinWinRate { get; set; }
+    [Range(0, double.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    public double? MinWinRate { get; init; }
 
     /// <summary>
-    /// Ranges from 0.00-1.00
+    /// Maximum win rate
     /// </summary>
-    public double? MaxWinRate { get; set; }
+    [Range(0, double.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    public double? MaxWinRate { get; init; }
 
     /// <summary>
     /// A collection of optional filters for tiers
     /// </summary>
-    public LeaderboardTierFilterDTO? TierFilters { get; set; }
+    [BindNever]
+    [JsonIgnore]
+    public LeaderboardTierFilterDTO? TierFilters { get; set; } = new();
 }

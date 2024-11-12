@@ -1,34 +1,43 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using API.Enums;
-using API.ModelBinders;
 using Database.Enums;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace API.DTOs;
 
+/// <summary>
+/// Filtering parameters for leaderboard requests
+/// </summary>
 public class LeaderboardRequestQueryDTO
 {
+    /// <summary>
+    /// Ruleset for leaderboard data
+    /// </summary>
+    [Required]
     public Ruleset Ruleset { get; init; }
+
     /// <summary>
     /// The zero-indexed page offset. Page 0 returns the first PageSize results.
     /// </summary>
+    [Required]
     [Range(0, int.MaxValue, ErrorMessage = "Page count out of bounds")]
     public int Page { get; set; }
 
     /// <summary>
     /// The number of elements to return per page
     /// </summary>
-    [Range(5, 100, ErrorMessage = "The page size must be between 5 and 100")]
-    public int PageSize { get; set; } = 50;
+    [DefaultValue(50)]
+    [Range(5, 100, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    public int PageSize { get; init; } = 50;
 
     /// <summary>
     /// Defines whether the leaderboard should be global or filtered by country
     /// </summary>
-    [Range(0, 1, ErrorMessage = "Invalid chart type provided. Must be 0 (global) or 1 (country)")]
     public LeaderboardChartType ChartType { get; init; } = LeaderboardChartType.Global;
 
-    [ModelBinder(BinderType = typeof(LeaderboardFilterModelBinder))]
-    // Note: When debugging in swagger, you'll want to clear
-    // out the default filter object to return an unfiltered leaderboard.
-    public LeaderboardFilterDTO Filter { get; init; } = new();
+    [BindNever]
+    [JsonIgnore]
+    public LeaderboardFilterDTO Filter { get; set; } = new();
 }
