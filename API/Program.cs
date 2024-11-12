@@ -1,7 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API.Authorization;
 using API.Authorization.Handlers;
@@ -29,6 +27,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -36,6 +35,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
+using Newtonsoft.Json.Serialization;
 using Npgsql;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
@@ -89,12 +89,7 @@ builder
     .Services.AddControllers(options =>
     {
         options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
-    })
-    .AddJsonOptions(o =>
-    {
-        o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
-        o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.ModelMetadataDetailsProviders.Add(new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
     })
     .AddNewtonsoftJson();
 
@@ -209,8 +204,8 @@ builder.Services.AddRateLimiter(options =>
 
 #region SwaggerGen Configuration
 
-builder
-    .Services.AddApiVersioning(options =>
+builder.Services
+    .AddApiVersioning(options =>
     {
         options.ReportApiVersions = true;
         options.DefaultApiVersion = new ApiVersion(1);
@@ -224,8 +219,6 @@ builder
         options.SubstituteApiVersionInUrl = true;
     });
 
-builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen(options =>
 {
     // Sets nullable flags
@@ -234,6 +227,8 @@ builder.Services.AddSwaggerGen(options =>
     options.UseAllOfToExtendReferenceSchemas();
     // Allows reference objects to be marked nullable
     options.UseAllOfForInheritance();
+    // Fixes parameter names from model binding
+    options.DescribeAllParametersInCamelCase();
 
     // Allow use of in-code XML documentation tags like <summary> and <remarks>
     string[] xmlDocPaths =

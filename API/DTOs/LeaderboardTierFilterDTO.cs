@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Mvc;
+
 namespace API.DTOs;
 
 /// <summary>
-/// A collection of booleans representing which tiers to filter.
+/// A collection of booleans representing which tiers to filter on the leaderboard.
 ///
 /// False = Default, no behavioral change
 /// True = Explicitly included in leaderboard results
@@ -15,13 +17,57 @@ namespace API.DTOs;
 /// </summary>
 public class LeaderboardTierFilterDTO
 {
-    public bool FilterBronze { get; set; }
-    public bool FilterSilver { get; set; }
-    public bool FilterGold { get; set; }
-    public bool FilterPlatinum { get; set; }
-    public bool FilterEmerald { get; set; }
-    public bool FilterDiamond { get; set; }
-    public bool FilterMaster { get; set; }
-    public bool FilterGrandmaster { get; set; }
-    public bool FilterEliteGrandmaster { get; set; }
+    /// <summary>
+    /// Explicitly include bronze players
+    /// </summary>
+    [BindProperty(Name = "bronze")]
+    public bool FilterBronze { get; init; }
+
+    /// <summary>
+    /// Explicitly include silver players
+    /// </summary>
+    [BindProperty(Name = "silver")]
+    public bool FilterSilver { get; init; }
+
+    /// <summary>
+    /// Explicitly include gold players
+    /// </summary>
+    [BindProperty(Name = "gold")]
+    public bool FilterGold { get; init; }
+
+    /// <summary>
+    /// Explicitly include platinum players
+    /// </summary>
+    [BindProperty(Name = "platinum")]
+    public bool FilterPlatinum { get; init; }
+
+    /// <summary>
+    /// Explicitly include emerald players
+    /// </summary>
+    [BindProperty(Name = "emerald")]
+    public bool FilterEmerald { get; init; }
+
+    /// <summary>
+    /// Explicitly include emerald players
+    /// </summary>
+    [BindProperty(Name = "diamond")]
+    public bool FilterDiamond { get; init; }
+
+    /// <summary>
+    /// Explicitly include master players
+    /// </summary>
+    [BindProperty(Name = "master")]
+    public bool FilterMaster { get; init; }
+
+    /// <summary>
+    /// Explicitly include grandmaster players
+    /// </summary>
+    [BindProperty(Name = "grandmaster")]
+    public bool FilterGrandmaster { get; init; }
+
+    /// <summary>
+    /// Explicitly include elite grandmaster players
+    /// </summary>
+    [BindProperty(Name = "eliteGrandmaster")]
+    public bool FilterEliteGrandmaster { get; init; }
 }
