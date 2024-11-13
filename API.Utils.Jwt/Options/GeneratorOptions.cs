@@ -43,7 +43,8 @@ public class GeneratorOptions : JwtUtilsOptionsBase
         Required = false,
         HelpText = $"Any number of role claims granted to the subject." +
                    $"\nPossible values: ['{OtrClaims.Roles.Admin}', '{OtrClaims.Roles.Submitter}'," +
-                   $"'{OtrClaims.Roles.Verifier}', '{OtrClaims.Roles.Whitelist}']"
+                   $"'{OtrClaims.Roles.Verifier}', '{OtrClaims.Roles.Whitelist}']",
+        Separator = ','
     )]
     public IEnumerable<string> Roles { get; set; } = new List<string>();
 
