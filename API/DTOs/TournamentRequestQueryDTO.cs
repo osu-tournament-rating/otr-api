@@ -31,7 +31,7 @@ public class TournamentRequestQueryDTO
     /// <summary>
     /// An optional ruleset to filter by
     /// </summary>
-    public Ruleset? Ruleset { get; init; } = null;
+    public Ruleset? Ruleset { get; init; }
 
     /// <summary>
     /// The key used to sort results by
