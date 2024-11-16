@@ -1,5 +1,4 @@
 using API.DTOs;
-using OsuApiClient.Domain.Osu.Users;
 
 namespace API.Services.Interfaces;
 
