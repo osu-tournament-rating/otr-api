@@ -11,8 +11,9 @@ public interface IProcessableEntity : IUpdateableEntity
     /// Verification status
     /// </summary>
     public VerificationStatus VerificationStatus { get; set; }
+
     /// <summary>
-    /// Timestamp of the last time the entity was processed
+    /// The last time the entity was processed
     /// </summary>
     public DateTime LastProcessingDate { get; set; }
 

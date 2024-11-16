@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Interfaces;
 using Database.Enums;
 using Database.Enums.Verification;
+using Database.Utilities;
 
 namespace Database.Entities;
 
@@ -12,9 +13,21 @@ namespace Database.Entities;
 [Table("game_scores")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class GameScore : ProcessableEntityBase, IAdminNotableEntity<GameScoreAdminNote>,
+public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameScoreAdminNote>,
     IAuditableEntity<GameScoreAudit>, IScoreStatistics
 {
+    /// <summary>
+    ///     Id of the <see cref="Entities.Player" /> that set the <see cref="GameScore" />
+    /// </summary>
+    [Column("player_id")]
+    public int PlayerId { get; set; }
+
+    /// <summary>
+    ///     Id of the <see cref="Entities.Game" /> that the <see cref="GameScore" /> was set in
+    /// </summary>
+    [Column("game_id")]
+    public int GameId { get; set; }
+
     /// <summary>
     /// Total score
     /// </summary>
@@ -33,23 +46,17 @@ public class GameScore : ProcessableEntityBase, IAdminNotableEntity<GameScoreAdm
     [Column("max_combo")]
     public int MaxCombo { get; set; }
 
-    [Column("count_50")]
-    public int Count50 { get; set; }
+    [Column("count_50")] public int Count50 { get; set; }
 
-    [Column("count_100")]
-    public int Count100 { get; set; }
+    [Column("count_100")] public int Count100 { get; set; }
 
-    [Column("count_300")]
-    public int Count300 { get; set; }
+    [Column("count_300")] public int Count300 { get; set; }
 
-    [Column("count_miss")]
-    public int CountMiss { get; set; }
+    [Column("count_miss")] public int CountMiss { get; set; }
 
-    [Column("count_katu")]
-    public int CountKatu { get; set; }
+    [Column("count_katu")] public int CountKatu { get; set; }
 
-    [Column("count_geki")]
-    public int CountGeki { get; set; }
+    [Column("count_geki")] public int CountGeki { get; set; }
 
     /// <summary>
     /// Denotes if the <see cref="Player"/> passed
@@ -87,6 +94,10 @@ public class GameScore : ProcessableEntityBase, IAdminNotableEntity<GameScoreAdm
     [Column("ruleset")]
     public Ruleset Ruleset { get; set; }
 
+    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
+
+    [Column("last_processing_date")] public DateTime LastProcessingDate { get; set; }
+
     /// <summary>
     /// Rejection reason
     /// </summary>
@@ -100,21 +111,9 @@ public class GameScore : ProcessableEntityBase, IAdminNotableEntity<GameScoreAdm
     public ScoreProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
-    /// Id of the <see cref="Entities.Game"/> that the <see cref="GameScore"/> was set in
-    /// </summary>
-    [Column("game_id")]
-    public int GameId { get; set; }
-
-    /// <summary>
     /// The <see cref="Entities.Game"/> that the <see cref="GameScore"/> was set in
     /// </summary>
     public Game Game { get; set; } = null!;
-
-    /// <summary>
-    /// Id of the <see cref="Entities.Player"/> that set the <see cref="GameScore"/>
-    /// </summary>
-    [Column("player_id")]
-    public int PlayerId { get; set; }
 
     /// <summary>
     /// The <see cref="Entities.Player"/> that set the <see cref="GameScore"/>
@@ -125,8 +124,7 @@ public class GameScore : ProcessableEntityBase, IAdminNotableEntity<GameScoreAdm
 
     public ICollection<GameScoreAudit> Audits { get; set; } = new List<GameScoreAudit>();
 
-    [NotMapped]
-    public int? ActionBlamedOnUserId { get; set; }
+    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
 
     /// <summary>
     /// Accuracy
@@ -165,13 +163,14 @@ public class GameScore : ProcessableEntityBase, IAdminNotableEntity<GameScoreAdm
                 default:
                     divisor = 305d * (CountGeki + Count300 + CountKatu + Count100 + Count50 + CountMiss);
                     return divisor != 0
-                        ? 100 * (305d * CountGeki + 300 * Count300 + 200 * CountKatu + 100 * Count100 + 50 * Count50) / divisor
+                        ? 100 * (305d * CountGeki + 300 * Count300 + 200 * CountKatu + 100 * Count100 + 50 * Count50) /
+                          divisor
                         : divisor;
             }
         }
     }
 
-    public override void ResetAutomationStatuses(bool force)
+    public void ResetAutomationStatuses(bool force)
     {
         var scoreUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
                                     VerificationStatus != VerificationStatus.Verified);
@@ -185,4 +184,6 @@ public class GameScore : ProcessableEntityBase, IAdminNotableEntity<GameScoreAdm
         RejectionReason = ScoreRejectionReason.None;
         ProcessingStatus = ScoreProcessingStatus.NeedsAutomationChecks;
     }
+
+    public void ConfirmPreVerificationStatus() => VerificationStatus = EnumUtils.ConfirmPreStatus(VerificationStatus);
 }
