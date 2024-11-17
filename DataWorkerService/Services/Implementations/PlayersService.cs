@@ -145,7 +145,7 @@ public class PlayersService(
             await UpdateFromOsuTrackApiAsync(player);
         }
 
-        await context.SaveChangesAsync();
+        await playersRepository.UpdateAsync(outdatedPlayers);
 
         logger.LogDebug(
             "Updated Players with outdated osu! API data [Count: {Count}]",
@@ -197,5 +197,7 @@ public class PlayersService(
 
             logger.LogDebug("Updated Player osu!track API data [Id: {Id} | Ruleset: {Ruleset}]", player.Id, r);
         }
+
+        player.OsuTrackLastFetch = DateTime.UtcNow;
     }
 }
