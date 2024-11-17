@@ -4,7 +4,6 @@ using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
-using Database.Utilities;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -102,24 +101,25 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             return null;
         }
 
-        tournament.VerificationStatus = EnumUtils.ConfirmPreStatus(tournament.VerificationStatus);
+        #region Confirm "pre" verification statuses
+        tournament.ConfirmPreVerificationStatus();
         foreach (Match match in tournament.Matches)
         {
-            match.VerificationStatus = EnumUtils.ConfirmPreStatus(match.VerificationStatus);
+            match.ConfirmPreVerificationStatus();
 
             foreach (Game game in match.Games)
             {
-                game.VerificationStatus = EnumUtils.ConfirmPreStatus(game.VerificationStatus);
+                game.ConfirmPreVerificationStatus();
 
                 foreach (GameScore score in game.Scores)
                 {
-                    score.VerificationStatus = EnumUtils.ConfirmPreStatus(score.VerificationStatus);
+                    score.ConfirmPreVerificationStatus();
                 }
             }
         }
+        #endregion
 
         await UpdateAsync(tournament);
-
         return tournament;
     }
 
@@ -185,14 +185,42 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         await UpdateAsync(tournament);
     }
 
+    public async Task ResetAutomationStatusesAsync(int id, bool force = false)
+    {
+        Tournament? tournament = await TournamentsBaseQuery()
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (tournament is null)
+        {
+            return;
+        }
+
+        tournament.ResetAutomationStatuses(force);
+        foreach (Match match in tournament.Matches)
+        {
+            match.ResetAutomationStatuses(force);
+            foreach (Game game in match.Games)
+            {
+                game.ResetAutomationStatuses(force);
+
+                foreach (GameScore score in game.Scores)
+                {
+                    score.ResetAutomationStatuses(force);
+                }
+            }
+        }
+
+        await UpdateAsync(tournament);
+    }
+
     /// <summary>
     /// Returns a queryable containing tournaments for <see cref="ruleset"/>
-    /// with *any* match applicable to all of the following criteria:
+    /// with *any* match applicable to all the following criteria:
     /// - Is verified
     /// - Started between <paramref name="dateMin"/> and <paramref name="dateMax"/>
     /// - Contains a <see cref="RatingAdjustment"/> for given <paramref name="playerId"/> (Denotes participation)
     /// </summary>
-    /// <param name="playerId">Id (primary key) of target player</param>
+    /// <param name="playerId">Primary key of target player</param>
     /// <param name="ruleset">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
