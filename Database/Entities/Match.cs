@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums.Verification;
+using Database.Utilities;
 
 namespace Database.Entities;
 
@@ -14,7 +15,8 @@ namespace Database.Entities;
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>, IAuditableEntity<MatchAudit>, IProcessableEntity
+public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<MatchAdminNote>,
+    IAuditableEntity<MatchAudit>
 {
     /// <summary>
     /// osu! id
@@ -43,11 +45,9 @@ public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>, 
     [Column("end_time")]
     public DateTime EndTime { get; set; }
 
-    /// <summary>
-    /// Verification status
-    /// </summary>
-    [Column("verification_status")]
-    public VerificationStatus VerificationStatus { get; set; }
+    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
+
+    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Rejection reason
@@ -66,9 +66,6 @@ public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>, 
     /// </summary>
     [Column("processing_status")]
     public MatchProcessingStatus ProcessingStatus { get; set; }
-
-    [Column("last_processing_date")]
-    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Tournament"/> the match was played in
@@ -128,4 +125,22 @@ public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>, 
     public ICollection<MatchAdminNote> AdminNotes { get; set; } = new List<MatchAdminNote>();
 
     [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+
+    public void ResetAutomationStatuses(bool force)
+    {
+        var matchUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
+                                    VerificationStatus != VerificationStatus.Verified);
+
+        if (!matchUpdate)
+        {
+            return;
+        }
+
+        VerificationStatus = VerificationStatus.None;
+        WarningFlags = MatchWarningFlags.None;
+        RejectionReason = MatchRejectionReason.None;
+        ProcessingStatus = MatchProcessingStatus.NeedsAutomationChecks;
+    }
+
+    public void ConfirmPreVerificationStatus() => VerificationStatus = EnumUtils.ConfirmPreStatus(VerificationStatus);
 }

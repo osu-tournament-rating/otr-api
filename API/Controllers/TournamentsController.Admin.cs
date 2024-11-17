@@ -31,6 +31,27 @@ public partial class TournamentsController
         return Ok(await tournamentsService.AcceptPreVerificationStatusesAsync(id));
     }
 
+    /// <summary>
+    /// Rerun automation checks for a tournament
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <param name="force">Whether to overwrite data which has already been Verified or Rejected</param>
+    /// <response code="404">If a tournament matching the given id does not exist</response>
+    /// <response code="200">The entities were updated successfully</response>
+    [HttpPost("{id:int}:reset-automation-statuses")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RerunAutomationChecksAsync(int id, [FromQuery] bool force = false)
+    {
+        if (!await tournamentsService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        await tournamentsService.RerunAutomationChecksAsync(id, force);
+        return Ok();
+    }
 
     /// <summary>
     /// Creates an admin note for a tournament
