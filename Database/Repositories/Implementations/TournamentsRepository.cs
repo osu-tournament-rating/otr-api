@@ -12,7 +12,7 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class TournamentsRepository(OtrContext context) : RepositoryBase<Tournament>(context), ITournamentsRepository
+public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository) : RepositoryBase<Tournament>(context), ITournamentsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -90,14 +90,137 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
                 .ToListAsync();
     }
 
+    public async Task<Tournament?> AcceptPreVerificationStatusesAsync(int id)
+    {
+        Tournament? tournament = await TournamentsBaseQuery()
+            .Where(t => t.ProcessingStatus == TournamentProcessingStatus.NeedsVerification)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (tournament is null)
+        {
+            return null;
+        }
+
+        #region Confirm "pre" verification statuses
+        tournament.ConfirmPreVerificationStatus();
+        foreach (Match match in tournament.Matches)
+        {
+            match.ConfirmPreVerificationStatus();
+
+            foreach (Game game in match.Games)
+            {
+                game.ConfirmPreVerificationStatus();
+
+                foreach (GameScore score in game.Scores)
+                {
+                    score.ConfirmPreVerificationStatus();
+                }
+            }
+        }
+        #endregion
+
+        await UpdateAsync(tournament);
+        return tournament;
+    }
+
+    public async Task<ICollection<Beatmap>> GetPooledBeatmapsAsync(int id) =>
+        (await _context.Tournaments.Include(t => t.PooledBeatmaps)
+            .FirstOrDefaultAsync(t => t.Id == id))?.PooledBeatmaps ?? [];
+
+    public async Task<ICollection<Beatmap>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds)
+    {
+        Tournament? tournament = await _context.Tournaments
+            .Include(t => t.PooledBeatmaps)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (tournament is null)
+        {
+            return [];
+        }
+
+        IEnumerable<int> existingIds = tournament.PooledBeatmaps.Select(b => b.Id);
+        ICollection<Beatmap> beatmaps = await beatmapsRepository.GetOrCreateAsync(osuBeatmapIds, save: false);
+
+        var unmappedBeatmaps = beatmaps.ExceptBy(existingIds, b => b.Id).ToList();
+        unmappedBeatmaps.ForEach(b => tournament.PooledBeatmaps.Add(b));
+
+        await UpdateAsync(tournament);
+
+        return tournament.PooledBeatmaps;
+    }
+
+    public async Task DeletePooledBeatmapsAsync(int id)
+    {
+        Tournament? tournament = await _context.Tournaments
+            .Include(t => t.PooledBeatmaps)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (tournament is null || tournament.PooledBeatmaps.Count == 0)
+        {
+            return;
+        }
+
+        tournament.PooledBeatmaps = new List<Beatmap>();
+        await UpdateAsync(tournament);
+    }
+
+    public async Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds)
+    {
+        Tournament? tournament = await _context.Tournaments
+            .Include(t => t.PooledBeatmaps)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (tournament is null)
+        {
+            return;
+        }
+
+        var beatmaps = tournament.PooledBeatmaps.Where(b => beatmapIds.Contains(b.Id)).ToList();
+        if (beatmaps.Count == 0)
+        {
+            return;
+        }
+
+        beatmaps.ForEach(b => tournament.PooledBeatmaps.Remove(b));
+        await UpdateAsync(tournament);
+    }
+
+    public async Task ResetAutomationStatusesAsync(int id, bool force = false)
+    {
+        Tournament? tournament = await TournamentsBaseQuery()
+            .FirstOrDefaultAsync(t => t.Id == id);
+
+        if (tournament is null)
+        {
+            return;
+        }
+
+        tournament.ResetAutomationStatuses(force);
+        foreach (Match match in tournament.Matches)
+        {
+            match.ResetAutomationStatuses(force);
+            foreach (Game game in match.Games)
+            {
+                game.ResetAutomationStatuses(force);
+
+                foreach (GameScore score in game.Scores)
+                {
+                    score.ResetAutomationStatuses(force);
+                }
+            }
+        }
+
+        await UpdateAsync(tournament);
+    }
+
     /// <summary>
     /// Returns a queryable containing tournaments for <see cref="ruleset"/>
-    /// with *any* match applicable to all of the following criteria:
+    /// with *any* match applicable to all the following criteria:
     /// - Is verified
     /// - Started between <paramref name="dateMin"/> and <paramref name="dateMax"/>
     /// - Contains a <see cref="RatingAdjustment"/> for given <paramref name="playerId"/> (Denotes participation)
     /// </summary>
-    /// <param name="playerId">Id (primary key) of target player</param>
+    /// <param name="playerId">Primary key of target player</param>
     /// <param name="ruleset">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
@@ -141,6 +264,7 @@ public class TournamentsRepository(OtrContext context) : RepositoryBase<Tourname
             .ThenInclude(g => g.Beatmap)
             .Include(e => e.SubmittedByUser)
             .Include(t => t.AdminNotes)
+            .Include(t => t.PooledBeatmaps)
             .AsSplitQuery();
     }
 }
