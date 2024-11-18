@@ -8,7 +8,7 @@ on:
       - unlabeled
 
 jobs:
-  fail-for-draft:
+  fail-when-blocked:
     if: contains(github.event.pull_request.labels.*.name, 'pr:blocked')
     runs-on: ubuntu-latest
     steps:
