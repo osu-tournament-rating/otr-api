@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.RateLimiting;
 using API.Authorization;
 using API.Authorization.Handlers;
@@ -8,7 +9,6 @@ using API.Configurations;
 using API.Handlers.Implementations;
 using API.Handlers.Interfaces;
 using API.Middlewares;
-using API.ModelBinders.Providers;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Implementations;
@@ -85,13 +85,20 @@ builder
 
 #region Controller Configuration
 
-builder
-    .Services.AddControllers(options =>
+builder.Services
+    .AddControllers(o =>
     {
-        options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
-        options.ModelMetadataDetailsProviders.Add(new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
+        o.ModelMetadataDetailsProviders.Add(new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
     })
-    .AddNewtonsoftJson();
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+    })
+    .AddNewtonsoftJson(o =>
+    {
+        o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+    });
 
 #endregion
 
@@ -243,7 +250,9 @@ builder.Services.AddSwaggerGen(options =>
     }
 
     // Register custom filters
+    // Filters are executed in order of: Operation, Parameter, Schema, Document
     options.OperationFilter<SecurityMetadataOperationFilter>();
+    options.OperationFilter<DiscardNestedParametersOperationFilter>();
 
     options.SchemaFilter<EnumMetadataSchemaFilter>((object)xmlDocPaths);
     options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();

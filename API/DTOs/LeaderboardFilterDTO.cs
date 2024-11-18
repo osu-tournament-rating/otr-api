@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace API.DTOs;
@@ -7,60 +7,102 @@ namespace API.DTOs;
 /// <summary>
 /// Filters for the leaderboard
 /// </summary>
-public class LeaderboardFilterDTO
+public class LeaderboardFilterDTO : IValidatableObject
 {
     /// <summary>
     /// Rank floor
     /// </summary>
-    [Range(1, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    [FromQuery]
+    [Range(1, int.MaxValue)]
     public int? MinRank { get; init; }
 
     /// <summary>
     /// Rank ceiling
     /// </summary>
-    [Range(1, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    [FromQuery]
+    [Range(1, int.MaxValue)]
     public int? MaxRank { get; init; }
 
     /// <summary>
     /// Rating floor
     /// </summary>
-    [Range(100, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    [FromQuery]
+    [Range(100, int.MaxValue)]
     public int? MinRating { get; init; }
 
     /// <summary>
     /// Rating ceiling
     /// </summary>
-    [Range(100, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    [FromQuery]
+    [Range(100, int.MaxValue)]
     public int? MaxRating { get; init; }
 
     /// <summary>
-    /// Minimum Maximum number of matches played
+    /// Minimum number of matches played
     /// </summary>
-    [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    [FromQuery]
+    [Range(0, int.MaxValue)]
     public int? MinMatches { get; init; }
 
     /// <summary>
     /// Maximum number of matches played
     /// </summary>
-    [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    [FromQuery]
+    [Range(0, int.MaxValue)]
     public int? MaxMatches { get; init; }
 
     /// <summary>
     /// Minimum win rate
     /// </summary>
-    [Range(0, double.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    [FromQuery]
+    [Range(0.00, 1.00)]
     public double? MinWinRate { get; init; }
 
     /// <summary>
     /// Maximum win rate
     /// </summary>
-    [Range(0, double.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+    [FromQuery]
+    [Range(0.00, 1.00)]
     public double? MaxWinRate { get; init; }
 
     /// <summary>
     /// A collection of optional filters for tiers
     /// </summary>
     [BindNever]
-    [JsonIgnore]
     public LeaderboardTierFilterDTO? TierFilters { get; set; } = new();
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (MinRank > MaxRank)
+        {
+            yield return new ValidationResult(
+                $"Value for {nameof(MinRank)} must be less than or equal to {nameof(MaxRank)}",
+                new[] { nameof(MinRank), nameof(MaxRank) }
+            );
+        }
+
+        if (MinRating > MaxRating)
+        {
+            yield return new ValidationResult(
+                $"Value for {nameof(MinRating)} must be less than or equal to {nameof(MaxRating)}",
+                new[] { nameof(MinRating), nameof(MaxRating) }
+            );
+        }
+
+        if (MinMatches > MaxMatches)
+        {
+            yield return new ValidationResult(
+                $"Value for {nameof(MinMatches)} must be less than or equal to {nameof(MaxMatches)}",
+                new[] { nameof(MinMatches), nameof(MaxMatches) }
+            );
+        }
+
+        if (MinWinRate > MaxWinRate)
+        {
+            yield return new ValidationResult(
+                $"Value for {nameof(MinWinRate)} must be less than or equal to {nameof(MaxWinRate)}",
+                new[] { nameof(MinWinRate), nameof(MaxWinRate) }
+            );
+        }
+    }
 }
