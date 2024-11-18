@@ -14,45 +14,45 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Asp.Versioning.Mvc" Version="8.0.0" />
-    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.0.0" />
+    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0"/>
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0"/>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="CachingFramework.Redis" Version="15.0.2" />
-    <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="4.0.4" />
-    <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.5">
+    <PackageReference Include="Community.Microsoft.Extensions.Caching.PostgreSql" Version="4.0.6"/>
+    <PackageReference Include="JetBrains.Annotations" Version="2024.3.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="9.0.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0"/>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.5" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="9.0.0"/>
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0"/>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0"/>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Npgsql" Version="8.0.3" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
-    <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.3" />
-    <PackageReference Include="OpenTelemetry" Version="1.8.1" />
-    <PackageReference Include="OpenTelemetry.Api" Version="1.8.1" />
-    <PackageReference Include="OpenTelemetry.Api.ProviderBuilderExtensions" Version="1.8.1" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.8.1" />
+    <PackageReference Include="Npgsql" Version="8.0.5"/>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10"/>
+    <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.5"/>
+    <PackageReference Include="OpenTelemetry" Version="1.10.0"/>
+    <PackageReference Include="OpenTelemetry.Api" Version="1.10.0"/>
+    <PackageReference Include="OpenTelemetry.Api.ProviderBuilderExtensions" Version="1.10.0"/>
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.10.0"/>
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.8.0-rc.1" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.8.1" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.8.1" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.10.0"/>
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0"/>
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0"/>
     <PackageReference Include="OpenTelemetry.Instrumentation.Process" Version="0.5.0-beta.4" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.8.0" />
-    <PackageReference Include="Serilog" Version="3.1.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0"/>
+    <PackageReference Include="Serilog" Version="4.1.0"/>
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.3"/>
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0"/>
     <PackageReference Include="Serilog.Sinks.PostgreSQL" Version="2.3.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.0.0"/>
     <PackageReference Include="Unchase.Swashbuckle.AspNetCore.Extensions" Version="2.7.1" />
   </ItemGroup>
   <ItemGroup>
