@@ -1,7 +1,14 @@
-name: Qodana
+name: Qodana PR Scan
+
 on:
-  workflow_dispatch:
+  # Trigger on pull request updates when *.cs files change
   pull_request:
+    paths:
+      - '**/*.cs'
+  # Trigger on pushes to master
+  push:
+    branches:
+      - master
 
 jobs:
   qodana:
@@ -10,18 +17,20 @@ jobs:
       contents: write
       pull-requests: write
       checks: write
+
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}  # to check out the actual pull request commit, not the merge commit
-          fetch-depth: 0  # a full history is required for pull request analysis
+          ref: ${{ github.event.pull_request.head.sha || github.sha }} # Check out PR head or the push commit
+          fetch-depth: 0 # Full history for analysis
+
       - name: 'Qodana Scan'
         uses: JetBrains/qodana-action@v2024.2
         with:
           args: --linter,jetbrains/qodana-dotnet:2024.2
           use-caches: true
           post-pr-comment: false
-          fail-threshold: 0
+          pr-mode: ${{ github.event_name == 'pull_request' }}
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_903418561 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
