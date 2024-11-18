@@ -35,7 +35,7 @@ public abstract class AutomationCheckBase<TEntity>(
     /// <param name="entity">Entity that was checked</param>
     protected virtual void OnPass(TEntity entity)
     {
-        logger.LogDebug("Automation check passed [Id: {Id}]", entity.Id);
+        logger.LogTrace("Automation check passed [Id: {Id}]", entity.Id);
     }
 
     /// <summary>
