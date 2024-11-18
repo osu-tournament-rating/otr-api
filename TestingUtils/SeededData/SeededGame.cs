@@ -26,6 +26,7 @@ public static class SeededGame
         DateTime? endTime = null,
         VerificationStatus? verificationStatus = null,
         GameRejectionReason? rejectionReason = null,
+        GameWarningFlags? warningFlags = null,
         GameProcessingStatus? processingStatus = null,
         Match? match = null,
         Beatmap? beatmap = null
@@ -44,6 +45,7 @@ public static class SeededGame
             Mods = mods ?? (Mods)s_rand.NextInclusive((int)Mods.Perfect),
             VerificationStatus = verificationStatus ?? s_rand.NextEnum<VerificationStatus>(),
             RejectionReason = rejectionReason ?? s_rand.NextEnum<GameRejectionReason>(),
+            WarningFlags = warningFlags ?? s_rand.NextEnum<GameWarningFlags>(),
             ProcessingStatus = processingStatus ?? s_rand.NextEnum<GameProcessingStatus>(),
             MatchId = seededMatch.Id,
             Match = seededMatch,

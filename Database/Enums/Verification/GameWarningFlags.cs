@@ -18,12 +18,5 @@ public enum GameWarningFlags
     /// <see cref="Entities.Beatmap"/>s, and the <see cref="Entities.Game"/>'s <see cref="Entities.Game.Beatmap"/>
     /// is played only once throughout the entire <see cref="Entities.Tournament"/>
     /// </summary>
-    BeatmapUsedOnce = 1 << 0,
-
-    /// <summary>
-    /// If the parent <see cref="Entities.Tournament"/> has a submitted pool of <see cref="Entities.Beatmap"/>s,
-    /// the <see cref="Entities.Game"/>'s <see cref="Entities.Game.Beatmap"/> is not a part of the pool,
-    /// and the <see cref="Entities.Game"/> is not one of the first two in the <see cref="Entities.Match"/>
-    /// </summary>
-    BeatmapNotInMappool = 1 << 1
+    BeatmapUsedOnce = 1 << 0
 }

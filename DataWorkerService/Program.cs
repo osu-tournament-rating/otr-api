@@ -131,6 +131,7 @@ builder.Services.AddSingleton<IAutomationCheck<GameScore>, ScoreMinimumCheck>();
 builder.Services.AddSingleton<IAutomationCheck<GameScore>, ScoreModCheck>();
 builder.Services.AddSingleton<IAutomationCheck<GameScore>, ScoreRulesetCheck>();
 
+builder.Services.AddSingleton<IAutomationCheck<Game>, GameBeatmapUsageCheck>();
 builder.Services.AddSingleton<IAutomationCheck<Game>, GameEndTimeCheck>();
 builder.Services.AddSingleton<IAutomationCheck<Game>, GameModCheck>();
 builder.Services.AddSingleton<IAutomationCheck<Game>, GameRulesetCheck>();

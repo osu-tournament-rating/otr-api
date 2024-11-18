@@ -43,23 +43,17 @@ public class GeneratorOptions : JwtUtilsOptionsBase
         Required = false,
         HelpText = $"Any number of role claims granted to the subject." +
                    $"\nPossible values: ['{OtrClaims.Roles.Admin}', '{OtrClaims.Roles.Submitter}'," +
-                   $"'{OtrClaims.Roles.Verifier}', '{OtrClaims.Roles.Whitelist}']"
+                   $"'{OtrClaims.Roles.Verifier}', '{OtrClaims.Roles.Whitelist}']",
+        Separator = ','
     )]
     public IEnumerable<string> Roles { get; set; } = new List<string>();
 
     [Option(
-        "rlo-permit-limit",
+        "rate-limit-override",
         Required = false,
         HelpText = "Sets a custom permit limit for the subject that overrides the API rate limit."
     )]
     public int? PermitLimit { get; set; }
-
-    [Option(
-        "rlo-window",
-        Required = false,
-        HelpText = "Sets a custom window interval (in seconds) for the subject that overrides the API rate limit."
-    )]
-    public int? Window { get; set; }
 
     [Option(
         "expiry",

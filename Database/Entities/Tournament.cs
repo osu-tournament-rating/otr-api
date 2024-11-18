@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Interfaces;
 using Database.Enums;
 using Database.Enums.Verification;
+using Database.Utilities;
 
 namespace Database.Entities;
 
@@ -55,11 +56,9 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     [Column("lobby_size")]
     public int LobbySize { get; set; }
 
-    /// <summary>
-    /// Verification status
-    /// </summary>
-    [Column("verification_status")]
-    public VerificationStatus VerificationStatus { get; set; }
+    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
+
+    [Column("last_processing_date")] public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Rejection reason
@@ -72,9 +71,6 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// </summary>
     [Column("processing_status")]
     public TournamentProcessingStatus ProcessingStatus { get; set; }
-
-    [Column("last_processing_date")]
-    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="User"/> that submitted the tournament
@@ -136,6 +132,22 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// </summary>
     public ICollection<Beatmap> PooledBeatmaps { get; set; } = new List<Beatmap>();
 
-    [NotMapped]
-    public int? ActionBlamedOnUserId { get; set; }
+    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+
+    public void ResetAutomationStatuses(bool force)
+    {
+        var update = force || (VerificationStatus != VerificationStatus.Rejected &&
+                               VerificationStatus != VerificationStatus.Verified);
+
+        if (!update)
+        {
+            return;
+        }
+
+        VerificationStatus = VerificationStatus.None;
+        RejectionReason = TournamentRejectionReason.None;
+        ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
+    }
+
+    public void ConfirmPreVerificationStatus() => VerificationStatus = EnumUtils.ConfirmPreStatus(VerificationStatus);
 }
