@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using API.DTOs.Interfaces;
 using Database.Enums;
 
 namespace API.DTOs;
@@ -6,15 +7,15 @@ namespace API.DTOs;
 /// <summary>
 /// Filtering parameters for tournaments requests
 /// </summary>
-public class TournamentRequestQueryDTO : PaginatedRequestQueryDTO
+public class TournamentRequestQueryDTO : IPaginatedRequestQueryDTO
 {
     [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
-    public override int Page { get; init; }
+    [Range(1, int.MaxValue)]
+    public int Page { get; init; }
 
     [Required]
-    [Range(1, 100, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
-    public override int PageSize { get; init; }
+    [Range(1, 100)]
+    public int PageSize { get; init; }
 
     /// <summary>
     /// Filters results for only tournaments that are verified

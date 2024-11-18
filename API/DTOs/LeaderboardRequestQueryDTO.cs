@@ -1,8 +1,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+using API.DTOs.Interfaces;
 using API.Enums;
 using Database.Enums;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace API.DTOs;
@@ -10,34 +11,32 @@ namespace API.DTOs;
 /// <summary>
 /// Filtering parameters for leaderboard requests
 /// </summary>
-public class LeaderboardRequestQueryDTO
+public class LeaderboardRequestQueryDTO : IPaginatedRequestQueryDTO
 {
+    [FromQuery]
+    [Range(1, int.MaxValue)]
+    [DefaultValue(1)]
+    public int Page { get; init; } = 1;
+
+    [FromQuery]
+    [Range(10, 100)]
+    [DefaultValue(50)]
+    public int PageSize { get; init; } = 50;
+
     /// <summary>
     /// Ruleset for leaderboard data
     /// </summary>
-    [Required]
-    public Ruleset Ruleset { get; init; }
-
-    /// <summary>
-    /// The zero-indexed page offset. Page 0 returns the first PageSize results.
-    /// </summary>
-    [Required]
-    [Range(0, int.MaxValue, ErrorMessage = "Page count out of bounds")]
-    public int Page { get; set; }
-
-    /// <summary>
-    /// The number of elements to return per page
-    /// </summary>
-    [DefaultValue(50)]
-    [Range(5, 100, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
-    public int PageSize { get; init; } = 50;
+    [FromQuery]
+    [DefaultValue(Ruleset.Osu)]
+    public Ruleset Ruleset { get; init; } = Ruleset.Osu;
 
     /// <summary>
     /// Defines whether the leaderboard should be global or filtered by country
     /// </summary>
+    [FromQuery]
+    [DefaultValue(LeaderboardChartType.Global)]
     public LeaderboardChartType ChartType { get; init; } = LeaderboardChartType.Global;
 
     [BindNever]
-    [JsonIgnore]
     public LeaderboardFilterDTO Filter { get; set; } = new();
 }

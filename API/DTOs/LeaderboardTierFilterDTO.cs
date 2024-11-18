@@ -20,54 +20,54 @@ public class LeaderboardTierFilterDTO
     /// <summary>
     /// Explicitly include bronze players
     /// </summary>
-    [BindProperty(Name = "bronze")]
+    [FromQuery(Name = "bronze")]
     public bool FilterBronze { get; init; }
 
     /// <summary>
     /// Explicitly include silver players
     /// </summary>
-    [BindProperty(Name = "silver")]
+    [FromQuery(Name = "silver")]
     public bool FilterSilver { get; init; }
 
     /// <summary>
     /// Explicitly include gold players
     /// </summary>
-    [BindProperty(Name = "gold")]
+    [FromQuery(Name = "gold")]
     public bool FilterGold { get; init; }
 
     /// <summary>
     /// Explicitly include platinum players
     /// </summary>
-    [BindProperty(Name = "platinum")]
+    [FromQuery(Name = "platinum")]
     public bool FilterPlatinum { get; init; }
 
     /// <summary>
     /// Explicitly include emerald players
     /// </summary>
-    [BindProperty(Name = "emerald")]
+    [FromQuery(Name = "emerald")]
     public bool FilterEmerald { get; init; }
 
     /// <summary>
     /// Explicitly include emerald players
     /// </summary>
-    [BindProperty(Name = "diamond")]
+    [FromQuery(Name = "diamond")]
     public bool FilterDiamond { get; init; }
 
     /// <summary>
     /// Explicitly include master players
     /// </summary>
-    [BindProperty(Name = "master")]
+    [FromQuery(Name = "master")]
     public bool FilterMaster { get; init; }
 
     /// <summary>
     /// Explicitly include grandmaster players
     /// </summary>
-    [BindProperty(Name = "grandmaster")]
+    [FromQuery(Name = "grandmaster")]
     public bool FilterGrandmaster { get; init; }
 
     /// <summary>
     /// Explicitly include elite grandmaster players
     /// </summary>
-    [BindProperty(Name = "eliteGrandmaster")]
+    [FromQuery(Name = "eliteGrandmaster")]
     public bool FilterEliteGrandmaster { get; init; }
 }
