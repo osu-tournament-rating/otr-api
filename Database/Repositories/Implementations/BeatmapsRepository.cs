@@ -23,4 +23,29 @@ public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(co
         IEnumerable<long> remainingIds = osuIds.Except(result.Select(p => p.OsuId));
         return (await _context.Beatmaps.Where(b => remainingIds.Contains(b.OsuId)).ToListAsync()).Concat(result);
     }
+
+    public async Task<ICollection<Beatmap>> GetOrCreateAsync(IEnumerable<long> osuIds, bool save)
+    {
+        osuIds = osuIds.ToList();
+
+        // Identify existing beatmaps
+        var existing = (await GetAsync(osuIds)).ToList();
+
+        // Identify missing beatmaps
+        var missingIds = osuIds.Except(existing.Select(b => b.OsuId)).ToList();
+
+        // Create missing beatmaps
+        var missing = missingIds.Select(id => new Beatmap { OsuId = id }).ToList();
+        if (!save)
+        {
+            return existing.Concat(missing).ToList();
+        }
+
+        // Save the missing beatmaps
+        await _context.Beatmaps.AddRangeAsync(missing);
+        await _context.SaveChangesAsync();
+
+        // Return all beatmaps
+        return existing.Concat(missing).ToList();
+    }
 }

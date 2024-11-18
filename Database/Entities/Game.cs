@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Interfaces;
 using Database.Enums;
 using Database.Enums.Verification;
+using Database.Utilities;
 
 namespace Database.Entities;
 
@@ -12,7 +13,8 @@ namespace Database.Entities;
 [Table("games")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>, IAuditableEntity<GameAudit>
+public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>,
+    IAuditableEntity<GameAudit>
 {
     /// <summary>
     /// osu! id
@@ -56,11 +58,7 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     [Column("end_time")]
     public DateTime EndTime { get; set; }
 
-    /// <summary>
-    /// Verification status
-    /// </summary>
-    [Column("verification_status")]
-    public VerificationStatus VerificationStatus { get; set; }
+    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
     /// Rejection reason
@@ -80,8 +78,7 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     [Column("processing_status")]
     public GameProcessingStatus ProcessingStatus { get; set; }
 
-    [Column("last_processing_date")]
-    public DateTime LastProcessingDate { get; set; }
+    [Column("last_processing_date")] public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Match"/> that the game was played in
@@ -120,12 +117,29 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     public ICollection<GameAudit> Audits { get; set; } = new List<GameAudit>();
 
 
-    [NotMapped]
-    public int? ActionBlamedOnUserId { get; set; }
+    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
 
     /// <summary>
     /// Denotes if the mod setting was "free mod"
     /// </summary>
     [NotMapped]
     public bool IsFreeMod => Mods is Mods.None;
+
+    public void ResetAutomationStatuses(bool force)
+    {
+        var gameUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
+                                   VerificationStatus != VerificationStatus.Verified);
+
+        if (!gameUpdate)
+        {
+            return;
+        }
+
+        VerificationStatus = VerificationStatus.None;
+        WarningFlags = GameWarningFlags.None;
+        RejectionReason = GameRejectionReason.None;
+        ProcessingStatus = GameProcessingStatus.NeedsAutomationChecks;
+    }
+
+    public void ConfirmPreVerificationStatus() => VerificationStatus = EnumUtils.ConfirmPreStatus(VerificationStatus);
 }

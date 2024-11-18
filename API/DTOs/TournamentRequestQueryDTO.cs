@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using Database.Enums;
-using static Database.Enums.Ruleset;
 
 namespace API.DTOs;
 
@@ -31,7 +30,7 @@ public class TournamentRequestQueryDTO
     /// <summary>
     /// An optional ruleset to filter by
     /// </summary>
-    public Ruleset? Ruleset { get; init; } = Osu;
+    public Ruleset? Ruleset { get; init; }
 
     /// <summary>
     /// The key used to sort results by

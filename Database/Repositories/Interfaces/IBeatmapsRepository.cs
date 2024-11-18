@@ -17,4 +17,12 @@ public interface IBeatmapsRepository : IRepository<Beatmap>
     /// <param name="osuIds">Beatmap osu! ids</param>
     /// <returns>A list containing a beatmap for each osu! id. If one is not found, it will not be returned.</returns>
     Task<IEnumerable<Beatmap>> GetAsync(IEnumerable<long> osuIds);
+
+    /// <summary>
+    /// Gets or creates a <see cref="Beatmap"/> for each given osu! id
+    /// </summary>
+    /// <param name="osuIds">Beatmap osu! ids</param>
+    /// <param name="save">Whether to save the creations to the database</param>
+    /// <returns>A list containing a beatmap for each osu! id</returns>
+    Task<ICollection<Beatmap>> GetOrCreateAsync(IEnumerable<long> osuIds, bool save);
 }

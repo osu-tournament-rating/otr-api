@@ -138,4 +138,22 @@ public class TournamentsService(
     }
 
     public async Task DeleteAsync(int id) => await tournamentsRepository.DeleteAsync(id);
+
+    public async Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id) =>
+        mapper.Map<TournamentDTO?>(await tournamentsRepository.AcceptPreVerificationStatusesAsync(id));
+
+    public async Task RerunAutomationChecksAsync(int id, bool force = false) =>
+        await tournamentsRepository.ResetAutomationStatusesAsync(id, force);
+
+    public async Task<ICollection<BeatmapDTO>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds) =>
+        mapper.Map<ICollection<BeatmapDTO>>(await tournamentsRepository.AddPooledBeatmapsAsync(id, osuBeatmapIds));
+
+    public async Task<ICollection<BeatmapDTO>> GetPooledBeatmapsAsync(int id) =>
+        mapper.Map<ICollection<BeatmapDTO>>(await tournamentsRepository.GetPooledBeatmapsAsync(id));
+
+    public async Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds) =>
+        await tournamentsRepository.DeletePooledBeatmapsAsync(id, beatmapIds);
+
+    public async Task DeletePooledBeatmapsAsync(int id) =>
+        await tournamentsRepository.DeletePooledBeatmapsAsync(id);
 }
