@@ -97,8 +97,14 @@ public class TournamentsService(
 
     public async Task<ICollection<TournamentDTO>> GetAsync(TournamentRequestQueryDTO requestQuery)
     {
-        return mapper.Map<ICollection<TournamentDTO>>(await tournamentsRepository.GetAsync(requestQuery.Page, requestQuery.PageSize,
-            requestQuery.QuerySortType, requestQuery.Descending, requestQuery.Verified, requestQuery.Ruleset));
+        return mapper.Map<ICollection<TournamentDTO>>(await tournamentsRepository.GetAsync(
+            requestQuery.Page,
+            requestQuery.PageSize,
+            requestQuery.QuerySortType,
+            requestQuery.Descending,
+            requestQuery.Verified,
+            requestQuery.Ruleset
+        ));
     }
 
     public async Task<TournamentDTO?> GetVerifiedAsync(int id) =>
