@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API.Authorization;
@@ -31,6 +32,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 using Npgsql;
@@ -44,7 +47,6 @@ using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
-using Unchase.Swashbuckle.AspNetCore.Extensions.Options;
 
 #region WebApplicationBuilder Configuration
 
@@ -92,6 +94,7 @@ builder
     {
         o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     })
     .AddNewtonsoftJson();
 
@@ -245,10 +248,10 @@ builder.Services.AddSwaggerGen(options =>
     }
 
     // Register custom filters
+    options.OperationFilter<SecurityMetadataOperationFilter>();
+
     options.SchemaFilter<EnumMetadataSchemaFilter>((object)xmlDocPaths);
     options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
-
-    options.OperationFilter<SecurityMetadataOperationFilter>();
 
     // Populate the document's info
     options.SwaggerDoc(
@@ -284,15 +287,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     // Add documentation about authentication schemes
-    var oauthScopes = new Dictionary<string, string>
-    {
-        [OtrClaims.Roles.User] = OtrClaims.GetDescription(OtrClaims.Roles.User),
-        [OtrClaims.Roles.Client] = OtrClaims.GetDescription(OtrClaims.Roles.Client),
-        [OtrClaims.Roles.Admin] = OtrClaims.GetDescription(OtrClaims.Roles.Admin),
-        [OtrClaims.Roles.Verifier] = OtrClaims.GetDescription(OtrClaims.Roles.Verifier),
-        [OtrClaims.Roles.Submitter] = OtrClaims.GetDescription(OtrClaims.Roles.Submitter),
-        [OtrClaims.Roles.Whitelist] = OtrClaims.GetDescription(OtrClaims.Roles.Whitelist)
-    };
+    var oauthScopes = OtrClaims.Roles.ValidRoles
+        .Select(r => new KeyValuePair<string, string>(r, OtrClaims.GetDescription(r)))
+        .ToDictionary();
 
     options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
     {
@@ -324,6 +321,36 @@ builder.Services.AddSwaggerGen(options =>
                 RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
                 Scopes = oauthScopes
             }
+        }
+    });
+
+    // Register custom enum schemas describing authorization roles and policies
+    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(OtrClaims.Roles), new OpenApiSchema
+    {
+        Type = "string",
+        Description = "The possible roles assignable to a user or client",
+        Enum = new List<IOpenApiAny>(oauthScopes.Keys.Select(role => new OpenApiString(role))),
+        Extensions = new Dictionary<string, IOpenApiExtension>
+        {
+            [ExtensionKeys.EnumNames] = oauthScopes.Keys.Select(k => char.ToUpper(k[0]) + k[1..]).ToOpenApiArray(),
+            [ExtensionKeys.EnumDescriptions] = oauthScopes.Values.ToOpenApiArray()
+        }
+    });
+
+    // Register custom enum schemas describing authorization roles and policies
+    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(AuthorizationPolicies), new OpenApiSchema
+    {
+        Type = "string",
+        Description = "The possible authorization policies enforced on a route. Authorization policies differ from " +
+                      "Roles as they may require special conditions to be satisfied. See the description of a " +
+                      "policy for more information.",
+        Enum = AuthorizationPolicies.Policies.ToOpenApiArray(),
+        Extensions = new Dictionary<string, IOpenApiExtension>
+        {
+            [ExtensionKeys.EnumNames] = AuthorizationPolicies.Policies.ToOpenApiArray(),
+            [ExtensionKeys.EnumDescriptions] = AuthorizationPolicies.Policies
+                .Select(AuthorizationPolicies.GetDescription)
+                .ToOpenApiArray()
         }
     });
 
