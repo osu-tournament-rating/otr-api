@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents an aggregate of match statistics for a player during a period of time
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public class AggregatePlayerMatchStatsDTO
 {
     /// <summary>
