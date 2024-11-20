@@ -35,7 +35,7 @@ public abstract class ScopeConsumingBackgroundService(
         while (!stoppingToken.IsCancellationRequested)
         {
             ExecutionCount++;
-            logger.LogDebug("Background service beginning work [Run: {CurRun}]", ExecutionCount);
+            logger.LogTrace("Background service beginning work [Run: {CurRun}]", ExecutionCount);
 
             _stopwatch.Start();
 
@@ -45,8 +45,8 @@ public abstract class ScopeConsumingBackgroundService(
             }
 
             _stopwatch.Stop();
-            logger.LogDebug(
-                "Background service completed work [Run: {CurRun} | Elapsed: {Elapsed:mm\\:ss\\:fff}]",
+            logger.LogTrace(
+                @"Background service completed work [Run: {CurRun} | Elapsed: {Elapsed:mm\:ss\:fff}]",
                 ExecutionCount,
                 _stopwatch.Elapsed
             );
