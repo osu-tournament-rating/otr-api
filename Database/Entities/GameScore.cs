@@ -114,15 +114,15 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     public int GameId { get; set; }
 
     /// <summary>
+    /// The <see cref="Entities.Game"/> that the <see cref="GameScore"/> was set in
+    /// </summary>
+    public Game Game { get; set; } = null!;
+
+    /// <summary>
     /// Id of the <see cref="Entities.Player" /> that set the <see cref="GameScore" />
     /// </summary>
     [Column("player_id")]
     public int PlayerId { get; set; }
-
-    /// <summary>
-    /// The <see cref="Entities.Game"/> that the <see cref="GameScore"/> was set in
-    /// </summary>
-    public Game Game { get; set; } = null!;
 
     /// <summary>
     /// The <see cref="Entities.Player"/> that set the <see cref="GameScore"/>
