@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Database.Entities.Interfaces;
 using Database.Enums;
 using Database.Utilities;
@@ -81,11 +82,14 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
         }
 
         // Create changelog
-        foreach (PropertyEntry? prop in origEntityEntry.Properties.Where(p =>
-                     p.IsModified
-                     && !AuditingUtils.BlacklistedPropNames.Contains(p.Metadata.Name))
-                 )
+        foreach (PropertyEntry? prop in origEntityEntry.Properties.Where(p => p.IsModified))
         {
+            if (prop.Metadata.FieldInfo is not null
+                && prop.Metadata.FieldInfo.GetCustomAttribute<AuditIgnoreAttribute>() is not null)
+            {
+                continue;
+            }
+
             if (prop.OriginalValue is not null && prop.CurrentValue is not null && prop.OriginalValue != prop.CurrentValue)
             {
                 Changes.Add(
