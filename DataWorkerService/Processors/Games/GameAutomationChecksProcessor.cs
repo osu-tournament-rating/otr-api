@@ -18,7 +18,7 @@ public class GameAutomationChecksProcessor(
     {
         if (entity.ProcessingStatus is not GameProcessingStatus.NeedsAutomationChecks)
         {
-            logger.LogDebug(
+            logger.LogTrace(
                 "Game does not require processing [Id: {Id} | Processing Status: {Status}]",
                 entity.Id,
                 entity.ProcessingStatus
