@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API.Authorization;
@@ -15,6 +16,7 @@ using API.Repositories.Interfaces;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.SwaggerGen;
+using API.SwaggerGen.Filters;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
@@ -30,6 +32,8 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 using Npgsql;
@@ -43,7 +47,6 @@ using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
-using Unchase.Swashbuckle.AspNetCore.Extensions.Options;
 
 #region WebApplicationBuilder Configuration
 
@@ -91,6 +94,7 @@ builder
     {
         o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     })
     .AddNewtonsoftJson();
 
@@ -224,19 +228,14 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SchemaGeneratorOptions.SupportNonNullableReferenceTypes = true;
-    options.SwaggerDoc(
-        "v1",
-        new OpenApiInfo
-        {
-            Version = "v1",
-            Title = "osu! Tournament Rating API",
-            Description =
-                "The official resource for reading and writing data within the osu! Tournament Rating platform."
-        }
-    );
+    // Sets nullable flags
+    options.SupportNonNullableReferenceTypes();
+    // Allows reference enums to be marked nullable
+    options.UseAllOfToExtendReferenceSchemas();
+    // Allows reference objects to be marked nullable
+    options.UseAllOfForInheritance();
 
-    // Allow swagger to use in-code XML documentation tags like <summary> and <remarks>
+    // Allow use of in-code XML documentation tags like <summary> and <remarks>
     string[] xmlDocPaths =
     [
         $"{AppDomain.CurrentDomain.BaseDirectory}API.xml",
@@ -248,7 +247,25 @@ builder.Services.AddSwaggerGen(options =>
         options.IncludeXmlCommentsWithRemarks(xmlDoc);
     }
 
-    // Generate custom descriptors for endpoints using method names
+    // Register custom filters
+    options.OperationFilter<SecurityMetadataOperationFilter>();
+
+    options.SchemaFilter<EnumMetadataSchemaFilter>((object)xmlDocPaths);
+    options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
+
+    // Populate the document's info
+    options.SwaggerDoc(
+        "v1",
+        new OpenApiInfo
+        {
+            Version = "v1",
+            Title = "osu! Tournament Rating API",
+            Description =
+                "The official resource for reading and writing data within the osu! Tournament Rating platform."
+        }
+    );
+
+    // Generate custom descriptors for endpoints using their literal method names
     var unknownMethodCount = 0;
     options.CustomOperationIds(description =>
     {
@@ -269,35 +286,10 @@ builder.Services.AddSwaggerGen(options =>
         return $"{controller}_{method}";
     });
 
-    // Applies a fix to the way that swagger parses descriptions for enums
-    options.AddEnumsWithValuesFixFilters(enumsOptions =>
-    {
-        enumsOptions.IncludeDescriptions = true;
-        enumsOptions.IncludeXEnumRemarks = true;
-        enumsOptions.DescriptionSource = DescriptionSources.XmlComments;
-
-        enumsOptions.ApplySchemaFilter = true;
-        enumsOptions.ApplyDocumentFilter = false;
-        enumsOptions.ApplyParameterFilter = false;
-
-        foreach (var xmlDoc in xmlDocPaths)
-        {
-            enumsOptions.IncludeXmlCommentsFrom(xmlDoc);
-        }
-    });
-
-    options.SchemaFilter<BitwiseFlagEnumSchemaFilter>();
-
-    // Adds documentation to swagger about authentication and the ability to authenticate from swagger ui
-    var oauthScopes = new Dictionary<string, string>
-    {
-        [OtrClaims.Roles.User] = OtrClaims.GetDescription(OtrClaims.Roles.User),
-        [OtrClaims.Roles.Client] = OtrClaims.GetDescription(OtrClaims.Roles.Client),
-        [OtrClaims.Roles.Admin] = OtrClaims.GetDescription(OtrClaims.Roles.Admin),
-        [OtrClaims.Roles.Verifier] = OtrClaims.GetDescription(OtrClaims.Roles.Verifier),
-        [OtrClaims.Roles.Submitter] = OtrClaims.GetDescription(OtrClaims.Roles.Submitter),
-        [OtrClaims.Roles.Whitelist] = OtrClaims.GetDescription(OtrClaims.Roles.Whitelist)
-    };
+    // Add documentation about authentication schemes
+    var oauthScopes = OtrClaims.Roles.ValidRoles
+        .Select(r => new KeyValuePair<string, string>(r, OtrClaims.GetDescription(r)))
+        .ToDictionary();
 
     options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
     {
@@ -309,7 +301,7 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT"
     });
 
-    options.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
+    options.AddSecurityDefinition(SecurityRequirements.OAuthSecurityRequirementId, new OpenApiSecurityScheme
     {
         Name = "OAuth2 Authentication",
         In = ParameterLocation.Header,
@@ -332,9 +324,38 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
-    options.AddSecurityRequirement(SecurityRequirements.BearerSecurityRequirement);
+    // Register custom enum schemas describing authorization roles and policies
+    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(OtrClaims.Roles), new OpenApiSchema
+    {
+        Type = "string",
+        Description = "The possible roles assignable to a user or client",
+        Enum = new List<IOpenApiAny>(oauthScopes.Keys.Select(role => new OpenApiString(role))),
+        Extensions = new Dictionary<string, IOpenApiExtension>
+        {
+            [ExtensionKeys.EnumNames] = oauthScopes.Keys.Select(k => char.ToUpper(k[0]) + k[1..]).ToOpenApiArray(),
+            [ExtensionKeys.EnumDescriptions] = oauthScopes.Values.ToOpenApiArray()
+        }
+    });
 
-    options.OperationFilter<ActionSecurityOperationFilter>();
+    // Register custom enum schemas describing authorization roles and policies
+    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(AuthorizationPolicies), new OpenApiSchema
+    {
+        Type = "string",
+        Description = "The possible authorization policies enforced on a route. Authorization policies differ from " +
+                      "Roles as they may require special conditions to be satisfied. See the description of a " +
+                      "policy for more information.",
+        Enum = AuthorizationPolicies.Policies.ToOpenApiArray(),
+        Extensions = new Dictionary<string, IOpenApiExtension>
+        {
+            [ExtensionKeys.EnumNames] = AuthorizationPolicies.Policies.ToOpenApiArray(),
+            [ExtensionKeys.EnumDescriptions] = AuthorizationPolicies.Policies
+                .Select(AuthorizationPolicies.GetDescription)
+                .ToOpenApiArray()
+        }
+    });
+
+    // Add the ability to authenticate with swagger ui
+    options.AddSecurityRequirement(SecurityRequirements.BearerSecurityRequirement);
 });
 
 #endregion

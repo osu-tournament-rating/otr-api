@@ -13,12 +13,7 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
 
     public override async Task<User> CreateAsync(User entity)
     {
-        if (!entity.PlayerId.HasValue)
-        {
-            throw new NullReferenceException("Attempted to create a User entity with a null PlayerId");
-        }
-
-        entity.Settings = await userSettingsRepository.GenerateDefaultAsync(entity.PlayerId.Value);
+        entity.Settings = await userSettingsRepository.GenerateDefaultAsync(entity.PlayerId);
         return await base.CreateAsync(entity);
     }
 
@@ -27,7 +22,7 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
 
     public async Task<User?> GetByPlayerIdAsync(int playerId, bool loadSettings = false)
     {
-        IQueryable<User> query = _context.Users.AsNoTracking();
+        IQueryable<User> query = _context.Users;
         query = loadSettings
             ? query.Include(u => u.Settings)
             : query;
@@ -43,15 +38,7 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
             return user;
         }
 
-        return await CreateAsync(
-            new User
-            {
-                PlayerId = playerId,
-                Created = DateTime.UtcNow,
-                LastLogin = DateTime.UtcNow,
-                Scopes = []
-            }
-        );
+        return await CreateAsync(new User { PlayerId = playerId });
     }
 
     public async Task<int?> GetPlayerIdAsync(int id) =>
