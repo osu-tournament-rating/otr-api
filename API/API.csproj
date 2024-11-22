@@ -34,9 +34,9 @@
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.0"/>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0"/>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Npgsql" Version="8.0.5"/>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.10"/>
-    <PackageReference Include="Npgsql.OpenTelemetry" Version="8.0.5"/>
+    <PackageReference Include="Npgsql" Version="9.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.1" />
+    <PackageReference Include="Npgsql.OpenTelemetry" Version="9.0.1" />
     <PackageReference Include="OpenTelemetry" Version="1.10.0"/>
     <PackageReference Include="OpenTelemetry.Api" Version="1.10.0"/>
     <PackageReference Include="OpenTelemetry.Api.ProviderBuilderExtensions" Version="1.10.0"/>
