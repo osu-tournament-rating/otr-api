@@ -82,8 +82,7 @@ public class OAuthHandler(
          * Don't overwrite if the osu! api returns 0 friends.
          * We don't want to accidentally nuke someone's friends list from an API error.
          */
-        var overwrite = friendOsuIds.Count > 0;
-        if (overwrite)
+        if (friendOsuIds.Count > 0)
         {
             await userRepository.SyncFriendsAsync(user.Id, friendOsuIds);
         }

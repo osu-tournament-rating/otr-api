@@ -42,6 +42,5 @@ public interface IUserRepository : IRepository<User>
     /// </summary>
     /// <param name="id">User id</param>
     /// <param name="playerIds">osu! user ids</param>
-    /// <returns></returns>
     Task<User?> SyncFriendsAsync(int id, ICollection<long> osuIds);
 }

@@ -176,9 +176,8 @@ public interface IOsuClient : IDisposable
     /// <summary>
     /// Gets the current user's friends list
     /// </summary>
-    /// <returns>
-    /// A collection of followed <see cref="User"/>s
-    /// </returns>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A collection of followed <see cref="User"/>s</returns>
     Task<IEnumerable<User>?> GetUserFriendsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>

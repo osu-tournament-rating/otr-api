@@ -106,9 +106,6 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     /// </summary>
     public ICollection<PlayerHighestRanks> HighestRanks { get; set; } = new List<PlayerHighestRanks>();
 
-    /// <summary>
-    /// A collection of <see cref="PlayerAdminNote"/>s made by the <see cref="Player"/>
-    /// </summary>
     public ICollection<PlayerAdminNote> AdminNotes { get; set; } = new List<PlayerAdminNote>();
 
     /// <summary>
