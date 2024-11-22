@@ -13,7 +13,7 @@ public abstract class ProcessorBase<TEntity>(ILogger logger) : IProcessor<TEntit
 {
     public virtual async Task ProcessAsync(TEntity entity, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Processing started [Id: {Id}]", entity.Id);
+        logger.LogTrace("Processing started [Id: {Id}]", entity.Id);
 
         var stopWatch = new Stopwatch();
         stopWatch.Start();
@@ -21,8 +21,8 @@ public abstract class ProcessorBase<TEntity>(ILogger logger) : IProcessor<TEntit
         await OnProcessingAsync(entity, cancellationToken);
 
         stopWatch.Stop();
-        logger.LogInformation(
-            "Processing completed [Id: {Id} | Elapsed: {Elapsed:mm\\:ss\\:fff}]",
+        logger.LogTrace(
+            @"Processing completed [Id: {Id} | Elapsed: {Elapsed:mm\:ss\:fff}]",
             entity.Id,
             stopWatch.Elapsed
         );

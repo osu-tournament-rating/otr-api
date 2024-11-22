@@ -17,7 +17,7 @@ public class GameVerificationProcessor(
     {
         if (entity.ProcessingStatus is not GameProcessingStatus.NeedsVerification)
         {
-            logger.LogDebug(
+            logger.LogTrace(
                 "Game does not require processing [Id: {Id} | Processing Status: {Status}]",
                 entity.Id,
                 entity.ProcessingStatus
@@ -36,7 +36,7 @@ public class GameVerificationProcessor(
 
             if (!entity.Scores.All(s => s.ProcessingStatus > ScoreProcessingStatus.NeedsVerification))
             {
-                logger.LogDebug(
+                logger.LogTrace(
                     "Game's scores are still awaiting verification [Id: {Id} | Processing Status: {Status}]",
                     entity.Id,
                     entity.ProcessingStatus
@@ -49,7 +49,7 @@ public class GameVerificationProcessor(
         switch (entity.VerificationStatus)
         {
             case VerificationStatus.PreRejected or VerificationStatus.PreVerified:
-                logger.LogDebug(
+                logger.LogTrace(
                     "Game is still awaiting verification [Id: {Id} | Processing Status: {Status}]",
                     entity.Id,
                     entity.ProcessingStatus
