@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Database;
 using Database.Entities;
+using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 using DataWorkerService.Configurations;
 using DataWorkerService.Processors;
@@ -61,7 +62,11 @@ public class TournamentProcessorService(
 
             if (tournament.Matches.Count == 0)
             {
+                tournament.VerificationStatus = VerificationStatus.Rejected;
+                tournament.RejectionReason = TournamentRejectionReason.IncompleteData;
+                tournament.ProcessingStatus = TournamentProcessingStatus.Done;
                 tournament.LastProcessingDate = DateTime.Now;
+
                 await context.SaveChangesAsync(stoppingToken);
 
                 logger.LogWarning("Skipping processing for tournament with no matches [Id: {Id}]", tournament.Id);
