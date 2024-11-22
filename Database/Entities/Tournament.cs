@@ -56,9 +56,11 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     [Column("lobby_size")]
     public int LobbySize { get; set; }
 
-    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
+    [Column("verification_status")]
+    public VerificationStatus VerificationStatus { get; set; }
 
-    [Column("last_processing_date")] public DateTime LastProcessingDate { get; set; }
+    [Column("last_processing_date")]
+    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Rejection reason
@@ -69,6 +71,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// Processing status
     /// </summary>
+    [AuditIgnore]
     [Column("processing_status")]
     public TournamentProcessingStatus ProcessingStatus { get; set; }
 
@@ -132,7 +135,8 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// </summary>
     public ICollection<Beatmap> PooledBeatmaps { get; set; } = new List<Beatmap>();
 
-    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+    [NotMapped]
+    public int? ActionBlamedOnUserId { get; set; }
 
     public void ResetAutomationStatuses(bool force)
     {
