@@ -48,6 +48,7 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     [Column("verification_status")]
     public VerificationStatus VerificationStatus { get; set; }
 
+    [AuditIgnore]
     [Column("last_processing_date")]
     public DateTime LastProcessingDate { get; set; }
 
