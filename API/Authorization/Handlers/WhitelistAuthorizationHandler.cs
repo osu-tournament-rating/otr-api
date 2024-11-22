@@ -20,7 +20,7 @@ public class WhitelistAuthorizationHandler(
         WhitelistAuthorizationRequirement requirement
     )
     {
-        if (_enabled && context.User.IsWhitelisted())
+        if (!_enabled || (_enabled && context.User.IsWhitelisted()))
         {
             context.Succeed(requirement);
             return Task.CompletedTask;
