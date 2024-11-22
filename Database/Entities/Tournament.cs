@@ -59,6 +59,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     [Column("verification_status")]
     public VerificationStatus VerificationStatus { get; set; }
 
+    [AuditIgnore]
     [Column("last_processing_date")]
     public DateTime LastProcessingDate { get; set; }
 
@@ -71,7 +72,6 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// Processing status
     /// </summary>
-    [AuditIgnore]
     [Column("processing_status")]
     public TournamentProcessingStatus ProcessingStatus { get; set; }
 

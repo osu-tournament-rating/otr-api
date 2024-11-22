@@ -84,8 +84,8 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
         // Create changelog
         foreach (PropertyEntry? prop in origEntityEntry.Properties.Where(p => p.IsModified))
         {
-            if (prop.Metadata.FieldInfo is not null
-                && prop.Metadata.FieldInfo.GetCustomAttribute<AuditIgnoreAttribute>() is not null)
+            PropertyInfo? declaringProp = typeof(TAuditable).GetProperty(prop.Metadata.Name);
+            if (declaringProp is not null && declaringProp.GetCustomAttribute<AuditIgnoreAttribute>() is not null)
             {
                 continue;
             }
