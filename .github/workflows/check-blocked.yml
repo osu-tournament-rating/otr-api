@@ -2,17 +2,17 @@ name: Check Blocked
 
 on:
   pull_request:
-    types:
-      - opened
-      - labeled
-      - unlabeled
-
+    types: [opened, labeled, unlabeled, synchronize]
 jobs:
-  fail-when-blocked:
-    if: contains(github.event.pull_request.labels.*.name, 'pr:blocked')
+  label:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
-      - name: Fail if PR is blocked
-        run: |
-          echo "This PR is currently blocked."
-          exit 1
+      - uses: mheap/github-action-required-labels@v5
+        with:
+          mode: exactly
+          count: 1
+          labels: |
+            pr:blocked
