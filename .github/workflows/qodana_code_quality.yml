@@ -1,11 +1,8 @@
 name: Qodana PR Scan
 
+# Trigger on PRs and pushes to master
 on:
-  # Trigger on pull request updates when *.cs files change
   pull_request:
-    paths:
-      - '**/*.cs'
-  # Trigger on pushes to master
   push:
     branches:
       - master
