@@ -12,6 +12,11 @@ public static class AuthorizationPolicies
     public const string AccessUserResources = "AccessUserResources";
 
     /// <summary>
+    /// Policy that controls access based on whether or not the whitelist is enabled
+    /// </summary>
+    public const string Whitelist = "Whitelist";
+
+    /// <summary>
     /// Collection of all <see cref="AuthorizationPolicies"/>
     /// </summary>
     public static readonly string[] Policies =
