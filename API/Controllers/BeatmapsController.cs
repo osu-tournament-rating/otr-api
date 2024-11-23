@@ -25,8 +25,8 @@ public class BeatmapsController(IBeatmapService beatmapService) : Controller
     /// <summary>
     /// Get a beatmap
     /// </summary>
-    /// <remarks>Get a beatmap searching first by id, then by beatmap osu! id</remarks>
-    /// <param name="key">Search key (o!TR id or osu! id)</param>
+    /// <remarks>Get a beatmap searching first by id, then by osu! id</remarks>
+    /// <param name="key">Search key (id or osu! id)</param>
     /// <response code="404">A beatmap matching the given key does not exist</response>
     /// <response code="200">Returns a beatmap</response>
     [HttpGet("{key:long}")]

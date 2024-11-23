@@ -6,7 +6,6 @@ using Database.Entities;
 using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OsuApiClient.Net.Constants;
 
 namespace API.Controllers;
 
@@ -23,7 +22,7 @@ public partial class PlayersController(
     /// Get a player
     /// </summary>
     /// <remarks>Get a player searching first by id, then by osu! id, then osu! username</remarks>
-    /// <param name="key">Search key (o!TR id, osu! id, or osu! username)</param>
+    /// <param name="key">Search key (id, osu! id, or osu! username)</param>
     /// <response code="404">A player matching the given key does not exist</response>
     /// <response code="200">Returns a player</response>
     [HttpGet("{key}")]
@@ -44,7 +43,7 @@ public partial class PlayersController(
     /// </summary>
     /// <remarks>
     /// Gets player by versatile search.
-    /// If no ruleset is provided, the player's default is used. <see cref="Endpoints.Osu"/> is used as a fallback.
+    /// If no ruleset is provided, the player's default is used. <see cref="Ruleset.Osu"/> is used as a fallback.
     /// If a ruleset is provided but the player has no data for it, all optional fields of the response will be null.
     /// <see cref="PlayerStatsDTO.PlayerInfo"/> will always be populated as long as a player is found.
     /// If no date range is provided, gets all stats without considering date

@@ -24,17 +24,17 @@ public class MatchRequestQueryDTO : PaginatedRequestQueryDTO
     public Ruleset? Ruleset { get; init; }
 
     /// <summary>
-    /// Filters results for only matches with a partially matching name
+    /// Filters results for only matches with a partially matching name (case insensitive)
     /// </summary>
     public string? Name { get; init; }
 
     /// <summary>
-    /// Filters results for only matches that occurred after a specified date
+    /// Filters results for only matches that occurred on or after a specified date
     /// </summary>
     public DateTime? DateMin { get; init; }
 
     /// <summary>
-    /// Filters results for only matches that occurred before a specified date
+    /// Filters results for only matches that occurred on or before a specified date
     /// </summary>
     public DateTime? DateMax { get; init; }
 
