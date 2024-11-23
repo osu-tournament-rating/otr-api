@@ -13,6 +13,6 @@ jobs:
       - uses: mheap/github-action-required-labels@v5
         with:
           mode: exactly
-          count: 1
+          count: 0
           labels: |
             pr:blocked
