@@ -4,15 +4,25 @@ using Database.Enums.Verification;
 
 namespace API.DTOs;
 
+/// <summary>
+/// Represents a tournament with minimal data
+/// </summary>
 public class TournamentCompactDTO
 {
     /// <summary>
-    /// The tournament id
+    /// Id
     /// </summary>
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public int Id { get; init; }
 
     /// <summary>
-    /// The tournament name
+    /// The timestamp of submission
+    /// </summary>
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
+    public DateTime Created { get; init; }
+
+    /// <summary>
+    /// Full name
     /// </summary>
     public string Name { get; init; } = null!;
 
@@ -53,6 +63,16 @@ public class TournamentCompactDTO
     public int LobbySize { get; init; }
 
     /// <summary>
+    /// The start date of the first match
+    /// </summary>
+    public DateTime StartTime { get; init; }
+
+    /// <summary>
+    /// The end date of the last match
+    /// </summary>
+    public DateTime EndTime { get; init; }
+
+    /// <summary>
     /// The state of verification
     /// </summary>
     public VerificationStatus VerificationStatus { get; init; }
@@ -68,18 +88,12 @@ public class TournamentCompactDTO
     public TournamentRejectionReason RejectionReason { get; init; }
 
     /// <summary>
-    /// The timestamp of submission
+    /// The user that submitted the tournament
     /// </summary>
-    [SuppressMessage("ReSharper", "UnusedMember.Global")]
-    public DateTime Created { get; init; }
+    public UserCompactDTO? SubmittedByUser { get; init; }
 
     /// <summary>
-    /// The start date of the first match
+    /// The user that verified the tournament
     /// </summary>
-    public DateTime StartTime { get; init; }
-
-    /// <summary>
-    /// The end date of the last match
-    /// </summary>
-    public DateTime EndTime { get; init; }
+    public UserCompactDTO? VerifiedByUser { get; init; }
 }

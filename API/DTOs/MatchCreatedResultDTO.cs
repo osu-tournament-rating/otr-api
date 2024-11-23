@@ -1,16 +1,15 @@
-using API.DTOs.Interfaces;
+using System.Text.Json.Serialization;
 using API.Utilities;
-using Newtonsoft.Json;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a created match
 /// </summary>
-public class MatchCreatedResultDTO : CreatedResultBaseDTO, ICreatedResult
+public class MatchCreatedResultDTO : CreatedResultBaseDTO
 {
     [JsonIgnore]
-    public CreatedAtRouteValues CreatedAtRouteValues => CreatedAtRouteValuesHelper.GetMatch(Id);
+    public override CreatedAtRouteValues CreatedAtRouteValues => CreatedAtRouteValuesHelper.GetMatch(Id);
 
     /// <summary>
     /// osu! match id

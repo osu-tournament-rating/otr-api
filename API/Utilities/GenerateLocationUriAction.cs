@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using API.DTOs.Interfaces;
+using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
 using Database.Entities.Interfaces;
@@ -11,9 +11,9 @@ namespace API.Utilities;
 /// </summary>
 // Resharper suggests making the class abstract, but it is constructed via the DI container
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class GenerateLocationUriAction(IUrlHelperService urlHelperService) : IMappingAction<IEntity, ICreatedResult>
+public class GenerateLocationUriAction(IUrlHelperService urlHelperService) : IMappingAction<IEntity, CreatedResultBaseDTO>
 {
-    public void Process(IEntity src, ICreatedResult dest, ResolutionContext ctx)
+    public void Process(IEntity src, CreatedResultBaseDTO dest, ResolutionContext ctx)
     {
         dest.Location = urlHelperService.Action(dest.CreatedAtRouteValues);
     }

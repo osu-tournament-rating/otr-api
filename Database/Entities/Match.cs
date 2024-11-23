@@ -45,8 +45,11 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     [Column("end_time")]
     public DateTime EndTime { get; set; }
 
-    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
+    [Column("verification_status")]
+    public VerificationStatus VerificationStatus { get; set; }
 
+    [AuditIgnore]
+    [Column("last_processing_date")]
     public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
@@ -124,7 +127,8 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
 
     public ICollection<MatchAdminNote> AdminNotes { get; set; } = new List<MatchAdminNote>();
 
-    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+    [NotMapped]
+    public int? ActionBlamedOnUserId { get; set; }
 
     public void ResetAutomationStatuses(bool force)
     {

@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API.Authorization;
@@ -15,6 +16,7 @@ using API.Repositories.Interfaces;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.SwaggerGen;
+using API.SwaggerGen.Filters;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
@@ -26,10 +28,12 @@ using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 using Npgsql;
@@ -39,11 +43,11 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OsuApiClient.Extensions;
 using Serilog;
+using Serilog.AspNetCore;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
-using Unchase.Swashbuckle.AspNetCore.Extensions.Options;
 
 #region WebApplicationBuilder Configuration
 
@@ -82,15 +86,17 @@ builder
 
 #region Controller Configuration
 
-builder
-    .Services.AddControllers(options =>
+builder.Services
+    .AddControllers(options =>
     {
         options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
+        options.Filters.Add(new AuthorizeFilter(AuthorizationPolicies.Whitelist));
     })
     .AddJsonOptions(o =>
     {
         o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
         o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     })
     .AddNewtonsoftJson();
 
@@ -186,7 +192,7 @@ builder.Services.AddRateLimiter(options =>
 
         // Partition for each unique user / client
         return RateLimitPartition.GetFixedWindowLimiter(
-            $"{(context.User.IsUser() ? OtrClaims.Roles.User : OtrClaims.Roles.Client)}_{context.User.GetSubjectId()}",
+            $"{context.User.GetSubjectType()}_{context.User.GetSubjectId()}",
             _ => GetRateLimiterOptions(context.User.GetRateLimitOverride())
         );
     });
@@ -224,19 +230,14 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SchemaGeneratorOptions.SupportNonNullableReferenceTypes = true;
-    options.SwaggerDoc(
-        "v1",
-        new OpenApiInfo
-        {
-            Version = "v1",
-            Title = "osu! Tournament Rating API",
-            Description =
-                "The official resource for reading and writing data within the osu! Tournament Rating platform."
-        }
-    );
+    // Sets nullable flags
+    options.SupportNonNullableReferenceTypes();
+    // Allows reference enums to be marked nullable
+    options.UseAllOfToExtendReferenceSchemas();
+    // Allows reference objects to be marked nullable
+    options.UseAllOfForInheritance();
 
-    // Allow swagger to use in-code XML documentation tags like <summary> and <remarks>
+    // Allow use of in-code XML documentation tags like <summary> and <remarks>
     string[] xmlDocPaths =
     [
         $"{AppDomain.CurrentDomain.BaseDirectory}API.xml",
@@ -248,7 +249,25 @@ builder.Services.AddSwaggerGen(options =>
         options.IncludeXmlCommentsWithRemarks(xmlDoc);
     }
 
-    // Generate custom descriptors for endpoints using method names
+    // Register custom filters
+    options.OperationFilter<SecurityMetadataOperationFilter>();
+
+    options.SchemaFilter<EnumMetadataSchemaFilter>((object)xmlDocPaths);
+    options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
+
+    // Populate the document's info
+    options.SwaggerDoc(
+        "v1",
+        new OpenApiInfo
+        {
+            Version = "v1",
+            Title = "osu! Tournament Rating API",
+            Description =
+                "The official resource for reading and writing data within the osu! Tournament Rating platform."
+        }
+    );
+
+    // Generate custom descriptors for endpoints using their literal method names
     var unknownMethodCount = 0;
     options.CustomOperationIds(description =>
     {
@@ -269,35 +288,10 @@ builder.Services.AddSwaggerGen(options =>
         return $"{controller}_{method}";
     });
 
-    // Applies a fix to the way that swagger parses descriptions for enums
-    options.AddEnumsWithValuesFixFilters(enumsOptions =>
-    {
-        enumsOptions.IncludeDescriptions = true;
-        enumsOptions.IncludeXEnumRemarks = true;
-        enumsOptions.DescriptionSource = DescriptionSources.XmlComments;
-
-        enumsOptions.ApplySchemaFilter = true;
-        enumsOptions.ApplyDocumentFilter = false;
-        enumsOptions.ApplyParameterFilter = false;
-
-        foreach (var xmlDoc in xmlDocPaths)
-        {
-            enumsOptions.IncludeXmlCommentsFrom(xmlDoc);
-        }
-    });
-
-    options.SchemaFilter<BitwiseFlagEnumSchemaFilter>();
-
-    // Adds documentation to swagger about authentication and the ability to authenticate from swagger ui
-    var oauthScopes = new Dictionary<string, string>
-    {
-        [OtrClaims.Roles.User] = OtrClaims.GetDescription(OtrClaims.Roles.User),
-        [OtrClaims.Roles.Client] = OtrClaims.GetDescription(OtrClaims.Roles.Client),
-        [OtrClaims.Roles.Admin] = OtrClaims.GetDescription(OtrClaims.Roles.Admin),
-        [OtrClaims.Roles.Verifier] = OtrClaims.GetDescription(OtrClaims.Roles.Verifier),
-        [OtrClaims.Roles.Submitter] = OtrClaims.GetDescription(OtrClaims.Roles.Submitter),
-        [OtrClaims.Roles.Whitelist] = OtrClaims.GetDescription(OtrClaims.Roles.Whitelist)
-    };
+    // Add documentation about authentication schemes
+    var oauthScopes = OtrClaims.Roles.ValidRoles
+        .Select(r => new KeyValuePair<string, string>(r, OtrClaims.GetDescription(r)))
+        .ToDictionary();
 
     options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
     {
@@ -309,7 +303,7 @@ builder.Services.AddSwaggerGen(options =>
         BearerFormat = "JWT"
     });
 
-    options.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
+    options.AddSecurityDefinition(SecurityRequirements.OAuthSecurityRequirementId, new OpenApiSecurityScheme
     {
         Name = "OAuth2 Authentication",
         In = ParameterLocation.Header,
@@ -332,14 +326,43 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
-    options.AddSecurityRequirement(SecurityRequirements.BearerSecurityRequirement);
+    // Register custom enum schemas describing authorization roles and policies
+    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(OtrClaims.Roles), new OpenApiSchema
+    {
+        Type = "string",
+        Description = "The possible roles assignable to a user or client",
+        Enum = new List<IOpenApiAny>(oauthScopes.Keys.Select(role => new OpenApiString(role))),
+        Extensions = new Dictionary<string, IOpenApiExtension>
+        {
+            [ExtensionKeys.EnumNames] = oauthScopes.Keys.Select(k => char.ToUpper(k[0]) + k[1..]).ToOpenApiArray(),
+            [ExtensionKeys.EnumDescriptions] = oauthScopes.Values.ToOpenApiArray()
+        }
+    });
 
-    options.OperationFilter<ActionSecurityOperationFilter>();
+    // Register custom enum schemas describing authorization roles and policies
+    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(AuthorizationPolicies), new OpenApiSchema
+    {
+        Type = "string",
+        Description = "The possible authorization policies enforced on a route. Authorization policies differ from " +
+                      "Roles as they may require special conditions to be satisfied. See the description of a " +
+                      "policy for more information.",
+        Enum = AuthorizationPolicies.Policies.ToOpenApiArray(),
+        Extensions = new Dictionary<string, IOpenApiExtension>
+        {
+            [ExtensionKeys.EnumNames] = AuthorizationPolicies.Policies.ToOpenApiArray(),
+            [ExtensionKeys.EnumDescriptions] = AuthorizationPolicies.Policies
+                .Select(AuthorizationPolicies.GetDescription)
+                .ToOpenApiArray()
+        }
+    });
+
+    // Add the ability to authenticate with swagger ui
+    options.AddSecurityRequirement(SecurityRequirements.BearerSecurityRequirement);
 });
 
 #endregion
 
-#region Logger Configuration
+#region Logging Configuration
 
 builder.Services.AddSerilog(configuration =>
 {
@@ -361,7 +384,6 @@ builder.Services.AddSerilog(configuration =>
             "Microsoft.EntityFrameworkCore.Database.Command",
             LogEventLevel.Warning
         )
-        .MinimumLevel.Override("OsuSharp", LogEventLevel.Fatal)
         .Enrich.FromLogContext()
         .WriteTo.Console(
             outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}"
@@ -379,7 +401,49 @@ builder.Services.AddSerilog(configuration =>
         );
 });
 
-builder.Services.AddLogging();
+builder.Services.Configure<RequestLoggingOptions>(o =>
+{
+    o.IncludeQueryInRequestPath = true;
+
+    o.MessageTemplate =
+        "{RequestIdentity} {RequestScheme} {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.00} ms";
+
+    o.GetLevel = (httpContext, elapsed, ex) =>
+    {
+        // Error for server errors and exceptions
+        if (httpContext.Response.StatusCode >= StatusCodes.Status500InternalServerError || ex is not null)
+        {
+            return LogEventLevel.Error;
+        }
+
+        // Warn for unexpected client errors or long response times
+        if (httpContext.Response.StatusCode > StatusCodes.Status404NotFound || elapsed >= 5000)
+        {
+            return LogEventLevel.Warning;
+        }
+
+        return LogEventLevel.Information;
+    };
+
+    o.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+
+        string ident;
+        if (httpContext.User.TryGetSubjectId(out var id))
+        {
+            var subjectType = httpContext.User.GetSubjectType();
+            subjectType = char.ToUpper(subjectType[0]) + subjectType[1..];
+            ident = $"{subjectType} {id}";
+        }
+        else
+        {
+            ident = "Anonymous";
+        }
+
+        diagnosticContext.Set("RequestIdentity", ident);
+    };
+});
 
 #endregion
 
@@ -444,23 +508,27 @@ builder.Services
 
 #region Authorization Configuration
 
-builder
-    .Services.AddAuthorizationBuilder()
-    .AddPolicy(
-        AuthorizationPolicies.AccessUserResources,
-        policy =>
-            policy
-                .RequireAuthenticatedUser()
-                .AddRequirements(new AccessUserResourcesRequirement(allowSelf: true))
-    );
+builder.Services
+    .AddAuthorizationBuilder()
+    .AddPolicy(AuthorizationPolicies.AccessUserResources, p =>
+    {
+        p.RequireRole(OtrClaims.Roles.User);
+        p.AddRequirements(new AccessUserResourcesAuthorizationRequirement());
+    })
+    .AddPolicy(AuthorizationPolicies.Whitelist, p =>
+    {
+        p.AddRequirements(new WhitelistAuthorizationRequirement());
+    });
 
-builder.Services.AddSingleton<IAuthorizationHandler, AccessUserResourcesAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, AccessUserResourcesAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, WhitelistAuthorizationHandler>();
 
 #endregion
 
 #region Context Accessors
 
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+builder.Services.AddHttpContextAccessor();
 
 #endregion
 
@@ -576,25 +644,20 @@ app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.UseHttpsRedirection();
 
-app.UseRouting(); // UseRouting must come first before UseCors
-app.UseCors(); // Placed after UseRouting and before UseAuthentication and UseAuthorization
+app.UseSerilogRequestLogging();
 
-app.UseMiddleware<RequestLoggingMiddleware>();
+// UseRouting must come first before UseCors
+app.UseRouting();
+// Placed after UseRouting and before UseAuthentication and UseAuthorization
+app.UseCors();
 
 app.UseAuthentication();
-
-IOptions<AuthConfiguration> authConfiguration = app.Services.GetRequiredService<
-    IOptions<AuthConfiguration>
->();
-if (authConfiguration.Value.EnforceWhitelist)
-{
-    app.UseMiddleware<WhitelistEnforcementMiddleware>();
-}
-
 app.UseAuthorization();
 
 app.UseRateLimiter();
 app.UseMiddleware<RateLimitHeadersMiddleware>();
+
+app.UseSwagger();
 
 if (app.Environment.IsDevelopment())
 {
@@ -602,13 +665,15 @@ if (app.Environment.IsDevelopment())
     IMapper mapper = app.Services.GetRequiredService<IMapper>();
     mapper.ConfigurationProvider.AssertConfigurationIsValid();
 
-    app.UseSwagger();
-    app.UseSwaggerUI(x => { x.SwaggerEndpoint("/swagger/v1/swagger.json", "osu! Tournament Rating API"); });
+    app.UseSwaggerUI(o =>
+    {
+        o.EnableTryItOutByDefault();
+        o.SwaggerEndpoint("/swagger/v1/swagger.json", "osu! Tournament Rating API");
+    });
 
-    // Endpoints expecting authentication WILL throw exceptions if used anonymously
-    // Example: `GET` `/me`
     if (args.Contains("--allow-anonymous"))
     {
+        // Endpoints / features expecting authentication (like `GET` `/me`) WILL throw exceptions if used anonymously
         app.MapControllers().AllowAnonymous();
     }
     else
