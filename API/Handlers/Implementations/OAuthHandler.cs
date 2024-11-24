@@ -8,7 +8,9 @@ using API.Utilities.Extensions;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using OsuApiClient;
+using OsuApiClient.Configurations.Interfaces;
 using OsuUser = OsuApiClient.Domain.Osu.Users.UserExtended;
 
 namespace API.Handlers.Implementations;
@@ -23,8 +25,8 @@ public class OAuthHandler(
     IPlayersRepository playerRepository,
     IUserRepository userRepository,
     IOsuClient osuClient,
-    IPasswordHasher<OAuthClient> clientSecretHasher
-    ) : IOAuthHandler
+    IPasswordHasher<OAuthClient> clientSecretHasher,
+    IOptions<IOsuClientConfiguration> osuConfiguration) : IOAuthHandler
 {
     public async Task<AccessCredentialsDTO?> AuthorizeAsync(string osuAuthCode)
     {
@@ -69,7 +71,8 @@ public class OAuthHandler(
     {
         // Do not allow friends list syncs more often than every 24 hours
         if (user.LastFriendsListUpdate is not null &&
-            (DateTime.UtcNow - user.LastFriendsListUpdate).Value < TimeSpan.FromDays(1))
+            (DateTime.UtcNow - user.LastFriendsListUpdate).Value <
+            TimeSpan.FromHours(osuConfiguration.Value.LoginFriendsSyncFrequencyHours))
         {
             return;
         }
@@ -99,7 +102,8 @@ public class OAuthHandler(
         }
 
         // Validate secret
-        PasswordVerificationResult result = clientSecretHasher.VerifyHashedPassword(client, client.Secret, clientSecret);
+        PasswordVerificationResult
+            result = clientSecretHasher.VerifyHashedPassword(client, client.Secret, clientSecret);
         if (result != PasswordVerificationResult.Success)
         {
             return new DetailedResponseDTO<AccessCredentialsDTO> { ErrorDetail = "Invalid client credentials" };
@@ -153,6 +157,7 @@ public class OAuthHandler(
                     ErrorDetail = "Refresh token does not belong to an existing user"
                 };
             }
+
             accessToken = jwtService.GenerateAccessToken(user);
         }
         else if (claimsPrincipal.IsClient())
@@ -166,6 +171,7 @@ public class OAuthHandler(
                     ErrorDetail = "Refresh token does not belong to an existing client"
                 };
             }
+
             accessToken = jwtService.GenerateAccessToken(client);
         }
 

@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using OsuApiClient.Configurations.Interfaces;
+using API.Configurations.Interfaces;
 
 namespace API.Configurations;
 
-public class OsuConfiguration : IOsuClientConfiguration
+public class OsuConfiguration : IOsuConfiguration
 {
     public const string Position = "Osu";
 
@@ -16,6 +16,10 @@ public class OsuConfiguration : IOsuClientConfiguration
 
     [Required(ErrorMessage = "RedirectUrl is required!")]
     public string RedirectUrl { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "LoginFriendsSyncFrequencyHours is required!")]
+    [Range(1, int.MaxValue, ErrorMessage = "LoginFriendsSyncFrequencyHours must be a positive, non-zero value!")]
+    public int LoginFriendsSyncFrequencyHours { get; set; }
 
     public int? OsuRateLimit { get; set; }
 
