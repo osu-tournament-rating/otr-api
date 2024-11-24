@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using API.Authorization;
+using API.Configurations.Interfaces;
 using API.DTOs;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
@@ -10,7 +11,6 @@ using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using OsuApiClient;
-using OsuApiClient.Configurations.Interfaces;
 using OsuUser = OsuApiClient.Domain.Osu.Users.UserExtended;
 
 namespace API.Handlers.Implementations;
@@ -26,7 +26,7 @@ public class OAuthHandler(
     IUserRepository userRepository,
     IOsuClient osuClient,
     IPasswordHasher<OAuthClient> clientSecretHasher,
-    IOptions<IOsuClientConfiguration> osuConfiguration) : IOAuthHandler
+    IOptions<IOsuConfiguration> osuConfiguration) : IOAuthHandler
 {
     public async Task<AccessCredentialsDTO?> AuthorizeAsync(string osuAuthCode)
     {

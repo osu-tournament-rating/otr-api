@@ -6,9 +6,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance",
+    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class UserRepository(OtrContext context, ILogger<UserRepository> logger,
+public class UserRepository(
+    OtrContext context,
+    ILogger<UserRepository> logger,
     IUserSettingsRepository userSettingsRepository) : RepositoryBase<User>(context), IUserRepository
 {
     private readonly OtrContext _context = context;
@@ -46,13 +49,7 @@ public class UserRepository(OtrContext context, ILogger<UserRepository> logger,
         }
 
         return await CreateAsync(
-            new User
-            {
-                PlayerId = playerId,
-                Created = DateTime.UtcNow,
-                LastLogin = DateTime.UtcNow,
-                Scopes = []
-            }
+            new User { PlayerId = playerId, Created = DateTime.UtcNow, LastLogin = DateTime.UtcNow, Scopes = [] }
         );
     }
 
@@ -61,11 +58,11 @@ public class UserRepository(OtrContext context, ILogger<UserRepository> logger,
 
     public async Task<IEnumerable<OAuthClient>> GetClientsAsync(int id) =>
         await _context.Users.Where(u => u.Id == id).Select(u => u.Clients).FirstOrDefaultAsync()
-        ?? new List<OAuthClient>();
+        ?? [];
 
     public async Task<IEnumerable<Match>> GetSubmissionsAsync(int id) =>
         await _context.Users.Where(u => u.Id == id).Select(u => u.SubmittedMatches).FirstOrDefaultAsync()
-        ?? new List<Match>();
+        ?? [];
 
     public async Task<User?> SyncFriendsAsync(int id, ICollection<long> osuIds)
     {
@@ -89,17 +86,14 @@ public class UserRepository(OtrContext context, ILogger<UserRepository> logger,
         idSet.ExceptWith(players.Select(p => p.OsuId));
 
         // Create players and assign them to the friends list
-        players.AddRange(idSet.Select(osuId => new Player
-        {
-            OsuId = osuId
-        }));
+        players.AddRange(idSet.Select(osuId => new Player { OsuId = osuId }));
 
         // Overwrite friends list and update
         user.Friends = players;
         user.LastFriendsListUpdate = DateTime.UtcNow;
         await UpdateAsync(user);
 
-        logger.LogInformation("Synced {Count} friends for user {User}", user.Friends.Count, user.Id);
+        logger.LogDebug("Synced {Count} friends for user {User}", user.Friends.Count, user.Id);
 
         return user;
     }
