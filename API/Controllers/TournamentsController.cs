@@ -22,7 +22,7 @@ public partial class TournamentsController(
     /// <summary>
     /// Get all tournaments which fit an optional request query
     /// </summary>
-    /// <remarks>Will not include match data</remarks>
+    /// <remarks>Results will not include match data</remarks>
     /// <response code="200">Returns all tournaments which fit the request query</response>
     [HttpGet]
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
@@ -44,34 +44,67 @@ public partial class TournamentsController(
     [ProducesResponseType<TournamentCreatedResultDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateAsync([FromBody][Required] TournamentSubmissionDTO tournamentSubmission)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState.ErrorMessage());
-        }
+        // Sanitize id collections
+        tournamentSubmission.Ids = tournamentSubmission.Ids.Distinct().Where(id => id >= 1);
+        tournamentSubmission.BeatmapIds = tournamentSubmission.BeatmapIds.Distinct().Where(id => id >= 1);
 
+        #region Model Validation
+
+        // Check for unique submissions
         if (await tournamentsService.ExistsAsync(tournamentSubmission.Name, tournamentSubmission.Ruleset))
         {
-            return BadRequest(
-                $"A tournament with name: {tournamentSubmission.Name} for ruleset: {tournamentSubmission.Ruleset} already exists"
+            ModelState.AddModelError(
+                nameof(TournamentSubmissionDTO.Name),
+                $"A tournament with the name '{tournamentSubmission.Name}' and ruleset " +
+                $"'{tournamentSubmission.Ruleset}' already exists."
+            );
+            ModelState.AddModelError(
+                nameof(TournamentSubmissionDTO.Ruleset),
+                $"A tournament with the ruleset '{tournamentSubmission.Ruleset}' and name " +
+                $"'{tournamentSubmission.Name}' already exists."
             );
         }
 
-        if (tournamentSubmission.RejectionReason.HasValue && !User.IsAdmin())
+        // Some submission data requires admin permission
+        if (!User.IsAdmin())
         {
-            return BadRequest("Only admin users may supply a rejection reason");
+            // Check reject on submit
+            if (tournamentSubmission.RejectionReason.HasValue)
+            {
+                ModelState.AddModelError(
+                    nameof(TournamentSubmissionDTO.RejectionReason),
+                    $"The field {nameof(TournamentSubmissionDTO.RejectionReason)} may only be supplied by admin users."
+                );
+            }
+
+            // We never want unprivileged users submitting empty tournaments
+            if (!tournamentSubmission.Ids.Any())
+            {
+                ModelState.AddModelError(
+                    nameof(TournamentSubmissionDTO.Ids),
+                    $"The field {nameof(TournamentSubmissionDTO.Ids)} cannot be empty."
+                );
+            }
         }
 
-        // Sanitize forum post url
-        Uri.TryCreate(tournamentSubmission.ForumUrl, UriKind.Absolute, out Uri? sanitizedUrl);
-        if (sanitizedUrl is null)
+        // Check for valid forum post url
+        if (!Uri.TryCreate(tournamentSubmission.ForumUrl, UriKind.Absolute, out Uri? sanitizedUri))
         {
-            return BadRequest($"The tournament forum URL is invalid: {tournamentSubmission.ForumUrl}");
+            ModelState.AddModelError(
+                nameof(TournamentSubmissionDTO.ForumUrl),
+                $"The field {nameof(TournamentSubmissionDTO.ForumUrl)} is invalid."
+            );
         }
-        tournamentSubmission.ForumUrl = sanitizedUrl.GetLeftPart(UriPartial.Path);
 
-        // Input validation for mp and beatmap ids
-        tournamentSubmission.Ids = tournamentSubmission.Ids.Where(id => id >= 1);
-        tournamentSubmission.BeatmapIds = tournamentSubmission.BeatmapIds.Where(id => id >= 1);
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem();
+        }
+
+        #endregion
+
+        // Sanitize forum url
+        tournamentSubmission.ForumUrl = sanitizedUri!.AbsolutePath;
 
         // Create tournament
         TournamentCreatedResultDTO result = await tournamentsService.CreateAsync(

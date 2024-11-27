@@ -30,6 +30,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.OpenApi.Any;
@@ -89,6 +90,7 @@ builder
 builder.Services
     .AddControllers(options =>
     {
+        options.ModelMetadataDetailsProviders.Add(new NewtonsoftJsonValidationMetadataProvider());
         options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
         options.Filters.Add(new AuthorizeFilter(AuthorizationPolicies.Whitelist));
     })
