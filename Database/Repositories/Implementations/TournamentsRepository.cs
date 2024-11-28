@@ -99,7 +99,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         }
 
         return await query
-                .Page(pageSize, page)
+                .Page(pageSize, page - 1)
                 .ToListAsync();
     }
 
