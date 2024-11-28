@@ -146,7 +146,7 @@ public class UsersController(
     /// <param name="clientId">OAuth client id</param>
     /// <response code="404">
     /// A user matching the given id does not exist
-    /// or an oauth client matching the given id is not owned by the user
+    /// or an OAuth client matching the given id is not owned by the user
     /// </response>
     /// <response code="400">The deletion was not successful</response>
     /// <response code="200">The deletion was successful</response>
@@ -174,7 +174,7 @@ public class UsersController(
     /// <param name="clientId">OAuth client id</param>
     /// <response code="404">
     /// A user matching the given id does not exist
-    /// or an oauth client matching the given id is not owned by the user
+    /// or an OAuth client matching the given id is not owned by the user
     /// </response>
     /// <response code="200">Returns new client credentials</response>
     [HttpPost("{id:int}/clients/{clientId:int}/secret:reset")]

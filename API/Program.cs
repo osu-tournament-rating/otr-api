@@ -26,10 +26,10 @@ using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
@@ -43,6 +43,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OsuApiClient.Extensions;
 using Serilog;
+using Serilog.AspNetCore;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -89,6 +90,7 @@ builder.Services
     .AddControllers(o =>
     {
         o.ModelMetadataDetailsProviders.Add(new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
+        o.Filters.Add(new AuthorizeFilter(AuthorizationPolicies.Whitelist));
     })
     .AddJsonOptions(o =>
     {
@@ -192,7 +194,7 @@ builder.Services.AddRateLimiter(options =>
 
         // Partition for each unique user / client
         return RateLimitPartition.GetFixedWindowLimiter(
-            $"{(context.User.IsUser() ? OtrClaims.Roles.User : OtrClaims.Roles.Client)}_{context.User.GetSubjectId()}",
+            $"{context.User.GetSubjectType()}_{context.User.GetSubjectId()}",
             _ => GetRateLimiterOptions(context.User.GetRateLimitOverride())
         );
     });
@@ -364,7 +366,7 @@ builder.Services.AddSwaggerGen(options =>
 
 #endregion
 
-#region Logger Configuration
+#region Logging Configuration
 
 builder.Services.AddSerilog(configuration =>
 {
@@ -386,7 +388,6 @@ builder.Services.AddSerilog(configuration =>
             "Microsoft.EntityFrameworkCore.Database.Command",
             LogEventLevel.Warning
         )
-        .MinimumLevel.Override("OsuSharp", LogEventLevel.Fatal)
         .Enrich.FromLogContext()
         .WriteTo.Console(
             outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}"
@@ -404,7 +405,49 @@ builder.Services.AddSerilog(configuration =>
         );
 });
 
-builder.Services.AddLogging();
+builder.Services.Configure<RequestLoggingOptions>(o =>
+{
+    o.IncludeQueryInRequestPath = true;
+
+    o.MessageTemplate =
+        "{RequestIdentity} {RequestScheme} {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.00} ms";
+
+    o.GetLevel = (httpContext, elapsed, ex) =>
+    {
+        // Error for server errors and exceptions
+        if (httpContext.Response.StatusCode >= StatusCodes.Status500InternalServerError || ex is not null)
+        {
+            return LogEventLevel.Error;
+        }
+
+        // Warn for unexpected client errors or long response times
+        if (httpContext.Response.StatusCode > StatusCodes.Status404NotFound || elapsed >= 5000)
+        {
+            return LogEventLevel.Warning;
+        }
+
+        return LogEventLevel.Information;
+    };
+
+    o.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+
+        string ident;
+        if (httpContext.User.TryGetSubjectId(out var id))
+        {
+            var subjectType = httpContext.User.GetSubjectType();
+            subjectType = char.ToUpper(subjectType[0]) + subjectType[1..];
+            ident = $"{subjectType} {id}";
+        }
+        else
+        {
+            ident = "Anonymous";
+        }
+
+        diagnosticContext.Set("RequestIdentity", ident);
+    };
+});
 
 #endregion
 
@@ -469,23 +512,27 @@ builder.Services
 
 #region Authorization Configuration
 
-builder
-    .Services.AddAuthorizationBuilder()
-    .AddPolicy(
-        AuthorizationPolicies.AccessUserResources,
-        policy =>
-            policy
-                .RequireAuthenticatedUser()
-                .AddRequirements(new AccessUserResourcesRequirement(allowSelf: true))
-    );
+builder.Services
+    .AddAuthorizationBuilder()
+    .AddPolicy(AuthorizationPolicies.AccessUserResources, p =>
+    {
+        p.RequireRole(OtrClaims.Roles.User);
+        p.AddRequirements(new AccessUserResourcesAuthorizationRequirement());
+    })
+    .AddPolicy(AuthorizationPolicies.Whitelist, p =>
+    {
+        p.AddRequirements(new WhitelistAuthorizationRequirement());
+    });
 
-builder.Services.AddSingleton<IAuthorizationHandler, AccessUserResourcesAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, AccessUserResourcesAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, WhitelistAuthorizationHandler>();
 
 #endregion
 
 #region Context Accessors
 
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+builder.Services.AddHttpContextAccessor();
 
 #endregion
 
@@ -601,25 +648,20 @@ app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.UseHttpsRedirection();
 
-app.UseRouting(); // UseRouting must come first before UseCors
-app.UseCors(); // Placed after UseRouting and before UseAuthentication and UseAuthorization
+app.UseSerilogRequestLogging();
 
-app.UseMiddleware<RequestLoggingMiddleware>();
+// UseRouting must come first before UseCors
+app.UseRouting();
+// Placed after UseRouting and before UseAuthentication and UseAuthorization
+app.UseCors();
 
 app.UseAuthentication();
-
-IOptions<AuthConfiguration> authConfiguration = app.Services.GetRequiredService<
-    IOptions<AuthConfiguration>
->();
-if (authConfiguration.Value.EnforceWhitelist)
-{
-    app.UseMiddleware<WhitelistEnforcementMiddleware>();
-}
-
 app.UseAuthorization();
 
 app.UseRateLimiter();
 app.UseMiddleware<RateLimitHeadersMiddleware>();
+
+app.UseSwagger();
 
 if (app.Environment.IsDevelopment())
 {
@@ -627,13 +669,15 @@ if (app.Environment.IsDevelopment())
     IMapper mapper = app.Services.GetRequiredService<IMapper>();
     mapper.ConfigurationProvider.AssertConfigurationIsValid();
 
-    app.UseSwagger();
-    app.UseSwaggerUI(x => { x.SwaggerEndpoint("/swagger/v1/swagger.json", "osu! Tournament Rating API"); });
+    app.UseSwaggerUI(o =>
+    {
+        o.EnableTryItOutByDefault();
+        o.SwaggerEndpoint("/swagger/v1/swagger.json", "osu! Tournament Rating API");
+    });
 
-    // Endpoints expecting authentication WILL throw exceptions if used anonymously
-    // Example: `GET` `/me`
     if (args.Contains("--allow-anonymous"))
     {
+        // Endpoints / features expecting authentication (like `GET` `/me`) WILL throw exceptions if used anonymously
         app.MapControllers().AllowAnonymous();
     }
     else
