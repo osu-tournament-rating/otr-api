@@ -11,7 +11,7 @@ namespace API.DTOs;
 /// <summary>
 /// Filtering parameters for leaderboard requests
 /// </summary>
-public class LeaderboardRequestQueryDTO : IPaginatedRequestQueryDTO
+public class LeaderboardRequestQueryDTO : IPaginated
 {
     [FromQuery]
     [Range(1, int.MaxValue)]
@@ -28,6 +28,7 @@ public class LeaderboardRequestQueryDTO : IPaginatedRequestQueryDTO
     /// </summary>
     [FromQuery]
     [DefaultValue(Ruleset.Osu)]
+    [EnumDataType(typeof(Ruleset))]
     public Ruleset Ruleset { get; init; } = Ruleset.Osu;
 
     /// <summary>
@@ -35,6 +36,7 @@ public class LeaderboardRequestQueryDTO : IPaginatedRequestQueryDTO
     /// </summary>
     [FromQuery]
     [DefaultValue(LeaderboardChartType.Global)]
+    [EnumDataType(typeof(LeaderboardChartType))]
     public LeaderboardChartType ChartType { get; init; } = LeaderboardChartType.Global;
 
     [BindNever]

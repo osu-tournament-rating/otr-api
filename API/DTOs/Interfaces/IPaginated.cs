@@ -3,7 +3,7 @@ namespace API.DTOs.Interfaces;
 /// <summary>
 /// Default pagination request parameters
 /// </summary>
-public interface IPaginatedRequestQueryDTO
+public interface IPaginated
 {
     /// <summary>
     /// Page number

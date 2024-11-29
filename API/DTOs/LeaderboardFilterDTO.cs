@@ -12,6 +12,10 @@ public class LeaderboardFilterDTO : IValidatableObject
     /// <summary>
     /// Rank floor
     /// </summary>
+    /// <remarks>
+    /// The "better" inclusive rank bound.
+    /// If given, only players with a rank greater than or equal to this value will be included
+    /// </remarks>
     [FromQuery]
     [Range(1, int.MaxValue)]
     public int? MinRank { get; init; }
@@ -19,6 +23,10 @@ public class LeaderboardFilterDTO : IValidatableObject
     /// <summary>
     /// Rank ceiling
     /// </summary>
+    /// <remarks>
+    /// The "worse" inclusive rank bound.
+    /// If given, only players with a rank less than or equal to this value will be included
+    /// </remarks>
     [FromQuery]
     [Range(1, int.MaxValue)]
     public int? MaxRank { get; init; }
@@ -26,6 +34,10 @@ public class LeaderboardFilterDTO : IValidatableObject
     /// <summary>
     /// Rating floor
     /// </summary>
+    /// <remarks>
+    /// The "better" inclusive rating bound.
+    /// If given, only players with a rating greater than or equal to this value will be included
+    /// </remarks>
     [FromQuery]
     [Range(100, int.MaxValue)]
     public int? MinRating { get; init; }
@@ -33,6 +45,10 @@ public class LeaderboardFilterDTO : IValidatableObject
     /// <summary>
     /// Rating ceiling
     /// </summary>
+    /// <remarks>
+    /// The "worse" inclusive rating bound.
+    /// If given, only players with a rating less than or equal to this value will be included
+    /// </remarks>
     [FromQuery]
     [Range(100, int.MaxValue)]
     public int? MaxRating { get; init; }
