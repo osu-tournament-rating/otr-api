@@ -14,18 +14,21 @@ public class TournamentSubmissionDTO
     /// <summary>
     /// The name of the tournament
     /// </summary>
-    public required string Name { get; set; }
+    [Required]
+    public string Name { get; set; } = null!;
 
     /// <summary>
     /// Acronym / shortened name of the tournament
-    /// <example>For osu! World Cup 2023, this value would be "OWC23"</example>
     /// </summary>
-    public required string Abbreviation { get; set; }
+    /// <example>For osu! World Cup 2023, this value would be "OWC23"</example>
+    [Required]
+    public string Abbreviation { get; set; } = null!;
 
     /// <summary>
     /// The osu! forum post advertising this tournament
     /// </summary>
-    public required string ForumUrl { get; set; }
+    [Required]
+    public string ForumUrl { get; set; } = null!;
 
     /// <summary>
     /// Lowest rank a player can be to participate in the tournament
@@ -44,6 +47,7 @@ public class TournamentSubmissionDTO
     /// <summary>
     /// osu! ruleset
     /// </summary>
+    [EnumDataType(typeof(Ruleset))]
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
@@ -51,6 +55,7 @@ public class TournamentSubmissionDTO
     /// for this reason and go through no additional processing
     /// </summary>
     /// <remarks>Submissions with a rejection reason will only be accepted from admin users</remarks>
+    [EnumDataType(typeof(TournamentRejectionReason))]
     public TournamentRejectionReason? RejectionReason { get; set; }
 
     /// <summary>

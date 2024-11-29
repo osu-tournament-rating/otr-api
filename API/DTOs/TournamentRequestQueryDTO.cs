@@ -1,44 +1,44 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using API.DTOs.Interfaces;
 using Database.Enums;
 
 namespace API.DTOs;
 
 /// <summary>
-/// Enables pagination and filtering of tournament requests
+/// Filtering parameters for tournaments requests
 /// </summary>
-public class TournamentRequestQueryDTO
+public class TournamentRequestQueryDTO : IPaginated
 {
-    /// <summary>
-    /// The page number
-    /// </summary>
     [Required]
-    [Range(0, int.MaxValue, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
-    public int Page { get; init; } = 1;
+    [Range(1, int.MaxValue)]
+    public int Page { get; init; }
+
+    [Required]
+    [Range(1, 100)]
+    public int PageSize { get; init; }
 
     /// <summary>
-    /// The size of the page
+    /// Filters results for only tournaments that are verified
     /// </summary>
-    [Required]
-    [Range(5, 100, ErrorMessage = "Value for {0} must be between {1} and {2}.")]
-    public int PageSize { get; init; } = 20;
-
-    /// <summary>
-    /// Whether the tournaments must be verified
-    /// </summary>
+    [DefaultValue(true)]
     public bool Verified { get; init; } = true;
 
     /// <summary>
-    /// An optional ruleset to filter by
+    /// Filters results for only tournaments played in a specified ruleset
     /// </summary>
+    [EnumDataType(typeof(Ruleset))]
     public Ruleset? Ruleset { get; init; }
 
     /// <summary>
     /// The key used to sort results by
     /// </summary>
-    public TournamentQuerySortType QuerySortType { get; init; } = TournamentQuerySortType.StartTime;
+    [DefaultValue(TournamentQuerySortType.StartTime)]
+    [EnumDataType(typeof(TournamentQuerySortType))]
+    public TournamentQuerySortType Sort { get; init; } = TournamentQuerySortType.StartTime;
 
     /// <summary>
-    /// Whether the tournaments are sorted in descending order by the <see cref="QuerySortType"/>
+    /// Whether the results are sorted in descending order by the <see cref="Sort"/>
     /// </summary>
-    public bool Descending { get; init; } = false;
+    public bool Descending { get; init; }
 }

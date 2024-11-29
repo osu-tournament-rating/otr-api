@@ -16,7 +16,7 @@ public class AdminNoteDTO
     public DateTime Created { get; init; }
 
     /// <summary>
-    /// Timestamp of the last update if available
+    /// Timestamp of the last update, if available
     /// </summary>
     public DateTime? Updated { get; init; }
 
@@ -26,14 +26,9 @@ public class AdminNoteDTO
     public int ReferenceId { get; init; }
 
     /// <summary>
-    /// Id of the admin user that created the note
+    /// The admin user that created the note
     /// </summary>
-    public int AdminUserId { get; set; }
-
-    /// <summary>
-    /// Username of the admin user that created the note
-    /// </summary>
-    public string? AdminUsername { get; init; }
+    public UserCompactDTO AdminUser { get; init; } = null!;
 
     /// <summary>
     /// Content of the note

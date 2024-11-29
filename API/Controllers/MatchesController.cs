@@ -1,10 +1,9 @@
-using System.ComponentModel.DataAnnotations;
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities.Extensions;
 using Asp.Versioning;
-using Database.Enums;
+using Database.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -17,43 +16,21 @@ namespace API.Controllers;
 public partial class MatchesController(IMatchesService matchesService, IAdminNoteService adminNoteService) : Controller
 {
     /// <summary>
-    /// Gets all matches
+    /// Get all matches which fit an optional request query
     /// </summary>
-    /// <remarks>
-    /// Results are ordered by id and support pagination. All match data is included.
-    /// </remarks>
-    /// <param name="limit">
-    /// Controls the number of matches to return. Functions as a "page size".
-    /// Default: 100 Constraints: Minimum 1, Maximum 5000
-    /// </param>
-    /// <param name="page">
-    /// Controls which block of size <paramref name="limit"/> to return.
-    /// Default: 1, Constraints: Minimum 1
-    /// </param>
-    /// <response code="200">Returns the desired page of matches</response>
+    /// <remarks>Will not include game data</remarks>
+    /// <response code="200">Returns all matches which fit the request query</response>
     [HttpGet]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
-    [ProducesResponseType<PagedResultDTO<MatchDTO>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ListAsync(
-        [FromQuery] MatchesFilterDTO filter,
-        [FromQuery][Range(1, int.MaxValue)] int limit = 100,
-        [FromQuery][Range(1, int.MaxValue)] int page = 1
-    )
-    {
-        // Clamp page size for non-admin users
-        if (limit > 5000 && !User.IsAdmin())
-        {
-            limit = 5000;
-        }
-
-        return Ok(await matchesService.GetAsync(limit, page, filter));
-    }
+    [ProducesResponseType<IEnumerable<MatchDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListAsync([FromQuery] MatchRequestQueryDTO requestQuery) =>
+        Ok(await matchesService.GetAsync(requestQuery));
 
     /// <summary>
     /// Get a match
     /// </summary>
     /// <param name="id">Match id</param>
-    /// <response code="404">If a match does not exist for the given id</response>
+    /// <response code="404">A match matching the given id does not exist</response>
     /// <response code="200">Returns a match</response>
     [HttpGet("{id:int}")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
@@ -68,26 +45,18 @@ public partial class MatchesController(IMatchesService matchesService, IAdminNot
             : Ok(match);
     }
 
-    // TODO: Should be /player/{osuId}/matches instead.
-    [HttpGet("player/{osuId:long}")]
-    [Authorize(Roles = OtrClaims.Roles.Admin)]
-    public async Task<IActionResult> GetMatchesAsync(long osuId, Ruleset ruleset) =>
-        Ok(await matchesService.GetAllForPlayerAsync(osuId, ruleset, DateTime.MinValue, DateTime.MaxValue));
-
     /// <summary>
-    ///  Amend match data
+    /// Amend match data
     /// </summary>
-    /// <param name="id">The match id</param>
+    /// <param name="id">Match id</param>
     /// <param name="patch">JsonPatch data</param>
-    /// <response code="404">If the provided id does not belong to a match</response>
-    /// <response code="400">If JsonPatch data is malformed</response>
-    /// <response code="200">Returns the patched match</response>
-    /// <returns></returns>
+    /// <response code="404">A match matching the given id does not exist</response>
+    /// <response code="400">The JsonPatch data is malformed</response>
+    /// <response code="200">Returns the updated match</response>
     [HttpPatch("{id:int}")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<MatchDTO> patch)
     {
@@ -98,7 +67,7 @@ public partial class MatchesController(IMatchesService matchesService, IAdminNot
         }
 
         // Ensure request is only attempting to perform a replace operation.
-        if (!patch.IsReplaceOnly())
+        if (patch.Operations.Count == 0 || !patch.IsReplaceOnly())
         {
             return BadRequest();
         }
@@ -117,10 +86,11 @@ public partial class MatchesController(IMatchesService matchesService, IAdminNot
     /// Delete a match
     /// </summary>
     /// <param name="id">Match id</param>
-    /// <response code="404">The match does not exist</response>
+    /// <response code="404">A match matching the given id does not exist</response>
     /// <response code="204">The match was deleted successfully</response>
     [HttpDelete("{id:int}")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
@@ -132,5 +102,25 @@ public partial class MatchesController(IMatchesService matchesService, IAdminNot
 
         await matchesService.DeleteAsync(id);
         return NoContent();
+    }
+
+    /// <summary>
+    /// List all admin notes from a match
+    /// </summary>
+    /// <param name="id">Match id</param>
+    /// <response code="404">A match matching the given id does not exist</response>
+    /// <response code="200">Returns all admin notes from a match</response>
+    [HttpGet("{id:int}/notes")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<IEnumerable<AdminNoteDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListAdminNotesAsync(int id)
+    {
+        if (!await matchesService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        return Ok(await adminNoteService.ListAsync<MatchAdminNote>(id));
     }
 }

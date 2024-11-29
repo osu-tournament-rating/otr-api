@@ -16,7 +16,7 @@ public class ScoreAutomationChecksProcessor(
     {
         if (entity.ProcessingStatus is not ScoreProcessingStatus.NeedsAutomationChecks)
         {
-            logger.LogDebug(
+            logger.LogTrace(
                 "Score does not require processing [Id: {Id} | Processing Status: {Status}]",
                 entity.Id,
                 entity.ProcessingStatus

@@ -814,6 +814,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(u => u.Id).UseIdentityColumn();
             entity.Property(u => u.Scopes).HasDefaultValue(Array.Empty<string>());
             entity.Property(u => u.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+            entity.Property(u => u.LastLogin).HasDefaultValueSql(SqlCurrentTimestamp);
 
             entity.HasIndex(u => u.PlayerId);
 

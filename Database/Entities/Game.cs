@@ -58,7 +58,8 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     [Column("end_time")]
     public DateTime EndTime { get; set; }
 
-    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
+    [Column("verification_status")]
+    public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
     /// Rejection reason
@@ -78,7 +79,9 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     [Column("processing_status")]
     public GameProcessingStatus ProcessingStatus { get; set; }
 
-    [Column("last_processing_date")] public DateTime LastProcessingDate { get; set; }
+    [AuditIgnore]
+    [Column("last_processing_date")]
+    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Match"/> that the game was played in
@@ -116,8 +119,8 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
 
     public ICollection<GameAudit> Audits { get; set; } = new List<GameAudit>();
 
-
-    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+    [NotMapped]
+    public int? ActionBlamedOnUserId { get; set; }
 
     /// <summary>
     /// Denotes if the mod setting was "free mod"

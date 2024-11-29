@@ -1615,10 +1615,12 @@ namespace Database.Migrations
                         .HasColumnName("last_friends_list_update");
 
                     b.Property<DateTime?>("LastLogin")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_login");
+                        .HasColumnName("last_login")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int?>("PlayerId")
+                    b.Property<int>("PlayerId")
                         .HasColumnType("integer")
                         .HasColumnName("player_id");
 
@@ -2066,7 +2068,8 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Player", "Player")
                         .WithOne("User")
                         .HasForeignKey("Database.Entities.User", "PlayerId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.Navigation("Player");
                 });

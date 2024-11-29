@@ -13,6 +13,10 @@ public abstract class AutomationCheckBase<TEntity>(
 {
     public virtual int Order => 0;
 
+    protected virtual LogLevel LogLevelOnPass => LogLevel.Trace;
+
+    protected virtual LogLevel LogLevelOnFail => LogLevel.Trace;
+
     public virtual bool Check(TEntity entity)
     {
         var passed = OnChecking(entity);
@@ -35,7 +39,7 @@ public abstract class AutomationCheckBase<TEntity>(
     /// <param name="entity">Entity that was checked</param>
     protected virtual void OnPass(TEntity entity)
     {
-        logger.LogDebug("Automation check passed [Id: {Id}]", entity.Id);
+        logger.Log(LogLevelOnPass, "Automation check passed [Id: {Id}]", entity.Id);
     }
 
     /// <summary>
@@ -44,7 +48,7 @@ public abstract class AutomationCheckBase<TEntity>(
     /// <param name="entity">Entity that was checked</param>
     protected virtual void OnFail(TEntity entity)
     {
-        logger.LogInformation("Automation check failed [Id: {Id}]", entity.Id);
+        logger.Log(LogLevelOnFail, "Automation check passed [Id: {Id}]", entity.Id);
     }
 
     /// <summary>

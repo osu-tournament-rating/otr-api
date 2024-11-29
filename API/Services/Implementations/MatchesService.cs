@@ -1,7 +1,5 @@
-using API.Controllers;
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities.Extensions;
 using AutoMapper;
 using Database.Entities;
 using Database.Enums;
@@ -11,19 +9,14 @@ namespace API.Services.Implementations;
 
 public class MatchesService(
     IMatchesRepository matchesRepository,
-    IUrlHelperService urlHelperService,
     IMapper mapper
 ) : IMatchesService
 {
-    public async Task<PagedResultDTO<MatchDTO>> GetAsync(
-        int limit,
-        int page,
-        MatchesFilterDTO filter
-    )
+    public async Task<IEnumerable<MatchDTO>> GetAsync(MatchRequestQueryDTO filter)
     {
         IEnumerable<Match> result = await matchesRepository.GetAsync(
-            limit,
-            page - 1,
+            filter.Page,
+            filter.PageSize,
             ruleset: filter.Ruleset,
             name: filter.Name,
             dateMin: filter.DateMin,
@@ -34,41 +27,10 @@ public class MatchesService(
             submittedBy: filter.SubmittedBy,
             verifiedBy: filter.VerifiedBy,
             querySortType: filter.Sort,
-            sortDescending: filter.SortDescending
+            sortDescending: filter.Descending
         );
-        var count = result.Count();
 
-        IDictionary<string, string> filterQuery = filter.ToDictionary();
-
-        return new PagedResultDTO<MatchDTO>
-        {
-            Next = count == limit
-                ? urlHelperService.Action(new CreatedAtRouteValues
-                {
-                    Controller = nameof(MatchesController),
-                    Action = nameof(MatchesController.ListAsync),
-                    RouteValues = filterQuery.Concat(new[]
-                    {
-                        new KeyValuePair<string, string>(nameof(limit), limit.ToString()),
-                        new KeyValuePair<string, string>(nameof(page), (page + 1).ToString())
-                    })
-                })
-                : null,
-            Previous = page > 1
-                ? urlHelperService.Action(new CreatedAtRouteValues
-                {
-                    Controller = nameof(MatchesController),
-                    Action = nameof(MatchesController.ListAsync),
-                    RouteValues = filterQuery.Concat(new[]
-                    {
-                        new KeyValuePair<string, string>(nameof(limit), limit.ToString()),
-                        new KeyValuePair<string, string>(nameof(page), (page - 1).ToString())
-                    })
-                })
-                : null,
-            Count = count,
-            Results = mapper.Map<IEnumerable<MatchDTO>>(result).ToList()
-        };
+        return mapper.Map<IEnumerable<MatchDTO>>(result);
     }
 
     public async Task<MatchDTO?> GetAsync(int id) =>

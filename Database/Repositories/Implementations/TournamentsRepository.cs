@@ -17,10 +17,13 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     private readonly OtrContext _context = context;
 
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
-        eagerLoad ? await TournamentsBaseQuery().FirstOrDefaultAsync(x => x.Id == id) : await base.GetAsync(id);
+        eagerLoad
+            ? await TournamentsBaseQuery().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id)
+            : await base.GetAsync(id);
 
     public async Task<Tournament?> GetVerifiedAsync(int id) =>
         await _context.Tournaments
+            .AsNoTracking()
             .AsSplitQuery()
             .Include(t => t.Matches.Where(m => m.VerificationStatus == VerificationStatus.Verified && m.ProcessingStatus == MatchProcessingStatus.Done))
             .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
@@ -29,6 +32,8 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
             .ThenInclude(g => g.Scores.Where(gs => gs.VerificationStatus == VerificationStatus.Verified && gs.ProcessingStatus == ScoreProcessingStatus.Done))
             .ThenInclude(gs => gs.Player)
+            .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
+            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
             .Include(t => t.AdminNotes)
             .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -68,11 +73,19 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         DateTime dateMax
     ) => await QueryForParticipation(playerId, ruleset, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
 
-    public async Task<ICollection<Tournament>> GetAsync(int page, int pageSize, TournamentQuerySortType querySortType,
-        bool descending = false, bool verified = true, Ruleset? ruleset = null)
+    public async Task<ICollection<Tournament>> GetAsync(
+        int page,
+        int pageSize,
+        TournamentQuerySortType querySortType,
+        bool descending = false,
+        bool verified = true,
+        Ruleset? ruleset = null
+    )
     {
         IQueryable<Tournament> query = _context.Tournaments
             .AsNoTracking()
+            .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
+            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
             .OrderBy(querySortType, descending);
 
         if (verified)
@@ -86,7 +99,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         }
 
         return await query
-                .Page(pageSize, page)
+                .Page(pageSize, page - 1)
                 .ToListAsync();
     }
 
@@ -265,6 +278,8 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .Include(e => e.SubmittedByUser)
             .Include(t => t.AdminNotes)
             .Include(t => t.PooledBeatmaps)
+            .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
+            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
             .AsSplitQuery();
     }
 }

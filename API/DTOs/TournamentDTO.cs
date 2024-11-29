@@ -1,9 +1,7 @@
-// ReSharper disable CommentTypo
-
 namespace API.DTOs;
 
 /// <summary>
-/// Represents a tournament
+/// Represents a tournament including optional data
 /// </summary>
 public class TournamentDTO : TournamentCompactDTO
 {
