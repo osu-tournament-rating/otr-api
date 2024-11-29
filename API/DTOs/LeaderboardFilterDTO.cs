@@ -1,52 +1,124 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Filters for the leaderboard
 /// </summary>
-public class LeaderboardFilterDTO
+public class LeaderboardFilterDTO : IValidatableObject
 {
     /// <summary>
-    /// The "better" inclusive bound (ranges from 1+)
+    /// Rank floor
     /// </summary>
-    public int? MinRank { get; set; }
+    /// <remarks>
+    /// The "better" inclusive rank bound.
+    /// If given, only players with a rank greater than or equal to this value will be included
+    /// </remarks>
+    [FromQuery]
+    [Range(1, int.MaxValue)]
+    public int? MinRank { get; init; }
 
     /// <summary>
-    /// The "worse" inclusive bound (ranges from 1+)
+    /// Rank ceiling
     /// </summary>
-    public int? MaxRank { get; set; }
+    /// <remarks>
+    /// The "worse" inclusive rank bound.
+    /// If given, only players with a rank less than or equal to this value will be included
+    /// </remarks>
+    [FromQuery]
+    [Range(1, int.MaxValue)]
+    public int? MaxRank { get; init; }
 
     /// <summary>
-    /// The lower-performing rating bound (ranges from 100+)
+    /// Rating floor
     /// </summary>
-    public int? MinRating { get; set; }
+    /// <remarks>
+    /// The "worse" inclusive rating bound.
+    /// If given, only players with a rating greater than or equal to this value will be included
+    /// </remarks>
+    [FromQuery]
+    [Range(100, int.MaxValue)]
+    public int? MinRating { get; init; }
 
     /// <summary>
-    /// The higher-performing rating bound (ranges from 100+)
+    /// Rating ceiling
     /// </summary>
-    public int? MaxRating { get; set; }
+    /// <remarks>
+    /// The "better" inclusive rating bound.
+    /// If given, only players with a rating less than or equal to this value will be included
+    /// </remarks>
+    [FromQuery]
+    [Range(100, int.MaxValue)]
+    public int? MaxRating { get; init; }
 
     /// <summary>
-    /// The minimum number of matches played (ranges from 1-10000)
+    /// Minimum number of matches played
     /// </summary>
-    public int? MinMatches { get; set; }
+    [FromQuery]
+    [Range(0, int.MaxValue)]
+    public int? MinMatches { get; init; }
 
     /// <summary>
-    /// The maximum number of matches played (ranges from 1-10000)
+    /// Maximum number of matches played
     /// </summary>
-    public int? MaxMatches { get; set; }
+    [FromQuery]
+    [Range(0, int.MaxValue)]
+    public int? MaxMatches { get; init; }
 
     /// <summary>
-    /// Ranges from 0.00-1.00
+    /// Minimum win rate
     /// </summary>
-    public double? MinWinRate { get; set; }
+    [FromQuery]
+    [Range(0.00, 1.00)]
+    public double? MinWinRate { get; init; }
 
     /// <summary>
-    /// Ranges from 0.00-1.00
+    /// Maximum win rate
     /// </summary>
-    public double? MaxWinRate { get; set; }
+    [FromQuery]
+    [Range(0.00, 1.00)]
+    public double? MaxWinRate { get; init; }
 
     /// <summary>
     /// A collection of optional filters for tiers
     /// </summary>
-    public LeaderboardTierFilterDTO? TierFilters { get; set; }
+    [BindNever]
+    public LeaderboardTierFilterDTO? TierFilters { get; set; } = new();
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (MinRank > MaxRank)
+        {
+            yield return new ValidationResult(
+                $"Value for {nameof(MinRank)} must be less than or equal to {nameof(MaxRank)}",
+                [nameof(MinRank), nameof(MaxRank)]
+            );
+        }
+
+        if (MinRating > MaxRating)
+        {
+            yield return new ValidationResult(
+                $"Value for {nameof(MinRating)} must be less than or equal to {nameof(MaxRating)}",
+                [nameof(MinRating), nameof(MaxRating)]
+            );
+        }
+
+        if (MinMatches > MaxMatches)
+        {
+            yield return new ValidationResult(
+                $"Value for {nameof(MinMatches)} must be less than or equal to {nameof(MaxMatches)}",
+                [nameof(MinMatches), nameof(MaxMatches)]
+            );
+        }
+
+        if (MinWinRate > MaxWinRate)
+        {
+            yield return new ValidationResult(
+                $"Value for {nameof(MinWinRate)} must be less than or equal to {nameof(MaxWinRate)}",
+                [nameof(MinWinRate), nameof(MaxWinRate)]
+            );
+        }
+    }
 }

@@ -36,8 +36,7 @@ public class ApiBaseStatsRepository(
 
         return await query
             .OrderByRatingDescending()
-            .Skip(page * pageSize)
-            .Take(pageSize)
+            .Page(pageSize, page - 1)
             .AsNoTracking()
             .ToListAsync();
     }
