@@ -35,7 +35,7 @@ public class LeaderboardFilterDTO : IValidatableObject
     /// Rating floor
     /// </summary>
     /// <remarks>
-    /// The "better" inclusive rating bound.
+    /// The "worse" inclusive rating bound.
     /// If given, only players with a rating greater than or equal to this value will be included
     /// </remarks>
     [FromQuery]
@@ -46,7 +46,7 @@ public class LeaderboardFilterDTO : IValidatableObject
     /// Rating ceiling
     /// </summary>
     /// <remarks>
-    /// The "worse" inclusive rating bound.
+    /// The "better" inclusive rating bound.
     /// If given, only players with a rating less than or equal to this value will be included
     /// </remarks>
     [FromQuery]
@@ -93,7 +93,7 @@ public class LeaderboardFilterDTO : IValidatableObject
         {
             yield return new ValidationResult(
                 $"Value for {nameof(MinRank)} must be less than or equal to {nameof(MaxRank)}",
-                new[] { nameof(MinRank), nameof(MaxRank) }
+                [nameof(MinRank), nameof(MaxRank)]
             );
         }
 
@@ -101,7 +101,7 @@ public class LeaderboardFilterDTO : IValidatableObject
         {
             yield return new ValidationResult(
                 $"Value for {nameof(MinRating)} must be less than or equal to {nameof(MaxRating)}",
-                new[] { nameof(MinRating), nameof(MaxRating) }
+                [nameof(MinRating), nameof(MaxRating)]
             );
         }
 
@@ -109,7 +109,7 @@ public class LeaderboardFilterDTO : IValidatableObject
         {
             yield return new ValidationResult(
                 $"Value for {nameof(MinMatches)} must be less than or equal to {nameof(MaxMatches)}",
-                new[] { nameof(MinMatches), nameof(MaxMatches) }
+                [nameof(MinMatches), nameof(MaxMatches)]
             );
         }
 
@@ -117,7 +117,7 @@ public class LeaderboardFilterDTO : IValidatableObject
         {
             yield return new ValidationResult(
                 $"Value for {nameof(MinWinRate)} must be less than or equal to {nameof(MaxWinRate)}",
-                new[] { nameof(MinWinRate), nameof(MaxWinRate) }
+                [nameof(MinWinRate), nameof(MaxWinRate)]
             );
         }
     }
