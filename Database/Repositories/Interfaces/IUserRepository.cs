@@ -41,6 +41,6 @@ public interface IUserRepository : IRepository<User>
     /// Clears and re-creates the user's friends list.
     /// </summary>
     /// <param name="id">User id</param>
-    /// <param name="playerIds">osu! user ids</param>
-    Task<User?> SyncFriendsAsync(int id, ICollection<long> osuIds);
+    /// <param name="playerPsuIds">osu! player ids</param>
+    Task<User?> SyncFriendsAsync(int id, ICollection<long> playerOsuIds);
 }

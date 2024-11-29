@@ -64,7 +64,7 @@ public class UserRepository(
         await _context.Users.Where(u => u.Id == id).Select(u => u.SubmittedMatches).FirstOrDefaultAsync()
         ?? [];
 
-    public async Task<User?> SyncFriendsAsync(int id, ICollection<long> osuIds)
+    public async Task<User?> SyncFriendsAsync(int id, ICollection<long> playerOsuIds)
     {
         User? user = await _context.Users
             .Include(u => u.Friends)
@@ -75,7 +75,7 @@ public class UserRepository(
             return null;
         }
 
-        var idSet = osuIds.ToHashSet();
+        var idSet = playerOsuIds.ToHashSet();
 
         // Identify all players which we already have
         List<Player> players = await _context.Players
