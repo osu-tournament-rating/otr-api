@@ -1,3 +1,4 @@
+using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums;
 using Database.Repositories.Interfaces;
@@ -50,39 +51,19 @@ public class PlayerRatingsRepository(OtrContext context, IPlayersRepository play
         return await _context.SaveChangesAsync();
     }
 
-    public async Task TruncateAsync() =>
-        await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE base_stats RESTART IDENTITY;");
-
-    public async Task<int> GetGlobalRankAsync(long osuPlayerId, Ruleset ruleset)
-    {
-        var globalIndex = (
-                await _context
-                    .PlayerRatings.WhereRuleset(ruleset)
-                    .OrderByRatingDescending()
-                    .Select(x => x.Player.OsuId)
-                    .ToListAsync()
-            )
-            .TakeWhile(x => x != osuPlayerId)
-            .Count();
-
-        return globalIndex + 1;
-    }
-
     public async Task<int> HighestRankAsync(Ruleset ruleset, string? country = null)
     {
+        IQueryable<PlayerRating> query = _context
+            .PlayerRatings
+            .AsNoTracking()
+            .WhereRuleset(ruleset);
+
         if (country != null)
         {
-            return await _context
-                .PlayerRatings.AsNoTracking()
-                .Where(x => x.Player.Country == country && x.Ruleset == ruleset)
-                .Select(x => x.CountryRank)
-                .DefaultIfEmpty()
-                .MaxAsync();
+            query = query.Where(pr => pr.Player.Country == country);
         }
 
-        return await _context
-            .PlayerRatings.AsNoTracking()
-            .WhereRuleset(ruleset)
+        return await query
             .Select(x => x.GlobalRank)
             .DefaultIfEmpty()
             .MaxAsync();
@@ -90,19 +71,17 @@ public class PlayerRatingsRepository(OtrContext context, IPlayersRepository play
 
     public async Task<double> HighestRatingAsync(Ruleset ruleset, string? country = null)
     {
+        IQueryable<PlayerRating> query = _context
+            .PlayerRatings
+            .AsNoTracking()
+            .Where(x => x.Ruleset == ruleset);
+
         if (country != null)
         {
-            return await _context
-                .PlayerRatings.AsNoTracking()
-                .Where(x => x.Player.Country == country && x.Ruleset == ruleset)
-                .Select(x => x.Rating)
-                .DefaultIfEmpty()
-                .MaxAsync();
+            query = query.Where(pr => pr.Player.Country == country);
         }
 
-        return await _context
-            .PlayerRatings.AsNoTracking()
-            .Where(x => x.Ruleset == ruleset)
+        return await query
             .Select(x => x.Rating)
             .DefaultIfEmpty()
             .MaxAsync();
@@ -110,20 +89,18 @@ public class PlayerRatingsRepository(OtrContext context, IPlayersRepository play
 
     public async Task<int> HighestMatchesAsync(Ruleset ruleset, string? country = null)
     {
+        IQueryable<PlayerMatchStats> query = _context
+            .Players
+            .AsNoTracking()
+            .SelectMany(p => p.MatchStats)
+            .Where(ms => ms.Match.Tournament.Ruleset == ruleset);
+
         if (country != null)
         {
-            return await _context
-                .Players.SelectMany(p => p.MatchStats)
-                .Where(ms => ms.Match.Tournament.Ruleset == ruleset && ms.Player.Country == country)
-                .GroupBy(ms => ms.PlayerId)
-                .OrderByDescending(g => g.Count())
-                .Select(g => g.Count())
-                .FirstOrDefaultAsync();
+            query = query.Where(pms => pms.Player.Country == country);
         }
 
-        return await _context
-            .Players.SelectMany(p => p.MatchStats)
-            .Where(ms => ms.Match.Tournament.Ruleset == ruleset)
+        return await query
             .GroupBy(ms => ms.PlayerId)
             .OrderByDescending(g => g.Count())
             .Select(g => g.Count())

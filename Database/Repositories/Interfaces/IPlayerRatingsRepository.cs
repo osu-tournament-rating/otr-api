@@ -6,24 +6,16 @@ namespace Database.Repositories.Interfaces;
 public interface IPlayerRatingsRepository : IRepository<PlayerRating>
 {
     /// <summary>
-    ///  Returns all ratings for a player, one for each game ruleset (if available)
+    /// Returns all ratings for a player, one for each <see cref="Ruleset"/>> (if available)
     /// </summary>
-    /// <param name="playerId"></param>
-    /// <returns></returns>
+    /// <param name="playerId">The osu! player id</param>
+    /// <returns>A collection of <see cref="PlayerRating"/>, one per ruleset</returns>
     Task<IEnumerable<PlayerRating>> GetForPlayerAsync(long osuPlayerId);
-
 
     Task<PlayerRating?> GetForPlayerAsync(int playerId, Ruleset ruleset);
 
 
     Task<int> BatchInsertAsync(IEnumerable<PlayerRating> playerRatings);
-
-
-    Task TruncateAsync();
-
-
-    Task<int> GetGlobalRankAsync(long osuPlayerId, Ruleset ruleset);
-
 
     /// <summary>
     ///  The highest numeric (aka the worst) rank of a player in our system.
@@ -32,9 +24,7 @@ public interface IPlayerRatingsRepository : IRepository<PlayerRating>
     /// <returns></returns>
     Task<int> HighestRankAsync(Ruleset ruleset, string? country = null);
 
-
     Task<double> HighestRatingAsync(Ruleset ruleset, string? country = null);
-
 
     Task<int> HighestMatchesAsync(Ruleset ruleset, string? country = null);
 

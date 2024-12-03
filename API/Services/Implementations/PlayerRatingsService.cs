@@ -126,8 +126,6 @@ public class PlayerRatingsService(
         return leaderboard;
     }
 
-    public async Task TruncateAsync() => await playerRatingsRepository.TruncateAsync();
-
     public async Task<int> LeaderboardCountAsync(
         Ruleset requestQueryRuleset,
         LeaderboardChartType requestQueryChartType,
