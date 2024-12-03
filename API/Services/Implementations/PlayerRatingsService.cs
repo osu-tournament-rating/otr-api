@@ -9,12 +9,12 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class BaseStatsService(
-    IApiBaseStatsRepository baseStatsRepository,
+public class PlayerRatingsService(
+    IApiPlayerRatingsRepository playerRatingsRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
     IPlayersRepository playerRepository,
     ITournamentsService tournamentsService
-    ) : IBaseStatsService
+) : IPlayerRatingsService
 {
     public async Task<IEnumerable<PlayerRatingStatsDTO?>> GetAsync(long osuPlayerId)
     {
@@ -25,7 +25,7 @@ public class BaseStatsService(
             return new List<PlayerRatingStatsDTO?>();
         }
 
-        IEnumerable<PlayerRating> baseStats = await baseStatsRepository.GetForPlayerAsync(osuPlayerId);
+        IEnumerable<PlayerRating> baseStats = await playerRatingsRepository.GetForPlayerAsync(osuPlayerId);
         var ret = new List<PlayerRatingStatsDTO?>();
 
         foreach (PlayerRating stat in baseStats)
@@ -39,7 +39,7 @@ public class BaseStatsService(
 
     public async Task<PlayerRatingStatsDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset)
     {
-        currentStats ??= await baseStatsRepository.GetForPlayerAsync(playerId, ruleset);
+        currentStats ??= await playerRatingsRepository.GetForPlayerAsync(playerId, ruleset);
 
         if (currentStats == null)
         {
@@ -95,7 +95,7 @@ public class BaseStatsService(
             );
         }
 
-        return await baseStatsRepository.BatchInsertAsync(toInsert);
+        return await playerRatingsRepository.BatchInsertAsync(toInsert);
     }
 
     public async Task<IEnumerable<PlayerRatingStatsDTO?>> GetLeaderboardAsync(
@@ -107,7 +107,7 @@ public class BaseStatsService(
         int? playerId
     )
     {
-        IEnumerable<PlayerRating> baseStats = await baseStatsRepository.GetLeaderboardAsync(
+        IEnumerable<PlayerRating> baseStats = await playerRatingsRepository.GetLeaderboardAsync(
             page,
             pageSize,
             ruleset,
@@ -126,7 +126,7 @@ public class BaseStatsService(
         return leaderboard;
     }
 
-    public async Task TruncateAsync() => await baseStatsRepository.TruncateAsync();
+    public async Task TruncateAsync() => await playerRatingsRepository.TruncateAsync();
 
     public async Task<int> LeaderboardCountAsync(
         Ruleset requestQueryRuleset,
@@ -134,7 +134,7 @@ public class BaseStatsService(
         LeaderboardFilterDTO requestQueryFilter,
         int? playerId
     ) =>
-        await baseStatsRepository.LeaderboardCountAsync(
+        await playerRatingsRepository.LeaderboardCountAsync(
             requestQueryRuleset,
             requestQueryChartType,
             requestQueryFilter,
@@ -147,11 +147,11 @@ public class BaseStatsService(
     ) =>
         new()
         {
-            MaxRating = await baseStatsRepository.HighestRatingAsync(requestQueryRuleset),
-            MaxMatches = await baseStatsRepository.HighestMatchesAsync(requestQueryRuleset),
+            MaxRating = await playerRatingsRepository.HighestRatingAsync(requestQueryRuleset),
+            MaxMatches = await playerRatingsRepository.HighestMatchesAsync(requestQueryRuleset),
             MaxRank = 100_000
         };
 
     public async Task<IDictionary<int, int>> GetHistogramAsync(Ruleset ruleset) =>
-        await baseStatsRepository.GetHistogramAsync(ruleset);
+        await playerRatingsRepository.GetHistogramAsync(ruleset);
 }

@@ -14,12 +14,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance",
+    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class ApiBaseStatsRepository(
+public class ApiPlayerRatingsRepository(
     OtrContext context,
     IPlayersRepository playerRepository
-    ) : BaseStatsRepository(context, playerRepository), IApiBaseStatsRepository
+) : PlayerRatingsRepository(context, playerRepository), IApiPlayerRatingsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -131,7 +132,8 @@ public class ApiBaseStatsRepository(
         return query;
     }
 
-    private static IQueryable<PlayerRating> FilterByRating(IQueryable<PlayerRating> query, int? minRating, int? maxRating)
+    private static IQueryable<PlayerRating> FilterByRating(IQueryable<PlayerRating> query, int? minRating,
+        int? maxRating)
     {
         if (minRating.HasValue)
         {
@@ -196,7 +198,8 @@ public class ApiBaseStatsRepository(
             || (includeEmerald && x.Rating >= RatingUtils.RatingEmeraldIII && x.Rating < RatingUtils.RatingDiamondIII)
             || (includeDiamond && x.Rating >= RatingUtils.RatingDiamondIII && x.Rating < RatingUtils.RatingMasterIII)
             || (includeMaster && x.Rating >= RatingUtils.RatingMasterIII && x.Rating < RatingUtils.RatingGrandmasterIII)
-            || (includeGrandmaster && x.Rating >= RatingUtils.RatingGrandmasterIII && x.Rating < RatingUtils.RatingEliteGrandmaster)
+            || (includeGrandmaster && x.Rating >= RatingUtils.RatingGrandmasterIII &&
+                x.Rating < RatingUtils.RatingEliteGrandmaster)
             || (includeEliteGrandmaster && x.Rating >= RatingUtils.RatingEliteGrandmaster)
         );
     }

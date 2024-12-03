@@ -6,7 +6,7 @@ using Database.Enums;
 
 namespace API.Services.Interfaces;
 
-public interface IBaseStatsService
+public interface IPlayerRatingsService
 {
     /// <summary>
     ///  Returns a list of all ratings for a player, one for each game ruleset (if available)
@@ -28,19 +28,21 @@ public interface IBaseStatsService
     );
 
     Task TruncateAsync();
+
     Task<int> LeaderboardCountAsync(
         Ruleset requestQueryRuleset,
         LeaderboardChartType requestQueryChartType,
         LeaderboardFilterDTO requestQueryFilter,
         int? playerId
     );
+
     Task<LeaderboardFilterDefaultsDTO> LeaderboardFilterDefaultsAsync(
         Ruleset requestQueryRuleset,
         LeaderboardChartType requestQueryChartType
     );
 
     /// <summary>
-    /// See <see cref="IApiBaseStatsRepository.GetHistogramAsync"/>
+    /// See <see cref="IApiPlayerRatingsRepository.GetHistogramAsync"/>
     /// </summary>
     /// <param name="ruleset"></param>
     /// <returns></returns>

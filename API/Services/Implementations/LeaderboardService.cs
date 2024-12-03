@@ -8,8 +8,8 @@ namespace API.Services.Implementations;
 [SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly")]
 public class LeaderboardService(
     IPlayersRepository playerRepository,
-    IBaseStatsService baseStatsService
-    ) : ILeaderboardService
+    IPlayerRatingsService iPlayerRatingsService
+) : ILeaderboardService
 {
     public async Task<LeaderboardDTO> GetLeaderboardAsync(
         LeaderboardRequestQueryDTO requestQuery,
@@ -21,19 +21,19 @@ public class LeaderboardService(
         var leaderboard = new LeaderboardDTO
         {
             Ruleset = requestQuery.Ruleset,
-            TotalPlayerCount = await baseStatsService.LeaderboardCountAsync(
+            TotalPlayerCount = await iPlayerRatingsService.LeaderboardCountAsync(
                 requestQuery.Ruleset,
                 requestQuery.ChartType,
                 requestQuery.Filter,
                 authorizedUserId
             ),
-            FilterDefaults = await baseStatsService.LeaderboardFilterDefaultsAsync(
+            FilterDefaults = await iPlayerRatingsService.LeaderboardFilterDefaultsAsync(
                 requestQuery.Ruleset,
                 requestQuery.ChartType
             )
         };
 
-        IEnumerable<PlayerRatingStatsDTO?> baseStats = await baseStatsService.GetLeaderboardAsync(
+        IEnumerable<PlayerRatingStatsDTO?> baseStats = await iPlayerRatingsService.GetLeaderboardAsync(
             requestQuery.Ruleset,
             requestQuery.Page,
             requestQuery.PageSize,

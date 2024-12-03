@@ -3,7 +3,7 @@ using Database.Enums;
 
 namespace Database.Repositories.Interfaces;
 
-public interface IBaseStatsRepository : IRepository<PlayerRating>
+public interface IPlayerRatingsRepository : IRepository<PlayerRating>
 {
     /// <summary>
     ///  Returns all ratings for a player, one for each game ruleset (if available)

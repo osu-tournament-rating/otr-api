@@ -4,8 +4,11 @@ using Database.Enums;
 
 namespace API.Services.Implementations;
 
-public class FilteringService(IPlayerService playerService, IBaseStatsService baseStatsService, IPlayerStatsService
-    playerStatsService) : IFilteringService
+public class FilteringService(
+    IPlayerService playerService,
+    IPlayerRatingsService iPlayerRatingsService,
+    IPlayerStatsService
+        playerStatsService) : IFilteringService
 {
     public async Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO filteringRequest)
     {
@@ -56,7 +59,8 @@ public class FilteringService(IPlayerService playerService, IBaseStatsService ba
         };
     }
 
-    private async Task<(FilteringResult result, FilteringFailReason? failReason)> FilterAsync(FilteringRequestDTO filteringRequest,
+    private async Task<(FilteringResult result, FilteringFailReason? failReason)> FilterAsync(
+        FilteringRequestDTO filteringRequest,
         PlayerCompactDTO? playerInfo)
     {
         FilteringResult result = FilteringResult.Fail;
@@ -69,7 +73,8 @@ public class FilteringService(IPlayerService playerService, IBaseStatsService ba
             return (result, failReason);
         }
 
-        PlayerRatingStatsDTO? baseStats = await baseStatsService.GetAsync(null, playerInfo.Id, filteringRequest.Ruleset);
+        PlayerRatingStatsDTO? baseStats =
+            await iPlayerRatingsService.GetAsync(null, playerInfo.Id, filteringRequest.Ruleset);
 
         if (baseStats == null)
         {
