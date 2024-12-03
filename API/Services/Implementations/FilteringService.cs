@@ -6,7 +6,7 @@ namespace API.Services.Implementations;
 
 public class FilteringService(
     IPlayerService playerService,
-    IPlayerRatingsService iPlayerRatingsService,
+    IPlayerRatingsService playerRatingsService,
     IPlayerStatsService
         playerStatsService) : IFilteringService
 {
@@ -73,37 +73,37 @@ public class FilteringService(
             return (result, failReason);
         }
 
-        PlayerRatingStatsDTO? baseStats =
-            await iPlayerRatingsService.GetAsync(null, playerInfo.Id, filteringRequest.Ruleset);
+        PlayerRatingStatsDTO? ratingStats =
+            await playerRatingsService.GetAsync(null, playerInfo.Id, filteringRequest.Ruleset);
 
-        if (baseStats == null)
+        if (ratingStats == null)
         {
             failReason |= FilteringFailReason.NoData;
 
             return (result, failReason);
         }
 
-        if (baseStats.Rating < filteringRequest.MinRating)
+        if (ratingStats.Rating < filteringRequest.MinRating)
         {
             failReason |= FilteringFailReason.MinRating;
         }
 
-        if (baseStats.Rating > filteringRequest.MaxRating)
+        if (ratingStats.Rating > filteringRequest.MaxRating)
         {
             failReason |= FilteringFailReason.MaxRating;
         }
 
-        if (!filteringRequest.AllowProvisional && baseStats.IsProvisional)
+        if (!filteringRequest.AllowProvisional && ratingStats.IsProvisional)
         {
             failReason |= FilteringFailReason.IsProvisional;
         }
 
-        if (baseStats.MatchesPlayed < filteringRequest.MatchesPlayed)
+        if (ratingStats.MatchesPlayed < filteringRequest.MatchesPlayed)
         {
             failReason |= FilteringFailReason.NotEnoughMatches;
         }
 
-        if (baseStats.TournamentsPlayed < filteringRequest.TournamentsPlayed)
+        if (ratingStats.TournamentsPlayed < filteringRequest.TournamentsPlayed)
         {
             failReason |= FilteringFailReason.NotEnoughTournaments;
         }

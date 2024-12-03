@@ -16,7 +16,6 @@ public interface IPlayerRatingsService
     Task<IEnumerable<PlayerRatingStatsDTO?>> GetAsync(long osuPlayerId);
 
     Task<PlayerRatingStatsDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset);
-    Task<int> BatchInsertAsync(IEnumerable<PlayerRatingDTO> stats);
 
     Task<IEnumerable<PlayerRatingStatsDTO?>> GetLeaderboardAsync(
         Ruleset ruleset,
@@ -26,8 +25,6 @@ public interface IPlayerRatingsService
         LeaderboardFilterDTO filter,
         int? playerId
     );
-
-    Task TruncateAsync();
 
     Task<int> LeaderboardCountAsync(
         Ruleset requestQueryRuleset,

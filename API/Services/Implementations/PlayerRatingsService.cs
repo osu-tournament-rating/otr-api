@@ -22,13 +22,13 @@ public class PlayerRatingsService(
 
         if (!id.HasValue)
         {
-            return new List<PlayerRatingStatsDTO?>();
+            return [];
         }
 
-        IEnumerable<PlayerRating> baseStats = await playerRatingsRepository.GetForPlayerAsync(osuPlayerId);
+        IEnumerable<PlayerRating> playerRatings = await playerRatingsRepository.GetForPlayerAsync(osuPlayerId);
         var ret = new List<PlayerRatingStatsDTO?>();
 
-        foreach (PlayerRating stat in baseStats)
+        foreach (PlayerRating stat in playerRatings)
         {
             // One per ruleset
             ret.Add(await GetAsync(stat, id.Value, stat.Ruleset));
@@ -107,7 +107,7 @@ public class PlayerRatingsService(
         int? playerId
     )
     {
-        IEnumerable<PlayerRating> baseStats = await playerRatingsRepository.GetLeaderboardAsync(
+        IEnumerable<PlayerRating> leaderboardRatings = await playerRatingsRepository.GetLeaderboardAsync(
             page,
             pageSize,
             ruleset,
@@ -118,9 +118,9 @@ public class PlayerRatingsService(
 
         var leaderboard = new List<PlayerRatingStatsDTO?>();
 
-        foreach (PlayerRating baseStat in baseStats)
+        foreach (PlayerRating rating in leaderboardRatings)
         {
-            leaderboard.Add(await GetAsync(baseStat, baseStat.PlayerId, ruleset));
+            leaderboard.Add(await GetAsync(rating, rating.PlayerId, ruleset));
         }
 
         return leaderboard;

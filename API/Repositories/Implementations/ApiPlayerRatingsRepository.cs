@@ -154,9 +154,6 @@ public class ApiPlayerRatingsRepository(
         int? maxMatches
     )
     {
-        // This is required to count the number of matches played.
-        // In the future this should be a stat tied to BaseStats, not calculated.
-
         if (minMatches.HasValue || maxMatches.HasValue)
         {
             query = query.Include(x => x.Player).ThenInclude(x => x.MatchStats);
@@ -164,12 +161,12 @@ public class ApiPlayerRatingsRepository(
 
         if (minMatches.HasValue)
         {
-            query = query.Where(x => x.Player.MatchStats.Count() >= minMatches.Value);
+            query = query.Where(x => x.Player.MatchStats.Count >= minMatches.Value);
         }
 
         if (maxMatches.HasValue)
         {
-            query = query.Where(x => x.Player.MatchStats.Count() <= maxMatches.Value);
+            query = query.Where(x => x.Player.MatchStats.Count <= maxMatches.Value);
         }
 
         return query;

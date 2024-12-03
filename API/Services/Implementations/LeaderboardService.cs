@@ -8,7 +8,7 @@ namespace API.Services.Implementations;
 [SuppressMessage("Usage", "CA2208:Instantiate argument exceptions correctly")]
 public class LeaderboardService(
     IPlayersRepository playerRepository,
-    IPlayerRatingsService iPlayerRatingsService
+    IPlayerRatingsService playerRatingsService
 ) : ILeaderboardService
 {
     public async Task<LeaderboardDTO> GetLeaderboardAsync(
@@ -21,19 +21,19 @@ public class LeaderboardService(
         var leaderboard = new LeaderboardDTO
         {
             Ruleset = requestQuery.Ruleset,
-            TotalPlayerCount = await iPlayerRatingsService.LeaderboardCountAsync(
+            TotalPlayerCount = await playerRatingsService.LeaderboardCountAsync(
                 requestQuery.Ruleset,
                 requestQuery.ChartType,
                 requestQuery.Filter,
                 authorizedUserId
             ),
-            FilterDefaults = await iPlayerRatingsService.LeaderboardFilterDefaultsAsync(
+            FilterDefaults = await playerRatingsService.LeaderboardFilterDefaultsAsync(
                 requestQuery.Ruleset,
                 requestQuery.ChartType
             )
         };
 
-        IEnumerable<PlayerRatingStatsDTO?> baseStats = await iPlayerRatingsService.GetLeaderboardAsync(
+        IEnumerable<PlayerRatingStatsDTO?> leaderboardStats = await playerRatingsService.GetLeaderboardAsync(
             requestQuery.Ruleset,
             requestQuery.Page,
             requestQuery.PageSize,
@@ -44,29 +44,29 @@ public class LeaderboardService(
 
         var leaderboardPlayerInfo = new List<LeaderboardPlayerInfoDTO>();
 
-        foreach (PlayerRatingStatsDTO? baseStat in baseStats)
+        foreach (PlayerRatingStatsDTO? leaderboardStat in leaderboardStats)
         {
-            if (baseStat == null)
+            if (leaderboardStat == null)
             {
                 continue;
             }
 
-            var osuId = await playerRepository.GetOsuIdAsync(baseStat.PlayerId);
-            var name = await playerRepository.GetUsernameAsync(baseStat.PlayerId);
-            var country = await playerRepository.GetCountryAsync(baseStat.PlayerId);
+            var osuId = await playerRepository.GetOsuIdAsync(leaderboardStat.PlayerId);
+            var name = await playerRepository.GetUsernameAsync(leaderboardStat.PlayerId);
+            var country = await playerRepository.GetCountryAsync(leaderboardStat.PlayerId);
 
             leaderboardPlayerInfo.Add(
                 new LeaderboardPlayerInfoDTO
                 {
-                    PlayerId = baseStat.PlayerId,
+                    PlayerId = leaderboardStat.PlayerId,
                     OsuId = osuId,
-                    GlobalRank = baseStat.GlobalRank,
-                    MatchesPlayed = baseStat.MatchesPlayed,
+                    GlobalRank = leaderboardStat.GlobalRank,
+                    MatchesPlayed = leaderboardStat.MatchesPlayed,
                     Name = name ?? "<Unknown>",
-                    Rating = baseStat.Rating,
-                    Tier = baseStat.RankProgress.CurrentTier,
-                    WinRate = baseStat.WinRate,
-                    Ruleset = baseStat.Ruleset,
+                    Rating = leaderboardStat.Rating,
+                    Tier = leaderboardStat.RankProgress.CurrentTier,
+                    WinRate = leaderboardStat.WinRate,
+                    Ruleset = leaderboardStat.Ruleset,
                     Country = country
                 }
             );

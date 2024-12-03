@@ -16,7 +16,7 @@ public interface IPlayerRatingsRepository : IRepository<PlayerRating>
     Task<PlayerRating?> GetForPlayerAsync(int playerId, Ruleset ruleset);
 
 
-    Task<int> BatchInsertAsync(IEnumerable<PlayerRating> baseStats);
+    Task<int> BatchInsertAsync(IEnumerable<PlayerRating> playerRatings);
 
 
     Task TruncateAsync();

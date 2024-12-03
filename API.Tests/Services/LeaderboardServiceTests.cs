@@ -20,7 +20,7 @@ public class LeaderboardServiceTests
             .SetupGetUsername()
             .SetupGetCountry();
 
-        MockBaseStatsRepository baseStatsRepository = new MockBaseStatsRepository()
+        MockPlayerRatingsRepository playerRatingsRepository = new MockPlayerRatingsRepository()
             .SetupLeaderboard()
             .SetupLeaderboardCount()
             .SetupHighestMatches()
@@ -40,8 +40,8 @@ public class LeaderboardServiceTests
 
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
-        var baseStatsService = new PlayerRatingsService(
-            baseStatsRepository.Object,
+        var playerRatingsService = new PlayerRatingsService(
+            playerRatingsRepository.Object,
             matchStatsRepository.Object,
             playerRepository.Object,
             tournamentsService
@@ -49,7 +49,7 @@ public class LeaderboardServiceTests
 
         _leaderboardService = new LeaderboardService(
             playerRepository.Object,
-            baseStatsService
+            playerRatingsService
         );
     }
 

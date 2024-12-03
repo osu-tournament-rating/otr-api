@@ -7,9 +7,9 @@ using Moq;
 
 namespace APITests.MockRepositories;
 
-public class MockBaseStatsRepository : Mock<IApiPlayerRatingsRepository>
+public class MockPlayerRatingsRepository : Mock<IApiPlayerRatingsRepository>
 {
-    public MockBaseStatsRepository SetupLeaderboardCount()
+    public MockPlayerRatingsRepository SetupLeaderboardCount()
     {
         Setup(x =>
                 x.LeaderboardCountAsync(
@@ -24,7 +24,7 @@ public class MockBaseStatsRepository : Mock<IApiPlayerRatingsRepository>
         return this;
     }
 
-    public MockBaseStatsRepository SetupLeaderboard()
+    public MockPlayerRatingsRepository SetupLeaderboard()
     {
         Setup(x =>
                 x.GetLeaderboardAsync(
@@ -38,36 +38,36 @@ public class MockBaseStatsRepository : Mock<IApiPlayerRatingsRepository>
             )
             .ReturnsAsync(
                 (int _, int pageSize, int _, LeaderboardChartType _, LeaderboardFilterDTO filter, int? _) =>
-                    SeededBaseStats.GetLeaderboardFiltered(filter, pageSize)
+                    SeededPlayerRatings.GetLeaderboardFiltered(filter, pageSize)
             );
 
         return this;
     }
 
-    public MockBaseStatsRepository SetupHighestRating()
+    public MockPlayerRatingsRepository SetupHighestRating()
     {
         Setup(x => x.HighestRatingAsync(It.IsAny<Ruleset>(), It.IsAny<string?>())).ReturnsAsync(3200);
 
         return this;
     }
 
-    public MockBaseStatsRepository SetupHighestMatches()
+    public MockPlayerRatingsRepository SetupHighestMatches()
     {
         Setup(x => x.HighestMatchesAsync(It.IsAny<Ruleset>(), It.IsAny<string?>())).ReturnsAsync(500);
 
         return this;
     }
 
-    public MockBaseStatsRepository SetupHighestRank()
+    public MockPlayerRatingsRepository SetupHighestRank()
     {
         Setup(x => x.HighestRankAsync(It.IsAny<Ruleset>(), It.IsAny<string?>())).ReturnsAsync(100_000_000);
 
         return this;
     }
 
-    public MockBaseStatsRepository SetupGetForPlayerAsync()
+    public MockPlayerRatingsRepository SetupGetForPlayerAsync()
     {
-        Setup(x => x.GetForPlayerAsync(It.IsAny<int>(), It.IsAny<Ruleset>())).ReturnsAsync(SeededBaseStats.Get());
+        Setup(x => x.GetForPlayerAsync(It.IsAny<int>(), It.IsAny<Ruleset>())).ReturnsAsync(SeededPlayerRatings.Get());
 
         return this;
     }
