@@ -25,7 +25,7 @@ public class PlayerRatingsService(
             return [];
         }
 
-        IEnumerable<PlayerRating> playerRatings = await playerRatingsRepository.GetForPlayerAsync(osuPlayerId);
+        IEnumerable<PlayerRating> playerRatings = await playerRatingsRepository.GetAsync(osuPlayerId);
         var ret = new List<PlayerRatingStatsDTO?>();
 
         foreach (PlayerRating stat in playerRatings)
@@ -39,7 +39,7 @@ public class PlayerRatingsService(
 
     public async Task<PlayerRatingStatsDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset)
     {
-        currentStats ??= await playerRatingsRepository.GetForPlayerAsync(playerId, ruleset);
+        currentStats ??= await playerRatingsRepository.GetAsync(playerId, ruleset);
 
         if (currentStats == null)
         {
@@ -74,28 +74,6 @@ public class PlayerRatingsService(
             TournamentsPlayed = tournamentsPlayed,
             RankProgress = rankProgress
         };
-    }
-
-    public async Task<int> BatchInsertAsync(IEnumerable<PlayerRatingDTO> stats)
-    {
-        var toInsert = new List<PlayerRating>();
-        foreach (PlayerRatingDTO item in stats)
-        {
-            toInsert.Add(
-                new PlayerRating
-                {
-                    PlayerId = item.PlayerId,
-                    Rating = item.Rating,
-                    Volatility = item.Volatility,
-                    Ruleset = item.Ruleset,
-                    Percentile = item.Percentile,
-                    GlobalRank = item.GlobalRank,
-                    CountryRank = item.CountryRank
-                }
-            );
-        }
-
-        return await playerRatingsRepository.BatchInsertAsync(toInsert);
     }
 
     public async Task<IEnumerable<PlayerRatingStatsDTO?>> GetLeaderboardAsync(

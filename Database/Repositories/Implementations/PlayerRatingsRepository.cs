@@ -12,7 +12,7 @@ public class PlayerRatingsRepository(OtrContext context, IPlayersRepository play
 {
     private readonly OtrContext _context = context;
 
-    public async Task<IEnumerable<PlayerRating>> GetForPlayerAsync(long osuPlayerId)
+    public async Task<IEnumerable<PlayerRating>> GetAsync(long osuPlayerId)
     {
         var id = await playersRepository.GetIdAsync(osuPlayerId);
 
@@ -24,7 +24,7 @@ public class PlayerRatingsRepository(OtrContext context, IPlayersRepository play
         return await _context.PlayerRatings.Where(x => x.PlayerId == id.Value).ToListAsync();
     }
 
-    public async Task<PlayerRating?> GetForPlayerAsync(int playerId, Ruleset ruleset) =>
+    public async Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset) =>
         await _context.PlayerRatings.Where(x => x.PlayerId == playerId && x.Ruleset == ruleset).FirstOrDefaultAsync();
 
     public async Task<int> BatchInsertAsync(IEnumerable<PlayerRating> playerRatings)

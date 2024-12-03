@@ -67,7 +67,7 @@ public class MockPlayerRatingsRepository : Mock<IApiPlayerRatingsRepository>
 
     public MockPlayerRatingsRepository SetupGetForPlayerAsync()
     {
-        Setup(x => x.GetForPlayerAsync(It.IsAny<int>(), It.IsAny<Ruleset>())).ReturnsAsync(SeededPlayerRatings.Get());
+        Setup(x => x.GetAsync(It.IsAny<int>(), It.IsAny<Ruleset>())).ReturnsAsync(SeededPlayerRatings.Get());
 
         return this;
     }
