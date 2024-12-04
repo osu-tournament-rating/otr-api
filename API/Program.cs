@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API.Authorization;
 using API.Authorization.Handlers;
@@ -10,7 +9,6 @@ using API.Configurations;
 using API.Handlers.Implementations;
 using API.Handlers.Interfaces;
 using API.Middlewares;
-using API.ModelBinders.Providers;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Implementations;
@@ -37,6 +35,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
+using Newtonsoft.Json.Serialization;
 using Npgsql;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
@@ -88,19 +87,20 @@ builder
 #region Controller Configuration
 
 builder.Services
-    .AddControllers(options =>
+    .AddControllers(o =>
     {
-        options.ModelMetadataDetailsProviders.Add(new NewtonsoftJsonValidationMetadataProvider());
-        options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
-        options.Filters.Add(new AuthorizeFilter(AuthorizationPolicies.Whitelist));
+        o.ModelMetadataDetailsProviders.Add(new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
+        o.Filters.Add(new AuthorizeFilter(AuthorizationPolicies.Whitelist));
     })
     .AddJsonOptions(o =>
     {
-        o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
-        o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     })
-    .AddNewtonsoftJson();
+    .AddNewtonsoftJson(o =>
+    {
+        o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+    });
 
 #endregion
 
@@ -213,8 +213,8 @@ builder.Services.AddRateLimiter(options =>
 
 #region SwaggerGen Configuration
 
-builder
-    .Services.AddApiVersioning(options =>
+builder.Services
+    .AddApiVersioning(options =>
     {
         options.ReportApiVersions = true;
         options.DefaultApiVersion = new ApiVersion(1);
@@ -228,8 +228,6 @@ builder
         options.SubstituteApiVersionInUrl = true;
     });
 
-builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen(options =>
 {
     // Sets nullable flags
@@ -238,6 +236,8 @@ builder.Services.AddSwaggerGen(options =>
     options.UseAllOfToExtendReferenceSchemas();
     // Allows reference objects to be marked nullable
     options.UseAllOfForInheritance();
+    // Fixes parameter names from model binding
+    options.DescribeAllParametersInCamelCase();
 
     // Allow use of in-code XML documentation tags like <summary> and <remarks>
     string[] xmlDocPaths =
@@ -252,7 +252,9 @@ builder.Services.AddSwaggerGen(options =>
     }
 
     // Register custom filters
+    // Filters are executed in order of: Operation, Parameter, Schema, Document
     options.OperationFilter<SecurityMetadataOperationFilter>();
+    options.OperationFilter<DiscardNestedParametersOperationFilter>();
 
     options.SchemaFilter<EnumMetadataSchemaFilter>((object)xmlDocPaths);
     options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();

@@ -21,9 +21,14 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Co
     [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType<LeaderboardDTO>(StatusCodes.Status200OK)]
     public async Task<ActionResult<LeaderboardDTO>> GetAsync(
-        [FromQuery] LeaderboardRequestQueryDTO requestQuery
+        LeaderboardRequestQueryDTO requestQuery,
+        LeaderboardFilterDTO filter,
+        LeaderboardTierFilterDTO tierFilter
     )
     {
+        requestQuery.Filter = filter;
+        requestQuery.Filter.TierFilters = tierFilter;
+
         LeaderboardDTO leaderboard = await leaderboardService.GetLeaderboardAsync(requestQuery, User.GetSubjectId());
         return Ok(leaderboard);
     }
