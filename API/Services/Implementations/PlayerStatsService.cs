@@ -11,7 +11,7 @@ using Database.Repositories.Interfaces;
 namespace API.Services.Implementations;
 
 public class PlayerStatsService(
-    IBaseStatsService baseStatsService,
+    IPlayerRatingsService playerRatingsService,
     IApiMatchWinRecordRepository matchWinRecordRepository,
     IApiPlayerMatchStatsRepository matchStatsRepository,
     IPlayersRepository playerRepository,
@@ -118,9 +118,9 @@ public class PlayerStatsService(
 
         PlayerCompactDTO playerInfo = mapper.Map<PlayerCompactDTO>(player);
 
-        PlayerRatingStatsDTO? baseStats = await GetBaseStatsAsync(player.Id, ruleset.Value);
+        PlayerRatingStatsDTO? ratingStats = await GetCurrentAsync(player.Id, ruleset.Value);
 
-        if (baseStats is null)
+        if (ratingStats is null)
         {
             return new PlayerStatsDTO { PlayerInfo = playerInfo, Ruleset = ruleset.Value };
         }
@@ -159,7 +159,7 @@ public class PlayerStatsService(
         {
             PlayerInfo = playerInfo,
             Ruleset = ruleset.Value,
-            Rating = baseStats,
+            Rating = ratingStats,
             MatchStats = matchStats,
             ModStats = modStats,
             TournamentStats = tournamentStats,
@@ -167,34 +167,6 @@ public class PlayerStatsService(
             FrequentTeammates = frequentTeammates,
             FrequentOpponents = frequentOpponents
         };
-    }
-
-    public async Task BatchInsertAsync(IEnumerable<PlayerMatchStatsDTO> postBody)
-    {
-        var items = new List<PlayerMatchStats>();
-
-        foreach (PlayerMatchStatsDTO item in postBody)
-        {
-            var stats = new PlayerMatchStats
-            {
-                PlayerId = item.PlayerId,
-                MatchId = item.MatchId,
-                Won = item.Won,
-                AverageScore = item.AverageScore,
-                AverageMisses = item.AverageMisses,
-                AverageAccuracy = item.AverageAccuracy,
-                GamesPlayed = item.GamesPlayed,
-                AveragePlacement = item.AveragePlacement,
-                GamesWon = item.GamesWon,
-                GamesLost = item.GamesLost,
-                TeammateIds = item.TeammateIds,
-                OpponentIds = item.OpponentIds
-            };
-
-            items.Add(stats);
-        }
-
-        await matchStatsRepository.InsertAsync(items);
     }
 
     public async Task<double> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null,
@@ -205,12 +177,11 @@ public class PlayerStatsService(
             .Max(x => x.RatingAfter);
     }
 
-    // Returns overall stats for the player, no need to filter by date.
-    private async Task<PlayerRatingStatsDTO?> GetBaseStatsAsync(int playerId, Ruleset ruleset)
+    private async Task<PlayerRatingStatsDTO?> GetCurrentAsync(int playerId, Ruleset ruleset)
     {
-        PlayerRatingStatsDTO? dto = await baseStatsService.GetAsync(null, playerId, ruleset);
+        PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(null, playerId, ruleset);
 
-        if (dto == null)
+        if (ratingStats == null)
         {
             return null;
         }
@@ -218,21 +189,21 @@ public class PlayerStatsService(
         var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
         var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
 
-        dto.MatchesPlayed = matchesPlayed;
-        dto.WinRate = winRate;
+        ratingStats.MatchesPlayed = matchesPlayed;
+        ratingStats.WinRate = winRate;
 
-        dto.RankProgress = new RankProgressDTO
+        ratingStats.RankProgress = new RankProgressDTO
         {
-            CurrentTier = RatingUtils.GetTier(dto.Rating),
-            CurrentSubTier = RatingUtils.GetSubTier(dto.Rating),
-            RatingForNextTier = RatingUtils.GetNextTierRatingDelta(dto.Rating),
-            RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(dto.Rating),
-            NextMajorTier = RatingUtils.GetNextMajorTier(dto.Rating),
-            SubTierFillPercentage = RatingUtils.GetNextTierFillPercentage(dto.Rating),
-            MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(dto.Rating)
+            CurrentTier = RatingUtils.GetTier(ratingStats.Rating),
+            CurrentSubTier = RatingUtils.GetSubTier(ratingStats.Rating),
+            RatingForNextTier = RatingUtils.GetNextTierRatingDelta(ratingStats.Rating),
+            RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(ratingStats.Rating),
+            NextMajorTier = RatingUtils.GetNextMajorTier(ratingStats.Rating),
+            SubTierFillPercentage = RatingUtils.GetNextTierFillPercentage(ratingStats.Rating),
+            MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(ratingStats.Rating)
         };
 
-        return dto;
+        return ratingStats;
     }
 
     private async Task<PlayerModStatsDTO> GetModStatsAsync(

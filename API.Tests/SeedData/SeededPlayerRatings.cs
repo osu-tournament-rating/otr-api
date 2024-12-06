@@ -5,7 +5,7 @@ using Database.Entities.Processor;
 
 namespace APITests.SeedData;
 
-public static class SeededBaseStats
+public static class SeededPlayerRatings
 {
     public static PlayerRating Get() =>
         new()

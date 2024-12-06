@@ -88,8 +88,8 @@ public interface IPlayersRepository : IRepository<Player>
     /// <summary>
     /// Fetches the username for the given player id
     /// </summary>
-    /// <param name="id">The user id</param>
-    Task<string?> GetUsernameAsync(int id);
+    /// <param name="id">The player id</param>
+    Task<string> GetUsernameAsync(int id);
 
     /// <summary>
     /// Returns the player id for the given user id

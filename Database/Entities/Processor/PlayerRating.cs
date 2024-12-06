@@ -14,7 +14,7 @@ namespace Database.Entities.Processor;
 /// <br/><br/>
 /// For more in depth documentation, see
 /// <a href="https://docs.otr.stagec.xyz/rating-calculation.html#rating">
-/// o!TR Ratings Wiki
+/// o!TR Rating Calculation Documentation
 /// </a>
 /// </remarks>
 [Table("player_ratings")]
@@ -72,5 +72,5 @@ public class PlayerRating : EntityBase
     /// A collection of <see cref="RatingAdjustment"/>s that represent
     /// the individual changes to the <see cref="PlayerRating"/> over time
     /// </summary>
-    public ICollection<RatingAdjustment> Adjustments { get; init; } = new List<RatingAdjustment>();
+    public ICollection<RatingAdjustment> Adjustments { get; init; } = [];
 }
