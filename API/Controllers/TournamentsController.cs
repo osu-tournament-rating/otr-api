@@ -104,7 +104,7 @@ public partial class TournamentsController(
         #endregion
 
         // Sanitize forum url
-        tournamentSubmission.ForumUrl = sanitizedUri!.AbsolutePath;
+        tournamentSubmission.ForumUrl = sanitizedUri!.GetLeftPart(UriPartial.Path);
 
         // Create tournament
         TournamentCreatedResultDTO result = await tournamentsService.CreateAsync(
