@@ -47,12 +47,16 @@ public class TournamentsService(
                 .Except(existingMatchIds)
                 .Select(matchId => new Match { OsuId = matchId, SubmittedByUserId = submitterUserId })
                 .ToList(),
-            PooledBeatmaps = existingBeatmaps
-                .Concat(submittedBeatmapIds
-                    .Except(existingBeatmaps.Select(b => b.OsuId))
-                    .Select(beatmapId => new Beatmap { OsuId = beatmapId })
-                )
-                .ToList()
+            PooledBeatmaps =
+
+            [
+                .. existingBeatmaps
+,
+                .. submittedBeatmapIds
+                            .Except(existingBeatmaps.Select(b => b.OsuId))
+                            .Select(beatmapId => new Beatmap { OsuId = beatmapId })
+,
+            ]
         };
 
         // Handle reject-on-submit cases
@@ -132,6 +136,9 @@ public class TournamentsService(
         existing.Ruleset = wrapper.Ruleset;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
         existing.LobbySize = wrapper.LobbySize;
+        existing.ProcessingStatus = wrapper.ProcessingStatus;
+        existing.VerificationStatus = wrapper.VerificationStatus;
+        existing.RejectionReason = wrapper.RejectionReason;
 
         await tournamentsRepository.UpdateAsync(existing);
         return mapper.Map<TournamentDTO>(existing);
