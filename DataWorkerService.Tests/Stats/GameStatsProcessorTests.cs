@@ -61,7 +61,7 @@ public class GameStatsProcessorTests
     }
 
     [Fact]
-    public async void Processor_Integrated_BehavesAsExpected()
+    public async Task Processor_Integrated_BehavesAsExpected()
     {
         // Arrange
         var processor = new GameStatsProcessor(new Logger<GameStatsProcessor>(new SerilogLoggerFactory()));
