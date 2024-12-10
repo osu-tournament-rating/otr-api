@@ -20,7 +20,7 @@ public class LeaderboardServiceTests
             .SetupGetUsername()
             .SetupGetCountry();
 
-        MockBaseStatsRepository baseStatsRepository = new MockBaseStatsRepository()
+        MockPlayerRatingsRepository playerRatingsRepository = new MockPlayerRatingsRepository()
             .SetupLeaderboard()
             .SetupLeaderboardCount()
             .SetupHighestMatches()
@@ -40,8 +40,8 @@ public class LeaderboardServiceTests
 
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
-        var baseStatsService = new BaseStatsService(
-            baseStatsRepository.Object,
+        var playerRatingsService = new PlayerRatingsService(
+            playerRatingsRepository.Object,
             matchStatsRepository.Object,
             playerRepository.Object,
             tournamentsService
@@ -49,7 +49,7 @@ public class LeaderboardServiceTests
 
         _leaderboardService = new LeaderboardService(
             playerRepository.Object,
-            baseStatsService
+            playerRatingsService
         );
     }
 
@@ -83,10 +83,7 @@ public class LeaderboardServiceTests
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
-                TierFilters = new LeaderboardTierFilterDTO
-                {
-                    FilterEliteGrandmaster = true
-                }
+                TierFilters = new LeaderboardTierFilterDTO { FilterEliteGrandmaster = true }
             }
         };
 
@@ -107,10 +104,7 @@ public class LeaderboardServiceTests
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
-                TierFilters = new LeaderboardTierFilterDTO
-                {
-                    FilterGrandmaster = true
-                }
+                TierFilters = new LeaderboardTierFilterDTO { FilterGrandmaster = true }
             }
         };
 
@@ -129,13 +123,7 @@ public class LeaderboardServiceTests
         {
             Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
-            Filter = new LeaderboardFilterDTO
-            {
-                TierFilters = new LeaderboardTierFilterDTO
-                {
-                    FilterMaster = true
-                }
-            }
+            Filter = new LeaderboardFilterDTO { TierFilters = new LeaderboardTierFilterDTO { FilterMaster = true } }
         };
 
         // Act
@@ -155,10 +143,7 @@ public class LeaderboardServiceTests
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
-                TierFilters = new LeaderboardTierFilterDTO
-                {
-                    FilterDiamond = true
-                }
+                TierFilters = new LeaderboardTierFilterDTO { FilterDiamond = true }
             }
         };
 
@@ -179,10 +164,7 @@ public class LeaderboardServiceTests
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
-                TierFilters = new LeaderboardTierFilterDTO
-                {
-                    FilterEmerald = true
-                }
+                TierFilters = new LeaderboardTierFilterDTO { FilterEmerald = true }
             }
         };
 
@@ -203,10 +185,7 @@ public class LeaderboardServiceTests
             ChartType = LeaderboardChartType.Global,
             Filter = new LeaderboardFilterDTO
             {
-                TierFilters = new LeaderboardTierFilterDTO
-                {
-                    FilterPlatinum = true
-                }
+                TierFilters = new LeaderboardTierFilterDTO { FilterPlatinum = true }
             }
         };
 
@@ -225,13 +204,7 @@ public class LeaderboardServiceTests
         {
             Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
-            Filter = new LeaderboardFilterDTO
-            {
-                TierFilters = new LeaderboardTierFilterDTO
-                {
-                    FilterGold = true
-                }
-            }
+            Filter = new LeaderboardFilterDTO { TierFilters = new LeaderboardTierFilterDTO { FilterGold = true } }
         };
 
         // Act
@@ -249,13 +222,7 @@ public class LeaderboardServiceTests
         {
             Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
-            Filter = new LeaderboardFilterDTO
-            {
-                TierFilters = new LeaderboardTierFilterDTO
-                {
-                    FilterSilver = true
-                }
-            }
+            Filter = new LeaderboardFilterDTO { TierFilters = new LeaderboardTierFilterDTO { FilterSilver = true } }
         };
 
         // Act
@@ -273,13 +240,7 @@ public class LeaderboardServiceTests
         {
             Ruleset = 0,
             ChartType = LeaderboardChartType.Global,
-            Filter = new LeaderboardFilterDTO
-            {
-                TierFilters = new LeaderboardTierFilterDTO
-                {
-                    FilterBronze = true
-                }
-            }
+            Filter = new LeaderboardFilterDTO { TierFilters = new LeaderboardTierFilterDTO { FilterBronze = true } }
         };
 
         // Act
@@ -338,11 +299,7 @@ public class LeaderboardServiceTests
             Ruleset = 0,
             Filter = new LeaderboardFilterDTO
             {
-                TierFilters = new LeaderboardTierFilterDTO
-                {
-                    FilterGrandmaster = true,
-                    FilterBronze = true
-                }
+                TierFilters = new LeaderboardTierFilterDTO { FilterGrandmaster = true, FilterBronze = true }
             }
         };
 
@@ -374,7 +331,7 @@ public class LeaderboardServiceTests
                 {
                     FilterEliteGrandmaster = true,
                     FilterDiamond = true,
-                    FilterSilver = true,
+                    FilterSilver = true
                 }
             }
         };

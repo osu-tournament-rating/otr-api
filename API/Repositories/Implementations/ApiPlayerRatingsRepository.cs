@@ -14,12 +14,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance",
+    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class ApiBaseStatsRepository(
+public class ApiPlayerRatingsRepository(
     OtrContext context,
     IPlayersRepository playerRepository
-    ) : BaseStatsRepository(context, playerRepository), IApiBaseStatsRepository
+) : PlayerRatingsRepository(context, playerRepository), IApiPlayerRatingsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -130,7 +131,8 @@ public class ApiBaseStatsRepository(
         return query;
     }
 
-    private static IQueryable<PlayerRating> FilterByRating(IQueryable<PlayerRating> query, int? minRating, int? maxRating)
+    private static IQueryable<PlayerRating> FilterByRating(IQueryable<PlayerRating> query, int? minRating,
+        int? maxRating)
     {
         if (minRating.HasValue)
         {
@@ -151,9 +153,6 @@ public class ApiBaseStatsRepository(
         int? maxMatches
     )
     {
-        // This is required to count the number of matches played.
-        // In the future this should be a stat tied to BaseStats, not calculated.
-
         if (minMatches.HasValue || maxMatches.HasValue)
         {
             query = query.Include(x => x.Player).ThenInclude(x => x.MatchStats);
@@ -161,12 +160,12 @@ public class ApiBaseStatsRepository(
 
         if (minMatches.HasValue)
         {
-            query = query.Where(x => x.Player.MatchStats.Count() >= minMatches.Value);
+            query = query.Where(x => x.Player.MatchStats.Count >= minMatches.Value);
         }
 
         if (maxMatches.HasValue)
         {
-            query = query.Where(x => x.Player.MatchStats.Count() <= maxMatches.Value);
+            query = query.Where(x => x.Player.MatchStats.Count <= maxMatches.Value);
         }
 
         return query;
@@ -195,7 +194,8 @@ public class ApiBaseStatsRepository(
             || (includeEmerald && x.Rating >= RatingUtils.RatingEmeraldIII && x.Rating < RatingUtils.RatingDiamondIII)
             || (includeDiamond && x.Rating >= RatingUtils.RatingDiamondIII && x.Rating < RatingUtils.RatingMasterIII)
             || (includeMaster && x.Rating >= RatingUtils.RatingMasterIII && x.Rating < RatingUtils.RatingGrandmasterIII)
-            || (includeGrandmaster && x.Rating >= RatingUtils.RatingGrandmasterIII && x.Rating < RatingUtils.RatingEliteGrandmaster)
+            || (includeGrandmaster && x.Rating >= RatingUtils.RatingGrandmasterIII &&
+                x.Rating < RatingUtils.RatingEliteGrandmaster)
             || (includeEliteGrandmaster && x.Rating >= RatingUtils.RatingEliteGrandmaster)
         );
     }
