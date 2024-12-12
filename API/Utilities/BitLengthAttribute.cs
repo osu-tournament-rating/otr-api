@@ -8,14 +8,8 @@ namespace API.Utilities;
 /// </summary>
 public class BitLengthAttribute : ValidationAttribute
 {
-    public int Minimum { get; set; }
-    public int Maximum { get; set; }
-
-    public BitLengthAttribute()
-    {
-        Minimum = 0;
-        Maximum = int.MaxValue;
-    }
+    public int Minimum { get; set; } = 0;
+    public int Maximum { get; set; } = int.MaxValue;
 
     public override bool IsValid(object? value)
     {
