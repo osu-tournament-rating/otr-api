@@ -20,7 +20,7 @@ public class BeatmapJsonModel : JsonModelBase
     [JsonProperty("id")]
     public long Id { get; set; }
 
-    [JsonProperty("ruleset")]
+    [JsonProperty("mode")]
     public string Mode { get; set; } = null!;
 
     [JsonProperty("status")]
