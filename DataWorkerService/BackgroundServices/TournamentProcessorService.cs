@@ -49,45 +49,51 @@ public class TournamentProcessorService(
             scope.ServiceProvider.GetRequiredService<ITournamentProcessorResolver>();
 
         IEnumerable<Tournament> tournaments = await tournamentsRepository.GetNeedingProcessingAsync(_config.BatchSize);
+        var tasks = new List<Task>();
+
         foreach (Tournament tournament in tournaments)
         {
-            _stopwatch.Start();
-
-            logger.LogInformation(
-                "Processing starting [Id: {Id} | Processing Status: {Status} | Last Processing: {LastProcessing:MM/dd/yyyy}]",
-                tournament.Id,
-                tournament.ProcessingStatus,
-                tournament.LastProcessingDate
-            );
-
-            if (tournament.Matches.Count == 0)
-            {
-                tournament.VerificationStatus = VerificationStatus.Rejected;
-                tournament.RejectionReason = TournamentRejectionReason.IncompleteData;
-                tournament.ProcessingStatus = TournamentProcessingStatus.Done;
-                tournament.LastProcessingDate = DateTime.Now;
-
-                await context.SaveChangesAsync(stoppingToken);
-
-                logger.LogWarning("Skipping processing for tournament with no matches [Id: {Id}]", tournament.Id);
-                continue;
-            }
-
-            foreach (IProcessor<Tournament> processor in tournamentProcessorResolver.GetAll())
-            {
-                await processor.ProcessAsync(tournament, stoppingToken);
-            }
-
-            _stopwatch.Stop();
-            logger.LogInformation(
-                "Processing completed [Id: {Id} | Processing Status: {Status} | Elapsed: {Elapsed:mm\\:ss\\:fff}]",
-                tournament.Id,
-                tournament.ProcessingStatus,
-                _stopwatch.Elapsed
-            );
-            _stopwatch.Reset();
-
-            await context.SaveChangesAsync(stoppingToken);
+            tasks.Add(ProcessAsync(stoppingToken, tournament, tournamentProcessorResolver));
         }
+
+        await Task.WhenAll(tasks);
+
+        await context.SaveChangesAsync(stoppingToken);
+    }
+
+    private async Task ProcessAsync(CancellationToken stoppingToken, Tournament tournament,
+        ITournamentProcessorResolver tournamentProcessorResolver)
+    {
+        var sw = new Stopwatch();
+        sw.Start();
+
+        logger.LogInformation(
+            "Processing starting [Id: {Id} | Processing Status: {Status} | Last Processing: {LastProcessing:MM/dd/yyyy}]",
+            tournament.Id,
+            tournament.ProcessingStatus,
+            tournament.LastProcessingDate
+        );
+
+        if (tournament.Matches.Count == 0)
+        {
+            tournament.VerificationStatus = VerificationStatus.Rejected;
+            tournament.RejectionReason = TournamentRejectionReason.IncompleteData;
+            tournament.ProcessingStatus = TournamentProcessingStatus.Done;
+            tournament.LastProcessingDate = DateTime.Now;
+
+            logger.LogWarning("Skipping processing for tournament with no matches [Id: {Id}]", tournament.Id);
+            return;
+        }
+
+        IProcessor<Tournament> processor = tournamentProcessorResolver.GetNextProcessor(tournament.ProcessingStatus);
+        await processor.ProcessAsync(tournament, stoppingToken);
+
+        sw.Stop();
+        logger.LogInformation(
+            "Processing completed [Id: {Id} | Processing Status: {Status} | Elapsed: {Elapsed:mm\\:ss\\:fff}]",
+            tournament.Id,
+            tournament.ProcessingStatus,
+            _stopwatch.Elapsed
+        );
     }
 }

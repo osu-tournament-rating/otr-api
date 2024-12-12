@@ -65,8 +65,6 @@ public class TournamentVerificationProcessor(
                 entity.ProcessingStatus = TournamentProcessingStatus.NeedsStatCalculation;
                 break;
         }
-
-        await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <summary>
