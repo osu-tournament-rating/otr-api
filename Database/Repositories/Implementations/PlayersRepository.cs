@@ -95,9 +95,15 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
 
     public async Task<int> GetIdAsync(int userId) =>
         await _context
-            .Players.AsNoTracking()
-            .Where(x => x.User != null && x.User.Id == userId)
-            .Select(x => x.Id)
+            .Players
+            .Where(p => p.User != null && p.User.Id == userId)
+            .Select(p => p.Id)
+            .FirstOrDefaultAsync();
+
+    public async Task<int?> GetUserIdAsync(int id) =>
+        await _context.Players
+            .Where(p => p.User != null && p.Id == id)
+            .Select(p => p.User!.Id)
             .FirstOrDefaultAsync();
 
     public async Task<string?> GetCountryAsync(int playerId) =>

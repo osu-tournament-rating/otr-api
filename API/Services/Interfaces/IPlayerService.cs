@@ -24,6 +24,14 @@ public interface IPlayerService
     Task<PlayerCompactDTO?> GetVersatileAsync(string key);
 
     /// <summary>
+    /// Gets a player's friends for the given id
+    /// </summary>
+    /// <param name="id">The player id</param>
+    /// <returns>A list of <see cref="PlayerCompactDTO"/> representing the player's friends,
+    /// or null if no user for the given id exists</returns>
+    Task<IEnumerable<PlayerCompactDTO>?> GetFriendsAsync(int id);
+
+    /// <summary>
     /// Gets player information for a list of osu! ids
     /// </summary>
     /// <param name="osuIds">The osu! player ids</param>

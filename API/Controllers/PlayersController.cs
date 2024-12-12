@@ -96,4 +96,22 @@ public partial class PlayersController(
 
         return Ok(await adminNoteService.ListAsync<PlayerAdminNote>(id));
     }
+
+    [HttpGet("{id:int}/friends")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<IEnumerable<PlayerCompactDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListFriendsAsync(int id)
+    {
+        if (!await playerService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        IEnumerable<PlayerCompactDTO>? result = await playerService.GetFriendsAsync(id);
+
+        return result is null
+            ? NotFound()
+            : Ok(result);
+    }
 }

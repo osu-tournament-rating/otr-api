@@ -6,7 +6,7 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class PlayerService(IPlayersRepository playerRepository, IMapper mapper) : IPlayerService
+public class PlayerService(IPlayersRepository playerRepository, IUserService userService, IMapper mapper) : IPlayerService
 {
     public async Task<IEnumerable<PlayerCompactDTO>> GetAllAsync() =>
         mapper.Map<IEnumerable<PlayerCompactDTO>>(await playerRepository.GetAsync());
@@ -18,6 +18,14 @@ public class PlayerService(IPlayersRepository playerRepository, IMapper mapper) 
 
     public async Task<PlayerCompactDTO?> GetVersatileAsync(string key) =>
         mapper.Map<PlayerCompactDTO?>(await playerRepository.GetVersatileAsync(key, false));
+
+    public async Task<IEnumerable<PlayerCompactDTO>?> GetFriendsAsync(int id)
+    {
+        var userId = await playerRepository.GetUserIdAsync(id);
+        return userId is null
+            ? null
+            : await userService.GetFriendsAsync(userId.Value);
+    }
 
     public async Task<IEnumerable<PlayerCompactDTO>> GetAsync(IEnumerable<long> osuIds)
     {

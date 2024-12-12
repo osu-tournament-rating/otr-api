@@ -98,6 +98,12 @@ public interface IPlayersRepository : IRepository<Player>
     Task<int> GetIdAsync(int userId);
 
     /// <summary>
+    /// Returns the user id for the given player id, if available
+    /// </summary>
+    /// <param name="id">The player id</param>
+    Task<int?> GetUserIdAsync(int id);
+
+    /// <summary>
     /// Returns the country of the player with the given player id, if available
     /// </summary>
     /// <param name="playerId"></param>
