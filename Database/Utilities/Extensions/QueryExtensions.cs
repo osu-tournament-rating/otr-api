@@ -81,18 +81,35 @@ public static class QueryExtensions
         query.AsQueryable().Where(x => x.ProcessingStatus == TournamentProcessingStatus.Done);
 
     /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those with a name or abbreviation that partially matches the
+    /// given search term
+    /// </summary>
+    /// <param name="term">Search term</param>
+    public static IQueryable<Tournament> WhereNameOrAbbreviation(this IQueryable<Tournament> query, string term)
+    {
+        //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
+        term = term.Replace("_", @"\_");
+
+        return query.Where(t =>
+            EF.Functions.ILike(t.Name, $"%{term}%", @"\")
+            || EF.Functions.ILike(t.Abbreviation, $"%{term}%", @"\")
+        );
+    }
+
+    /// <summary>
     /// Orders the query based on the specified sort type and direction.
     /// </summary>
     /// <param name="query">The query to be ordered.</param>
     /// <param name="sortType">Defines which key to order the results by</param>
     /// <param name="descending">A boolean indicating whether the ordering should be in descending order. Defaults to false (ascending).</param>
     /// <returns>The ordered query</returns>
-    public static IQueryable<Tournament> OrderBy(this IQueryable<Tournament> query, TournamentQuerySortType sortType, bool descending = false) =>
+    public static IQueryable<Tournament> OrderBy(this IQueryable<Tournament> query, TournamentQuerySortType sortType, bool descending = true) =>
         sortType switch
         {
             TournamentQuerySortType.Id => descending ? query.OrderByDescending(t => t.Id) : query.OrderBy(t => t.Id),
             TournamentQuerySortType.Name => descending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name),
             TournamentQuerySortType.StartTime => descending ? query.OrderByDescending(t => t.StartTime) : query.OrderBy(t => t.StartTime),
+            TournamentQuerySortType.EndTime => descending ? query.OrderByDescending(t => t.EndTime) : query.OrderBy(t => t.EndTime),
             TournamentQuerySortType.Created => descending ? query.OrderByDescending(t => t.Created) : query.OrderBy(t => t.Created),
             _ => query
         };

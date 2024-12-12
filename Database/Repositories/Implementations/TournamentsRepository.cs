@@ -9,8 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance",
-    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository) : RepositoryBase<Tournament>(context), ITournamentsRepository
 {
@@ -77,16 +76,23 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         int page,
         int pageSize,
         TournamentQuerySortType querySortType,
-        bool descending = false,
         bool verified = true,
-        Ruleset? ruleset = null
+        Ruleset? ruleset = null,
+        string? name = null,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null,
+        VerificationStatus? verificationStatus = null,
+        TournamentRejectionReason? rejectionReason = null,
+        TournamentProcessingStatus? processingStatus = null,
+        int? submittedBy = null,
+        int? verifiedBy = null,
+        bool descending = true
     )
     {
         IQueryable<Tournament> query = _context.Tournaments
             .AsNoTracking()
             .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
-            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
-            .OrderBy(querySortType, descending);
+            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null);
 
         if (verified)
         {
@@ -95,10 +101,51 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
 
         if (ruleset.HasValue)
         {
-            query = query.Where(x => x.Ruleset == ruleset.Value);
+            query = query.Where(t => t.Ruleset == ruleset.Value);
+        }
+
+        if (!string.IsNullOrEmpty(name))
+        {
+            query = query.WhereNameOrAbbreviation(name);
+        }
+
+        if (dateMin.HasValue)
+        {
+            query = query.Where(t => t.StartTime > dateMin.Value);
+        }
+
+        if (dateMax.HasValue)
+        {
+            query = query.Where(t => t.EndTime < dateMax.Value);
+        }
+
+        if (verificationStatus.HasValue)
+        {
+            query = query.Where(t => t.VerificationStatus == verificationStatus.Value);
+        }
+
+        if (rejectionReason.HasValue)
+        {
+            query = query.Where(t => t.RejectionReason == rejectionReason.Value);
+        }
+
+        if (processingStatus.HasValue)
+        {
+            query = query.Where(t => t.ProcessingStatus == processingStatus.Value);
+        }
+
+        if (submittedBy.HasValue)
+        {
+            query = query.Where(t => t.SubmittedByUserId == submittedBy.Value);
+        }
+
+        if (verifiedBy.HasValue)
+        {
+            query = query.Where(t => t.VerifiedByUserId == verifiedBy.Value);
         }
 
         return await query
+                .OrderBy(querySortType, descending)
                 .Page(pageSize, page - 1)
                 .ToListAsync();
     }
@@ -173,7 +220,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             return;
         }
 
-        tournament.PooledBeatmaps = new List<Beatmap>();
+        tournament.PooledBeatmaps = [];
         await UpdateAsync(tournament);
     }
 

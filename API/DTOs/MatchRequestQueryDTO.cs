@@ -79,5 +79,5 @@ public class MatchRequestQueryDTO : IPaginated
     /// <summary>
     /// Whether the results are sorted in descending order by the <see cref="Sort"/>
     /// </summary>
-    public bool? Descending { get; init; }
+    public bool? Descending { get; init; } = true;
 }

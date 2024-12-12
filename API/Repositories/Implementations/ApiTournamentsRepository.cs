@@ -6,6 +6,7 @@ using Database.Enums;
 using Database.Enums.Verification;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
+using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
@@ -15,16 +16,10 @@ public class ApiTournamentsRepository(OtrContext context, IBeatmapsRepository be
 {
     private readonly OtrContext _context = context;
 
-    public async Task<IEnumerable<TournamentSearchResultDTO>> SearchAsync(string name)
-    {
-        //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
-        name = name.Replace("_", @"\_");
-        return await _context.Tournaments
+    public async Task<IEnumerable<TournamentSearchResultDTO>> SearchAsync(string name) =>
+        await _context.Tournaments
             .AsNoTracking()
-            .Where(x =>
-                EF.Functions.ILike(x.Name, $"%{name}%", @"\")
-                || EF.Functions.ILike(x.Abbreviation, $"%{name}%", @"\")
-            )
+            .WhereNameOrAbbreviation(name)
             .Select(t => new TournamentSearchResultDTO()
             {
                 Id = t.Id,
@@ -34,7 +29,6 @@ public class ApiTournamentsRepository(OtrContext context, IBeatmapsRepository be
             })
             .Take(30)
             .ToListAsync();
-    }
 
     public async Task<PlayerTournamentLobbySizeCountDTO> GetLobbySizeStatsAsync(
     int playerId,

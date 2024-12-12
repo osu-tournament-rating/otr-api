@@ -1,5 +1,6 @@
 using Database.Entities;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace Database.Repositories.Interfaces;
 
@@ -54,18 +55,21 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="pageSize">The size of the collection</param>
     /// <param name="querySortType">Determines how the results are sorted</param>
     /// <param name="descending">Whether to sort the results in descending order</param>
-    /// <param name="verified">
-    /// Whether the resulting tournaments must be verified and have completed processing
-    /// </param>
-    /// <param name="ruleset">An optional ruleset to filter by</param>
-    /// <remarks>All returned entities will not be tracked by the context</remarks>
-    Task<ICollection<Tournament>> GetAsync(
-        int page,
+    /// <remarks>None of the entities returned will be tracked by the context</remarks>
+    Task<ICollection<Tournament>> GetAsync(int page,
         int pageSize,
         TournamentQuerySortType querySortType,
-        bool descending = false,
         bool verified = true,
-        Ruleset? ruleset = null
+        Ruleset? ruleset = null,
+        string? name = null,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null,
+        VerificationStatus? verificationStatus = null,
+        TournamentRejectionReason? rejectionReason = null,
+        TournamentProcessingStatus? processingStatus = null,
+        int? submittedBy = null,
+        int? verifiedBy = null,
+        bool descending = true
     );
 
     /// <summary>
