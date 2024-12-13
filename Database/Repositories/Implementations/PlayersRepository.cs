@@ -100,12 +100,6 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
             .Select(p => p.Id)
             .FirstOrDefaultAsync();
 
-    public async Task<int?> GetUserIdAsync(int id) =>
-        await _context.Players
-            .Where(p => p.User != null && p.Id == id)
-            .Select(p => p.User!.Id)
-            .FirstOrDefaultAsync();
-
     public async Task<string?> GetCountryAsync(int playerId) =>
         await _context.Players.Where(p => p.Id == playerId).Select(p => p.Country).FirstOrDefaultAsync();
 
