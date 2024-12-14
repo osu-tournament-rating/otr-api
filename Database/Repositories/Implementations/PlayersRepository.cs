@@ -79,7 +79,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
 
     public async Task<Player> GetOrCreateAsync(long osuId) =>
         await _context.Players.FirstOrDefaultAsync(x => x.OsuId == osuId)
-            ?? await CreateAsync(new Player { OsuId = osuId });
+        ?? await CreateAsync(new Player { OsuId = osuId });
 
     public async Task<int?> GetIdAsync(long osuId) =>
         await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
@@ -90,8 +90,11 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
     public async Task<string?> GetUsernameAsync(long osuId) =>
         await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
 
-    public async Task<string?> GetUsernameAsync(int id) =>
-        await _context.Players.Where(p => p.Id == id).Select(p => p.Username).FirstOrDefaultAsync();
+    public async Task<string> GetUsernameAsync(int id) =>
+        await _context.Players
+            .AsNoTracking()
+            .Where(p => p.Id == id)
+            .Select(p => p.Username).FirstOrDefaultAsync() ?? string.Empty;
 
     public async Task<int> GetIdAsync(int userId) =>
         await _context
