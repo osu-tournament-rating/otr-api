@@ -35,7 +35,7 @@ public class GameBeatmapUsageCheckTests : AutomationChecksTestBase<GameBeatmapUs
 
         Tournament tournament = GenerateTournamentWithPooledBeatmaps();
         Game game = tournament.Matches.First().Games.First();
-        game.Beatmap = new Beatmap { OsuId = beatmapOsuId };
+        game.Beatmap = new Beatmap { Id = beatmapOsuId, OsuId = beatmapOsuId };
 
         // Act
         var actualPass = AutomationCheck.Check(game);
@@ -49,27 +49,33 @@ public class GameBeatmapUsageCheckTests : AutomationChecksTestBase<GameBeatmapUs
     public void Check_GameFlag_IsBeatmapUsedOnce_WhenBeatmapUsedOnce()
     {
         // Arrange
-        const int beatmapOsuId = 1;
+        const int beatmapOsuId = 500;
         const GameWarningFlags expectedFlag = GameWarningFlags.BeatmapUsedOnce;
 
         Tournament tournament = GenerateTournamentWithPooledBeatmaps();
-        tournament.PooledBeatmaps = new List<Beatmap>();
+        tournament.PooledBeatmaps = [];
 
-        Game game = tournament.Matches.SelectMany(m => m.Games).First(g => g.Beatmap!.OsuId == beatmapOsuId);
+        Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None,
+            warningFlags: MatchWarningFlags.None, tournament: tournament);
+        Beatmap beatmap = SeededBeatmap.Generate(-1, beatmapOsuId);
+        Game _ = SeededGame.Generate(rejectionReason: GameRejectionReason.None, warningFlags: GameWarningFlags.None,
+            match: match, beatmap: beatmap);
+
+        Game relevantGame = tournament.Matches.SelectMany(m => m.Games).First(g => g.Beatmap!.OsuId == beatmapOsuId);
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        var actualPass = AutomationCheck.Check(relevantGame);
         var unique = tournament.Matches
             .SelectMany(m => m.Games)
             .Select(g => g.Beatmap)
             .Select(b => b!.OsuId)
-            .Count(id => id == beatmapOsuId) == 1;
+            .Count(osuId => osuId == beatmapOsuId) == 1;
 
         // Assert
         Assert.Empty(tournament.PooledBeatmaps);
         Assert.True(actualPass);
         Assert.True(unique);
-        Assert.True(game.WarningFlags.HasFlag(expectedFlag));
+        Assert.True(relevantGame.WarningFlags.HasFlag(expectedFlag));
     }
 
     /// <summary>
@@ -79,22 +85,20 @@ public class GameBeatmapUsageCheckTests : AutomationChecksTestBase<GameBeatmapUs
     /// </summary>
     private static Tournament GenerateTournamentWithPooledBeatmaps()
     {
-        Tournament tournament = SeededTournament.Generate();
+        Tournament tournament = SeededTournament.Generate(rejectionReason: TournamentRejectionReason.None);
 
         for (var i = 0; i < 5; i++)
         {
-            Match match = SeededMatch.Generate();
-            match.Tournament = tournament;
+            Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None, tournament: tournament);
 
-            Game game = SeededGame.Generate(warningFlags: GameWarningFlags.None);
-            game.Match = match;
+            Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None,
+                warningFlags: GameWarningFlags.None, match: match);
 
             Beatmap beatmap = SeededBeatmap.Generate(id: i, osuId: i);
-
             game.Beatmap = beatmap;
+
             match.Games.Add(game);
             tournament.Matches.Add(match);
-
             tournament.PooledBeatmaps.Add(beatmap);
         }
 
