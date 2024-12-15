@@ -4,8 +4,11 @@ using Database.Enums;
 
 namespace API.Services.Implementations;
 
-public class FilteringService(IPlayerService playerService, IBaseStatsService baseStatsService, IPlayerStatsService
-    playerStatsService) : IFilteringService
+public class FilteringService(
+    IPlayerService playerService,
+    IPlayerRatingsService playerRatingsService,
+    IPlayerStatsService
+        playerStatsService) : IFilteringService
 {
     public async Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO filteringRequest)
     {
@@ -56,7 +59,8 @@ public class FilteringService(IPlayerService playerService, IBaseStatsService ba
         };
     }
 
-    private async Task<(FilteringResult result, FilteringFailReason? failReason)> FilterAsync(FilteringRequestDTO filteringRequest,
+    private async Task<(FilteringResult result, FilteringFailReason? failReason)> FilterAsync(
+        FilteringRequestDTO filteringRequest,
         PlayerCompactDTO? playerInfo)
     {
         FilteringResult result = FilteringResult.Fail;
@@ -69,36 +73,37 @@ public class FilteringService(IPlayerService playerService, IBaseStatsService ba
             return (result, failReason);
         }
 
-        PlayerRatingStatsDTO? baseStats = await baseStatsService.GetAsync(null, playerInfo.Id, filteringRequest.Ruleset);
+        PlayerRatingStatsDTO? ratingStats =
+            await playerRatingsService.GetAsync(null, playerInfo.Id, filteringRequest.Ruleset);
 
-        if (baseStats == null)
+        if (ratingStats == null)
         {
             failReason |= FilteringFailReason.NoData;
 
             return (result, failReason);
         }
 
-        if (baseStats.Rating < filteringRequest.MinRating)
+        if (ratingStats.Rating < filteringRequest.MinRating)
         {
             failReason |= FilteringFailReason.MinRating;
         }
 
-        if (baseStats.Rating > filteringRequest.MaxRating)
+        if (ratingStats.Rating > filteringRequest.MaxRating)
         {
             failReason |= FilteringFailReason.MaxRating;
         }
 
-        if (!filteringRequest.AllowProvisional && baseStats.IsProvisional)
+        if (!filteringRequest.AllowProvisional && ratingStats.IsProvisional)
         {
             failReason |= FilteringFailReason.IsProvisional;
         }
 
-        if (baseStats.MatchesPlayed < filteringRequest.MatchesPlayed)
+        if (ratingStats.MatchesPlayed < filteringRequest.MatchesPlayed)
         {
             failReason |= FilteringFailReason.NotEnoughMatches;
         }
 
-        if (baseStats.TournamentsPlayed < filteringRequest.TournamentsPlayed)
+        if (ratingStats.TournamentsPlayed < filteringRequest.TournamentsPlayed)
         {
             failReason |= FilteringFailReason.NotEnoughTournaments;
         }

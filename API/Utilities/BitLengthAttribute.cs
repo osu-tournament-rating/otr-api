@@ -9,13 +9,7 @@ namespace API.Utilities;
 public class BitLengthAttribute : ValidationAttribute
 {
     public int Minimum { get; set; }
-    public int Maximum { get; set; }
-
-    public BitLengthAttribute()
-    {
-        Minimum = 0;
-        Maximum = int.MaxValue;
-    }
+    public int Maximum { get; set; } = int.MaxValue;
 
     public override bool IsValid(object? value)
     {
