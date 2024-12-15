@@ -23,10 +23,15 @@ public enum TournamentQuerySortType
     /// <summary>
     /// Sort by name
     /// </summary>
-    Name,
+    SearchQueryRelevance,
 
     /// <summary>
     /// Sort by created date
     /// </summary>
-    Created
+    Created,
+
+    /// <summary>
+    /// Sort by lobby size
+    /// </summary>
+    LobbySize
 }

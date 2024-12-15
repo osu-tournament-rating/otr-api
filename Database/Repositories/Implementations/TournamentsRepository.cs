@@ -96,6 +96,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         TournamentProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
+        int? lobbySize = null,
         bool descending = true
     )
     {
@@ -110,7 +111,8 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .WhereRejectionReason(rejectionReason)
             .WhereProcessingStatus(processingStatus)
             .WhereSubmittedBy(submittedBy)
-            .WhereVerifiedBy(verifiedBy);
+            .WhereVerifiedBy(verifiedBy)
+            .WhereLobbySize(lobbySize);
 
         if (verified)
         {

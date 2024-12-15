@@ -115,6 +115,7 @@ public class TournamentsService(
             processingStatus: requestQuery.ProcessingStatus,
             submittedBy: requestQuery.SubmittedBy,
             verifiedBy: requestQuery.VerifiedBy,
+            lobbySize: requestQuery.LobbySize,
             descending: requestQuery.Descending
         ));
     }

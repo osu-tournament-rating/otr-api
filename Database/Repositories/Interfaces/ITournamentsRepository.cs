@@ -84,6 +84,9 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="verifiedBy">
     /// Filters results for only tournaments verified by a user with a specified id
     /// </param>
+    /// <param name="lobbySize">
+    /// Filters results for only tournaments played with a specified lobby size
+    /// </param>
     /// <param name="descending">Whether to sort the results in descending order</param>
     /// <remarks>None of the entities returned will be tracked by the context</remarks>
     Task<ICollection<Tournament>> GetAsync(
@@ -100,6 +103,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
         TournamentProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
+        int? lobbySize = null,
         bool descending = true
     );
 

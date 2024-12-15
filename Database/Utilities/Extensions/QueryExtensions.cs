@@ -188,6 +188,14 @@ public static class QueryExtensions
         userId.HasValue ? query.Where(t => t.VerifiedByUserId == userId.Value) : query;
 
     /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those played with the given lobby size
+    /// </summary>
+    /// <param name="lobbySize">Lobby size</param>
+    /// <remarks>Does nothing if <paramref name="lobbySize"/> is null</remarks>
+    public static IQueryable<Tournament> WhereLobbySize(this IQueryable<Tournament> query, int? lobbySize = null) =>
+        lobbySize.HasValue ? query.Where(t => t.LobbySize == lobbySize.Value) : query;
+
+    /// <summary>
     /// Orders the query based on the specified sort type and direction.
     /// </summary>
     /// <param name="query">The query to be ordered.</param>
@@ -198,13 +206,13 @@ public static class QueryExtensions
         sortType switch
         {
             TournamentQuerySortType.Id => descending ? query.OrderByDescending(t => t.Id) : query.OrderBy(t => t.Id),
-            TournamentQuerySortType.Name => descending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name),
+            TournamentQuerySortType.SearchQueryRelevance => descending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name),
             TournamentQuerySortType.StartTime => descending ? query.OrderByDescending(t => t.StartTime) : query.OrderBy(t => t.StartTime),
             TournamentQuerySortType.EndTime => descending ? query.OrderByDescending(t => t.EndTime) : query.OrderBy(t => t.EndTime),
             TournamentQuerySortType.Created => descending ? query.OrderByDescending(t => t.Created) : query.OrderBy(t => t.Created),
+            TournamentQuerySortType.LobbySize => descending ? query.OrderByDescending(t => t.LobbySize) : query.OrderBy(t => t.LobbySize),
             _ => query
         };
-
     #endregion
 
     #region Matches
