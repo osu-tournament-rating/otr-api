@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using API.Authorization;
-using API.Configurations.Interfaces;
+using API.Configurations;
 using API.DTOs;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
@@ -26,7 +26,7 @@ public class OAuthHandler(
     IUserRepository userRepository,
     IOsuClient osuClient,
     IPasswordHasher<OAuthClient> clientSecretHasher,
-    IOptions<IOsuConfiguration> osuConfiguration) : IOAuthHandler
+    IOptions<OsuConfiguration> osuConfiguration) : IOAuthHandler
 {
     public async Task<AccessCredentialsDTO?> AuthorizeAsync(string osuAuthCode)
     {
