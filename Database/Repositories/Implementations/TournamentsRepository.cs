@@ -82,13 +82,12 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         DateTime dateMax
     ) => await QueryForParticipation(playerId, ruleset, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
 
-    public async Task<ICollection<Tournament>> GetAsync(
-        int page,
+    public async Task<ICollection<Tournament>> GetAsync(int page,
         int pageSize,
         TournamentQuerySortType querySortType,
         bool verified = true,
         Ruleset? ruleset = null,
-        string? name = null,
+        string? searchQuery = null,
         DateTime? dateMin = null,
         DateTime? dateMax = null,
         VerificationStatus? verificationStatus = null,
@@ -96,8 +95,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         TournamentProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
-        bool descending = true
-    )
+        bool descending = true)
     {
         IQueryable<Tournament> query = _context.Tournaments
             .AsNoTracking()
@@ -114,9 +112,9 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             query = query.Where(t => t.Ruleset == ruleset.Value);
         }
 
-        if (!string.IsNullOrEmpty(name))
+        if (!string.IsNullOrEmpty(searchQuery))
         {
-            query = query.WhereNameOrAbbreviation(name);
+            query = query.WhereNameOrAbbreviation(searchQuery);
         }
 
         if (dateMin.HasValue)

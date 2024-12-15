@@ -107,7 +107,7 @@ public class TournamentsService(
             requestQuery.Sort,
             verified: requestQuery.Verified,
             ruleset: requestQuery.Ruleset,
-            name: requestQuery.Name,
+            searchQuery: requestQuery.SearchQuery,
             dateMin: requestQuery.DateMin,
             dateMax: requestQuery.DateMax,
             verificationStatus: requestQuery.VerificationStatus,

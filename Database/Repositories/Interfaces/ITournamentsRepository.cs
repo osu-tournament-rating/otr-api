@@ -54,6 +54,36 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="page">The page</param>
     /// <param name="pageSize">The size of the collection</param>
     /// <param name="querySortType">Determines how the results are sorted</param>
+    /// <param name="verified">
+    /// Filters results for only tournaments that are verified
+    /// see <see cref="ITournamentsRepository.GetVerifiedAsync"/>
+    /// </param>
+    /// <param name="ruleset">Filters results for only tournaments played in a specified ruleset
+    /// </param>
+    /// <param name="searchQuery">
+    /// Filters results for only tournaments with a partially matching name or abbreviation (case insensitive)
+    /// </param>
+    /// <param name="dateMin"
+    /// >Filters results for only tournaments that occurred on or after a specified date
+    /// </param>
+    /// <param name="dateMax">
+    /// Filters results for only tournaments that occurred on or before a specified date
+    /// </param>
+    /// <param name="verificationStatus">
+    /// Filters results for only tournaments with a specified verification status
+    /// </param>
+    /// <param name="rejectionReason">
+    /// Filters results for only tournaments with a specified rejection reason
+    ///</param>
+    /// <param name="processingStatus">
+    /// Filters results for only tournaments with a specified processing status
+    /// </param>
+    /// <param name="submittedBy">
+    /// Filters results for only tournaments submitted by a user with a specified id
+    /// </param>
+    /// <param name="verifiedBy">
+    /// Filters results for only tournaments verified by a user with a specified id
+    /// </param>
     /// <param name="descending">Whether to sort the results in descending order</param>
     /// <remarks>None of the entities returned will be tracked by the context</remarks>
     Task<ICollection<Tournament>> GetAsync(int page,
@@ -61,7 +91,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
         TournamentQuerySortType querySortType,
         bool verified = true,
         Ruleset? ruleset = null,
-        string? name = null,
+        string? searchQuery = null,
         DateTime? dateMin = null,
         DateTime? dateMax = null,
         VerificationStatus? verificationStatus = null,

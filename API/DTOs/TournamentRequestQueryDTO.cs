@@ -34,7 +34,7 @@ public class TournamentRequestQueryDTO : IPaginated
     /// <summary>
     /// Filters results for only tournaments with a partially matching name or abbreviation (case insensitive)
     /// </summary>
-    public string? Name { get; init; }
+    public string? SearchQuery { get; init; }
 
     /// <summary>
     /// Filters results for only tournaments that occurred on or after a specified date
