@@ -89,7 +89,8 @@ builder
 builder.Services
     .AddControllers(o =>
     {
-        o.ModelMetadataDetailsProviders.Add(new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
+        o.ModelMetadataDetailsProviders.Add(
+            new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
         o.Filters.Add(new AuthorizeFilter(AuthorizationPolicies.Whitelist));
     })
     .AddJsonOptions(o =>
@@ -97,10 +98,7 @@ builder.Services
         o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     })
-    .AddNewtonsoftJson(o =>
-    {
-        o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-    });
+    .AddNewtonsoftJson(o => { o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver(); });
 
 #endregion
 
@@ -586,10 +584,10 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 
 #region Repositories
 
-builder.Services.AddScoped<ApiPlayerRatingsRepository, ApiPlayerRatingsRepository>();
 builder.Services.AddScoped<IApiMatchRatingStatsRepository, ApiMatchRatingStatsRepository>();
 builder.Services.AddScoped<IApiMatchWinRecordRepository, ApiMatchWinRecordRepository>();
 builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRepository>();
+builder.Services.AddScoped<IApiPlayerRatingsRepository, ApiPlayerRatingsRepository>();
 builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
 
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
@@ -613,7 +611,6 @@ builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
 #region Services
 
 builder.Services.AddScoped<IAdminNoteService, AdminNoteService>();
-builder.Services.AddScoped<IPlayerRatingsService, IPlayerRatingsService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();
@@ -622,6 +619,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
+builder.Services.AddScoped<IPlayerRatingsService, PlayerRatingsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
