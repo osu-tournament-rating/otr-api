@@ -67,34 +67,125 @@ public static class QueryExtensions
     #region Tournaments
 
     /// <summary>
-    /// Filters a <see cref="Tournament"/> query for those with a <see cref="VerificationStatus"/>
-    /// of <see cref="VerificationStatus.Verified"/>
+    /// Filters a <see cref="Tournament"/> query for those with the given
+    /// <see cref="VerificationStatus"/>
     /// </summary>
-    public static IQueryable<Tournament> WhereVerified(this IQueryable<Tournament> query) =>
-        query.AsQueryable().Where(x => x.VerificationStatus == VerificationStatus.Verified);
+    /// <param name="verificationStatus">Verification status</param>
+    /// <remarks>Does nothing if <paramref name="verificationStatus"/> is null</remarks>
+    public static IQueryable<Tournament> WhereVerificationStatus(
+        this IQueryable<Tournament> query,
+        VerificationStatus? verificationStatus = null
+    ) =>
+        verificationStatus.HasValue
+            ? query.Where(e => e.VerificationStatus == verificationStatus.Value)
+            : query;
 
     /// <summary>
-    /// Filters a <see cref="Tournament"/> query for those with a <see cref="TournamentProcessingStatus"/>
-    /// of <see cref="TournamentProcessingStatus.Done"/>
+    /// Filters a <see cref="Tournament"/> query for those with the given
+    /// <see cref="TournamentProcessingStatus"/>
     /// </summary>
-    public static IQueryable<Tournament> WhereProcessingCompleted(this IQueryable<Tournament> query) =>
-        query.AsQueryable().Where(x => x.ProcessingStatus == TournamentProcessingStatus.Done);
+    /// <param name="processingStatus">Processing status</param>
+    /// <remarks>Does nothing if <paramref name="processingStatus"/> is null</remarks>
+    public static IQueryable<Tournament> WhereProcessingStatus(
+        this IQueryable<Tournament> query,
+        TournamentProcessingStatus? processingStatus = null
+    ) =>
+        processingStatus.HasValue
+            ? query.Where(t => t.ProcessingStatus == processingStatus.Value)
+            : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those with the given
+    /// <see cref="TournamentRejectionReason"/>
+    /// </summary>
+    /// <param name="rejectionReason">Rejection reason</param>
+    /// <remarks>Does nothing if <paramref name="rejectionReason"/> is null</remarks>
+    public static IQueryable<Tournament> WhereRejectionReason(
+        this IQueryable<Tournament> query,
+        TournamentRejectionReason? rejectionReason = null
+    ) =>
+        rejectionReason.HasValue
+            ? query.Where(t => t.RejectionReason == rejectionReason.Value)
+            : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those played in the given <see cref="Ruleset"/>
+    /// </summary>
+    /// <param name="ruleset">Ruleset</param>
+    /// <remarks>Does nothing if <paramref name="ruleset"/> is null</remarks>
+    public static IQueryable<Tournament> WhereRuleset(this IQueryable<Tournament> query, Ruleset? ruleset) =>
+        ruleset.HasValue ? query.Where(t => t.Ruleset == ruleset.Value) : query;
 
     /// <summary>
     /// Filters a <see cref="Tournament"/> query for those with a name or abbreviation that partially matches the
     /// given search term
     /// </summary>
-    /// <param name="term">Search term</param>
-    public static IQueryable<Tournament> WhereNameOrAbbreviation(this IQueryable<Tournament> query, string term)
+    /// <param name="searchQuery">String to match against name and abbreviation</param>
+    /// <remarks>Does nothing if <paramref name="searchQuery"/> is null</remarks>
+    public static IQueryable<Tournament> WhereSearchQuery(this IQueryable<Tournament> query, string? searchQuery = null)
     {
+        if (string.IsNullOrEmpty(searchQuery))
+        {
+            return query;
+        }
+
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
-        term = term.Replace("_", @"\_");
+        searchQuery = searchQuery.Replace("_", @"\_");
 
         return query.Where(t =>
-            EF.Functions.ILike(t.Name, $"%{term}%", @"\")
-            || EF.Functions.ILike(t.Abbreviation, $"%{term}%", @"\")
+            EF.Functions.ILike(t.Name, $"%{searchQuery}%", @"\")
+            || EF.Functions.ILike(t.Abbreviation, $"%{searchQuery}%", @"\")
         );
     }
+
+    /// <summary>
+    /// Filters a <see cref="Match"/> query for those with a <see cref="Tournament.EndTime"/> that is on or
+    /// after the given date
+    /// </summary>
+    /// <param name="date">Date comparison</param>
+    /// <remarks>Does nothing if <paramref name="date"/> is null</remarks>
+    public static IQueryable<Tournament> AfterDate(this IQueryable<Tournament> query, DateTime? date = null) =>
+        date.HasValue ? query.Where(t => t.EndTime >= date.Value) : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those with a <see cref="Tournament.StartTime"/> that is on or
+    /// before the given date
+    /// </summary>
+    /// <param name="date">Date comparison</param>
+    /// <remarks>Does nothing if <paramref name="date"/> is null</remarks>
+    public static IQueryable<Tournament> BeforeDate(this IQueryable<Tournament> query, DateTime? date = null) =>
+        date.HasValue ? query.Where(t => t.StartTime <= date) : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those played between a given date range
+    /// </summary>
+    /// <param name="dateMin">Date range lower bound</param>
+    /// <param name="dateMax">Date range upper bound</param>
+    /// <remarks>
+    /// If either <param name="dateMin"> or <param name="dateMax"> are null, only filters for the end of the
+    /// range that is included. Does nothing if both are null.
+    /// </remarks>
+    public static IQueryable<Tournament> WhereDateRange(
+        this IQueryable<Tournament> query,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    ) => query.AsQueryable().AfterDate(dateMin).BeforeDate(dateMax);
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those submitted by a user matching the given id
+    /// </summary>
+    /// <param name="userId">User id</param>
+    /// <remarks>Does nothing if <paramref name="userId"/> is null</remarks>
+    public static IQueryable<Tournament> WhereSubmittedBy(this IQueryable<Tournament> query, int? userId = null) =>
+        userId.HasValue ? query.Where(t => t.SubmittedByUserId == userId.Value) : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those verified by a user matching the given id
+    /// </summary>
+    /// <param name="userId">User id</param>
+    /// <remarks>Does nothing if <paramref name="userId"/> is null</remarks>
+    public static IQueryable<Tournament> WhereVerifiedBy(this IQueryable<Tournament> query, int? userId = null) =>
+        userId.HasValue ? query.Where(t => t.VerifiedByUserId == userId.Value) : query;
 
     /// <summary>
     /// Orders the query based on the specified sort type and direction.

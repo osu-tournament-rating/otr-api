@@ -82,7 +82,8 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         DateTime dateMax
     ) => await QueryForParticipation(playerId, ruleset, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
 
-    public async Task<ICollection<Tournament>> GetAsync(int page,
+    public async Task<ICollection<Tournament>> GetAsync(
+        int page,
         int pageSize,
         TournamentQuerySortType querySortType,
         bool verified = true,
@@ -95,67 +96,33 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         TournamentProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
-        bool descending = true)
+        bool descending = true
+    )
     {
         IQueryable<Tournament> query = _context.Tournaments
             .AsNoTracking()
             .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
-            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null);
+            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
+            .WhereRuleset(ruleset)
+            .WhereSearchQuery(searchQuery)
+            .WhereDateRange(dateMin, dateMax)
+            .WhereVerificationStatus(verificationStatus)
+            .WhereRejectionReason(rejectionReason)
+            .WhereProcessingStatus(processingStatus)
+            .WhereSubmittedBy(submittedBy)
+            .WhereVerifiedBy(verifiedBy);
 
         if (verified)
         {
-            query = query.WhereVerified().WhereProcessingCompleted();
-        }
-
-        if (ruleset.HasValue)
-        {
-            query = query.Where(t => t.Ruleset == ruleset.Value);
-        }
-
-        if (!string.IsNullOrEmpty(searchQuery))
-        {
-            query = query.WhereNameOrAbbreviation(searchQuery);
-        }
-
-        if (dateMin.HasValue)
-        {
-            query = query.Where(t => t.StartTime > dateMin.Value);
-        }
-
-        if (dateMax.HasValue)
-        {
-            query = query.Where(t => t.EndTime < dateMax.Value);
-        }
-
-        if (verificationStatus.HasValue)
-        {
-            query = query.Where(t => t.VerificationStatus == verificationStatus.Value);
-        }
-
-        if (rejectionReason.HasValue)
-        {
-            query = query.Where(t => t.RejectionReason == rejectionReason.Value);
-        }
-
-        if (processingStatus.HasValue)
-        {
-            query = query.Where(t => t.ProcessingStatus == processingStatus.Value);
-        }
-
-        if (submittedBy.HasValue)
-        {
-            query = query.Where(t => t.SubmittedByUserId == submittedBy.Value);
-        }
-
-        if (verifiedBy.HasValue)
-        {
-            query = query.Where(t => t.VerifiedByUserId == verifiedBy.Value);
+            query = query
+                .WhereVerificationStatus(VerificationStatus.Verified)
+                .WhereProcessingStatus(TournamentProcessingStatus.Done);
         }
 
         return await query
-                .OrderBy(querySortType, descending)
-                .Page(pageSize, page - 1)
-                .ToListAsync();
+            .OrderBy(querySortType, descending)
+            .Page(pageSize, page - 1)
+            .ToListAsync();
     }
 
     public async Task<Tournament?> AcceptPreVerificationStatusesAsync(int id)

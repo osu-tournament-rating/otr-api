@@ -19,7 +19,7 @@ public class ApiTournamentsRepository(OtrContext context, IBeatmapsRepository be
     public async Task<IEnumerable<TournamentSearchResultDTO>> SearchAsync(string name) =>
         await _context.Tournaments
             .AsNoTracking()
-            .WhereNameOrAbbreviation(name)
+            .WhereSearchQuery(name)
             .Select(t => new TournamentSearchResultDTO()
             {
                 Id = t.Id,

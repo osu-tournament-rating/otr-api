@@ -86,7 +86,8 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// </param>
     /// <param name="descending">Whether to sort the results in descending order</param>
     /// <remarks>None of the entities returned will be tracked by the context</remarks>
-    Task<ICollection<Tournament>> GetAsync(int page,
+    Task<ICollection<Tournament>> GetAsync(
+        int page,
         int pageSize,
         TournamentQuerySortType querySortType,
         bool verified = true,
