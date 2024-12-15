@@ -16,7 +16,7 @@ public enum TournamentQuerySortType
     StartTime,
 
     /// <summary>
-    /// Sort by start date
+    /// Sort by end date
     /// </summary>
     EndTime,
 

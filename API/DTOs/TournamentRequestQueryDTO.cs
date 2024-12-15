@@ -47,7 +47,7 @@ public class TournamentRequestQueryDTO : IPaginated
     public DateTime? DateMax { get; init; }
 
     /// <summary>
-    /// Filters results for only matches with a specified verification status
+    /// Filters results for only tournaments with a specified verification status
     /// </summary>
     [EnumDataType(typeof(VerificationStatus))]
     public VerificationStatus? VerificationStatus { get; init; }
@@ -77,9 +77,9 @@ public class TournamentRequestQueryDTO : IPaginated
     /// <summary>
     /// The key used to sort results by
     /// </summary>
-    [DefaultValue(TournamentQuerySortType.StartTime)]
+    [DefaultValue(TournamentQuerySortType.EndTime)]
     [EnumDataType(typeof(TournamentQuerySortType))]
-    public TournamentQuerySortType Sort { get; init; } = TournamentQuerySortType.StartTime;
+    public TournamentQuerySortType Sort { get; init; } = TournamentQuerySortType.EndTime;
 
     /// <summary>
     /// Whether the results are sorted in descending order by the <see cref="Sort"/>
