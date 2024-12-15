@@ -17,11 +17,12 @@ public class OsuConfiguration : IOsuConfiguration
     [Required(ErrorMessage = "RedirectUrl is required!")]
     public string RedirectUrl { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "LoginFriendsSyncFrequencyHours is required!")]
     [Range(1, int.MaxValue, ErrorMessage = "LoginFriendsSyncFrequencyHours must be a positive, non-zero value!")]
-    public int LoginFriendsSyncFrequencyHours { get; set; }
+    public int LoginFriendsSyncFrequencyHours { get; set; } = 24;
 
+    [Range(1, 1200, ErrorMessage = "OsuRateLimit must be between 1 and 1200!")]
     public int? OsuRateLimit { get; set; }
 
+    [Range(1, 300, ErrorMessage = "OsuRateLimit must be between 1 and 300!")]
     public int? OsuTrackRateLimit { get; set; }
 }
