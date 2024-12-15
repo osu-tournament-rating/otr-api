@@ -29,5 +29,5 @@ jobs:
           post-pr-comment: false
           pr-mode: ${{ github.event_name == 'pull_request' }}
         env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_903418561 }}
+          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
