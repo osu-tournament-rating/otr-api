@@ -89,7 +89,8 @@ builder
 builder.Services
     .AddControllers(o =>
     {
-        o.ModelMetadataDetailsProviders.Add(new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
+        o.ModelMetadataDetailsProviders.Add(
+            new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
         o.Filters.Add(new AuthorizeFilter(AuthorizationPolicies.Whitelist));
     })
     .AddJsonOptions(o =>
@@ -97,10 +98,7 @@ builder.Services
         o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     })
-    .AddNewtonsoftJson(o =>
-    {
-        o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-    });
+    .AddNewtonsoftJson(o => { o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver(); });
 
 #endregion
 
@@ -297,51 +295,56 @@ builder.Services.AddSwaggerGen(options =>
         .Select(r => new KeyValuePair<string, string>(r, OtrClaims.GetDescription(r)))
         .ToDictionary();
 
-    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Name = "JWT Authentication",
-        Type = SecuritySchemeType.Http,
-        Description = "JWT Authorization using the Bearer scheme. Paste **ONLY** your JWT in the text box below",
-        Scheme = JwtBearerDefaults.AuthenticationScheme,
-        BearerFormat = "JWT"
-    });
-
-    options.AddSecurityDefinition(SecurityRequirements.OAuthSecurityRequirementId, new OpenApiSecurityScheme
-    {
-        Name = "OAuth2 Authentication",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.OAuth2,
-        Description = "OAuth2 Authentication",
-        Flows = new OpenApiOAuthFlows
+    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme,
+        new OpenApiSecurityScheme
         {
-            AuthorizationCode = new OpenApiOAuthFlow
+            In = ParameterLocation.Header,
+            Name = "JWT Authentication",
+            Type = SecuritySchemeType.Http,
+            Description =
+                "JWT Authorization using the Bearer scheme. Paste **ONLY** your JWT in the text box below",
+            Scheme = JwtBearerDefaults.AuthenticationScheme,
+            BearerFormat = "JWT"
+        });
+
+    options.AddSecurityDefinition(SecurityRequirements.OAuthSecurityRequirementId,
+        new OpenApiSecurityScheme
+        {
+            Name = "OAuth2 Authentication",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.OAuth2,
+            Description = "OAuth2 Authentication",
+            Flows = new OpenApiOAuthFlows
             {
-                AuthorizationUrl = new Uri("api/v1.0/OAuth/authorize", UriKind.Relative),
-                RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
-                Scopes = oauthScopes
-            },
-            ClientCredentials = new OpenApiOAuthFlow
-            {
-                TokenUrl = new Uri("api/v1.0/OAuth/token", UriKind.Relative),
-                RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
-                Scopes = oauthScopes
+                AuthorizationCode = new OpenApiOAuthFlow
+                {
+                    AuthorizationUrl = new Uri("api/v1.0/OAuth/authorize", UriKind.Relative),
+                    RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
+                    Scopes = oauthScopes
+                },
+                ClientCredentials = new OpenApiOAuthFlow
+                {
+                    TokenUrl = new Uri("api/v1.0/OAuth/token", UriKind.Relative),
+                    RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
+                    Scopes = oauthScopes
+                }
             }
-        }
-    });
+        });
 
     // Register custom enum schemas describing authorization roles and policies
-    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(OtrClaims.Roles), new OpenApiSchema
-    {
-        Type = "string",
-        Description = "The possible roles assignable to a user or client",
-        Enum = new List<IOpenApiAny>(oauthScopes.Keys.Select(role => new OpenApiString(role))),
-        Extensions = new Dictionary<string, IOpenApiExtension>
+    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(OtrClaims.Roles),
+        new OpenApiSchema
         {
-            [ExtensionKeys.EnumNames] = oauthScopes.Keys.Select(k => char.ToUpper(k[0]) + k[1..]).ToOpenApiArray(),
-            [ExtensionKeys.EnumDescriptions] = oauthScopes.Values.ToOpenApiArray()
-        }
-    });
+            Type = "string",
+            Description = "The possible roles assignable to a user or client",
+            Enum = new List<IOpenApiAny>(oauthScopes.Keys.Select(role => new OpenApiString(role))),
+            Extensions = new Dictionary<string, IOpenApiExtension>
+            {
+                [ExtensionKeys.EnumNames] =
+                    oauthScopes.Keys.Select(k => char.ToUpper(k[0]) + k[1..]).ToOpenApiArray(),
+                [ExtensionKeys.EnumDescriptions] = oauthScopes.Values.ToOpenApiArray()
+            }
+        });
 
     // Register custom enum schemas describing authorization roles and policies
     options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(AuthorizationPolicies), new OpenApiSchema
@@ -519,10 +522,7 @@ builder.Services
         p.RequireRole(OtrClaims.Roles.User);
         p.AddRequirements(new AccessUserResourcesAuthorizationRequirement());
     })
-    .AddPolicy(AuthorizationPolicies.Whitelist, p =>
-    {
-        p.AddRequirements(new WhitelistAuthorizationRequirement());
-    });
+    .AddPolicy(AuthorizationPolicies.Whitelist, p => { p.AddRequirements(new WhitelistAuthorizationRequirement()); });
 
 builder.Services.AddScoped<IAuthorizationHandler, AccessUserResourcesAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, WhitelistAuthorizationHandler>();
@@ -584,14 +584,14 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 
 #region Repositories
 
-builder.Services.AddScoped<IApiBaseStatsRepository, ApiBaseStatsRepository>();
 builder.Services.AddScoped<IApiMatchRatingStatsRepository, ApiMatchRatingStatsRepository>();
 builder.Services.AddScoped<IApiMatchWinRecordRepository, ApiMatchWinRecordRepository>();
 builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRepository>();
+builder.Services.AddScoped<IApiPlayerRatingsRepository, ApiPlayerRatingsRepository>();
 builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
 
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
-builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
+builder.Services.AddScoped<IPlayerRatingsRepository, PlayerRatingsRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
@@ -611,7 +611,6 @@ builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
 #region Services
 
 builder.Services.AddScoped<IAdminNoteService, AdminNoteService>();
-builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();
@@ -620,6 +619,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
+builder.Services.AddScoped<IPlayerRatingsService, PlayerRatingsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
