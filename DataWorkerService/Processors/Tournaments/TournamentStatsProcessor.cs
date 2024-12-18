@@ -49,7 +49,8 @@ public class TournamentStatsProcessor(
         }
 
         IEnumerable<Match> verifiedMatches = entity.Matches
-            .Where(m => m is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done })
+            .Where(m => m is
+            { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done })
             .ToList();
 
         // Sanity check
@@ -60,7 +61,7 @@ public class TournamentStatsProcessor(
                 && match.PlayerRatingAdjustments.Count != 0
                 && match.PlayerMatchStats.Count == match.PlayerRatingAdjustments.Count
                 && match.WinRecord is not null
-            )
+               )
             {
                 continue;
             }
@@ -116,7 +117,5 @@ public class TournamentStatsProcessor(
         }
 
         entity.ProcessingStatus = TournamentProcessingStatus.Done;
-
-        await context.SaveChangesAsync(cancellationToken);
     }
 }

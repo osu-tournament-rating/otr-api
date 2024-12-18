@@ -69,7 +69,5 @@ public class TournamentDataProcessor(
 
             entity.ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
         }
-
-        await context.SaveChangesAsync(cancellationToken);
     }
 }

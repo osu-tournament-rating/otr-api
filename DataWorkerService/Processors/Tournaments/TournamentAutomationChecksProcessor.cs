@@ -44,7 +44,5 @@ public class TournamentAutomationChecksProcessor(
             : VerificationStatus.PreRejected;
 
         entity.ProcessingStatus = TournamentProcessingStatus.NeedsVerification;
-
-        await context.SaveChangesAsync(cancellationToken);
     }
 }
