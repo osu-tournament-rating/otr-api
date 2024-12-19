@@ -56,6 +56,12 @@ public class TournamentProcessorService(
 
         foreach (Tournament tournament in tournaments)
         {
+            if (tournament.Matches.Count == 0)
+            {
+                RejectTournamentIncompleteData(tournament);
+                continue;
+            }
+
             tasks.Add(ProcessAsync(tournament, tournamentProcessorResolver, stoppingToken));
         }
 
@@ -70,6 +76,16 @@ public class TournamentProcessorService(
         _stopwatch.Reset();
     }
 
+    private void RejectTournamentIncompleteData(Tournament tournament)
+    {
+        tournament.VerificationStatus = VerificationStatus.Rejected;
+        tournament.RejectionReason = TournamentRejectionReason.IncompleteData;
+        tournament.ProcessingStatus = TournamentProcessingStatus.Done;
+        tournament.LastProcessingDate = DateTime.Now;
+
+        logger.LogWarning("Skipping processing for tournament with no matches [Id: {Id}]", tournament.Id);
+    }
+
     private async Task ProcessAsync(Tournament tournament,
         ITournamentProcessorResolver tournamentProcessorResolver, CancellationToken stoppingToken)
     {
@@ -80,17 +96,6 @@ public class TournamentProcessorService(
             tournament.ProcessingStatus,
             tournament.LastProcessingDate
         );
-
-        if (tournament.Matches.Count == 0)
-        {
-            tournament.VerificationStatus = VerificationStatus.Rejected;
-            tournament.RejectionReason = TournamentRejectionReason.IncompleteData;
-            tournament.ProcessingStatus = TournamentProcessingStatus.Done;
-            tournament.LastProcessingDate = DateTime.Now;
-
-            logger.LogWarning("Skipping processing for tournament with no matches [Id: {Id}]", tournament.Id);
-            return;
-        }
 
         IProcessor<Tournament> processor = tournamentProcessorResolver.GetNextProcessor(tournament.ProcessingStatus);
         await processor.ProcessAsync(tournament, stoppingToken);
