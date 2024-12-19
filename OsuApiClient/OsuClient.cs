@@ -391,6 +391,23 @@ public sealed class OsuClient(
         );
     }
 
+    public async Task<IEnumerable<User>?> GetUserFriendsAsync(CancellationToken cancellationToken = default)
+    {
+        CheckDisposed();
+
+        if (Uri.TryCreate(Endpoints.Osu.Friends, UriKind.Relative, out Uri? uri))
+        {
+            return await _handler.FetchEnumerableAsync<User, UserJsonModel>(
+                new ApiRequest { Credentials = _credentials, Method = HttpMethod.Get, Route = uri },
+                cancellationToken
+            );
+        }
+
+        logger.LogError("Failed to create Friends URI");
+        return null;
+    }
+
+
     public void ClearCredentials()
     {
         CheckDisposed();
