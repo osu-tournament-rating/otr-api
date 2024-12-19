@@ -38,8 +38,8 @@ public class PlayersService(
 
         await context.SaveChangesAsync();
 
-        logger.LogDebug(
-            "Updated Players with outdated osu! API data [Count: {Count}]",
+        logger.LogInformation(
+            "Updated players with outdated osu! API data [Count: {Count}]",
             outdatedPlayers.Count
         );
     }
@@ -148,8 +148,8 @@ public class PlayersService(
 
         await playersRepository.UpdateAsync(outdatedPlayers);
 
-        logger.LogDebug(
-            "Updated Players with outdated osu! API data [Count: {Count}]",
+        logger.LogInformation(
+            "Updated players with outdated osu!track API data [Count: {Count}]",
             outdatedPlayers.Count
         );
     }
