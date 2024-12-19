@@ -1,4 +1,3 @@
-using Database;
 using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums.Verification;
@@ -11,8 +10,7 @@ namespace DataWorkerService.Processors.Tournaments;
 /// </summary>
 public class TournamentStatsProcessor(
     ILogger<TournamentStatsProcessor> logger,
-    IMatchProcessorResolver matchProcessorResolver,
-    OtrContext context
+    IMatchProcessorResolver matchProcessorResolver
 ) : ProcessorBase<Tournament>(logger)
 {
     protected override async Task OnProcessingAsync(Tournament entity, CancellationToken cancellationToken)
