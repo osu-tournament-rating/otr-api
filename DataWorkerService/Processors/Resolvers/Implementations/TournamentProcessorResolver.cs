@@ -29,7 +29,8 @@ public class TournamentProcessorResolver(
             TournamentProcessingStatus.NeedsAutomationChecks => GetAutomationChecksProcessor(),
             TournamentProcessingStatus.NeedsStatCalculation => GetStatsProcessor(),
             TournamentProcessingStatus.NeedsVerification => GetVerificationProcessor(),
-            _ => throw new Exception("No processor")
+            _ => throw new ArgumentException(
+                $"No next processor is known for the TournamentProcessingStatus {processingStatus}")
         };
 
     public override IProcessor<Tournament> GetVerificationProcessor() =>
