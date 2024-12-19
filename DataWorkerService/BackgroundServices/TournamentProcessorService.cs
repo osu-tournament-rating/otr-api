@@ -99,11 +99,24 @@ public class TournamentProcessorService(
 
         IProcessor<Tournament> processor = tournamentProcessorResolver.GetNextProcessor(tournament.ProcessingStatus);
         await processor.ProcessAsync(tournament, stoppingToken);
-        logger.LogInformation(
-            "Processing completed [Id: {Id} | Processing Status: {Before} --> {After}]",
-            tournament.Id,
-            processingStatusBefore,
-            tournament.ProcessingStatus
-        );
+
+        if (processingStatusBefore != tournament.ProcessingStatus)
+        {
+            logger.LogInformation(
+                "Processing completed [Id: {Id} | Processing Status: {Before} --> {After}]",
+                tournament.Id,
+                processingStatusBefore,
+                tournament.ProcessingStatus
+            );
+        }
+        else
+        {
+            logger.LogDebug(
+                "Processing completed [Id: {Id} | Processing Status: {Before} --> {After}]",
+                tournament.Id,
+                processingStatusBefore,
+                tournament.ProcessingStatus
+            );
+        }
     }
 }
