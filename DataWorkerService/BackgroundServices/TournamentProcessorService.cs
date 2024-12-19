@@ -40,6 +40,9 @@ public class TournamentProcessorService(
 
     protected override async Task DoWork(IServiceScope scope, CancellationToken stoppingToken)
     {
+        logger.LogInformation("Tournament batch processing started");
+
+        _stopwatch.Start();
         OtrContext context = scope.ServiceProvider.GetRequiredService<OtrContext>();
 
         ITournamentsRepository tournamentsRepository =
@@ -48,26 +51,30 @@ public class TournamentProcessorService(
         ITournamentProcessorResolver tournamentProcessorResolver =
             scope.ServiceProvider.GetRequiredService<ITournamentProcessorResolver>();
 
-        IEnumerable<Tournament> tournaments = await tournamentsRepository.GetNeedingProcessingAsync(_config.BatchSize);
+        var tournaments = (await tournamentsRepository.GetNeedingProcessingAsync(_config.BatchSize)).ToList();
         var tasks = new List<Task>();
 
         foreach (Tournament tournament in tournaments)
         {
-            tasks.Add(ProcessAsync(stoppingToken, tournament, tournamentProcessorResolver));
+            tasks.Add(ProcessAsync(tournament, tournamentProcessorResolver, stoppingToken));
         }
 
         await Task.WhenAll(tasks);
-
         await context.SaveChangesAsync(stoppingToken);
+
+        _stopwatch.Stop();
+        logger.LogInformation(
+            @"Tournament batch processing completed: [Count: {Count}, Elapsed: {Elapsed:mm\:ss\:fff}]",
+            tournaments.Count, _stopwatch.Elapsed);
+
+        _stopwatch.Reset();
     }
 
-    private async Task ProcessAsync(CancellationToken stoppingToken, Tournament tournament,
-        ITournamentProcessorResolver tournamentProcessorResolver)
+    private async Task ProcessAsync(Tournament tournament,
+        ITournamentProcessorResolver tournamentProcessorResolver, CancellationToken stoppingToken)
     {
-        var sw = new Stopwatch();
-        sw.Start();
-
-        logger.LogInformation(
+        TournamentProcessingStatus processingStatusBefore = tournament.ProcessingStatus;
+        logger.LogDebug(
             "Processing starting [Id: {Id} | Processing Status: {Status} | Last Processing: {LastProcessing:MM/dd/yyyy}]",
             tournament.Id,
             tournament.ProcessingStatus,
@@ -87,13 +94,11 @@ public class TournamentProcessorService(
 
         IProcessor<Tournament> processor = tournamentProcessorResolver.GetNextProcessor(tournament.ProcessingStatus);
         await processor.ProcessAsync(tournament, stoppingToken);
-
-        sw.Stop();
         logger.LogInformation(
-            "Processing completed [Id: {Id} | Processing Status: {Status} | Elapsed: {Elapsed:mm\\:ss\\:fff}]",
+            "Processing completed [Id: {Id} | Processing Status: {Before} --> {After}]",
             tournament.Id,
-            tournament.ProcessingStatus,
-            _stopwatch.Elapsed
+            processingStatusBefore,
+            tournament.ProcessingStatus
         );
     }
 }
