@@ -139,7 +139,7 @@ public static class QueryExtensions
     }
 
     /// <summary>
-    /// Filters a <see cref="Match"/> query for those with a <see cref="Tournament.EndTime"/> that is on or
+    /// Filters a <see cref="Tournament"/> query for those with a <see cref="Tournament.EndTime"/> that is on or
     /// after the given date
     /// </summary>
     /// <param name="date">Date comparison</param>
