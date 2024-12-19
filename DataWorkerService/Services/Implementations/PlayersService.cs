@@ -17,7 +17,7 @@ public class PlayersService(
     IPlayersRepository playersRepository,
     IOsuClient osuClient,
     OtrContext context
-    ) : IPlayersService
+) : IPlayersService
 {
     public async Task SetAllOutdatedOsuApiAsync(PlayerFetchPlatformConfiguration config)
     {
@@ -38,8 +38,8 @@ public class PlayersService(
 
         await context.SaveChangesAsync();
 
-        logger.LogDebug(
-            "Updated Players with outdated osu! API data [Count: {Count}]",
+        logger.LogInformation(
+            "Updated players with outdated osu! API data [Count: {Count}]",
             outdatedPlayers.Count
         );
     }
@@ -111,7 +111,8 @@ public class PlayersService(
             // Update any ruleset variant data
             foreach (UserStatisticsVariant variant in result.Statistics.Variants.Where(v => v.IsRanked))
             {
-                PlayerOsuRulesetData? variantData = player.RulesetData.FirstOrDefault(rd => rd.Ruleset == variant.Ruleset);
+                PlayerOsuRulesetData? variantData =
+                    player.RulesetData.FirstOrDefault(rd => rd.Ruleset == variant.Ruleset);
 
                 if (variantData is null)
                 {
@@ -147,8 +148,8 @@ public class PlayersService(
 
         await playersRepository.UpdateAsync(outdatedPlayers);
 
-        logger.LogDebug(
-            "Updated Players with outdated osu! API data [Count: {Count}]",
+        logger.LogInformation(
+            "Updated players with outdated osu!track API data [Count: {Count}]",
             outdatedPlayers.Count
         );
     }
@@ -156,7 +157,7 @@ public class PlayersService(
     public async Task UpdateFromOsuTrackApiAsync(Player player)
     {
         logger.LogDebug(
-            "Preparing to update Player osu! API data [Id: {Id} | osu! Id: {OsuId} | Last Update: {LastUpdate:u}]",
+            "Preparing to update osu!track data for player [Id: {Id} | osu! Id: {OsuId} | Last Update: {LastUpdate:u}]",
             player.Id,
             player.OsuId,
             player.OsuLastFetch
@@ -164,11 +165,14 @@ public class PlayersService(
 
         foreach (Ruleset r in Enum.GetValues<Ruleset>().Where(r => r.IsFetchable()))
         {
-            var result = (await osuClient.GetUserStatsHistoryAsync(player.OsuId, r) ?? Array.Empty<UserStatUpdate>()).ToList();
+            var result = (await osuClient.GetUserStatsHistoryAsync(player.OsuId, r) ?? [])
+                .ToList();
 
             if (result.Count == 0)
             {
-                logger.LogTrace("Failed to fetch Player osu!track API data. Result has no elements. [Id: {Id} | Ruleset: {Ruleset}]", player.Id, r);
+                logger.LogTrace(
+                    "Failed to fetch Player osu!track API data. Result has no elements. [Id: {Id} | Ruleset: {Ruleset}]",
+                    player.Id, r);
             }
 
             PlayerOsuRulesetData? rulesetData = player.RulesetData.FirstOrDefault(x => x.Ruleset == r);
@@ -183,7 +187,7 @@ public class PlayersService(
                 .Min(pms => pms?.Match.StartTime);
 
             UserStatUpdate? statUpdate = earliestMatchDate is not null
-                ? result.OrderBy(s => Math.Abs((s.Timestamp - earliestMatchDate.Value).Ticks)).First()
+                ? result.OrderBy(s => Math.Abs((s.Timestamp - earliestMatchDate.Value).Ticks)).FirstOrDefault()
                 : result.FirstOrDefault();
 
             if (statUpdate is null)
