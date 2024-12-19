@@ -9,8 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance",
-    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository)
     : RepositoryBase<Tournament>(context), ITournamentsRepository
@@ -87,28 +86,43 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         int page,
         int pageSize,
         TournamentQuerySortType querySortType,
-        bool descending = false,
         bool verified = true,
-        Ruleset? ruleset = null
+        Ruleset? ruleset = null,
+        string? searchQuery = null,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null,
+        VerificationStatus? verificationStatus = null,
+        TournamentRejectionReason? rejectionReason = null,
+        TournamentProcessingStatus? processingStatus = null,
+        int? submittedBy = null,
+        int? verifiedBy = null,
+        int? lobbySize = null,
+        bool descending = true
     )
     {
         IQueryable<Tournament> query = _context.Tournaments
             .AsNoTracking()
             .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
             .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
-            .OrderBy(querySortType, descending);
+            .WhereRuleset(ruleset)
+            .WhereSearchQuery(searchQuery)
+            .WhereDateRange(dateMin, dateMax)
+            .WhereVerificationStatus(verificationStatus)
+            .WhereRejectionReason(rejectionReason)
+            .WhereProcessingStatus(processingStatus)
+            .WhereSubmittedBy(submittedBy)
+            .WhereVerifiedBy(verifiedBy)
+            .WhereLobbySize(lobbySize);
 
         if (verified)
         {
-            query = query.WhereVerified().WhereProcessingCompleted();
-        }
-
-        if (ruleset.HasValue)
-        {
-            query = query.Where(x => x.Ruleset == ruleset.Value);
+            query = query
+                .WhereVerificationStatus(VerificationStatus.Verified)
+                .WhereProcessingStatus(TournamentProcessingStatus.Done);
         }
 
         return await query
+            .OrderBy(querySortType, descending)
             .Page(pageSize, page - 1)
             .ToListAsync();
     }

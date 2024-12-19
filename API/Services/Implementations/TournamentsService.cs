@@ -105,9 +105,18 @@ public class TournamentsService(
             requestQuery.Page,
             requestQuery.PageSize,
             requestQuery.Sort,
-            requestQuery.Descending,
-            requestQuery.Verified,
-            requestQuery.Ruleset
+            verified: requestQuery.Verified,
+            ruleset: requestQuery.Ruleset,
+            searchQuery: requestQuery.SearchQuery,
+            dateMin: requestQuery.DateMin,
+            dateMax: requestQuery.DateMax,
+            verificationStatus: requestQuery.VerificationStatus,
+            rejectionReason: requestQuery.RejectionReason,
+            processingStatus: requestQuery.ProcessingStatus,
+            submittedBy: requestQuery.SubmittedBy,
+            verifiedBy: requestQuery.VerifiedBy,
+            lobbySize: requestQuery.LobbySize,
+            descending: requestQuery.Descending
         ));
     }
 
