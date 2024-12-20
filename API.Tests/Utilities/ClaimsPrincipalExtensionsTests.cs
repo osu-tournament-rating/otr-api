@@ -77,7 +77,7 @@ public class ClaimsPrincipalExtensionsTests
 
         claims.AddIdentity(new ClaimsIdentity(
         [
-            new(OtrClaims.RateLimitOverrides, expected.ToString())
+            new Claim(OtrClaims.RateLimitOverrides, expected.ToString())
         ]));
 
         Assert.NotNull(claims.GetRateLimitOverride());

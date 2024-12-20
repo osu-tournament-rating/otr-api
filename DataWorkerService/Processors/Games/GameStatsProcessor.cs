@@ -25,7 +25,7 @@ public class GameStatsProcessor(
             return Task.CompletedTask;
         }
 
-        IEnumerable<GameScore> verifiedScores =
+        List<GameScore> verifiedScores =
         [
             .. entity.Scores
                 .Where(s => s is
