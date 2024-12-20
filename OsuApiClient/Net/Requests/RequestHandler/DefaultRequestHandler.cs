@@ -37,11 +37,11 @@ internal sealed class DefaultRequestHandler(
 
     private readonly JsonSerializer _serializer = new();
 
-    private readonly IDictionary<FetchPlatform, FixedWindowRateLimit> _rateLimits =
-        new Dictionary<FetchPlatform, FixedWindowRateLimit>
+    private readonly Dictionary<FetchPlatform, FixedWindowRateLimit> _rateLimits =
+        new()
         {
-            [FetchPlatform.Osu] = new(configuration.OsuRateLimit),
-            [FetchPlatform.OsuTrack] = new(configuration.OsuTrackRateLimit)
+            [FetchPlatform.Osu] = new FixedWindowRateLimit(configuration.OsuRateLimit),
+            [FetchPlatform.OsuTrack] = new FixedWindowRateLimit(configuration.OsuTrackRateLimit)
         };
 
     private bool _disposed;
@@ -147,9 +147,11 @@ internal sealed class DefaultRequestHandler(
             Method = request.Method,
             RequestUri = new Uri(Endpoints.GetBaseUrl(request.Platform) + uri, UriKind.Absolute),
             Content = content,
-            Headers = { Authorization = request.Credentials is not null
-                ? new AuthenticationHeaderValue("Bearer", request.Credentials.AccessToken)
-                : null
+            Headers =
+            {
+                Authorization = request.Credentials is not null
+                    ? new AuthenticationHeaderValue("Bearer", request.Credentials.AccessToken)
+                    : null
             }
         };
 
