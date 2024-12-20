@@ -28,11 +28,12 @@ public class ApiMatchRatingStatsRepository(OtrContext context)
             .RatingAdjustments
             .Where(ra =>
                 ra.PlayerId == playerId
-                && ra.AdjustmentType == RatingAdjustmentType.Match
+                && ra.AdjustmentType != RatingAdjustmentType.Initial
                 && ra.Match!.Tournament.Ruleset == ruleset
                 && ra.Timestamp >= dateMin
                 && ra.Timestamp <= dateMax
             )
+            .OrderBy(ra => ra.Timestamp)
             .Select(ra => new
             {
                 ra.Timestamp,
@@ -50,39 +51,14 @@ public class ApiMatchRatingStatsRepository(OtrContext context)
                     RatingAfter = ra.RatingAfter,
                     VolatilityBefore = ra.VolatilityBefore,
                     VolatilityAfter = ra.VolatilityAfter,
-                    IsAdjustment = false,
+                    IsAdjustment = true,
                     Timestamp = ra.Match.StartTime
                 }
             }).ToListAsync();
 
-        var ratingAdjustments = await _context
-            .RatingAdjustments
-            .Where(ra =>
-                ra.PlayerId == playerId
-                && ra.Ruleset == ruleset
-                && ra.Timestamp >= dateMin
-                && ra.Timestamp <= dateMax
-            )
-            .Select(ra => new
-            {
-                ra.Timestamp, // Use Timestamp for grouping as fallback
-                DataPoint = new PlayerRatingChartDataPointDTO
-                {
-                    Name = ra.AdjustmentType == RatingAdjustmentType.Decay ? "Decay" : "Adjustment",
-                    RatingBefore = ra.RatingBefore,
-                    RatingAfter = ra.RatingAfter,
-                    VolatilityBefore = ra.VolatilityBefore,
-                    VolatilityAfter = ra.VolatilityAfter,
-                    IsAdjustment = true,
-                    Timestamp = ra.Timestamp
-                }
-            })
-            .ToListAsync();
-
         // Combine data points, converting Match.StartTime and RatingAdjustment.Timestamp to Date for grouping
         var combinedDataPoints = adjustments
             .Select(mrs => new { mrs.Timestamp.Date, mrs.DataPoint })
-            .Concat(ratingAdjustments.Select(ra => new { ra.Timestamp.Date, ra.DataPoint }))
             .GroupBy(x => x.Date)
             .OrderBy(g => g.Key)
             .Select(g => g.Select(x => x.DataPoint).ToList())

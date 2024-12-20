@@ -24,32 +24,30 @@ public class PlayerRatingsRepository(OtrContext context, IPlayersRepository play
         return await _context.PlayerRatings.Where(x => x.PlayerId == id.Value).ToListAsync();
     }
 
-    public async Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset) =>
-        await _context.PlayerRatings.Where(x => x.PlayerId == playerId && x.Ruleset == ruleset).FirstOrDefaultAsync();
-
-    public async Task<int> BatchInsertAsync(IEnumerable<PlayerRating> playerRatings)
+    public async Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset)
     {
-        var ls = new List<PlayerRating>();
-        foreach (PlayerRating stat in playerRatings)
+        var results = await _context.PlayerRatings
+            .Include(pr => pr.Adjustments)
+            .Where(pr => pr.PlayerId == playerId && pr.Ruleset == ruleset)
+            .Select(pr => new
+            {
+                PlayerRating =
+                    pr, // TODO: Should probably include all RatingAdjustments regardless of type and have web not display initial
+                Adjustments = pr.Adjustments.Where(ra => ra.AdjustmentType != RatingAdjustmentType.Initial)
+                    .OrderBy(ra => ra.Timestamp)
+                    .ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        if (results is null)
         {
-            ls.Add(
-                new PlayerRating
-                {
-                    PlayerId = stat.PlayerId,
-                    Ruleset = stat.Ruleset,
-                    Rating = stat.Rating,
-                    Volatility = stat.Volatility,
-                    Percentile = stat.Percentile,
-                    GlobalRank = stat.GlobalRank,
-                    CountryRank = stat.CountryRank,
-                    Created = DateTime.UtcNow
-                }
-            );
+            return null;
         }
 
-        await _context.PlayerRatings.AddRangeAsync(ls);
-        return await _context.SaveChangesAsync();
+        results.PlayerRating.Adjustments = [.. results.Adjustments];
+        return results.PlayerRating;
     }
+
 
     public async Task<int> HighestRankAsync(Ruleset ruleset, string? country = null)
     {
