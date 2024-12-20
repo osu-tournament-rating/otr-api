@@ -58,7 +58,12 @@ public class UserRepository(
         ?? [];
 
     public async Task<IEnumerable<Player>> GetFriendsAsync(int id) =>
-        await _context.Users.Where(u => u.Id == id).Select(u => u.Friends).FirstOrDefaultAsync()
+        await _context.Users
+            .Include(u => u.Friends)
+            .ThenInclude(p => p.User)
+            .Where(u => u.Id == id)
+            .Select(u => u.Friends)
+            .FirstOrDefaultAsync()
         ?? [];
 
     public async Task<User?> SyncFriendsAsync(int id, ICollection<long> playerOsuIds)
