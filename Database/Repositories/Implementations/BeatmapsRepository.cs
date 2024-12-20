@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance",
+    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(context), IBeatmapsRepository
 {
@@ -38,7 +39,7 @@ public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(co
         var missing = missingIds.Select(id => new Beatmap { OsuId = id }).ToList();
         if (!save)
         {
-            return existing.Concat(missing).ToList();
+            return [.. existing, .. missing];
         }
 
         // Save the missing beatmaps
@@ -46,6 +47,6 @@ public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(co
         await _context.SaveChangesAsync();
 
         // Return all beatmaps
-        return existing.Concat(missing).ToList();
+        return [.. existing, .. missing];
     }
 }

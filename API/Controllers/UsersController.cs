@@ -93,7 +93,7 @@ public class UsersController(
             return NotFound();
         }
 
-        return Ok(await userService.GetSubmissionsAsync(id) ?? new List<MatchSubmissionStatusDTO>());
+        return Ok(await userService.GetSubmissionsAsync(id) ?? []);
     }
 
     /// <summary>
@@ -136,7 +136,7 @@ public class UsersController(
             return NotFound();
         }
 
-        return Ok(await userService.GetClientsAsync(id) ?? new List<OAuthClientDTO>());
+        return Ok(await userService.GetClientsAsync(id) ?? []);
     }
 
     /// <summary>

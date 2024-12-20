@@ -34,23 +34,17 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     [Column("max_combo")]
     public int MaxCombo { get; set; }
 
-    [Column("count_50")]
-    public int Count50 { get; set; }
+    [Column("count_50")] public int Count50 { get; set; }
 
-    [Column("count_100")]
-    public int Count100 { get; set; }
+    [Column("count_100")] public int Count100 { get; set; }
 
-    [Column("count_300")]
-    public int Count300 { get; set; }
+    [Column("count_300")] public int Count300 { get; set; }
 
-    [Column("count_miss")]
-    public int CountMiss { get; set; }
+    [Column("count_miss")] public int CountMiss { get; set; }
 
-    [Column("count_katu")]
-    public int CountKatu { get; set; }
+    [Column("count_katu")] public int CountKatu { get; set; }
 
-    [Column("count_geki")]
-    public int CountGeki { get; set; }
+    [Column("count_geki")] public int CountGeki { get; set; }
 
     /// <summary>
     /// Denotes if the <see cref="Player"/> passed
@@ -88,8 +82,7 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     [Column("ruleset")]
     public Ruleset Ruleset { get; set; }
 
-    [Column("verification_status")]
-    public VerificationStatus VerificationStatus { get; set; }
+    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
 
     [AuditIgnore]
     [Column("last_processing_date")]
@@ -129,12 +122,11 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     /// </summary>
     public Player Player { get; set; } = null!;
 
-    public ICollection<GameScoreAdminNote> AdminNotes { get; set; } = new List<GameScoreAdminNote>();
+    public ICollection<GameScoreAdminNote> AdminNotes { get; set; } = [];
 
-    public ICollection<GameScoreAudit> Audits { get; set; } = new List<GameScoreAudit>();
+    public ICollection<GameScoreAudit> Audits { get; set; } = [];
 
-    [NotMapped]
-    public int? ActionBlamedOnUserId { get; set; }
+    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
 
     /// <summary>
     /// Accuracy

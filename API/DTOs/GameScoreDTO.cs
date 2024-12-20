@@ -53,5 +53,5 @@ public class GameScoreDTO
     /// <summary>
     /// All associated admin notes
     /// </summary>
-    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = new List<AdminNoteDTO>();
+    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
 }

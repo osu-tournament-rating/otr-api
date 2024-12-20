@@ -58,8 +58,7 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     [Column("end_time")]
     public DateTime EndTime { get; set; }
 
-    [Column("verification_status")]
-    public VerificationStatus VerificationStatus { get; set; }
+    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
     /// Rejection reason
@@ -113,14 +112,13 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// <summary>
     /// A collection of <see cref="GameScore"/>s set in the <see cref="Game"/>
     /// </summary>
-    public ICollection<GameScore> Scores { get; set; } = new List<GameScore>();
+    public ICollection<GameScore> Scores { get; set; } = [];
 
-    public ICollection<GameAdminNote> AdminNotes { get; set; } = new List<GameAdminNote>();
+    public ICollection<GameAdminNote> AdminNotes { get; set; } = [];
 
-    public ICollection<GameAudit> Audits { get; set; } = new List<GameAudit>();
+    public ICollection<GameAudit> Audits { get; set; } = [];
 
-    [NotMapped]
-    public int? ActionBlamedOnUserId { get; set; }
+    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
 
     /// <summary>
     /// Denotes if the mod setting was "free mod"

@@ -25,10 +25,13 @@ public class GameStatsProcessor(
             return Task.CompletedTask;
         }
 
-        IEnumerable<GameScore> verifiedScores = entity.Scores
-            .Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done })
-            .OrderByDescending(s => s.Score)
-            .ToList();
+        IEnumerable<GameScore> verifiedScores =
+        [
+            .. entity.Scores
+                .Where(s => s is
+                    { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done })
+                .OrderByDescending(s => s.Score)
+        ];
 
         AssignScorePlacements(verifiedScores);
         entity.WinRecord = GenerateWinRecord(verifiedScores);

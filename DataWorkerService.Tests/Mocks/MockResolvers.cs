@@ -1,5 +1,3 @@
-using Database.Entities;
-using DataWorkerService.AutomationChecks;
 using DataWorkerService.AutomationChecks.Games;
 using DataWorkerService.AutomationChecks.Matches;
 using DataWorkerService.AutomationChecks.Scores;
@@ -26,12 +24,11 @@ public static class MockResolvers
         new ScoreVerificationProcessor(Logger<ScoreVerificationProcessor>()),
         new ScoreAutomationChecksProcessor(
             Logger<ScoreAutomationChecksProcessor>(),
-            new List<IAutomationCheck<GameScore>>
-            {
+            [
                 new ScoreMinimumCheck(Logger<ScoreMinimumCheck>()),
                 new ScoreModCheck(Logger<ScoreModCheck>()),
                 new ScoreRulesetCheck(Logger<ScoreRulesetCheck>())
-            }
+            ]
         )
     ]);
 
@@ -40,8 +37,7 @@ public static class MockResolvers
         new GameVerificationProcessor(Logger<GameVerificationProcessor>(), ScoreProcessorResolver),
         new GameAutomationChecksProcessor(
             Logger<GameAutomationChecksProcessor>(),
-            new List<IAutomationCheck<Game>>
-            {
+            [
                 new GameBeatmapUsageCheck(Logger<GameBeatmapUsageCheck>()),
                 new GameEndTimeCheck(Logger<GameEndTimeCheck>()),
                 new GameModCheck(Logger<GameModCheck>()),
@@ -49,7 +45,7 @@ public static class MockResolvers
                 new GameScoreCountCheck(Logger<GameScoreCountCheck>()),
                 new GameScoringTypeCheck(Logger<GameScoringTypeCheck>()),
                 new GameTeamTypeCheck(Logger<GameTeamTypeCheck>())
-            },
+            ],
             ScoreProcessorResolver
         )
     ]);
@@ -59,27 +55,26 @@ public static class MockResolvers
         new MatchVerificationProcessor(Logger<MatchVerificationProcessor>(), GameProcessorResolver),
         new MatchAutomationChecksProcessor(
             Logger<MatchAutomationChecksProcessor>(),
-            new List<IAutomationCheck<Match>>
-            {
+            [
                 new MatchEndTimeCheck(Logger<MatchEndTimeCheck>()),
                 new MatchGameCountCheck(Logger<MatchGameCountCheck>()),
                 new MatchHeadToHeadCheck(Logger<MatchHeadToHeadCheck>()),
                 new MatchNamePrefixCheck(Logger<MatchNamePrefixCheck>()),
                 new MatchNameFormatCheck(Logger<MatchNameFormatCheck>())
-            },
+            ],
             GameProcessorResolver
         )
     ]);
 
     public static TournamentProcessorResolver TournamentProcessorResolver => new([
         new TournamentStatsProcessor(Logger<TournamentStatsProcessor>(), MatchProcessorResolver, s_mockContext.Object),
-        new TournamentVerificationProcessor(Logger<TournamentVerificationProcessor>(), MatchProcessorResolver, s_mockContext.Object),
+        new TournamentVerificationProcessor(Logger<TournamentVerificationProcessor>(), MatchProcessorResolver,
+            s_mockContext.Object),
         new TournamentAutomationChecksProcessor(
             Logger<TournamentAutomationChecksProcessor>(),
-            new List<IAutomationCheck<Tournament>>
-            {
+            [
                 new TournamentMatchCountCheck(Logger<TournamentMatchCountCheck>())
-            },
+            ],
             MatchProcessorResolver,
             s_mockContext.Object
         )
