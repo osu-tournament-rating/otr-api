@@ -30,7 +30,8 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
         if (eagerLoad)
         {
             return await _context
-                .Players.Include(x => x.Scores)
+                .Players
+                .Include(x => x.Scores)
                 .Include(x => x.Ratings)
                 .AsNoTracking()
                 .ToListAsync();
