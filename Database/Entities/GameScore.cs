@@ -17,18 +17,6 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     IAuditableEntity<GameScoreAudit>, IScoreStatistics
 {
     /// <summary>
-    ///     Id of the <see cref="Entities.Player" /> that set the <see cref="GameScore" />
-    /// </summary>
-    [Column("player_id")]
-    public int PlayerId { get; set; }
-
-    /// <summary>
-    ///     Id of the <see cref="Entities.Game" /> that the <see cref="GameScore" /> was set in
-    /// </summary>
-    [Column("game_id")]
-    public int GameId { get; set; }
-
-    /// <summary>
     /// Total score
     /// </summary>
     [Column("score")]
@@ -46,17 +34,23 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     [Column("max_combo")]
     public int MaxCombo { get; set; }
 
-    [Column("count_50")] public int Count50 { get; set; }
+    [Column("count_50")]
+    public int Count50 { get; set; }
 
-    [Column("count_100")] public int Count100 { get; set; }
+    [Column("count_100")]
+    public int Count100 { get; set; }
 
-    [Column("count_300")] public int Count300 { get; set; }
+    [Column("count_300")]
+    public int Count300 { get; set; }
 
-    [Column("count_miss")] public int CountMiss { get; set; }
+    [Column("count_miss")]
+    public int CountMiss { get; set; }
 
-    [Column("count_katu")] public int CountKatu { get; set; }
+    [Column("count_katu")]
+    public int CountKatu { get; set; }
 
-    [Column("count_geki")] public int CountGeki { get; set; }
+    [Column("count_geki")]
+    public int CountGeki { get; set; }
 
     /// <summary>
     /// Denotes if the <see cref="Player"/> passed
@@ -94,9 +88,12 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     [Column("ruleset")]
     public Ruleset Ruleset { get; set; }
 
-    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
+    [Column("verification_status")]
+    public VerificationStatus VerificationStatus { get; set; }
 
-    [Column("last_processing_date")] public DateTime LastProcessingDate { get; set; }
+    [AuditIgnore]
+    [Column("last_processing_date")]
+    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Rejection reason
@@ -111,9 +108,21 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     public ScoreProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
+    /// Id of the <see cref="Entities.Game" /> that the <see cref="GameScore" /> was set in
+    /// </summary>
+    [Column("game_id")]
+    public int GameId { get; set; }
+
+    /// <summary>
     /// The <see cref="Entities.Game"/> that the <see cref="GameScore"/> was set in
     /// </summary>
     public Game Game { get; set; } = null!;
+
+    /// <summary>
+    /// Id of the <see cref="Entities.Player" /> that set the <see cref="GameScore" />
+    /// </summary>
+    [Column("player_id")]
+    public int PlayerId { get; set; }
 
     /// <summary>
     /// The <see cref="Entities.Player"/> that set the <see cref="GameScore"/>
@@ -124,7 +133,8 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
 
     public ICollection<GameScoreAudit> Audits { get; set; } = new List<GameScoreAudit>();
 
-    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+    [NotMapped]
+    public int? ActionBlamedOnUserId { get; set; }
 
     /// <summary>
     /// Accuracy

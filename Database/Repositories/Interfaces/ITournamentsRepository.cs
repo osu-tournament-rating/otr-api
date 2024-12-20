@@ -1,5 +1,6 @@
 using Database.Entities;
 using Database.Enums;
+using Database.Enums.Verification;
 
 namespace Database.Repositories.Interfaces;
 
@@ -53,19 +54,57 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="page">The page</param>
     /// <param name="pageSize">The size of the collection</param>
     /// <param name="querySortType">Determines how the results are sorted</param>
-    /// <param name="descending">Whether to sort the results in descending order</param>
     /// <param name="verified">
-    /// Whether the resulting tournaments must be verified and have completed processing
+    /// Filters results for only tournaments that are verified
+    /// see <see cref="ITournamentsRepository.GetVerifiedAsync"/>
     /// </param>
-    /// <param name="ruleset">An optional ruleset to filter by</param>
-    /// <remarks>All returned entities will not be tracked by the context</remarks>
+    /// <param name="ruleset">Filters results for only tournaments played in a specified ruleset
+    /// </param>
+    /// <param name="searchQuery">
+    /// Filters results for only tournaments with a partially matching name or abbreviation (case insensitive)
+    /// </param>
+    /// <param name="dateMin"
+    /// >Filters results for only tournaments that occurred on or after a specified date
+    /// </param>
+    /// <param name="dateMax">
+    /// Filters results for only tournaments that occurred on or before a specified date
+    /// </param>
+    /// <param name="verificationStatus">
+    /// Filters results for only tournaments with a specified verification status
+    /// </param>
+    /// <param name="rejectionReason">
+    /// Filters results for only tournaments with a specified rejection reason
+    ///</param>
+    /// <param name="processingStatus">
+    /// Filters results for only tournaments with a specified processing status
+    /// </param>
+    /// <param name="submittedBy">
+    /// Filters results for only tournaments submitted by a user with a specified id
+    /// </param>
+    /// <param name="verifiedBy">
+    /// Filters results for only tournaments verified by a user with a specified id
+    /// </param>
+    /// <param name="lobbySize">
+    /// Filters results for only tournaments played with a specified lobby size
+    /// </param>
+    /// <param name="descending">Whether to sort the results in descending order</param>
+    /// <remarks>None of the entities returned will be tracked by the context</remarks>
     Task<ICollection<Tournament>> GetAsync(
         int page,
         int pageSize,
         TournamentQuerySortType querySortType,
-        bool descending = false,
         bool verified = true,
-        Ruleset? ruleset = null
+        Ruleset? ruleset = null,
+        string? searchQuery = null,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null,
+        VerificationStatus? verificationStatus = null,
+        TournamentRejectionReason? rejectionReason = null,
+        TournamentProcessingStatus? processingStatus = null,
+        int? submittedBy = null,
+        int? verifiedBy = null,
+        int? lobbySize = null,
+        bool descending = true
     );
 
     /// <summary>

@@ -16,7 +16,7 @@ public class GameStatsProcessor(
     {
         if (entity.ProcessingStatus is not GameProcessingStatus.NeedsStatCalculation)
         {
-            logger.LogDebug(
+            logger.LogTrace(
                 "Game does not require processing [Id: {Id} | Processing Status: {Status}]",
                 entity.Id,
                 entity.ProcessingStatus

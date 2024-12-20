@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using API.Authorization;
 using API.Authorization.Handlers;
@@ -10,7 +9,6 @@ using API.Configurations;
 using API.Handlers.Implementations;
 using API.Handlers.Interfaces;
 using API.Middlewares;
-using API.ModelBinders.Providers;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services.Implementations;
@@ -28,14 +26,16 @@ using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
+using Newtonsoft.Json.Serialization;
 using Npgsql;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
@@ -43,6 +43,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OsuApiClient.Extensions;
 using Serilog;
+using Serilog.AspNetCore;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -85,18 +86,19 @@ builder
 
 #region Controller Configuration
 
-builder
-    .Services.AddControllers(options =>
+builder.Services
+    .AddControllers(o =>
     {
-        options.ModelBinderProviders.Insert(0, new LeaderboardFilterModelBinderProvider());
+        o.ModelMetadataDetailsProviders.Add(
+            new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
+        o.Filters.Add(new AuthorizeFilter(AuthorizationPolicies.Whitelist));
     })
     .AddJsonOptions(o =>
     {
-        o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
-        o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     })
-    .AddNewtonsoftJson();
+    .AddNewtonsoftJson(o => { o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver(); });
 
 #endregion
 
@@ -190,7 +192,7 @@ builder.Services.AddRateLimiter(options =>
 
         // Partition for each unique user / client
         return RateLimitPartition.GetFixedWindowLimiter(
-            $"{(context.User.IsUser() ? OtrClaims.Roles.User : OtrClaims.Roles.Client)}_{context.User.GetSubjectId()}",
+            $"{context.User.GetSubjectType()}_{context.User.GetSubjectId()}",
             _ => GetRateLimiterOptions(context.User.GetRateLimitOverride())
         );
     });
@@ -209,8 +211,8 @@ builder.Services.AddRateLimiter(options =>
 
 #region SwaggerGen Configuration
 
-builder
-    .Services.AddApiVersioning(options =>
+builder.Services
+    .AddApiVersioning(options =>
     {
         options.ReportApiVersions = true;
         options.DefaultApiVersion = new ApiVersion(1);
@@ -224,8 +226,6 @@ builder
         options.SubstituteApiVersionInUrl = true;
     });
 
-builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen(options =>
 {
     // Sets nullable flags
@@ -234,6 +234,8 @@ builder.Services.AddSwaggerGen(options =>
     options.UseAllOfToExtendReferenceSchemas();
     // Allows reference objects to be marked nullable
     options.UseAllOfForInheritance();
+    // Fixes parameter names from model binding
+    options.DescribeAllParametersInCamelCase();
 
     // Allow use of in-code XML documentation tags like <summary> and <remarks>
     string[] xmlDocPaths =
@@ -248,7 +250,9 @@ builder.Services.AddSwaggerGen(options =>
     }
 
     // Register custom filters
+    // Filters are executed in order of: Operation, Parameter, Schema, Document
     options.OperationFilter<SecurityMetadataOperationFilter>();
+    options.OperationFilter<DiscardNestedParametersOperationFilter>();
 
     options.SchemaFilter<EnumMetadataSchemaFilter>((object)xmlDocPaths);
     options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
@@ -291,51 +295,56 @@ builder.Services.AddSwaggerGen(options =>
         .Select(r => new KeyValuePair<string, string>(r, OtrClaims.GetDescription(r)))
         .ToDictionary();
 
-    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Name = "JWT Authentication",
-        Type = SecuritySchemeType.Http,
-        Description = "JWT Authorization using the Bearer scheme. Paste **ONLY** your JWT in the text box below",
-        Scheme = JwtBearerDefaults.AuthenticationScheme,
-        BearerFormat = "JWT"
-    });
-
-    options.AddSecurityDefinition(SecurityRequirements.OAuthSecurityRequirementId, new OpenApiSecurityScheme
-    {
-        Name = "OAuth2 Authentication",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.OAuth2,
-        Description = "OAuth2 Authentication",
-        Flows = new OpenApiOAuthFlows
+    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme,
+        new OpenApiSecurityScheme
         {
-            AuthorizationCode = new OpenApiOAuthFlow
+            In = ParameterLocation.Header,
+            Name = "JWT Authentication",
+            Type = SecuritySchemeType.Http,
+            Description =
+                "JWT Authorization using the Bearer scheme. Paste **ONLY** your JWT in the text box below",
+            Scheme = JwtBearerDefaults.AuthenticationScheme,
+            BearerFormat = "JWT"
+        });
+
+    options.AddSecurityDefinition(SecurityRequirements.OAuthSecurityRequirementId,
+        new OpenApiSecurityScheme
+        {
+            Name = "OAuth2 Authentication",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.OAuth2,
+            Description = "OAuth2 Authentication",
+            Flows = new OpenApiOAuthFlows
             {
-                AuthorizationUrl = new Uri("api/v1.0/OAuth/authorize", UriKind.Relative),
-                RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
-                Scopes = oauthScopes
-            },
-            ClientCredentials = new OpenApiOAuthFlow
-            {
-                TokenUrl = new Uri("api/v1.0/OAuth/token", UriKind.Relative),
-                RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
-                Scopes = oauthScopes
+                AuthorizationCode = new OpenApiOAuthFlow
+                {
+                    AuthorizationUrl = new Uri("api/v1.0/OAuth/authorize", UriKind.Relative),
+                    RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
+                    Scopes = oauthScopes
+                },
+                ClientCredentials = new OpenApiOAuthFlow
+                {
+                    TokenUrl = new Uri("api/v1.0/OAuth/token", UriKind.Relative),
+                    RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
+                    Scopes = oauthScopes
+                }
             }
-        }
-    });
+        });
 
     // Register custom enum schemas describing authorization roles and policies
-    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(OtrClaims.Roles), new OpenApiSchema
-    {
-        Type = "string",
-        Description = "The possible roles assignable to a user or client",
-        Enum = new List<IOpenApiAny>(oauthScopes.Keys.Select(role => new OpenApiString(role))),
-        Extensions = new Dictionary<string, IOpenApiExtension>
+    options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(OtrClaims.Roles),
+        new OpenApiSchema
         {
-            [ExtensionKeys.EnumNames] = oauthScopes.Keys.Select(k => char.ToUpper(k[0]) + k[1..]).ToOpenApiArray(),
-            [ExtensionKeys.EnumDescriptions] = oauthScopes.Values.ToOpenApiArray()
-        }
-    });
+            Type = "string",
+            Description = "The possible roles assignable to a user or client",
+            Enum = new List<IOpenApiAny>(oauthScopes.Keys.Select(role => new OpenApiString(role))),
+            Extensions = new Dictionary<string, IOpenApiExtension>
+            {
+                [ExtensionKeys.EnumNames] =
+                    oauthScopes.Keys.Select(k => char.ToUpper(k[0]) + k[1..]).ToOpenApiArray(),
+                [ExtensionKeys.EnumDescriptions] = oauthScopes.Values.ToOpenApiArray()
+            }
+        });
 
     // Register custom enum schemas describing authorization roles and policies
     options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(AuthorizationPolicies), new OpenApiSchema
@@ -360,7 +369,7 @@ builder.Services.AddSwaggerGen(options =>
 
 #endregion
 
-#region Logger Configuration
+#region Logging Configuration
 
 builder.Services.AddSerilog(configuration =>
 {
@@ -382,7 +391,6 @@ builder.Services.AddSerilog(configuration =>
             "Microsoft.EntityFrameworkCore.Database.Command",
             LogEventLevel.Warning
         )
-        .MinimumLevel.Override("OsuSharp", LogEventLevel.Fatal)
         .Enrich.FromLogContext()
         .WriteTo.Console(
             outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}"
@@ -400,7 +408,49 @@ builder.Services.AddSerilog(configuration =>
         );
 });
 
-builder.Services.AddLogging();
+builder.Services.Configure<RequestLoggingOptions>(o =>
+{
+    o.IncludeQueryInRequestPath = true;
+
+    o.MessageTemplate =
+        "{RequestIdentity} {RequestScheme} {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.00} ms";
+
+    o.GetLevel = (httpContext, elapsed, ex) =>
+    {
+        // Error for server errors and exceptions
+        if (httpContext.Response.StatusCode >= StatusCodes.Status500InternalServerError || ex is not null)
+        {
+            return LogEventLevel.Error;
+        }
+
+        // Warn for unexpected client errors or long response times
+        if (httpContext.Response.StatusCode > StatusCodes.Status404NotFound || elapsed >= 5000)
+        {
+            return LogEventLevel.Warning;
+        }
+
+        return LogEventLevel.Information;
+    };
+
+    o.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+
+        string ident;
+        if (httpContext.User.TryGetSubjectId(out var id))
+        {
+            var subjectType = httpContext.User.GetSubjectType();
+            subjectType = char.ToUpper(subjectType[0]) + subjectType[1..];
+            ident = $"{subjectType} {id}";
+        }
+        else
+        {
+            ident = "Anonymous";
+        }
+
+        diagnosticContext.Set("RequestIdentity", ident);
+    };
+});
 
 #endregion
 
@@ -465,23 +515,24 @@ builder.Services
 
 #region Authorization Configuration
 
-builder
-    .Services.AddAuthorizationBuilder()
-    .AddPolicy(
-        AuthorizationPolicies.AccessUserResources,
-        policy =>
-            policy
-                .RequireAuthenticatedUser()
-                .AddRequirements(new AccessUserResourcesRequirement(allowSelf: true))
-    );
+builder.Services
+    .AddAuthorizationBuilder()
+    .AddPolicy(AuthorizationPolicies.AccessUserResources, p =>
+    {
+        p.RequireRole(OtrClaims.Roles.User);
+        p.AddRequirements(new AccessUserResourcesAuthorizationRequirement());
+    })
+    .AddPolicy(AuthorizationPolicies.Whitelist, p => { p.AddRequirements(new WhitelistAuthorizationRequirement()); });
 
-builder.Services.AddSingleton<IAuthorizationHandler, AccessUserResourcesAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, AccessUserResourcesAuthorizationHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, WhitelistAuthorizationHandler>();
 
 #endregion
 
 #region Context Accessors
 
 builder.Services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+builder.Services.AddHttpContextAccessor();
 
 #endregion
 
@@ -533,14 +584,14 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 
 #region Repositories
 
-builder.Services.AddScoped<IApiBaseStatsRepository, ApiBaseStatsRepository>();
 builder.Services.AddScoped<IApiMatchRatingStatsRepository, ApiMatchRatingStatsRepository>();
 builder.Services.AddScoped<IApiMatchWinRecordRepository, ApiMatchWinRecordRepository>();
 builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRepository>();
+builder.Services.AddScoped<IApiPlayerRatingsRepository, ApiPlayerRatingsRepository>();
 builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
 
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
-builder.Services.AddScoped<IBaseStatsRepository, BaseStatsRepository>();
+builder.Services.AddScoped<IPlayerRatingsRepository, PlayerRatingsRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
@@ -560,7 +611,6 @@ builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
 #region Services
 
 builder.Services.AddScoped<IAdminNoteService, AdminNoteService>();
-builder.Services.AddScoped<IBaseStatsService, BaseStatsService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();
@@ -569,6 +619,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
+builder.Services.AddScoped<IPlayerRatingsService, PlayerRatingsService>();
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
@@ -597,25 +648,20 @@ app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
 app.UseHttpsRedirection();
 
-app.UseRouting(); // UseRouting must come first before UseCors
-app.UseCors(); // Placed after UseRouting and before UseAuthentication and UseAuthorization
+app.UseSerilogRequestLogging();
 
-app.UseMiddleware<RequestLoggingMiddleware>();
+// UseRouting must come first before UseCors
+app.UseRouting();
+// Placed after UseRouting and before UseAuthentication and UseAuthorization
+app.UseCors();
 
 app.UseAuthentication();
-
-IOptions<AuthConfiguration> authConfiguration = app.Services.GetRequiredService<
-    IOptions<AuthConfiguration>
->();
-if (authConfiguration.Value.EnforceWhitelist)
-{
-    app.UseMiddleware<WhitelistEnforcementMiddleware>();
-}
-
 app.UseAuthorization();
 
 app.UseRateLimiter();
 app.UseMiddleware<RateLimitHeadersMiddleware>();
+
+app.UseSwagger();
 
 if (app.Environment.IsDevelopment())
 {
@@ -623,13 +669,15 @@ if (app.Environment.IsDevelopment())
     IMapper mapper = app.Services.GetRequiredService<IMapper>();
     mapper.ConfigurationProvider.AssertConfigurationIsValid();
 
-    app.UseSwagger();
-    app.UseSwaggerUI(x => { x.SwaggerEndpoint("/swagger/v1/swagger.json", "osu! Tournament Rating API"); });
+    app.UseSwaggerUI(o =>
+    {
+        o.EnableTryItOutByDefault();
+        o.SwaggerEndpoint("/swagger/v1/swagger.json", "osu! Tournament Rating API");
+    });
 
-    // Endpoints expecting authentication WILL throw exceptions if used anonymously
-    // Example: `GET` `/me`
     if (args.Contains("--allow-anonymous"))
     {
+        // Endpoints / features expecting authentication (like `GET` `/me`) WILL throw exceptions if used anonymously
         app.MapControllers().AllowAnonymous();
     }
     else

@@ -16,12 +16,22 @@ public enum TournamentQuerySortType
     StartTime,
 
     /// <summary>
+    /// Sort by end date
+    /// </summary>
+    EndTime,
+
+    /// <summary>
     /// Sort by name
     /// </summary>
-    Name,
+    SearchQueryRelevance,
 
     /// <summary>
     /// Sort by created date
     /// </summary>
-    Created
+    Created,
+
+    /// <summary>
+    /// Sort by lobby size
+    /// </summary>
+    LobbySize
 }

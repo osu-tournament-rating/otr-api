@@ -12,7 +12,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 /// </copyright>
 public class UserStatisticsVariantJsonModel : JsonModelBase
 {
-    [JsonProperty("ruleset")]
+    [JsonProperty("mode")]
     public string Mode { get; set; } = null!;
 
     [JsonProperty("variant")]

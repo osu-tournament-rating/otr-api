@@ -23,11 +23,11 @@ public class BeatmapsController(IBeatmapService beatmapService) : Controller
         Ok(await beatmapService.ListAsync());
 
     /// <summary>
-    /// Get a beatmap by versatile search
+    /// Get a beatmap
     /// </summary>
-    /// <remarks>Get a beatmap searching first by id, then by osu! beatmap id</remarks>
-    /// <param name="key">Search key</param>
-    /// <response code="404">If a beatmap for the search key does not exist</response>
+    /// <remarks>Get a beatmap searching first by id, then by osu! id</remarks>
+    /// <param name="key">Search key (id or osu! id)</param>
+    /// <response code="404">A beatmap matching the given key does not exist</response>
     /// <response code="200">Returns a beatmap</response>
     [HttpGet("{key:long}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

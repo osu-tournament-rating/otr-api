@@ -1,34 +1,44 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using API.DTOs.Interfaces;
 using API.Enums;
-using API.ModelBinders;
 using Database.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace API.DTOs;
 
-public class LeaderboardRequestQueryDTO
+/// <summary>
+/// Filtering parameters for leaderboard requests
+/// </summary>
+public class LeaderboardRequestQueryDTO : IPaginated
 {
-    public Ruleset Ruleset { get; init; }
-    /// <summary>
-    /// The zero-indexed page offset. Page 0 returns the first PageSize results.
-    /// </summary>
-    [Range(0, int.MaxValue, ErrorMessage = "Page count out of bounds")]
-    public int Page { get; set; }
+    [FromQuery]
+    [Range(1, int.MaxValue)]
+    [DefaultValue(1)]
+    public int Page { get; init; } = 1;
+
+    [FromQuery]
+    [Range(10, 100)]
+    [DefaultValue(50)]
+    public int PageSize { get; init; } = 50;
 
     /// <summary>
-    /// The number of elements to return per page
+    /// Ruleset for leaderboard data
     /// </summary>
-    [Range(5, 100, ErrorMessage = "The page size must be between 5 and 100")]
-    public int PageSize { get; set; } = 50;
+    [FromQuery]
+    [DefaultValue(Ruleset.Osu)]
+    [EnumDataType(typeof(Ruleset))]
+    public Ruleset Ruleset { get; init; } = Ruleset.Osu;
 
     /// <summary>
     /// Defines whether the leaderboard should be global or filtered by country
     /// </summary>
-    [Range(0, 1, ErrorMessage = "Invalid chart type provided. Must be 0 (global) or 1 (country)")]
+    [FromQuery]
+    [DefaultValue(LeaderboardChartType.Global)]
+    [EnumDataType(typeof(LeaderboardChartType))]
     public LeaderboardChartType ChartType { get; init; } = LeaderboardChartType.Global;
 
-    [ModelBinder(BinderType = typeof(LeaderboardFilterModelBinder))]
-    // Note: When debugging in swagger, you'll want to clear
-    // out the default filter object to return an unfiltered leaderboard.
-    public LeaderboardFilterDTO Filter { get; init; } = new();
+    [BindNever]
+    public LeaderboardFilterDTO Filter { get; set; } = new();
 }

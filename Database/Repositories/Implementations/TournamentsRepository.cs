@@ -9,10 +9,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance",
-    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository) : RepositoryBase<Tournament>(context), ITournamentsRepository
+public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository)
+    : RepositoryBase<Tournament>(context), ITournamentsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -25,12 +25,20 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         await _context.Tournaments
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(t => t.Matches.Where(m => m.VerificationStatus == VerificationStatus.Verified && m.ProcessingStatus == MatchProcessingStatus.Done))
-            .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
+            .Include(t => t.Matches.Where(m =>
+                m.VerificationStatus == VerificationStatus.Verified &&
+                m.ProcessingStatus == MatchProcessingStatus.Done))
+            .ThenInclude(m => m.Games.Where(g =>
+                g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
             .ThenInclude(g => g.Beatmap)
-            .Include(t => t.Matches.Where(m => m.VerificationStatus == VerificationStatus.Verified && m.ProcessingStatus == MatchProcessingStatus.Done))
-            .ThenInclude(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
-            .ThenInclude(g => g.Scores.Where(gs => gs.VerificationStatus == VerificationStatus.Verified && gs.ProcessingStatus == ScoreProcessingStatus.Done))
+            .Include(t => t.Matches.Where(m =>
+                m.VerificationStatus == VerificationStatus.Verified &&
+                m.ProcessingStatus == MatchProcessingStatus.Done))
+            .ThenInclude(m => m.Games.Where(g =>
+                g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
+            .ThenInclude(g => g.Scores.Where(gs =>
+                gs.VerificationStatus == VerificationStatus.Verified &&
+                gs.ProcessingStatus == ScoreProcessingStatus.Done))
             .ThenInclude(gs => gs.Player)
             .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
             .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
@@ -39,7 +47,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
 
     public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
         await _context.Tournaments
-            .AsSingleQuery()
+            .AsSplitQuery()
             .Include(t => t.PooledBeatmaps)
             .Include(t => t.PlayerTournamentStats)
             .Include(t => t.Matches)
@@ -58,7 +66,8 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .Include(t => t.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.WinRecord)
-            .Where(t => t.ProcessingStatus != TournamentProcessingStatus.Done && t.ProcessingStatus != TournamentProcessingStatus.NeedsApproval)
+            .Where(t => t.ProcessingStatus != TournamentProcessingStatus.Done &&
+                        t.ProcessingStatus != TournamentProcessingStatus.NeedsApproval)
             .OrderBy(t => t.LastProcessingDate)
             .Take(limit)
             .ToListAsync();
@@ -77,30 +86,45 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         int page,
         int pageSize,
         TournamentQuerySortType querySortType,
-        bool descending = false,
         bool verified = true,
-        Ruleset? ruleset = null
+        Ruleset? ruleset = null,
+        string? searchQuery = null,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null,
+        VerificationStatus? verificationStatus = null,
+        TournamentRejectionReason? rejectionReason = null,
+        TournamentProcessingStatus? processingStatus = null,
+        int? submittedBy = null,
+        int? verifiedBy = null,
+        int? lobbySize = null,
+        bool descending = true
     )
     {
         IQueryable<Tournament> query = _context.Tournaments
             .AsNoTracking()
             .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
             .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
-            .OrderBy(querySortType, descending);
+            .WhereRuleset(ruleset)
+            .WhereSearchQuery(searchQuery)
+            .WhereDateRange(dateMin, dateMax)
+            .WhereVerificationStatus(verificationStatus)
+            .WhereRejectionReason(rejectionReason)
+            .WhereProcessingStatus(processingStatus)
+            .WhereSubmittedBy(submittedBy)
+            .WhereVerifiedBy(verifiedBy)
+            .WhereLobbySize(lobbySize);
 
         if (verified)
         {
-            query = query.WhereVerified().WhereProcessingCompleted();
-        }
-
-        if (ruleset.HasValue)
-        {
-            query = query.Where(x => x.Ruleset == ruleset.Value);
+            query = query
+                .WhereVerificationStatus(VerificationStatus.Verified)
+                .WhereProcessingStatus(TournamentProcessingStatus.Done);
         }
 
         return await query
-                .Page(pageSize, page)
-                .ToListAsync();
+            .OrderBy(querySortType, descending)
+            .Page(pageSize, page - 1)
+            .ToListAsync();
     }
 
     public async Task<Tournament?> AcceptPreVerificationStatusesAsync(int id)
@@ -115,6 +139,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         }
 
         #region Confirm "pre" verification statuses
+
         tournament.ConfirmPreVerificationStatus();
         foreach (Match match in tournament.Matches)
         {
@@ -130,6 +155,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
                 }
             }
         }
+
         #endregion
 
         await UpdateAsync(tournament);
@@ -173,7 +199,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             return;
         }
 
-        tournament.PooledBeatmaps = new List<Beatmap>();
+        tournament.PooledBeatmaps = [];
         await UpdateAsync(tournament);
     }
 

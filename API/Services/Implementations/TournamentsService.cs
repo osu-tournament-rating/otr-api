@@ -47,12 +47,16 @@ public class TournamentsService(
                 .Except(existingMatchIds)
                 .Select(matchId => new Match { OsuId = matchId, SubmittedByUserId = submitterUserId })
                 .ToList(),
-            PooledBeatmaps = existingBeatmaps
-                .Concat(submittedBeatmapIds
-                    .Except(existingBeatmaps.Select(b => b.OsuId))
-                    .Select(beatmapId => new Beatmap { OsuId = beatmapId })
-                )
-                .ToList()
+            PooledBeatmaps =
+
+            [
+                .. existingBeatmaps
+,
+                .. submittedBeatmapIds
+                            .Except(existingBeatmaps.Select(b => b.OsuId))
+                            .Select(beatmapId => new Beatmap { OsuId = beatmapId })
+,
+            ]
         };
 
         // Handle reject-on-submit cases
@@ -100,10 +104,19 @@ public class TournamentsService(
         return mapper.Map<ICollection<TournamentDTO>>(await tournamentsRepository.GetAsync(
             requestQuery.Page,
             requestQuery.PageSize,
-            requestQuery.QuerySortType,
-            requestQuery.Descending,
-            requestQuery.Verified,
-            requestQuery.Ruleset
+            requestQuery.Sort,
+            verified: requestQuery.Verified,
+            ruleset: requestQuery.Ruleset,
+            searchQuery: requestQuery.SearchQuery,
+            dateMin: requestQuery.DateMin,
+            dateMax: requestQuery.DateMax,
+            verificationStatus: requestQuery.VerificationStatus,
+            rejectionReason: requestQuery.RejectionReason,
+            processingStatus: requestQuery.ProcessingStatus,
+            submittedBy: requestQuery.SubmittedBy,
+            verifiedBy: requestQuery.VerifiedBy,
+            lobbySize: requestQuery.LobbySize,
+            descending: requestQuery.Descending
         ));
     }
 
@@ -132,6 +145,9 @@ public class TournamentsService(
         existing.Ruleset = wrapper.Ruleset;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
         existing.LobbySize = wrapper.LobbySize;
+        existing.ProcessingStatus = wrapper.ProcessingStatus;
+        existing.VerificationStatus = wrapper.VerificationStatus;
+        existing.RejectionReason = wrapper.RejectionReason;
 
         await tournamentsRepository.UpdateAsync(existing);
         return mapper.Map<TournamentDTO>(existing);

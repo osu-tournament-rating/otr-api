@@ -13,7 +13,7 @@ public class ScoreVerificationProcessor(ILogger<ScoreVerificationProcessor> logg
     {
         if (entity.ProcessingStatus is not ScoreProcessingStatus.NeedsVerification)
         {
-            logger.LogDebug(
+            logger.LogTrace(
                 "Score does not require processing [Id: {Id} | Processing Status: {Status}]",
                 entity.Id,
                 entity.ProcessingStatus
@@ -25,7 +25,7 @@ public class ScoreVerificationProcessor(ILogger<ScoreVerificationProcessor> logg
         switch (entity.VerificationStatus)
         {
             case VerificationStatus.PreRejected or VerificationStatus.PreVerified:
-                logger.LogDebug(
+                logger.LogTrace(
                     "Score is still awaiting verification [Id: {Id} | Processing Status: {Status}]",
                     entity.Id,
                     entity.ProcessingStatus
