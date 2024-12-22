@@ -18,7 +18,7 @@ public class MatchAutomationChecksProcessor(
     {
         if (entity.ProcessingStatus is not MatchProcessingStatus.NeedsAutomationChecks)
         {
-            logger.LogDebug(
+            logger.LogTrace(
                 "Match does not require processing [Id: {Id} | Processing Status: {Status}]",
                 entity.Id,
                 entity.ProcessingStatus
