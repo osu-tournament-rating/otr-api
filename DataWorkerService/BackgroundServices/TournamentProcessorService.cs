@@ -112,10 +112,9 @@ public class TournamentProcessorService(
         else
         {
             logger.LogDebug(
-                "Processing completed [Id: {Id} | Processing Status: {Before} --> {After}]",
+                "Processing completed [Id: {Id} | Processing Status: {Before} (No change)]",
                 tournament.Id,
-                processingStatusBefore,
-                tournament.ProcessingStatus
+                processingStatusBefore
             );
         }
     }
