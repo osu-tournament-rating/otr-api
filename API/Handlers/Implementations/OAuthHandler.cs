@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using API.Authorization;
+using API.Configurations;
 using API.DTOs;
 using API.Handlers.Interfaces;
 using API.Repositories.Interfaces;
@@ -8,6 +9,7 @@ using API.Utilities.Extensions;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using OsuApiClient;
 using OsuUser = OsuApiClient.Domain.Osu.Users.UserExtended;
 
@@ -23,8 +25,8 @@ public class OAuthHandler(
     IPlayersRepository playerRepository,
     IUserRepository userRepository,
     IOsuClient osuClient,
-    IPasswordHasher<OAuthClient> clientSecretHasher
-    ) : IOAuthHandler
+    IPasswordHasher<OAuthClient> clientSecretHasher,
+    IOptions<OsuConfiguration> osuConfiguration) : IOAuthHandler
 {
     public async Task<AccessCredentialsDTO?> AuthorizeAsync(string osuAuthCode)
     {
@@ -43,8 +45,12 @@ public class OAuthHandler(
             return null;
         }
 
+        // Create the Player if they don't exist in our system.
+        // Then, create the User if needed.
         Player player = await playerRepository.GetOrCreateAsync(osuUser.Id);
         User user = await AuthenticateUserAsync(player.Id);
+
+        await SyncFriendsAsync(user);
 
         logger.LogDebug("Authorized user with id {Id}", user.Id);
 
@@ -55,6 +61,34 @@ public class OAuthHandler(
             AccessExpiration = jwtService.AccessDurationSeconds,
             RefreshExpiration = jwtService.RefreshDurationSeconds
         };
+    }
+
+    /// <summary>
+    /// Sync the user's osu! friends list with the repository
+    /// </summary>
+    /// <param name="user">The user</param>
+    private async Task SyncFriendsAsync(User user)
+    {
+        // Do not allow friends list syncs more often than every 24 hours
+        if (user.LastFriendsListUpdate is not null &&
+            (DateTime.UtcNow - user.LastFriendsListUpdate).Value <
+            TimeSpan.FromHours(osuConfiguration.Value.LoginFriendsSyncFrequencyHours))
+        {
+            return;
+        }
+
+        // Sync the user's friends list
+        // ReSharper disable once SuggestVarOrType_Elsewhere
+        List<long> friendOsuIds = (await osuClient.GetUserFriendsAsync())?.Select(u => u.Id).ToList() ?? [];
+
+        /**
+         * Don't overwrite if the osu! api returns 0 friends.
+         * We don't want to accidentally nuke someone's friends list from an API error.
+         */
+        if (friendOsuIds.Count > 0)
+        {
+            await userRepository.SyncFriendsAsync(user.Id, friendOsuIds);
+        }
     }
 
     public async Task<DetailedResponseDTO<AccessCredentialsDTO>> AuthorizeAsync(int clientId, string clientSecret)
@@ -68,7 +102,8 @@ public class OAuthHandler(
         }
 
         // Validate secret
-        PasswordVerificationResult result = clientSecretHasher.VerifyHashedPassword(client, client.Secret, clientSecret);
+        PasswordVerificationResult
+            result = clientSecretHasher.VerifyHashedPassword(client, client.Secret, clientSecret);
         if (result != PasswordVerificationResult.Success)
         {
             return new DetailedResponseDTO<AccessCredentialsDTO> { ErrorDetail = "Invalid client credentials" };
@@ -122,6 +157,7 @@ public class OAuthHandler(
                     ErrorDetail = "Refresh token does not belong to an existing user"
                 };
             }
+
             accessToken = jwtService.GenerateAccessToken(user);
         }
         else if (claimsPrincipal.IsClient())
@@ -135,6 +171,7 @@ public class OAuthHandler(
                     ErrorDetail = "Refresh token does not belong to an existing client"
                 };
             }
+
             accessToken = jwtService.GenerateAccessToken(client);
         }
 
@@ -155,7 +192,7 @@ public class OAuthHandler(
     }
 
     /// <summary>
-    /// Uses OsuSharp to authorize the current user via osu! API v2
+    /// Authorizes the current user via osu! API v2
     /// </summary>
     /// <param name="osuCode">The authorization code for the user</param>
     /// <returns>The authorized user</returns>
@@ -170,7 +207,7 @@ public class OAuthHandler(
     /// </summary>
     private async Task<User> AuthenticateUserAsync(int playerId)
     {
-        User user = await userRepository.GetByPlayerIdOrCreateAsync(playerId);
+        User user = await userRepository.GetOrCreateByPlayerIdAsync(playerId);
 
         user.LastLogin = DateTime.UtcNow;
         await userRepository.UpdateAsync(user);
