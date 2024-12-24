@@ -144,10 +144,10 @@ public class Beatmap : EntityBase
     /// <summary>
     /// A collection of <see cref="Game"/>s played on the <see cref="Beatmap"/>
     /// </summary>
-    public ICollection<Game> Games { get; set; } = new List<Game>();
+    public ICollection<Game> Games { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="Tournament"/>s which pooled this beatmap
     /// </summary>
-    public ICollection<Tournament> TournamentsPooledIn { get; set; } = new List<Tournament>();
+    public ICollection<Tournament> TournamentsPooledIn { get; set; } = [];
 }

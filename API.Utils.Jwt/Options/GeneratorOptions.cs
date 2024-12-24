@@ -46,7 +46,7 @@ public class GeneratorOptions : JwtUtilsOptionsBase
                    $"'{OtrClaims.Roles.Verifier}', '{OtrClaims.Roles.Whitelist}']",
         Separator = ','
     )]
-    public IEnumerable<string> Roles { get; set; } = new List<string>();
+    public IEnumerable<string> Roles { get; set; } = [];
 
     [Option(
         "rate-limit-override",

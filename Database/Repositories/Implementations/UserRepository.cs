@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance",
+    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class UserRepository(OtrContext context, IUserSettingsRepository userSettingsRepository) : RepositoryBase<User>(context), IUserRepository
+public class UserRepository(OtrContext context, IUserSettingsRepository userSettingsRepository)
+    : RepositoryBase<User>(context), IUserRepository
 {
     private readonly OtrContext _context = context;
 
@@ -46,11 +48,11 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
 
     public async Task<IEnumerable<OAuthClient>> GetClientsAsync(int id) =>
         await _context.Users.Where(u => u.Id == id).Select(u => u.Clients).FirstOrDefaultAsync()
-        ?? new List<OAuthClient>();
+        ?? [];
 
     public async Task<IEnumerable<Match>> GetSubmissionsAsync(int id) =>
         await _context.Users.Where(u => u.Id == id).Select(u => u.SubmittedMatches).FirstOrDefaultAsync()
-        ?? new List<Match>();
+        ?? [];
 
     private IQueryable<User> UserBaseQuery() =>
         _context.Users
