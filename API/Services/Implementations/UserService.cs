@@ -25,6 +25,9 @@ public class UserService(IUserRepository userRepository,
     public async Task<IEnumerable<MatchSubmissionStatusDTO>?> GetSubmissionsAsync(int id) =>
         mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>(await userRepository.GetSubmissionsAsync(id));
 
+    public async Task<IEnumerable<PlayerCompactDTO>> GetFriendsAsync(int id) =>
+        mapper.Map<IEnumerable<PlayerCompactDTO>>(await userRepository.GetFriendsAsync(id));
+
     public async Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId)
     {
         IEnumerable<Match>? submissions = (await userRepository.GetAsync(id))?.SubmittedMatches.ToList();

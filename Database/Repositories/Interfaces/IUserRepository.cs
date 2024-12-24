@@ -38,9 +38,15 @@ public interface IUserRepository : IRepository<User>
     Task<IEnumerable<Match>> GetSubmissionsAsync(int id);
 
     /// <summary>
+    /// Gets a user's friends
+    /// </summary>
+    /// <param name="id">Id of the user</param>
+    Task<IEnumerable<Player>> GetFriendsAsync(int id);
+
+    /// <summary>
     /// Clears and re-creates the user's friends list.
     /// </summary>
     /// <param name="id">User id</param>
-    /// <param name="playerPsuIds">osu! player ids</param>
+    /// <param name="playerOsuIds">osu! player ids</param>
     Task<User?> SyncFriendsAsync(int id, ICollection<long> playerOsuIds);
 }

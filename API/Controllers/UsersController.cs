@@ -93,7 +93,7 @@ public class UsersController(
             return NotFound();
         }
 
-        return Ok(await userService.GetSubmissionsAsync(id) ?? new List<MatchSubmissionStatusDTO>());
+        return Ok(await userService.GetSubmissionsAsync(id) ?? []);
     }
 
     /// <summary>
@@ -136,7 +136,7 @@ public class UsersController(
             return NotFound();
         }
 
-        return Ok(await userService.GetClientsAsync(id) ?? new List<OAuthClientDTO>());
+        return Ok(await userService.GetClientsAsync(id) ?? []);
     }
 
     /// <summary>
@@ -251,5 +251,27 @@ public class UsersController(
         return await userSettingsService.SyncRulesetAsync(id)
             ? Ok()
             : BadRequest();
+    }
+
+    /// <summary>
+    /// Get a user's friends
+    /// </summary>
+    /// <param name="id">User id</param>
+    /// <response code="404">A user matching the given id does not exist</response>
+    /// <response code="200">The operation was successful</response>
+    [HttpGet("{id:int}/friends")]
+    [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
+    [ProducesResponseType<IEnumerable<PlayerCompactDTO>>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<IEnumerable<PlayerCompactDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListFriendsAsync(int id)
+    {
+        if (!await userService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        IEnumerable<PlayerCompactDTO> result = await userService.GetFriendsAsync(id);
+
+        return Ok(result);
     }
 }
