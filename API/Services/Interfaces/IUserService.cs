@@ -37,7 +37,7 @@ public interface IUserService
     /// Gets a user's friends for the given id
     /// </summary>
     /// <param name="id">Id of the user</param>
-    /// <returns>A list of user's friends</returns>
+    /// <returns>A list of the user's friends</returns>
     Task<IEnumerable<PlayerCompactDTO>> GetFriendsAsync(int id);
 
     /// <summary>
