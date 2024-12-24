@@ -21,7 +21,7 @@ public class MatchDataProcessor(
     {
         if (entity.ProcessingStatus is not MatchProcessingStatus.NeedsData)
         {
-            logger.LogDebug(
+            logger.LogTrace(
                 "Match does not require processing [Id: {Id} | Processing Status: {Status}]",
                 entity.Id,
                 entity.ProcessingStatus

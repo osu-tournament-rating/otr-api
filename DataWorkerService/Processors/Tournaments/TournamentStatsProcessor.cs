@@ -1,4 +1,3 @@
-using Database;
 using Database.Entities;
 using Database.Entities.Processor;
 using Database.Enums.Verification;
@@ -11,8 +10,7 @@ namespace DataWorkerService.Processors.Tournaments;
 /// </summary>
 public class TournamentStatsProcessor(
     ILogger<TournamentStatsProcessor> logger,
-    IMatchProcessorResolver matchProcessorResolver,
-    OtrContext context
+    IMatchProcessorResolver matchProcessorResolver
 ) : ProcessorBase<Tournament>(logger)
 {
     protected override async Task OnProcessingAsync(Tournament entity, CancellationToken cancellationToken)
@@ -49,7 +47,8 @@ public class TournamentStatsProcessor(
         }
 
         IEnumerable<Match> verifiedMatches = entity.Matches
-            .Where(m => m is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done })
+            .Where(m => m is
+            { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done })
             .ToList();
 
         // Sanity check
@@ -60,7 +59,7 @@ public class TournamentStatsProcessor(
                 && match.PlayerRatingAdjustments.Count != 0
                 && match.PlayerMatchStats.Count == match.PlayerRatingAdjustments.Count
                 && match.WinRecord is not null
-            )
+               )
             {
                 continue;
             }
@@ -116,7 +115,5 @@ public class TournamentStatsProcessor(
         }
 
         entity.ProcessingStatus = TournamentProcessingStatus.Done;
-
-        await context.SaveChangesAsync(cancellationToken);
     }
 }

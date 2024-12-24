@@ -16,8 +16,6 @@ public static class MockResolvers
 {
     private static readonly SerilogLoggerFactory s_loggerFactory = new();
 
-    private static readonly MockContext s_mockContext = new();
-
     private static Logger<T> Logger<T>() where T : class => new(s_loggerFactory);
 
     public static ScoreProcessorResolver ScoreProcessorResolver => new([
@@ -67,16 +65,14 @@ public static class MockResolvers
     ]);
 
     public static TournamentProcessorResolver TournamentProcessorResolver => new([
-        new TournamentStatsProcessor(Logger<TournamentStatsProcessor>(), MatchProcessorResolver, s_mockContext.Object),
-        new TournamentVerificationProcessor(Logger<TournamentVerificationProcessor>(), MatchProcessorResolver,
-            s_mockContext.Object),
+        new TournamentStatsProcessor(Logger<TournamentStatsProcessor>(), MatchProcessorResolver),
+        new TournamentVerificationProcessor(Logger<TournamentVerificationProcessor>(), MatchProcessorResolver),
         new TournamentAutomationChecksProcessor(
             Logger<TournamentAutomationChecksProcessor>(),
             [
                 new TournamentMatchCountCheck(Logger<TournamentMatchCountCheck>())
             ],
-            MatchProcessorResolver,
-            s_mockContext.Object
+            MatchProcessorResolver
         )
     ]);
 }

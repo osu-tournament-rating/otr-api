@@ -40,6 +40,9 @@ public class TournamentProcessorService(
 
     protected override async Task DoWork(IServiceScope scope, CancellationToken stoppingToken)
     {
+        logger.LogInformation("Tournament batch processing started");
+
+        _stopwatch.Start();
         OtrContext context = scope.ServiceProvider.GetRequiredService<OtrContext>();
 
         ITournamentsRepository tournamentsRepository =
@@ -48,46 +51,71 @@ public class TournamentProcessorService(
         ITournamentProcessorResolver tournamentProcessorResolver =
             scope.ServiceProvider.GetRequiredService<ITournamentProcessorResolver>();
 
-        IEnumerable<Tournament> tournaments = await tournamentsRepository.GetNeedingProcessingAsync(_config.BatchSize);
+        var tournaments = (await tournamentsRepository.GetNeedingProcessingAsync(_config.BatchSize)).ToList();
+        var tasks = new List<Task>();
+
         foreach (Tournament tournament in tournaments)
         {
-            _stopwatch.Start();
-
-            logger.LogInformation(
-                "Processing starting [Id: {Id} | Processing Status: {Status} | Last Processing: {LastProcessing:MM/dd/yyyy}]",
-                tournament.Id,
-                tournament.ProcessingStatus,
-                tournament.LastProcessingDate
-            );
-
             if (tournament.Matches.Count == 0)
             {
-                tournament.VerificationStatus = VerificationStatus.Rejected;
-                tournament.RejectionReason = TournamentRejectionReason.IncompleteData;
-                tournament.ProcessingStatus = TournamentProcessingStatus.Done;
-                tournament.LastProcessingDate = DateTime.Now;
-
-                await context.SaveChangesAsync(stoppingToken);
-
-                logger.LogWarning("Skipping processing for tournament with no matches [Id: {Id}]", tournament.Id);
+                RejectTournamentIncompleteData(tournament);
                 continue;
             }
 
-            foreach (IProcessor<Tournament> processor in tournamentProcessorResolver.GetAll())
-            {
-                await processor.ProcessAsync(tournament, stoppingToken);
-            }
+            tasks.Add(ProcessAsync(tournament, tournamentProcessorResolver, stoppingToken));
+        }
 
-            _stopwatch.Stop();
+        await Task.WhenAll(tasks);
+        await context.SaveChangesAsync(stoppingToken);
+
+        _stopwatch.Stop();
+        logger.LogInformation(
+            @"Tournament batch processing completed: [Count: {Count}, Elapsed: {Elapsed:mm\:ss\:fff}]",
+            tournaments.Count, _stopwatch.Elapsed);
+
+        _stopwatch.Reset();
+    }
+
+    private void RejectTournamentIncompleteData(Tournament tournament)
+    {
+        tournament.VerificationStatus = VerificationStatus.Rejected;
+        tournament.RejectionReason = TournamentRejectionReason.IncompleteData;
+        tournament.ProcessingStatus = TournamentProcessingStatus.Done;
+        tournament.LastProcessingDate = DateTime.Now;
+
+        logger.LogWarning("Skipping processing for tournament with no matches [Id: {Id}]", tournament.Id);
+    }
+
+    private async Task ProcessAsync(Tournament tournament,
+        ITournamentProcessorResolver tournamentProcessorResolver, CancellationToken stoppingToken)
+    {
+        TournamentProcessingStatus processingStatusBefore = tournament.ProcessingStatus;
+        logger.LogDebug(
+            "Processing starting [Id: {Id} | Processing Status: {Status} | Last Processing: {LastProcessing:MM/dd/yyyy}]",
+            tournament.Id,
+            tournament.ProcessingStatus,
+            tournament.LastProcessingDate
+        );
+
+        IProcessor<Tournament> processor = tournamentProcessorResolver.GetNextProcessor(tournament.ProcessingStatus);
+        await processor.ProcessAsync(tournament, stoppingToken);
+
+        if (processingStatusBefore != tournament.ProcessingStatus)
+        {
             logger.LogInformation(
-                "Processing completed [Id: {Id} | Processing Status: {Status} | Elapsed: {Elapsed:mm\\:ss\\:fff}]",
+                "Processing completed [Id: {Id} | Processing Status: {Before} --> {After}]",
                 tournament.Id,
-                tournament.ProcessingStatus,
-                _stopwatch.Elapsed
+                processingStatusBefore,
+                tournament.ProcessingStatus
             );
-            _stopwatch.Reset();
-
-            await context.SaveChangesAsync(stoppingToken);
+        }
+        else
+        {
+            logger.LogDebug(
+                "Processing completed [Id: {Id} | Processing Status: {Before} (No change)]",
+                tournament.Id,
+                processingStatusBefore
+            );
         }
     }
 }
