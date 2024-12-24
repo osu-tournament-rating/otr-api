@@ -78,6 +78,9 @@ public class TournamentStatsProcessor(
             return;
         }
 
+        // Reference set of ids to prevent duplicate insertions
+        var existingPlayerIds = entity.PlayerTournamentStats.Select(pts => pts.PlayerId).ToHashSet();
+
         // Create a PlayerTournamentStats for each Player
         foreach (Player player in verifiedMatches
                      .SelectMany(m => m.PlayerMatchStats)
@@ -85,6 +88,11 @@ public class TournamentStatsProcessor(
                      .DistinctBy(p => p.Id)
                 )
         {
+            if (existingPlayerIds.Contains(player.Id))
+            {
+                continue;
+            }
+
             IEnumerable<PlayerMatchStats> matchStats = verifiedMatches
                 .SelectMany(m => m.PlayerMatchStats)
                 .Where(pms => pms.Player.Id == player.Id)
