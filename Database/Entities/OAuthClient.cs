@@ -45,5 +45,5 @@ public class OAuthClient : UpdateableEntityBase, IAdminNotableEntity<OAuthClient
     /// </summary>
     public User User { get; set; } = null!;
 
-    public ICollection<OAuthClientAdminNote> AdminNotes { get; set; } = new List<OAuthClientAdminNote>();
+    public ICollection<OAuthClientAdminNote> AdminNotes { get; set; } = [];
 }

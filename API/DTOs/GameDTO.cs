@@ -78,7 +78,7 @@ public class GameDTO
     /// <summary>
     /// All associated admin notes
     /// </summary>
-    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = new List<AdminNoteDTO>();
+    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
 
     /// <summary>
     /// All match scores

@@ -74,10 +74,10 @@ public class MatchDTO
     /// List of games played during the match
     /// </summary>
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public ICollection<GameDTO> Games { get; set; } = new List<GameDTO>();
+    public ICollection<GameDTO> Games { get; set; } = [];
 
     /// <summary>
     /// All associated admin notes
     /// </summary>
-    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = new List<AdminNoteDTO>();
+    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
 }

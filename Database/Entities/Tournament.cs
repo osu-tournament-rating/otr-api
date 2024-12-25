@@ -56,8 +56,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     [Column("lobby_size")]
     public int LobbySize { get; set; }
 
-    [Column("verification_status")]
-    public VerificationStatus VerificationStatus { get; set; }
+    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
 
     [AuditIgnore]
     [Column("last_processing_date")]
@@ -112,31 +111,30 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// A collection of <see cref="Match"/>es played in the tournament
     /// </summary>
-    public ICollection<Match> Matches { get; set; } = new List<Match>();
+    public ICollection<Match> Matches { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="Entities.PlayerTournamentStats"/>, one for each <see cref="Player"/> that participated
     /// </summary>
-    public ICollection<PlayerTournamentStats> PlayerTournamentStats { get; set; } = new List<PlayerTournamentStats>();
+    public ICollection<PlayerTournamentStats> PlayerTournamentStats { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="TournamentAudit"/>s which are used to track the changes
     /// to this entity over time
     /// </summary>
-    public ICollection<TournamentAudit> Audits { get; set; } = new List<TournamentAudit>();
+    public ICollection<TournamentAudit> Audits { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="TournamentAdminNote"/>s for the tournament
     /// </summary>
-    public ICollection<TournamentAdminNote> AdminNotes { get; set; } = new List<TournamentAdminNote>();
+    public ICollection<TournamentAdminNote> AdminNotes { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="Beatmap"/>s pooled in the tournament
     /// </summary>
-    public ICollection<Beatmap> PooledBeatmaps { get; set; } = new List<Beatmap>();
+    public ICollection<Beatmap> PooledBeatmaps { get; set; } = [];
 
-    [NotMapped]
-    public int? ActionBlamedOnUserId { get; set; }
+    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
 
     public void ResetAutomationStatuses(bool force)
     {

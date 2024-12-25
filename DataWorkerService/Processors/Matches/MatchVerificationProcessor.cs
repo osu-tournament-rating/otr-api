@@ -18,7 +18,7 @@ public class MatchVerificationProcessor(
     {
         if (entity.ProcessingStatus is not MatchProcessingStatus.NeedsVerification)
         {
-            logger.LogDebug(
+            logger.LogTrace(
                 "Match does not require processing [Id: {Id} | Processing Status: {Status}]",
                 entity.Id,
                 entity.ProcessingStatus

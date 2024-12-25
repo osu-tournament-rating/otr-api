@@ -3,26 +3,26 @@ name: .NET CI/CD
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build_test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: '8.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
 
-    - name: Build
-      run: dotnet build -c Release
+      - name: Build
+        run: dotnet build -c Release
 
-    - name: Test
-      run: dotnet test -c Release --verbosity normal
+      - name: Test
+        run: dotnet test -c Release --verbosity normal
 
   publish:
     needs: build_test
@@ -30,15 +30,18 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+      
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: stagecodes
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
       - name: Build and Push Docker Image
         run: |
           docker build -t stagecodes/otr-api-prod -f API.Dockerfile .
           docker push stagecodes/otr-api-prod
+      
       - name: Build and push DataWorkerService
         run: |
           docker build -t stagecodes/otr-data-worker-service-prod -f DataWorkerService.Dockerfile .
@@ -51,16 +54,24 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
       - name: Create .env files
         run: |
           echo "${{ secrets.API_ENV }}" > api.env
           echo "${{ secrets.DATAWORKERSERVICE_ENV }}" > dataworkerservice.env
           echo "${{ secrets.DB_ENV }}" > db.env
           echo "${{ secrets.POSTGRES_EXPORTER_ENV }}" > postgres_exporter.env
+
       - name: Generate migrations script
         run: |
           dotnet tool install --global dotnet-ef
           dotnet ef migrations script --idempotent --context OtrContext --project Database -o script.sql
+      
       - name: Copy files to server
         uses: appleboy/scp-action@master
         with:
@@ -69,6 +80,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           source: "api.env,dataworkerservice.env,db.env,postgres_exporter.env,./cfg/docker-compose-prod.yml,./cfg/otel-collector-config.yml,./cfg/prometheus.yml,script.sql"
           target: "~/otr-api-dataworker/"
+      
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:

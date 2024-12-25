@@ -1,4 +1,5 @@
 using Database.Entities;
+using Database.Enums.Verification;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 using DataWorkerService.Processors.Tournaments;
 
@@ -10,17 +11,30 @@ public class TournamentProcessorResolver(
 {
     public IProcessor<Tournament> GetDataProcessor() =>
         Processors.FirstOrDefault(p => p is TournamentDataProcessor)
-            ?? throw new InvalidOperationException($"Processor was not registered: {nameof(TournamentDataProcessor)}");
+        ?? throw new InvalidOperationException($"Processor was not registered: {nameof(TournamentDataProcessor)}");
 
     public override IProcessor<Tournament> GetAutomationChecksProcessor() =>
         Processors.FirstOrDefault(p => p is TournamentAutomationChecksProcessor)
-        ?? throw new InvalidOperationException($"Processor was not registered: {nameof(TournamentAutomationChecksProcessor)}");
+        ?? throw new InvalidOperationException(
+            $"Processor was not registered: {nameof(TournamentAutomationChecksProcessor)}");
 
     public IProcessor<Tournament> GetStatsProcessor() =>
         Processors.FirstOrDefault(p => p is TournamentStatsProcessor)
         ?? throw new InvalidOperationException($"Processor was not registered: {nameof(TournamentStatsProcessor)}");
 
+    public IProcessor<Tournament> GetNextProcessor(TournamentProcessingStatus processingStatus) =>
+        processingStatus switch
+        {
+            TournamentProcessingStatus.NeedsMatchData => GetDataProcessor(),
+            TournamentProcessingStatus.NeedsAutomationChecks => GetAutomationChecksProcessor(),
+            TournamentProcessingStatus.NeedsStatCalculation => GetStatsProcessor(),
+            TournamentProcessingStatus.NeedsVerification => GetVerificationProcessor(),
+            _ => throw new ArgumentException(
+                $"No next processor is known for the TournamentProcessingStatus {processingStatus}")
+        };
+
     public override IProcessor<Tournament> GetVerificationProcessor() =>
         Processors.FirstOrDefault(p => p is TournamentVerificationProcessor)
-        ?? throw new InvalidOperationException($"Processor was not registered: {nameof(TournamentVerificationProcessor)}");
+        ?? throw new InvalidOperationException(
+            $"Processor was not registered: {nameof(TournamentVerificationProcessor)}");
 }

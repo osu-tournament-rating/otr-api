@@ -45,8 +45,7 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     [Column("end_time")]
     public DateTime EndTime { get; set; }
 
-    [Column("verification_status")]
-    public VerificationStatus VerificationStatus { get; set; }
+    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
 
     [AuditIgnore]
     [Column("last_processing_date")]
@@ -111,24 +110,23 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// <summary>
     /// A collection of the <see cref="Game"/>s played in the match
     /// </summary>
-    public ICollection<Game> Games { get; set; } = new List<Game>();
+    public ICollection<Game> Games { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="Entities.PlayerMatchStats"/>, one for each <see cref="Player"/> that participated
     /// </summary>
-    public ICollection<PlayerMatchStats> PlayerMatchStats { get; set; } = new List<PlayerMatchStats>();
+    public ICollection<PlayerMatchStats> PlayerMatchStats { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="RatingAdjustment"/>s, one for each <see cref="Player"/> that participated
     /// </summary>
-    public ICollection<RatingAdjustment> PlayerRatingAdjustments { get; set; } = new List<RatingAdjustment>();
+    public ICollection<RatingAdjustment> PlayerRatingAdjustments { get; set; } = [];
 
-    public ICollection<MatchAudit> Audits { get; set; } = new List<MatchAudit>();
+    public ICollection<MatchAudit> Audits { get; set; } = [];
 
-    public ICollection<MatchAdminNote> AdminNotes { get; set; } = new List<MatchAdminNote>();
+    public ICollection<MatchAdminNote> AdminNotes { get; set; } = [];
 
-    [NotMapped]
-    public int? ActionBlamedOnUserId { get; set; }
+    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
 
     public void ResetAutomationStatuses(bool force)
     {
