@@ -24,15 +24,11 @@ public class PlayerRatingsRepository(OtrContext context, IPlayersRepository play
         return await _context.PlayerRatings.Where(x => x.PlayerId == id.Value).ToListAsync();
     }
 
-    public async Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset)
-    {
-        PlayerRating? result = await _context.PlayerRatings
+    public async Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset) =>
+        await _context.PlayerRatings
             .Include(pr => pr.Adjustments)
             .Where(pr => pr.PlayerId == playerId && pr.Ruleset == ruleset)
             .FirstOrDefaultAsync();
-
-        return result;
-    }
 
 
     public async Task<int> HighestRankAsync(Ruleset ruleset, string? country = null)

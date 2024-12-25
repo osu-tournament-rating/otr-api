@@ -33,7 +33,6 @@ public class ApiMatchRatingStatsRepository(OtrContext context)
                 && ra.Timestamp >= dateMin
                 && ra.Timestamp <= dateMax
             )
-            .OrderBy(ra => ra.Timestamp)
             .Select(ra =>
             new PlayerRatingChartDataPointDTO
             {

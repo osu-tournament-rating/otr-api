@@ -269,20 +269,21 @@ public class PlayerStatsService(
             return new AggregatePlayerMatchStatsDTO();
         }
 
-        var offset = adjustments.FirstOrDefault(ra => ra.AdjustmentType == RatingAdjustmentType.Initial)?.RatingAfter;
-
-        if (offset is null)
-        {
-            logger.LogWarning("Initial rating adjustment not found for player, stats will not be completely accurate " +
-                            " [Id: {PlayerId}]", id);
-        }
+        /**
+         * If the adjustments list contains an initial rating, we need to subtract the
+         * rating gained value by the initial rating. Essentially we are displaying
+         * the net gain in rating without considering the initial rating.
+         */
+        var initialRatingValue = adjustments
+            .FirstOrDefault(ra => ra.AdjustmentType == RatingAdjustmentType.Initial)?.RatingAfter
+            ?? 0;
 
         return new AggregatePlayerMatchStatsDTO
         {
             // TODO: Different way of calcing this
             // AverageMatchCostAggregate = ratingStats.Average(x => x.MatchCost),
             HighestRating = adjustments.Max(ra => ra.RatingAfter),
-            RatingGained = adjustments.Sum(ra => ra.RatingDelta) - (offset ?? 0),
+            RatingGained = adjustments.Sum(ra => ra.RatingDelta) - initialRatingValue,
             GamesWon = matchStats.Sum(ra => ra.GamesWon),
             GamesLost = matchStats.Sum(ra => ra.GamesLost),
             GamesPlayed = matchStats.Sum(ra => ra.GamesPlayed),
