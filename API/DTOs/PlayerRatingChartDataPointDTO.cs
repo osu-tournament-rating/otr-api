@@ -1,3 +1,5 @@
+using Database.Enums;
+
 namespace API.DTOs;
 
 /// <summary>
@@ -6,62 +8,67 @@ namespace API.DTOs;
 public class PlayerRatingChartDataPointDTO
 {
     /// <summary>
-    /// Match name
+    /// Match name, if applicable
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public string? Name { get; init; }
 
     /// <summary>
-    /// Match id
+    /// Match id, if applicable
     /// </summary>
-    public int? MatchId { get; set; }
+    public int? MatchId { get; init; }
 
     /// <summary>
-    /// osu! match id
+    /// osu! match id, if applicable
     /// </summary>
-    public long? MatchOsuId { get; set; }
+    public long? MatchOsuId { get; init; }
 
     /// <summary>
-    /// Match cost of the player
+    /// Match cost of the player, if applicable
     /// </summary>
-    public double? MatchCost { get; set; }
+    public double? MatchCost { get; init; }
 
     /// <summary>
-    /// Rating of the player before this match occurred
+    /// Rating of the player before the adjustment
     /// </summary>
-    public double RatingBefore { get; set; }
+    public double RatingBefore { get; init; }
 
     /// <summary>
-    /// Rating of the player after this match occurred
+    /// Rating of the player after the adjustment
     /// </summary>
-    public double RatingAfter { get; set; }
+    public double RatingAfter { get; init; }
 
     /// <summary>
     /// Volatility of the player before this match occurred
     /// </summary>
-    public double VolatilityBefore { get; set; }
+    public double VolatilityBefore { get; init; }
 
     /// <summary>
-    /// Volatility of the player after this match occurred
+    /// Volatility of the player after this adjustment
     /// </summary>
-    public double VolatilityAfter { get; set; }
+    public double VolatilityAfter { get; init; }
 
     /// <summary>
-    /// Difference in rating for the player after this match occurred
+    /// Difference in rating between now and the previous adjustment
     /// </summary>
     public double RatingChange => RatingAfter - RatingBefore;
 
     /// <summary>
-    /// Difference in volatility for the player after this match occurred
+    /// Difference in volatility between now and the previous adjustment
     /// </summary>
     public double VolatilityChange => VolatilityAfter - VolatilityBefore;
 
     /// <summary>
-    /// Indicates whether this data point is from a rating change that occurred outside of a match (i.e. decay)
+    /// Ruleset of the adjustment
     /// </summary>
-    public bool IsAdjustment { get; set; }
+    public Ruleset Ruleset { get; init; }
+
+    /// <summary>
+    /// Adjustment type
+    /// </summary>
+    public RatingAdjustmentType RatingAdjustmentType { get; init; }
 
     /// <summary>
     /// Match start time
     /// </summary>
-    public DateTime? Timestamp { get; set; }
+    public DateTime? Timestamp { get; init; }
 }

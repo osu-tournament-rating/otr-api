@@ -37,19 +37,24 @@ public class ApiMatchRatingStatsRepository(OtrContext context)
             .Select(ra =>
             new PlayerRatingChartDataPointDTO
             {
-                Name = string.IsNullOrEmpty(ra.Match.Name) ? "<Unknown>" : ra.Match.Name,
+                Name = ra.Match == null
+                    ? null
+                    : ra.Match.Name,
                 MatchId = ra.MatchId,
-                MatchOsuId = ra.Match.OsuId,
+                MatchOsuId = ra.Match == null
+                    ? null
+                    : ra.Match.OsuId,
                 MatchCost = _context.PlayerMatchStats
-                        .Where(pms => pms.PlayerId == ra.PlayerId &&
-                                      pms.MatchId == ra.MatchId)
-                        .Select(pms => pms.MatchCost)
-                        .FirstOrDefault(),
+                    .Where(pms => pms.PlayerId == ra.PlayerId &&
+                                  pms.MatchId == ra.MatchId)
+                    .Select(pms => pms.MatchCost)
+                    .FirstOrDefault(),
                 RatingBefore = ra.RatingBefore,
                 RatingAfter = ra.RatingAfter,
                 VolatilityBefore = ra.VolatilityBefore,
                 VolatilityAfter = ra.VolatilityAfter,
-                IsAdjustment = true,
+                Ruleset = ra.Ruleset,
+                RatingAdjustmentType = ra.AdjustmentType,
                 Timestamp = ra.Timestamp
             })
             .OrderBy(ra => ra.Timestamp)
