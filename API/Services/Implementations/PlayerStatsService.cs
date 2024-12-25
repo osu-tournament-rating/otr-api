@@ -173,8 +173,8 @@ public class PlayerStatsService(
         DateTime? dateMax = null)
     {
         return (await ratingStatsRepository.GetForPlayerAsync(playerId, ruleset, dateMin, dateMax))
-            .SelectMany(x => x)
-            .Max(x => x.RatingAfter);
+            .SelectMany(ra => ra)
+            .Max(ra => ra.RatingAfter);
     }
 
     private async Task<PlayerRatingStatsDTO?> GetCurrentAsync(int playerId, Ruleset ruleset)
@@ -261,7 +261,7 @@ public class PlayerStatsService(
         var adjustments =
             (await ratingStatsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax))
             .ToList()
-            .SelectMany(x => x)
+            .SelectMany(ra => ra)
             .ToList();
 
         if (matchStats.Count == 0)
@@ -274,7 +274,7 @@ public class PlayerStatsService(
             // TODO: Different way of calcing this
             // AverageMatchCostAggregate = ratingStats.Average(x => x.MatchCost),
             HighestRating = adjustments.Max(x => x.RatingAfter),
-            RatingGained = adjustments.Last().RatingAfter - adjustments.First().RatingAfter,
+            RatingGained = adjustments.Last().RatingAfter - adjustments.FirstOrDefault()?.RatingAfter ?? 0,
             GamesWon = matchStats.Sum(x => x.GamesWon),
             GamesLost = matchStats.Sum(x => x.GamesLost),
             GamesPlayed = matchStats.Sum(x => x.GamesPlayed),

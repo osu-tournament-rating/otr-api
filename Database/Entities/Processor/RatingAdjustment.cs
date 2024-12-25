@@ -22,10 +22,16 @@ namespace Database.Entities.Processor;
 public class RatingAdjustment : EntityBase
 {
     /// <summary>
-    /// The <see cref="RatingAdjustmentType"/> of the adjustment
+    /// The <see cref="RatingAdjustmentType"/>
     /// </summary>
     [Column("adjustment_type")]
     public RatingAdjustmentType AdjustmentType { get; init; }
+
+    /// <summary>
+    ///     The <see cref="Ruleset" />
+    /// </summary>
+    [Column("ruleset")]
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Timestamp for when the adjustment was applied

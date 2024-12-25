@@ -3,7 +3,9 @@ using API.Enums;
 using API.Services.Implementations;
 using API.Utilities;
 using APITests.MockRepositories;
+using AutoMapper;
 using Database.Enums;
+using MapperProfile = OsuApiClient.Configurations.MapperProfile;
 
 namespace APITests.Services;
 
@@ -44,7 +46,8 @@ public class LeaderboardServiceTests
             playerRatingsRepository.Object,
             matchStatsRepository.Object,
             playerRepository.Object,
-            tournamentsService
+            tournamentsService,
+            new Mapper(new MapperConfiguration(configuration => configuration.AddProfile(new MapperProfile())))
         );
 
         _leaderboardService = new LeaderboardService(

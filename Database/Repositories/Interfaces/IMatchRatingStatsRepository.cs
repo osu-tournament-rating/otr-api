@@ -22,8 +22,6 @@ public interface IMatchRatingStatsRepository : IRepository<RatingAdjustment>
         DateTime? dateMax = null
     );
 
-    Task TruncateAsync();
-
     Task<IEnumerable<RatingAdjustment>> TeammateRatingStatsAsync(
         int playerId,
         int teammateId,
