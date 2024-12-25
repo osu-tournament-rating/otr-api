@@ -14,7 +14,7 @@ public class MatchRatingStatsRepository(OtrContext context)
 {
     private readonly OtrContext _context = context;
 
-    public async Task<IEnumerable<IEnumerable<RatingAdjustment>>> GetForPlayerAsync(
+    public async Task<IEnumerable<RatingAdjustment>> GetForPlayerAsync(
         int playerId,
         Ruleset ruleset,
         DateTime? dateMin = null,
@@ -27,13 +27,11 @@ public class MatchRatingStatsRepository(OtrContext context)
         return await _context.RatingAdjustments
             .Where(ra =>
                 ra.PlayerId == playerId
-                && ra.AdjustmentType == RatingAdjustmentType.Match
                 && ra.Ruleset == ruleset
                 && ra.Timestamp >= dateMin
                 && ra.Timestamp <= dateMax
             )
             .Include(ra => ra.Match!.Tournament)
-            .GroupBy(ra => ra.Timestamp)
             .ToListAsync();
     }
 

@@ -15,7 +15,7 @@ public interface IMatchRatingStatsRepository : IRepository<RatingAdjustment>
     /// <param name="dateMin"></param>
     /// <param name="dateMax"></param>
     /// <returns></returns>
-    Task<IEnumerable<IEnumerable<RatingAdjustment>>> GetForPlayerAsync(
+    Task<IEnumerable<RatingAdjustment>> GetForPlayerAsync(
         int playerId,
         Ruleset ruleset,
         DateTime? dateMin = null,

@@ -24,47 +24,39 @@ public class ApiMatchRatingStatsRepository(OtrContext context)
         dateMax ??= DateTime.MaxValue;
 
         // Fetch Match Rating Stats and group by Match.StartTime.Date
-        var adjustments = await _context
+        List<IGrouping<DateTime?, PlayerRatingChartDataPointDTO>> chartPoints = await _context
             .RatingAdjustments
+            .Include(ra => ra.Match)
             .Where(ra =>
                 ra.PlayerId == playerId
-                && ra.AdjustmentType != RatingAdjustmentType.Initial
-                && ra.Match!.Tournament.Ruleset == ruleset
+                && ra.Ruleset == ruleset
                 && ra.Timestamp >= dateMin
                 && ra.Timestamp <= dateMax
             )
             .OrderBy(ra => ra.Timestamp)
-            .Select(ra => new
+            .Select(ra =>
+            new PlayerRatingChartDataPointDTO
             {
-                ra.Timestamp,
-                DataPoint = new PlayerRatingChartDataPointDTO
-                {
-                    Name = ra.Match!.Name ?? "<Unknown>",
-                    MatchId = ra.MatchId,
-                    MatchOsuId = ra.Match.OsuId,
-                    MatchCost = _context.PlayerMatchStats
+                Name = string.IsNullOrEmpty(ra.Match.Name) ? "<Unknown>" : ra.Match.Name,
+                MatchId = ra.MatchId,
+                MatchOsuId = ra.Match.OsuId,
+                MatchCost = _context.PlayerMatchStats
                         .Where(pms => pms.PlayerId == ra.PlayerId &&
                                       pms.MatchId == ra.MatchId)
                         .Select(pms => pms.MatchCost)
                         .FirstOrDefault(),
-                    RatingBefore = ra.RatingBefore,
-                    RatingAfter = ra.RatingAfter,
-                    VolatilityBefore = ra.VolatilityBefore,
-                    VolatilityAfter = ra.VolatilityAfter,
-                    IsAdjustment = true,
-                    Timestamp = ra.Match.StartTime
-                }
-            }).ToListAsync();
+                RatingBefore = ra.RatingBefore,
+                RatingAfter = ra.RatingAfter,
+                VolatilityBefore = ra.VolatilityBefore,
+                VolatilityAfter = ra.VolatilityAfter,
+                IsAdjustment = true,
+                Timestamp = ra.Timestamp
+            })
+            .OrderBy(ra => ra.Timestamp)
+            .GroupBy(ra => ra.Timestamp)
+            .ToListAsync();
 
         // Combine data points, converting Match.StartTime and RatingAdjustment.Timestamp to Date for grouping
-        var combinedDataPoints = adjustments
-            .Select(mrs => new { mrs.Timestamp.Date, mrs.DataPoint })
-            .GroupBy(x => x.Date)
-            .OrderBy(g => g.Key)
-            .Select(g => g.Select(x => x.DataPoint).ToList())
-            .ToList();
-
-        // Prepare and return the DTO
-        return new PlayerRatingChartDTO { ChartData = combinedDataPoints };
+        return new PlayerRatingChartDTO { ChartData = chartPoints };
     }
 }
