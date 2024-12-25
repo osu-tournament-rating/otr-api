@@ -26,26 +26,12 @@ public class PlayerRatingsRepository(OtrContext context, IPlayersRepository play
 
     public async Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset)
     {
-        var results = await _context.PlayerRatings
+        PlayerRating? result = await _context.PlayerRatings
             .Include(pr => pr.Adjustments)
             .Where(pr => pr.PlayerId == playerId && pr.Ruleset == ruleset)
-            .Select(pr => new
-            {
-                PlayerRating =
-                    pr, // TODO: Should probably include all RatingAdjustments regardless of type and have web not display initial
-                Adjustments = pr.Adjustments.Where(ra => ra.AdjustmentType != RatingAdjustmentType.Initial)
-                    .OrderBy(ra => ra.Timestamp)
-                    .ToList()
-            })
             .FirstOrDefaultAsync();
 
-        if (results is null)
-        {
-            return null;
-        }
-
-        results.PlayerRating.Adjustments = [.. results.Adjustments];
-        return results.PlayerRating;
+        return result;
     }
 
 

@@ -75,7 +75,7 @@ public class PlayerRatingsService(
             WinRate = winRate,
             TournamentsPlayed = tournamentsPlayed,
             RankProgress = rankProgress,
-            Adjustments = mapper.Map<ICollection<RatingAdjustmentDTO>>(currentStats.Adjustments)
+            Adjustments = mapper.Map<ICollection<RatingAdjustmentDTO>>(currentStats.Adjustments.OrderBy(a => a.Timestamp))
         };
     }
 
