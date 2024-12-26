@@ -11,7 +11,6 @@ using Database.Repositories.Interfaces;
 namespace API.Services.Implementations;
 
 public class PlayerStatsService(
-    ILogger<PlayerStatsService> logger,
     IPlayerRatingsService playerRatingsService,
     IApiMatchWinRecordRepository matchWinRecordRepository,
     IApiPlayerMatchStatsRepository matchStatsRepository,
