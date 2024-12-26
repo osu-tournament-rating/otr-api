@@ -25,6 +25,7 @@ public partial class TournamentsController(
     /// <remarks>Results will not include match data</remarks>
     /// <response code="200">Returns all tournaments which fit the request query</response>
     [HttpGet]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAsync([FromQuery] TournamentRequestQueryDTO requestQuery) =>
         Ok(await tournamentsService.GetAsync(requestQuery));
