@@ -3,6 +3,7 @@ using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
+using AutoMapper;
 using Database.Entities.Processor;
 using Database.Enums;
 using Database.Repositories.Interfaces;
@@ -13,7 +14,8 @@ public class PlayerRatingsService(
     IApiPlayerRatingsRepository playerRatingsRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
     IPlayersRepository playerRepository,
-    ITournamentsService tournamentsService
+    ITournamentsService tournamentsService,
+    IMapper mapper
 ) : IPlayerRatingsService
 {
     public async Task<IEnumerable<PlayerRatingStatsDTO?>> GetAsync(long osuPlayerId)
@@ -72,7 +74,8 @@ public class PlayerRatingsService(
             Volatility = currentStats.Volatility,
             WinRate = winRate,
             TournamentsPlayed = tournamentsPlayed,
-            RankProgress = rankProgress
+            RankProgress = rankProgress,
+            Adjustments = mapper.Map<ICollection<RatingAdjustmentDTO>>(currentStats.Adjustments.OrderBy(a => a.Timestamp))
         };
     }
 
