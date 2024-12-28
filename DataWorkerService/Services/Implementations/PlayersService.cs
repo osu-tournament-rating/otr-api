@@ -163,6 +163,12 @@ public class PlayersService(
             player.OsuLastFetch
         );
 
+        if (player.MatchStats.Count == 0)
+        {
+            logger.LogDebug("Skipping osu!track update for player, awaiting PlayerMatchStats generation [Id: {Id}].", player.Id);
+            return;
+        }
+
         foreach (Ruleset r in Enum.GetValues<Ruleset>().Where(r => r.IsFetchable()))
         {
             var result = (await osuClient.GetUserStatsHistoryAsync(player.OsuId, r) ?? [])
@@ -173,6 +179,7 @@ public class PlayersService(
                 logger.LogTrace(
                     "Failed to fetch Player osu!track API data. Result has no elements. [Id: {Id} | Ruleset: {Ruleset}]",
                     player.Id, r);
+                continue;
             }
 
             PlayerOsuRulesetData? rulesetData = player.RulesetData.FirstOrDefault(x => x.Ruleset == r);
