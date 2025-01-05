@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Database.Repositories.Interfaces;
 
-public interface IRepository<T> where T : class
+public interface IRepository<T> where T : class, IEntity
 {
     /// <summary>
     /// Exposes a <see cref="LocalView{T}"/> that tracks <typeparamref name="T"/> entities in the context
@@ -41,6 +41,13 @@ public interface IRepository<T> where T : class
     /// </summary>
     /// <returns>The entity, or null if not found.</returns>
     Task<T?> GetAsync(int id);
+
+    /// <summary>
+    /// Fetch multiple entities by primary key
+    /// </summary>
+    /// <param name="ids">A collection of <see cref="Player"/> ids</param>
+    /// <returns>A collection of <see cref="T"/>, one per id, if it exists</returns>
+    Task<ICollection<T>> GetAsync(IEnumerable<int> ids);
 
     /// <summary>
     /// Updates an entity

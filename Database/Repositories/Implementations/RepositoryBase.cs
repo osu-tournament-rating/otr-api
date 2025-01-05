@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Database.Repositories.Implementations;
 
-public class RepositoryBase<T> : IRepository<T> where T : class
+public class RepositoryBase<T> : IRepository<T> where T : class, IEntity
 {
     private readonly OtrContext _context;
 
@@ -42,6 +42,12 @@ public class RepositoryBase<T> : IRepository<T> where T : class
     }
 
     public virtual async Task<T?> GetAsync(int id) => await _context.Set<T>().FindAsync(id);
+
+    public async Task<ICollection<T>> GetAsync(IEnumerable<int> ids) =>
+        await _context.Set<T>()
+            .Where(x => ids.Contains(x.Id))
+            .ToListAsync();
+
 
     public virtual async Task<int> UpdateAsync(T entity)
     {

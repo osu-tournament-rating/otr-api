@@ -9,6 +9,7 @@ namespace API.Services.Implementations;
 
 public class MatchesService(
     IMatchesRepository matchesRepository,
+    IPlayersRepository playersRepository,
     IMapper mapper
 ) : IMatchesService
 {
@@ -33,8 +34,21 @@ public class MatchesService(
         return mapper.Map<IEnumerable<MatchDTO>>(result);
     }
 
-    public async Task<MatchDTO?> GetAsync(int id) =>
-        mapper.Map<MatchDTO?>(await matchesRepository.GetFullAsync(id));
+    public async Task<MatchDTO?> GetAsync(int id)
+    {
+        MatchDTO? match = mapper
+            .Map<MatchDTO?>(await matchesRepository.GetFullAsync(id));
+
+        if (match is null)
+        {
+            return null;
+        }
+
+        ICollection<PlayerCompactDTO> players = await GetPlayerCompactsAsync(match);
+        match.Players = players;
+
+        return match;
+    }
 
     public async Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(
         long osuPlayerId,
@@ -43,8 +57,15 @@ public class MatchesService(
         DateTime end
     )
     {
-        IEnumerable<Match> matches = await matchesRepository.GetPlayerMatchesAsync(osuPlayerId, ruleset, start, end);
-        return mapper.Map<IEnumerable<MatchDTO>>(matches);
+        var matches = (await matchesRepository.GetPlayerMatchesAsync(osuPlayerId, ruleset, start, end)).ToList();
+        IEnumerable<MatchDTO>? matchDtos = mapper.Map<IEnumerable<MatchDTO>>(matches);
+
+        foreach (MatchDTO dto in matchDtos)
+        {
+            dto.Players = await GetPlayerCompactsAsync(dto);
+        }
+
+        return matchDtos;
     }
 
     public async Task<IEnumerable<MatchSearchResultDTO>> SearchAsync(string name) =>
@@ -74,4 +95,15 @@ public class MatchesService(
 
     public async Task DeleteAsync(int id) =>
         await matchesRepository.DeleteAsync(id);
+
+    private async Task<ICollection<PlayerCompactDTO>> GetPlayerCompactsAsync(MatchDTO match)
+    {
+        IEnumerable<int> playerIds = match.Games
+            .Select(x => x.Scores.Select(y => y.PlayerId))
+            .SelectMany(x => x)
+            .Distinct();
+
+        ICollection<PlayerCompactDTO>? players = mapper.Map<ICollection<PlayerCompactDTO>>(await playersRepository.GetAsync(playerIds));
+        return players;
+    }
 }
