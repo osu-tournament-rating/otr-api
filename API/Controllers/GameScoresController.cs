@@ -16,6 +16,26 @@ namespace API.Controllers;
 public partial class GameScoresController(IGameScoresService gameScoresService, IAdminNoteService adminNoteService) : Controller
 {
     /// <summary>
+    /// Get a score
+    /// </summary>
+    /// <response code="404">A score matching the given id does not exist</response>
+    /// <response code="200">Returns the score</response>
+    [HttpGet("{id:int}")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<GameScoreDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAsync(int id, [FromQuery] bool verified = true)
+    {
+        GameScoreDTO? score = await gameScoresService.GetAsync(id, verified);
+        if (score is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(score);
+    }
+
+    /// <summary>
     /// Amend score data
     /// </summary>
     /// <param name="id">Score id</param>
@@ -31,7 +51,7 @@ public partial class GameScoresController(IGameScoresService gameScoresService, 
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<GameScoreDTO> patch)
     {
         // Ensure target game score exists
-        GameScoreDTO? score = await gameScoresService.GetAsync(id);
+        GameScoreDTO? score = await gameScoresService.GetAsync(id, false);
         if (score is null)
         {
             return NotFound();
@@ -67,7 +87,7 @@ public partial class GameScoresController(IGameScoresService gameScoresService, 
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
-        GameScoreDTO? result = await gameScoresService.GetAsync(id);
+        GameScoreDTO? result = await gameScoresService.GetAsync(id, false);
         if (result is null)
         {
             return NotFound();

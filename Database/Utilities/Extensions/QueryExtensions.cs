@@ -427,7 +427,7 @@ public static class QueryExtensions
     /// of <see cref="VerificationStatus.Verified"/>
     /// </summary>
     public static IQueryable<GameScore> WhereVerified(this IQueryable<GameScore> query) =>
-        query.AsQueryable().Where(x => x.VerificationStatus == VerificationStatus.Verified);
+        query.Where(x => x.VerificationStatus == VerificationStatus.Verified);
 
     /// <summary>
     /// Filters a <see cref="GameScore"/> query for those with a <see cref="ScoreProcessingStatus"/>

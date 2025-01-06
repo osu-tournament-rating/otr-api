@@ -8,8 +8,8 @@ namespace API.Services.Implementations;
 
 public class GameScoresService(IGameScoresRepository gameScoresRepository, IMapper mapper) : IGameScoresService
 {
-    public async Task<GameScoreDTO?> GetAsync(int id) =>
-        mapper.Map<GameScoreDTO>(await gameScoresRepository.GetAsync(id));
+    public async Task<GameScoreDTO?> GetAsync(int id, bool verified) =>
+        mapper.Map<GameScoreDTO>(await gameScoresRepository.GetAsync(id, verified));
 
     public async Task<GameScoreDTO?> UpdateAsync(int id, GameScoreDTO score)
     {

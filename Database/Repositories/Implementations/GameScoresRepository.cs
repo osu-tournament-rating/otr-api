@@ -4,6 +4,7 @@ using Database.Enums;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Database.Repositories.Implementations;
 
@@ -15,6 +16,19 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
 
     public async Task<bool> ExistsAsync(long osuId) =>
         await _context.GameScores.AnyAsync(gs => gs.GameId == osuId);
+
+    public async Task<GameScore?> GetAsync(int id, bool verified)
+    {
+        IQueryable<GameScore> query = _context.GameScores
+            .Include(gs => gs.AdminNotes);
+
+        if (verified)
+        {
+            query = query.WhereVerified();
+        }
+
+        return await query.FirstOrDefaultAsync(gs => gs.Id == id);
+    }
 
     public async Task<int> AverageTeammateScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
     {
