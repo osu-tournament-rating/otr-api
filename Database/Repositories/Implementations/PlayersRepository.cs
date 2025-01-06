@@ -22,7 +22,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
         return (await _context.Players.Where(p => remainingIds.Contains(p.OsuId)).ToListAsync()).Concat(result);
     }
 
-    public new async Task<ICollection<Player>> GetAsync(IEnumerable<int> ids) =>
+    public override async Task<ICollection<Player>> GetAsync(IEnumerable<int> ids) =>
         await _context.Players
             .Include(p => p.User)
             .Where(p => ids.Contains(p.Id)).ToListAsync();
