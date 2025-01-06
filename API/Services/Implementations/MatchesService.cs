@@ -104,6 +104,7 @@ public class MatchesService(
             .Distinct();
 
         ICollection<PlayerCompactDTO>? players = mapper.Map<ICollection<PlayerCompactDTO>>(await playersRepository.GetAsync(playerIds));
+
         return players;
     }
 }
