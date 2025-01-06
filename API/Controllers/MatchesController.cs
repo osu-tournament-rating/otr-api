@@ -36,9 +36,9 @@ public partial class MatchesController(IMatchesService matchesService, IAdminNot
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAsync(int id)
+    public async Task<IActionResult> GetAsync(int id, [FromQuery] bool verified = true)
     {
-        MatchDTO? match = await matchesService.GetAsync(id);
+        MatchDTO? match = await matchesService.GetAsync(id, verified);
 
         return match is null
             ? NotFound()
@@ -60,7 +60,7 @@ public partial class MatchesController(IMatchesService matchesService, IAdminNot
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<MatchDTO> patch)
     {
-        MatchDTO? match = await matchesService.GetAsync(id);
+        MatchDTO? match = await matchesService.GetAsync(id, false);
         if (match is null)
         {
             return NotFound();
@@ -94,7 +94,7 @@ public partial class MatchesController(IMatchesService matchesService, IAdminNot
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
-        MatchDTO? result = await matchesService.GetAsync(id);
+        MatchDTO? result = await matchesService.GetAsync(id, false);
         if (result is null)
         {
             return NotFound();

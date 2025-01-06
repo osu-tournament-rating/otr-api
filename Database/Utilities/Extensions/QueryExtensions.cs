@@ -237,23 +237,32 @@ public static class QueryExtensions
     /// <see cref="Match.PlayerRatingAdjustments"/>, <see cref="Match.Games"/>
     /// (<see cref="Game.Scores"/>, <see cref="Game.Beatmap"/>, <see cref="Game.WinRecord"/>)
     /// </summary>
-    public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query) =>
-        query
-            .AsQueryable()
+    public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query, bool verified)
+    {
+        if (verified)
+        {
+            query = query.Include(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified &&
+                                                          g.ProcessingStatus == GameProcessingStatus.Done))
+                .ThenInclude(g => g.Scores.Where(s => s.VerificationStatus == VerificationStatus.Verified &&
+                                                      s.ProcessingStatus == ScoreProcessingStatus.Done));
+        }
+
+
+        return query
+            .Include(m => m.Games)
+            .ThenInclude(g => g.Scores)
             .Include(m => m.WinRecord)
             .Include(m => m.PlayerMatchStats)
             .Include(m => m.PlayerRatingAdjustments)
-            .Include(m => m.Games)
-            .ThenInclude(g => g.Scores)
             .ThenInclude(s => s.Player)
             .Include(m => m.Games)
-            .ThenInclude(s => s.AdminNotes)
+            .ThenInclude(g => g.AdminNotes)
             .Include(m => m.Games)
             .ThenInclude(g => g.Beatmap)
             .Include(m => m.Games)
-            .ThenInclude(g => g.WinRecord)
-            .Include(m => m.Games)
-            .ThenInclude(g => g.AdminNotes);
+            .ThenInclude(g => g.WinRecord);
+    }
+
 
     /// <summary>
     /// Includes the <see cref="Tournament"/> navigation on this <see cref="Match"/>

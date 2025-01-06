@@ -34,10 +34,10 @@ public class MatchesService(
         return mapper.Map<IEnumerable<MatchDTO>>(result);
     }
 
-    public async Task<MatchDTO?> GetAsync(int id)
+    public async Task<MatchDTO?> GetAsync(int id, bool verified)
     {
         MatchDTO? match = mapper
-            .Map<MatchDTO?>(await matchesRepository.GetFullAsync(id));
+            .Map<MatchDTO?>(await matchesRepository.GetFullAsync(id, verified));
 
         if (match is null)
         {
