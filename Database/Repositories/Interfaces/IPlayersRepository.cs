@@ -50,6 +50,15 @@ public interface IPlayersRepository : IRepository<Player>
     Task<IEnumerable<Player>> GetAsync(bool eagerLoad = false);
 
     /// <summary>
+    /// Fetch multiple <see cref="Player"/>s by primary key
+    /// </summary>
+    /// <param name="ids">Primary keys</param>
+    /// <returns>
+    /// A collection of <see cref="Player"/>s, one per provided id, if it exists
+    /// </returns>
+    new Task<ICollection<Player>> GetAsync(IEnumerable<int> ids);
+
+    /// <summary>
     /// Returns a collection of players, one per provided osu! id
     /// </summary>
     /// <param name="osuIds">The osu! player ids</param>

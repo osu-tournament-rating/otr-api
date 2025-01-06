@@ -14,7 +14,8 @@ public interface IMatchesService
     /// Gets a match for the given id including all navigation properties.
     /// </summary>
     /// <param name="id">Match id</param>
-    Task<MatchDTO?> GetAsync(int id);
+    /// <param name="verified">Whether the match (and all child navigations) are verified</param>
+    Task<MatchDTO?> GetAsync(int id, bool verified);
 
     Task<IEnumerable<MatchDTO>> GetAllForPlayerAsync(
         long osuPlayerId,

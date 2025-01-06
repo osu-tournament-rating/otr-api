@@ -71,6 +71,11 @@ public class MatchDTO
     public TournamentCompactDTO Tournament { get; set; } = null!;
 
     /// <summary>
+    /// The participating <see cref="Player"/>s
+    /// </summary>
+    public ICollection<PlayerCompactDTO> Players { get; set; } = [];
+
+    /// <summary>
     /// List of games played during the match
     /// </summary>
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]

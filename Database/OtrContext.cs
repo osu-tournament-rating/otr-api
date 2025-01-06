@@ -332,7 +332,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasOne(m => m.WinRecord)
                 .WithOne(mwr => mwr.Match)
                 .HasForeignKey<MatchWinRecord>(mwr => mwr.MatchId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Games
             entity
@@ -422,7 +422,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasOne(mwr => mwr.Match)
                 .WithOne(m => m.WinRecord)
                 .HasForeignKey<MatchWinRecord>(mwr => mwr.MatchId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(mwr => mwr.LoserRoster);
             entity.HasIndex(mwr => mwr.WinnerRoster);

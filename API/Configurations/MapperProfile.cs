@@ -21,7 +21,9 @@ public class MapperProfile : Profile
         CreateMap<GameScore, GameScoreDTO>().ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
 
         CreateMap<Match, MatchDTO>()
-            .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset));
+            .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset))
+            .ForMember(x => x.Players, opt => opt.Ignore());
+
         CreateMap<Match, MatchSubmissionStatusDTO>();
         CreateMap<Match, MatchCreatedResultDTO>()
             .MapAsCreatedResult()
@@ -36,7 +38,8 @@ public class MapperProfile : Profile
 
         CreateMap<RatingAdjustment, RatingAdjustmentDTO>();
 
-        CreateMap<Player, PlayerCompactDTO>();
+        CreateMap<Player, PlayerCompactDTO>()
+            .ForMember(x => x.UserId, opt => opt.MapFrom(y => y.User!.Id));
         CreateMap<PlayerOsuRulesetData, PlayerOsuRulesetDataDTO>();
 
         CreateMap<Tournament, TournamentCompactDTO>();
