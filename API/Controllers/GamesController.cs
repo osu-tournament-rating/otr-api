@@ -16,6 +16,26 @@ namespace API.Controllers;
 public partial class GamesController(IGamesService gamesService, IAdminNoteService adminNoteService) : Controller
 {
     /// <summary>
+    /// Get a game
+    /// </summary>
+    /// <response code="404">A game matching the given id does not exist</response>
+    /// <response code="200">Returns a game</response>
+    [HttpGet("{id:int}")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<GameDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAsync(int id, [FromQuery] bool verified = true)
+    {
+        GameDTO? game = await gamesService.GetAsync(id, verified);
+        if (game is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(game);
+    }
+
+    /// <summary>
     /// Amend game data
     /// </summary>
     /// <param name="id">Game id</param>
@@ -31,7 +51,7 @@ public partial class GamesController(IGamesService gamesService, IAdminNoteServi
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<GameDTO> patch)
     {
         // Ensure target tournament exists
-        GameDTO? game = await gamesService.GetAsync(id);
+        GameDTO? game = await gamesService.GetAsync(id, false);
         if (game is null)
         {
             return NotFound();
@@ -66,7 +86,7 @@ public partial class GamesController(IGamesService gamesService, IAdminNoteServi
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
-        GameDTO? result = await gamesService.GetAsync(id);
+        GameDTO? result = await gamesService.GetAsync(id, false);
         if (result is null)
         {
             return NotFound();

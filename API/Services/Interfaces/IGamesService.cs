@@ -9,7 +9,7 @@ public interface IGamesService
     /// </summary>
     /// <param name="id">The id of the game</param>
     /// <returns>The game, or null if not found</returns>
-    Task<GameDTO?> GetAsync(int id);
+    Task<GameDTO?> GetAsync(int id, bool verified);
 
     /// <summary>
     ///  Updates a game entity with values from a <see cref="GameDTO" />

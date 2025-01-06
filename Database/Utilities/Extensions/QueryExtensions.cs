@@ -355,6 +355,29 @@ public static class QueryExtensions
     #region Games
 
     /// <summary>
+    /// Includes navigation properties for a <see cref="Game"/>
+    /// <br/>Includes: <see cref="Game.Beatmap"/>, <see cref="Game.WinRecord"/>,
+    /// <see cref="Game.Scores"/>, <see cref="Game.AdminNotes"/>,
+    /// <see cref="Game.Audits"/>
+    /// </summary>
+    public static IQueryable<Game> IncludeChildren(this IQueryable<Game> query, bool verified)
+    {
+        if (verified)
+        {
+            query = query.Include(g => g.Scores.Where(s => s.VerificationStatus == VerificationStatus.Verified &&
+                                                           s.ProcessingStatus == ScoreProcessingStatus.Done));
+        }
+
+        return query
+            .Include(g => g.Beatmap)
+            .Include(g => g.WinRecord)
+            .Include(g => g.Scores)
+            .ThenInclude(s => s.Player)
+            .Include(g => g.AdminNotes)
+            .Include(g => g.Audits);
+    }
+
+    /// <summary>
     /// Filters a <see cref="Game"/> query for those with a <see cref="VerificationStatus"/>
     /// of <see cref="VerificationStatus.Verified"/>
     /// </summary>
