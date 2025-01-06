@@ -99,8 +99,7 @@ public class MatchesService(
     private async Task<ICollection<PlayerCompactDTO>> GetPlayerCompactsAsync(MatchDTO match)
     {
         IEnumerable<int> playerIds = match.Games
-            .Select(x => x.Scores.Select(y => y.PlayerId))
-            .SelectMany(x => x)
+            .SelectMany(g => g.Scores.Select(s => s.PlayerId))
             .Distinct();
 
         ICollection<PlayerCompactDTO>? players = mapper.Map<ICollection<PlayerCompactDTO>>(await playersRepository.GetAsync(playerIds));
