@@ -46,7 +46,7 @@ public interface IRepository<T> where T : class, IEntity
     /// Fetch multiple entities by primary key
     /// </summary>
     /// <param name="ids">A collection of <see cref="Player"/> ids</param>
-    /// <returns>A collection of <see cref="T"/>, one per id, if it exists</returns>
+    /// <returns>A collection of <typeparamref name="T"/>, one per id, if it exists</returns>
     Task<ICollection<T>> GetAsync(IEnumerable<int> ids);
 
     /// <summary>
