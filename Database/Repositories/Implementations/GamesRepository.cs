@@ -11,14 +11,17 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class GamesRepository(OtrContext context) : RepositoryBase<Game>(context), IGamesRepository
 {
+    private readonly OtrContext _context = context;
+
     public async Task<Game?> GetAsync(int id, bool verified) =>
         verified
-            ? await context.Games
+            ? await _context.Games
                 .WhereVerified()
                 .IncludeChildren(verified)
                 .FirstOrDefaultAsync(g => g.Id == id)
-            : await context.Games
+            : await _context.Games
                 .IncludeChildren(verified)
                 .Where(g => g.Id == id)
                 .FirstOrDefaultAsync();
+
 }
