@@ -18,6 +18,7 @@ public partial class GamesController(IGamesService gamesService, IAdminNoteServi
     /// <summary>
     /// Get a game
     /// </summary>
+    /// <param name="verified">Whether the game and all navigations must be verified</param>
     /// <response code="404">A game matching the given id does not exist</response>
     /// <response code="200">Returns a game</response>
     [HttpGet("{id:int}")]

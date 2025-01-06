@@ -8,6 +8,7 @@ public interface IGamesService
     ///  Gets a game by id
     /// </summary>
     /// <param name="id">The id of the game</param>
+    /// <param name="verified">Whether the game and all navigations must be verified</param>
     /// <returns>The game, or null if not found</returns>
     Task<GameDTO?> GetAsync(int id, bool verified);
 

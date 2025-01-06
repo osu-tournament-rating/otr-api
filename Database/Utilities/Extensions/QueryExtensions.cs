@@ -237,6 +237,7 @@ public static class QueryExtensions
     /// <see cref="Match.PlayerRatingAdjustments"/>, <see cref="Match.Games"/>
     /// (<see cref="Game.Scores"/>, <see cref="Game.Beatmap"/>, <see cref="Game.WinRecord"/>)
     /// </summary>
+    /// <param name="verified">Whether all navigations must be verified</param>
     public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query, bool verified)
     {
         if (verified)
@@ -360,6 +361,7 @@ public static class QueryExtensions
     /// <see cref="Game.Scores"/>, <see cref="Game.AdminNotes"/>,
     /// <see cref="Game.Audits"/>
     /// </summary>
+    /// <param name="verified">Whether all navigations must be verified</param>
     public static IQueryable<Game> IncludeChildren(this IQueryable<Game> query, bool verified)
     {
         if (verified)
