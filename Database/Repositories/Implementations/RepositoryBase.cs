@@ -43,7 +43,7 @@ public class RepositoryBase<T> : IRepository<T> where T : class, IEntity
 
     public virtual async Task<T?> GetAsync(int id) => await _context.Set<T>().FindAsync(id);
 
-    public async Task<ICollection<T>> GetAsync(IEnumerable<int> ids) =>
+    public virtual async Task<ICollection<T>> GetAsync(IEnumerable<int> ids) =>
         await _context.Set<T>()
             .Where(x => ids.Contains(x.Id))
             .ToListAsync();

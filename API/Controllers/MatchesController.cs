@@ -30,6 +30,7 @@ public partial class MatchesController(IMatchesService matchesService, IAdminNot
     /// Get a match
     /// </summary>
     /// <param name="id">Match id</param>
+    /// <param name="verified">Whether all games and subsequent child navigations must be verified</param>
     /// <response code="404">A match matching the given id does not exist</response>
     /// <response code="200">Returns a match</response>
     [HttpGet("{id:int}")]
