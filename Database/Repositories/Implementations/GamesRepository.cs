@@ -14,14 +14,7 @@ public class GamesRepository(OtrContext context) : RepositoryBase<Game>(context)
     private readonly OtrContext _context = context;
 
     public async Task<Game?> GetAsync(int id, bool verified) =>
-        verified
-            ? await _context.Games
-                .WhereVerified()
-                .IncludeChildren(verified)
-                .FirstOrDefaultAsync(g => g.Id == id)
-            : await _context.Games
-                .IncludeChildren(verified)
-                .Where(g => g.Id == id)
-                .FirstOrDefaultAsync();
-
+        await _context.Games
+            .IncludeChildren(verified)
+            .FirstOrDefaultAsync(g => g.Id == id);
 }

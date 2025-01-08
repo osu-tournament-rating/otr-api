@@ -18,7 +18,7 @@ public partial class GamesController(IGamesService gamesService, IAdminNoteServi
     /// <summary>
     /// Get a game
     /// </summary>
-    /// <param name="verified">Whether the game and all navigations must be verified</param>
+    /// <param name="verified">Whether the game's scores must be verified</param>
     /// <response code="404">A game matching the given id does not exist</response>
     /// <response code="200">Returns a game</response>
     [HttpGet("{id:int}")]
@@ -51,7 +51,7 @@ public partial class GamesController(IGamesService gamesService, IAdminNoteServi
     [ProducesResponseType<GameDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<GameDTO> patch)
     {
-        // Ensure target tournament exists
+        // Ensure target game exists
         GameDTO? game = await gamesService.GetAsync(id, false);
         if (game is null)
         {
@@ -73,7 +73,7 @@ public partial class GamesController(IGamesService gamesService, IAdminNoteServi
 
         // Apply patched values to entity
         GameDTO? updatedGame = await gamesService.UpdateAsync(id, game);
-        return Ok(updatedGame!);
+        return Ok(updatedGame);
     }
 
     /// <summary>

@@ -202,17 +202,29 @@ public static class QueryExtensions
     /// <param name="sortType">Defines which key to order the results by</param>
     /// <param name="descending">A boolean indicating whether the ordering should be in descending order. Defaults to false (ascending).</param>
     /// <returns>The ordered query</returns>
-    public static IQueryable<Tournament> OrderBy(this IQueryable<Tournament> query, TournamentQuerySortType sortType, bool descending = true) =>
+    public static IQueryable<Tournament> OrderBy(this IQueryable<Tournament> query, TournamentQuerySortType sortType,
+        bool descending = true) =>
         sortType switch
         {
             TournamentQuerySortType.Id => descending ? query.OrderByDescending(t => t.Id) : query.OrderBy(t => t.Id),
-            TournamentQuerySortType.SearchQueryRelevance => descending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name),
-            TournamentQuerySortType.StartTime => descending ? query.OrderByDescending(t => t.StartTime) : query.OrderBy(t => t.StartTime),
-            TournamentQuerySortType.EndTime => descending ? query.OrderByDescending(t => t.EndTime) : query.OrderBy(t => t.EndTime),
-            TournamentQuerySortType.Created => descending ? query.OrderByDescending(t => t.Created) : query.OrderBy(t => t.Created),
-            TournamentQuerySortType.LobbySize => descending ? query.OrderByDescending(t => t.LobbySize) : query.OrderBy(t => t.LobbySize),
+            TournamentQuerySortType.SearchQueryRelevance => descending
+                ? query.OrderByDescending(t => t.Name)
+                : query.OrderBy(t => t.Name),
+            TournamentQuerySortType.StartTime => descending
+                ? query.OrderByDescending(t => t.StartTime)
+                : query.OrderBy(t => t.StartTime),
+            TournamentQuerySortType.EndTime => descending
+                ? query.OrderByDescending(t => t.EndTime)
+                : query.OrderBy(t => t.EndTime),
+            TournamentQuerySortType.Created => descending
+                ? query.OrderByDescending(t => t.Created)
+                : query.OrderBy(t => t.Created),
+            TournamentQuerySortType.LobbySize => descending
+                ? query.OrderByDescending(t => t.LobbySize)
+                : query.OrderBy(t => t.LobbySize),
             _ => query
         };
+
     #endregion
 
     #region Matches
@@ -328,14 +340,22 @@ public static class QueryExtensions
     /// <param name="sortType">Defines which key to order the results by</param>
     /// <param name="descending">A boolean indicating whether the ordering should be in descending order. Defaults to false (ascending).</param>
     /// <returns>The ordered query</returns>
-    public static IQueryable<Match> OrderBy(this IQueryable<Match> query, MatchQuerySortType sortType, bool descending = false) =>
+    public static IQueryable<Match> OrderBy(this IQueryable<Match> query, MatchQuerySortType sortType,
+        bool descending = false) =>
         sortType switch
         {
             MatchQuerySortType.Id => descending ? query.OrderByDescending(m => m.Id) : query.OrderBy(m => m.Id),
-            MatchQuerySortType.OsuId => descending ? query.OrderByDescending(m => m.OsuId) : query.OrderBy(m => m.OsuId),
-            MatchQuerySortType.StartTime => descending ? query.OrderByDescending(m => m.StartTime) : query.OrderBy(m => m.StartTime),
-            MatchQuerySortType.EndTime => descending ? query.OrderByDescending(m => m.EndTime) : query.OrderBy(m => m.EndTime),
-            MatchQuerySortType.Created => descending ? query.OrderByDescending(m => m.Created) : query.OrderBy(m => m.Created),
+            MatchQuerySortType.OsuId =>
+                descending ? query.OrderByDescending(m => m.OsuId) : query.OrderBy(m => m.OsuId),
+            MatchQuerySortType.StartTime => descending
+                ? query.OrderByDescending(m => m.StartTime)
+                : query.OrderBy(m => m.StartTime),
+            MatchQuerySortType.EndTime => descending
+                ? query.OrderByDescending(m => m.EndTime)
+                : query.OrderBy(m => m.EndTime),
+            MatchQuerySortType.Created => descending
+                ? query.OrderByDescending(m => m.Created)
+                : query.OrderBy(m => m.Created),
             _ => query
         };
 
@@ -375,6 +395,8 @@ public static class QueryExtensions
             .Include(g => g.WinRecord)
             .Include(g => g.Scores)
             .ThenInclude(s => s.Player)
+            .Include(g => g.Scores)
+            .ThenInclude(gs => gs.AdminNotes)
             .Include(g => g.AdminNotes)
             .Include(g => g.Audits);
     }
