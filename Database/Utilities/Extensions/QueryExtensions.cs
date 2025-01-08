@@ -264,10 +264,11 @@ public static class QueryExtensions
         return query
             .Include(m => m.Games)
             .ThenInclude(g => g.Scores)
+            .ThenInclude(gs => gs.AdminNotes)
             .Include(m => m.WinRecord)
             .Include(m => m.PlayerMatchStats)
             .Include(m => m.PlayerRatingAdjustments)
-            .ThenInclude(s => s.Player)
+            .ThenInclude(ra => ra.Player)
             .Include(m => m.Games)
             .ThenInclude(g => g.AdminNotes)
             .Include(m => m.Games)

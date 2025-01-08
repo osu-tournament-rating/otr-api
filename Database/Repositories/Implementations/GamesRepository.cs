@@ -15,6 +15,7 @@ public class GamesRepository(OtrContext context) : RepositoryBase<Game>(context)
 
     public async Task<Game?> GetAsync(int id, bool verified) =>
         await _context.Games
+            .AsNoTracking()
             .IncludeChildren(verified)
             .FirstOrDefaultAsync(g => g.Id == id);
 }
