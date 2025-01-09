@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance",
+    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(context), IMatchesRepository
 {
@@ -96,13 +97,6 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
             .IncludeChildren(verified)
             .IncludeTournament()
             .IncludeAdminNotes<Match, MatchAdminNote>();
-
-        if (verified)
-        {
-            query = query.Where(m => m.VerificationStatus == VerificationStatus.Verified &&
-                                     m.ProcessingStatus == MatchProcessingStatus.Done);
-
-        }
 
         return await query.FirstOrDefaultAsync(m => m.Id == id);
     }
