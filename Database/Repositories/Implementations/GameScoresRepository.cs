@@ -4,11 +4,11 @@ using Database.Enums;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance",
+    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore>(context), IGameScoresRepository
 {
@@ -17,15 +17,10 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
     public async Task<bool> ExistsAsync(long osuId) =>
         await _context.GameScores.AnyAsync(gs => gs.GameId == osuId);
 
-    public async Task<GameScore?> GetAsync(int id, bool verified)
+    public override async Task<GameScore?> GetAsync(int id)
     {
         IQueryable<GameScore> query = _context.GameScores
             .Include(gs => gs.AdminNotes);
-
-        if (verified)
-        {
-            query = query.WhereVerified();
-        }
 
         return await query.FirstOrDefaultAsync(gs => gs.Id == id);
     }

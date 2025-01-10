@@ -9,7 +9,7 @@ public interface IGameScoresService
     /// </summary>
     /// <param name="id">The id of the score</param>
     /// <returns>The score, or null if not found</returns>
-    Task<GameScoreDTO?> GetAsync(int id, bool verified);
+    Task<GameScoreDTO?> GetAsync(int id);
 
     /// <summary>
     ///  Updates a score entity with values from a <see cref="GameScoreDTO" />
