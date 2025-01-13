@@ -10,6 +10,11 @@ namespace API.DTOs;
 public class GameScoreDTO
 {
     /// <summary>
+    /// Primary key
+    /// </summary>
+    public int Id { get; init; }
+
+    /// <summary>
     /// Id of the Player that set the score
     /// </summary>
     public int PlayerId { get; init; }
