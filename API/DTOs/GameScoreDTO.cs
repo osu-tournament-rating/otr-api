@@ -60,11 +60,6 @@ public class GameScoreDTO
     public int Count300 { get; init; }
 
     /// <summary>
-    /// Count of missed notes
-    /// </summary>
-    public int CountMiss { get; init; }
-
-    /// <summary>
     /// Count of notes hit with a judgement of Katu
     /// </summary>
     public int CountKatu { get; init; }
@@ -75,14 +70,14 @@ public class GameScoreDTO
     public int CountGeki { get; init; }
 
     /// <summary>
+    /// Count of missed notes
+    /// </summary>
+    public int CountMiss { get; init; }
+
+    /// <summary>
     /// Applied mods
     /// </summary>
     public Mods Mods { get; init; }
-
-    /// <summary>
-    /// Number of misses
-    /// </summary>
-    public int Misses { get; init; }
 
     /// <summary>
     /// Accuracy
