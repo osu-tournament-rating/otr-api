@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
 using Database.Enums.Verification;
 
@@ -12,6 +13,11 @@ public class GameScoreDTO
     /// Id of the Player that set the score
     /// </summary>
     public int PlayerId { get; init; }
+
+    /// <summary>
+    /// Ruleset the score was set in
+    /// </summary>
+    public Ruleset Ruleset { get; init; }
 
     /// <summary>
     /// Team the Player was on
@@ -101,5 +107,6 @@ public class GameScoreDTO
     /// <summary>
     /// All associated admin notes
     /// </summary>
+    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
 }

@@ -15,7 +15,8 @@ public class MapperProfile : Profile
 
         CreateMap<Beatmap, BeatmapDTO>();
 
-        CreateMap<Game, GameDTO>();
+        CreateMap<Game, GameDTO>()
+            .ForMember(x => x.Players, opt => opt.Ignore());
         CreateMap<GameWinRecord, GameWinRecordDTO>();
 
         CreateMap<GameScore, GameScoreDTO>();
