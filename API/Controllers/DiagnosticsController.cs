@@ -10,9 +10,9 @@ namespace API.Controllers;
 public class DiagnosticsController : Controller
 {
     /// <summary>
-    /// Allows clients to determine if the server is running  
+    /// Allows clients to determine if the server is running
     /// </summary>
-    /// <response code="200>The server is running</response> 
+    /// <response code="200">The server is running</response>
     [HttpGet("ping")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status200OK)]
