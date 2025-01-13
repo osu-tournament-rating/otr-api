@@ -18,7 +18,7 @@ public class MapperProfile : Profile
         CreateMap<Game, GameDTO>();
         CreateMap<GameWinRecord, GameWinRecordDTO>();
 
-        CreateMap<GameScore, GameScoreDTO>().ForMember(x => x.Misses, opt => opt.MapFrom(y => y.CountMiss));
+        CreateMap<GameScore, GameScoreDTO>();
 
         CreateMap<Match, MatchDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset))

@@ -7,82 +7,87 @@ namespace API.DTOs;
 /// <summary>
 /// Represents a single game (osu! beatmap) played in a match
 /// </summary>
-[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class GameDTO
 {
     /// <summary>
     /// Primary key
     /// </summary>
-    public int Id { get; set; }
+    public int Id { get; init; }
 
     /// <summary>
     /// The ruleset
     /// </summary>
-    public Ruleset Ruleset { get; set; }
+    public Ruleset Ruleset { get; init; }
 
     /// <summary>
     /// The scoring type used
     /// </summary>
-    public ScoringType ScoringType { get; set; }
+    public ScoringType ScoringType { get; init; }
 
     /// <summary>
     /// The team type used
     /// </summary>
-    public TeamType TeamType { get; set; }
+    public TeamType TeamType { get; init; }
 
     /// <summary>
     /// The mods enabled
     /// </summary>
-    public Mods Mods { get; set; }
+    public Mods Mods { get; init; }
+
+    /// <summary>
+    /// Denotes if the mod setting was "free mod"
+    /// </summary>
+    public bool IsFreeMod { get; init; }
 
     /// <summary>
     /// osu! id
     /// </summary>
-    public long OsuId { get; set; }
+    public long OsuId { get; init; }
 
     /// <summary>
     /// The verification status
     /// </summary>
-    public VerificationStatus VerificationStatus { get; set; }
+    public VerificationStatus VerificationStatus { get; init; }
 
     /// <summary>
     /// The processing status
     /// </summary>
-    public GameProcessingStatus ProcessingStatus { get; set; }
+    public GameProcessingStatus ProcessingStatus { get; init; }
 
     /// <summary>
     /// Warning flags
     /// </summary>
-    public GameWarningFlags WarningFlags { get; set; }
+    public GameWarningFlags WarningFlags { get; init; }
 
     /// <summary>
     /// The rejection reason
     /// </summary>
-    public GameRejectionReason RejectionReason { get; set; }
+    public GameRejectionReason RejectionReason { get; init; }
 
     /// <summary>
     /// Timestamp of the beginning of the game
     /// </summary>
-    public DateTime StartTime { get; set; }
+    public DateTime StartTime { get; init; }
 
     /// <summary>
     /// Timestamp of the end of the game
     /// </summary>
-    public DateTime? EndTime { get; set; }
+    public DateTime? EndTime { get; init; }
 
     /// <summary>
     /// The beatmap played
     /// </summary>
-    public BeatmapDTO? Beatmap { get; set; }
+    public required BeatmapDTO Beatmap { get; init; }
 
     /// <summary>
     /// All associated admin notes
     /// </summary>
+    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
 
     /// <summary>
     /// All match scores
     /// </summary>
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public List<GameScoreDTO> Scores { get; set; } = [];
+    public ICollection<GameScoreDTO> Scores { get; init; } = [];
 }
