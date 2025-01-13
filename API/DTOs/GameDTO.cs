@@ -80,6 +80,19 @@ public class GameDTO
     public required BeatmapDTO Beatmap { get; init; }
 
     /// <summary>
+    /// Win record
+    /// </summary>
+    public GameWinRecordDTO? WinRecord { get; init; }
+
+    /// <summary>
+    /// All participating players
+    /// </summary>
+    /// <remarks>
+    /// Will only be populated if the game is the highest order of entity requested
+    /// </remarks>
+    public ICollection<PlayerCompactDTO> Players { get; set; } = [];
+
+    /// <summary>
     /// All associated admin notes
     /// </summary>
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
