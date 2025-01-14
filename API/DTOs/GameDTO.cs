@@ -78,7 +78,7 @@ public class GameDTO
     /// <summary>
     /// The beatmap played
     /// </summary>
-    public required BeatmapDTO Beatmap { get; init; }
+    public BeatmapDTO Beatmap { get; init; } = null!;
 
     /// <summary>
     /// Win record
