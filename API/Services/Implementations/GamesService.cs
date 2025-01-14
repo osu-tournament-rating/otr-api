@@ -51,7 +51,7 @@ public class GamesService(IGamesRepository gamesRepository, IPlayersRepository p
 
     private async Task<ICollection<PlayerCompactDTO>> GetPlayerCompactsAsync(GameDTO game)
     {
-        IEnumerable<int> playerIds = game.Scores.Select(s => s.PlayerId);
+        IEnumerable<int> playerIds = game.Scores.Select(s => s.PlayerId).Distinct();
         return mapper.Map<ICollection<PlayerCompactDTO>>(await playersRepository.GetAsync(playerIds));
     }
 }

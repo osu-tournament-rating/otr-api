@@ -16,6 +16,11 @@ public class GameDTO
     public int Id { get; init; }
 
     /// <summary>
+    /// osu! id
+    /// </summary>
+    public long OsuId { get; init; }
+
+    /// <summary>
     /// The ruleset
     /// </summary>
     public Ruleset Ruleset { get; init; }
@@ -36,14 +41,9 @@ public class GameDTO
     public Mods Mods { get; init; }
 
     /// <summary>
-    /// Denotes if the mod setting was "free mod"
+    /// Denotes if the mod setting is "free mod"
     /// </summary>
     public bool IsFreeMod { get; init; }
-
-    /// <summary>
-    /// osu! id
-    /// </summary>
-    public long OsuId { get; init; }
 
     /// <summary>
     /// The verification status
