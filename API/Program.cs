@@ -21,6 +21,7 @@ using AutoMapper;
 using Dapper;
 using Database;
 using Database.Entities;
+using Database.Enums;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -614,7 +615,6 @@ builder.Services.AddScoped<IAdminNoteService, AdminNoteService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();
-builder.Services.AddScoped<IGameWinRecordsService, GameWinRecordsService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
@@ -722,5 +722,13 @@ if (args.Contains("--swagger-to-file"))
 #endregion
 
 app.Logger.LogInformation("Running!");
+//
+// var ctx = app.Services.CreateScope().ServiceProvider.GetRequiredService<OtrContext>();
+// var match = ctx.Matches.First(m => m.Id == 112366);
+// match.WinRecord = new MatchWinRecord()
+// {
+//     LoserRoster = [26], WinnerRoster = [27], LoserTeam = Team.Blue, WinnerTeam = Team.Red, WinnerScore = 2, LoserScore = 1
+// };
+// ctx.SaveChanges();
 
 app.Run();

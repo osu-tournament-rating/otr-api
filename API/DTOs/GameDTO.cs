@@ -81,9 +81,10 @@ public class GameDTO
     public BeatmapDTO Beatmap { get; init; } = null!;
 
     /// <summary>
-    /// Win record
+    /// Team rosters
     /// </summary>
-    public GameWinRecordDTO? WinRecord { get; init; }
+    /// <remarks>Only populated for fully processed and verified games</remarks>
+    public ICollection<RosterDTO> Rosters { get; init; } = [];
 
     /// <summary>
     /// All participating players

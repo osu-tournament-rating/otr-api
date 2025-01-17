@@ -80,8 +80,8 @@ public class MatchesService(
         }
 
         existing.Name = match.Name;
-        existing.StartTime = match.StartTime ?? existing.StartTime;
-        existing.EndTime = match.EndTime ?? existing.EndTime;
+        existing.StartTime = match.StartTime;
+        existing.EndTime = match.EndTime;
         existing.VerificationStatus = match.VerificationStatus;
         existing.RejectionReason = match.RejectionReason;
         existing.ProcessingStatus = match.ProcessingStatus;

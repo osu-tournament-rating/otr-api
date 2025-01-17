@@ -3,6 +3,7 @@ using API.Utilities;
 using API.Utilities.Extensions;
 using AutoMapper;
 using Database.Entities;
+using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 
 namespace API.Configurations;
@@ -15,15 +16,37 @@ public class MapperProfile : Profile
 
         CreateMap<Beatmap, BeatmapDTO>();
 
+        CreateMap<IWinRecord?, IEnumerable<RosterDTO>>()
+            .ConvertUsing((src, _, _) =>
+            {
+                if (src is null)
+                {
+                    return [];
+                }
+
+                return
+                [
+                    new RosterDTO
+                    {
+                        Team = src.WinnerTeam, Roster = src.WinnerRoster, Won = true, Score = src.WinnerScore,
+                    },
+                    new RosterDTO
+                    {
+                        Team = src.LoserTeam, Roster = src.LoserRoster, Won = false, Score = src.LoserScore,
+                    },
+                ];
+            });
+
         CreateMap<Game, GameDTO>()
-            .ForMember(x => x.Players, opt => opt.Ignore());
-        CreateMap<GameWinRecord, GameWinRecordDTO>();
+            .ForMember(x => x.Players, opt => opt.Ignore())
+            .ForMember(x => x.Rosters, opt => opt.MapFrom(x => x.WinRecord));
 
         CreateMap<GameScore, GameScoreDTO>();
 
         CreateMap<Match, MatchDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset))
-            .ForMember(x => x.Players, opt => opt.Ignore());
+            .ForMember(x => x.Players, opt => opt.Ignore())
+            .ForMember(x => x.Rosters, opt => opt.MapFrom(x => x.WinRecord));
 
         CreateMap<Match, MatchSubmissionStatusDTO>();
         CreateMap<Match, MatchCreatedResultDTO>()
