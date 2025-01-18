@@ -67,7 +67,7 @@ public class BeatmapExtendedJsonModel : BeatmapJsonModel
     public int RankedStatus { get; set; }
 
     [JsonProperty("url")]
-    public string Url { get; set; } = null!;
+    public string Url { get; set; } = string.Empty;
 
     [JsonProperty("checksum")]
     public string? Checksum { get; set; }
