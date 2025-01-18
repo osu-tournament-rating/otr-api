@@ -33,7 +33,7 @@ public class Beatmap : IModel
     /// <summary>
     /// Ranking status as a string
     /// </summary>
-    public string Status { get; init; } = null!;
+    public string Status { get; init; } = string.Empty;
 
     /// <summary>
     /// Total length
@@ -48,7 +48,7 @@ public class Beatmap : IModel
     /// <summary>
     /// Difficulty name
     /// </summary>
-    public string DifficultyName { get; init; } = null!;
+    public string DifficultyName { get; init; } = string.Empty;
 
     /// <summary>
     /// The <see cref="Beatmaps.Beatmapset"/> the beatmap is part of

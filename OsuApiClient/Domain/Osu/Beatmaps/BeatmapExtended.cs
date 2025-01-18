@@ -97,10 +97,15 @@ public class BeatmapExtended : Beatmap
     /// <summary>
     /// osu! website url for the beatmap
     /// </summary>
-    public string Url { get; init; } = null!;
+    public string Url { get; init; } = string.Empty;
 
     /// <summary>
     /// Checksum
     /// </summary>
     public string? Checksum { get; init; }
+
+    /// <summary>
+    /// Any number of users that own the beatmap
+    /// </summary>
+    public BeatmapOwner[] Owners { get; init; } = [];
 }

@@ -52,6 +52,12 @@ public class MapperProfile : Profile
             .ForMember(dest => dest.HpDrain, opt => opt.MapFrom(src => src.Drain))
             .ForMember(dest => dest.OverallDifficulty, opt => opt.MapFrom(src => src.Accuracy));
 
+        CreateMap<BeatmapsetJsonModel, Beatmapset>()
+            .ForMember(dest => dest.CreatorId, opt => opt.MapFrom(src => src.UserId));
+
+        CreateMap<BeatmapsetExtendedJsonModel, BeatmapsetExtended>()
+            .IncludeBase<BeatmapsetJsonModel, Beatmapset>();
+
         CreateMap<UserStatUpdateJsonModel, UserStatUpdate>()
             .ForMember(dest => dest.TotalScore, opt => opt.MapFrom(src => long.Parse(src.TotalScore)))
             .ForMember(dest => dest.RankedScore, opt => opt.MapFrom(src => long.Parse(src.RankedScore)));

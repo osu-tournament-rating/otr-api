@@ -1,15 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using AutoMapper;
-using AutoMapper.Configuration.Annotations;
 using OsuApiClient.Domain.Osu.Multiplayer;
-using OsuApiClient.Net.JsonModels.Osu.Beatmaps;
 
 namespace OsuApiClient.Domain.Osu.Beatmaps;
 
 /// <summary>
 /// Represents a beatmapset of a <see cref="Beatmap"/> played in a <see cref="MultiplayerGame"/>
 /// </summary>
-[AutoMap(typeof(BeatmapsetJsonModel))]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class Beatmapset : IModel
 {
@@ -41,7 +37,6 @@ public class Beatmapset : IModel
     /// <summary>
     /// Id of the <see cref="Creator"/>
     /// </summary>
-    [SourceMember(nameof(BeatmapsetJsonModel.UserId))]
     public int? CreatorId { get; init; }
 
     /// <summary>
@@ -87,7 +82,7 @@ public class Beatmapset : IModel
     /// <summary>
     /// Ranked status
     /// </summary>
-    public string Status { get; init; } = null!;
+    public string Status { get; init; } = string.Empty;
 
     /// <summary>
     /// No description

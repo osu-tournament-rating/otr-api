@@ -72,6 +72,9 @@ public class BeatmapExtendedJsonModel : BeatmapJsonModel
     [JsonProperty("checksum")]
     public string? Checksum { get; set; }
 
+    [JsonProperty("owners")]
+    public BeatmapOwnerJsonModel[] Owners { get; set; } = [];
+
     // Not really necessary to include
     // [JsonProperty("failtimes")]
     // public BeatmapFailTimes? { get; set; }
