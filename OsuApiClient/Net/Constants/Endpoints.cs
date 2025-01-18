@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using OsuApiClient.Enums;
 
 namespace OsuApiClient.Net.Constants;
 
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public static class Endpoints
 {
     public static class Osu
@@ -22,6 +24,8 @@ public static class Endpoints
         public const string Me = Api + "/me";
 
         public const string Beatmaps = Api + "/beatmaps";
+        public const string BeatmapAttributes = Beatmaps + "/{0:long}/attributes";
+        public const string Beatmapsets = Api + "/beatmapsets/{0:long}";
     }
 
     public static class OsuTrack
