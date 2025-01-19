@@ -362,7 +362,7 @@ public sealed class OsuClient(
         await UpdateCredentialsAsync(cancellationToken);
 
         return await _handler.FetchAsync<BeatmapAttributes, BeatmapAttributesJsonModel>(
-            new ApiRequest()
+            new ApiRequest
             {
                 Credentials = _credentials,
                 Method = HttpMethod.Get,
@@ -382,11 +382,11 @@ public sealed class OsuClient(
         await UpdateCredentialsAsync(cancellationToken);
 
         return await _handler.FetchAsync<BeatmapsetExtended, BeatmapsetExtendedJsonModel>(
-            new ApiRequest()
+            new ApiRequest
             {
                 Credentials = _credentials,
                 Method = HttpMethod.Get,
-                Route = new Uri(string.Format(Endpoints.Osu.Beatmapsets, beatmapsetId)),
+                Route = new Uri(string.Format(Endpoints.Osu.Beatmapsets, beatmapsetId))
             },
             cancellationToken
         );
