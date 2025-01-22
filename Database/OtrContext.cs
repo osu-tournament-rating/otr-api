@@ -85,6 +85,20 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(b => b.HasData).HasDefaultValue(true);
 
+            // Relation: BeatmapAttributes
+            entity
+                .HasMany(b => b.Attributes)
+                .WithOne(ba => ba.Beatmap)
+                .HasForeignKey(ba => ba.BeatmapId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: BeatmapSet
+            entity
+                .HasOne(b => b.BeatmapSet)
+                .WithMany(bs => bs.Beatmaps)
+                .HasForeignKey(b => b.BeatmapSetId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Relation: Games
             entity
                 .HasMany(b => b.Games)
