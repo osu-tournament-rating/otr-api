@@ -352,6 +352,46 @@ public sealed class OsuClient(
         );
     }
 
+    public async Task<BeatmapAttributes?> GetBeatmapAttributesAsync(
+        long beatmapId,
+        Mods mods,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CheckDisposed();
+        await UpdateCredentialsAsync(cancellationToken);
+
+        return await _handler.FetchAsync<BeatmapAttributes, BeatmapAttributesJsonModel>(
+            new ApiRequest
+            {
+                Credentials = _credentials,
+                Method = HttpMethod.Get,
+                Route = new Uri(string.Format(Endpoints.Osu.BeatmapAttributes, beatmapId)),
+                QueryParameters = new Dictionary<string, string> { ["mods"] = mods.ToString() }
+            },
+            cancellationToken
+        );
+    }
+
+    public async Task<BeatmapsetExtended?> GetBeatmapsetAsync(
+        long beatmapsetId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        CheckDisposed();
+        await UpdateCredentialsAsync(cancellationToken);
+
+        return await _handler.FetchAsync<BeatmapsetExtended, BeatmapsetExtendedJsonModel>(
+            new ApiRequest
+            {
+                Credentials = _credentials,
+                Method = HttpMethod.Get,
+                Route = new Uri(string.Format(Endpoints.Osu.Beatmapsets, beatmapsetId))
+            },
+            cancellationToken
+        );
+    }
+
     public async Task<IEnumerable<UserStatUpdate>?> GetUserStatsHistoryAsync(
         long id,
         Ruleset ruleset,
@@ -361,6 +401,7 @@ public sealed class OsuClient(
     )
     {
         CheckDisposed();
+        await UpdateCredentialsAsync(cancellationToken);
 
         var queryParams = new Dictionary<string, string>
         {

@@ -12,10 +12,10 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users;
 public class UserJsonModel : JsonModelBase
 {
     [JsonProperty("avatar_url")]
-    public string AvatarUrl { get; set; } = null!;
+    public string AvatarUrl { get; set; } = string.Empty;
 
     [JsonProperty("country_code")]
-    public string CountryCode { get; set; } = null!;
+    public string CountryCode { get; set; } = string.Empty;
 
     [JsonProperty("default_group")]
     public string? DefaultGroup { get; set; }
@@ -48,5 +48,5 @@ public class UserJsonModel : JsonModelBase
     public string? ProfileColor { get; set; }
 
     [JsonProperty("username")]
-    public string Username { get; set; } = null!;
+    public string Username { get; set; } = string.Empty;
 }

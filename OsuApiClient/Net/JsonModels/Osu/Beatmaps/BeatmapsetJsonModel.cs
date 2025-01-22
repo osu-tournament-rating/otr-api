@@ -12,22 +12,16 @@ namespace OsuApiClient.Net.JsonModels.Osu.Beatmaps;
 public class BeatmapsetJsonModel : JsonModelBase
 {
     [JsonProperty("artist")]
-    public string Artist { get; set; } = null!;
+    public string Artist { get; set; } = string.Empty;
 
     [JsonProperty("artist_unicode")]
-    public string ArtistUnicode { get; set; } = null!;
-
-    [JsonProperty("covers")]
-    public BeatmapsetCoversJsonModel Covers { get; set; } = null!;
+    public string ArtistUnicode { get; set; } = string.Empty;
 
     [JsonProperty("creator")]
     public string? Creator { get; set; }
 
     [JsonProperty("favourite_count")]
     public int FavouriteCount { get; set; }
-
-    [JsonProperty("hype")]
-    public BeatmapsetHypeJsonModel? Hype { get; set; }
 
     [JsonProperty("id")]
     public long Id { get; set; }
@@ -51,13 +45,13 @@ public class BeatmapsetJsonModel : JsonModelBase
     public bool Spotlight { get; set; }
 
     [JsonProperty("status")]
-    public string Status { get; set; } = null!;
+    public string Status { get; set; } = string.Empty;
 
     [JsonProperty("title")]
-    public string Title { get; set; } = null!;
+    public string Title { get; set; } = string.Empty;
 
     [JsonProperty("title_unicode")]
-    public string TitleUnicode { get; set; } = null!;
+    public string TitleUnicode { get; set; } = string.Empty;
 
     [JsonProperty("track_id")]
     public long? TrackId { get; set; }

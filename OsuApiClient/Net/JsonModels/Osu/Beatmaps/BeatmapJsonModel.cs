@@ -21,10 +21,10 @@ public class BeatmapJsonModel : JsonModelBase
     public long Id { get; set; }
 
     [JsonProperty("mode")]
-    public string Mode { get; set; } = null!;
+    public string Mode { get; set; } = string.Empty;
 
     [JsonProperty("status")]
-    public string Status { get; set; } = null!;
+    public string Status { get; set; } = string.Empty;
 
     [JsonProperty("total_length")]
     public long TotalLength { get; set; }
@@ -33,7 +33,7 @@ public class BeatmapJsonModel : JsonModelBase
     public long UserId { get; set; }
 
     [JsonProperty("version")]
-    public string Version { get; set; } = null!;
+    public string Version { get; set; } = string.Empty;
 
     [JsonProperty("beatmapset")]
     public BeatmapsetJsonModel? Beatmapset { get; set; }

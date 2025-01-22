@@ -1,15 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using AutoMapper;
-using AutoMapper.Configuration.Annotations;
 using OsuApiClient.Domain.Osu.Multiplayer;
-using OsuApiClient.Net.JsonModels.Osu.Beatmaps;
 
 namespace OsuApiClient.Domain.Osu.Beatmaps;
 
 /// <summary>
 /// Represents a beatmapset of a <see cref="Beatmap"/> played in a <see cref="MultiplayerGame"/>
 /// </summary>
-[AutoMap(typeof(BeatmapsetJsonModel))]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class Beatmapset : IModel
 {
@@ -21,27 +17,26 @@ public class Beatmapset : IModel
     /// <summary>
     /// Song artist
     /// </summary>
-    public string Artist { get; init; } = null!;
+    public string Artist { get; init; } = string.Empty;
 
     /// <summary>
-    /// Song artist including unicode characters
+    /// Song artist including Unicode characters
     /// </summary>
-    public string ArtistUnicode { get; init; } = null!;
+    public string ArtistUnicode { get; init; } = string.Empty;
 
     /// <summary>
     /// Title
     /// </summary>
-    public string Title { get; init; } = null!;
+    public string Title { get; init; } = string.Empty;
 
     /// <summary>
-    /// Title including unicode characters
+    /// Title including Unicode characters
     /// </summary>
-    public string TitleUnicode { get; init; } = null!;
+    public string TitleUnicode { get; init; } = string.Empty;
 
     /// <summary>
     /// Id of the <see cref="Creator"/>
     /// </summary>
-    [SourceMember(nameof(BeatmapsetJsonModel.UserId))]
     public int? CreatorId { get; init; }
 
     /// <summary>
@@ -50,19 +45,9 @@ public class Beatmapset : IModel
     public string? Creator { get; init; }
 
     /// <summary>
-    /// Cover image urls
-    /// </summary>
-    public BeatmapsetCovers Covers { get; init; } = null!;
-
-    /// <summary>
     /// Number of favorites
     /// </summary>
     public int FavouriteCount { get; init; }
-
-    /// <summary>
-    /// Hype information
-    /// </summary>
-    public BeatmapsetHype? Hype { get; init; }
 
     /// <summary>
     /// Denotes if the set contains nsfw content
@@ -97,7 +82,7 @@ public class Beatmapset : IModel
     /// <summary>
     /// Ranked status
     /// </summary>
-    public string Status { get; init; } = null!;
+    public string Status { get; init; } = string.Empty;
 
     /// <summary>
     /// No description

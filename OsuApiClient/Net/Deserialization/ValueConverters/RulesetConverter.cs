@@ -27,7 +27,7 @@ public class RulesetConverter : IValueConverter<string, Ruleset>
             ("mania", "4k") => Ruleset.Mania4k,
             ("mania", "7k") => Ruleset.Mania7k,
             // This should never happen, but using standard as a fallback is ok for our use case
-            _ => Ruleset.Osu
+            _ => throw new ArgumentException($"Failed to convert value '{value}' to {nameof(Ruleset)}")
         };
     }
 }
