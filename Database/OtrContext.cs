@@ -32,6 +32,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     private const string SqlPlaceholderDate = "'2007-09-17T00:00:00'::timestamp";
 
     public virtual DbSet<Beatmap> Beatmaps { get; set; }
+    public virtual DbSet<BeatmapAttributes> BeatmapAttributes { get; set; }
+    public virtual DbSet<BeatmapSet> BeatmapSets { get; set; }
     public virtual DbSet<Game> Games { get; set; }
     public virtual DbSet<GameAudit> GameAudits { get; set; }
     public virtual DbSet<GameScore> GameScores { get; set; }
@@ -89,6 +91,60 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .WithOne(g => g.Beatmap)
                 .HasForeignKey(g => g.BeatmapId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Relation: Players
+            entity
+                .HasMany(b => b.Creators)
+                .WithMany(p => p.CreatedBeatmaps)
+                .UsingEntity<Dictionary<string, object>>(
+                    "__join__beatmap_creators",
+                    r => r.HasOne<Player>()
+                        .WithMany()
+                        .HasForeignKey("player_id")
+                        .HasConstraintName("FK_join__beatmap_creators_Player"),
+                    l => l.HasOne<Beatmap>()
+                        .WithMany()
+                        .HasForeignKey("beatmap_id")
+                        .HasConstraintName("FK_join__beatmap_creators_Beatmap"));
+
+            entity.HasIndex(b => b.OsuId).IsUnique();
+        });
+
+        modelBuilder.Entity<BeatmapAttributes>(entity =>
+        {
+            entity.Property(ba => ba.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(ba => ba.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Beatmap
+            entity
+                .HasOne(ba => ba.Beatmap)
+                .WithMany(b => b.Attributes)
+                .HasForeignKey(ba => ba.BeatmapId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(ba => new { ba.BeatmapId, ba.Mods }).IsUnique();
+        });
+
+        modelBuilder.Entity<BeatmapSet>(entity =>
+        {
+            entity.Property(b => b.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(b => b.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Player (Creator)
+            entity
+                .HasOne(b => b.Creator)
+                .WithMany(p => p.CreatedSets)
+                .HasForeignKey(b => b.CreatorId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: Beatmaps
+            entity
+                .HasMany(b => b.Beatmaps)
+                .WithOne(bm => bm.BeatmapSet)
+                .HasForeignKey(bm => bm.BeatmapSetId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(b => b.OsuId).IsUnique();
         });
@@ -758,11 +814,11 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                     r => r.HasOne<Beatmap>()
                         .WithMany()
                         .HasForeignKey("beatmap_id")
-                        .HasConstraintName("FK_JoinTable_Beatmap"),
+                        .HasConstraintName("FK_join__pooled_beatmaps_Beatmap"),
                     l => l.HasOne<Tournament>()
                         .WithMany()
                         .HasForeignKey("tournament_id")
-                        .HasConstraintName("FK_JoinTable_Tournament"));
+                        .HasConstraintName("FK_join__pooled_beatmaps_Tournament"));
 
             entity.HasIndex(t => t.Ruleset);
             entity.HasIndex(t => new { t.Name, t.Abbreviation }).IsUnique();
