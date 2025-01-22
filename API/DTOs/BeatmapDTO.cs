@@ -11,11 +11,6 @@ public class BeatmapDTO
     public int Id { get; set; }
 
     /// <summary>
-    /// Artist of the song
-    /// </summary>
-    public string Artist { get; set; } = null!;
-
-    /// <summary>
     /// osu! id of the beatmap
     /// </summary>
     public long OsuId { get; set; }
@@ -24,16 +19,6 @@ public class BeatmapDTO
     /// Beats per minute
     /// </summary>
     public double? Bpm { get; set; }
-
-    /// <summary>
-    /// osu! id of the mapper
-    /// </summary>
-    public long MapperId { get; set; }
-
-    /// <summary>
-    /// osu! username of the mapper
-    /// </summary>
-    public string MapperName { get; set; } = null!;
 
     /// <summary>
     /// Star rating
@@ -63,15 +48,20 @@ public class BeatmapDTO
     /// <summary>
     /// Song length
     /// </summary>
-    public double Length { get; set; }
-
-    /// <summary>
-    /// Title of the beatmap / song
-    /// </summary>
-    public string Title { get; set; } = null!;
+    public double TotalLength { get; set; }
 
     /// <summary>
     /// Name of the difficulty
     /// </summary>
     public string? DiffName { get; set; }
+
+    /// <summary>
+    /// Beatmap attributes
+    /// </summary>
+    public ICollection<BeatmapAttributesDTO> Attributes { get; set; } = [];
+
+    /// <summary>
+    /// Beatmap creators
+    /// </summary>
+    public ICollection<PlayerCompactDTO> Creators { get; set; } = [];
 }
