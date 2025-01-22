@@ -121,7 +121,7 @@ public class Beatmap : UpdateableEntityBase
     /// <summary>
     /// The associated beatmapset
     /// </summary>
-    public BeatmapSet BeatmapSet { get; init; } = null!;
+    public BeatmapSet BeatmapSet { get; set; } = null!;
 
     /// <summary>
     /// Collection of players who created this beatmap
