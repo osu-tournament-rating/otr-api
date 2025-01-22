@@ -1,23 +1,21 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
+// ReSharper disable CollectionNeverUpdated.Global
 
 namespace Database.Entities;
 
 /// <summary>
-/// An osu! beatmap
+/// Represents a beatmap in the osu! API.
 /// </summary>
 [Table("beatmaps")]
-[SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class Beatmap : EntityBase
+public class Beatmap : UpdateableEntityBase
 {
     /// <summary>
-    /// osu! id of the beatmap
+    /// osu! beatmap ID
     /// </summary>
     [Column("osu_id")]
-    public long OsuId { get; set; }
+    public long OsuId { get; init; }
 
     /// <summary>
     /// Denotes if the <see cref="Beatmap"/> has populated data
@@ -27,127 +25,121 @@ public class Beatmap : EntityBase
     /// the time of access, this value will be false and all properties will be unpopulated.
     /// </remarks>
     [Column("has_data")]
-    public bool HasData { get; set; }
+    public bool HasData { get; init; }
 
     /// <summary>
-    /// osu! id of the mapper
+    /// Ruleset
     /// </summary>
-    [Column("mapper_id")]
-    public long MapperId { get; set; }
-
-    /// <summary>
-    /// osu! username of the mapper
-    /// </summary>
-    [MaxLength(32)]
-    [Column("mapper_name")]
-    public string MapperName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Song artist
-    /// </summary>
-    [MaxLength(512)]
-    [Column("artist")]
-    public string Artist { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Song title
-    /// </summary>
-    [MaxLength(512)]
-    [Column("title")]
-    public string Title { get; set; } = string.Empty;
+    [Column("ruleset")]
+    public Ruleset Ruleset { get; init; }
 
     /// <summary>
     /// Difficulty name
     /// </summary>
-    [MaxLength(255)]
     [Column("diff_name")]
-    public string DiffName { get; set; } = string.Empty;
+    [MaxLength(512)]
+    public string DiffName { get; init; } = string.Empty;
 
     /// <summary>
-    /// Ranked status
+    /// Total length in seconds
     /// </summary>
-    [Column("ranked_status")]
-    public BeatmapRankedStatus RankedStatus { get; set; }
+    [Column("total_length")]
+    public int TotalLength { get; init; }
 
     /// <summary>
-    /// Star rating
+    /// Drain length in seconds
     /// </summary>
-    [Column("sr")]
-    public double Sr { get; set; }
+    [Column("drain_length")]
+    public int DrainLength { get; init; }
 
     /// <summary>
     /// Beats per minute
     /// </summary>
     [Column("bpm")]
-    public double Bpm { get; set; }
+    public double Bpm { get; init; }
+
+    /// <summary>
+    /// Number of circles in the beatmap
+    /// </summary>
+    [Column("count_circle")]
+    public int CountCircle { get; init; }
+
+    /// <summary>
+    /// Number of sliders in the beatmap
+    /// </summary>
+    [Column("count_slider")]
+    public int CountSlider { get; init; }
+
+    /// <summary>
+    /// Number of spinners in the beatmap
+    /// </summary>
+    [Column("count_spinner")]
+    public int CountSpinner { get; init; }
 
     /// <summary>
     /// Circle size
     /// </summary>
     [Column("cs")]
-    public double Cs { get; set; }
+    public double Cs { get; init; }
 
     /// <summary>
-    /// Approach rate
-    /// </summary>
-    [Column("ar")]
-    public double Ar { get; set; }
-
-    /// <summary>
-    /// Hp
+    /// HP drain rate
     /// </summary>
     [Column("hp")]
-    public double Hp { get; set; }
+    public double Hp { get; init; }
 
     /// <summary>
     /// Overall difficulty
     /// </summary>
     [Column("od")]
-    public double Od { get; set; }
+    public double Od { get; init; }
 
     /// <summary>
-    /// Total length of the song
+    /// Approach rate
     /// </summary>
-    [Column("length")]
-    public double Length { get; set; }
+    [Column("ar")]
+    public double Ar { get; init; }
 
     /// <summary>
-    /// The <see cref="Enums.Ruleset"/> this <see cref="Beatmap"/> is playable on
+    /// Star rating (No Mod)
     /// </summary>
-    [Column("ruleset")]
-    public Ruleset Ruleset { get; set; }
+    [Column("sr")]
+    public double Sr { get; init; }
 
     /// <summary>
-    /// Count of circles
-    /// </summary>
-    [Column("circle_count")]
-    public int CircleCount { get; set; }
-
-    /// <summary>
-    /// Count of sliders
-    /// </summary>
-    [Column("slider_count")]
-    public int SliderCount { get; set; }
-
-    /// <summary>
-    /// Count of spinners
-    /// </summary>
-    [Column("spinner_count")]
-    public int SpinnerCount { get; set; }
-
-    /// <summary>
-    /// Max possible combo
+    /// Maximum combo, if available
     /// </summary>
     [Column("max_combo")]
-    public int MaxCombo { get; set; }
+    public int? MaxCombo { get; init; }
 
     /// <summary>
-    /// A collection of <see cref="Game"/>s played on the <see cref="Beatmap"/>
+    /// Id of the associated beatmapset
     /// </summary>
-    public ICollection<Game> Games { get; set; } = [];
+    [Column("beatmapset_id")]
+    public int BeatmapSetId { get; init; }
 
     /// <summary>
-    /// A collection of <see cref="Tournament"/>s which pooled this beatmap
+    /// The associated beatmapset
     /// </summary>
-    public ICollection<Tournament> TournamentsPooledIn { get; set; } = [];
+    public BeatmapSet BeatmapSet { get; init; } = null!;
+
+    /// <summary>
+    /// Collection of players who created this beatmap
+    /// </summary>
+    public ICollection<Player> Creators { get; init; } = [];
+
+    /// <summary>
+    /// Collection of games played on this beatmap
+    /// </summary>
+    public ICollection<Game> Games { get; init; } = [];
+
+    /// <summary>
+    /// Collection of tournaments this beatmap is pooled in
+    /// </summary>
+    public ICollection<Tournament> TournamentsPooledIn { get; init; } = [];
+
+    /// <summary>
+    /// Collection of attributes for this beatmap
+    /// </summary>
+    public ICollection<BeatmapAttributes> Attributes { get; init; } = [];
 }
