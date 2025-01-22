@@ -15,7 +15,7 @@ public class Beatmap : UpdateableEntityBase
     /// osu! beatmap ID
     /// </summary>
     [Column("osu_id")]
-    public long OsuId { get; init; }
+    public long OsuId { get; set; }
 
     /// <summary>
     /// Denotes if the <see cref="Beatmap"/> has populated data
@@ -25,98 +25,98 @@ public class Beatmap : UpdateableEntityBase
     /// the time of access, this value will be false and all properties will be unpopulated.
     /// </remarks>
     [Column("has_data")]
-    public bool HasData { get; init; }
+    public bool HasData { get; set; }
 
     /// <summary>
     /// Ruleset
     /// </summary>
     [Column("ruleset")]
-    public Ruleset Ruleset { get; init; }
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Difficulty name
     /// </summary>
     [Column("diff_name")]
     [MaxLength(512)]
-    public string DiffName { get; init; } = string.Empty;
+    public string DiffName { get; set; } = string.Empty;
 
     /// <summary>
     /// Total length in seconds
     /// </summary>
     [Column("total_length")]
-    public int TotalLength { get; init; }
+    public long TotalLength { get; set; }
 
     /// <summary>
     /// Drain length in seconds
     /// </summary>
     [Column("drain_length")]
-    public int DrainLength { get; init; }
+    public int DrainLength { get; set; }
 
     /// <summary>
     /// Beats per minute
     /// </summary>
     [Column("bpm")]
-    public double Bpm { get; init; }
+    public double Bpm { get; set; }
 
     /// <summary>
     /// Number of circles in the beatmap
     /// </summary>
     [Column("count_circle")]
-    public int CountCircle { get; init; }
+    public int CountCircle { get; set; }
 
     /// <summary>
     /// Number of sliders in the beatmap
     /// </summary>
     [Column("count_slider")]
-    public int CountSlider { get; init; }
+    public int CountSlider { get; set; }
 
     /// <summary>
     /// Number of spinners in the beatmap
     /// </summary>
     [Column("count_spinner")]
-    public int CountSpinner { get; init; }
+    public int CountSpinner { get; set; }
 
     /// <summary>
     /// Circle size
     /// </summary>
     [Column("cs")]
-    public double Cs { get; init; }
+    public double Cs { get; set; }
 
     /// <summary>
     /// HP drain rate
     /// </summary>
     [Column("hp")]
-    public double Hp { get; init; }
+    public double Hp { get; set; }
 
     /// <summary>
     /// Overall difficulty
     /// </summary>
     [Column("od")]
-    public double Od { get; init; }
+    public double Od { get; set; }
 
     /// <summary>
     /// Approach rate
     /// </summary>
     [Column("ar")]
-    public double Ar { get; init; }
+    public double Ar { get; set; }
 
     /// <summary>
     /// Star rating (No Mod)
     /// </summary>
     [Column("sr")]
-    public double Sr { get; init; }
+    public double Sr { get; set; }
 
     /// <summary>
     /// Maximum combo, if available
     /// </summary>
     [Column("max_combo")]
-    public int? MaxCombo { get; init; }
+    public int? MaxCombo { get; set; }
 
     /// <summary>
     /// Id of the associated beatmapset
     /// </summary>
     [Column("beatmapset_id")]
-    public int BeatmapSetId { get; init; }
+    public int BeatmapSetId { get; set; }
 
     /// <summary>
     /// The associated beatmapset
@@ -126,20 +126,20 @@ public class Beatmap : UpdateableEntityBase
     /// <summary>
     /// Collection of players who created this beatmap
     /// </summary>
-    public ICollection<Player> Creators { get; init; } = [];
+    public ICollection<Player> Creators { get; set; } = [];
 
     /// <summary>
     /// Collection of games played on this beatmap
     /// </summary>
-    public ICollection<Game> Games { get; init; } = [];
+    public ICollection<Game> Games { get; set; } = [];
 
     /// <summary>
     /// Collection of tournaments this beatmap is pooled in
     /// </summary>
-    public ICollection<Tournament> TournamentsPooledIn { get; init; } = [];
+    public ICollection<Tournament> TournamentsPooledIn { get; set; } = [];
 
     /// <summary>
     /// Collection of attributes for this beatmap
     /// </summary>
-    public ICollection<BeatmapAttributes> Attributes { get; init; } = [];
+    public ICollection<BeatmapAttributes> Attributes { get; set; } = [];
 }

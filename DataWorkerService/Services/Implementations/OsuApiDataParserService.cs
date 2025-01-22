@@ -138,11 +138,11 @@ public class OsuApiDataParserService(
 
             if (fullApiBeatmap is not null)
             {
-                ParseBeatmap(cachedBeatmap, fullApiBeatmap);
+                await ParseBeatmapAsync(cachedBeatmap, fullApiBeatmap);
             }
             else
             {
-                ParseBeatmapPartial(cachedBeatmap, apiBeatmap);
+                await ParseBeatmapPartialAsync(cachedBeatmap, apiBeatmap);
             }
         }
     }
@@ -263,27 +263,54 @@ public class OsuApiDataParserService(
         return scores;
     }
 
-    public static void ParseBeatmapPartial(Beatmap beatmap, ApiBeatmap apiBeatmap)
+    public async Task ParseBeatmapPartialAsync(Beatmap beatmap, ApiBeatmap apiBeatmap)
     {
         beatmap.OsuId = apiBeatmap.Id;
         beatmap.Ruleset = apiBeatmap.Ruleset;
-        beatmap.Length = apiBeatmap.TotalLength;
+        beatmap.TotalLength = apiBeatmap.TotalLength;
         beatmap.DiffName = apiBeatmap.DifficultyName;
 
-        if (apiBeatmap.Beatmapset is null)
+        if (apiBeatmap.Beatmapset?.CreatorId is null)
         {
             return;
         }
 
-        beatmap.Artist = apiBeatmap.Beatmapset.Artist;
-        beatmap.Title = apiBeatmap.Beatmapset.Title;
-        beatmap.MapperName = apiBeatmap.Beatmapset.Creator ?? string.Empty;
-        beatmap.MapperId = apiBeatmap.Beatmapset.CreatorId ?? default;
+        Player creatorPlayer = await playersRepository.GetOrCreateAsync(apiBeatmap.Beatmapset.CreatorId.Value);
+
+        // Create or update BeatmapSet
+        var beatmapSet = new BeatmapSet
+        {
+            OsuId = apiBeatmap.Beatmapset.Id,
+            Artist = apiBeatmap.Beatmapset.Artist,
+            Title = apiBeatmap.Beatmapset.Title,
+            CreatorId = creatorPlayer.Id,
+            RankedStatus = StatusFromString(apiBeatmap.Beatmapset.Status),
+            SubmittedDate = apiBeatmap.Beatmapset.SubmittedDate,
+            RankedDate = apiBeatmap.Beatmapset.RankedDate
+        };
+
+        beatmap.BeatmapSet = beatmapSet;
+        beatmap.BeatmapSetId = beatmapSet.Id;
     }
 
-    public static void ParseBeatmap(Beatmap beatmap, BeatmapExtended fullApiBeatmap)
+    private static BeatmapRankedStatus StatusFromString(string status)
     {
-        ParseBeatmapPartial(beatmap, fullApiBeatmap);
+        return status.ToLower() switch
+        {
+            "graveyard" => BeatmapRankedStatus.Graveyard,
+            "wip" => BeatmapRankedStatus.WorkInProgress,
+            "pending" => BeatmapRankedStatus.Pending,
+            "ranked" => BeatmapRankedStatus.Ranked,
+            "approved" => BeatmapRankedStatus.Approved,
+            "qualified" => BeatmapRankedStatus.Qualified,
+            "loved" => BeatmapRankedStatus.Loved,
+            _ => throw new Exception($"Could not determine BeatmapRankedStatus from string {status}")
+        };
+    }
+
+    public async Task ParseBeatmapAsync(Beatmap beatmap, BeatmapExtended fullApiBeatmap)
+    {
+        await ParseBeatmapPartialAsync(beatmap, fullApiBeatmap);
 
         beatmap.Sr = fullApiBeatmap.StarRating;
         beatmap.Bpm = fullApiBeatmap.Bpm;
@@ -291,11 +318,10 @@ public class OsuApiDataParserService(
         beatmap.Ar = fullApiBeatmap.ApproachRate;
         beatmap.Hp = fullApiBeatmap.HpDrain;
         beatmap.Od = fullApiBeatmap.OverallDifficulty;
-        beatmap.RankedStatus = fullApiBeatmap.RankedStatus;
-        beatmap.CircleCount = fullApiBeatmap.CountCircles;
-        beatmap.SliderCount = fullApiBeatmap.CountSliders;
-        beatmap.SpinnerCount = fullApiBeatmap.CountSpinners;
-        beatmap.MaxCombo = fullApiBeatmap.MaxCombo ?? default;
+        beatmap.CountCircle = fullApiBeatmap.CountCircles;
+        beatmap.CountSlider = fullApiBeatmap.CountSliders;
+        beatmap.CountSpinner = fullApiBeatmap.CountSpinners;
+        beatmap.MaxCombo = fullApiBeatmap.MaxCombo;
 
         beatmap.HasData = true;
     }
@@ -338,7 +364,7 @@ public class OsuApiDataParserService(
 
         if (game.Beatmap is not null)
         {
-            return apiGame.StartTime.AddSeconds(game.Beatmap.Length);
+            return apiGame.StartTime.AddSeconds(game.Beatmap.TotalLength);
         }
 
         return null;

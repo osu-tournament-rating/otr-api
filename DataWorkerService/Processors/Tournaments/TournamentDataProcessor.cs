@@ -1,7 +1,7 @@
 using Database.Entities;
 using Database.Enums.Verification;
 using DataWorkerService.Processors.Resolvers.Interfaces;
-using DataWorkerService.Services.Implementations;
+using DataWorkerService.Services.Interfaces;
 using OsuApiClient;
 using OsuApiClient.Domain.Osu.Beatmaps;
 using Beatmap = Database.Entities.Beatmap;
@@ -14,7 +14,8 @@ namespace DataWorkerService.Processors.Tournaments;
 public class TournamentDataProcessor(
     ILogger<TournamentDataProcessor> logger,
     IMatchProcessorResolver matchProcessorResolver,
-    IOsuClient osuClient
+    IOsuClient osuClient,
+    IOsuApiDataParserService osuApiDataParserService
 ) : ProcessorBase<Tournament>(logger)
 {
     protected override async Task OnProcessingAsync(Tournament entity, CancellationToken cancellationToken)
@@ -46,7 +47,7 @@ public class TournamentDataProcessor(
                 continue;
             }
 
-            OsuApiDataParserService.ParseBeatmap(beatmap, apiBeatmap);
+            await osuApiDataParserService.ParseBeatmapAsync(beatmap, apiBeatmap);
         }
 
         logger.LogInformation(

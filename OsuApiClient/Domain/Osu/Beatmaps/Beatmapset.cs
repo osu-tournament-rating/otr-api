@@ -6,7 +6,6 @@ namespace OsuApiClient.Domain.Osu.Beatmaps;
 /// <summary>
 /// Represents a beatmapset of a <see cref="Beatmap"/> played in a <see cref="MultiplayerGame"/>
 /// </summary>
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class Beatmapset : IModel
 {
     /// <summary>
@@ -25,19 +24,14 @@ public class Beatmapset : IModel
     public string ArtistUnicode { get; init; } = string.Empty;
 
     /// <summary>
-    /// Title
+    /// Beats per minute
     /// </summary>
-    public string Title { get; init; } = string.Empty;
-
-    /// <summary>
-    /// Title including Unicode characters
-    /// </summary>
-    public string TitleUnicode { get; init; } = string.Empty;
+    public double Bpm { get; init; }
 
     /// <summary>
     /// Id of the <see cref="Creator"/>
     /// </summary>
-    public int? CreatorId { get; init; }
+    public long? CreatorId { get; init; }
 
     /// <summary>
     /// Username of the creator
@@ -48,6 +42,11 @@ public class Beatmapset : IModel
     /// Number of favorites
     /// </summary>
     public int FavouriteCount { get; init; }
+
+    /// <summary>
+    /// Recent update time
+    /// </summary>
+    public DateTime LastUpdated { get; init; }
 
     /// <summary>
     /// Denotes if the set contains nsfw content
@@ -70,6 +69,11 @@ public class Beatmapset : IModel
     public string? PreviewUrl { get; init; }
 
     /// <summary>
+    /// When the set entered the ranked category
+    /// </summary>
+    public DateTime? RankedDate { get; init; }
+
+    /// <summary>
     /// No description
     /// </summary>
     public string? Source { get; init; }
@@ -85,7 +89,22 @@ public class Beatmapset : IModel
     public string Status { get; init; } = string.Empty;
 
     /// <summary>
-    /// No description
+    /// When the set was published
+    /// </summary>
+    public DateTime SubmittedDate { get; init; }
+
+    /// <summary>
+    /// Title
+    /// </summary>
+    public string Title { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Title including Unicode characters
+    /// </summary>
+    public string TitleUnicode { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Featured Artist track identifier
     /// </summary>
     public long? TrackId { get; init; }
 
