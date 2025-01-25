@@ -34,6 +34,12 @@ public class Beatmap : UpdateableEntityBase
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
+    /// Ranked status
+    /// </summary>
+    [Column("ranked_status")]
+    public BeatmapRankedStatus RankedStatus { get; set; }
+
+    /// <summary>
     /// Difficulty name
     /// </summary>
     [Column("diff_name")]
@@ -116,12 +122,12 @@ public class Beatmap : UpdateableEntityBase
     /// Id of the associated beatmapset
     /// </summary>
     [Column("beatmapset_id")]
-    public int BeatmapSetId { get; set; }
+    public int? BeatmapSetId { get; set; }
 
     /// <summary>
-    /// The associated beatmapset
+    /// The associated beatmapset, if available
     /// </summary>
-    public BeatmapSet BeatmapSet { get; set; } = null!;
+    public BeatmapSet? BeatmapSet { get; set; }
 
     /// <summary>
     /// Collection of players who created this beatmap
