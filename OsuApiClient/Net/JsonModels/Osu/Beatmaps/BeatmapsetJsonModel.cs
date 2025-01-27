@@ -53,14 +53,14 @@ public class BeatmapsetJsonModel : JsonModelBase
     [JsonProperty("ranked_date")]
     public DateTime? RankedDate { get; set; }
 
+    [JsonProperty("ranked")]
+    public int RankedStatus { get; set; }
+
     [JsonProperty("source")]
     public string? Source { get; set; }
 
     [JsonProperty("spotlight")]
     public bool Spotlight { get; set; }
-
-    [JsonProperty("status")]
-    public string Status { get; set; } = string.Empty;
 
     [JsonProperty("submitted_date")]
     public DateTime SubmittedDate { get; set; }

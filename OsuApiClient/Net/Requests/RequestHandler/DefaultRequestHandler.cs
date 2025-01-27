@@ -281,8 +281,9 @@ internal sealed class DefaultRequestHandler(
         }
 
         logger.LogWarning(
-            "Fetch was unsuccessful [Platform: {Platform} | Code: {Code} | Reason: {Reason} | Response: {Response}]",
+            "Fetch was unsuccessful [Platform: {Platform} | Route: {Route} | Code: {Code} | Reason: {Reason} | Response: {Response}]",
             platform,
+            response.RequestMessage?.RequestUri,
             (int)response.StatusCode,
             response.ReasonPhrase,
             responseContent.Length > 500
@@ -306,10 +307,12 @@ internal sealed class DefaultRequestHandler(
         {
             return _serializer.Deserialize<TModel?>(new JsonTextReader(new StringReader(responseContent)));
         }
-        catch (JsonSerializationException ex)
+
+        catch (Exception ex)
         {
             logger.LogError(
-                "Serialization exception while processing response of target type [{type}]: {ex}",
+                "{ExceptionType} while processing response of target type [{Type}]: {Exception}",
+                ex.GetType().Name,
                 nameof(TModel),
                 ex
             );

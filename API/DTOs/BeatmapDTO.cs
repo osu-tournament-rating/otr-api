@@ -48,7 +48,7 @@ public class BeatmapDTO
     /// <summary>
     /// Song length
     /// </summary>
-    public double TotalLength { get; set; }
+    public long TotalLength { get; set; }
 
     /// <summary>
     /// Name of the difficulty

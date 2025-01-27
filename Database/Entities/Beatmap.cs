@@ -12,6 +12,12 @@ namespace Database.Entities;
 public class Beatmap : UpdateableEntityBase
 {
     /// <summary>
+    /// Id of the associated beatmapset
+    /// </summary>
+    [Column("beatmapset_id")]
+    public int? BeatmapSetId { get; set; }
+
+    /// <summary>
     /// osu! beatmap ID
     /// </summary>
     [Column("osu_id")]
@@ -117,12 +123,6 @@ public class Beatmap : UpdateableEntityBase
     /// </summary>
     [Column("max_combo")]
     public int? MaxCombo { get; set; }
-
-    /// <summary>
-    /// Id of the associated beatmapset
-    /// </summary>
-    [Column("beatmapset_id")]
-    public int? BeatmapSetId { get; set; }
 
     /// <summary>
     /// The associated beatmapset, if available

@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+using Database.Enums;
 using OsuApiClient.Domain.Osu.Multiplayer;
 
 namespace OsuApiClient.Domain.Osu.Beatmaps;
@@ -67,6 +67,11 @@ public class Beatmapset : IModel
     /// Preview image url
     /// </summary>
     public string? PreviewUrl { get; init; }
+
+    /// <summary>
+    /// Ranked status
+    /// </summary>
+    public BeatmapRankedStatus RankedStatus { get; init; }
 
     /// <summary>
     /// When the set entered the ranked category

@@ -59,7 +59,7 @@ public class BeatmapSet : UpdateableEntityBase
     /// <summary>
     /// The set creator
     /// </summary>
-    public Player Creator { get; set; } = null!;
+    public Player? Creator { get; set; }
 
     /// <summary>
     /// Collection of beatmaps in this beatmapset
