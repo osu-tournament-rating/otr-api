@@ -11,6 +11,7 @@ using ApiBeatmap = OsuApiClient.Domain.Osu.Beatmaps.Beatmap;
 using ApiGameScore = OsuApiClient.Domain.Osu.Multiplayer.GameScore;
 using Beatmap = Database.Entities.Beatmap;
 using GameScore = Database.Entities.GameScore;
+using User = OsuApiClient.Domain.Osu.Users.User;
 
 namespace DataWorkerService.Services.Implementations;
 
@@ -48,7 +49,7 @@ public class OsuApiDataParserService(
         logger.LogDebug("Finished parsing match [Id: {Id} | osu! Id: {OsuId}]", match.Id, match.OsuId);
     }
 
-    public async Task LoadPlayersAsync(IEnumerable<MatchUser> apiPlayers)
+    public async Task LoadPlayersAsync(IEnumerable<User> apiPlayers)
     {
         apiPlayers = apiPlayers.ToList();
         var uncachedPlayerOsuIds = apiPlayers
@@ -69,7 +70,7 @@ public class OsuApiDataParserService(
             Player? player = fetchedPlayers.FirstOrDefault(p => p.OsuId == playerOsuId);
             if (player is null)
             {
-                MatchUser? apiPlayer = apiPlayers.FirstOrDefault(p => p.Id == playerOsuId);
+                User? apiPlayer = apiPlayers.FirstOrDefault(p => p.Id == playerOsuId);
 
                 player = new Player
                 {
@@ -138,11 +139,11 @@ public class OsuApiDataParserService(
 
             if (fullApiBeatmap is not null)
             {
-                await ParseBeatmapAsync(cachedBeatmap, fullApiBeatmap);
+                await ParseBeatmap(cachedBeatmap, fullApiBeatmap);
             }
             else
             {
-                await ParseBeatmapPartialAsync(cachedBeatmap, apiBeatmap);
+                await ParseBeatmapPartial(cachedBeatmap, apiBeatmap);
             }
         }
     }
@@ -263,7 +264,7 @@ public class OsuApiDataParserService(
         return scores;
     }
 
-    public async Task ParseBeatmapPartialAsync(Beatmap beatmap, ApiBeatmap apiBeatmap)
+    public Task ParseBeatmapPartial(Beatmap beatmap, ApiBeatmap apiBeatmap)
     {
         beatmap.OsuId = apiBeatmap.Id;
         beatmap.Ruleset = apiBeatmap.Ruleset;
@@ -272,10 +273,12 @@ public class OsuApiDataParserService(
 
         if (apiBeatmap.Beatmapset?.CreatorId is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        Player creatorPlayer = await playersRepository.GetOrCreateAsync(apiBeatmap.Beatmapset.CreatorId.Value);
+        Player? creatorPlayer = _playersCache.Find(p => p.OsuId == apiBeatmap.Beatmapset.CreatorId.Value) ?? throw new Exception(
+                $"Failed to find player with osu! id {apiBeatmap.Beatmapset.CreatorId.Value} in players cache!");
+
 
         // Create or update BeatmapSet
         var beatmapSet = new BeatmapSet
@@ -284,33 +287,20 @@ public class OsuApiDataParserService(
             Artist = apiBeatmap.Beatmapset.Artist,
             Title = apiBeatmap.Beatmapset.Title,
             CreatorId = creatorPlayer.Id,
-            RankedStatus = StatusFromString(apiBeatmap.Beatmapset.Status),
+            RankedStatus = apiBeatmap.Beatmapset.RankedStatus,
             SubmittedDate = apiBeatmap.Beatmapset.SubmittedDate,
             RankedDate = apiBeatmap.Beatmapset.RankedDate
         };
 
         beatmap.BeatmapSet = beatmapSet;
         beatmap.BeatmapSetId = beatmapSet.Id;
+
+        return Task.CompletedTask;
     }
 
-    private static BeatmapRankedStatus StatusFromString(string status)
+    public Task ParseBeatmap(Beatmap beatmap, BeatmapExtended fullApiBeatmap)
     {
-        return status.ToLower() switch
-        {
-            "graveyard" => BeatmapRankedStatus.Graveyard,
-            "wip" => BeatmapRankedStatus.WorkInProgress,
-            "pending" => BeatmapRankedStatus.Pending,
-            "ranked" => BeatmapRankedStatus.Ranked,
-            "approved" => BeatmapRankedStatus.Approved,
-            "qualified" => BeatmapRankedStatus.Qualified,
-            "loved" => BeatmapRankedStatus.Loved,
-            _ => throw new Exception($"Could not determine BeatmapRankedStatus from string {status}")
-        };
-    }
-
-    public async Task ParseBeatmapAsync(Beatmap beatmap, BeatmapExtended fullApiBeatmap)
-    {
-        await ParseBeatmapPartialAsync(beatmap, fullApiBeatmap);
+        ParseBeatmapPartial(beatmap, fullApiBeatmap);
 
         beatmap.Sr = fullApiBeatmap.StarRating;
         beatmap.Bpm = fullApiBeatmap.Bpm;
@@ -324,6 +314,7 @@ public class OsuApiDataParserService(
         beatmap.MaxCombo = fullApiBeatmap.MaxCombo;
 
         beatmap.HasData = true;
+        return Task.CompletedTask;
     }
 
     public static DateTime? DetermineMatchEndTime(MultiplayerMatch apiMatch)

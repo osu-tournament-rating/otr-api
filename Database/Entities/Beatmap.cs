@@ -6,7 +6,7 @@ using Database.Enums;
 namespace Database.Entities;
 
 /// <summary>
-/// Represents a beatmap in the osu! API.
+/// Core beatmap information
 /// </summary>
 [Table("beatmaps")]
 public class Beatmap : UpdateableEntityBase

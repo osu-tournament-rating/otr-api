@@ -22,5 +22,11 @@ public interface IOsuApiDataParserService
     /// <param name="apiMatch"><see cref="MultiplayerMatch"/> data</param>
     Task ParseMatchAsync(Match match, MultiplayerMatch apiMatch);
 
-    Task ParseBeatmapAsync(Beatmap beatmap, BeatmapExtended apiBeatmap);
+    /// <summary>
+    /// Parses data from an osu! API beatmap into a beatmap which we store
+    /// </summary>
+    /// <param name="beatmap">The entity to update</param>
+    /// <param name="apiBeatmap">Result from osu! API</param>
+    /// <remarks>This method modifies the <see cref="beatmap"/> input parameter</remarks>
+    Task ParseBeatmap(Beatmap beatmap, BeatmapExtended apiBeatmap);
 }

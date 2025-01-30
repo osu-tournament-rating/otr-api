@@ -65,6 +65,9 @@ public class BeatmapsetJsonModel : JsonModelBase
     [JsonProperty("submitted_date")]
     public DateTime SubmittedDate { get; set; }
 
+    [JsonProperty("status")]
+    public string Status { get; set; } = string.Empty;
+
     [JsonProperty("title")]
     public string Title { get; set; } = string.Empty;
 

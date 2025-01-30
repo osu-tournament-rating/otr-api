@@ -8,8 +8,8 @@ namespace Database.Entities;
 /// <summary>
 /// Represents a beatmap's attributes from the osu! API
 /// </summary>
-[Table("beatmap_attributes")]
 [UsedImplicitly]
+[Table("beatmap_attributes")]
 public class BeatmapAttributes : EntityBase
 {
     /// <summary>

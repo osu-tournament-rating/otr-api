@@ -47,7 +47,7 @@ public class TournamentDataProcessor(
                 continue;
             }
 
-            await osuApiDataParserService.ParseBeatmapAsync(beatmap, apiBeatmap);
+            await osuApiDataParserService.ParseBeatmap(beatmap, apiBeatmap);
         }
 
         logger.LogInformation(

@@ -114,7 +114,7 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     /// <summary>
     /// A collection of <see cref="BeatmapSet"/> created by the <see cref="Player"/>
     /// </summary>
-    public ICollection<BeatmapSet> CreatedSets { get; set; } = [];
+    public ICollection<BeatmapSet> CreatedBeatmapSets { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="Beatmap"/> created by the <see cref="Player"/>

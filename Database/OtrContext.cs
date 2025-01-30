@@ -149,7 +149,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             // Relation: Player (Creator)
             entity
                 .HasOne(b => b.Creator)
-                .WithMany(p => p.CreatedSets)
+                .WithMany(p => p.CreatedBeatmapSets)
                 .HasForeignKey(b => b.CreatorId)
                 .OnDelete(DeleteBehavior.Cascade);
 

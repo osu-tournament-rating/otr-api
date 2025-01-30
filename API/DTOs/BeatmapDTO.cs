@@ -36,7 +36,7 @@ public class BeatmapDTO
     public double Ar { get; set; }
 
     /// <summary>
-    /// Hp
+    /// HP drain rate
     /// </summary>
     public double Hp { get; set; }
 
@@ -54,6 +54,16 @@ public class BeatmapDTO
     /// Name of the difficulty
     /// </summary>
     public string? DiffName { get; set; }
+
+    /// <summary>
+    /// Beatmapset id
+    /// </summary>
+    public int? BeatmapSetId { get; set; }
+
+    /// <summary>
+    /// Beatmapset
+    /// </summary>
+    public BeatmapSetCompactDTO? BeatmapSet { get; init; }
 
     /// <summary>
     /// Beatmap attributes

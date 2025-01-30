@@ -9,7 +9,12 @@ namespace API.DTOs;
 public class BeatmapSetCompactDTO
 {
     /// <summary>
-    /// osu! beatmapset ID
+    /// Beatmapset id
+    /// </summary>
+    public int Id { get; set; }
+
+    /// <summary>
+    /// osu! beatmapset id
     /// </summary>
     public long OsuId { get; set; }
 
