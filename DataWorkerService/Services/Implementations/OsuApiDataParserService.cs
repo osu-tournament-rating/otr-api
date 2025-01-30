@@ -281,7 +281,7 @@ public class OsuApiDataParserService(
 
 
         // Create or update BeatmapSet
-        var beatmapSet = new BeatmapSet
+        beatmap.BeatmapSet = new BeatmapSet
         {
             OsuId = apiBeatmap.Beatmapset.Id,
             Artist = apiBeatmap.Beatmapset.Artist,
@@ -291,9 +291,6 @@ public class OsuApiDataParserService(
             SubmittedDate = apiBeatmap.Beatmapset.SubmittedDate,
             RankedDate = apiBeatmap.Beatmapset.RankedDate
         };
-
-        beatmap.BeatmapSet = beatmapSet;
-        beatmap.BeatmapSetId = beatmapSet.Id;
 
         return Task.CompletedTask;
     }

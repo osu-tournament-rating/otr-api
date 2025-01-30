@@ -13,12 +13,6 @@ namespace Database.Entities;
 public class BeatmapAttributes : EntityBase
 {
     /// <summary>
-    /// Id of the associated beatmap
-    /// </summary>
-    [Column("beatmap_id")]
-    public int BeatmapId { get; set; }
-
-    /// <summary>
     /// Mods applied to the beatmap
     /// </summary>
     [Column("mods")]
@@ -29,6 +23,12 @@ public class BeatmapAttributes : EntityBase
     /// </summary>
     [Column("sr")]
     public double Sr { get; set; }
+
+    /// <summary>
+    /// Id of the associated beatmap
+    /// </summary>
+    [Column("beatmap_id")]
+    public int BeatmapId { get; set; }
 
     /// <summary>
     /// The associated beatmap

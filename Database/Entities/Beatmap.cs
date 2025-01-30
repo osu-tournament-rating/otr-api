@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
-// ReSharper disable CollectionNeverUpdated.Global
 
 namespace Database.Entities;
 
@@ -9,6 +9,7 @@ namespace Database.Entities;
 /// Core beatmap information
 /// </summary>
 [Table("beatmaps")]
+[SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 public class Beatmap : UpdateableEntityBase
 {
     /// <summary>

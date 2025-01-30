@@ -364,7 +364,10 @@ public sealed class OsuClient(
                 Credentials = _credentials,
                 Method = HttpMethod.Get,
                 Route = new Uri(Endpoints.Osu.Beatmaps, UriKind.Relative),
-                QueryParameters = beatmapIds.Select((id, index) => new KeyValuePair<string, string>($"ids%5B{index}%5D", id.ToString())).ToDictionary()
+                QueryParameters = beatmapIds
+                    .Distinct()
+                    .Select((id, index) => new KeyValuePair<string, string>($"ids%5B{index}%5D", id.ToString()))
+                    .ToDictionary()
             },
             cancellationToken
         ))?.Beatmaps;

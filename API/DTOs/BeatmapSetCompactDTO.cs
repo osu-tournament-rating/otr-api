@@ -19,11 +19,6 @@ public class BeatmapSetCompactDTO
     public long OsuId { get; set; }
 
     /// <summary>
-    /// Id of the Player who created the set
-    /// </summary>
-    public int CreatorId { get; set; }
-
-    /// <summary>
     /// Artist
     /// </summary>
     [MaxLength(512)]
@@ -51,7 +46,12 @@ public class BeatmapSetCompactDTO
     public DateTime? SubmittedDate { get; set; }
 
     /// <summary>
+    /// Id of the Player who created the set
+    /// </summary>
+    public int CreatorId { get; set; }
+
+    /// <summary>
     /// The set creator
     /// </summary>
-    public PlayerCompactDTO Creator { get; set; } = new();
+    public PlayerCompactDTO? Creator { get; set; }
 }
