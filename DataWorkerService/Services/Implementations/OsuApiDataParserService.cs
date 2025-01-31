@@ -11,6 +11,7 @@ using ApiBeatmap = OsuApiClient.Domain.Osu.Beatmaps.Beatmap;
 using ApiGameScore = OsuApiClient.Domain.Osu.Multiplayer.GameScore;
 using Beatmap = Database.Entities.Beatmap;
 using GameScore = Database.Entities.GameScore;
+using User = OsuApiClient.Domain.Osu.Users.User;
 
 namespace DataWorkerService.Services.Implementations;
 
@@ -48,7 +49,7 @@ public class OsuApiDataParserService(
         logger.LogDebug("Finished parsing match [Id: {Id} | osu! Id: {OsuId}]", match.Id, match.OsuId);
     }
 
-    public async Task LoadPlayersAsync(IEnumerable<MatchUser> apiPlayers)
+    public async Task LoadPlayersAsync(IEnumerable<User> apiPlayers)
     {
         apiPlayers = apiPlayers.ToList();
         var uncachedPlayerOsuIds = apiPlayers
@@ -69,7 +70,7 @@ public class OsuApiDataParserService(
             Player? player = fetchedPlayers.FirstOrDefault(p => p.OsuId == playerOsuId);
             if (player is null)
             {
-                MatchUser? apiPlayer = apiPlayers.FirstOrDefault(p => p.Id == playerOsuId);
+                User? apiPlayer = apiPlayers.FirstOrDefault(p => p.Id == playerOsuId);
 
                 player = new Player
                 {
@@ -138,11 +139,11 @@ public class OsuApiDataParserService(
 
             if (fullApiBeatmap is not null)
             {
-                ParseBeatmap(cachedBeatmap, fullApiBeatmap);
+                await ParseBeatmap(cachedBeatmap, fullApiBeatmap);
             }
             else
             {
-                ParseBeatmapPartial(cachedBeatmap, apiBeatmap);
+                await ParseBeatmapPartial(cachedBeatmap, apiBeatmap);
             }
         }
     }
@@ -263,25 +264,38 @@ public class OsuApiDataParserService(
         return scores;
     }
 
-    public static void ParseBeatmapPartial(Beatmap beatmap, ApiBeatmap apiBeatmap)
+    public Task ParseBeatmapPartial(Beatmap beatmap, ApiBeatmap apiBeatmap)
     {
         beatmap.OsuId = apiBeatmap.Id;
         beatmap.Ruleset = apiBeatmap.Ruleset;
-        beatmap.Length = apiBeatmap.TotalLength;
+        beatmap.TotalLength = apiBeatmap.TotalLength;
         beatmap.DiffName = apiBeatmap.DifficultyName;
 
-        if (apiBeatmap.Beatmapset is null)
+        if (apiBeatmap.Beatmapset?.CreatorId is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        beatmap.Artist = apiBeatmap.Beatmapset.Artist;
-        beatmap.Title = apiBeatmap.Beatmapset.Title;
-        beatmap.MapperName = apiBeatmap.Beatmapset.Creator ?? string.Empty;
-        beatmap.MapperId = apiBeatmap.Beatmapset.CreatorId ?? default;
+        Player creatorPlayer = _playersCache.Find(p => p.OsuId == apiBeatmap.Beatmapset.CreatorId.Value) ?? throw new Exception(
+                $"Failed to find player with osu! id {apiBeatmap.Beatmapset.CreatorId.Value} in players cache!");
+
+
+        // Create or update BeatmapSet
+        beatmap.BeatmapSet = new BeatmapSet
+        {
+            OsuId = apiBeatmap.Beatmapset.Id,
+            Artist = apiBeatmap.Beatmapset.Artist,
+            Title = apiBeatmap.Beatmapset.Title,
+            CreatorId = creatorPlayer.Id,
+            RankedStatus = apiBeatmap.Beatmapset.RankedStatus,
+            SubmittedDate = apiBeatmap.Beatmapset.SubmittedDate,
+            RankedDate = apiBeatmap.Beatmapset.RankedDate
+        };
+
+        return Task.CompletedTask;
     }
 
-    public static void ParseBeatmap(Beatmap beatmap, BeatmapExtended fullApiBeatmap)
+    public Task ParseBeatmap(Beatmap beatmap, BeatmapExtended fullApiBeatmap)
     {
         ParseBeatmapPartial(beatmap, fullApiBeatmap);
 
@@ -291,13 +305,13 @@ public class OsuApiDataParserService(
         beatmap.Ar = fullApiBeatmap.ApproachRate;
         beatmap.Hp = fullApiBeatmap.HpDrain;
         beatmap.Od = fullApiBeatmap.OverallDifficulty;
-        beatmap.RankedStatus = fullApiBeatmap.RankedStatus;
-        beatmap.CircleCount = fullApiBeatmap.CountCircles;
-        beatmap.SliderCount = fullApiBeatmap.CountSliders;
-        beatmap.SpinnerCount = fullApiBeatmap.CountSpinners;
-        beatmap.MaxCombo = fullApiBeatmap.MaxCombo ?? default;
+        beatmap.CountCircle = fullApiBeatmap.CountCircles;
+        beatmap.CountSlider = fullApiBeatmap.CountSliders;
+        beatmap.CountSpinner = fullApiBeatmap.CountSpinners;
+        beatmap.MaxCombo = fullApiBeatmap.MaxCombo;
 
         beatmap.HasData = true;
+        return Task.CompletedTask;
     }
 
     public static DateTime? DetermineMatchEndTime(MultiplayerMatch apiMatch)
@@ -338,7 +352,7 @@ public class OsuApiDataParserService(
 
         if (game.Beatmap is not null)
         {
-            return apiGame.StartTime.AddSeconds(game.Beatmap.Length);
+            return apiGame.StartTime.AddSeconds(game.Beatmap.TotalLength);
         }
 
         return null;

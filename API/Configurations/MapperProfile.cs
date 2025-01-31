@@ -14,6 +14,8 @@ public class MapperProfile : Profile
         CreateMap<AdminNoteEntityBase, AdminNoteDTO>();
 
         CreateMap<Beatmap, BeatmapDTO>();
+        CreateMap<BeatmapSet, BeatmapSetCompactDTO>();
+        CreateMap<BeatmapAttributes, BeatmapAttributesDTO>();
 
         CreateMap<Game, GameDTO>()
             .ForMember(x => x.Players, opt => opt.Ignore());

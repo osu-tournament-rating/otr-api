@@ -17,14 +17,23 @@ public class BeatmapsetJsonModel : JsonModelBase
     [JsonProperty("artist_unicode")]
     public string ArtistUnicode { get; set; } = string.Empty;
 
+    [JsonProperty("bpm")]
+    public double Bpm { get; set; }
+
     [JsonProperty("creator")]
     public string? Creator { get; set; }
+
+    [JsonProperty("creator_id")]
+    public long? CreatorId { get; set; }
 
     [JsonProperty("favourite_count")]
     public int FavouriteCount { get; set; }
 
     [JsonProperty("id")]
     public long Id { get; set; }
+
+    [JsonProperty("last_updated")]
+    public DateTime LastUpdated { get; set; }
 
     [JsonProperty("nsfw")]
     public bool Nsfw { get; set; }
@@ -35,14 +44,26 @@ public class BeatmapsetJsonModel : JsonModelBase
     [JsonProperty("play_count")]
     public long PlayCount { get; set; }
 
+    /// <summary>
+    /// Audio preview
+    /// </summary>
     [JsonProperty("preview_url")]
     public string? PreviewUrl { get; set; }
+
+    [JsonProperty("ranked_date")]
+    public DateTime? RankedDate { get; set; }
+
+    [JsonProperty("ranked")]
+    public int RankedStatus { get; set; }
 
     [JsonProperty("source")]
     public string? Source { get; set; }
 
     [JsonProperty("spotlight")]
     public bool Spotlight { get; set; }
+
+    [JsonProperty("submitted_date")]
+    public DateTime SubmittedDate { get; set; }
 
     [JsonProperty("status")]
     public string Status { get; set; } = string.Empty;
@@ -57,7 +78,7 @@ public class BeatmapsetJsonModel : JsonModelBase
     public long? TrackId { get; set; }
 
     [JsonProperty("user_id")]
-    public int? UserId { get; set; }
+    public long? UserId { get; set; }
 
     [JsonProperty("video")]
     public bool Video { get; set; }

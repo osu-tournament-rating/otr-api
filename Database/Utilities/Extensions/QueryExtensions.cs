@@ -18,6 +18,16 @@ public static class QueryExtensions
     public static IQueryable<T> Page<T>(this IQueryable<T> query, int limit, int page) =>
         query.AsQueryable().Skip(limit * page).Take(limit);
 
+    #region Beatmaps
+
+    public static IQueryable<Beatmap> IncludeChildren(this IQueryable<Beatmap> query) =>
+        query
+            .Include(b => b.BeatmapSet)
+            .Include(b => b.Creators)
+            .Include(b => b.Attributes);
+
+    #endregion
+
     #region Ratings
 
     /// <summary>

@@ -10,11 +10,8 @@ namespace OsuApiClient.Net.JsonModels.Osu.Beatmaps;
 /// ppy 2025
 /// Last accessed January 2025
 /// </copyright>
-public class BeatmapOwnerJsonModel : JsonModelBase
+public class BeatmapCollectionJsonModel : JsonModelBase
 {
-    [JsonProperty("id")]
-    public long Id { get; set; }
-
-    [JsonProperty("username")]
-    public string Username { get; set; } = string.Empty;
+    [JsonProperty("beatmaps")]
+    public IEnumerable<BeatmapExtendedJsonModel> Beatmaps { get; init; } = [];
 }

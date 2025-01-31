@@ -24,8 +24,8 @@ public static class Endpoints
         public const string Me = Api + "/me";
 
         public const string Beatmaps = Api + "/beatmaps";
-        public const string BeatmapAttributes = Beatmaps + "/{0:long}/attributes";
-        public const string Beatmapsets = Api + "/beatmapsets/{0:long}";
+        public const string BeatmapAttributes = Beatmaps + "/{0}/attributes";
+        public const string Beatmapsets = Api + "/beatmapsets/{0}";
     }
 
     public static class OsuTrack

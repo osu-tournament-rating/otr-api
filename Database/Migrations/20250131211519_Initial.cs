@@ -9,44 +9,9 @@ namespace Database.Migrations
     /// <inheritdoc />
     public partial class Initial : Migration
     {
-        private static readonly string[] columns = new[] { "player_id", "game_id" };
-
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "beatmaps",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
-                    osu_id = table.Column<long>(type: "bigint", nullable: false),
-                    has_data = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    mapper_id = table.Column<long>(type: "bigint", nullable: false),
-                    mapper_name = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
-                    artist = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
-                    title = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
-                    diff_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    ranked_status = table.Column<int>(type: "integer", nullable: false),
-                    sr = table.Column<double>(type: "double precision", nullable: false),
-                    bpm = table.Column<double>(type: "double precision", nullable: false),
-                    cs = table.Column<double>(type: "double precision", nullable: false),
-                    ar = table.Column<double>(type: "double precision", nullable: false),
-                    hp = table.Column<double>(type: "double precision", nullable: false),
-                    od = table.Column<double>(type: "double precision", nullable: false),
-                    length = table.Column<double>(type: "double precision", nullable: false),
-                    ruleset = table.Column<int>(type: "integer", nullable: false),
-                    circle_count = table.Column<int>(type: "integer", nullable: false),
-                    slider_count = table.Column<int>(type: "integer", nullable: false),
-                    spinner_count = table.Column<int>(type: "integer", nullable: false),
-                    max_combo = table.Column<int>(type: "integer", nullable: false),
-                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_beatmaps", x => x.id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "players",
                 columns: table => new
@@ -54,18 +19,96 @@ namespace Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     osu_id = table.Column<long>(type: "bigint", nullable: false),
-                    username = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
-                    country = table.Column<string>(type: "character varying(4)", maxLength: 4, nullable: false),
-                    default_ruleset = table.Column<int>(type: "integer", nullable: false),
+                    username = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false, defaultValue: ""),
+                    country = table.Column<string>(type: "character varying(4)", maxLength: 4, nullable: false, defaultValue: ""),
+                    default_ruleset = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     osu_last_fetch = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
                     osu_track_last_fetch = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    ruleset_data = table.Column<string>(type: "jsonb", nullable: true)
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_players", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "beatmapsets",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    osu_id = table.Column<long>(type: "bigint", nullable: false),
+                    creator_id = table.Column<int>(type: "integer", nullable: true),
+                    artist = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
+                    title = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
+                    ranked_status = table.Column<int>(type: "integer", nullable: false),
+                    ranked_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    submitted_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_beatmapsets", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_beatmapsets_players_creator_id",
+                        column: x => x.creator_id,
+                        principalTable: "players",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "player_highest_ranks",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    ruleset = table.Column<int>(type: "integer", nullable: false),
+                    global_rank = table.Column<int>(type: "integer", nullable: false),
+                    global_rank_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    country_rank = table.Column<int>(type: "integer", nullable: false),
+                    country_rank_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    player_id = table.Column<int>(type: "integer", nullable: false),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_player_highest_ranks", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_player_highest_ranks_players_player_id",
+                        column: x => x.player_id,
+                        principalTable: "players",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "player_osu_ruleset_data",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    ruleset = table.Column<int>(type: "integer", nullable: false),
+                    pp = table.Column<double>(type: "double precision", nullable: false),
+                    global_rank = table.Column<int>(type: "integer", nullable: false),
+                    earliest_global_rank = table.Column<int>(type: "integer", nullable: true),
+                    earliest_global_rank_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    player_id = table.Column<int>(type: "integer", nullable: false),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_player_osu_ruleset_data", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_player_osu_ruleset_data_players_player_id",
+                        column: x => x.player_id,
+                        principalTable: "players",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -100,12 +143,11 @@ namespace Database.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    last_login = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    scopes = table.Column<string[]>(type: "text[]", nullable: false),
-                    player_id = table.Column<int>(type: "integer", nullable: true),
+                    last_login = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    scopes = table.Column<string[]>(type: "text[]", nullable: false, defaultValue: new string[0]),
+                    player_id = table.Column<int>(type: "integer", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    rate_limit_overrides = table.Column<string>(type: "jsonb", nullable: false)
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -119,6 +161,44 @@ namespace Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "beatmaps",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    osu_id = table.Column<long>(type: "bigint", nullable: false),
+                    has_data = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    ruleset = table.Column<int>(type: "integer", nullable: false),
+                    ranked_status = table.Column<int>(type: "integer", nullable: false),
+                    diff_name = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
+                    total_length = table.Column<long>(type: "bigint", nullable: false),
+                    drain_length = table.Column<int>(type: "integer", nullable: false),
+                    bpm = table.Column<double>(type: "double precision", nullable: false),
+                    count_circle = table.Column<int>(type: "integer", nullable: false),
+                    count_slider = table.Column<int>(type: "integer", nullable: false),
+                    count_spinner = table.Column<int>(type: "integer", nullable: false),
+                    cs = table.Column<double>(type: "double precision", nullable: false),
+                    hp = table.Column<double>(type: "double precision", nullable: false),
+                    od = table.Column<double>(type: "double precision", nullable: false),
+                    ar = table.Column<double>(type: "double precision", nullable: false),
+                    sr = table.Column<double>(type: "double precision", nullable: false),
+                    max_combo = table.Column<int>(type: "integer", nullable: true),
+                    beatmapset_id = table.Column<int>(type: "integer", nullable: true),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_beatmaps", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_beatmaps_beatmapsets_beatmapset_id",
+                        column: x => x.beatmapset_id,
+                        principalTable: "beatmapsets",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "oauth_clients",
                 columns: table => new
                 {
@@ -126,10 +206,10 @@ namespace Database.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     secret = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
                     scopes = table.Column<string[]>(type: "text[]", nullable: false),
+                    rate_limit_override = table.Column<int>(type: "integer", nullable: true),
                     user_id = table.Column<int>(type: "integer", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    rate_limit_overrides = table.Column<string>(type: "jsonb", nullable: false)
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -137,6 +217,35 @@ namespace Database.Migrations
                     table.ForeignKey(
                         name: "FK_oauth_clients_users_user_id",
                         column: x => x.user_id,
+                        principalTable: "users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "player_admin_notes",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    note = table.Column<string>(type: "text", nullable: false),
+                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    admin_user_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_player_admin_notes", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_player_admin_notes_players_ref_id",
+                        column: x => x.ref_id,
+                        principalTable: "players",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_player_admin_notes_users_admin_user_id",
+                        column: x => x.admin_user_id,
                         principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -154,14 +263,14 @@ namespace Database.Migrations
                     rank_range_lower_bound = table.Column<int>(type: "integer", nullable: false),
                     ruleset = table.Column<int>(type: "integer", nullable: false),
                     lobby_size = table.Column<int>(type: "integer", nullable: false),
-                    verification_status = table.Column<int>(type: "integer", nullable: false),
-                    rejection_reason = table.Column<int>(type: "integer", nullable: false),
-                    processing_status = table.Column<int>(type: "integer", nullable: false),
+                    verification_status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     last_processing_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
+                    rejection_reason = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    processing_status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     submitted_by_user_id = table.Column<int>(type: "integer", nullable: true),
                     verified_by_user_id = table.Column<int>(type: "integer", nullable: true),
-                    StartTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    start_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
+                    end_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -189,7 +298,7 @@ namespace Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     default_ruleset = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    default_ruleset_controlled = table.Column<bool>(type: "boolean", nullable: false),
+                    default_ruleset_controlled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     user_id = table.Column<int>(type: "integer", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
@@ -206,19 +315,113 @@ namespace Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "__join__beatmap_creators",
+                columns: table => new
+                {
+                    CreatedBeatmapsId = table.Column<int>(type: "integer", nullable: false),
+                    CreatorsId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK___join__beatmap_creators", x => new { x.CreatedBeatmapsId, x.CreatorsId });
+                    table.ForeignKey(
+                        name: "FK___join__beatmap_creators_beatmaps_CreatedBeatmapsId",
+                        column: x => x.CreatedBeatmapsId,
+                        principalTable: "beatmaps",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK___join__beatmap_creators_players_CreatorsId",
+                        column: x => x.CreatorsId,
+                        principalTable: "players",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "beatmap_attributes",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    mods = table.Column<int>(type: "integer", nullable: false),
+                    sr = table.Column<double>(type: "double precision", nullable: false),
+                    beatmap_id = table.Column<int>(type: "integer", nullable: false),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_beatmap_attributes", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_beatmap_attributes_beatmaps_beatmap_id",
+                        column: x => x.beatmap_id,
+                        principalTable: "beatmaps",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "oauth_client_admin_notes",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    note = table.Column<string>(type: "text", nullable: false),
+                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    admin_user_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_oauth_client_admin_notes", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_oauth_client_admin_notes_oauth_clients_ref_id",
+                        column: x => x.ref_id,
+                        principalTable: "oauth_clients",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "__join__pooled_beatmaps",
+                columns: table => new
+                {
+                    PooledBeatmapsId = table.Column<int>(type: "integer", nullable: false),
+                    TournamentsPooledInId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK___join__pooled_beatmaps", x => new { x.PooledBeatmapsId, x.TournamentsPooledInId });
+                    table.ForeignKey(
+                        name: "FK___join__pooled_beatmaps_beatmaps_PooledBeatmapsId",
+                        column: x => x.PooledBeatmapsId,
+                        principalTable: "beatmaps",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK___join__pooled_beatmaps_tournaments_TournamentsPooledInId",
+                        column: x => x.TournamentsPooledInId,
+                        principalTable: "tournaments",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "matches",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     osu_id = table.Column<long>(type: "bigint", nullable: false),
-                    name = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
+                    name = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false, defaultValue: ""),
                     start_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
                     end_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
-                    verification_status = table.Column<int>(type: "integer", nullable: false),
-                    rejection_reason = table.Column<int>(type: "integer", nullable: false),
-                    processing_status = table.Column<int>(type: "integer", nullable: false),
+                    verification_status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     last_processing_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
+                    rejection_reason = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    warning_flags = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    processing_status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     tournament_id = table.Column<int>(type: "integer", nullable: false),
                     submitted_by_user_id = table.Column<int>(type: "integer", nullable: true),
                     verified_by_user_id = table.Column<int>(type: "integer", nullable: true),
@@ -288,6 +491,35 @@ namespace Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "tournament_admin_notes",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    note = table.Column<string>(type: "text", nullable: false),
+                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    admin_user_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_tournament_admin_notes", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_tournament_admin_notes_tournaments_ref_id",
+                        column: x => x.ref_id,
+                        principalTable: "tournaments",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_tournament_admin_notes_users_admin_user_id",
+                        column: x => x.admin_user_id,
+                        principalTable: "users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "tournament_audits",
                 columns: table => new
                 {
@@ -322,12 +554,12 @@ namespace Database.Migrations
                     scoring_type = table.Column<int>(type: "integer", nullable: false),
                     team_type = table.Column<int>(type: "integer", nullable: false),
                     mods = table.Column<int>(type: "integer", nullable: false),
-                    post_mod_sr = table.Column<double>(type: "double precision", nullable: false),
                     start_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
                     end_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
-                    verification_status = table.Column<int>(type: "integer", nullable: false),
-                    rejection_reason = table.Column<int>(type: "integer", nullable: false),
-                    processing_status = table.Column<int>(type: "integer", nullable: false),
+                    verification_status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    rejection_reason = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    warning_flags = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
+                    processing_status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
                     last_processing_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
                     match_id = table.Column<int>(type: "integer", nullable: false),
                     beatmap_id = table.Column<int>(type: "integer", nullable: true),
@@ -347,6 +579,35 @@ namespace Database.Migrations
                         name: "FK_games_matches_match_id",
                         column: x => x.match_id,
                         principalTable: "matches",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "match_admin_notes",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    note = table.Column<string>(type: "text", nullable: false),
+                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    admin_user_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_match_admin_notes", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_match_admin_notes_matches_ref_id",
+                        column: x => x.ref_id,
+                        principalTable: "matches",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_match_admin_notes_users_admin_user_id",
+                        column: x => x.admin_user_id,
+                        principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -398,7 +659,7 @@ namespace Database.Migrations
                         column: x => x.match_id,
                         principalTable: "matches",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.SetNull);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -446,6 +707,7 @@ namespace Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     adjustment_type = table.Column<int>(type: "integer", nullable: false),
+                    ruleset = table.Column<int>(type: "integer", nullable: false),
                     timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     rating_before = table.Column<double>(type: "double precision", nullable: false),
                     rating_after = table.Column<double>(type: "double precision", nullable: false),
@@ -475,6 +737,35 @@ namespace Database.Migrations
                         name: "FK_rating_adjustments_players_player_id",
                         column: x => x.player_id,
                         principalTable: "players",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "game_admin_notes",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    note = table.Column<string>(type: "text", nullable: false),
+                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    admin_user_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_game_admin_notes", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_game_admin_notes_games_ref_id",
+                        column: x => x.ref_id,
+                        principalTable: "games",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_game_admin_notes_users_admin_user_id",
+                        column: x => x.admin_user_id,
+                        principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -525,9 +816,9 @@ namespace Database.Migrations
                     team = table.Column<int>(type: "integer", nullable: false),
                     ruleset = table.Column<int>(type: "integer", nullable: false),
                     verification_status = table.Column<int>(type: "integer", nullable: false),
+                    last_processing_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
                     rejection_reason = table.Column<int>(type: "integer", nullable: false),
                     processing_status = table.Column<int>(type: "integer", nullable: false),
-                    last_processing_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "'2007-09-17T00:00:00'::timestamp"),
                     game_id = table.Column<int>(type: "integer", nullable: false),
                     player_id = table.Column<int>(type: "integer", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
@@ -577,6 +868,35 @@ namespace Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "game_score_admin_notes",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    note = table.Column<string>(type: "text", nullable: false),
+                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    admin_user_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_game_score_admin_notes", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_game_score_admin_notes_game_scores_ref_id",
+                        column: x => x.ref_id,
+                        principalTable: "game_scores",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_game_score_admin_notes_users_admin_user_id",
+                        column: x => x.admin_user_id,
+                        principalTable: "users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "game_score_audits",
                 columns: table => new
                 {
@@ -601,14 +921,66 @@ namespace Database.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX___join__beatmap_creators_CreatorsId",
+                table: "__join__beatmap_creators",
+                column: "CreatorsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX___join__pooled_beatmaps_TournamentsPooledInId",
+                table: "__join__pooled_beatmaps",
+                column: "TournamentsPooledInId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_beatmap_attributes_beatmap_id_mods",
+                table: "beatmap_attributes",
+                columns: new[] { "beatmap_id", "mods" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_beatmaps_beatmapset_id",
+                table: "beatmaps",
+                column: "beatmapset_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_beatmaps_osu_id",
                 table: "beatmaps",
                 column: "osu_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_beatmapsets_creator_id",
+                table: "beatmapsets",
+                column: "creator_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_beatmapsets_osu_id",
+                table: "beatmapsets",
+                column: "osu_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_admin_notes_admin_user_id",
+                table: "game_admin_notes",
+                column: "admin_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_admin_notes_ref_id",
+                table: "game_admin_notes",
+                column: "ref_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_game_audits_ref_id",
                 table: "game_audits",
+                column: "ref_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_score_admin_notes_admin_user_id",
+                table: "game_score_admin_notes",
+                column: "admin_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_score_admin_notes_ref_id",
+                table: "game_score_admin_notes",
                 column: "ref_id");
 
             migrationBuilder.CreateIndex(
@@ -629,7 +1001,7 @@ namespace Database.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_game_scores_player_id_game_id",
                 table: "game_scores",
-                columns: columns,
+                columns: new[] { "player_id", "game_id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -663,6 +1035,16 @@ namespace Database.Migrations
                 name: "IX_games_start_time",
                 table: "games",
                 column: "start_time");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_match_admin_notes_admin_user_id",
+                table: "match_admin_notes",
+                column: "admin_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_match_admin_notes_ref_id",
+                table: "match_admin_notes",
+                column: "ref_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_match_audits_ref_id",
@@ -707,9 +1089,42 @@ namespace Database.Migrations
                 column: "verified_by_user_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_oauth_client_admin_notes_ref_id",
+                table: "oauth_client_admin_notes",
+                column: "ref_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_oauth_clients_user_id",
                 table: "oauth_clients",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_player_admin_notes_admin_user_id",
+                table: "player_admin_notes",
+                column: "admin_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_player_admin_notes_ref_id",
+                table: "player_admin_notes",
+                column: "ref_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_player_highest_ranks_country_rank",
+                table: "player_highest_ranks",
+                column: "country_rank",
+                descending: new bool[0]);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_player_highest_ranks_global_rank",
+                table: "player_highest_ranks",
+                column: "global_rank",
+                descending: new bool[0]);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_player_highest_ranks_player_id_ruleset",
+                table: "player_highest_ranks",
+                columns: new[] { "player_id", "ruleset" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_player_match_stats_match_id",
@@ -733,6 +1148,12 @@ namespace Database.Migrations
                 columns: new[] { "player_id", "won" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_player_osu_ruleset_data_player_id_ruleset",
+                table: "player_osu_ruleset_data",
+                columns: new[] { "player_id", "ruleset" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_player_ratings_player_id",
                 table: "player_ratings",
                 column: "player_id");
@@ -747,7 +1168,7 @@ namespace Database.Migrations
                 name: "IX_player_ratings_rating",
                 table: "player_ratings",
                 column: "rating",
-                descending: Array.Empty<bool>());
+                descending: new bool[0]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_player_ratings_ruleset",
@@ -793,6 +1214,16 @@ namespace Database.Migrations
                 column: "player_rating_id");
 
             migrationBuilder.CreateIndex(
+                name: "IX_tournament_admin_notes_admin_user_id",
+                table: "tournament_admin_notes",
+                column: "admin_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_tournament_admin_notes_ref_id",
+                table: "tournament_admin_notes",
+                column: "ref_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_tournament_audits_ref_id",
                 table: "tournament_audits",
                 column: "ref_id");
@@ -835,7 +1266,22 @@ namespace Database.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "__join__beatmap_creators");
+
+            migrationBuilder.DropTable(
+                name: "__join__pooled_beatmaps");
+
+            migrationBuilder.DropTable(
+                name: "beatmap_attributes");
+
+            migrationBuilder.DropTable(
+                name: "game_admin_notes");
+
+            migrationBuilder.DropTable(
                 name: "game_audits");
+
+            migrationBuilder.DropTable(
+                name: "game_score_admin_notes");
 
             migrationBuilder.DropTable(
                 name: "game_score_audits");
@@ -844,22 +1290,37 @@ namespace Database.Migrations
                 name: "game_win_records");
 
             migrationBuilder.DropTable(
+                name: "match_admin_notes");
+
+            migrationBuilder.DropTable(
                 name: "match_audits");
 
             migrationBuilder.DropTable(
                 name: "match_win_records");
 
             migrationBuilder.DropTable(
-                name: "oauth_clients");
+                name: "oauth_client_admin_notes");
+
+            migrationBuilder.DropTable(
+                name: "player_admin_notes");
+
+            migrationBuilder.DropTable(
+                name: "player_highest_ranks");
 
             migrationBuilder.DropTable(
                 name: "player_match_stats");
+
+            migrationBuilder.DropTable(
+                name: "player_osu_ruleset_data");
 
             migrationBuilder.DropTable(
                 name: "player_tournament_stats");
 
             migrationBuilder.DropTable(
                 name: "rating_adjustments");
+
+            migrationBuilder.DropTable(
+                name: "tournament_admin_notes");
 
             migrationBuilder.DropTable(
                 name: "tournament_audits");
@@ -869,6 +1330,9 @@ namespace Database.Migrations
 
             migrationBuilder.DropTable(
                 name: "game_scores");
+
+            migrationBuilder.DropTable(
+                name: "oauth_clients");
 
             migrationBuilder.DropTable(
                 name: "player_ratings");
@@ -881,6 +1345,9 @@ namespace Database.Migrations
 
             migrationBuilder.DropTable(
                 name: "matches");
+
+            migrationBuilder.DropTable(
+                name: "beatmapsets");
 
             migrationBuilder.DropTable(
                 name: "tournaments");

@@ -35,19 +35,25 @@ namespace Database.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("ar");
 
-                    b.Property<string>("Artist")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("artist");
+                    b.Property<int?>("BeatmapSetId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beatmapset_id");
 
                     b.Property<double>("Bpm")
                         .HasColumnType("double precision")
                         .HasColumnName("bpm");
 
-                    b.Property<int>("CircleCount")
+                    b.Property<int>("CountCircle")
                         .HasColumnType("integer")
-                        .HasColumnName("circle_count");
+                        .HasColumnName("count_circle");
+
+                    b.Property<int>("CountSlider")
+                        .HasColumnType("integer")
+                        .HasColumnName("count_slider");
+
+                    b.Property<int>("CountSpinner")
+                        .HasColumnType("integer")
+                        .HasColumnName("count_spinner");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -61,9 +67,13 @@ namespace Database.Migrations
 
                     b.Property<string>("DiffName")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
                         .HasColumnName("diff_name");
+
+                    b.Property<int>("DrainLength")
+                        .HasColumnType("integer")
+                        .HasColumnName("drain_length");
 
                     b.Property<bool>("HasData")
                         .ValueGeneratedOnAdd()
@@ -75,21 +85,7 @@ namespace Database.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("hp");
 
-                    b.Property<double>("Length")
-                        .HasColumnType("double precision")
-                        .HasColumnName("length");
-
-                    b.Property<long>("MapperId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("mapper_id");
-
-                    b.Property<string>("MapperName")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("mapper_name");
-
-                    b.Property<int>("MaxCombo")
+                    b.Property<int?>("MaxCombo")
                         .HasColumnType("integer")
                         .HasColumnName("max_combo");
 
@@ -109,17 +105,103 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("ruleset");
 
-                    b.Property<int>("SliderCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("slider_count");
+                    b.Property<double>("Sr")
+                        .HasColumnType("double precision")
+                        .HasColumnName("sr");
 
-                    b.Property<int>("SpinnerCount")
+                    b.Property<long>("TotalLength")
+                        .HasColumnType("bigint")
+                        .HasColumnName("total_length");
+
+                    b.Property<DateTime?>("Updated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BeatmapSetId");
+
+                    b.HasIndex("OsuId")
+                        .IsUnique();
+
+                    b.ToTable("beatmaps");
+                });
+
+            modelBuilder.Entity("Database.Entities.BeatmapAttributes", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasColumnName("spinner_count");
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BeatmapId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beatmap_id");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("Mods")
+                        .HasColumnType("integer")
+                        .HasColumnName("mods");
 
                     b.Property<double>("Sr")
                         .HasColumnType("double precision")
                         .HasColumnName("sr");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BeatmapId", "Mods")
+                        .IsUnique();
+
+                    b.ToTable("beatmap_attributes");
+                });
+
+            modelBuilder.Entity("Database.Entities.BeatmapSet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Artist")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("artist");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("CreatorId")
+                        .HasColumnType("integer")
+                        .HasColumnName("creator_id");
+
+                    b.Property<long>("OsuId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("osu_id");
+
+                    b.Property<DateTime?>("RankedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ranked_date");
+
+                    b.Property<int>("RankedStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("ranked_status");
+
+                    b.Property<DateTime?>("SubmittedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_date");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -127,12 +209,18 @@ namespace Database.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("title");
 
+                    b.Property<DateTime?>("Updated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
 
                     b.HasIndex("OsuId")
                         .IsUnique();
 
-                    b.ToTable("beatmaps");
+                    b.ToTable("beatmapsets");
                 });
 
             modelBuilder.Entity("Database.Entities.Game", b =>
@@ -1686,19 +1774,65 @@ namespace Database.Migrations
                     b.ToTable("user_settings");
                 });
 
+            modelBuilder.Entity("__join__beatmap_creators", b =>
+                {
+                    b.Property<int>("CreatedBeatmapsId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CreatorsId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CreatedBeatmapsId", "CreatorsId");
+
+                    b.HasIndex("CreatorsId");
+
+                    b.ToTable("__join__beatmap_creators");
+                });
+
             modelBuilder.Entity("__join__pooled_beatmaps", b =>
                 {
-                    b.Property<int>("beatmap_id")
+                    b.Property<int>("PooledBeatmapsId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("tournament_id")
+                    b.Property<int>("TournamentsPooledInId")
                         .HasColumnType("integer");
 
-                    b.HasKey("beatmap_id", "tournament_id");
+                    b.HasKey("PooledBeatmapsId", "TournamentsPooledInId");
 
-                    b.HasIndex("tournament_id");
+                    b.HasIndex("TournamentsPooledInId");
 
                     b.ToTable("__join__pooled_beatmaps");
+                });
+
+            modelBuilder.Entity("Database.Entities.Beatmap", b =>
+                {
+                    b.HasOne("Database.Entities.BeatmapSet", "BeatmapSet")
+                        .WithMany("Beatmaps")
+                        .HasForeignKey("BeatmapSetId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("BeatmapSet");
+                });
+
+            modelBuilder.Entity("Database.Entities.BeatmapAttributes", b =>
+                {
+                    b.HasOne("Database.Entities.Beatmap", "Beatmap")
+                        .WithMany("Attributes")
+                        .HasForeignKey("BeatmapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Beatmap");
+                });
+
+            modelBuilder.Entity("Database.Entities.BeatmapSet", b =>
+                {
+                    b.HasOne("Database.Entities.Player", "Creator")
+                        .WithMany("CreatedBeatmapSets")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Creator");
                 });
 
             modelBuilder.Entity("Database.Entities.Game", b =>
@@ -2068,26 +2202,46 @@ namespace Database.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("__join__beatmap_creators", b =>
+                {
+                    b.HasOne("Database.Entities.Beatmap", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedBeatmapsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Database.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("CreatorsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("__join__pooled_beatmaps", b =>
                 {
                     b.HasOne("Database.Entities.Beatmap", null)
                         .WithMany()
-                        .HasForeignKey("beatmap_id")
+                        .HasForeignKey("PooledBeatmapsId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_JoinTable_Beatmap");
+                        .IsRequired();
 
                     b.HasOne("Database.Entities.Tournament", null)
                         .WithMany()
-                        .HasForeignKey("tournament_id")
+                        .HasForeignKey("TournamentsPooledInId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_JoinTable_Tournament");
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Entities.Beatmap", b =>
                 {
+                    b.Navigation("Attributes");
+
                     b.Navigation("Games");
+                });
+
+            modelBuilder.Entity("Database.Entities.BeatmapSet", b =>
+                {
+                    b.Navigation("Beatmaps");
                 });
 
             modelBuilder.Entity("Database.Entities.Game", b =>
@@ -2131,6 +2285,8 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Entities.Player", b =>
                 {
                     b.Navigation("AdminNotes");
+
+                    b.Navigation("CreatedBeatmapSets");
 
                     b.Navigation("HighestRanks");
 
