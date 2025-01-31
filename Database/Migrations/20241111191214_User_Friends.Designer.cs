@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,13 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20241111191214_User_Friends")]
+    partial class User_Friends
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "8.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -542,7 +545,7 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("game_id");
 
-                    b.PrimitiveCollection<int[]>("LoserRoster")
+                    b.Property<int[]>("LoserRoster")
                         .IsRequired()
                         .HasColumnType("integer[]")
                         .HasColumnName("loser_roster");
@@ -555,7 +558,7 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("loser_team");
 
-                    b.PrimitiveCollection<int[]>("WinnerRoster")
+                    b.Property<int[]>("WinnerRoster")
                         .IsRequired()
                         .HasColumnType("integer[]")
                         .HasColumnName("winner_roster");
@@ -776,7 +779,7 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.PrimitiveCollection<int[]>("LoserRoster")
+                    b.Property<int[]>("LoserRoster")
                         .IsRequired()
                         .HasColumnType("integer[]")
                         .HasColumnName("loser_roster");
@@ -793,7 +796,7 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("match_id");
 
-                    b.PrimitiveCollection<int[]>("WinnerRoster")
+                    b.Property<int[]>("WinnerRoster")
                         .IsRequired()
                         .HasColumnType("integer[]")
                         .HasColumnName("winner_roster");
@@ -837,7 +840,7 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("rate_limit_override");
 
-                    b.PrimitiveCollection<string[]>("Scopes")
+                    b.Property<string[]>("Scopes")
                         .IsRequired()
                         .HasColumnType("text[]")
                         .HasColumnName("scopes");
@@ -1116,7 +1119,7 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("match_id");
 
-                    b.PrimitiveCollection<int[]>("OpponentIds")
+                    b.Property<int[]>("OpponentIds")
                         .IsRequired()
                         .HasColumnType("integer[]")
                         .HasColumnName("opponent_ids");
@@ -1125,7 +1128,7 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("player_id");
 
-                    b.PrimitiveCollection<int[]>("TeammateIds")
+                    b.Property<int[]>("TeammateIds")
                         .IsRequired()
                         .HasColumnType("integer[]")
                         .HasColumnName("teammate_ids");
@@ -1262,7 +1265,7 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("player_id");
 
-                    b.PrimitiveCollection<int[]>("TeammateIds")
+                    b.Property<int[]>("TeammateIds")
                         .IsRequired()
                         .HasColumnType("integer[]")
                         .HasColumnName("teammate_ids");
@@ -1377,10 +1380,6 @@ namespace Database.Migrations
                     b.Property<double>("RatingBefore")
                         .HasColumnType("double precision")
                         .HasColumnName("rating_before");
-
-                    b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone")
@@ -1619,16 +1618,14 @@ namespace Database.Migrations
                         .HasColumnName("last_friends_list_update");
 
                     b.Property<DateTime?>("LastLogin")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_login")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnName("last_login");
 
-                    b.Property<int>("PlayerId")
+                    b.Property<int?>("PlayerId")
                         .HasColumnType("integer")
                         .HasColumnName("player_id");
 
-                    b.PrimitiveCollection<string[]>("Scopes")
+                    b.Property<string[]>("Scopes")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text[]")
@@ -1692,13 +1689,13 @@ namespace Database.Migrations
 
             modelBuilder.Entity("__join__friends", b =>
                 {
-                    b.Property<int>("player_id")
-                        .HasColumnType("integer");
-
                     b.Property<int>("user_id")
                         .HasColumnType("integer");
 
-                    b.HasKey("player_id", "user_id");
+                    b.Property<int>("player_id")
+                        .HasColumnType("integer");
+
+                    b.HasKey("user_id", "player_id");
 
                     b.HasIndex("user_id");
 
@@ -1879,7 +1876,7 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Match", "Match")
                         .WithOne("WinRecord")
                         .HasForeignKey("Database.Entities.MatchWinRecord", "MatchId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("Match");
@@ -2072,8 +2069,7 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Player", "Player")
                         .WithOne("User")
                         .HasForeignKey("Database.Entities.User", "PlayerId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Player");
                 });

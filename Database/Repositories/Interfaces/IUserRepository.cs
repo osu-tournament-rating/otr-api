@@ -16,7 +16,7 @@ public interface IUserRepository : IRepository<User>
     /// Gets a user for the given player id, or create if one doesn't exist
     /// </summary>
     /// <param name="playerId">Id of the player</param>
-    Task<User> GetByPlayerIdOrCreateAsync(int playerId);
+    Task<User> GetOrCreateByPlayerIdAsync(int playerId);
 
     /// <summary>
     /// Gets a user's player id
@@ -36,4 +36,17 @@ public interface IUserRepository : IRepository<User>
     /// </summary>
     /// <param name="id">Id of the user</param>
     Task<IEnumerable<Match>> GetSubmissionsAsync(int id);
+
+    /// <summary>
+    /// Gets a user's friends
+    /// </summary>
+    /// <param name="id">Id of the user</param>
+    Task<IEnumerable<Player>> GetFriendsAsync(int id);
+
+    /// <summary>
+    /// Clears and re-creates the user's friends list.
+    /// </summary>
+    /// <param name="id">User id</param>
+    /// <param name="playerOsuIds">osu! player ids</param>
+    Task<User?> SyncFriendsAsync(int id, ICollection<long> playerOsuIds);
 }

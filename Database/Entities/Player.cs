@@ -107,4 +107,9 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     public ICollection<PlayerHighestRanks> HighestRanks { get; set; } = [];
 
     public ICollection<PlayerAdminNote> AdminNotes { get; set; } = [];
+
+    /// <summary>
+    /// The inverse navigation of the <see cref="User.Friends"/> relationship
+    /// </summary>
+    public ICollection<User> Followers { get; set; } = [];
 }

@@ -7,7 +7,8 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class UserService(IUserRepository userRepository, IMatchesRepository matchesRepository, IMapper mapper) : IUserService
+public class UserService(IUserRepository userRepository,
+    IMatchesRepository matchesRepository, IMapper mapper) : IUserService
 {
     public async Task<bool> ExistsAsync(int id) =>
         await userRepository.ExistsAsync(id);
@@ -23,6 +24,9 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
 
     public async Task<IEnumerable<MatchSubmissionStatusDTO>?> GetSubmissionsAsync(int id) =>
         mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>(await userRepository.GetSubmissionsAsync(id));
+
+    public async Task<IEnumerable<PlayerCompactDTO>> GetFriendsAsync(int id) =>
+        mapper.Map<IEnumerable<PlayerCompactDTO>>(await userRepository.GetFriendsAsync(id));
 
     public async Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId)
     {
