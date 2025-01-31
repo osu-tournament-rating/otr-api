@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    [Migration("20250127194804_Initial")]
+    [Migration("20250131001408_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -1779,30 +1779,30 @@ namespace Database.Migrations
 
             modelBuilder.Entity("__join__beatmap_creators", b =>
                 {
-                    b.Property<int>("beatmap_id")
+                    b.Property<int>("CreatedBeatmapsId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("player_id")
+                    b.Property<int>("CreatorsId")
                         .HasColumnType("integer");
 
-                    b.HasKey("beatmap_id", "player_id");
+                    b.HasKey("CreatedBeatmapsId", "CreatorsId");
 
-                    b.HasIndex("player_id");
+                    b.HasIndex("CreatorsId");
 
                     b.ToTable("__join__beatmap_creators");
                 });
 
             modelBuilder.Entity("__join__pooled_beatmaps", b =>
                 {
-                    b.Property<int>("beatmap_id")
+                    b.Property<int>("PooledBeatmapsId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("tournament_id")
+                    b.Property<int>("TournamentsPooledInId")
                         .HasColumnType("integer");
 
-                    b.HasKey("beatmap_id", "tournament_id");
+                    b.HasKey("PooledBeatmapsId", "TournamentsPooledInId");
 
-                    b.HasIndex("tournament_id");
+                    b.HasIndex("TournamentsPooledInId");
 
                     b.ToTable("__join__pooled_beatmaps");
                 });
@@ -1831,7 +1831,7 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Entities.BeatmapSet", b =>
                 {
                     b.HasOne("Database.Entities.Player", "Creator")
-                        .WithMany("CreatedSets")
+                        .WithMany("CreatedBeatmapSets")
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2210,34 +2210,30 @@ namespace Database.Migrations
                 {
                     b.HasOne("Database.Entities.Beatmap", null)
                         .WithMany()
-                        .HasForeignKey("beatmap_id")
+                        .HasForeignKey("CreatedBeatmapsId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK___join__beatmap_creators_Beatmap");
+                        .IsRequired();
 
                     b.HasOne("Database.Entities.Player", null)
                         .WithMany()
-                        .HasForeignKey("player_id")
+                        .HasForeignKey("CreatorsId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK___join__beatmap_creators_Player");
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("__join__pooled_beatmaps", b =>
                 {
                     b.HasOne("Database.Entities.Beatmap", null)
                         .WithMany()
-                        .HasForeignKey("beatmap_id")
+                        .HasForeignKey("PooledBeatmapsId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK___join__pooled_beatmaps_Beatmap");
+                        .IsRequired();
 
                     b.HasOne("Database.Entities.Tournament", null)
                         .WithMany()
-                        .HasForeignKey("tournament_id")
+                        .HasForeignKey("TournamentsPooledInId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK___join__pooled_beatmaps_Tournament");
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Database.Entities.Beatmap", b =>
@@ -2294,7 +2290,7 @@ namespace Database.Migrations
                 {
                     b.Navigation("AdminNotes");
 
-                    b.Navigation("CreatedSets");
+                    b.Navigation("CreatedBeatmapSets");
 
                     b.Navigation("HighestRanks");
 

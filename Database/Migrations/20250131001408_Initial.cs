@@ -318,21 +318,21 @@ namespace Database.Migrations
                 name: "__join__beatmap_creators",
                 columns: table => new
                 {
-                    beatmap_id = table.Column<int>(type: "integer", nullable: false),
-                    player_id = table.Column<int>(type: "integer", nullable: false)
+                    CreatedBeatmapsId = table.Column<int>(type: "integer", nullable: false),
+                    CreatorsId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK___join__beatmap_creators", x => new { x.beatmap_id, x.player_id });
+                    table.PrimaryKey("PK___join__beatmap_creators", x => new { x.CreatedBeatmapsId, x.CreatorsId });
                     table.ForeignKey(
-                        name: "FK___join__beatmap_creators_Beatmap",
-                        column: x => x.beatmap_id,
+                        name: "FK___join__beatmap_creators_beatmaps_CreatedBeatmapsId",
+                        column: x => x.CreatedBeatmapsId,
                         principalTable: "beatmaps",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK___join__beatmap_creators_Player",
-                        column: x => x.player_id,
+                        name: "FK___join__beatmap_creators_players_CreatorsId",
+                        column: x => x.CreatorsId,
                         principalTable: "players",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -344,9 +344,9 @@ namespace Database.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
-                    beatmap_id = table.Column<int>(type: "integer", nullable: false),
                     mods = table.Column<int>(type: "integer", nullable: false),
                     sr = table.Column<double>(type: "double precision", nullable: false),
+                    beatmap_id = table.Column<int>(type: "integer", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
@@ -387,21 +387,21 @@ namespace Database.Migrations
                 name: "__join__pooled_beatmaps",
                 columns: table => new
                 {
-                    beatmap_id = table.Column<int>(type: "integer", nullable: false),
-                    tournament_id = table.Column<int>(type: "integer", nullable: false)
+                    PooledBeatmapsId = table.Column<int>(type: "integer", nullable: false),
+                    TournamentsPooledInId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK___join__pooled_beatmaps", x => new { x.beatmap_id, x.tournament_id });
+                    table.PrimaryKey("PK___join__pooled_beatmaps", x => new { x.PooledBeatmapsId, x.TournamentsPooledInId });
                     table.ForeignKey(
-                        name: "FK___join__pooled_beatmaps_Beatmap",
-                        column: x => x.beatmap_id,
+                        name: "FK___join__pooled_beatmaps_beatmaps_PooledBeatmapsId",
+                        column: x => x.PooledBeatmapsId,
                         principalTable: "beatmaps",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK___join__pooled_beatmaps_Tournament",
-                        column: x => x.tournament_id,
+                        name: "FK___join__pooled_beatmaps_tournaments_TournamentsPooledInId",
+                        column: x => x.TournamentsPooledInId,
                         principalTable: "tournaments",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -921,14 +921,14 @@ namespace Database.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX___join__beatmap_creators_player_id",
+                name: "IX___join__beatmap_creators_CreatorsId",
                 table: "__join__beatmap_creators",
-                column: "player_id");
+                column: "CreatorsId");
 
             migrationBuilder.CreateIndex(
-                name: "IX___join__pooled_beatmaps_tournament_id",
+                name: "IX___join__pooled_beatmaps_TournamentsPooledInId",
                 table: "__join__pooled_beatmaps",
-                column: "tournament_id");
+                column: "TournamentsPooledInId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_beatmap_attributes_beatmap_id_mods",

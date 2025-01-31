@@ -110,16 +110,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity
                 .HasMany(b => b.Creators)
                 .WithMany(p => p.CreatedBeatmaps)
-                .UsingEntity<Dictionary<string, object>>(
-                    "__join__beatmap_creators",
-                    r => r.HasOne<Player>()
-                        .WithMany()
-                        .HasForeignKey("player_id")
-                        .HasConstraintName("FK___join__beatmap_creators_Player"),
-                    l => l.HasOne<Beatmap>()
-                        .WithMany()
-                        .HasForeignKey("beatmap_id")
-                        .HasConstraintName("FK___join__beatmap_creators_Beatmap"));
+                .UsingEntity("__join__beatmap_creators");
 
             entity.HasIndex(b => b.OsuId).IsUnique();
         });
@@ -823,16 +814,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity
                 .HasMany(t => t.PooledBeatmaps)
                 .WithMany(pb => pb.TournamentsPooledIn)
-                .UsingEntity<Dictionary<string, object>>(
-                    "__join__pooled_beatmaps",
-                    r => r.HasOne<Beatmap>()
-                        .WithMany()
-                        .HasForeignKey("beatmap_id")
-                        .HasConstraintName("FK___join__pooled_beatmaps_Beatmap"),
-                    l => l.HasOne<Tournament>()
-                        .WithMany()
-                        .HasForeignKey("tournament_id")
-                        .HasConstraintName("FK___join__pooled_beatmaps_Tournament"));
+                .UsingEntity("__join__pooled_beatmaps");
 
             entity.HasIndex(t => t.Ruleset);
             entity.HasIndex(t => new { t.Name, t.Abbreviation }).IsUnique();
