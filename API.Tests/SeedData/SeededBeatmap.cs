@@ -22,6 +22,6 @@ public static class SeededBeatmap
             CountSlider = 430,
             CountSpinner = 0,
             MaxCombo = 1551,
-            Created = new DateTime(2023, 09, 03),
+            Created = new DateTime(2023, 09, 03)
         };
 }

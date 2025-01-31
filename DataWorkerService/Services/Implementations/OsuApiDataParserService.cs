@@ -276,7 +276,7 @@ public class OsuApiDataParserService(
             return Task.CompletedTask;
         }
 
-        Player? creatorPlayer = _playersCache.Find(p => p.OsuId == apiBeatmap.Beatmapset.CreatorId.Value) ?? throw new Exception(
+        Player creatorPlayer = _playersCache.Find(p => p.OsuId == apiBeatmap.Beatmapset.CreatorId.Value) ?? throw new Exception(
                 $"Failed to find player with osu! id {apiBeatmap.Beatmapset.CreatorId.Value} in players cache!");
 
 
