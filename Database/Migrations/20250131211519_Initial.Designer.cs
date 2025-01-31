@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    [Migration("20250131001408_Initial")]
+    [Migration("20250131211519_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -186,7 +186,7 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("CreatorId")
+                    b.Property<int?>("CreatorId")
                         .HasColumnType("integer")
                         .HasColumnName("creator_id");
 
@@ -1833,8 +1833,7 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Player", "Creator")
                         .WithMany("CreatedBeatmapSets")
                         .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Creator");
                 });

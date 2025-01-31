@@ -39,7 +39,7 @@ namespace Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     osu_id = table.Column<long>(type: "bigint", nullable: false),
-                    creator_id = table.Column<int>(type: "integer", nullable: false),
+                    creator_id = table.Column<int>(type: "integer", nullable: true),
                     artist = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
                     title = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
                     ranked_status = table.Column<int>(type: "integer", nullable: false),
@@ -166,7 +166,6 @@ namespace Database.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
-                    beatmapset_id = table.Column<int>(type: "integer", nullable: true),
                     osu_id = table.Column<long>(type: "bigint", nullable: false),
                     has_data = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     ruleset = table.Column<int>(type: "integer", nullable: false),
@@ -184,6 +183,7 @@ namespace Database.Migrations
                     ar = table.Column<double>(type: "double precision", nullable: false),
                     sr = table.Column<double>(type: "double precision", nullable: false),
                     max_combo = table.Column<int>(type: "integer", nullable: true),
+                    beatmapset_id = table.Column<int>(type: "integer", nullable: true),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },

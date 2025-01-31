@@ -183,7 +183,7 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<int>("CreatorId")
+                    b.Property<int?>("CreatorId")
                         .HasColumnType("integer")
                         .HasColumnName("creator_id");
 
@@ -1830,8 +1830,7 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Player", "Creator")
                         .WithMany("CreatedBeatmapSets")
                         .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Creator");
                 });

@@ -22,7 +22,7 @@ public class BeatmapSet : UpdateableEntityBase
     /// Id of the Player who created the set
     /// </summary>
     [Column("creator_id")]
-    public int CreatorId { get; set; }
+    public int? CreatorId { get; set; }
 
     /// <summary>
     /// Artist
