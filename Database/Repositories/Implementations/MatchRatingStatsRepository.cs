@@ -6,13 +6,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance",
+    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<RatingAdjustment>(context), IMatchRatingStatsRepository
+public class MatchRatingStatsRepository(OtrContext context)
+    : RepositoryBase<RatingAdjustment>(context), IMatchRatingStatsRepository
 {
     private readonly OtrContext _context = context;
 
-    public async Task<IEnumerable<IEnumerable<RatingAdjustment>>> GetForPlayerAsync(
+    public async Task<IEnumerable<RatingAdjustment>> GetForPlayerAsync(
         int playerId,
         Ruleset ruleset,
         DateTime? dateMin = null,
@@ -23,21 +25,15 @@ public class MatchRatingStatsRepository(OtrContext context) : RepositoryBase<Rat
         dateMax ??= DateTime.MaxValue;
 
         return await _context.RatingAdjustments
-            .Where(x =>
-                x.PlayerId == playerId
-                && x.AdjustmentType == RatingAdjustmentType.Match
-                && x.Match!.Tournament.Ruleset == ruleset
-                && x.Match.StartTime >= dateMin
-                && x.Match.StartTime <= dateMax
+            .Where(ra =>
+                ra.PlayerId == playerId
+                && ra.Ruleset == ruleset
+                && ra.Timestamp >= dateMin
+                && ra.Timestamp <= dateMax
             )
-            .Include(x => x.Match)
-            .ThenInclude(x => x!.Tournament)
-            .GroupBy(x => x.Match!.StartTime.Date)
+            .Include(ra => ra.Match!.Tournament)
             .ToListAsync();
     }
-
-    public async Task TruncateAsync() =>
-        await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE match_rating_stats RESTART IDENTITY");
 
     public async Task<IEnumerable<RatingAdjustment>> TeammateRatingStatsAsync(
         int playerId,

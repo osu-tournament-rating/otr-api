@@ -68,7 +68,7 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     /// <summary>
     /// A collection of <see cref="PlayerOsuRulesetData"/>, one for each <see cref="Enums.Ruleset"/>
     /// </summary>
-    public ICollection<PlayerOsuRulesetData> RulesetData { get; set; } = new List<PlayerOsuRulesetData>();
+    public ICollection<PlayerOsuRulesetData> RulesetData { get; set; } = [];
 
     /// <summary>
     /// The <see cref="User"/> that owns the <see cref="Player"/>
@@ -78,38 +78,38 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     /// <summary>
     /// A collection of <see cref="PlayerRating"/> owned by the <see cref="Player"/>
     /// </summary>
-    public ICollection<PlayerRating> Ratings { get; set; } = new List<PlayerRating>();
+    public ICollection<PlayerRating> Ratings { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="RatingAdjustment"/>s adjusting any <see cref="Ratings"/>
     /// </summary>
-    public ICollection<RatingAdjustment> RatingAdjustments { get; set; } = new List<RatingAdjustment>();
+    public ICollection<RatingAdjustment> RatingAdjustments { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="GameScore"/>s set by the <see cref="Player"/>
     /// </summary>
-    public ICollection<GameScore> Scores { get; set; } = new List<GameScore>();
+    public ICollection<GameScore> Scores { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="PlayerMatchStats"/> generated for the <see cref="Player"/>
     /// </summary>
-    public ICollection<PlayerMatchStats> MatchStats { get; set; } = new List<PlayerMatchStats>();
+    public ICollection<PlayerMatchStats> MatchStats { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="PlayerTournamentStats"/> generated for the <see cref="Player"/>
     /// </summary>
-    public ICollection<PlayerTournamentStats> TournamentStats { get; set; } = new List<PlayerTournamentStats>();
+    public ICollection<PlayerTournamentStats> TournamentStats { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="PlayerHighestRanks"/> for the <see cref="Player"/>
     /// representing the peak global & country ranks for each ruleset
     /// </summary>
-    public ICollection<PlayerHighestRanks> HighestRanks { get; set; } = new List<PlayerHighestRanks>();
+    public ICollection<PlayerHighestRanks> HighestRanks { get; set; } = [];
 
-    public ICollection<PlayerAdminNote> AdminNotes { get; set; } = new List<PlayerAdminNote>();
+    public ICollection<PlayerAdminNote> AdminNotes { get; set; } = [];
 
     /// <summary>
     /// The inverse navigation of the <see cref="User.Friends"/> relationship
     /// </summary>
-    public ICollection<User> Followers { get; set; } = new List<User>();
+    public ICollection<User> Followers { get; set; } = [];
 }

@@ -25,8 +25,7 @@ public class ScoringTypeConverter : IValueConverter<string, ScoringType>
             "accuracy" => ScoringType.Accuracy,
             "combo" => ScoringType.Combo,
             "scorev2" => ScoringType.ScoreV2,
-            // This should never happen, but a fallback is ok for our use case
-            _ => ScoringType.Score
+            _ => throw new ArgumentException($"Failed to convert value '{value}' to {nameof(ScoringType)}")
         };
     }
 }

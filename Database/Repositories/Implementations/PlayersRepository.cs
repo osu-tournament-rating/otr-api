@@ -22,6 +22,11 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
         return (await _context.Players.Where(p => remainingIds.Contains(p.OsuId)).ToListAsync()).Concat(result);
     }
 
+    public override async Task<ICollection<Player>> GetAsync(IEnumerable<int> ids) =>
+        await _context.Players
+            .Include(p => p.User)
+            .Where(p => ids.Contains(p.Id)).ToListAsync();
+
     public async Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds) =>
         await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
@@ -30,7 +35,8 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
         if (eagerLoad)
         {
             return await _context
-                .Players.Include(x => x.Scores)
+                .Players
+                .Include(x => x.Scores)
                 .Include(x => x.Ratings)
                 .AsNoTracking()
                 .ToListAsync();

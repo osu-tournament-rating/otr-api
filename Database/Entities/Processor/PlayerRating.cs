@@ -72,5 +72,5 @@ public class PlayerRating : EntityBase
     /// A collection of <see cref="RatingAdjustment"/>s that represent
     /// the individual changes to the <see cref="PlayerRating"/> over time
     /// </summary>
-    public ICollection<RatingAdjustment> Adjustments { get; init; } = [];
+    public ICollection<RatingAdjustment> Adjustments { get; set; } = [];
 }

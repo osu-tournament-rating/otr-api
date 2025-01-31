@@ -52,42 +52,42 @@ public class User : UpdateableEntityBase
     /// <summary>
     /// A collection of <see cref="OAuthClient"/>s owned by the user
     /// </summary>
-    public ICollection<OAuthClient> Clients { get; set; } = new List<OAuthClient>();
+    public ICollection<OAuthClient> Clients { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="Match"/>es submitted by the user
     /// </summary>
-    public ICollection<Match> SubmittedMatches { get; set; } = new List<Match>();
+    public ICollection<Match> SubmittedMatches { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="Tournament"/>s submitted by the user
     /// </summary>
-    public ICollection<Tournament> SubmittedTournaments { get; set; } = new List<Tournament>();
+    public ICollection<Tournament> SubmittedTournaments { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="TournamentAdminNote"/>s created by the user
     /// </summary>
-    public ICollection<TournamentAdminNote> TournamentAdminNotes { get; set; } = new List<TournamentAdminNote>();
+    public ICollection<TournamentAdminNote> TournamentAdminNotes { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="PlayerAdminNote"/>s created by the user
     /// </summary>
-    public ICollection<PlayerAdminNote> PlayerAdminNotes { get; set; } = new List<PlayerAdminNote>();
+    public ICollection<PlayerAdminNote> PlayerAdminNotes { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="GameAdminNote"/>s created by the user
     /// </summary>
-    public ICollection<GameAdminNote> GameAdminNotes { get; set; } = new List<GameAdminNote>();
+    public ICollection<GameAdminNote> GameAdminNotes { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="GameScoreAdminNote"/>s created by the user
     /// </summary>
-    public ICollection<GameScoreAdminNote> GameScoreAdminNotes { get; set; } = new List<GameScoreAdminNote>();
+    public ICollection<GameScoreAdminNote> GameScoreAdminNotes { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="MatchAdminNote"/>s created by the user
     /// </summary>
-    public ICollection<MatchAdminNote> MatchAdminNotes { get; set; } = new List<MatchAdminNote>();
+    public ICollection<MatchAdminNote> MatchAdminNotes { get; set; } = [];
 
     /// <summary>
     /// Players this user is following on osu!
@@ -98,5 +98,5 @@ public class User : UpdateableEntityBase
     /// be registered in our system. However, it is guaranteed that all osu! users followed
     /// will be <see cref="Player"/>s in our system (as they can be created easily).
     /// </remarks>
-    public ICollection<Player> Friends { get; set; } = new List<Player>();
+    public ICollection<Player> Friends { get; set; } = [];
 }

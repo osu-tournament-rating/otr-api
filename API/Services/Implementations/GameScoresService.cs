@@ -22,7 +22,7 @@ public class GameScoresService(IGameScoresRepository gameScoresRepository, IMapp
         existing.Team = score.Team;
         existing.Score = score.Score;
         existing.Mods = score.Mods;
-        existing.CountMiss = score.Misses;
+        existing.CountMiss = score.CountMiss;
         existing.VerificationStatus = score.VerificationStatus;
         existing.ProcessingStatus = score.ProcessingStatus;
         existing.RejectionReason = score.RejectionReason;

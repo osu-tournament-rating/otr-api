@@ -24,8 +24,7 @@ public class TeamTypeConverter : IValueConverter<string, TeamType>
             "tag-coop" => TeamType.TagCoop,
             "team-vs" => TeamType.TeamVs,
             "tag-team-vs" => TeamType.TagTeamVs,
-            // This should never happen, but a fallback is ok for our use case
-            _ => TeamType.TeamVs
+            _ => throw new ArgumentException($"Failed to convert value '{value}' to {nameof(TeamType)}")
         };
     }
 }

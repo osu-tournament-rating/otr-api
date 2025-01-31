@@ -13,8 +13,29 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public partial class GameScoresController(IGameScoresService gameScoresService, IAdminNoteService adminNoteService) : Controller
+public partial class GameScoresController(IGameScoresService gameScoresService, IAdminNoteService adminNoteService)
+    : Controller
 {
+    /// <summary>
+    /// Get a score
+    /// </summary>
+    /// <response code="404">A score matching the given id does not exist</response>
+    /// <response code="200">Returns the score</response>
+    [HttpGet("{id:int}")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<GameScoreDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAsync(int id)
+    {
+        GameScoreDTO? score = await gameScoresService.GetAsync(id);
+        if (score is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(score);
+    }
+
     /// <summary>
     /// Amend score data
     /// </summary>

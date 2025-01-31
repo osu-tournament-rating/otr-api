@@ -6,10 +6,20 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class GamesService(IGamesRepository gamesRepository, IMapper mapper) : IGamesService
+public class GamesService(IGamesRepository gamesRepository, IPlayersRepository playersRepository, IMapper mapper) : IGamesService
 {
-    public async Task<GameDTO?> GetAsync(int id) =>
-        mapper.Map<GameDTO?>(await gamesRepository.GetAsync(id));
+    public async Task<GameDTO?> GetAsync(int id, bool verified)
+    {
+        GameDTO? game = mapper.Map<GameDTO?>(await gamesRepository.GetAsync(id, verified));
+
+        if (game is null)
+        {
+            return null;
+        }
+
+        game.Players = await GetPlayerCompactsAsync(game);
+        return game;
+    }
 
     public async Task<GameDTO?> UpdateAsync(int id, GameDTO game)
     {
@@ -38,4 +48,10 @@ public class GamesService(IGamesRepository gamesRepository, IMapper mapper) : IG
 
     public async Task DeleteAsync(int id) =>
         await gamesRepository.DeleteAsync(id);
+
+    private async Task<ICollection<PlayerCompactDTO>> GetPlayerCompactsAsync(GameDTO game)
+    {
+        IEnumerable<int> playerIds = game.Scores.Select(s => s.PlayerId).Distinct();
+        return mapper.Map<ICollection<PlayerCompactDTO>>(await playersRepository.GetAsync(playerIds));
+    }
 }

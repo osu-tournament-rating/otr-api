@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance",
+    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(context), IMatchesRepository
 {
@@ -89,13 +90,16 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
         await _context.Matches.Where(x => matchIds.Contains(x.OsuId)).ToListAsync();
 
-    public async Task<Match?> GetFullAsync(int id) =>
-        await _context.Matches
+    public async Task<Match?> GetFullAsync(int id, bool verified)
+    {
+        IQueryable<Match> query = _context.Matches
             .AsNoTracking()
-            .IncludeChildren()
+            .IncludeChildren(verified)
             .IncludeTournament()
-            .IncludeAdminNotes<Match, MatchAdminNote>()
-            .FirstOrDefaultAsync(m => m.Id == id);
+            .IncludeAdminNotes<Match, MatchAdminNote>();
+
+        return await query.FirstOrDefaultAsync(m => m.Id == id);
+    }
 
     public async Task<IEnumerable<Match>> SearchAsync(string name)
     {

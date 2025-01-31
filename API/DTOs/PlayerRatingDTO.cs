@@ -45,5 +45,5 @@ public class PlayerRatingDTO
     /// <summary>
     /// A collection of adjustments that describe the changes resulting in the final rating
     /// </summary>
-    public ICollection<RatingAdjustmentDTO> Adjustments { get; set; } = new List<RatingAdjustmentDTO>();
+    public ICollection<RatingAdjustmentDTO> Adjustments { get; set; } = [];
 }

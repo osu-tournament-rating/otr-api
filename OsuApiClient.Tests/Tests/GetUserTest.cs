@@ -12,7 +12,7 @@ public class GetUserTest(IOsuClient client) : IOsuClientTest
 {
     private const long StageUserId = 8191845;
     private const long CytusineUserId = 11557554;
-    private const string MysstoUsername = "rimjob";
+    private const string PeppyUsername = "peppy";
 
     public string Name => "Get User";
 
@@ -22,10 +22,10 @@ public class GetUserTest(IOsuClient client) : IOsuClientTest
 
         UserExtended? stage = await client.GetUserAsync(StageUserId, null, cancellationToken);
         UserExtended? cytusine = await client.GetUserAsync(CytusineUserId, Ruleset.ManiaOther, cancellationToken);
-        UserExtended? myssto = await client.GetUserAsync(MysstoUsername, null, cancellationToken);
+        UserExtended? peppy = await client.GetUserAsync(PeppyUsername, null, cancellationToken);
 
         return stage is not null
-               && myssto is not null
+               && peppy is not null
                && cytusine?.Statistics is not null
                && cytusine.Statistics.Variants.All(v => v.Ruleset is Ruleset.Mania4k or Ruleset.Mania7k);
     }

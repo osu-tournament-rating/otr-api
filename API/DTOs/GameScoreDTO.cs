@@ -1,34 +1,93 @@
+using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
 using Database.Enums.Verification;
 
 namespace API.DTOs;
 
+/// <summary>
+/// Represents a single score set in a game
+/// </summary>
 public class GameScoreDTO
 {
     /// <summary>
-    /// The id of the Player this score belongs to
+    /// Primary key
+    /// </summary>
+    public int Id { get; init; }
+
+    /// <summary>
+    /// Id of the Player that set the score
     /// </summary>
     public int PlayerId { get; init; }
 
     /// <summary>
-    /// The team the player was on when making this score (red, blue, or none)
+    /// Ruleset the score was set in
+    /// </summary>
+    public Ruleset Ruleset { get; init; }
+
+    /// <summary>
+    /// Team the Player was on
     /// </summary>
     public Team Team { get; init; }
 
     /// <summary>
-    /// The points earned
+    /// Letter grade
+    /// </summary>
+    public ScoreGrade Grade { get; init; }
+
+    /// <summary>
+    /// Total score
     /// </summary>
     public int Score { get; init; }
 
     /// <summary>
-    /// The mods applied to this score.
+    /// Placement of the score compared to all others in the same game
+    /// </summary>
+    public int Placement { get; init; }
+
+    /// <summary>
+    /// Max combo
+    /// </summary>
+    public int MaxCombo { get; init; }
+
+    /// <summary>
+    /// Count of notes hit with a judgement of 50
+    /// </summary>
+    public int Count50 { get; init; }
+
+    /// <summary>
+    /// Count of notes hit with a judgement of 100
+    /// </summary>
+    public int Count100 { get; init; }
+
+    /// <summary>
+    /// Count of notes hit with a judgement of 300
+    /// </summary>
+    public int Count300 { get; init; }
+
+    /// <summary>
+    /// Count of notes hit with a judgement of Katu
+    /// </summary>
+    public int CountKatu { get; init; }
+
+    /// <summary>
+    /// Count of notes hit with a judgement of Geki
+    /// </summary>
+    public int CountGeki { get; init; }
+
+    /// <summary>
+    /// Count of missed notes
+    /// </summary>
+    public int CountMiss { get; init; }
+
+    /// <summary>
+    /// Applied mods
     /// </summary>
     public Mods Mods { get; init; }
 
     /// <summary>
-    /// The number of missed notes
+    /// Accuracy
     /// </summary>
-    public int Misses { get; init; }
+    public double Accuracy { get; init; }
 
     /// <summary>
     /// The current state of verification
@@ -46,12 +105,8 @@ public class GameScoreDTO
     public ScoreRejectionReason RejectionReason { get; init; }
 
     /// <summary>
-    /// The accuracy of the score
-    /// </summary>
-    public double Accuracy { get; init; }
-
-    /// <summary>
     /// All associated admin notes
     /// </summary>
-    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = new List<AdminNoteDTO>();
+    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
+    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
 }

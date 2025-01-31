@@ -62,10 +62,10 @@ public class TournamentSubmissionDTO
     /// List of osu! match ids
     /// </summary>
     /// <example>For a match link https://osu.ppy.sh/mp/98119977, add 98119977 to this list</example>
-    public IEnumerable<long> Ids { get; set; } = new List<long>();
+    public IEnumerable<long> Ids { get; set; } = [];
 
     /// <summary>
     /// A collection of pooled osu! beatmap ids
     /// </summary>
-    public IEnumerable<long> BeatmapIds { get; set; } = new List<long>();
+    public IEnumerable<long> BeatmapIds { get; set; } = [];
 }

@@ -173,8 +173,7 @@ public class PlayerStatsService(
         DateTime? dateMax = null)
     {
         return (await ratingStatsRepository.GetForPlayerAsync(playerId, ruleset, dateMin, dateMax))
-            .SelectMany(x => x)
-            .Max(x => x.RatingAfter);
+            .Max(ra => ra.RatingAfter);
     }
 
     private async Task<PlayerRatingStatsDTO?> GetCurrentAsync(int playerId, Ruleset ruleset)
@@ -260,35 +259,44 @@ public class PlayerStatsService(
         var matchStats = (await matchStatsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax)).ToList();
         var adjustments =
             (await ratingStatsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax))
-            .ToList()
-            .SelectMany(x => x)
+            .GroupBy(ra => ra.Timestamp)
+            .SelectMany(ra => ra)
             .ToList();
 
-        if (matchStats.Count == 0)
+        if (matchStats.Count == 0 || adjustments.Count == 0)
         {
             return new AggregatePlayerMatchStatsDTO();
         }
+
+        /**
+         * If the adjustments list contains an initial rating, we need to subtract the
+         * rating gained value by the initial rating. Essentially we are displaying
+         * the net gain in rating without considering the initial rating.
+         */
+        var initialRatingValue = adjustments
+            .FirstOrDefault(ra => ra.AdjustmentType == RatingAdjustmentType.Initial)?.RatingAfter
+            ?? 0;
 
         return new AggregatePlayerMatchStatsDTO
         {
             // TODO: Different way of calcing this
             // AverageMatchCostAggregate = ratingStats.Average(x => x.MatchCost),
-            HighestRating = adjustments.Max(x => x.RatingAfter),
-            RatingGained = adjustments.Last().RatingAfter - adjustments.First().RatingAfter,
-            GamesWon = matchStats.Sum(x => x.GamesWon),
-            GamesLost = matchStats.Sum(x => x.GamesLost),
-            GamesPlayed = matchStats.Sum(x => x.GamesPlayed),
-            MatchesWon = matchStats.Count(x => x.Won),
-            MatchesLost = matchStats.Count(x => !x.Won),
+            HighestRating = adjustments.Max(ra => ra.RatingAfter),
+            RatingGained = adjustments.Sum(ra => ra.RatingDelta) - initialRatingValue,
+            GamesWon = matchStats.Sum(ra => ra.GamesWon),
+            GamesLost = matchStats.Sum(ra => ra.GamesLost),
+            GamesPlayed = matchStats.Sum(ra => ra.GamesPlayed),
+            MatchesWon = matchStats.Count(ra => ra.Won),
+            MatchesLost = matchStats.Count(ra => !ra.Won),
             // TODO: Different way of calcing this
             // AverageTeammateRating = ratingStats.Average(x => x.AverageTeammateRating),
             // AverageOpponentRating = ratingStats.Average(x => x.AverageOpponentRating),
             BestWinStreak = GetHighestWinStreak(matchStats),
-            MatchAverageScoreAggregate = matchStats.Average(x => x.AverageScore),
-            MatchAverageAccuracyAggregate = matchStats.Average(x => x.AverageAccuracy),
-            MatchAverageMissesAggregate = matchStats.Average(x => x.AverageMisses),
-            AverageGamesPlayedAggregate = matchStats.Average(x => x.GamesPlayed),
-            AveragePlacingAggregate = matchStats.Average(x => x.AveragePlacement),
+            MatchAverageScoreAggregate = matchStats.Average(pms => pms.AverageScore),
+            MatchAverageAccuracyAggregate = matchStats.Average(pms => pms.AverageAccuracy),
+            MatchAverageMissesAggregate = matchStats.Average(pms => pms.AverageMisses),
+            AverageGamesPlayedAggregate = matchStats.Average(pms => pms.GamesPlayed),
+            AveragePlacingAggregate = matchStats.Average(pms => pms.AveragePlacement),
             PeriodStart = dateMin,
             PeriodEnd = dateMax
         };

@@ -67,18 +67,133 @@ public static class QueryExtensions
     #region Tournaments
 
     /// <summary>
-    /// Filters a <see cref="Tournament"/> query for those with a <see cref="VerificationStatus"/>
-    /// of <see cref="VerificationStatus.Verified"/>
+    /// Filters a <see cref="Tournament"/> query for those with the given
+    /// <see cref="VerificationStatus"/>
     /// </summary>
-    public static IQueryable<Tournament> WhereVerified(this IQueryable<Tournament> query) =>
-        query.AsQueryable().Where(x => x.VerificationStatus == VerificationStatus.Verified);
+    /// <param name="verificationStatus">Verification status</param>
+    /// <remarks>Does nothing if <paramref name="verificationStatus"/> is null</remarks>
+    public static IQueryable<Tournament> WhereVerificationStatus(
+        this IQueryable<Tournament> query,
+        VerificationStatus? verificationStatus = null
+    ) =>
+        verificationStatus.HasValue
+            ? query.Where(e => e.VerificationStatus == verificationStatus.Value)
+            : query;
 
     /// <summary>
-    /// Filters a <see cref="Tournament"/> query for those with a <see cref="TournamentProcessingStatus"/>
-    /// of <see cref="TournamentProcessingStatus.Done"/>
+    /// Filters a <see cref="Tournament"/> query for those with the given
+    /// <see cref="TournamentProcessingStatus"/>
     /// </summary>
-    public static IQueryable<Tournament> WhereProcessingCompleted(this IQueryable<Tournament> query) =>
-        query.AsQueryable().Where(x => x.ProcessingStatus == TournamentProcessingStatus.Done);
+    /// <param name="processingStatus">Processing status</param>
+    /// <remarks>Does nothing if <paramref name="processingStatus"/> is null</remarks>
+    public static IQueryable<Tournament> WhereProcessingStatus(
+        this IQueryable<Tournament> query,
+        TournamentProcessingStatus? processingStatus = null
+    ) =>
+        processingStatus.HasValue
+            ? query.Where(t => t.ProcessingStatus == processingStatus.Value)
+            : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those with the given
+    /// <see cref="TournamentRejectionReason"/>
+    /// </summary>
+    /// <param name="rejectionReason">Rejection reason</param>
+    /// <remarks>Does nothing if <paramref name="rejectionReason"/> is null</remarks>
+    public static IQueryable<Tournament> WhereRejectionReason(
+        this IQueryable<Tournament> query,
+        TournamentRejectionReason? rejectionReason = null
+    ) =>
+        rejectionReason.HasValue
+            ? query.Where(t => t.RejectionReason == rejectionReason.Value)
+            : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those played in the given <see cref="Ruleset"/>
+    /// </summary>
+    /// <param name="ruleset">Ruleset</param>
+    /// <remarks>Does nothing if <paramref name="ruleset"/> is null</remarks>
+    public static IQueryable<Tournament> WhereRuleset(this IQueryable<Tournament> query, Ruleset? ruleset) =>
+        ruleset.HasValue ? query.Where(t => t.Ruleset == ruleset.Value) : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those with a name or abbreviation that partially matches the
+    /// given search term
+    /// </summary>
+    /// <param name="searchQuery">String to match against name and abbreviation</param>
+    /// <remarks>Does nothing if <paramref name="searchQuery"/> is null</remarks>
+    public static IQueryable<Tournament> WhereSearchQuery(this IQueryable<Tournament> query, string? searchQuery = null)
+    {
+        if (string.IsNullOrEmpty(searchQuery))
+        {
+            return query;
+        }
+
+        //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
+        searchQuery = searchQuery.Replace("_", @"\_");
+
+        return query.Where(t =>
+            EF.Functions.ILike(t.Name, $"%{searchQuery}%", @"\")
+            || EF.Functions.ILike(t.Abbreviation, $"%{searchQuery}%", @"\")
+        );
+    }
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those with a <see cref="Tournament.EndTime"/> that is on or
+    /// after the given date
+    /// </summary>
+    /// <param name="date">Date comparison</param>
+    /// <remarks>Does nothing if <paramref name="date"/> is null</remarks>
+    public static IQueryable<Tournament> AfterDate(this IQueryable<Tournament> query, DateTime? date = null) =>
+        date.HasValue ? query.Where(t => t.EndTime >= date.Value) : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those with a <see cref="Tournament.StartTime"/> that is on or
+    /// before the given date
+    /// </summary>
+    /// <param name="date">Date comparison</param>
+    /// <remarks>Does nothing if <paramref name="date"/> is null</remarks>
+    public static IQueryable<Tournament> BeforeDate(this IQueryable<Tournament> query, DateTime? date = null) =>
+        date.HasValue ? query.Where(t => t.StartTime <= date) : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those played between a given date range
+    /// </summary>
+    /// <param name="dateMin">Date range lower bound</param>
+    /// <param name="dateMax">Date range upper bound</param>
+    /// <remarks>
+    /// If either <param name="dateMin"> or <param name="dateMax"> are null, only filters for the end of the
+    /// range that is included. Does nothing if both are null.
+    /// </remarks>
+    public static IQueryable<Tournament> WhereDateRange(
+        this IQueryable<Tournament> query,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    ) => query.AsQueryable().AfterDate(dateMin).BeforeDate(dateMax);
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those submitted by a user matching the given id
+    /// </summary>
+    /// <param name="userId">User id</param>
+    /// <remarks>Does nothing if <paramref name="userId"/> is null</remarks>
+    public static IQueryable<Tournament> WhereSubmittedBy(this IQueryable<Tournament> query, int? userId = null) =>
+        userId.HasValue ? query.Where(t => t.SubmittedByUserId == userId.Value) : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those verified by a user matching the given id
+    /// </summary>
+    /// <param name="userId">User id</param>
+    /// <remarks>Does nothing if <paramref name="userId"/> is null</remarks>
+    public static IQueryable<Tournament> WhereVerifiedBy(this IQueryable<Tournament> query, int? userId = null) =>
+        userId.HasValue ? query.Where(t => t.VerifiedByUserId == userId.Value) : query;
+
+    /// <summary>
+    /// Filters a <see cref="Tournament"/> query for those played with the given lobby size
+    /// </summary>
+    /// <param name="lobbySize">Lobby size</param>
+    /// <remarks>Does nothing if <paramref name="lobbySize"/> is null</remarks>
+    public static IQueryable<Tournament> WhereLobbySize(this IQueryable<Tournament> query, int? lobbySize = null) =>
+        lobbySize.HasValue ? query.Where(t => t.LobbySize == lobbySize.Value) : query;
 
     /// <summary>
     /// Orders the query based on the specified sort type and direction.
@@ -87,13 +202,26 @@ public static class QueryExtensions
     /// <param name="sortType">Defines which key to order the results by</param>
     /// <param name="descending">A boolean indicating whether the ordering should be in descending order. Defaults to false (ascending).</param>
     /// <returns>The ordered query</returns>
-    public static IQueryable<Tournament> OrderBy(this IQueryable<Tournament> query, TournamentQuerySortType sortType, bool descending = false) =>
+    public static IQueryable<Tournament> OrderBy(this IQueryable<Tournament> query, TournamentQuerySortType sortType,
+        bool descending = true) =>
         sortType switch
         {
             TournamentQuerySortType.Id => descending ? query.OrderByDescending(t => t.Id) : query.OrderBy(t => t.Id),
-            TournamentQuerySortType.Name => descending ? query.OrderByDescending(t => t.Name) : query.OrderBy(t => t.Name),
-            TournamentQuerySortType.StartTime => descending ? query.OrderByDescending(t => t.StartTime) : query.OrderBy(t => t.StartTime),
-            TournamentQuerySortType.Created => descending ? query.OrderByDescending(t => t.Created) : query.OrderBy(t => t.Created),
+            TournamentQuerySortType.SearchQueryRelevance => descending
+                ? query.OrderByDescending(t => t.Name)
+                : query.OrderBy(t => t.Name),
+            TournamentQuerySortType.StartTime => descending
+                ? query.OrderByDescending(t => t.StartTime)
+                : query.OrderBy(t => t.StartTime),
+            TournamentQuerySortType.EndTime => descending
+                ? query.OrderByDescending(t => t.EndTime)
+                : query.OrderBy(t => t.EndTime),
+            TournamentQuerySortType.Created => descending
+                ? query.OrderByDescending(t => t.Created)
+                : query.OrderBy(t => t.Created),
+            TournamentQuerySortType.LobbySize => descending
+                ? query.OrderByDescending(t => t.LobbySize)
+                : query.OrderBy(t => t.LobbySize),
             _ => query
         };
 
@@ -121,23 +249,34 @@ public static class QueryExtensions
     /// <see cref="Match.PlayerRatingAdjustments"/>, <see cref="Match.Games"/>
     /// (<see cref="Game.Scores"/>, <see cref="Game.Beatmap"/>, <see cref="Game.WinRecord"/>)
     /// </summary>
-    public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query) =>
-        query
-            .AsQueryable()
+    /// <param name="verified">Whether all navigations must be verified</param>
+    public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query, bool verified)
+    {
+        if (verified)
+        {
+            query = query.Include(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified &&
+                                                          g.ProcessingStatus == GameProcessingStatus.Done))
+                .ThenInclude(g => g.Scores.Where(s => s.VerificationStatus == VerificationStatus.Verified &&
+                                                      s.ProcessingStatus == ScoreProcessingStatus.Done));
+        }
+
+
+        return query
+            .Include(m => m.Games)
+            .ThenInclude(g => g.Scores)
+            .ThenInclude(gs => gs.AdminNotes)
             .Include(m => m.WinRecord)
             .Include(m => m.PlayerMatchStats)
             .Include(m => m.PlayerRatingAdjustments)
+            .ThenInclude(ra => ra.Player)
             .Include(m => m.Games)
-            .ThenInclude(g => g.Scores)
-            .ThenInclude(s => s.Player)
-            .Include(m => m.Games)
-            .ThenInclude(s => s.AdminNotes)
+            .ThenInclude(g => g.AdminNotes)
             .Include(m => m.Games)
             .ThenInclude(g => g.Beatmap)
             .Include(m => m.Games)
-            .ThenInclude(g => g.WinRecord)
-            .Include(m => m.Games)
-            .ThenInclude(g => g.AdminNotes);
+            .ThenInclude(g => g.WinRecord);
+    }
+
 
     /// <summary>
     /// Includes the <see cref="Tournament"/> navigation on this <see cref="Match"/>
@@ -202,14 +341,22 @@ public static class QueryExtensions
     /// <param name="sortType">Defines which key to order the results by</param>
     /// <param name="descending">A boolean indicating whether the ordering should be in descending order. Defaults to false (ascending).</param>
     /// <returns>The ordered query</returns>
-    public static IQueryable<Match> OrderBy(this IQueryable<Match> query, MatchQuerySortType sortType, bool descending = false) =>
+    public static IQueryable<Match> OrderBy(this IQueryable<Match> query, MatchQuerySortType sortType,
+        bool descending = false) =>
         sortType switch
         {
             MatchQuerySortType.Id => descending ? query.OrderByDescending(m => m.Id) : query.OrderBy(m => m.Id),
-            MatchQuerySortType.OsuId => descending ? query.OrderByDescending(m => m.OsuId) : query.OrderBy(m => m.OsuId),
-            MatchQuerySortType.StartTime => descending ? query.OrderByDescending(m => m.StartTime) : query.OrderBy(m => m.StartTime),
-            MatchQuerySortType.EndTime => descending ? query.OrderByDescending(m => m.EndTime) : query.OrderBy(m => m.EndTime),
-            MatchQuerySortType.Created => descending ? query.OrderByDescending(m => m.Created) : query.OrderBy(m => m.Created),
+            MatchQuerySortType.OsuId =>
+                descending ? query.OrderByDescending(m => m.OsuId) : query.OrderBy(m => m.OsuId),
+            MatchQuerySortType.StartTime => descending
+                ? query.OrderByDescending(m => m.StartTime)
+                : query.OrderBy(m => m.StartTime),
+            MatchQuerySortType.EndTime => descending
+                ? query.OrderByDescending(m => m.EndTime)
+                : query.OrderBy(m => m.EndTime),
+            MatchQuerySortType.Created => descending
+                ? query.OrderByDescending(m => m.Created)
+                : query.OrderBy(m => m.Created),
             _ => query
         };
 
@@ -228,6 +375,32 @@ public static class QueryExtensions
     #endregion
 
     #region Games
+
+    /// <summary>
+    /// Includes navigation properties for a <see cref="Game"/>
+    /// <br/>Includes: <see cref="Game.Beatmap"/>, <see cref="Game.WinRecord"/>,
+    /// <see cref="Game.Scores"/>, <see cref="Game.AdminNotes"/>,
+    /// <see cref="Game.Audits"/>
+    /// </summary>
+    /// <param name="verified">Whether all navigations must be verified</param>
+    public static IQueryable<Game> IncludeChildren(this IQueryable<Game> query, bool verified)
+    {
+        if (verified)
+        {
+            query = query.Include(g => g.Scores.Where(s => s.VerificationStatus == VerificationStatus.Verified &&
+                                                           s.ProcessingStatus == ScoreProcessingStatus.Done));
+        }
+
+        return query
+            .Include(g => g.Beatmap)
+            .Include(g => g.WinRecord)
+            .Include(g => g.Scores)
+            .ThenInclude(s => s.Player)
+            .Include(g => g.Scores)
+            .ThenInclude(gs => gs.AdminNotes)
+            .Include(g => g.AdminNotes)
+            .Include(g => g.Audits);
+    }
 
     /// <summary>
     /// Filters a <see cref="Game"/> query for those with a <see cref="VerificationStatus"/>
@@ -279,7 +452,7 @@ public static class QueryExtensions
     /// of <see cref="VerificationStatus.Verified"/>
     /// </summary>
     public static IQueryable<GameScore> WhereVerified(this IQueryable<GameScore> query) =>
-        query.AsQueryable().Where(x => x.VerificationStatus == VerificationStatus.Verified);
+        query.Where(x => x.VerificationStatus == VerificationStatus.Verified);
 
     /// <summary>
     /// Filters a <see cref="GameScore"/> query for those with a <see cref="ScoreProcessingStatus"/>

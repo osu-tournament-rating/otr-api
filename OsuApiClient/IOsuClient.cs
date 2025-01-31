@@ -107,7 +107,7 @@ public interface IOsuClient : IDisposable
     /// Gets a multiplayer match, limit 100 events
     /// </summary>
     /// <remarks>
-    /// By default the endpoint returns a match with only the last 100 events that occurred.
+    /// By default, the endpoint returns a match with only the last 100 events that occurred.
     /// For example, if you wanted the first 100 events, you would pass 0 for <paramref name="eventsAfterId"/>
     /// </remarks>
     /// <param name="matchId">Id of the multiplayer lobby</param>
@@ -147,6 +147,36 @@ public interface IOsuClient : IDisposable
     /// <returns>A <see cref="BeatmapExtended"/>, or null if the request was unsuccessful</returns>
     Task<BeatmapExtended?> GetBeatmapAsync(
         long beatmapId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Gets difficulty attributes for a beatmap
+    /// </summary>
+    /// <remarks>
+    /// See <a href="https://osu.ppy.sh/docs/index.html#get-beatmap-attributes">Get Beatmap Attributes</a>
+    /// </remarks>
+    /// <param name="beatmapId">Id of the beatmap</param>
+    /// <param name="mods">Mod combination to request attributes for</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A <see cref="BeatmapAttributes"/>, or null if the request was unsuccessful</returns>
+    Task<BeatmapAttributes?> GetBeatmapAttributesAsync(
+        long beatmapId,
+        Mods mods,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Gets a beatmap set
+    /// </summary>
+    /// <remarks>
+    /// See <a href="https://osu.ppy.sh/docs/index.html#get-apiv2beatmapsetsbeatmapset">Get Beatmapset</a>
+    /// </remarks>
+    /// <param name="beatmapsetId">Id of the beatmap set</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A <see cref="BeatmapsetExtended"/>, or null if the request was unsuccessful</returns>
+    Task<BeatmapsetExtended?> GetBeatmapsetAsync(
+        long beatmapsetId,
         CancellationToken cancellationToken = default
     );
 

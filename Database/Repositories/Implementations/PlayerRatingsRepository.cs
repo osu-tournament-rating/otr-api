@@ -25,31 +25,11 @@ public class PlayerRatingsRepository(OtrContext context, IPlayersRepository play
     }
 
     public async Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset) =>
-        await _context.PlayerRatings.Where(x => x.PlayerId == playerId && x.Ruleset == ruleset).FirstOrDefaultAsync();
+        await _context.PlayerRatings
+            .Include(pr => pr.Adjustments)
+            .Where(pr => pr.PlayerId == playerId && pr.Ruleset == ruleset)
+            .FirstOrDefaultAsync();
 
-    public async Task<int> BatchInsertAsync(IEnumerable<PlayerRating> playerRatings)
-    {
-        var ls = new List<PlayerRating>();
-        foreach (PlayerRating stat in playerRatings)
-        {
-            ls.Add(
-                new PlayerRating
-                {
-                    PlayerId = stat.PlayerId,
-                    Ruleset = stat.Ruleset,
-                    Rating = stat.Rating,
-                    Volatility = stat.Volatility,
-                    Percentile = stat.Percentile,
-                    GlobalRank = stat.GlobalRank,
-                    CountryRank = stat.CountryRank,
-                    Created = DateTime.UtcNow
-                }
-            );
-        }
-
-        await _context.PlayerRatings.AddRangeAsync(ls);
-        return await _context.SaveChangesAsync();
-    }
 
     public async Task<int> HighestRankAsync(Ruleset ruleset, string? country = null)
     {
