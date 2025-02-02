@@ -40,8 +40,8 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
                 gs.VerificationStatus == VerificationStatus.Verified &&
                 gs.ProcessingStatus == ScoreProcessingStatus.Done))
             .ThenInclude(gs => gs.Player)
-            .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
-            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
+            .Include(t => t.SubmittedByUser!.Player)
+            .Include(t => t.VerifiedByUser!.Player)
             .Include(t => t.AdminNotes)
             .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -102,8 +102,8 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     {
         IQueryable<Tournament> query = _context.Tournaments
             .AsNoTracking()
-            .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
-            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
+            .Include(t => t.SubmittedByUser!.Player)
+            .Include(t => t.VerifiedByUser!.Player)
             .WhereRuleset(ruleset)
             .WhereSearchQuery(searchQuery)
             .WhereDateRange(dateMin, dateMax)
@@ -301,17 +301,17 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Beatmap)
-            .ThenInclude(b => b != null ? b.BeatmapSet : null)
-            .ThenInclude(bs => bs != null ? bs.Creator : null)
+            .ThenInclude(b => b!.BeatmapSet)
+            .ThenInclude(bs => bs!.Creator)
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Beatmap)
-            .ThenInclude(b => b != null ? b.Creators : null)
+            .ThenInclude(b => b!.Creators)
             .Include(e => e.SubmittedByUser)
             .Include(t => t.AdminNotes)
             .Include(t => t.PooledBeatmaps)
-            .Include(t => t.SubmittedByUser != null ? t.SubmittedByUser.Player : null)
-            .Include(t => t.VerifiedByUser != null ? t.VerifiedByUser.Player : null)
+            .Include(t => t.SubmittedByUser!.Player)
+            .Include(t => t.VerifiedByUser!.Player)
             .AsSplitQuery();
     }
 }

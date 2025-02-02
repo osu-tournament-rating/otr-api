@@ -282,11 +282,11 @@ public static class QueryExtensions
             .ThenInclude(g => g.AdminNotes)
             .Include(m => m.Games)
             .ThenInclude(g => g.Beatmap)
-            .ThenInclude(b => b != null ? b.BeatmapSet : null)
-            .ThenInclude(bs => bs != null ? bs.Creator : null)
+            .ThenInclude(b => b!.BeatmapSet)
+            .ThenInclude(bs => bs!.Creator)
             .Include(m => m.Games)
             .ThenInclude(g => g.Beatmap)
-            .ThenInclude(b => b != null ? b.Creators : null)
+            .ThenInclude(b => b!.Creators)
             .Include(m => m.Games)
             .ThenInclude(g => g.WinRecord);
     }
