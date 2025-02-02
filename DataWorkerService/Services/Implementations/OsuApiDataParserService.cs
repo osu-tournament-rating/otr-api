@@ -25,8 +25,8 @@ public class OsuApiDataParserService(
     IOsuClient osuClient
 ) : IOsuApiDataParserService
 {
-    private readonly List<Player> _playersCache = [];
-    private readonly List<Beatmap> _beatmapsCache = [];
+    private readonly Dictionary<long, Player> _playersCache = [];
+    private readonly Dictionary<long, Beatmap> _beatmapsCache = [];
 
     public async Task ParseMatchAsync(Match match, MultiplayerMatch apiMatch)
     {
@@ -55,7 +55,7 @@ public class OsuApiDataParserService(
         var uncachedPlayerOsuIds = apiPlayers
             .Select(p => p.Id)
             .Distinct()
-            .Where(osuId => !_playersCache.Select(p => p.OsuId).Contains(osuId))
+            .Where(osuId => !_playersCache.ContainsKey(osuId))
             .ToList();
 
         if (uncachedPlayerOsuIds.Count == 0)
@@ -82,7 +82,7 @@ public class OsuApiDataParserService(
                 playersRepository.Add(player);
             }
 
-            _playersCache.Add(player);
+            _playersCache.Add(playerOsuId, player);
         }
     }
 
@@ -93,7 +93,7 @@ public class OsuApiDataParserService(
         var uncachedBeatmapOsuIds = apiGames
             .Select(g => g.BeatmapId)
             .Distinct()
-            .Where(osuId => !_beatmapsCache.Select(b => b.OsuId).Contains(osuId))
+            .Where(osuId => !_beatmapsCache.ContainsKey(osuId))
             .ToList();
 
         /**
@@ -114,7 +114,7 @@ public class OsuApiDataParserService(
                     beatmapsRepository.Add(beatmap);
                 }
 
-                _beatmapsCache.Add(beatmap);
+                _beatmapsCache.Add(beatmap.OsuId, beatmap);
             }
         }
 
@@ -126,10 +126,14 @@ public class OsuApiDataParserService(
          */
         foreach (ApiBeatmap apiBeatmap in apiGames.Select(g => g.Beatmap).OfType<ApiBeatmap>())
         {
-            Beatmap? cachedBeatmap = _beatmapsCache.FirstOrDefault(b => b.OsuId == apiBeatmap.Id);
+            if (!_beatmapsCache.TryGetValue(apiBeatmap.Id, out Beatmap? cachedBeatmap))
+            {
+                logger.LogCritical("Beatmap should never be null here");
+                throw new Exception("Beatmap cache miss during beatmap loading");
+            }
 
-            // The cached beatmap should never be null but we can't proceed if it is
-            if (cachedBeatmap is null || cachedBeatmap.HasData)
+            // Skip unnecessary API call if we already have data for this beatmap
+            if (cachedBeatmap.HasData)
             {
                 continue;
             }
@@ -231,10 +235,9 @@ public class OsuApiDataParserService(
 
         foreach (ApiGameScore apiScore in apiScores)
         {
-            Player? player = _playersCache.FirstOrDefault(p => p.OsuId == apiScore.UserId);
-            if (player is null)
+            if (!_playersCache.TryGetValue(apiScore.UserId, out Player? player))
             {
-                logger.LogError("Expected player to be loaded, skipping score [Player osu! id: {osuId}]", apiScore.UserId);
+                logger.LogError("Expected player to be loaded, skipping score [Player osu! id: {OsuId}]", apiScore.UserId);
                 continue;
             }
 
@@ -276,9 +279,11 @@ public class OsuApiDataParserService(
             return Task.CompletedTask;
         }
 
-        Player creatorPlayer = _playersCache.Find(p => p.OsuId == apiBeatmap.Beatmapset.CreatorId.Value) ?? throw new Exception(
-                $"Failed to find player with osu! id {apiBeatmap.Beatmapset.CreatorId.Value} in players cache!");
-
+        if (!_playersCache.TryGetValue(apiBeatmap.Beatmapset.CreatorId.Value, out Player? creatorPlayer))
+        {
+            logger.LogCritical("Player should never be null here");
+            throw new Exception("Player cache miss during partial beatmap parsing");
+        }
 
         // Create or update BeatmapSet
         beatmap.BeatmapSet = new BeatmapSet
