@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace API.Utilities;
+namespace API.Utilities.DataAnnotations;
 
 /// <summary>
 /// Specifies the minimum and maximum length of a string property in bits.

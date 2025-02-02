@@ -1,7 +1,10 @@
-using API.Utilities;
+using System.Diagnostics.CodeAnalysis;
+using API.Utilities.DataAnnotations;
 
-namespace APITests.Utilities;
+namespace APITests.Utilities.DataAnnotations;
 
+[SuppressMessage("ReSharper", "CommentTypo")]
+[SuppressMessage("ReSharper", "StringLiteralTypo")]
 public class BitLengthAttributeTests
 {
     [Theory]

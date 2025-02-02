@@ -183,7 +183,7 @@ public partial class TournamentsController(
         patch.ApplyTo(tournament, ModelState);
         if (!TryValidateModel(tournament))
         {
-            return BadRequest(ModelState.ErrorMessage());
+            return ValidationProblem(ModelState);
         }
 
         // Apply patched values to entity

@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities.Extensions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,11 +26,6 @@ public class FilteringController(IFilteringService filteringService) : Controlle
     [ProducesResponseType<FilteringResultDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> FilterAsync([FromBody][Required] FilteringRequestDTO filteringRequest)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState.ErrorMessage());
-        }
-
         // Filter out duplicate ids
         filteringRequest.OsuPlayerIds = filteringRequest.OsuPlayerIds.Distinct();
 
