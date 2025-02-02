@@ -1,4 +1,4 @@
-name: .NET CI/CD
+name: Production Deploy
 
 on:
   workflow_dispatch:     

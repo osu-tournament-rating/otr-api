@@ -1,4 +1,4 @@
-name: .NET CI/CD
+name: Staging Deploy
 
 on:
   workflow_dispatch:
