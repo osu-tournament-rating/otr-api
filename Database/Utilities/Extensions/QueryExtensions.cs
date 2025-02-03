@@ -270,23 +270,26 @@ public static class QueryExtensions
                                                       s.ProcessingStatus == ScoreProcessingStatus.Done));
         }
 
-
         return query
-            .Include(m => m.Games)
-            .ThenInclude(g => g.Scores)
-            .ThenInclude(gs => gs.AdminNotes)
             .Include(m => m.WinRecord)
             .Include(m => m.PlayerMatchStats)
             .Include(m => m.PlayerRatingAdjustments)
             .ThenInclude(ra => ra.Player)
             .Include(m => m.Games)
+            .ThenInclude(g => g.Scores)
+            .ThenInclude(gs => gs.AdminNotes)
+            .Include(m => m.Games)
             .ThenInclude(g => g.AdminNotes)
             .Include(m => m.Games)
             .ThenInclude(g => g.Beatmap)
+            .ThenInclude(b => b!.BeatmapSet)
+            .ThenInclude(bs => bs!.Creator)
+            .Include(m => m.Games)
+            .ThenInclude(g => g.Beatmap)
+            .ThenInclude(b => b!.Creators)
             .Include(m => m.Games)
             .ThenInclude(g => g.WinRecord);
     }
-
 
     /// <summary>
     /// Includes the <see cref="Tournament"/> navigation on this <see cref="Match"/>
