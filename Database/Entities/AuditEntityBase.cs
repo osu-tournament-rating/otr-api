@@ -35,7 +35,7 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
     public int? ReferenceId { get; private set; }
 
     [Column("action_user_id")]
-    public int? ActionUserId { get; private set; }
+    public int? ActionUserId { get; set; }
 
     [Column("action_type")]
     public AuditActionType ActionType { get; private set; }

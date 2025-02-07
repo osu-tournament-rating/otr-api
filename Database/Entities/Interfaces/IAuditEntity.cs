@@ -30,7 +30,7 @@ public interface IAuditEntity : IEntity
     /// <summary>
     /// Id of the <see cref="User"/> that took action on the record
     /// </summary>
-    public int? ActionUserId { get; }
+    public int? ActionUserId { get; set; }
 
     /// <summary>
     /// The type of action taken on the entity being audited

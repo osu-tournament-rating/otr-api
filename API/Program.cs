@@ -15,6 +15,7 @@ using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.SwaggerGen;
 using API.SwaggerGen.Filters;
+using API.Utilities;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
@@ -550,15 +551,12 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 #region Database Context
 
-builder.Services.AddDbContext<OtrContext>(o =>
+builder.Services.AddScoped<AuditBlamingInterceptor>();
+builder.Services.AddDbContext<OtrContext>((services, options) =>
 {
-    o.UseNpgsql(
-        builder
-            .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-                ConnectionStringsConfiguration.Position
-            )
-            .DefaultConnection
-    );
+    options
+        .UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection)
+        .AddInterceptors(services.GetRequiredService<AuditBlamingInterceptor>());
 });
 
 // The Redis cache is registered as a singleton because it is meant to be re-used across instances

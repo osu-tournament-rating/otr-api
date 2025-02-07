@@ -1,5 +1,6 @@
 using Database;
 using Database.Entities;
+using Database.Interceptors;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
 using DataWorkerService.AutomationChecks;
@@ -91,7 +92,8 @@ builder.Services.AddDbContext<OtrContext>(o =>
                 ConnectionStringsConfiguration.Position
             )
             .DefaultConnection
-    );
+    )
+    .AddInterceptors(new AuditingInterceptor());
 });
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
