@@ -79,7 +79,7 @@ public class AuditingInterceptor : ISaveChangesInterceptor
         return result;
     }
 
-    private void OnSavingChanges(DbContext context)
+    protected virtual void OnSavingChanges(DbContext context)
     {
         // Cache the current change list to avoid detecting changes multiple times
         var trackedEntries = context.ChangeTracker.Entries().ToList();

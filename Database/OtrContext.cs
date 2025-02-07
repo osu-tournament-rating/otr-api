@@ -18,8 +18,6 @@ namespace Database;
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(options)
 {
-    private readonly AuditingInterceptor _auditingInterceptor = new();
-
     /// <summary>
     /// SQL function for getting the current timestamp
     /// </summary>
@@ -56,9 +54,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     public virtual DbSet<TournamentAudit> TournamentAudits { get; set; }
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<UserSettings> UserSettings { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.AddInterceptors(_auditingInterceptor);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
