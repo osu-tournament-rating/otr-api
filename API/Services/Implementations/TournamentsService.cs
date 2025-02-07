@@ -155,8 +155,8 @@ public class TournamentsService(
 
     public async Task DeleteAsync(int id) => await tournamentsRepository.DeleteAsync(id);
 
-    public async Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id) =>
-        mapper.Map<TournamentDTO?>(await tournamentsRepository.AcceptPreVerificationStatusesAsync(id));
+    public async Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId) =>
+        mapper.Map<TournamentDTO?>(await tournamentsRepository.AcceptPreVerificationStatusesAsync(id, verifierUserId));
 
     public async Task RerunAutomationChecksAsync(int id, bool force = false) =>
         await tournamentsRepository.ResetAutomationStatusesAsync(id, force);

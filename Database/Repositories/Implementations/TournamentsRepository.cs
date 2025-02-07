@@ -127,7 +127,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .ToListAsync();
     }
 
-    public async Task<Tournament?> AcceptPreVerificationStatusesAsync(int id)
+    public async Task<Tournament?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId)
     {
         Tournament? tournament = await TournamentsBaseQuery()
             .Where(t => t.ProcessingStatus == TournamentProcessingStatus.NeedsVerification)
@@ -141,9 +141,12 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         #region Confirm "pre" verification statuses
 
         tournament.ConfirmPreVerificationStatus();
+        tournament.VerifiedByUserId = verifierUserId;
+
         foreach (Match match in tournament.Matches)
         {
             match.ConfirmPreVerificationStatus();
+            match.VerifiedByUserId = verifierUserId;
 
             foreach (Game game in match.Games)
             {

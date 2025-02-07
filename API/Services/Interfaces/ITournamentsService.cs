@@ -83,8 +83,9 @@ public interface ITournamentsService
     /// <see cref="GameScore"/>s
     /// </summary>
     /// <param name="id">Tournament id</param>
+    /// <param name="verifierUserId">User id of the verifier</param>
     /// <returns>The updated <see cref="TournamentDTO"/></returns>
-    Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id);
+    Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId);
 
     /// <summary>
     /// Adds a collection of osu! beatmap ids to the tournament's PooledBeatmaps collection

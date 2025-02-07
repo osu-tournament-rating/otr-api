@@ -114,8 +114,9 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <see cref="GameScore"/>s
     /// </summary>
     /// <param name="id">Tournament id</param>
+    /// <param name="verifierUserId">User id of the verifier</param>
     /// <returns>The updated <see cref="Tournament"/></returns>
-    Task<Tournament?> AcceptPreVerificationStatusesAsync(int id);
+    Task<Tournament?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId);
 
     /// <summary>
     /// Resets the VerificationStatus, ProcessingStatus, WarningFlags (if applicable), and RejectionReasons for

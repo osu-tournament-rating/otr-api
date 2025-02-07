@@ -29,7 +29,7 @@ public partial class TournamentsController
         }
 
         // Result will never be null here
-        return Ok(await tournamentsService.AcceptPreVerificationStatusesAsync(id));
+        return Ok(await tournamentsService.AcceptPreVerificationStatusesAsync(id, User.GetSubjectId()));
     }
 
     /// <summary>
