@@ -76,7 +76,7 @@ public partial class MatchesController(IMatchesService matchesService, IAdminNot
         patch.ApplyTo(match, ModelState);
         if (!TryValidateModel(match))
         {
-            return BadRequest(ModelState.ErrorMessage());
+            return ValidationProblem(ModelState);
         }
 
         MatchDTO? updatedMatch = await matchesService.UpdateAsync(id, match);

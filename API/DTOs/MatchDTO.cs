@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Database.Enums;
 using Database.Enums.Verification;
@@ -23,6 +24,7 @@ public class MatchDTO
     /// <summary>
     /// Title of the lobby
     /// </summary>
+    [Required]
     public string Name { get; set; } = null!;
 
     /// <summary>
@@ -43,21 +45,25 @@ public class MatchDTO
     /// <summary>
     /// Verification status
     /// </summary>
+    [EnumDataType(typeof(VerificationStatus))]
     public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
     /// Rejection reason
     /// </summary>
+    [EnumDataType(typeof(MatchRejectionReason))]
     public MatchRejectionReason RejectionReason { get; set; }
 
     /// <summary>
     /// Warning flags
     /// </summary>
+    [EnumDataType(typeof(MatchWarningFlags))]
     public MatchWarningFlags WarningFlags { get; set; }
 
     /// <summary>
     /// Processing status
     /// </summary>
+    [EnumDataType(typeof(MatchProcessingStatus))]
     public MatchProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
@@ -84,5 +90,6 @@ public class MatchDTO
     /// <summary>
     /// All associated admin notes
     /// </summary>
+    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
 }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using API.Utilities.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -17,7 +18,7 @@ public class LeaderboardFilterDTO : IValidatableObject
     /// If given, only players with a rank greater than or equal to this value will be included
     /// </remarks>
     [FromQuery]
-    [Range(1, int.MaxValue)]
+    [Positive]
     public int? MinRank { get; init; }
 
     /// <summary>
@@ -28,7 +29,7 @@ public class LeaderboardFilterDTO : IValidatableObject
     /// If given, only players with a rank less than or equal to this value will be included
     /// </remarks>
     [FromQuery]
-    [Range(1, int.MaxValue)]
+    [Positive]
     public int? MaxRank { get; init; }
 
     /// <summary>
@@ -57,28 +58,28 @@ public class LeaderboardFilterDTO : IValidatableObject
     /// Minimum number of matches played
     /// </summary>
     [FromQuery]
-    [Range(0, int.MaxValue)]
+    [Positive]
     public int? MinMatches { get; init; }
 
     /// <summary>
     /// Maximum number of matches played
     /// </summary>
     [FromQuery]
-    [Range(0, int.MaxValue)]
+    [Positive]
     public int? MaxMatches { get; init; }
 
     /// <summary>
     /// Minimum win rate
     /// </summary>
     [FromQuery]
-    [Range(0.00, 1.00)]
+    [Percentage]
     public double? MinWinRate { get; init; }
 
     /// <summary>
     /// Maximum win rate
     /// </summary>
     [FromQuery]
-    [Range(0.00, 1.00)]
+    [Percentage]
     public double? MaxWinRate { get; init; }
 
     /// <summary>

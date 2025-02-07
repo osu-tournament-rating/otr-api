@@ -68,7 +68,7 @@ public partial class GameScoresController(IGameScoresService gameScoresService, 
         patch.ApplyTo(score, ModelState);
         if (!TryValidateModel(score))
         {
-            return BadRequest(ModelState.ErrorMessage());
+            return ValidationProblem(ModelState);
         }
 
         // Apply patched values to entity
