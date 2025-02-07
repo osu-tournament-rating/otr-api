@@ -38,15 +38,25 @@ public class TournamentDataProcessor(
         }
 
         // Process data for pooled beatmaps that were not played
-        foreach (Beatmap beatmap in entity.PooledBeatmaps.Where(b => b.Games.Count == 0 && !b.HasData))
+        var beatmapIdChunks = new List<List<long>>();
+        for (var i = 0; i < entity.PooledBeatmaps.Count; i += 50)
         {
-            BeatmapExtended? apiBeatmap = await osuClient.GetBeatmapAsync(beatmap.OsuId, cancellationToken);
+            beatmapIdChunks.Add(entity.PooledBeatmaps
+                .Where(b => !b.HasData)
+                .Skip(i)
+                .Take(50)
+                .Select(b => b.OsuId)
+                .ToList());
+        }
 
-            if (apiBeatmap is null)
-            {
-                continue;
-            }
+        var apiBeatmaps = new List<BeatmapExtended>();
+        foreach (List<long> chunk in beatmapIdChunks)
+        {
+            apiBeatmaps.AddRange(await osuClient.GetBeatmapsAsync(chunk, cancellationToken) ?? []);
+        }
 
+        foreach (BeatmapExtended apiBeatmap in apiBeatmaps)
+        {
             await osuApiDataParserService.ParseBeatmap(beatmap, apiBeatmap);
         }
 
