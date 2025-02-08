@@ -11,5 +11,6 @@ namespace DataWorkerService.Services.Interfaces;
 /// </summary>
 public interface IOsuApiDataParserService
 {
-
+    Task<IEnumerable<long>> FetchBeatmapsetIdsAsync(IEnumerable<long> osuBeatmapIds);
+    Task ProcessBeatmapsetsAsync(IEnumerable<long> osuBeatmapsetIds);
 }

@@ -57,7 +57,7 @@ public class TournamentDataProcessor(
 
         foreach (BeatmapExtended apiBeatmap in apiBeatmaps)
         {
-            await osuApiDataParserService.ParseBeatmap(beatmap, apiBeatmap);
+            await osuApiDataParserService.ParseBeatmapAsync(beatmap, apiBeatmap);
         }
 
         logger.LogInformation(
