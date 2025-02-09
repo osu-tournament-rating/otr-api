@@ -43,6 +43,9 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// <summary>
     /// The <see cref="Enums.Mods"/> enabled for the game
     /// </summary>
+    /// <remarks>
+    /// Mods set on the game level are "forced" on all scores
+    /// </remarks>
     [Column("mods")]
     public Mods Mods { get; set; }
 
@@ -124,7 +127,13 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// Denotes if the mod setting was "free mod"
     /// </summary>
     [NotMapped]
-    public bool IsFreeMod => Mods is Mods.None;
+    public bool IsFreeMod =>
+        // No forced mod
+        Mods is Mods.None
+        // The forced mod is only HT or DT
+        || (Mods is Mods.HalfTime or Mods.DoubleTime
+            // Any scores include HT or DT, but are not only HT or DT
+            && Scores.Any(s => s.Mods.HasFlag(Mods) && s.Mods != Mods));
 
     public void ResetAutomationStatuses(bool force)
     {
