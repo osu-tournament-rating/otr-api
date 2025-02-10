@@ -1,5 +1,6 @@
 using Database;
 using Database.Entities;
+using Database.Enums;
 using Database.Repositories.Interfaces;
 using DataWorkerService.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ public class OsuApiDataParserService(IOsuClient osuClient, IBeatmapsRepository b
 {
     public async Task<IEnumerable<long>> FetchBeatmapsetIdsAsync(IEnumerable<long> osuBeatmapIds)
     {
+        // NOTE: Only used for tournament pooled beatmap processing
         var setIds = new List<long>();
         IEnumerable<long[]> chunks = osuBeatmapIds.Chunk(50);
 
@@ -42,28 +44,72 @@ public class OsuApiDataParserService(IOsuClient osuClient, IBeatmapsRepository b
         {
             if (existingSets.ContainsKey(osuBeatmapsetId))
             {
-                return;
+                continue;
             }
 
-            BeatmapsetExtended? beatmapset = await osuClient.GetBeatmapsetAsync(osuBeatmapsetId);
-            if (beatmapset is null)
+            BeatmapsetExtended? apiBeatmapset = await osuClient.GetBeatmapsetAsync(osuBeatmapsetId);
+            if (apiBeatmapset is null)
             {
-                return;
-            }
-
-            IEnumerable<long> osuBeatmapIds = beatmapset.Beatmaps.Select(b => b.Id);
-            var beatmapEntities = (await beatmapsRepository.GetAsync(osuBeatmapIds))
-                .ToDictionary(k => k.OsuId, v => v);
-
-            foreach (BeatmapExtended apiBeatmap in beatmapset.Beatmaps)
-            {
-                if (!beatmapEntities.TryGetValue(apiBeatmap.Id, out Beatmap? entity))
+                var emptySet = new BeatmapSet
                 {
-                    entity = new Beatmap();
-                    LoadBeatmapAsync(entity, apiBeatmap);
+                    OsuId = osuBeatmapsetId,
+                    RankedStatus = BeatmapRankedStatus.Graveyard
+                };
+                context.BeatmapSets.Add(emptySet);
+
+                continue;
+            }
+
+            // Create new beatmapset and store
+            var beatmapset = new BeatmapSet();
+            LoadBeatmapset(beatmapset, apiBeatmapset);
+
+            IEnumerable<long> osuUserIds = apiBeatmapset.RelatedUsers.Select(ru => ru.Id);
+            IEnumerable<long> osuBeatmapIds = apiBeatmapset.Beatmaps.Select(b => b.Id);
+
+            Dictionary<long, Beatmap> existingBeatmaps = await context.Beatmaps
+                .Where(b => osuBeatmapIds.Contains(b.OsuId))
+                .ToDictionaryAsync(k => k.OsuId, v => v);
+
+            Dictionary<long, Player> existingPlayers = await context.Players
+                .Where(p => osuUserIds.Contains(p.OsuId))
+                .ToDictionaryAsync(k => k.OsuId, v => v);
+
+            var newPlayers = new Dictionary<long, Player>();
+
+            foreach (ApiUser relatedUser in apiBeatmapset.RelatedUsers)
+            {
+                if (!existingPlayers.TryGetValue(relatedUser.Id, out Player? entity))
+                {
+                    entity = new Player();
+                    LoadPlayer(entity, relatedUser);
+
+                    newPlayers.Add(entity.OsuId, entity);
+
+                    continue;
+                }
+
+                LoadPlayer(entity, relatedUser);
+            }
+
+            foreach (BeatmapExtended apiBeatmap in apiBeatmapset.Beatmaps)
+            {
+                if (!existingBeatmaps.TryGetValue(apiBeatmap.Id, out Beatmap? entity))
+                {
+                    // TODO: Fetch player from existing or new players dicts and link to beatmap.
+                    if (!existingPlayers.TryGetValue(apiBeatmapset.CreatorId ?? 0, out Player? player))
+                    {
+                        newPlayers.TryGetValue(apiBeatmapset.CreatorId ?? 0, out player);
+                    }
+
+                    entity = new Beatmap
+                    {
+                        BeatmapSet = beatmapset,
+                        Creators = player is null ? [] : [player]
+                    };
+                    LoadBeatmap(entity, apiBeatmap);
 
                     context.Beatmaps.Add(entity);
-
                     continue;
                 }
 
@@ -72,17 +118,14 @@ public class OsuApiDataParserService(IOsuClient osuClient, IBeatmapsRepository b
                     continue;
                 }
 
-                LoadBeatmapAsync(entity, apiBeatmap);
+                LoadBeatmap(entity, apiBeatmap);
             }
 
-            foreach (ApiUser relatedUser in beatmapset.RelatedUsers)
-            {
-
-            }
+            context.Players.AddRange(newPlayers.Values);
         }
     }
 
-    private static void LoadBeatmapAsync(Beatmap beatmap, BeatmapExtended apiBeatmap)
+    private static void LoadBeatmap(Beatmap beatmap, BeatmapExtended apiBeatmap)
     {
         beatmap.OsuId = apiBeatmap.Id;
         beatmap.Ruleset = apiBeatmap.Ruleset;
@@ -101,5 +144,23 @@ public class OsuApiDataParserService(IOsuClient osuClient, IBeatmapsRepository b
         beatmap.Sr = apiBeatmap.StarRating;
         beatmap.MaxCombo = apiBeatmap.MaxCombo;
         beatmap.HasData = true;
+    }
+
+    private static void LoadPlayer(Player player, ApiUser apiUser)
+    {
+        player.OsuId = apiUser.Id;
+        player.Username = apiUser.Username;
+        player.Country = apiUser.CountryCode;
+        player.Ruleset = Ruleset.Osu;
+    }
+
+    private static void LoadBeatmapset(BeatmapSet beatmapset, BeatmapsetExtended apiBeatmapset)
+    {
+        beatmapset.OsuId = apiBeatmapset.Id;
+        beatmapset.Artist = apiBeatmapset.Artist;
+        beatmapset.Title = apiBeatmapset.Title;
+        beatmapset.RankedStatus = apiBeatmapset.RankedStatus;
+        beatmapset.RankedDate = apiBeatmapset.RankedDate;
+        beatmapset.SubmittedDate = apiBeatmapset.SubmittedDate;
     }
 }
