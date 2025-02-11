@@ -1,360 +1,237 @@
-using System.Diagnostics.CodeAnalysis;
+using Database;
 using Database.Entities;
-using Database.Enums;
-using Database.Repositories.Interfaces;
 using DataWorkerService.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
 using OsuApiClient.Domain.Osu.Beatmaps;
-using OsuApiClient.Domain.Osu.Multiplayer;
-using OsuApiClient.Enums;
-using ApiBeatmap = OsuApiClient.Domain.Osu.Beatmaps.Beatmap;
-using ApiGameScore = OsuApiClient.Domain.Osu.Multiplayer.GameScore;
+using ApiUser = OsuApiClient.Domain.Osu.Users.User;
 using Beatmap = Database.Entities.Beatmap;
-using GameScore = Database.Entities.GameScore;
-using User = OsuApiClient.Domain.Osu.Users.User;
 
 namespace DataWorkerService.Services.Implementations;
 
-[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public class OsuApiDataParserService(
     ILogger<OsuApiDataParserService> logger,
-    IGamesRepository gamesRepository,
-    IBeatmapsRepository beatmapsRepository,
-    IPlayersRepository playersRepository,
-    IGameScoresRepository gameScoresRepository,
+    OtrContext context,
     IOsuClient osuClient
 ) : IOsuApiDataParserService
 {
-    private readonly List<Player> _playersCache = [];
-    private readonly List<Beatmap> _beatmapsCache = [];
+    private readonly IDictionary<long, BeatmapSet> _beatmapSetCache = new Dictionary<long, BeatmapSet>();
+    private readonly IDictionary<long, Beatmap> _beatmapCache = new Dictionary<long, Beatmap>();
+    private readonly IDictionary<long, Player> _playerCache = new Dictionary<long, Player>();
 
-    public async Task ParseMatchAsync(Match match, MultiplayerMatch apiMatch)
+    public async Task ProcessBeatmapsAsync(IEnumerable<long> beatmapOsuIds)
     {
-        logger.LogDebug("Parsing match [Id: {Id} | osu! Id: {OsuId}]", match.Id, match.OsuId);
-
-        // Start with static match data
-        match.OsuId = apiMatch.Match.Id;
-        match.Name = apiMatch.Match.Name;
-        match.StartTime = apiMatch.Match.StartTime.DateTime;
-
-        // Load players and beatmaps
-        await LoadPlayersAsync(apiMatch.Users);
-        await LoadBeatmapsAsync(apiMatch.Events.Select(e => e.Game).OfType<MultiplayerGame>());
-
-        // Parse games
-        match.Games = CreateGames(apiMatch).ToList();
-
-        match.EndTime = DetermineMatchEndTime(apiMatch) ?? default;
-
-        logger.LogDebug("Finished parsing match [Id: {Id} | osu! Id: {OsuId}]", match.Id, match.OsuId);
-    }
-
-    public async Task LoadPlayersAsync(IEnumerable<User> apiPlayers)
-    {
-        apiPlayers = apiPlayers.ToList();
-        var uncachedPlayerOsuIds = apiPlayers
-            .Select(p => p.Id)
-            .Distinct()
-            .Where(osuId => !_playersCache.Select(p => p.OsuId).Contains(osuId))
-            .ToList();
-
-        if (uncachedPlayerOsuIds.Count == 0)
+        foreach (var beatmapOsuId in beatmapOsuIds)
         {
-            return;
-        }
-
-        IEnumerable<Player> fetchedPlayers = (await playersRepository.GetByOsuIdAsync(uncachedPlayerOsuIds)).ToList();
-
-        foreach (var playerOsuId in uncachedPlayerOsuIds)
-        {
-            Player? player = fetchedPlayers.FirstOrDefault(p => p.OsuId == playerOsuId);
-            if (player is null)
+            // Test cache
+            if (_beatmapCache.ContainsKey(beatmapOsuId))
             {
-                User? apiPlayer = apiPlayers.FirstOrDefault(p => p.Id == playerOsuId);
-
-                player = new Player
-                {
-                    OsuId = playerOsuId,
-                    Username = apiPlayer?.Username ?? string.Empty,
-                    Country = apiPlayer?.CountryCode ?? string.Empty
-                };
-
-                playersRepository.Add(player);
-            }
-
-            _playersCache.Add(player);
-        }
-    }
-
-    public async Task LoadBeatmapsAsync(IEnumerable<MultiplayerGame> apiGames)
-    {
-        apiGames = apiGames.ToList();
-
-        var uncachedBeatmapOsuIds = apiGames
-            .Select(g => g.BeatmapId)
-            .Distinct()
-            .Where(osuId => !_beatmapsCache.Select(b => b.OsuId).Contains(osuId))
-            .ToList();
-
-        /**
-         * Sync the cache by pulling existing beatmap entities or creating new entities as needed.
-         * This step ensures that each unique beatmap id we encounter has an entity created for it.
-         */
-        if (uncachedBeatmapOsuIds.Count != 0)
-        {
-            IEnumerable<Beatmap> fetchedBeatmaps = (await beatmapsRepository.GetAsync(uncachedBeatmapOsuIds)).ToList();
-
-            foreach (var beatmapOsuId in uncachedBeatmapOsuIds)
-            {
-                Beatmap? beatmap = fetchedBeatmaps.FirstOrDefault(b => b.OsuId == beatmapOsuId);
-
-                if (beatmap is null)
-                {
-                    beatmap = new Beatmap { OsuId = beatmapOsuId };
-                    beatmapsRepository.Add(beatmap);
-                }
-
-                _beatmapsCache.Add(beatmap);
-            }
-        }
-
-        /**
-         * By filtering for only non-null api beatmap objects using `.OfType<ApiBeatmap>()`, we can
-         * efficiently back-fill the cached beatmap entities with API data. This will populate data for
-         * newly created beatmaps, beatmaps created from submission, and even potentially fill in
-         * missing data from beatmaps that were not parsed properly.
-         */
-        foreach (ApiBeatmap apiBeatmap in apiGames.Select(g => g.Beatmap).OfType<ApiBeatmap>())
-        {
-            Beatmap? cachedBeatmap = _beatmapsCache.FirstOrDefault(b => b.OsuId == apiBeatmap.Id);
-
-            // The cached beatmap should never be null but we can't proceed if it is
-            if (cachedBeatmap is null || cachedBeatmap.HasData)
-            {
+                logger.LogDebug("Beatmap {OsuId}: Cache hit", beatmapOsuId);
                 continue;
             }
 
-            // Try to fetch the full beatmap first, fallback by using partial data from the game event
-            BeatmapExtended? fullApiBeatmap = await osuClient.GetBeatmapAsync(apiBeatmap.Id);
+            // Try to pull an existing beatmap from the database
+            Beatmap? beatmap = await context.Beatmaps
+                .AsSplitQuery()
+                .Include(b => b.BeatmapSet)
+                .ThenInclude(bs => bs!.Creator)
+                .Include(b => b.Creators)
+                .FirstOrDefaultAsync(b => b.OsuId == beatmapOsuId);
 
-            if (fullApiBeatmap is not null)
+            // If one exists already, cache
+            if (beatmap is not null)
             {
-                await ParseBeatmap(cachedBeatmap, fullApiBeatmap);
+                logger.LogDebug("Beatmap {OsuId}: Database hit", beatmapOsuId);
+
+                _beatmapCache.TryAdd(beatmap.OsuId, beatmap);
+                beatmap.Creators.ToList().ForEach(p => _playerCache.TryAdd(p.OsuId, p));
+                if (beatmap.BeatmapSet is not null)
+                {
+                    _beatmapSetCache.TryAdd(beatmap.BeatmapSet.OsuId, beatmap.BeatmapSet);
+                    if (beatmap.BeatmapSet.Creator is not null)
+                    {
+                        _playerCache.TryAdd(beatmap.BeatmapSet.Creator.OsuId, beatmap.BeatmapSet.Creator);
+                    }
+                }
             }
             else
             {
-                await ParseBeatmapPartial(cachedBeatmap, apiBeatmap);
+                beatmap = new Beatmap { OsuId = beatmapOsuId };
+
+                context.Beatmaps.Add(beatmap);
+                _beatmapCache.TryAdd(beatmap.OsuId, beatmap);
             }
+
+            if (beatmap.BeatmapSet is not null || beatmap.HasData)
+            {
+                continue;
+            }
+
+            // Get the beatmap from the osu! API
+            BeatmapExtended? apiBeatmap = await osuClient.GetBeatmapAsync(beatmapOsuId);
+
+            if (apiBeatmap is null)
+            {
+                continue;
+            }
+
+            logger.LogDebug("Beatmap {OsuId}: Moving to process set", beatmapOsuId);
+            await ProcessBeatmapSetAsync(apiBeatmap.BeatmapsetId);
         }
     }
 
-    public IEnumerable<Game> CreateGames(MultiplayerMatch apiMatch)
+    public async Task ProcessBeatmapSetAsync(long beatmapSetOsuId)
     {
-        var games = new List<Game>();
-
-        foreach (MatchEvent gameEvent in apiMatch.Events.Where(ev => ev.Detail.Type == MultiplayerEventType.Game))
+        // Test cache
+        if (_beatmapSetCache.ContainsKey(beatmapSetOsuId))
         {
-            logger.LogDebug(
-                "Parsing game [Match osu! Id: {MOsuId} | Event Id: {EvId}]",
-                apiMatch.Match.Id,
-                gameEvent.Id
-            );
+            logger.LogDebug("Beatmap Set {OsuId}: Cache hit", beatmapSetOsuId);
+            return;
+        }
 
-            // Sanity check
-            if (gameEvent.Game is null)
+        // Try to pull an existing set from the database
+        BeatmapSet? beatmapSet = await context.BeatmapSets
+            .AsSplitQuery()
+            .Include(bs => bs.Creator)
+            .Include(bs => bs.Beatmaps)
+            .ThenInclude(b => b.Creators)
+            .FirstOrDefaultAsync(bs => bs.OsuId == beatmapSetOsuId);
+
+        // If one exists already, cache and continue
+        if (beatmapSet is not null)
+        {
+            logger.LogDebug("Beatmap Set {OsuId}: Database hit", beatmapSetOsuId);
+
+            _beatmapSetCache.TryAdd(beatmapSet.OsuId, beatmapSet);
+            if (beatmapSet.Creator is not null)
             {
-                // Note: This could be filtered in the LINQ statement, but we want to know when this happens
-                logger.LogError(
-                    "Match event type was 'Game' but a game was not included, skipping [Match osu! Id: {OsuId} | Event Id: {EvId}]",
-                    apiMatch.Match.Id,
-                    gameEvent.Id
-                );
-
-                continue;
+                _playerCache.Add(beatmapSet.Creator.OsuId, beatmapSet.Creator);
             }
 
-            if (gameEvent.Game.Scores.Length == 0)
+            beatmapSet.Beatmaps.ToList().ForEach(b =>
             {
-                logger.LogDebug(
-                    "Game contains no scores and was likely aborted, skipping [Match osu! Id: {OsuId} | Event Id: {EvId}]",
-                    apiMatch.Match.Id,
-                    gameEvent.Id
-                );
+                _beatmapCache.TryAdd(b.OsuId, b);
+                b.Creators.ToList().ForEach(p => _playerCache.TryAdd(p.OsuId, p));
+            });
 
-                continue;
+            return;
+        }
+
+        BeatmapsetExtended? apiBeatmapSet = await osuClient.GetBeatmapsetAsync(beatmapSetOsuId);
+
+        // Could not fetch the set, create an empty entity
+        if (apiBeatmapSet is null)
+        {
+            logger.LogDebug("Beatmap Set {OsuId}: Fetch failed", beatmapSetOsuId);
+
+            beatmapSet = new BeatmapSet { OsuId = beatmapSetOsuId };
+
+            context.BeatmapSets.Add(beatmapSet);
+            _beatmapSetCache.TryAdd(beatmapSet.OsuId, beatmapSet);
+
+            return;
+        }
+
+        // Now we parse
+        logger.LogDebug("Beatmap Set {OsuId}: Parsing...", beatmapSetOsuId);
+
+        // Load players
+        // Filtering because this collection also contains beatmap nominators, etc. and we only want to target mappers
+        await LoadPlayersAsync(apiBeatmapSet.RelatedUsers.Where(u =>
+            u.Id == apiBeatmapSet.CreatorId || apiBeatmapSet.Beatmaps
+                .SelectMany(b => b.Owners)
+                .Any(o => o.Id == u.Id))
+        );
+
+        // Create new set
+        beatmapSet = new BeatmapSet
+        {
+            OsuId = beatmapSetOsuId,
+            Artist = apiBeatmapSet.Artist,
+            Title = apiBeatmapSet.Title,
+            RankedStatus = apiBeatmapSet.RankedStatus,
+            RankedDate = apiBeatmapSet.RankedDate,
+            SubmittedDate = apiBeatmapSet.SubmittedDate,
+        };
+
+        // Assign set creator if possible
+        if (apiBeatmapSet.CreatorId is not null && _playerCache.TryGetValue(apiBeatmapSet.CreatorId.Value, out Player? setCreator))
+        {
+            beatmapSet.Creator = setCreator;
+        }
+
+        // Parse maps
+        foreach (BeatmapExtended apiBeatmap in apiBeatmapSet.Beatmaps)
+        {
+            // Test cache
+            _beatmapCache.TryGetValue(apiBeatmap.Id, out Beatmap? beatmap);
+
+            if (beatmap is null)
+            {
+                beatmap = new Beatmap { OsuId = apiBeatmap.Id };
+                _beatmapCache.TryAdd(apiBeatmap.Id, beatmap);
             }
 
-            var game = new Game
-            {
-                OsuId = gameEvent.Game.Id,
-                Ruleset = gameEvent.Game.Ruleset,
-                ScoringType = gameEvent.Game.ScoringType,
-                TeamType = gameEvent.Game.TeamType,
-                Mods = gameEvent.Game.Mods,
-                StartTime = gameEvent.Game.StartTime,
-                Beatmap = _beatmapsCache.FirstOrDefault(b => b.OsuId == gameEvent.Game.BeatmapId),
-                Scores = CreateScores(gameEvent.Game.Scores).ToList()
-            };
+            beatmap.HasData = true;
+            beatmap.Ruleset = apiBeatmap.Ruleset;
+            beatmap.RankedStatus = apiBeatmap.RankedStatus;
+            beatmap.DiffName = apiBeatmap.DifficultyName;
+            beatmap.TotalLength = apiBeatmap.TotalLength;
+            beatmap.DrainLength = apiBeatmap.HitLength;
+            beatmap.Bpm = apiBeatmap.Bpm;
+            beatmap.CountCircle = apiBeatmap.CountCircles;
+            beatmap.CountSlider = apiBeatmap.CountSliders;
+            beatmap.CountSpinner = apiBeatmap.CountSpinners;
+            beatmap.Cs = apiBeatmap.CircleSize;
+            beatmap.Hp = apiBeatmap.HpDrain;
+            beatmap.Od = apiBeatmap.OverallDifficulty;
+            beatmap.Ar = apiBeatmap.ApproachRate;
+            beatmap.Sr = apiBeatmap.StarRating;
+            beatmap.MaxCombo = apiBeatmap.MaxCombo;
 
-            foreach (GameScore score in game.Scores)
+            // Set any owners
+            foreach (BeatmapOwner beatmapOwner in apiBeatmap.Owners)
             {
-                // Scale up scores set with EZ
-                if (game.Mods.HasFlag(Mods.Easy) || score.Mods.HasFlag(Mods.Easy))
+                if (_playerCache.TryGetValue(beatmapOwner.Id, out Player? player))
                 {
-                    score.Score = (int)(score.Score * 1.75);
+                    beatmap.Creators.Add(player);
                 }
             }
 
-            // Determine end time
-            DateTime? endTime = DetermineGameEndTime(game, gameEvent.Game);
-            if (endTime.HasValue)
-            {
-                game.EndTime = endTime.Value;
-            }
-
-            logger.LogDebug(
-                "Finished parsing game [Match osu! Id: {MOsuId} | Event Id: {EvId}]",
-                apiMatch.Match.Id,
-                gameEvent.Id
-            );
-
-            games.Add(game);
+            beatmapSet.Beatmaps.Add(beatmap);
         }
 
-        gamesRepository.AddRange(games);
-        return games;
+        _beatmapSetCache.TryAdd(beatmapSet.OsuId, beatmapSet);
+        context.BeatmapSets.Add(beatmapSet);
     }
 
-    public IEnumerable<GameScore> CreateScores(IEnumerable<ApiGameScore> apiScores)
+    public async Task LoadPlayersAsync(IEnumerable<ApiUser> apiUsers)
     {
-        var scores = new List<GameScore>();
-
-        foreach (ApiGameScore apiScore in apiScores)
+        foreach (ApiUser apiUser in apiUsers)
         {
-            Player? player = _playersCache.FirstOrDefault(p => p.OsuId == apiScore.UserId);
-            if (player is null)
+            // Test cache
+            if (_playerCache.ContainsKey(apiUser.Id))
             {
-                logger.LogError("Expected player to be loaded, skipping score [Player osu! id: {osuId}]", apiScore.UserId);
                 continue;
             }
 
-            var score = new GameScore
+            // Try to pull an existing player from the database
+            Player? player = await context.Players.FirstOrDefaultAsync(p => p.OsuId == apiUser.Id);
+
+            // Create if one doesnt exist
+            if (player is null)
             {
-                Score = apiScore.Score,
-                MaxCombo = apiScore.MaxCombo,
-                Count50 = apiScore.Statistics.Count50,
-                Count100 = apiScore.Statistics.Count100,
-                Count300 = apiScore.Statistics.Count300,
-                CountMiss = apiScore.Statistics.CountMiss,
-                CountGeki = apiScore.Statistics.CountGeki,
-                CountKatu = apiScore.Statistics.CountKatu,
-                Pass = apiScore.Passed,
-                Perfect = apiScore.Perfect != 0,
-                Grade = apiScore.Grade,
-                Mods = apiScore.Mods,
-                Ruleset = apiScore.Ruleset,
-                Team = apiScore.SlotInfo.Team,
-                Player = player
-            };
+                player = new Player
+                {
+                    OsuId = apiUser.Id,
+                    Username = apiUser.Username,
+                    Country = apiUser.CountryCode,
+                };
+                context.Players.Add(player);
+            }
 
-            scores.Add(score);
+            // Cache
+            _playerCache.TryAdd(apiUser.Id, player);
         }
-
-        gameScoresRepository.AddRange(scores);
-        return scores;
-    }
-
-    public Task ParseBeatmapPartial(Beatmap beatmap, ApiBeatmap apiBeatmap)
-    {
-        beatmap.OsuId = apiBeatmap.Id;
-        beatmap.Ruleset = apiBeatmap.Ruleset;
-        beatmap.TotalLength = apiBeatmap.TotalLength;
-        beatmap.DiffName = apiBeatmap.DifficultyName;
-
-        if (apiBeatmap.Beatmapset?.CreatorId is null)
-        {
-            return Task.CompletedTask;
-        }
-
-        Player creatorPlayer = _playersCache.Find(p => p.OsuId == apiBeatmap.Beatmapset.CreatorId.Value) ?? throw new Exception(
-                $"Failed to find player with osu! id {apiBeatmap.Beatmapset.CreatorId.Value} in players cache!");
-
-
-        // Create or update BeatmapSet
-        beatmap.BeatmapSet = new BeatmapSet
-        {
-            OsuId = apiBeatmap.Beatmapset.Id,
-            Artist = apiBeatmap.Beatmapset.Artist,
-            Title = apiBeatmap.Beatmapset.Title,
-            CreatorId = creatorPlayer.Id,
-            RankedStatus = apiBeatmap.Beatmapset.RankedStatus,
-            SubmittedDate = apiBeatmap.Beatmapset.SubmittedDate,
-            RankedDate = apiBeatmap.Beatmapset.RankedDate
-        };
-
-        return Task.CompletedTask;
-    }
-
-    public Task ParseBeatmap(Beatmap beatmap, BeatmapExtended fullApiBeatmap)
-    {
-        ParseBeatmapPartial(beatmap, fullApiBeatmap);
-
-        beatmap.Sr = fullApiBeatmap.StarRating;
-        beatmap.Bpm = fullApiBeatmap.Bpm;
-        beatmap.Cs = fullApiBeatmap.CircleSize;
-        beatmap.Ar = fullApiBeatmap.ApproachRate;
-        beatmap.Hp = fullApiBeatmap.HpDrain;
-        beatmap.Od = fullApiBeatmap.OverallDifficulty;
-        beatmap.CountCircle = fullApiBeatmap.CountCircles;
-        beatmap.CountSlider = fullApiBeatmap.CountSliders;
-        beatmap.CountSpinner = fullApiBeatmap.CountSpinners;
-        beatmap.MaxCombo = fullApiBeatmap.MaxCombo;
-
-        beatmap.HasData = true;
-        return Task.CompletedTask;
-    }
-
-    public static DateTime? DetermineMatchEndTime(MultiplayerMatch apiMatch)
-    {
-        // Return given end time if present
-        if (apiMatch.Match.EndTime.HasValue)
-        {
-            return apiMatch.Match.EndTime.Value.DateTime;
-        }
-
-        // Try to use the timestamp of a disband event if available
-        MatchEvent? disbandEvent = apiMatch.Events.FirstOrDefault(ev => ev.Detail.Type == MultiplayerEventType.MatchDisbanded);
-        if (disbandEvent is not null)
-        {
-            return disbandEvent.Timestamp;
-        }
-
-        // Try to use the timestamp of the last game event if available
-        MatchEvent? lastGame = apiMatch.Events
-            .Where(ev => ev.Detail.Type == MultiplayerEventType.Game)
-            .MaxBy(ev => ev.Timestamp);
-
-        return lastGame?.Timestamp;
-    }
-
-    public static DateTime? DetermineGameEndTime(Game game, MultiplayerGame apiGame)
-    {
-        if (apiGame.EndTime.HasValue)
-        {
-            return apiGame.EndTime.Value;
-        }
-
-        // Try to add the length of the beatmap to the start time
-        if (apiGame.Beatmap is not null)
-        {
-            return apiGame.StartTime.AddSeconds(apiGame.Beatmap.TotalLength);
-        }
-
-        if (game.Beatmap is not null)
-        {
-            return apiGame.StartTime.AddSeconds(game.Beatmap.TotalLength);
-        }
-
-        return null;
     }
 }

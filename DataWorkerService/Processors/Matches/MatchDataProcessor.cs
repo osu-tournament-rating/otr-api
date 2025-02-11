@@ -58,7 +58,7 @@ public class MatchDataProcessor(
             entity.OsuId
         );
 
-        await parserService.ParseMatchAsync(entity, response);
+        // await parserService.ParseMatchAsync(entity, response);
 
         // Set mania variant ruleset
         if (entity.Tournament.Ruleset is Ruleset.Mania4k or Ruleset.Mania7k)
