@@ -16,10 +16,10 @@ public class MatchInfoJsonModel : JsonModelBase
     public long Id { get; set; }
 
     [JsonProperty("start_time")]
-    public DateTimeOffset StartTime { get; set; }
+    public DateTime StartTime { get; set; }
 
     [JsonProperty("end_time")]
-    public DateTimeOffset? EndTime { get; set; }
+    public DateTime? EndTime { get; set; }
 
     [JsonProperty("name")]
     public string Name { get; set; } = null!;
