@@ -93,7 +93,8 @@ builder.Services.AddDbContext<OtrContext>(o =>
             )
             .DefaultConnection
     )
-    .AddInterceptors(new AuditingInterceptor());
+    .AddInterceptors(new AuditingInterceptor())
+    .UseSnakeCaseNamingConvention();
 });
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);

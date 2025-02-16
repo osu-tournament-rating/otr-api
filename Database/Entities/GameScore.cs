@@ -10,7 +10,6 @@ namespace Database.Entities;
 /// <summary>
 /// A score set by a <see cref="Entities.Player"/> in a <see cref="Entities.Game"/>
 /// </summary>
-[Table("game_scores")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameScoreAdminNote>,
@@ -19,91 +18,78 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     /// <summary>
     /// Total score
     /// </summary>
-    [Column("score")]
     public int Score { get; set; }
 
     /// <summary>
     /// Placement of the <see cref="Score"/> in the <see cref="Game"/> compared to all <see cref="Entities.Player"/>'s <see cref="Score"/>
     /// </summary>
-    [Column("placement")]
     public int Placement { get; set; }
 
     /// <summary>
     /// Max combo obtained
     /// </summary>
-    [Column("max_combo")]
     public int MaxCombo { get; set; }
 
-    [Column("count_50")] public int Count50 { get; set; }
+    public int Count50 { get; set; }
 
-    [Column("count_100")] public int Count100 { get; set; }
+    public int Count100 { get; set; }
 
-    [Column("count_300")] public int Count300 { get; set; }
+    public int Count300 { get; set; }
 
-    [Column("count_miss")] public int CountMiss { get; set; }
+    public int CountMiss { get; set; }
 
-    [Column("count_katu")] public int CountKatu { get; set; }
+    public int CountKatu { get; set; }
 
-    [Column("count_geki")] public int CountGeki { get; set; }
+    public int CountGeki { get; set; }
 
     /// <summary>
     /// Denotes if the <see cref="Player"/> passed
     /// </summary>
-    [Column("pass")]
     public bool Pass { get; set; }
 
     /// <summary>
     /// Denotes if the score is perfect (is an SS)
     /// </summary>
-    [Column("perfect")]
     public bool Perfect { get; set; }
 
     /// <summary>
     /// Represents the overall performance as a letter grade
     /// </summary>
-    [Column("grade")]
     public ScoreGrade Grade { get; set; }
 
     /// <summary>
     /// The <see cref="Enums.Mods"/> enabled for the score
     /// </summary>
-    [Column("mods")]
     public Mods Mods { get; set; }
 
     /// <summary>
     /// The <see cref="Enums.Team"/> the <see cref="Player"/> played for in the game
     /// </summary>
-    [Column("team")]
     public Team Team { get; set; }
 
     /// <summary>
     /// The <see cref="Enums.Ruleset"/> the score was set in
     /// </summary>
-    [Column("ruleset")]
     public Ruleset Ruleset { get; set; }
 
-    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
+    public VerificationStatus VerificationStatus { get; set; }
 
     [AuditIgnore]
-    [Column("last_processing_date")]
     public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Rejection reason
     /// </summary>
-    [Column("rejection_reason")]
     public ScoreRejectionReason RejectionReason { get; set; }
 
     /// <summary>
     /// Processing status
     /// </summary>
-    [Column("processing_status")]
     public ScoreProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Game" /> that the <see cref="GameScore" /> was set in
     /// </summary>
-    [Column("game_id")]
     public int GameId { get; set; }
 
     /// <summary>
@@ -114,7 +100,6 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     /// <summary>
     /// Id of the <see cref="Entities.Player" /> that set the <see cref="GameScore" />
     /// </summary>
-    [Column("player_id")]
     public int PlayerId { get; set; }
 
     /// <summary>

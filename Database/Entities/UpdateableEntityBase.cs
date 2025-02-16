@@ -10,6 +10,5 @@ namespace Database.Entities;
 public abstract class UpdateableEntityBase : EntityBase, IUpdateableEntity
 {
     [AuditIgnore]
-    [Column("updated")]
     public DateTime? Updated { get; set; }
 }

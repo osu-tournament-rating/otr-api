@@ -3,7 +3,7 @@ using OsuApiClient.Domain.Osu.Users;
 namespace OsuApiClient.Domain.Osu.Beatmaps;
 
 /// <summary>
-/// Represents a <see cref="BeatmapSet"/> with additional attributes
+/// Represents a <see cref="Beatmapset"/> with additional attributes
 /// </summary>
 public class BeatmapsetExtended : Beatmapset
 {

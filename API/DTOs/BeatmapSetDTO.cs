@@ -3,7 +3,7 @@ namespace API.DTOs;
 /// <summary>
 /// A beatmapset with beatmaps included
 /// </summary>
-public class BeatmapSetDTO : BeatmapSetCompactDTO
+public class BeatmapsetDTO : BeatmapsetCompactDTO
 {
     /// <summary>
     /// Beatmaps which are part of this set

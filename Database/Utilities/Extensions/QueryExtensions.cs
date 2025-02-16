@@ -22,7 +22,7 @@ public static class QueryExtensions
 
     public static IQueryable<Beatmap> IncludeChildren(this IQueryable<Beatmap> query) =>
         query
-            .Include(b => b.BeatmapSet)
+            .Include(b => b.Beatmapset)
             .Include(b => b.Creators)
             .Include(b => b.Attributes);
 
@@ -282,7 +282,7 @@ public static class QueryExtensions
             .ThenInclude(g => g.AdminNotes)
             .Include(m => m.Games)
             .ThenInclude(g => g.Beatmap)
-            .ThenInclude(b => b!.BeatmapSet)
+            .ThenInclude(b => b!.Beatmapset)
             .ThenInclude(bs => bs!.Creator)
             .Include(m => m.Games)
             .ThenInclude(g => g.Beatmap)

@@ -11,7 +11,6 @@ namespace Database.Entities;
 /// <summary>
 /// A match played in a <see cref="Tournament"/>
 /// </summary>
-[Table("matches")]
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
@@ -22,7 +21,6 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// osu! id
     /// </summary>
     /// <example>https://osu.ppy.sh/community/matches/[113475484]</example>
-    [Column("osu_id")]
     public long OsuId { get; set; }
 
     /// <summary>
@@ -30,49 +28,41 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// </summary>
     /// <example>5WC2024: (France) vs (Germany)</example>
     [MaxLength(512)]
-    [Column("name")]
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Timestamp for the beginning of the match
     /// </summary>
-    [Column("start_time")]
     public DateTime StartTime { get; set; }
 
     /// <summary>
     /// Timestamp for the end of the match
     /// </summary>
-    [Column("end_time")]
     public DateTime EndTime { get; set; }
 
-    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
+    public VerificationStatus VerificationStatus { get; set; }
 
     [AuditIgnore]
-    [Column("last_processing_date")]
     public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Rejection reason
     /// </summary>
-    [Column("rejection_reason")]
     public MatchRejectionReason RejectionReason { get; set; }
 
     /// <summary>
     /// Warning flags
     /// </summary>
-    [Column("warning_flags")]
     public MatchWarningFlags WarningFlags { get; set; }
 
     /// <summary>
     /// Processing status
     /// </summary>
-    [Column("processing_status")]
     public MatchProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Tournament"/> the match was played in
     /// </summary>
-    [Column("tournament_id")]
     public int TournamentId { get; set; }
 
     /// <summary>
@@ -83,7 +73,6 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// <summary>
     /// Id of the <see cref="User"/> that submitted the match
     /// </summary>
-    [Column("submitted_by_user_id")]
     public int? SubmittedByUserId { get; set; }
 
     /// <summary>
@@ -94,7 +83,6 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// <summary>
     /// Id of the <see cref="User"/> that verified the match
     /// </summary>
-    [Column("verified_by_user_id")]
     public int? VerifiedByUserId { get; set; }
 
     /// <summary>

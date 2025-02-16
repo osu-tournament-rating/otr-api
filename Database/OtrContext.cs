@@ -31,10 +31,12 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
     public virtual DbSet<Beatmap> Beatmaps { get; set; }
     public virtual DbSet<BeatmapAttributes> BeatmapAttributes { get; set; }
-    public virtual DbSet<BeatmapSet> BeatmapSets { get; set; }
+    public virtual DbSet<Beatmapset> Beatmapsets { get; set; }
     public virtual DbSet<Game> Games { get; set; }
+    public virtual DbSet<GameAdminNote> GameAdminNotes { get; set; }
     public virtual DbSet<GameAudit> GameAudits { get; set; }
     public virtual DbSet<GameScore> GameScores { get; set; }
+    public virtual DbSet<GameScoreAdminNote> GameScoreAdminNotes { get; set; }
     public virtual DbSet<GameScoreAudit> GameScoreAudits { get; set; }
     public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
     public virtual DbSet<Match> Matches { get; set; }
@@ -87,11 +89,11 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(ba => ba.BeatmapId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Relation: BeatmapSet
+            // Relation: Beatmapset
             entity
-                .HasOne(b => b.BeatmapSet)
+                .HasOne(b => b.Beatmapset)
                 .WithMany(bs => bs.Beatmaps)
-                .HasForeignKey(b => b.BeatmapSetId)
+                .HasForeignKey(b => b.BeatmapsetId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Games
@@ -126,7 +128,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.HasIndex(ba => new { ba.BeatmapId, ba.Mods }).IsUnique();
         });
 
-        modelBuilder.Entity<BeatmapSet>(entity =>
+        modelBuilder.Entity<Beatmapset>(entity =>
         {
             entity.Property(b => b.Id).UseIdentityAlwaysColumn();
 
@@ -135,15 +137,15 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             // Relation: Player (Creator)
             entity
                 .HasOne(b => b.Creator)
-                .WithMany(p => p.CreatedBeatmapSets)
+                .WithMany(p => p.CreatedBeatmapsets)
                 .HasForeignKey(b => b.CreatorId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Beatmaps
             entity
                 .HasMany(b => b.Beatmaps)
-                .WithOne(bm => bm.BeatmapSet)
-                .HasForeignKey(bm => bm.BeatmapSetId)
+                .WithOne(bm => bm.Beatmapset)
+                .HasForeignKey(bm => bm.BeatmapsetId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(b => b.OsuId).IsUnique();
@@ -239,6 +241,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(ga => ga.ActionType);
 
             entity.Property(ga => ga.Changes)
+                .HasColumnType("jsonb")
                 .HasConversion(auditChangesConverter)
                 .Metadata.SetValueComparer(auditChangesComparer);
 
@@ -318,6 +321,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(gsa => gsa.ActionType);
 
             entity.Property(gsa => gsa.Changes)
+                .HasColumnType("jsonb")
                 .HasConversion(auditChangesConverter)
                 .Metadata.SetValueComparer(auditChangesComparer);
 
@@ -456,6 +460,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(ma => ma.ActionType);
 
             entity.Property(ma => ma.Changes)
+                .HasColumnType("jsonb")
                 .HasConversion(auditChangesConverter)
                 .Metadata.SetValueComparer(auditChangesComparer);
 
@@ -487,6 +492,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
         modelBuilder.Entity<OAuthClient>(entity =>
         {
+            entity.ToTable("oauth_clients");
+
             entity.Property(c => c.Id).UseIdentityAlwaysColumn();
 
             entity.Property(c => c.Created).HasDefaultValueSql(SqlCurrentTimestamp);
@@ -508,6 +515,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
         modelBuilder.Entity<OAuthClientAdminNote>(entity =>
         {
+            entity.ToTable("oauth_client_admin_notes");
+
             entity.Property(oacan => oacan.Id).UseIdentityAlwaysColumn();
 
             entity.Property(oacan => oacan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
@@ -845,6 +854,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(ta => ta.ActionType);
 
             entity.Property(ta => ta.Changes)
+                .HasColumnType("jsonb")
                 .HasConversion(auditChangesConverter)
                 .Metadata.SetValueComparer(auditChangesComparer);
 
@@ -861,7 +871,9 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(u => u.Id).UseIdentityColumn();
             entity.Property(u => u.Scopes).HasDefaultValue(Array.Empty<string>());
             entity.Property(u => u.Created).HasDefaultValueSql(SqlCurrentTimestamp);
-            entity.Property(u => u.LastLogin).HasDefaultValueSql(SqlCurrentTimestamp);
+            entity.Property(u => u.LastLogin)
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql(SqlCurrentTimestamp);
 
             // Relation: UserSettings
             entity

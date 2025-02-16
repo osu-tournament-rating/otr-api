@@ -304,7 +304,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Beatmap)
-            .ThenInclude(b => b!.BeatmapSet)
+            .ThenInclude(b => b!.Beatmapset)
             .ThenInclude(bs => bs!.Creator)
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)

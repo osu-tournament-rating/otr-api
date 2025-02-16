@@ -19,25 +19,21 @@ public class OAuthClient : UpdateableEntityBase, IAdminNotableEntity<OAuthClient
     /// Client secrets are stored as hashes and only returned as plaintext when generated for the first time
     /// </remarks>
     [MaxLength(128)]
-    [Column("secret")]
     public string Secret { get; set; } = string.Empty;
 
     /// <summary>
     /// A collection of string literals denoting special permissions granted to the client
     /// </summary>
-    [Column("scopes")]
     public string[] Scopes { get; set; } = [];
 
     /// <summary>
     /// Value that overrides the default API rate limit for the client
     /// </summary>
-    [Column("rate_limit_override")]
     public int? RateLimitOverride { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.User"/> that owns the <see cref="OAuthClient"/>
     /// </summary>
-    [Column("user_id")]
     public int UserId { get; set; }
 
     /// <summary>

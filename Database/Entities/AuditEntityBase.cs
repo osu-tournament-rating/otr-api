@@ -21,26 +21,19 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
     where TAudit : IAuditEntity
 {
     [Key]
-    [Column("id")]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; }
 
-    [Column("created")]
     public DateTime Created { get; }
 
-    [Column("ref_id_lock")]
     public int ReferenceIdLock { get; private set; }
 
-    [Column("ref_id")]
     public int? ReferenceId { get; private set; }
 
-    [Column("action_user_id")]
     public int? ActionUserId { get; set; }
 
-    [Column("action_type")]
     public AuditActionType ActionType { get; private set; }
 
-    [Column("changes", TypeName = "jsonb")]
     public IDictionary<string, AuditChangelogEntry> Changes { get; } = new Dictionary<string, AuditChangelogEntry>();
 
     public virtual bool GenerateAudit(EntityEntry origEntityEntry)

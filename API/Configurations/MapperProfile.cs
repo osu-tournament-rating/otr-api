@@ -14,7 +14,7 @@ public class MapperProfile : Profile
         CreateMap<AdminNoteEntityBase, AdminNoteDTO>();
 
         CreateMap<Beatmap, BeatmapDTO>();
-        CreateMap<BeatmapSet, BeatmapSetCompactDTO>();
+        CreateMap<Beatmapset, BeatmapsetCompactDTO>();
         CreateMap<BeatmapAttributes, BeatmapAttributesDTO>();
 
         CreateMap<Game, GameDTO>()

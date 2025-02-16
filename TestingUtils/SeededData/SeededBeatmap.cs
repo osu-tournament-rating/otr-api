@@ -46,7 +46,7 @@ public static class SeededBeatmap
         int? sliderCount = null,
         int? spinnerCount = null,
         int? maxCombo = null,
-        BeatmapSet? beatmapSet = null
+        Beatmapset? beatmapset = null
     )
     {
         var seededBeatmap = new Beatmap
@@ -67,7 +67,7 @@ public static class SeededBeatmap
             MaxCombo = maxCombo ?? s_rand.NextInclusive(MaxComboMin, MaxComboMax),
         };
 
-        beatmapSet ??= new BeatmapSet
+        beatmapset ??= new Beatmapset
         {
             Id = 0,
             Created = default,
@@ -83,7 +83,7 @@ public static class SeededBeatmap
             Beatmaps = [seededBeatmap]
         };
 
-        seededBeatmap.BeatmapSet = beatmapSet;
+        seededBeatmap.Beatmapset = beatmapset;
         seededBeatmap.CountCircle = circleCount ?? s_rand.NextInclusive(seededBeatmap.MaxCombo.Value);
         seededBeatmap.CountSlider = sliderCount ?? s_rand.NextInclusive(seededBeatmap.MaxCombo.Value - seededBeatmap.CountCircle);
         seededBeatmap.CountSpinner = spinnerCount ?? seededBeatmap.MaxCombo.Value - seededBeatmap.CountCircle - seededBeatmap.CountSlider;

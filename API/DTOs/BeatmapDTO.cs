@@ -58,12 +58,12 @@ public class BeatmapDTO
     /// <summary>
     /// Beatmapset id
     /// </summary>
-    public int? BeatmapSetId { get; set; }
+    public int? BeatmapsetId { get; set; }
 
     /// <summary>
     /// Beatmapset
     /// </summary>
-    public BeatmapSetCompactDTO? BeatmapSet { get; init; }
+    public BeatmapsetCompactDTO? Beatmapset { get; init; }
 
     /// <summary>
     /// Beatmap attributes

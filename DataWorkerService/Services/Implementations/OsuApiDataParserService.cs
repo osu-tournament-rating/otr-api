@@ -10,6 +10,7 @@ using OsuApiClient.Enums;
 using ApiBeatmap = OsuApiClient.Domain.Osu.Beatmaps.Beatmap;
 using ApiGameScore = OsuApiClient.Domain.Osu.Multiplayer.GameScore;
 using Beatmap = Database.Entities.Beatmap;
+using Beatmapset = Database.Entities.Beatmapset;
 using GameScore = Database.Entities.GameScore;
 using User = OsuApiClient.Domain.Osu.Users.User;
 
@@ -280,8 +281,8 @@ public class OsuApiDataParserService(
                 $"Failed to find player with osu! id {apiBeatmap.Beatmapset.CreatorId.Value} in players cache!");
 
 
-        // Create or update BeatmapSet
-        beatmap.BeatmapSet = new BeatmapSet
+        // Create or update Beatmapset
+        beatmap.Beatmapset = new Beatmapset
         {
             OsuId = apiBeatmap.Beatmapset.Id,
             Artist = apiBeatmap.Beatmapset.Artist,
