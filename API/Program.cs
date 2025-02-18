@@ -338,7 +338,7 @@ builder.Services.AddSwaggerGen(options =>
         {
             Type = "string",
             Description = "The possible roles assignable to a user or client",
-            Enum = new List<IOpenApiAny>(oauthScopes.Keys.Select(role => new OpenApiString(role))),
+            Enum = [.. oauthScopes.Keys.Select(role => new OpenApiString(role))],
             Extensions = new Dictionary<string, IOpenApiExtension>
             {
                 [ExtensionKeys.EnumNames] =
@@ -555,9 +555,9 @@ builder.Services.AddScoped<AuditBlamingInterceptor>();
 builder.Services.AddDbContext<OtrContext>((services, options) =>
 {
     options
-        .UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection)
-        .AddInterceptors(services.GetRequiredService<AuditBlamingInterceptor>())
-        .UseSnakeCaseNamingConvention();
+        .UseNpgsql(builder.Configuration
+            .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection)
+        .AddInterceptors(services.GetRequiredService<AuditBlamingInterceptor>());
 });
 
 // The Redis cache is registered as a singleton because it is meant to be re-used across instances

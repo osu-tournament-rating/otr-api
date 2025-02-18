@@ -63,7 +63,8 @@ builder.Services.AddSerilog(configuration =>
         )
         .Enrich.FromLogContext()
         .WriteTo.Console(
-            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}"
+            outputTemplate:
+            "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}"
         )
         .WriteTo.File(
             path: Path.Join("logs", "dataworker_log.log"),
@@ -87,14 +88,13 @@ builder.Services.AddLogging();
 builder.Services.AddDbContext<OtrContext>(o =>
 {
     o.UseNpgsql(
-        builder
-            .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-                ConnectionStringsConfiguration.Position
-            )
-            .DefaultConnection
-    )
-    .AddInterceptors(new AuditingInterceptor())
-    .UseSnakeCaseNamingConvention();
+            builder
+                .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+                    ConnectionStringsConfiguration.Position
+                )
+                .DefaultConnection
+        )
+        .AddInterceptors(new AuditingInterceptor());
 });
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);

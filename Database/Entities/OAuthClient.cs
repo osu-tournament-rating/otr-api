@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities.Interfaces;
 
@@ -8,7 +7,6 @@ namespace Database.Entities;
 /// <summary>
 /// An OAuth2 Client for the o!TR API
 /// </summary>
-[Table("oauth_clients")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class OAuthClient : UpdateableEntityBase, IAdminNotableEntity<OAuthClientAdminNote>
 {

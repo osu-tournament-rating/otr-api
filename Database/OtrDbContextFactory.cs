@@ -22,8 +22,7 @@ public class OtrDbContextFactory : IDesignTimeDbContextFactory<OtrContext>
 
             var builder = new DbContextOptionsBuilder<OtrContext>();
             builder
-                .UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                .UseSnakeCaseNamingConvention();
+                .UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
 
             return new OtrContext(builder.Options);
         }
@@ -43,8 +42,7 @@ public class OtrDbContextFactory : IDesignTimeDbContextFactory<OtrContext>
 
             var builder = new DbContextOptionsBuilder<OtrContext>();
             builder
-                .UseNpgsql()
-                .UseSnakeCaseNamingConvention();
+                .UseNpgsql();
             return new OtrContext(builder.Options);
         }
     }

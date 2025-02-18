@@ -4,7 +4,6 @@ using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
-using Database.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -44,10 +43,12 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     public virtual DbSet<MatchAudit> MatchAudits { get; set; }
     public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
     public virtual DbSet<OAuthClient> OAuthClients { get; set; }
+    public virtual DbSet<OAuthClientAdminNote> OAuthClientAdminNotes { get; set; }
     public virtual DbSet<Player> Players { get; set; }
     public virtual DbSet<PlayerHighestRanks> PlayerHighestRanks { get; set; }
     public virtual DbSet<PlayerAdminNote> PlayerAdminNotes { get; set; }
     public virtual DbSet<PlayerMatchStats> PlayerMatchStats { get; set; }
+    public virtual DbSet<PlayerOsuRulesetData> PlayerOsuRulesetData { get; set; }
     public virtual DbSet<PlayerTournamentStats> PlayerTournamentStats { get; set; }
     public virtual DbSet<PlayerRating> PlayerRatings { get; set; }
     public virtual DbSet<RatingAdjustment> RatingAdjustments { get; set; }
@@ -107,7 +108,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity
                 .HasMany(b => b.Creators)
                 .WithMany(p => p.CreatedBeatmaps)
-                .UsingEntity("__join__beatmap_creators");
+                .UsingEntity("JoinBeatmapCreators");
 
             entity.HasIndex(b => b.OsuId).IsUnique();
         });
@@ -492,8 +493,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
         modelBuilder.Entity<OAuthClient>(entity =>
         {
-            entity.ToTable("oauth_clients");
-
             entity.Property(c => c.Id).UseIdentityAlwaysColumn();
 
             entity.Property(c => c.Created).HasDefaultValueSql(SqlCurrentTimestamp);
@@ -515,8 +514,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
         modelBuilder.Entity<OAuthClientAdminNote>(entity =>
         {
-            entity.ToTable("oauth_client_admin_notes");
-
             entity.Property(oacan => oacan.Id).UseIdentityAlwaysColumn();
 
             entity.Property(oacan => oacan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
@@ -818,7 +815,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity
                 .HasMany(t => t.PooledBeatmaps)
                 .WithMany(pb => pb.TournamentsPooledIn)
-                .UsingEntity("__join__pooled_beatmaps");
+                .UsingEntity("JoinPooledBeatmaps");
 
             entity.HasIndex(t => t.Ruleset);
             entity.HasIndex(t => new { t.Name, t.Abbreviation }).IsUnique();
@@ -994,7 +991,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
     private void SetUpdatedTimestamps()
     {
-        foreach (EntityEntry entry in ChangeTracker.Entries().Where(e => e is { State: EntityState.Modified, Entity: IUpdateableEntity }))
+        foreach (EntityEntry entry in ChangeTracker.Entries()
+                     .Where(e => e is { State: EntityState.Modified, Entity: IUpdateableEntity }))
         {
             ((IUpdateableEntity)entry.Entity).Updated = DateTime.UtcNow;
         }

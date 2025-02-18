@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    [Migration("20250131211519_Initial")]
+    [Migration("20250218030526_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -29,192 +29,156 @@ namespace Database.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<double>("Ar")
-                        .HasColumnType("double precision")
-                        .HasColumnName("ar");
+                        .HasColumnType("double precision");
 
-                    b.Property<int?>("BeatmapSetId")
-                        .HasColumnType("integer")
-                        .HasColumnName("beatmapset_id");
+                    b.Property<int?>("BeatmapsetId")
+                        .HasColumnType("integer");
 
                     b.Property<double>("Bpm")
-                        .HasColumnType("double precision")
-                        .HasColumnName("bpm");
+                        .HasColumnType("double precision");
 
                     b.Property<int>("CountCircle")
-                        .HasColumnType("integer")
-                        .HasColumnName("count_circle");
+                        .HasColumnType("integer");
 
                     b.Property<int>("CountSlider")
-                        .HasColumnType("integer")
-                        .HasColumnName("count_slider");
+                        .HasColumnType("integer");
 
                     b.Property<int>("CountSpinner")
-                        .HasColumnType("integer")
-                        .HasColumnName("count_spinner");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<double>("Cs")
-                        .HasColumnType("double precision")
-                        .HasColumnName("cs");
+                        .HasColumnType("double precision");
 
                     b.Property<string>("DiffName")
                         .IsRequired()
                         .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("diff_name");
+                        .HasColumnType("character varying(512)");
 
                     b.Property<int>("DrainLength")
-                        .HasColumnType("integer")
-                        .HasColumnName("drain_length");
+                        .HasColumnType("integer");
 
                     b.Property<bool>("HasData")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("has_data");
+                        .HasDefaultValue(true);
 
                     b.Property<double>("Hp")
-                        .HasColumnType("double precision")
-                        .HasColumnName("hp");
+                        .HasColumnType("double precision");
 
                     b.Property<int?>("MaxCombo")
-                        .HasColumnType("integer")
-                        .HasColumnName("max_combo");
+                        .HasColumnType("integer");
 
                     b.Property<double>("Od")
-                        .HasColumnType("double precision")
-                        .HasColumnName("od");
+                        .HasColumnType("double precision");
 
                     b.Property<long>("OsuId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("osu_id");
+                        .HasColumnType("bigint");
 
                     b.Property<int>("RankedStatus")
-                        .HasColumnType("integer")
-                        .HasColumnName("ranked_status");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
+                        .HasColumnType("integer");
 
                     b.Property<double>("Sr")
-                        .HasColumnType("double precision")
-                        .HasColumnName("sr");
+                        .HasColumnType("double precision");
 
                     b.Property<long>("TotalLength")
-                        .HasColumnType("bigint")
-                        .HasColumnName("total_length");
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BeatmapSetId");
+                    b.HasIndex("BeatmapsetId");
 
                     b.HasIndex("OsuId")
                         .IsUnique();
 
-                    b.ToTable("beatmaps");
+                    b.ToTable("Beatmaps");
                 });
 
             modelBuilder.Entity("Database.Entities.BeatmapAttributes", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BeatmapId")
-                        .HasColumnType("integer")
-                        .HasColumnName("beatmap_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("Mods")
-                        .HasColumnType("integer")
-                        .HasColumnName("mods");
+                        .HasColumnType("integer");
 
                     b.Property<double>("Sr")
-                        .HasColumnType("double precision")
-                        .HasColumnName("sr");
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BeatmapId", "Mods")
                         .IsUnique();
 
-                    b.ToTable("beatmap_attributes");
+                    b.ToTable("BeatmapAttributes");
                 });
 
-            modelBuilder.Entity("Database.Entities.BeatmapSet", b =>
+            modelBuilder.Entity("Database.Entities.Beatmapset", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Artist")
                         .IsRequired()
                         .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("artist");
+                        .HasColumnType("character varying(512)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("CreatorId")
-                        .HasColumnType("integer")
-                        .HasColumnName("creator_id");
+                        .HasColumnType("integer");
 
                     b.Property<long>("OsuId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("osu_id");
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("RankedDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("ranked_date");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("RankedStatus")
-                        .HasColumnType("integer")
-                        .HasColumnName("ranked_status");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("SubmittedDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("submitted_date");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("title");
+                        .HasColumnType("character varying(512)");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -223,97 +187,80 @@ namespace Database.Migrations
                     b.HasIndex("OsuId")
                         .IsUnique();
 
-                    b.ToTable("beatmapsets");
+                    b.ToTable("Beatmapsets");
                 });
 
             modelBuilder.Entity("Database.Entities.Game", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("BeatmapId")
-                        .HasColumnType("integer")
-                        .HasColumnName("beatmap_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("EndTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_time")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<DateTime>("LastProcessingDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_processing_date")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<int>("MatchId")
-                        .HasColumnType("integer")
-                        .HasColumnName("match_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Mods")
-                        .HasColumnType("integer")
-                        .HasColumnName("mods");
+                        .HasColumnType("integer");
 
                     b.Property<long>("OsuId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("osu_id");
+                        .HasColumnType("bigint");
 
                     b.Property<int>("ProcessingStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("processing_status");
+                        .HasDefaultValue(0);
 
                     b.Property<int>("RejectionReason")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("rejection_reason");
+                        .HasDefaultValue(0);
 
                     b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
+                        .HasColumnType("integer");
 
                     b.Property<int>("ScoringType")
-                        .HasColumnType("integer")
-                        .HasColumnName("scoring_type");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("StartTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_time")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<int>("TeamType")
-                        .HasColumnType("integer")
-                        .HasColumnName("team_type");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("VerificationStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("verification_status");
+                        .HasDefaultValue(0);
 
                     b.Property<int>("WarningFlags")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("warning_flags");
+                        .HasDefaultValue(0);
 
                     b.HasKey("Id");
 
@@ -326,40 +273,34 @@ namespace Database.Migrations
 
                     b.HasIndex("StartTime");
 
-                    b.ToTable("games");
+                    b.ToTable("Games");
                 });
 
             modelBuilder.Entity("Database.Entities.GameAdminNote", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Note")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
+                        .HasColumnType("text");
 
                     b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -367,156 +308,125 @@ namespace Database.Migrations
 
                     b.HasIndex("ReferenceId");
 
-                    b.ToTable("game_admin_notes");
+                    b.ToTable("GameAdminNotes");
                 });
 
             modelBuilder.Entity("Database.Entities.GameAudit", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ActionType")
-                        .HasColumnType("integer")
-                        .HasColumnName("action_type");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("ActionUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("action_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Changes")
                         .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("changes");
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("ReferenceIdLock")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ReferenceId");
 
-                    b.ToTable("game_audits");
+                    b.ToTable("GameAudits");
                 });
 
             modelBuilder.Entity("Database.Entities.GameScore", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("Count100")
-                        .HasColumnType("integer")
-                        .HasColumnName("count_100");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Count300")
-                        .HasColumnType("integer")
-                        .HasColumnName("count_300");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Count50")
-                        .HasColumnType("integer")
-                        .HasColumnName("count_50");
+                        .HasColumnType("integer");
 
                     b.Property<int>("CountGeki")
-                        .HasColumnType("integer")
-                        .HasColumnName("count_geki");
+                        .HasColumnType("integer");
 
                     b.Property<int>("CountKatu")
-                        .HasColumnType("integer")
-                        .HasColumnName("count_katu");
+                        .HasColumnType("integer");
 
                     b.Property<int>("CountMiss")
-                        .HasColumnType("integer")
-                        .HasColumnName("count_miss");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("GameId")
-                        .HasColumnType("integer")
-                        .HasColumnName("game_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Grade")
-                        .HasColumnType("integer")
-                        .HasColumnName("grade");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("LastProcessingDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_processing_date")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<int>("MaxCombo")
-                        .HasColumnType("integer")
-                        .HasColumnName("max_combo");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Mods")
-                        .HasColumnType("integer")
-                        .HasColumnName("mods");
+                        .HasColumnType("integer");
 
                     b.Property<bool>("Pass")
-                        .HasColumnType("boolean")
-                        .HasColumnName("pass");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("Perfect")
-                        .HasColumnType("boolean")
-                        .HasColumnName("perfect");
+                        .HasColumnType("boolean");
 
                     b.Property<int>("Placement")
-                        .HasColumnType("integer")
-                        .HasColumnName("placement");
+                        .HasColumnType("integer");
 
                     b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("ProcessingStatus")
-                        .HasColumnType("integer")
-                        .HasColumnName("processing_status");
+                        .HasColumnType("integer");
 
                     b.Property<int>("RejectionReason")
-                        .HasColumnType("integer")
-                        .HasColumnName("rejection_reason");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Score")
-                        .HasColumnType("integer")
-                        .HasColumnName("score");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Team")
-                        .HasColumnType("integer")
-                        .HasColumnName("team");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("VerificationStatus")
-                        .HasColumnType("integer")
-                        .HasColumnName("verification_status");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -527,40 +437,34 @@ namespace Database.Migrations
                     b.HasIndex("PlayerId", "GameId")
                         .IsUnique();
 
-                    b.ToTable("game_scores");
+                    b.ToTable("GameScores");
                 });
 
             modelBuilder.Entity("Database.Entities.GameScoreAdminNote", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Note")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
+                        .HasColumnType("text");
 
                     b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -568,96 +472,80 @@ namespace Database.Migrations
 
                     b.HasIndex("ReferenceId");
 
-                    b.ToTable("game_score_admin_notes");
+                    b.ToTable("GameScoreAdminNotes");
                 });
 
             modelBuilder.Entity("Database.Entities.GameScoreAudit", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ActionType")
-                        .HasColumnType("integer")
-                        .HasColumnName("action_type");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("ActionUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("action_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Changes")
                         .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("changes");
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("ReferenceIdLock")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ReferenceId");
 
-                    b.ToTable("game_score_audits");
+                    b.ToTable("GameScoreAudits");
                 });
 
             modelBuilder.Entity("Database.Entities.GameWinRecord", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("GameId")
-                        .HasColumnType("integer")
-                        .HasColumnName("game_id");
+                        .HasColumnType("integer");
 
                     b.PrimitiveCollection<int[]>("LoserRoster")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("loser_roster");
+                        .HasColumnType("integer[]");
 
                     b.Property<int>("LoserScore")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_score");
+                        .HasColumnType("integer");
 
                     b.Property<int>("LoserTeam")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_team");
+                        .HasColumnType("integer");
 
                     b.PrimitiveCollection<int[]>("WinnerRoster")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("winner_roster");
+                        .HasColumnType("integer[]");
 
                     b.Property<int>("WinnerScore")
-                        .HasColumnType("integer")
-                        .HasColumnName("winner_score");
+                        .HasColumnType("integer");
 
                     b.Property<int>("WinnerTeam")
-                        .HasColumnType("integer")
-                        .HasColumnName("winner_team");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -666,34 +554,30 @@ namespace Database.Migrations
 
                     b.HasIndex("WinnerRoster");
 
-                    b.ToTable("game_win_records");
+                    b.ToTable("GameWinRecords");
                 });
 
             modelBuilder.Entity("Database.Entities.Match", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("EndTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_time")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<DateTime>("LastProcessingDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_processing_date")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<string>("Name")
@@ -701,58 +585,47 @@ namespace Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
-                        .HasDefaultValue("")
-                        .HasColumnName("name");
+                        .HasDefaultValue("");
 
                     b.Property<long>("OsuId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("osu_id");
+                        .HasColumnType("bigint");
 
                     b.Property<int>("ProcessingStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("processing_status");
+                        .HasDefaultValue(0);
 
                     b.Property<int>("RejectionReason")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("rejection_reason");
+                        .HasDefaultValue(0);
 
                     b.Property<DateTime>("StartTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_time")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<int?>("SubmittedByUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("submitted_by_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("TournamentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("tournament_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("VerificationStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("verification_status");
+                        .HasDefaultValue(0);
 
                     b.Property<int?>("VerifiedByUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_by_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("WarningFlags")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("warning_flags");
+                        .HasDefaultValue(0);
 
                     b.HasKey("Id");
 
@@ -765,40 +638,34 @@ namespace Database.Migrations
 
                     b.HasIndex("VerifiedByUserId");
 
-                    b.ToTable("matches");
+                    b.ToTable("Matches");
                 });
 
             modelBuilder.Entity("Database.Entities.MatchAdminNote", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Note")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
+                        .HasColumnType("text");
 
                     b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -806,96 +673,80 @@ namespace Database.Migrations
 
                     b.HasIndex("ReferenceId");
 
-                    b.ToTable("match_admin_notes");
+                    b.ToTable("MatchAdminNotes");
                 });
 
             modelBuilder.Entity("Database.Entities.MatchAudit", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ActionType")
-                        .HasColumnType("integer")
-                        .HasColumnName("action_type");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("ActionUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("action_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Changes")
                         .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("changes");
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("ReferenceIdLock")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ReferenceId");
 
-                    b.ToTable("match_audits");
+                    b.ToTable("MatchAudits");
                 });
 
             modelBuilder.Entity("Database.Entities.MatchWinRecord", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.PrimitiveCollection<int[]>("LoserRoster")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("loser_roster");
+                        .HasColumnType("integer[]");
 
                     b.Property<int>("LoserScore")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_score");
+                        .HasColumnType("integer");
 
                     b.Property<int>("LoserTeam")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_team");
+                        .HasColumnType("integer");
 
                     b.Property<int>("MatchId")
-                        .HasColumnType("integer")
-                        .HasColumnName("match_id");
+                        .HasColumnType("integer");
 
                     b.PrimitiveCollection<int[]>("WinnerRoster")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("winner_roster");
+                        .HasColumnType("integer[]");
 
                     b.Property<int>("WinnerScore")
-                        .HasColumnType("integer")
-                        .HasColumnName("winner_score");
+                        .HasColumnType("integer");
 
                     b.Property<int>("WinnerTeam")
-                        .HasColumnType("integer")
-                        .HasColumnName("winner_team");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -906,99 +757,85 @@ namespace Database.Migrations
 
                     b.HasIndex("WinnerRoster");
 
-                    b.ToTable("match_win_records");
+                    b.ToTable("MatchWinRecords");
                 });
 
             modelBuilder.Entity("Database.Entities.OAuthClient", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("RateLimitOverride")
-                        .HasColumnType("integer")
-                        .HasColumnName("rate_limit_override");
+                        .HasColumnType("integer");
 
                     b.PrimitiveCollection<string[]>("Scopes")
                         .IsRequired()
-                        .HasColumnType("text[]")
-                        .HasColumnName("scopes");
+                        .HasColumnType("text[]");
 
                     b.Property<string>("Secret")
                         .IsRequired()
                         .HasMaxLength(128)
-                        .HasColumnType("character varying(128)")
-                        .HasColumnName("secret");
+                        .HasColumnType("character varying(128)");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("user_id");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("oauth_clients");
+                    b.ToTable("OAuthClients");
                 });
 
             modelBuilder.Entity("Database.Entities.OAuthClientAdminNote", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Note")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
+                        .HasColumnType("text");
 
                     b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ReferenceId");
 
-                    b.ToTable("oauth_client_admin_notes");
+                    b.ToTable("OAuthClientAdminNotes");
                 });
 
             modelBuilder.Entity("Database.Entities.Player", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
@@ -1007,88 +844,74 @@ namespace Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(4)
                         .HasColumnType("character varying(4)")
-                        .HasDefaultValue("")
-                        .HasColumnName("country");
+                        .HasDefaultValue("");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<long>("OsuId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("osu_id");
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("OsuLastFetch")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("osu_last_fetch")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<DateTime>("OsuTrackLastFetch")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("osu_track_last_fetch")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<int>("Ruleset")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("default_ruleset");
+                        .HasDefaultValue(0);
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
-                        .HasDefaultValue("")
-                        .HasColumnName("username");
+                        .HasDefaultValue("");
 
                     b.HasKey("Id");
 
                     b.HasIndex("OsuId")
                         .IsUnique();
 
-                    b.ToTable("players");
+                    b.ToTable("Players");
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerAdminNote", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Note")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
+                        .HasColumnType("text");
 
                     b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -1096,51 +919,42 @@ namespace Database.Migrations
 
                     b.HasIndex("ReferenceId");
 
-                    b.ToTable("player_admin_notes");
+                    b.ToTable("PlayerAdminNotes");
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerHighestRanks", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CountryRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("country_rank");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CountryRankDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("country_rank_date");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("GlobalRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("global_rank");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("GlobalRankDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("global_rank_date");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -1153,77 +967,62 @@ namespace Database.Migrations
                     b.HasIndex("PlayerId", "Ruleset")
                         .IsUnique();
 
-                    b.ToTable("player_highest_ranks");
+                    b.ToTable("PlayerHighestRanks");
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerMatchStats", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<double>("AverageAccuracy")
-                        .HasColumnType("double precision")
-                        .HasColumnName("average_accuracy");
+                        .HasColumnType("double precision");
 
                     b.Property<double>("AverageMisses")
-                        .HasColumnType("double precision")
-                        .HasColumnName("average_misses");
+                        .HasColumnType("double precision");
 
                     b.Property<double>("AveragePlacement")
-                        .HasColumnType("double precision")
-                        .HasColumnName("average_placement");
+                        .HasColumnType("double precision");
 
                     b.Property<double>("AverageScore")
-                        .HasColumnType("double precision")
-                        .HasColumnName("average_score");
+                        .HasColumnType("double precision");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("GamesLost")
-                        .HasColumnType("integer")
-                        .HasColumnName("games_lost");
+                        .HasColumnType("integer");
 
                     b.Property<int>("GamesPlayed")
-                        .HasColumnType("integer")
-                        .HasColumnName("games_played");
+                        .HasColumnType("integer");
 
                     b.Property<int>("GamesWon")
-                        .HasColumnType("integer")
-                        .HasColumnName("games_won");
+                        .HasColumnType("integer");
 
                     b.Property<double>("MatchCost")
-                        .HasColumnType("double precision")
-                        .HasColumnName("match_cost");
+                        .HasColumnType("double precision");
 
                     b.Property<int>("MatchId")
-                        .HasColumnType("integer")
-                        .HasColumnName("match_id");
+                        .HasColumnType("integer");
 
                     b.PrimitiveCollection<int[]>("OpponentIds")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("opponent_ids");
+                        .HasColumnType("integer[]");
 
                     b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
+                        .HasColumnType("integer");
 
                     b.PrimitiveCollection<int[]>("TeammateIds")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("teammate_ids");
+                        .HasColumnType("integer[]");
 
                     b.Property<bool>("Won")
-                        .HasColumnType("boolean")
-                        .HasColumnName("won");
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
@@ -1236,131 +1035,106 @@ namespace Database.Migrations
 
                     b.HasIndex("PlayerId", "Won");
 
-                    b.ToTable("player_match_stats");
+                    b.ToTable("PlayerMatchStats");
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerOsuRulesetData", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("EarliestGlobalRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("earliest_global_rank");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("EarliestGlobalRankDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("earliest_global_rank_date");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("GlobalRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("global_rank");
+                        .HasColumnType("integer");
 
                     b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
+                        .HasColumnType("integer");
 
                     b.Property<double>("Pp")
-                        .HasColumnType("double precision")
-                        .HasColumnName("pp");
+                        .HasColumnType("double precision");
 
                     b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PlayerId", "Ruleset")
                         .IsUnique();
 
-                    b.ToTable("player_osu_ruleset_data");
+                    b.ToTable("PlayerOsuRulesetData");
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerTournamentStats", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<double>("AverageAccuracy")
-                        .HasColumnType("double precision")
-                        .HasColumnName("average_accuracy");
+                        .HasColumnType("double precision");
 
                     b.Property<double>("AverageMatchCost")
-                        .HasColumnType("double precision")
-                        .HasColumnName("average_match_cost");
+                        .HasColumnType("double precision");
 
                     b.Property<double>("AveragePlacement")
-                        .HasColumnType("double precision")
-                        .HasColumnName("average_placement");
+                        .HasColumnType("double precision");
 
                     b.Property<double>("AverageRatingDelta")
-                        .HasColumnType("double precision")
-                        .HasColumnName("average_rating_delta");
+                        .HasColumnType("double precision");
 
                     b.Property<int>("AverageScore")
-                        .HasColumnType("integer")
-                        .HasColumnName("average_score");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("GamesLost")
-                        .HasColumnType("integer")
-                        .HasColumnName("games_lost");
+                        .HasColumnType("integer");
 
                     b.Property<int>("GamesPlayed")
-                        .HasColumnType("integer")
-                        .HasColumnName("games_played");
+                        .HasColumnType("integer");
 
                     b.Property<int>("GamesWon")
-                        .HasColumnType("integer")
-                        .HasColumnName("games_won");
+                        .HasColumnType("integer");
 
                     b.Property<int>("MatchesLost")
-                        .HasColumnType("integer")
-                        .HasColumnName("matches_lost");
+                        .HasColumnType("integer");
 
                     b.Property<int>("MatchesPlayed")
-                        .HasColumnType("integer")
-                        .HasColumnName("matches_played");
+                        .HasColumnType("integer");
 
                     b.Property<int>("MatchesWon")
-                        .HasColumnType("integer")
-                        .HasColumnName("matches_won");
+                        .HasColumnType("integer");
 
                     b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
+                        .HasColumnType("integer");
 
                     b.PrimitiveCollection<int[]>("TeammateIds")
                         .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("teammate_ids");
+                        .HasColumnType("integer[]");
 
                     b.Property<int>("TournamentId")
-                        .HasColumnType("integer")
-                        .HasColumnName("tournament_id");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -1369,51 +1143,42 @@ namespace Database.Migrations
                     b.HasIndex("PlayerId", "TournamentId")
                         .IsUnique();
 
-                    b.ToTable("player_tournament_stats");
+                    b.ToTable("PlayerTournamentStats");
                 });
 
             modelBuilder.Entity("Database.Entities.Processor.PlayerRating", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CountryRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("country_rank");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("GlobalRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("global_rank");
+                        .HasColumnType("integer");
 
                     b.Property<double>("Percentile")
-                        .HasColumnType("double precision")
-                        .HasColumnName("percentile");
+                        .HasColumnType("double precision");
 
                     b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
+                        .HasColumnType("integer");
 
                     b.Property<double>("Rating")
-                        .HasColumnType("double precision")
-                        .HasColumnName("rating");
+                        .HasColumnType("double precision");
 
                     b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
+                        .HasColumnType("integer");
 
                     b.Property<double>("Volatility")
-                        .HasColumnType("double precision")
-                        .HasColumnName("volatility");
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
@@ -1427,63 +1192,51 @@ namespace Database.Migrations
                     b.HasIndex("PlayerId", "Ruleset")
                         .IsUnique();
 
-                    b.ToTable("player_ratings");
+                    b.ToTable("PlayerRatings");
                 });
 
             modelBuilder.Entity("Database.Entities.Processor.RatingAdjustment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdjustmentType")
-                        .HasColumnType("integer")
-                        .HasColumnName("adjustment_type");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("MatchId")
-                        .HasColumnType("integer")
-                        .HasColumnName("match_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("PlayerRatingId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_rating_id");
+                        .HasColumnType("integer");
 
                     b.Property<double>("RatingAfter")
-                        .HasColumnType("double precision")
-                        .HasColumnName("rating_after");
+                        .HasColumnType("double precision");
 
                     b.Property<double>("RatingBefore")
-                        .HasColumnType("double precision")
-                        .HasColumnName("rating_before");
+                        .HasColumnType("double precision");
 
                     b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<double>("VolatilityAfter")
-                        .HasColumnType("double precision")
-                        .HasColumnName("volatility_after");
+                        .HasColumnType("double precision");
 
                     b.Property<double>("VolatilityBefore")
-                        .HasColumnType("double precision")
-                        .HasColumnName("volatility_before");
+                        .HasColumnType("double precision");
 
                     b.HasKey("Id");
 
@@ -1496,101 +1249,84 @@ namespace Database.Migrations
 
                     b.HasIndex("PlayerId", "Timestamp");
 
-                    b.ToTable("rating_adjustments");
+                    b.ToTable("RatingAdjustments");
                 });
 
             modelBuilder.Entity("Database.Entities.Tournament", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Abbreviation")
                         .IsRequired()
                         .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("abbreviation");
+                        .HasColumnType("character varying(32)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime>("EndTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_time")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<string>("ForumUrl")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("forum_url");
+                        .HasColumnType("character varying(255)");
 
                     b.Property<DateTime>("LastProcessingDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_processing_date")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<int>("LobbySize")
-                        .HasColumnType("integer")
-                        .HasColumnName("lobby_size");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("name");
+                        .HasColumnType("character varying(512)");
 
                     b.Property<int>("ProcessingStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("processing_status");
+                        .HasDefaultValue(0);
 
                     b.Property<int>("RankRangeLowerBound")
-                        .HasColumnType("integer")
-                        .HasColumnName("rank_range_lower_bound");
+                        .HasColumnType("integer");
 
                     b.Property<int>("RejectionReason")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("rejection_reason");
+                        .HasDefaultValue(0);
 
                     b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("StartTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_time")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<int?>("SubmittedByUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("submitted_by_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("VerificationStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("verification_status");
+                        .HasDefaultValue(0);
 
                     b.Property<int?>("VerifiedByUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("verified_by_user_id");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -1603,40 +1339,34 @@ namespace Database.Migrations
                     b.HasIndex("Name", "Abbreviation")
                         .IsUnique();
 
-                    b.ToTable("tournaments");
+                    b.ToTable("Tournaments");
                 });
 
             modelBuilder.Entity("Database.Entities.TournamentAdminNote", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AdminUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("admin_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Note")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("note");
+                        .HasColumnType("text");
 
                     b.Property<int>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -1644,140 +1374,121 @@ namespace Database.Migrations
 
                     b.HasIndex("ReferenceId");
 
-                    b.ToTable("tournament_admin_notes");
+                    b.ToTable("TournamentAdminNotes");
                 });
 
             modelBuilder.Entity("Database.Entities.TournamentAudit", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ActionType")
-                        .HasColumnType("integer")
-                        .HasColumnName("action_type");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("ActionUserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("action_user_id");
+                        .HasColumnType("integer");
 
                     b.Property<string>("Changes")
                         .IsRequired()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("changes");
+                        .HasColumnType("jsonb");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("ReferenceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnType("integer");
 
                     b.Property<int>("ReferenceIdLock")
-                        .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ReferenceId");
 
-                    b.ToTable("tournament_audits");
+                    b.ToTable("TournamentAudits");
                 });
 
             modelBuilder.Entity("Database.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<DateTime?>("LastLogin")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_login")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
+                        .HasColumnType("integer");
 
                     b.PrimitiveCollection<string[]>("Scopes")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasColumnType("text[]")
-                        .HasDefaultValue(new string[0])
-                        .HasColumnName("scopes");
+                        .HasDefaultValue(new string[0]);
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PlayerId")
                         .IsUnique();
 
-                    b.ToTable("users");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Database.Entities.UserSettings", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("DefaultRuleset")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("default_ruleset");
+                        .HasDefaultValue(0);
 
                     b.Property<bool>("DefaultRulesetIsControlled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("default_ruleset_controlled");
+                        .HasDefaultValue(false);
 
                     b.Property<DateTime?>("Updated")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("user_id");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("user_settings");
+                    b.ToTable("UserSettings");
                 });
 
-            modelBuilder.Entity("__join__beatmap_creators", b =>
+            modelBuilder.Entity("JoinBeatmapCreators", b =>
                 {
                     b.Property<int>("CreatedBeatmapsId")
                         .HasColumnType("integer");
@@ -1789,10 +1500,10 @@ namespace Database.Migrations
 
                     b.HasIndex("CreatorsId");
 
-                    b.ToTable("__join__beatmap_creators");
+                    b.ToTable("JoinBeatmapCreators");
                 });
 
-            modelBuilder.Entity("__join__pooled_beatmaps", b =>
+            modelBuilder.Entity("JoinPooledBeatmaps", b =>
                 {
                     b.Property<int>("PooledBeatmapsId")
                         .HasColumnType("integer");
@@ -1804,17 +1515,17 @@ namespace Database.Migrations
 
                     b.HasIndex("TournamentsPooledInId");
 
-                    b.ToTable("__join__pooled_beatmaps");
+                    b.ToTable("JoinPooledBeatmaps");
                 });
 
             modelBuilder.Entity("Database.Entities.Beatmap", b =>
                 {
-                    b.HasOne("Database.Entities.BeatmapSet", "BeatmapSet")
+                    b.HasOne("Database.Entities.Beatmapset", "Beatmapset")
                         .WithMany("Beatmaps")
-                        .HasForeignKey("BeatmapSetId")
+                        .HasForeignKey("BeatmapsetId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("BeatmapSet");
+                    b.Navigation("Beatmapset");
                 });
 
             modelBuilder.Entity("Database.Entities.BeatmapAttributes", b =>
@@ -1828,10 +1539,10 @@ namespace Database.Migrations
                     b.Navigation("Beatmap");
                 });
 
-            modelBuilder.Entity("Database.Entities.BeatmapSet", b =>
+            modelBuilder.Entity("Database.Entities.Beatmapset", b =>
                 {
                     b.HasOne("Database.Entities.Player", "Creator")
-                        .WithMany("CreatedBeatmapSets")
+                        .WithMany("CreatedBeatmapsets")
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -2205,7 +1916,7 @@ namespace Database.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("__join__beatmap_creators", b =>
+            modelBuilder.Entity("JoinBeatmapCreators", b =>
                 {
                     b.HasOne("Database.Entities.Beatmap", null)
                         .WithMany()
@@ -2220,7 +1931,7 @@ namespace Database.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("__join__pooled_beatmaps", b =>
+            modelBuilder.Entity("JoinPooledBeatmaps", b =>
                 {
                     b.HasOne("Database.Entities.Beatmap", null)
                         .WithMany()
@@ -2242,7 +1953,7 @@ namespace Database.Migrations
                     b.Navigation("Games");
                 });
 
-            modelBuilder.Entity("Database.Entities.BeatmapSet", b =>
+            modelBuilder.Entity("Database.Entities.Beatmapset", b =>
                 {
                     b.Navigation("Beatmaps");
                 });
@@ -2289,7 +2000,7 @@ namespace Database.Migrations
                 {
                     b.Navigation("AdminNotes");
 
-                    b.Navigation("CreatedBeatmapSets");
+                    b.Navigation("CreatedBeatmapsets");
 
                     b.Navigation("HighestRanks");
 
