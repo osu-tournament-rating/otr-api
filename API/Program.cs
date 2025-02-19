@@ -556,7 +556,8 @@ builder.Services.AddDbContext<OtrContext>((services, options) =>
 {
     options
         .UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection)
-        .AddInterceptors(services.GetRequiredService<AuditBlamingInterceptor>());
+        .AddInterceptors(services.GetRequiredService<AuditBlamingInterceptor>())
+        .UseSnakeCaseNamingConvention();
 });
 
 // The Redis cache is registered as a singleton because it is meant to be re-used across instances

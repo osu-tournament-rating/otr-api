@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2024.3.0"/>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0"/>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.0"/>

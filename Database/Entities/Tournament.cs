@@ -11,7 +11,6 @@ namespace Database.Entities;
 /// <summary>
 /// An osu! tournament
 /// </summary>
-[Table("tournaments")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>,
@@ -21,63 +20,53 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// Name
     /// </summary>
     [MaxLength(512)]
-    [Column("name")]
     public string Name { get; set; } = null!;
 
     /// <summary>
     /// Abbreviation
     /// </summary>
     [MaxLength(32)]
-    [Column("abbreviation")]
     public string Abbreviation { get; set; } = null!;
 
     /// <summary>
     /// Link to the osu! forum post
     /// </summary>
     [MaxLength(255)]
-    [Column("forum_url")]
     public string ForumUrl { get; set; } = null!;
 
     /// <summary>
     /// Lower bound of the rank range
     /// </summary>
-    [Column("rank_range_lower_bound")]
     public int RankRangeLowerBound { get; set; }
 
     /// <summary>
     /// The <see cref="Ruleset"/> the tournament was played in
     /// </summary>
-    [Column("ruleset")]
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Expected in-match team size
     /// </summary>
-    [Column("lobby_size")]
     public int LobbySize { get; set; }
 
-    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
+    public VerificationStatus VerificationStatus { get; set; }
 
     [AuditIgnore]
-    [Column("last_processing_date")]
     public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Rejection reason
     /// </summary>
-    [Column("rejection_reason")]
     public TournamentRejectionReason RejectionReason { get; set; }
 
     /// <summary>
     /// Processing status
     /// </summary>
-    [Column("processing_status")]
     public TournamentProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
     /// Id of the <see cref="User"/> that submitted the tournament
     /// </summary>
-    [Column("submitted_by_user_id")]
     public int? SubmittedByUserId { get; set; }
 
     /// <summary>
@@ -88,7 +77,6 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// Id of the <see cref="User"/> that verified the tournament
     /// </summary>
-    [Column("verified_by_user_id")]
     public int? VerifiedByUserId { get; set; }
 
     /// <summary>
@@ -99,13 +87,11 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// The start date of the first <see cref="Match"/> played in the tournament
     /// </summary>
-    [Column("start_time")]
     public DateTime StartTime { get; set; }
 
     /// <summary>
     /// The end date of the last <see cref="Match"/> played in the tournament
     /// </summary>
-    [Column("end_time")]
     public DateTime EndTime { get; set; }
 
     /// <summary>

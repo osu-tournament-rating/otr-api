@@ -6,7 +6,7 @@ namespace API.DTOs;
 /// <summary>
 /// Represents a compact version of a beatmapset
 /// </summary>
-public class BeatmapSetCompactDTO
+public class BeatmapsetCompactDTO
 {
     /// <summary>
     /// Beatmapset id

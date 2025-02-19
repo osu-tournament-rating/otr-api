@@ -74,7 +74,7 @@ public class PlayersService(
             {
                 player.Username = result.Username;
                 player.Country = result.CountryCode;
-                player.Ruleset = result.Ruleset;
+                player.DefaultRuleset = result.Ruleset;
 
                 if (player.User?.Settings is { DefaultRulesetIsControlled: false })
                 {

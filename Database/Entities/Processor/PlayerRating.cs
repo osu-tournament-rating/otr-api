@@ -17,50 +17,42 @@ namespace Database.Entities.Processor;
 /// o!TR Rating Calculation Documentation
 /// </a>
 /// </remarks>
-[Table("player_ratings")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class PlayerRating : EntityBase
 {
     /// <summary>
     /// The <see cref="Enums.Ruleset"/> that the <see cref="PlayerRating"/> was generated for
     /// </summary>
-    [Column("ruleset")]
     public Ruleset Ruleset { get; init; }
 
     /// <summary>
     /// osu! Tournament Rating... The number we're all here for!
     /// </summary>
-    [Column("rating")]
     public double Rating { get; set; }
 
     /// <summary>
     /// Measure of how "strong" a single change in <see cref="Rating"/> can be
     /// </summary>
-    [Column("volatility")]
     public double Volatility { get; init; }
 
     /// <summary>
     /// Global <see cref="Rating"/> percentile
     /// </summary>
-    [Column("percentile")]
     public double Percentile { get; init; }
 
     /// <summary>
     /// Global rank
     /// </summary>
-    [Column("global_rank")]
     public int GlobalRank { get; init; }
 
     /// <summary>
     /// Country rank
     /// </summary>
-    [Column("country_rank")]
     public int CountryRank { get; init; }
 
     /// <summary>
     /// Id of the <see cref="Player"/> that the <see cref="PlayerRating"/> was generated for
     /// </summary>
-    [Column("player_id")]
     public int PlayerId { get; init; }
 
     /// <summary>

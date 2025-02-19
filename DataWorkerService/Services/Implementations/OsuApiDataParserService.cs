@@ -10,6 +10,7 @@ using OsuApiClient.Enums;
 using ApiScore = OsuApiClient.Domain.Osu.Multiplayer.GameScore;
 using ApiUser = OsuApiClient.Domain.Osu.Users.User;
 using Beatmap = Database.Entities.Beatmap;
+using Beatmapset = Database.Entities.Beatmapset;
 using GameScore = Database.Entities.GameScore;
 
 namespace DataWorkerService.Services.Implementations;
@@ -20,7 +21,7 @@ public class OsuApiDataParserService(
     IOsuClient osuClient
 ) : IOsuApiDataParserService
 {
-    private readonly Dictionary<long, BeatmapSet> _beatmapSetCache = [];
+    private readonly Dictionary<long, Beatmapset> _beatmapSetCache = [];
     private readonly Dictionary<long, Beatmap> _beatmapCache = [];
     private readonly Dictionary<long, Player> _playerCache = [];
 
@@ -143,7 +144,7 @@ public class OsuApiDataParserService(
 
             // Test database
             Beatmap? beatmap = await context.Beatmaps
-                .Include(b => b.BeatmapSet)
+                .Include(b => b.Beatmapset)
                 .ThenInclude(bs => bs!.Creator)
                 .Include(b => b.Creators)
                 .FirstOrDefaultAsync(b => b.OsuId == beatmapOsuId);
@@ -153,12 +154,12 @@ public class OsuApiDataParserService(
             {
                 _beatmapCache.TryAdd(beatmap.OsuId, beatmap);
                 beatmap.Creators.ToList().ForEach(p => _playerCache.TryAdd(p.OsuId, p));
-                if (beatmap.BeatmapSet is not null)
+                if (beatmap.Beatmapset is not null)
                 {
-                    _beatmapSetCache.TryAdd(beatmap.BeatmapSet.OsuId, beatmap.BeatmapSet);
-                    if (beatmap.BeatmapSet.Creator is not null)
+                    _beatmapSetCache.TryAdd(beatmap.Beatmapset.OsuId, beatmap.Beatmapset);
+                    if (beatmap.Beatmapset.Creator is not null)
                     {
-                        _playerCache.TryAdd(beatmap.BeatmapSet.Creator.OsuId, beatmap.BeatmapSet.Creator);
+                        _playerCache.TryAdd(beatmap.Beatmapset.Creator.OsuId, beatmap.Beatmapset.Creator);
                     }
                 }
             }
@@ -170,7 +171,7 @@ public class OsuApiDataParserService(
                 _beatmapCache.TryAdd(beatmap.OsuId, beatmap);
             }
 
-            if (beatmap.BeatmapSet is not null || beatmap.HasData)
+            if (beatmap.Beatmapset is not null || beatmap.HasData)
             {
                 continue;
             }
@@ -183,11 +184,11 @@ public class OsuApiDataParserService(
                 continue;
             }
 
-            await ProcessBeatmapSetAsync(apiBeatmap.BeatmapsetId);
+            await ProcessBeatmapsetAsync(apiBeatmap.BeatmapsetId);
         }
     }
 
-    private async Task ProcessBeatmapSetAsync(long beatmapSetOsuId)
+    private async Task ProcessBeatmapsetAsync(long beatmapSetOsuId)
     {
         // Test cache
         if (_beatmapSetCache.ContainsKey(beatmapSetOsuId))
@@ -196,7 +197,7 @@ public class OsuApiDataParserService(
         }
 
         // Test database
-        BeatmapSet? beatmapSet = await context.BeatmapSets
+        Beatmapset? beatmapSet = await context.Beatmapsets
             .AsSplitQuery()
             .Include(bs => bs.Creator)
             .Include(bs => bs.Beatmaps)
@@ -221,14 +222,14 @@ public class OsuApiDataParserService(
             return;
         }
 
-        BeatmapsetExtended? apiBeatmapSet = await osuClient.GetBeatmapsetAsync(beatmapSetOsuId);
+        BeatmapsetExtended? apiBeatmapset = await osuClient.GetBeatmapsetAsync(beatmapSetOsuId);
 
         // Could not fetch the set, create an empty entity
-        if (apiBeatmapSet is null)
+        if (apiBeatmapset is null)
         {
-            beatmapSet = new BeatmapSet { OsuId = beatmapSetOsuId };
+            beatmapSet = new Beatmapset { OsuId = beatmapSetOsuId };
 
-            context.BeatmapSets.Add(beatmapSet);
+            context.Beatmapsets.Add(beatmapSet);
             _beatmapSetCache.TryAdd(beatmapSet.OsuId, beatmapSet);
 
             return;
@@ -237,31 +238,31 @@ public class OsuApiDataParserService(
         // Now we parse
         // Load players
         // Filtering because this collection also contains beatmap nominators, etc. and we only want to target mappers
-        await LoadPlayersAsync(apiBeatmapSet.RelatedUsers.Where(u =>
-            u.Id == apiBeatmapSet.CreatorId || apiBeatmapSet.Beatmaps
+        await LoadPlayersAsync(apiBeatmapset.RelatedUsers.Where(u =>
+            u.Id == apiBeatmapset.CreatorId || apiBeatmapset.Beatmaps
                 .SelectMany(b => b.Owners)
                 .Any(o => o.Id == u.Id))
         );
 
         // Create new set
-        beatmapSet = new BeatmapSet
+        beatmapSet = new Beatmapset
         {
             OsuId = beatmapSetOsuId,
-            Artist = apiBeatmapSet.Artist,
-            Title = apiBeatmapSet.Title,
-            RankedStatus = apiBeatmapSet.RankedStatus,
-            RankedDate = apiBeatmapSet.RankedDate,
-            SubmittedDate = apiBeatmapSet.SubmittedDate,
+            Artist = apiBeatmapset.Artist,
+            Title = apiBeatmapset.Title,
+            RankedStatus = apiBeatmapset.RankedStatus,
+            RankedDate = apiBeatmapset.RankedDate,
+            SubmittedDate = apiBeatmapset.SubmittedDate,
         };
 
         // Assign set creator if possible
-        if (apiBeatmapSet.CreatorId is not null && _playerCache.TryGetValue(apiBeatmapSet.CreatorId.Value, out Player? setCreator))
+        if (apiBeatmapset.CreatorId is not null && _playerCache.TryGetValue(apiBeatmapset.CreatorId.Value, out Player? setCreator))
         {
             beatmapSet.Creator = setCreator;
         }
 
         // Parse maps
-        foreach (BeatmapExtended apiBeatmap in apiBeatmapSet.Beatmaps)
+        foreach (BeatmapExtended apiBeatmap in apiBeatmapset.Beatmaps)
         {
             // Test cache
             _beatmapCache.TryGetValue(apiBeatmap.Id, out Beatmap? beatmap);
@@ -304,7 +305,7 @@ public class OsuApiDataParserService(
         }
 
         _beatmapSetCache.TryAdd(beatmapSet.OsuId, beatmapSet);
-        context.BeatmapSets.Add(beatmapSet);
+        context.Beatmapsets.Add(beatmapSet);
     }
 
     private async Task LoadPlayersAsync(IEnumerable<ApiUser> apiUsers)
