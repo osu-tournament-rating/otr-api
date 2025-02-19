@@ -18,9 +18,9 @@ public class SearchService(
     public async Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey) =>
         new()
         {
-            Tournaments = (await SearchTournamentsByNameAsync(searchKey)).ToList(),
-            Matches = (await SearchMatchesByNameAsync(searchKey)).ToList(),
-            Players = (await SearchPlayersByNameAsync(searchKey)).ToList()
+            Tournaments = [.. (await SearchTournamentsByNameAsync(searchKey))],
+            Matches = [.. (await SearchMatchesByNameAsync(searchKey))],
+            Players = [.. (await SearchPlayersByNameAsync(searchKey))]
         };
 
     private async Task<IEnumerable<TournamentSearchResultDTO>> SearchTournamentsByNameAsync(string tournamentName)
@@ -34,7 +34,7 @@ public class SearchService(
             return result;
         }
 
-        result = (await tournamentsRepository.SearchAsync(tournamentName)).ToList();
+        result = [.. (await tournamentsRepository.SearchAsync(tournamentName))];
         await cacheHandler.SetTournamentSearchResultAsync(result, tournamentName);
 
         return result;
@@ -51,7 +51,7 @@ public class SearchService(
             return result;
         }
 
-        result = (await matchesService.SearchAsync(matchName)).ToList();
+        result = [.. (await matchesService.SearchAsync(matchName))];
         await cacheHandler.SetMatchSearchResultAsync(result, matchName);
 
         return result;
@@ -68,7 +68,7 @@ public class SearchService(
             return result;
         }
 
-        result = (await playerRepository.SearchAsync(username))
+        result = [.. (await playerRepository.SearchAsync(username))
             .Select(player =>
             {
                 PlayerRating? stats = player.Ratings
@@ -82,8 +82,7 @@ public class SearchService(
                     Username = player.Username,
                     Thumbnail = $"a.ppy.sh/{player.OsuId}"
                 };
-            })
-            .ToList();
+            })];
         await cacheHandler.SetPlayerSearchResultAsync(result, username);
 
         return result;

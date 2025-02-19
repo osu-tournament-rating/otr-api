@@ -32,9 +32,7 @@ public class RepositoryBase<T> : IRepository<T> where T : class, IEntity
 
     public virtual async Task<IEnumerable<T>> CreateAsync(IEnumerable<T> entities)
     {
-        IEnumerable<Task<T>> entityTasks = entities
-            .Select(async e => (await _context.Set<T>().AddAsync(e)).Entity)
-            .ToList();
+        IEnumerable<Task<T>> entityTasks = [.. entities.Select(async e => (await _context.Set<T>().AddAsync(e)).Entity)];
         T[] created = await Task.WhenAll(entityTasks);
         await _context.SaveChangesAsync();
 

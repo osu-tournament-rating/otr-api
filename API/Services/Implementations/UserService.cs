@@ -50,7 +50,7 @@ public class UserService(IUserRepository userRepository, IMatchesRepository matc
             return null;
         }
 
-        user.Scopes = scopes.ToArray();
+        user.Scopes = [.. scopes];
         await userRepository.UpdateAsync(user);
 
         return mapper.Map<UserDTO>(user);

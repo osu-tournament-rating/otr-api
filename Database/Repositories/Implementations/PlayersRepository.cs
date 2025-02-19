@@ -16,7 +16,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
     public async Task<IEnumerable<Player>> GetByOsuIdAsync(IEnumerable<long> osuIds)
     {
         // Load local instances
-        IEnumerable<Player> result = LocalView.Where(p => osuIds.Contains(p.OsuId)).ToList();
+        IEnumerable<Player> result = [.. LocalView.Where(p => osuIds.Contains(p.OsuId))];
         // Query db for non-local instances
         IEnumerable<long> remainingIds = osuIds.Except(result.Select(p => p.OsuId));
         return (await _context.Players.Where(p => remainingIds.Contains(p.OsuId)).ToListAsync()).Concat(result);

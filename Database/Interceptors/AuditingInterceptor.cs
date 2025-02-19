@@ -85,15 +85,14 @@ public class AuditingInterceptor : ISaveChangesInterceptor
         var trackedEntries = context.ChangeTracker.Entries().ToList();
 
         // Get all entities in the change tracker that implement IAuditableEntity<>
-        IEnumerable<EntityEntry> auditableEntries = trackedEntries
+        IEnumerable<EntityEntry> auditableEntries = [.. trackedEntries
             .Where(entry =>
                 entry.Entity.GetType().GetInterfaces().Any(i =>
                     i.IsGenericType
                     && i.GetGenericTypeDefinition() == typeof(IAuditableEntity<>)
                 )
                 && entry.State is EntityState.Modified or EntityState.Added or EntityState.Deleted
-            )
-            .ToList();
+            )];
 
         // Create audits
         foreach (EntityEntry entry in auditableEntries)

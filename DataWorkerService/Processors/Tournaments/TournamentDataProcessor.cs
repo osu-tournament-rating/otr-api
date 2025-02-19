@@ -2,9 +2,6 @@ using Database.Entities;
 using Database.Enums.Verification;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 using DataWorkerService.Services.Interfaces;
-using OsuApiClient;
-using OsuApiClient.Domain.Osu.Beatmaps;
-using Beatmap = Database.Entities.Beatmap;
 
 namespace DataWorkerService.Processors.Tournaments;
 
@@ -14,7 +11,6 @@ namespace DataWorkerService.Processors.Tournaments;
 public class TournamentDataProcessor(
     ILogger<TournamentDataProcessor> logger,
     IMatchProcessorResolver matchProcessorResolver,
-    IOsuClient osuClient,
     IOsuApiDataParserService osuApiDataParserService
 ) : ProcessorBase<Tournament>(logger)
 {
@@ -31,23 +27,12 @@ public class TournamentDataProcessor(
             return;
         }
 
+        await osuApiDataParserService.ProcessBeatmapsAsync(entity.PooledBeatmaps.Select(b => b.OsuId));
+
         IProcessor<Match> matchDataProcessor = matchProcessorResolver.GetDataProcessor();
         foreach (Match match in entity.Matches)
         {
             await matchDataProcessor.ProcessAsync(match, cancellationToken);
-        }
-
-        // Process data for pooled beatmaps that were not played
-        foreach (Beatmap beatmap in entity.PooledBeatmaps.Where(b => b.Games.Count == 0 && !b.HasData))
-        {
-            BeatmapExtended? apiBeatmap = await osuClient.GetBeatmapAsync(beatmap.OsuId, cancellationToken);
-
-            if (apiBeatmap is null)
-            {
-                continue;
-            }
-
-            await osuApiDataParserService.ParseBeatmap(beatmap, apiBeatmap);
         }
 
         logger.LogInformation(

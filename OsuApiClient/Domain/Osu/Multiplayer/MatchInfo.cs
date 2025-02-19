@@ -19,12 +19,12 @@ public class MatchInfo : IModel
     /// <summary>
     /// Timestamp for the start of the lobby
     /// </summary>
-    public DateTimeOffset StartTime { get; init; }
+    public DateTime StartTime { get; init; }
 
     /// <summary>
     /// Timestamp for the end of the lobby
     /// </summary>
-    public DateTimeOffset? EndTime { get; init; }
+    public DateTime? EndTime { get; init; }
 
     /// <summary>
     /// Lobby title

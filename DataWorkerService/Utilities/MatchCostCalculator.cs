@@ -21,7 +21,7 @@ public static class MatchCostCalculator
     /// </remarks>
     public static IDictionary<int, double> CalculateOtrMatchCosts(IEnumerable<Game> games)
     {
-        games = games.ToList();
+        games = [.. games];
 
         var zScores = games
             .SelectMany(g => g.Scores)

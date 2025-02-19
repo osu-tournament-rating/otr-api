@@ -22,9 +22,7 @@ public class SecurityMetadataOperationFilter : IOperationFilter
             return;
         }
 
-        IEnumerable<AuthorizeAttribute> authAttributes = context
-            .GetControllerAndActionAttributes<AuthorizeAttribute>()
-            .ToList();
+        IEnumerable<AuthorizeAttribute> authAttributes = [.. context.GetControllerAndActionAttributes<AuthorizeAttribute>()];
         if (!authAttributes.Any())
         {
             operation.AddAuthExtension(false);

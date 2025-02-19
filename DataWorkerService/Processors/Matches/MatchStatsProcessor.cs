@@ -48,9 +48,7 @@ public class MatchStatsProcessor(
             }
         }
 
-        IEnumerable<Game> verifiedGames = entity.Games
-            .Where(g => g is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: GameProcessingStatus.Done })
-            .ToList();
+        IEnumerable<Game> verifiedGames = [.. entity.Games.Where(g => g is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: GameProcessingStatus.Done })];
 
         // Sanity check
         foreach (Game game in verifiedGames)
@@ -71,7 +69,7 @@ public class MatchStatsProcessor(
         }
 
         entity.WinRecord = GenerateWinRecord(verifiedGames);
-        entity.PlayerMatchStats = GeneratePlayerMatchStats(verifiedGames).ToList();
+        entity.PlayerMatchStats = [.. GeneratePlayerMatchStats(verifiedGames)];
 
         entity.ProcessingStatus = MatchProcessingStatus.NeedsRatingProcessorData;
     }
@@ -108,16 +106,14 @@ public class MatchStatsProcessor(
         {
             WinnerTeam = winningTeam,
             LoserTeam = losingTeam,
-            WinnerRoster = eGames
+            WinnerRoster = [.. eGames
                 .Select(g => g.WinRecord)
                 .SelectMany(gwr => gwr!.WinnerTeam == winningTeam ? gwr.WinnerRoster : gwr.LoserRoster)
-                .Distinct()
-                .ToArray(),
-            LoserRoster = eGames
+                .Distinct()],
+            LoserRoster = [.. eGames
                 .Select(g => g.WinRecord)
                 .SelectMany(gwr => gwr!.WinnerTeam == losingTeam ? gwr.WinnerRoster : gwr.LoserRoster)
-                .Distinct()
-                .ToArray(),
+                .Distinct()],
             WinnerScore = eGames.Count(g => g.WinRecord!.WinnerTeam == winningTeam),
             LoserScore = eGames.Count(g => g.WinRecord!.WinnerTeam == losingTeam),
         };
@@ -188,16 +184,14 @@ public class MatchStatsProcessor(
                     GamesLost = scores.Count(s => s.Game.WinRecord!.LoserRoster.Contains(playerId)),
                     Won = scores.First().Game.Match.WinRecord!.WinnerRoster.Contains(playerId),
                     // Reusing score groupings to ensure score filtering
-                    TeammateIds = playerScoreGroups
+                    TeammateIds = [.. playerScoreGroups
                         .Where(g => g.Item2.All(s => s.Team == scores.First().Team))
                         .Select(g => g.Key)
-                        .Where(id => id != playerId)
-                        .ToArray(),
-                    OpponentIds = playerScoreGroups
+                        .Where(id => id != playerId)],
+                    OpponentIds = [.. playerScoreGroups
                         .Where(g => g.Item2.All(s => s.Team != scores.First().Team))
                         .Select(g => g.Key)
-                        .Where(id => id != playerId)
-                        .ToArray(),
+                        .Where(id => id != playerId)],
                     PlayerId = playerId
                 };
             });
