@@ -46,7 +46,7 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     /// <summary>
     /// <see cref="Enums.Ruleset"/> as set on the <see cref="Player"/>'s osu! profile
     /// </summary>
-    public Ruleset Ruleset { get; set; }
+    public Ruleset DefaultRuleset { get; set; }
 
     /// <summary>
     /// Timestamp for the last time <see cref="RulesetData"/> was updated with data from the osu! API

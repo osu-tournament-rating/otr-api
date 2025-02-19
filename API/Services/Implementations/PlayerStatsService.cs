@@ -114,7 +114,7 @@ public class PlayerStatsService(
             return null;
         }
 
-        ruleset ??= player.User?.Settings.DefaultRuleset ?? player.Ruleset;
+        ruleset ??= player.User?.Settings.DefaultRuleset ?? player.DefaultRuleset;
 
         PlayerCompactDTO playerInfo = mapper.Map<PlayerCompactDTO>(player);
 

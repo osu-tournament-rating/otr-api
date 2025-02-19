@@ -107,7 +107,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity
                 .HasMany(b => b.Creators)
                 .WithMany(p => p.CreatedBeatmaps)
-                .UsingEntity("__join__beatmap_creators");
+                .UsingEntity("join_beatmap_creators");
 
             entity.HasIndex(b => b.OsuId).IsUnique();
         });
@@ -492,8 +492,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
         modelBuilder.Entity<OAuthClient>(entity =>
         {
-            entity.ToTable("oauth_clients");
-
             entity.Property(c => c.Id).UseIdentityAlwaysColumn();
 
             entity.Property(c => c.Created).HasDefaultValueSql(SqlCurrentTimestamp);
@@ -515,8 +513,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
         modelBuilder.Entity<OAuthClientAdminNote>(entity =>
         {
-            entity.ToTable("oauth_client_admin_notes");
-
             entity.Property(oacan => oacan.Id).UseIdentityAlwaysColumn();
 
             entity.Property(oacan => oacan.Created).HasDefaultValueSql(SqlCurrentTimestamp);
@@ -537,7 +533,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(p => p.Username).HasDefaultValue(string.Empty);
             entity.Property(p => p.Country).HasDefaultValue(string.Empty);
-            entity.Property(p => p.Ruleset).HasDefaultValue(Ruleset.Osu);
+            entity.Property(p => p.DefaultRuleset).HasDefaultValue(Ruleset.Osu);
             entity.Property(p => p.OsuLastFetch).HasDefaultValueSql(SqlPlaceholderDate);
             entity.Property(p => p.OsuTrackLastFetch).HasDefaultValueSql(SqlPlaceholderDate);
 
@@ -818,7 +814,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity
                 .HasMany(t => t.PooledBeatmaps)
                 .WithMany(pb => pb.TournamentsPooledIn)
-                .UsingEntity("__join__pooled_beatmaps");
+                .UsingEntity("join_pooled_beatmaps");
 
             entity.HasIndex(t => t.Ruleset);
             entity.HasIndex(t => new { t.Name, t.Abbreviation }).IsUnique();

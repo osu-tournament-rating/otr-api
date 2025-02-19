@@ -989,12 +989,12 @@ namespace Database.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_oauth_clients");
+                        .HasName("pk_o_auth_clients");
 
                     b.HasIndex("UserId")
-                        .HasDatabaseName("ix_oauth_clients_user_id");
+                        .HasDatabaseName("ix_o_auth_clients_user_id");
 
-                    b.ToTable("oauth_clients", (string)null);
+                    b.ToTable("o_auth_clients", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.OAuthClientAdminNote", b =>
@@ -1030,12 +1030,12 @@ namespace Database.Migrations
                         .HasColumnName("updated");
 
                     b.HasKey("Id")
-                        .HasName("pk_oauth_client_admin_notes");
+                        .HasName("pk_o_auth_client_admin_note");
 
                     b.HasIndex("ReferenceId")
-                        .HasDatabaseName("ix_oauth_client_admin_notes_reference_id");
+                        .HasDatabaseName("ix_o_auth_client_admin_note_reference_id");
 
-                    b.ToTable("oauth_client_admin_notes", (string)null);
+                    b.ToTable("o_auth_client_admin_note", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.Player", b =>
@@ -1061,6 +1061,12 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<int>("DefaultRuleset")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("default_ruleset");
+
                     b.Property<long>("OsuId")
                         .HasColumnType("bigint")
                         .HasColumnName("osu_id");
@@ -1076,12 +1082,6 @@ namespace Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("osu_track_last_fetch")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
-
-                    b.Property<int>("Ruleset")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("ruleset");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
@@ -1865,7 +1865,7 @@ namespace Database.Migrations
                     b.ToTable("user_settings", (string)null);
                 });
 
-            modelBuilder.Entity("__join__beatmap_creators", b =>
+            modelBuilder.Entity("join_beatmap_creators", b =>
                 {
                     b.Property<int>("CreatedBeatmapsId")
                         .HasColumnType("integer")
@@ -1876,15 +1876,15 @@ namespace Database.Migrations
                         .HasColumnName("creators_id");
 
                     b.HasKey("CreatedBeatmapsId", "CreatorsId")
-                        .HasName("pk___join__beatmap_creators");
+                        .HasName("pk_join_beatmap_creators");
 
                     b.HasIndex("CreatorsId")
-                        .HasDatabaseName("ix___join__beatmap_creators_creators_id");
+                        .HasDatabaseName("ix_join_beatmap_creators_creators_id");
 
-                    b.ToTable("__join__beatmap_creators", (string)null);
+                    b.ToTable("join_beatmap_creators", (string)null);
                 });
 
-            modelBuilder.Entity("__join__pooled_beatmaps", b =>
+            modelBuilder.Entity("join_pooled_beatmaps", b =>
                 {
                     b.Property<int>("PooledBeatmapsId")
                         .HasColumnType("integer")
@@ -1895,12 +1895,12 @@ namespace Database.Migrations
                         .HasColumnName("tournaments_pooled_in_id");
 
                     b.HasKey("PooledBeatmapsId", "TournamentsPooledInId")
-                        .HasName("pk___join__pooled_beatmaps");
+                        .HasName("pk_join_pooled_beatmaps");
 
                     b.HasIndex("TournamentsPooledInId")
-                        .HasDatabaseName("ix___join__pooled_beatmaps_tournaments_pooled_in_id");
+                        .HasDatabaseName("ix_join_pooled_beatmaps_tournaments_pooled_in_id");
 
-                    b.ToTable("__join__pooled_beatmaps", (string)null);
+                    b.ToTable("join_pooled_beatmaps", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.Beatmap", b =>
@@ -2127,7 +2127,7 @@ namespace Database.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_oauth_clients_users_user_id");
+                        .HasConstraintName("fk_o_auth_clients_users_user_id");
 
                     b.Navigation("User");
                 });
@@ -2139,7 +2139,7 @@ namespace Database.Migrations
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_oauth_client_admin_notes_oauth_clients_reference_id");
+                        .HasConstraintName("fk_o_auth_client_admin_note_o_auth_clients_reference_id");
 
                     b.Navigation("OAuthClient");
                 });
@@ -2343,38 +2343,38 @@ namespace Database.Migrations
                         .HasConstraintName("fk_user_settings_users_user_id");
                 });
 
-            modelBuilder.Entity("__join__beatmap_creators", b =>
+            modelBuilder.Entity("join_beatmap_creators", b =>
                 {
                     b.HasOne("Database.Entities.Beatmap", null)
                         .WithMany()
                         .HasForeignKey("CreatedBeatmapsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk___join__beatmap_creators_beatmaps_created_beatmaps_id");
+                        .HasConstraintName("fk_join_beatmap_creators_beatmaps_created_beatmaps_id");
 
                     b.HasOne("Database.Entities.Player", null)
                         .WithMany()
                         .HasForeignKey("CreatorsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk___join__beatmap_creators_players_creators_id");
+                        .HasConstraintName("fk_join_beatmap_creators_players_creators_id");
                 });
 
-            modelBuilder.Entity("__join__pooled_beatmaps", b =>
+            modelBuilder.Entity("join_pooled_beatmaps", b =>
                 {
                     b.HasOne("Database.Entities.Beatmap", null)
                         .WithMany()
                         .HasForeignKey("PooledBeatmapsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk___join__pooled_beatmaps_beatmaps_pooled_beatmaps_id");
+                        .HasConstraintName("fk_join_pooled_beatmaps_beatmaps_pooled_beatmaps_id");
 
                     b.HasOne("Database.Entities.Tournament", null)
                         .WithMany()
                         .HasForeignKey("TournamentsPooledInId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk___join__pooled_beatmaps_tournaments_tournaments_pooled_in_id");
+                        .HasConstraintName("fk_join_pooled_beatmaps_tournaments_tournaments_pooled_in_id");
                 });
 
             modelBuilder.Entity("Database.Entities.Beatmap", b =>

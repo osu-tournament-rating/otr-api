@@ -18,9 +18,9 @@ public class SearchService(
     public async Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey) =>
         new()
         {
-            Tournaments = (await SearchTournamentsByNameAsync(searchKey)).ToList(),
-            Matches = (await SearchMatchesByNameAsync(searchKey)).ToList(),
-            Players = (await SearchPlayersByNameAsync(searchKey)).ToList()
+            Tournaments = [.. (await SearchTournamentsByNameAsync(searchKey))],
+            Matches = [.. (await SearchMatchesByNameAsync(searchKey))],
+            Players = [.. (await SearchPlayersByNameAsync(searchKey))]
         };
 
     private async Task<IEnumerable<TournamentSearchResultDTO>> SearchTournamentsByNameAsync(string tournamentName)
@@ -68,11 +68,11 @@ public class SearchService(
             return result;
         }
 
-        result = (await playerRepository.SearchAsync(username))
+        result = [.. (await playerRepository.SearchAsync(username))
             .Select(player =>
             {
                 PlayerRating? stats = player.Ratings
-                    .FirstOrDefault(r => r.Ruleset == (player.User?.Settings.DefaultRuleset ?? player.Ruleset));
+                    .FirstOrDefault(r => r.Ruleset == (player.User?.Settings.DefaultRuleset ?? player.DefaultRuleset));
                 return new PlayerSearchResultDTO
                 {
                     Id = player.Id,
@@ -82,8 +82,7 @@ public class SearchService(
                     Username = player.Username,
                     Thumbnail = $"a.ppy.sh/{player.OsuId}"
                 };
-            })
-            .ToList();
+            })];
         await cacheHandler.SetPlayerSearchResultAsync(result, username);
 
         return result;

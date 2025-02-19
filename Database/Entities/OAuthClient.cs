@@ -8,7 +8,6 @@ namespace Database.Entities;
 /// <summary>
 /// An OAuth2 Client for the o!TR API
 /// </summary>
-[Table("oauth_clients")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class OAuthClient : UpdateableEntityBase, IAdminNotableEntity<OAuthClientAdminNote>
 {

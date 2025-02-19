@@ -16,6 +16,6 @@ public class UserSettingsRepository(OtrContext context, IPlayersRepository playe
     {
         Player? player = await playerRepository.GetAsync(id: playerId);
 
-        return new UserSettings() { DefaultRuleset = player?.Ruleset ?? Ruleset.Osu };
+        return new UserSettings() { DefaultRuleset = player?.DefaultRuleset ?? Ruleset.Osu };
     }
 }

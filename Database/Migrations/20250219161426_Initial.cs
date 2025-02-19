@@ -29,7 +29,7 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_players", x => x.id);
+                    table.PrimaryKey("pk_players", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -50,9 +50,9 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_beatmapsets", x => x.id);
+                    table.PrimaryKey("pk_beatmapsets", x => x.id);
                     table.ForeignKey(
-                        name: "FK_beatmapsets_players_creator_id",
+                        name: "fk_beatmapsets_players_creator_id",
                         column: x => x.creator_id,
                         principalTable: "players",
                         principalColumn: "id",
@@ -76,9 +76,9 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_player_highest_ranks", x => x.id);
+                    table.PrimaryKey("pk_player_highest_ranks", x => x.id);
                     table.ForeignKey(
-                        name: "FK_player_highest_ranks_players_player_id",
+                        name: "fk_player_highest_ranks_players_player_id",
                         column: x => x.player_id,
                         principalTable: "players",
                         principalColumn: "id",
@@ -102,9 +102,9 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_player_osu_ruleset_data", x => x.id);
+                    table.PrimaryKey("pk_player_osu_ruleset_data", x => x.id);
                     table.ForeignKey(
-                        name: "FK_player_osu_ruleset_data_players_player_id",
+                        name: "fk_player_osu_ruleset_data_players_player_id",
                         column: x => x.player_id,
                         principalTable: "players",
                         principalColumn: "id",
@@ -128,9 +128,9 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_player_ratings", x => x.id);
+                    table.PrimaryKey("pk_player_ratings", x => x.id);
                     table.ForeignKey(
-                        name: "FK_player_ratings_players_player_id",
+                        name: "fk_player_ratings_players_player_id",
                         column: x => x.player_id,
                         principalTable: "players",
                         principalColumn: "id",
@@ -151,9 +151,9 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_users", x => x.id);
+                    table.PrimaryKey("pk_users", x => x.id);
                     table.ForeignKey(
-                        name: "FK_users_players_player_id",
+                        name: "fk_users_players_player_id",
                         column: x => x.player_id,
                         principalTable: "players",
                         principalColumn: "id",
@@ -189,9 +189,9 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_beatmaps", x => x.id);
+                    table.PrimaryKey("pk_beatmaps", x => x.id);
                     table.ForeignKey(
-                        name: "FK_beatmaps_beatmapsets_beatmapset_id",
+                        name: "fk_beatmaps_beatmapsets_beatmapset_id",
                         column: x => x.beatmapset_id,
                         principalTable: "beatmapsets",
                         principalColumn: "id",
@@ -199,7 +199,7 @@ namespace Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "oauth_clients",
+                name: "o_auth_clients",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
@@ -213,9 +213,9 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_oauth_clients", x => x.id);
+                    table.PrimaryKey("pk_o_auth_clients", x => x.id);
                     table.ForeignKey(
-                        name: "FK_oauth_clients_users_user_id",
+                        name: "fk_o_auth_clients_users_user_id",
                         column: x => x.user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -231,20 +231,20 @@ namespace Database.Migrations
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     note = table.Column<string>(type: "text", nullable: false),
-                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    reference_id = table.Column<int>(type: "integer", nullable: false),
                     admin_user_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_player_admin_notes", x => x.id);
+                    table.PrimaryKey("pk_player_admin_notes", x => x.id);
                     table.ForeignKey(
-                        name: "FK_player_admin_notes_players_ref_id",
-                        column: x => x.ref_id,
+                        name: "fk_player_admin_notes_players_reference_id",
+                        column: x => x.reference_id,
                         principalTable: "players",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_player_admin_notes_users_admin_user_id",
+                        name: "fk_player_admin_notes_users_admin_user_id",
                         column: x => x.admin_user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -276,15 +276,15 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_tournaments", x => x.id);
+                    table.PrimaryKey("pk_tournaments", x => x.id);
                     table.ForeignKey(
-                        name: "FK_tournaments_users_submitted_by_user_id",
+                        name: "fk_tournaments_users_submitted_by_user_id",
                         column: x => x.submitted_by_user_id,
                         principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_tournaments_users_verified_by_user_id",
+                        name: "fk_tournaments_users_verified_by_user_id",
                         column: x => x.verified_by_user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -298,42 +298,18 @@ namespace Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     default_ruleset = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    default_ruleset_controlled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    default_ruleset_is_controlled = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     user_id = table.Column<int>(type: "integer", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_user_settings", x => x.id);
+                    table.PrimaryKey("pk_user_settings", x => x.id);
                     table.ForeignKey(
-                        name: "FK_user_settings_users_user_id",
+                        name: "fk_user_settings_users_user_id",
                         column: x => x.user_id,
                         principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "__join__beatmap_creators",
-                columns: table => new
-                {
-                    CreatedBeatmapsId = table.Column<int>(type: "integer", nullable: false),
-                    CreatorsId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK___join__beatmap_creators", x => new { x.CreatedBeatmapsId, x.CreatorsId });
-                    table.ForeignKey(
-                        name: "FK___join__beatmap_creators_beatmaps_CreatedBeatmapsId",
-                        column: x => x.CreatedBeatmapsId,
-                        principalTable: "beatmaps",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK___join__beatmap_creators_players_CreatorsId",
-                        column: x => x.CreatorsId,
-                        principalTable: "players",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -351,9 +327,9 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_beatmap_attributes", x => x.id);
+                    table.PrimaryKey("pk_beatmap_attributes", x => x.id);
                     table.ForeignKey(
-                        name: "FK_beatmap_attributes_beatmaps_beatmap_id",
+                        name: "fk_beatmap_attributes_beatmaps_beatmap_id",
                         column: x => x.beatmap_id,
                         principalTable: "beatmaps",
                         principalColumn: "id",
@@ -361,7 +337,31 @@ namespace Database.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "oauth_client_admin_notes",
+                name: "join_beatmap_creators",
+                columns: table => new
+                {
+                    created_beatmaps_id = table.Column<int>(type: "integer", nullable: false),
+                    creators_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_join_beatmap_creators", x => new { x.created_beatmaps_id, x.creators_id });
+                    table.ForeignKey(
+                        name: "fk_join_beatmap_creators_beatmaps_created_beatmaps_id",
+                        column: x => x.created_beatmaps_id,
+                        principalTable: "beatmaps",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_join_beatmap_creators_players_creators_id",
+                        column: x => x.creators_id,
+                        principalTable: "players",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "o_auth_client_admin_note",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
@@ -369,39 +369,39 @@ namespace Database.Migrations
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     note = table.Column<string>(type: "text", nullable: false),
-                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    reference_id = table.Column<int>(type: "integer", nullable: false),
                     admin_user_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_oauth_client_admin_notes", x => x.id);
+                    table.PrimaryKey("pk_o_auth_client_admin_note", x => x.id);
                     table.ForeignKey(
-                        name: "FK_oauth_client_admin_notes_oauth_clients_ref_id",
-                        column: x => x.ref_id,
-                        principalTable: "oauth_clients",
+                        name: "fk_o_auth_client_admin_note_o_auth_clients_reference_id",
+                        column: x => x.reference_id,
+                        principalTable: "o_auth_clients",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "__join__pooled_beatmaps",
+                name: "join_pooled_beatmaps",
                 columns: table => new
                 {
-                    PooledBeatmapsId = table.Column<int>(type: "integer", nullable: false),
-                    TournamentsPooledInId = table.Column<int>(type: "integer", nullable: false)
+                    pooled_beatmaps_id = table.Column<int>(type: "integer", nullable: false),
+                    tournaments_pooled_in_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK___join__pooled_beatmaps", x => new { x.PooledBeatmapsId, x.TournamentsPooledInId });
+                    table.PrimaryKey("pk_join_pooled_beatmaps", x => new { x.pooled_beatmaps_id, x.tournaments_pooled_in_id });
                     table.ForeignKey(
-                        name: "FK___join__pooled_beatmaps_beatmaps_PooledBeatmapsId",
-                        column: x => x.PooledBeatmapsId,
+                        name: "fk_join_pooled_beatmaps_beatmaps_pooled_beatmaps_id",
+                        column: x => x.pooled_beatmaps_id,
                         principalTable: "beatmaps",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK___join__pooled_beatmaps_tournaments_TournamentsPooledInId",
-                        column: x => x.TournamentsPooledInId,
+                        name: "fk_join_pooled_beatmaps_tournaments_tournaments_pooled_in_id",
+                        column: x => x.tournaments_pooled_in_id,
                         principalTable: "tournaments",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -430,21 +430,21 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_matches", x => x.id);
+                    table.PrimaryKey("pk_matches", x => x.id);
                     table.ForeignKey(
-                        name: "FK_matches_tournaments_tournament_id",
+                        name: "fk_matches_tournaments_tournament_id",
                         column: x => x.tournament_id,
                         principalTable: "tournaments",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_matches_users_submitted_by_user_id",
+                        name: "fk_matches_users_submitted_by_user_id",
                         column: x => x.submitted_by_user_id,
                         principalTable: "users",
                         principalColumn: "id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_matches_users_verified_by_user_id",
+                        name: "fk_matches_users_verified_by_user_id",
                         column: x => x.verified_by_user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -475,15 +475,15 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_player_tournament_stats", x => x.id);
+                    table.PrimaryKey("pk_player_tournament_stats", x => x.id);
                     table.ForeignKey(
-                        name: "FK_player_tournament_stats_players_player_id",
+                        name: "fk_player_tournament_stats_players_player_id",
                         column: x => x.player_id,
                         principalTable: "players",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_player_tournament_stats_tournaments_tournament_id",
+                        name: "fk_player_tournament_stats_tournaments_tournament_id",
                         column: x => x.tournament_id,
                         principalTable: "tournaments",
                         principalColumn: "id",
@@ -499,20 +499,20 @@ namespace Database.Migrations
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     note = table.Column<string>(type: "text", nullable: false),
-                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    reference_id = table.Column<int>(type: "integer", nullable: false),
                     admin_user_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_tournament_admin_notes", x => x.id);
+                    table.PrimaryKey("pk_tournament_admin_notes", x => x.id);
                     table.ForeignKey(
-                        name: "FK_tournament_admin_notes_tournaments_ref_id",
-                        column: x => x.ref_id,
+                        name: "fk_tournament_admin_notes_tournaments_reference_id",
+                        column: x => x.reference_id,
                         principalTable: "tournaments",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_tournament_admin_notes_users_admin_user_id",
+                        name: "fk_tournament_admin_notes_users_admin_user_id",
                         column: x => x.admin_user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -526,18 +526,18 @@ namespace Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    ref_id_lock = table.Column<int>(type: "integer", nullable: false),
-                    ref_id = table.Column<int>(type: "integer", nullable: true),
+                    reference_id_lock = table.Column<int>(type: "integer", nullable: false),
+                    reference_id = table.Column<int>(type: "integer", nullable: true),
                     action_user_id = table.Column<int>(type: "integer", nullable: true),
                     action_type = table.Column<int>(type: "integer", nullable: false),
                     changes = table.Column<string>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_tournament_audits", x => x.id);
+                    table.PrimaryKey("pk_tournament_audits", x => x.id);
                     table.ForeignKey(
-                        name: "FK_tournament_audits_tournaments_ref_id",
-                        column: x => x.ref_id,
+                        name: "fk_tournament_audits_tournaments_reference_id",
+                        column: x => x.reference_id,
                         principalTable: "tournaments",
                         principalColumn: "id",
                         onDelete: ReferentialAction.SetNull);
@@ -568,15 +568,15 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_games", x => x.id);
+                    table.PrimaryKey("pk_games", x => x.id);
                     table.ForeignKey(
-                        name: "FK_games_beatmaps_beatmap_id",
+                        name: "fk_games_beatmaps_beatmap_id",
                         column: x => x.beatmap_id,
                         principalTable: "beatmaps",
                         principalColumn: "id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_games_matches_match_id",
+                        name: "fk_games_matches_match_id",
                         column: x => x.match_id,
                         principalTable: "matches",
                         principalColumn: "id",
@@ -592,20 +592,20 @@ namespace Database.Migrations
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     note = table.Column<string>(type: "text", nullable: false),
-                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    reference_id = table.Column<int>(type: "integer", nullable: false),
                     admin_user_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_match_admin_notes", x => x.id);
+                    table.PrimaryKey("pk_match_admin_notes", x => x.id);
                     table.ForeignKey(
-                        name: "FK_match_admin_notes_matches_ref_id",
-                        column: x => x.ref_id,
+                        name: "fk_match_admin_notes_matches_reference_id",
+                        column: x => x.reference_id,
                         principalTable: "matches",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_match_admin_notes_users_admin_user_id",
+                        name: "fk_match_admin_notes_users_admin_user_id",
                         column: x => x.admin_user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -619,18 +619,18 @@ namespace Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    ref_id_lock = table.Column<int>(type: "integer", nullable: false),
-                    ref_id = table.Column<int>(type: "integer", nullable: true),
+                    reference_id_lock = table.Column<int>(type: "integer", nullable: false),
+                    reference_id = table.Column<int>(type: "integer", nullable: true),
                     action_user_id = table.Column<int>(type: "integer", nullable: true),
                     action_type = table.Column<int>(type: "integer", nullable: false),
                     changes = table.Column<string>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_match_audits", x => x.id);
+                    table.PrimaryKey("pk_match_audits", x => x.id);
                     table.ForeignKey(
-                        name: "FK_match_audits_matches_ref_id",
-                        column: x => x.ref_id,
+                        name: "fk_match_audits_matches_reference_id",
+                        column: x => x.reference_id,
                         principalTable: "matches",
                         principalColumn: "id",
                         onDelete: ReferentialAction.SetNull);
@@ -653,9 +653,9 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_match_win_records", x => x.id);
+                    table.PrimaryKey("pk_match_win_records", x => x.id);
                     table.ForeignKey(
-                        name: "FK_match_win_records_matches_match_id",
+                        name: "fk_match_win_records_matches_match_id",
                         column: x => x.match_id,
                         principalTable: "matches",
                         principalColumn: "id",
@@ -685,15 +685,15 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_player_match_stats", x => x.id);
+                    table.PrimaryKey("pk_player_match_stats", x => x.id);
                     table.ForeignKey(
-                        name: "FK_player_match_stats_matches_match_id",
+                        name: "fk_player_match_stats_matches_match_id",
                         column: x => x.match_id,
                         principalTable: "matches",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_player_match_stats_players_player_id",
+                        name: "fk_player_match_stats_players_player_id",
                         column: x => x.player_id,
                         principalTable: "players",
                         principalColumn: "id",
@@ -720,21 +720,21 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_rating_adjustments", x => x.id);
+                    table.PrimaryKey("pk_rating_adjustments", x => x.id);
                     table.ForeignKey(
-                        name: "FK_rating_adjustments_matches_match_id",
+                        name: "fk_rating_adjustments_matches_match_id",
                         column: x => x.match_id,
                         principalTable: "matches",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_rating_adjustments_player_ratings_player_rating_id",
+                        name: "fk_rating_adjustments_player_ratings_player_rating_id",
                         column: x => x.player_rating_id,
                         principalTable: "player_ratings",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_rating_adjustments_players_player_id",
+                        name: "fk_rating_adjustments_players_player_id",
                         column: x => x.player_id,
                         principalTable: "players",
                         principalColumn: "id",
@@ -750,20 +750,20 @@ namespace Database.Migrations
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     note = table.Column<string>(type: "text", nullable: false),
-                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    reference_id = table.Column<int>(type: "integer", nullable: false),
                     admin_user_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_game_admin_notes", x => x.id);
+                    table.PrimaryKey("pk_game_admin_notes", x => x.id);
                     table.ForeignKey(
-                        name: "FK_game_admin_notes_games_ref_id",
-                        column: x => x.ref_id,
+                        name: "fk_game_admin_notes_games_reference_id",
+                        column: x => x.reference_id,
                         principalTable: "games",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_game_admin_notes_users_admin_user_id",
+                        name: "fk_game_admin_notes_users_admin_user_id",
                         column: x => x.admin_user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -777,18 +777,18 @@ namespace Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    ref_id_lock = table.Column<int>(type: "integer", nullable: false),
-                    ref_id = table.Column<int>(type: "integer", nullable: true),
+                    reference_id_lock = table.Column<int>(type: "integer", nullable: false),
+                    reference_id = table.Column<int>(type: "integer", nullable: true),
                     action_user_id = table.Column<int>(type: "integer", nullable: true),
                     action_type = table.Column<int>(type: "integer", nullable: false),
                     changes = table.Column<string>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_game_audits", x => x.id);
+                    table.PrimaryKey("pk_game_audits", x => x.id);
                     table.ForeignKey(
-                        name: "FK_game_audits_games_ref_id",
-                        column: x => x.ref_id,
+                        name: "fk_game_audits_games_reference_id",
+                        column: x => x.reference_id,
                         principalTable: "games",
                         principalColumn: "id",
                         onDelete: ReferentialAction.SetNull);
@@ -803,9 +803,9 @@ namespace Database.Migrations
                     score = table.Column<int>(type: "integer", nullable: false),
                     placement = table.Column<int>(type: "integer", nullable: false),
                     max_combo = table.Column<int>(type: "integer", nullable: false),
-                    count_50 = table.Column<int>(type: "integer", nullable: false),
-                    count_100 = table.Column<int>(type: "integer", nullable: false),
-                    count_300 = table.Column<int>(type: "integer", nullable: false),
+                    count50 = table.Column<int>(type: "integer", nullable: false),
+                    count100 = table.Column<int>(type: "integer", nullable: false),
+                    count300 = table.Column<int>(type: "integer", nullable: false),
                     count_miss = table.Column<int>(type: "integer", nullable: false),
                     count_katu = table.Column<int>(type: "integer", nullable: false),
                     count_geki = table.Column<int>(type: "integer", nullable: false),
@@ -826,15 +826,15 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_game_scores", x => x.id);
+                    table.PrimaryKey("pk_game_scores", x => x.id);
                     table.ForeignKey(
-                        name: "FK_game_scores_games_game_id",
+                        name: "fk_game_scores_games_game_id",
                         column: x => x.game_id,
                         principalTable: "games",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_game_scores_players_player_id",
+                        name: "fk_game_scores_players_player_id",
                         column: x => x.player_id,
                         principalTable: "players",
                         principalColumn: "id",
@@ -858,9 +858,9 @@ namespace Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_game_win_records", x => x.id);
+                    table.PrimaryKey("pk_game_win_records", x => x.id);
                     table.ForeignKey(
-                        name: "FK_game_win_records_games_game_id",
+                        name: "fk_game_win_records_games_game_id",
                         column: x => x.game_id,
                         principalTable: "games",
                         principalColumn: "id",
@@ -876,20 +876,20 @@ namespace Database.Migrations
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     note = table.Column<string>(type: "text", nullable: false),
-                    ref_id = table.Column<int>(type: "integer", nullable: false),
+                    reference_id = table.Column<int>(type: "integer", nullable: false),
                     admin_user_id = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_game_score_admin_notes", x => x.id);
+                    table.PrimaryKey("pk_game_score_admin_notes", x => x.id);
                     table.ForeignKey(
-                        name: "FK_game_score_admin_notes_game_scores_ref_id",
-                        column: x => x.ref_id,
+                        name: "fk_game_score_admin_notes_game_scores_reference_id",
+                        column: x => x.reference_id,
                         principalTable: "game_scores",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_game_score_admin_notes_users_admin_user_id",
+                        name: "fk_game_score_admin_notes_users_admin_user_id",
                         column: x => x.admin_user_id,
                         principalTable: "users",
                         principalColumn: "id",
@@ -903,360 +903,360 @@ namespace Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityAlwaysColumn),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    ref_id_lock = table.Column<int>(type: "integer", nullable: false),
-                    ref_id = table.Column<int>(type: "integer", nullable: true),
+                    reference_id_lock = table.Column<int>(type: "integer", nullable: false),
+                    reference_id = table.Column<int>(type: "integer", nullable: true),
                     action_user_id = table.Column<int>(type: "integer", nullable: true),
                     action_type = table.Column<int>(type: "integer", nullable: false),
                     changes = table.Column<string>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_game_score_audits", x => x.id);
+                    table.PrimaryKey("pk_game_score_audits", x => x.id);
                     table.ForeignKey(
-                        name: "FK_game_score_audits_game_scores_ref_id",
-                        column: x => x.ref_id,
+                        name: "fk_game_score_audits_game_scores_reference_id",
+                        column: x => x.reference_id,
                         principalTable: "game_scores",
                         principalColumn: "id",
                         onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX___join__beatmap_creators_CreatorsId",
-                table: "__join__beatmap_creators",
-                column: "CreatorsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX___join__pooled_beatmaps_TournamentsPooledInId",
-                table: "__join__pooled_beatmaps",
-                column: "TournamentsPooledInId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_beatmap_attributes_beatmap_id_mods",
+                name: "ix_beatmap_attributes_beatmap_id_mods",
                 table: "beatmap_attributes",
                 columns: new[] { "beatmap_id", "mods" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_beatmaps_beatmapset_id",
+                name: "ix_beatmaps_beatmapset_id",
                 table: "beatmaps",
                 column: "beatmapset_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_beatmaps_osu_id",
+                name: "ix_beatmaps_osu_id",
                 table: "beatmaps",
                 column: "osu_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_beatmapsets_creator_id",
+                name: "ix_beatmapsets_creator_id",
                 table: "beatmapsets",
                 column: "creator_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_beatmapsets_osu_id",
+                name: "ix_beatmapsets_osu_id",
                 table: "beatmapsets",
                 column: "osu_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_game_admin_notes_admin_user_id",
+                name: "ix_game_admin_notes_admin_user_id",
                 table: "game_admin_notes",
                 column: "admin_user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_game_admin_notes_ref_id",
+                name: "ix_game_admin_notes_reference_id",
                 table: "game_admin_notes",
-                column: "ref_id");
+                column: "reference_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_game_audits_ref_id",
+                name: "ix_game_audits_reference_id",
                 table: "game_audits",
-                column: "ref_id");
+                column: "reference_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_game_score_admin_notes_admin_user_id",
+                name: "ix_game_score_admin_notes_admin_user_id",
                 table: "game_score_admin_notes",
                 column: "admin_user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_game_score_admin_notes_ref_id",
+                name: "ix_game_score_admin_notes_reference_id",
                 table: "game_score_admin_notes",
-                column: "ref_id");
+                column: "reference_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_game_score_audits_ref_id",
+                name: "ix_game_score_audits_reference_id",
                 table: "game_score_audits",
-                column: "ref_id");
+                column: "reference_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_game_scores_game_id",
+                name: "ix_game_scores_game_id",
                 table: "game_scores",
                 column: "game_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_game_scores_player_id",
+                name: "ix_game_scores_player_id",
                 table: "game_scores",
                 column: "player_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_game_scores_player_id_game_id",
+                name: "ix_game_scores_player_id_game_id",
                 table: "game_scores",
                 columns: new[] { "player_id", "game_id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_game_win_records_game_id",
+                name: "ix_game_win_records_game_id",
                 table: "game_win_records",
                 column: "game_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_game_win_records_winner_roster",
+                name: "ix_game_win_records_winner_roster",
                 table: "game_win_records",
                 column: "winner_roster");
 
             migrationBuilder.CreateIndex(
-                name: "IX_games_beatmap_id",
+                name: "ix_games_beatmap_id",
                 table: "games",
                 column: "beatmap_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_games_match_id",
+                name: "ix_games_match_id",
                 table: "games",
                 column: "match_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_games_osu_id",
+                name: "ix_games_osu_id",
                 table: "games",
                 column: "osu_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_games_start_time",
+                name: "ix_games_start_time",
                 table: "games",
                 column: "start_time");
 
             migrationBuilder.CreateIndex(
-                name: "IX_match_admin_notes_admin_user_id",
+                name: "ix_join_beatmap_creators_creators_id",
+                table: "join_beatmap_creators",
+                column: "creators_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_join_pooled_beatmaps_tournaments_pooled_in_id",
+                table: "join_pooled_beatmaps",
+                column: "tournaments_pooled_in_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_match_admin_notes_admin_user_id",
                 table: "match_admin_notes",
                 column: "admin_user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_match_admin_notes_ref_id",
+                name: "ix_match_admin_notes_reference_id",
                 table: "match_admin_notes",
-                column: "ref_id");
+                column: "reference_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_match_audits_ref_id",
+                name: "ix_match_audits_reference_id",
                 table: "match_audits",
-                column: "ref_id");
+                column: "reference_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_match_win_records_loser_roster",
+                name: "ix_match_win_records_loser_roster",
                 table: "match_win_records",
                 column: "loser_roster");
 
             migrationBuilder.CreateIndex(
-                name: "IX_match_win_records_match_id",
+                name: "ix_match_win_records_match_id",
                 table: "match_win_records",
                 column: "match_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_match_win_records_winner_roster",
+                name: "ix_match_win_records_winner_roster",
                 table: "match_win_records",
                 column: "winner_roster");
 
             migrationBuilder.CreateIndex(
-                name: "IX_matches_osu_id",
+                name: "ix_matches_osu_id",
                 table: "matches",
                 column: "osu_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_matches_submitted_by_user_id",
+                name: "ix_matches_submitted_by_user_id",
                 table: "matches",
                 column: "submitted_by_user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_matches_tournament_id",
+                name: "ix_matches_tournament_id",
                 table: "matches",
                 column: "tournament_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_matches_verified_by_user_id",
+                name: "ix_matches_verified_by_user_id",
                 table: "matches",
                 column: "verified_by_user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_oauth_client_admin_notes_ref_id",
-                table: "oauth_client_admin_notes",
-                column: "ref_id");
+                name: "ix_o_auth_client_admin_note_reference_id",
+                table: "o_auth_client_admin_note",
+                column: "reference_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_oauth_clients_user_id",
-                table: "oauth_clients",
+                name: "ix_o_auth_clients_user_id",
+                table: "o_auth_clients",
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_admin_notes_admin_user_id",
+                name: "ix_player_admin_notes_admin_user_id",
                 table: "player_admin_notes",
                 column: "admin_user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_admin_notes_ref_id",
+                name: "ix_player_admin_notes_reference_id",
                 table: "player_admin_notes",
-                column: "ref_id");
+                column: "reference_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_highest_ranks_country_rank",
+                name: "ix_player_highest_ranks_country_rank",
                 table: "player_highest_ranks",
                 column: "country_rank",
                 descending: new bool[0]);
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_highest_ranks_global_rank",
+                name: "ix_player_highest_ranks_global_rank",
                 table: "player_highest_ranks",
                 column: "global_rank",
                 descending: new bool[0]);
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_highest_ranks_player_id_ruleset",
+                name: "ix_player_highest_ranks_player_id_ruleset",
                 table: "player_highest_ranks",
                 columns: new[] { "player_id", "ruleset" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_match_stats_match_id",
+                name: "ix_player_match_stats_match_id",
                 table: "player_match_stats",
                 column: "match_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_match_stats_player_id",
+                name: "ix_player_match_stats_player_id",
                 table: "player_match_stats",
                 column: "player_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_match_stats_player_id_match_id",
+                name: "ix_player_match_stats_player_id_match_id",
                 table: "player_match_stats",
                 columns: new[] { "player_id", "match_id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_match_stats_player_id_won",
+                name: "ix_player_match_stats_player_id_won",
                 table: "player_match_stats",
                 columns: new[] { "player_id", "won" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_osu_ruleset_data_player_id_ruleset",
+                name: "ix_player_osu_ruleset_data_player_id_ruleset",
                 table: "player_osu_ruleset_data",
                 columns: new[] { "player_id", "ruleset" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_ratings_player_id",
+                name: "ix_player_ratings_player_id",
                 table: "player_ratings",
                 column: "player_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_ratings_player_id_ruleset",
+                name: "ix_player_ratings_player_id_ruleset",
                 table: "player_ratings",
                 columns: new[] { "player_id", "ruleset" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_ratings_rating",
+                name: "ix_player_ratings_rating",
                 table: "player_ratings",
                 column: "rating",
                 descending: new bool[0]);
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_ratings_ruleset",
+                name: "ix_player_ratings_ruleset",
                 table: "player_ratings",
                 column: "ruleset");
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_tournament_stats_player_id_tournament_id",
+                name: "ix_player_tournament_stats_player_id_tournament_id",
                 table: "player_tournament_stats",
                 columns: new[] { "player_id", "tournament_id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_player_tournament_stats_tournament_id",
+                name: "ix_player_tournament_stats_tournament_id",
                 table: "player_tournament_stats",
                 column: "tournament_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_players_osu_id",
+                name: "ix_players_osu_id",
                 table: "players",
                 column: "osu_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_rating_adjustments_match_id",
+                name: "ix_rating_adjustments_match_id",
                 table: "rating_adjustments",
                 column: "match_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_rating_adjustments_player_id_match_id",
+                name: "ix_rating_adjustments_player_id_match_id",
                 table: "rating_adjustments",
                 columns: new[] { "player_id", "match_id" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_rating_adjustments_player_id_timestamp",
+                name: "ix_rating_adjustments_player_id_timestamp",
                 table: "rating_adjustments",
                 columns: new[] { "player_id", "timestamp" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_rating_adjustments_player_rating_id",
+                name: "ix_rating_adjustments_player_rating_id",
                 table: "rating_adjustments",
                 column: "player_rating_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_tournament_admin_notes_admin_user_id",
+                name: "ix_tournament_admin_notes_admin_user_id",
                 table: "tournament_admin_notes",
                 column: "admin_user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_tournament_admin_notes_ref_id",
+                name: "ix_tournament_admin_notes_reference_id",
                 table: "tournament_admin_notes",
-                column: "ref_id");
+                column: "reference_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_tournament_audits_ref_id",
+                name: "ix_tournament_audits_reference_id",
                 table: "tournament_audits",
-                column: "ref_id");
+                column: "reference_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_tournaments_name_abbreviation",
+                name: "ix_tournaments_name_abbreviation",
                 table: "tournaments",
                 columns: new[] { "name", "abbreviation" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_tournaments_ruleset",
+                name: "ix_tournaments_ruleset",
                 table: "tournaments",
                 column: "ruleset");
 
             migrationBuilder.CreateIndex(
-                name: "IX_tournaments_submitted_by_user_id",
+                name: "ix_tournaments_submitted_by_user_id",
                 table: "tournaments",
                 column: "submitted_by_user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_tournaments_verified_by_user_id",
+                name: "ix_tournaments_verified_by_user_id",
                 table: "tournaments",
                 column: "verified_by_user_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_user_settings_user_id",
+                name: "ix_user_settings_user_id",
                 table: "user_settings",
                 column: "user_id",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_users_player_id",
+                name: "ix_users_player_id",
                 table: "users",
                 column: "player_id",
                 unique: true);
@@ -1265,12 +1265,6 @@ namespace Database.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "__join__beatmap_creators");
-
-            migrationBuilder.DropTable(
-                name: "__join__pooled_beatmaps");
-
             migrationBuilder.DropTable(
                 name: "beatmap_attributes");
 
@@ -1290,6 +1284,12 @@ namespace Database.Migrations
                 name: "game_win_records");
 
             migrationBuilder.DropTable(
+                name: "join_beatmap_creators");
+
+            migrationBuilder.DropTable(
+                name: "join_pooled_beatmaps");
+
+            migrationBuilder.DropTable(
                 name: "match_admin_notes");
 
             migrationBuilder.DropTable(
@@ -1299,7 +1299,7 @@ namespace Database.Migrations
                 name: "match_win_records");
 
             migrationBuilder.DropTable(
-                name: "oauth_client_admin_notes");
+                name: "o_auth_client_admin_note");
 
             migrationBuilder.DropTable(
                 name: "player_admin_notes");
@@ -1332,7 +1332,7 @@ namespace Database.Migrations
                 name: "game_scores");
 
             migrationBuilder.DropTable(
-                name: "oauth_clients");
+                name: "o_auth_clients");
 
             migrationBuilder.DropTable(
                 name: "player_ratings");
