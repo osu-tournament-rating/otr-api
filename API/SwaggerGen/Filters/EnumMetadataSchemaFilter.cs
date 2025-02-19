@@ -17,10 +17,9 @@ namespace API.SwaggerGen.Filters;
 [UsedImplicitly]
 public class EnumMetadataSchemaFilter(string[] xmlDocPaths) : ISchemaFilter
 {
-    private readonly IList<XPathNavigator> _xmlNavigators = xmlDocPaths
+    private readonly IList<XPathNavigator> _xmlNavigators = [.. xmlDocPaths
         .Where(File.Exists)
-        .Select(path => new XPathDocument(path).CreateNavigator())
-        .ToList();
+        .Select(path => new XPathDocument(path).CreateNavigator())];
 
     public void Apply(OpenApiSchema schema, SchemaFilterContext context)
     {

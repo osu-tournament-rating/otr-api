@@ -74,8 +74,8 @@ public class GameStatsProcessor(
         {
             WinnerTeam = winningTeam,
             LoserTeam = losingTeam,
-            WinnerRoster = eScores.Where(s => s.Team == winningTeam).Select(s => s.PlayerId).ToArray(),
-            LoserRoster = eScores.Where(s => s.Team == losingTeam).Select(s => s.PlayerId).ToArray(),
+            WinnerRoster = [.. eScores.Where(s => s.Team == winningTeam).Select(s => s.PlayerId)],
+            LoserRoster = [.. eScores.Where(s => s.Team == losingTeam).Select(s => s.PlayerId)],
             WinnerScore = eScores.Where(s => s.Team == winningTeam).Sum(s => s.Score),
             LoserScore = eScores.Where(s => s.Team == losingTeam).Sum(s => s.Score)
         };

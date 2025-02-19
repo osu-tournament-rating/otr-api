@@ -46,10 +46,9 @@ public class TournamentStatsProcessor(
             }
         }
 
-        IEnumerable<Match> verifiedMatches = entity.Matches
+        IEnumerable<Match> verifiedMatches = [.. entity.Matches
             .Where(m => m is
-            { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done })
-            .ToList();
+            { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done })];
 
         // Sanity check
         // If any processor data or stat objects are missing we cannot generate tournament stats
@@ -85,15 +84,13 @@ public class TournamentStatsProcessor(
                      .DistinctBy(p => p.Id)
                 )
         {
-            IEnumerable<PlayerMatchStats> matchStats = verifiedMatches
+            IEnumerable<PlayerMatchStats> matchStats = [.. verifiedMatches
                 .SelectMany(m => m.PlayerMatchStats)
-                .Where(pms => pms.Player.Id == player.Id)
-                .ToList();
+                .Where(pms => pms.Player.Id == player.Id)];
 
-            IEnumerable<RatingAdjustment> matchAdjustments = verifiedMatches
+            IEnumerable<RatingAdjustment> matchAdjustments = [.. verifiedMatches
                 .SelectMany(m => m.PlayerRatingAdjustments)
-                .Where(ra => ra.Player.Id == player.Id)
-                .ToList();
+                .Where(ra => ra.Player.Id == player.Id)];
 
             entity.PlayerTournamentStats.Add(new PlayerTournamentStats
             {
@@ -108,7 +105,7 @@ public class TournamentStatsProcessor(
                 GamesPlayed = matchStats.Sum(pms => pms.GamesPlayed),
                 GamesWon = matchStats.Sum(pms => pms.GamesWon),
                 GamesLost = matchStats.Sum(pms => pms.GamesLost),
-                TeammateIds = matchStats.SelectMany(pms => pms.TeammateIds).Distinct().ToArray(),
+                TeammateIds = [.. matchStats.SelectMany(pms => pms.TeammateIds).Distinct()],
                 PlayerId = player.Id,
                 TournamentId = entity.Id
             });
