@@ -22,7 +22,7 @@ public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(co
     public async Task<IEnumerable<Beatmap>> GetAsync(IEnumerable<long> osuIds)
     {
         // Load local instances
-        IEnumerable<Beatmap> result = LocalView.Where(b => osuIds.Contains(b.OsuId)).ToList();
+        IEnumerable<Beatmap> result = [.. LocalView.Where(b => osuIds.Contains(b.OsuId))];
         // Query db for non-local instances
         IEnumerable<long> remainingIds = osuIds.Except(result.Select(p => p.OsuId));
         return (await _context.Beatmaps
@@ -32,7 +32,7 @@ public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(co
 
     public async Task<ICollection<Beatmap>> GetOrCreateAsync(IEnumerable<long> osuIds, bool save)
     {
-        osuIds = osuIds.ToList();
+        osuIds = [.. osuIds];
 
         // Identify existing beatmaps
         var existing = (await GetAsync(osuIds)).ToList();

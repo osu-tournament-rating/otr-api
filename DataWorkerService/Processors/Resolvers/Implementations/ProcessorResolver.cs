@@ -9,7 +9,7 @@ public abstract class ProcessorResolver<TEntity> : IProcessorResolver<TEntity> w
 
     protected ProcessorResolver(IEnumerable<IProcessor<TEntity>> processors)
     {
-        processors = processors.ToList();
+        processors = [.. processors];
         if (!processors.Any())
         {
             throw new InvalidOperationException($"No processors were registered [Entity: {nameof(TEntity)}]");
