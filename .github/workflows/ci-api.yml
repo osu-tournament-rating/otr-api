@@ -21,11 +21,11 @@ jobs:
               run: dotnet restore
 
             - name: .NET Warnings & Code Style
-              run: dotnet build -c Debug -warnaserror -p:EnforceCodeStyleInBuild=true
+              run: dotnet build -c Debug -warnaserror
 
             - name: .NET Format
               run: |
-                dotnet format --severity info --exclude **/Migrations/* --verify-no-changes
+                dotnet format --severity info --exclude **/Migrations/* --verify-no-changes --verbosity diagnostic
     
     test:
       name: Test

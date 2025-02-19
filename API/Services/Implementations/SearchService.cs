@@ -34,7 +34,7 @@ public class SearchService(
             return result;
         }
 
-        result = (await tournamentsRepository.SearchAsync(tournamentName)).ToList();
+        result = [.. (await tournamentsRepository.SearchAsync(tournamentName))];
         await cacheHandler.SetTournamentSearchResultAsync(result, tournamentName);
 
         return result;
@@ -51,7 +51,7 @@ public class SearchService(
             return result;
         }
 
-        result = (await matchesService.SearchAsync(matchName)).ToList();
+        result = [.. (await matchesService.SearchAsync(matchName))];
         await cacheHandler.SetMatchSearchResultAsync(result, matchName);
 
         return result;
