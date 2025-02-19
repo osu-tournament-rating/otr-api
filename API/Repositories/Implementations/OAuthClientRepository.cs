@@ -46,6 +46,6 @@ public class OAuthClientRepository(OtrContext context, IPasswordHasher<OAuthClie
         const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
         var r = new Random();
-        return new string(Enumerable.Repeat(chars, length).Select(s => s[r.Next(s.Length)]).ToArray());
+        return new string([.. Enumerable.Repeat(chars, length).Select(s => s[r.Next(s.Length)])]);
     }
 }

@@ -43,10 +43,9 @@ public class TournamentsService(
                 ? TournamentProcessingStatus.NeedsMatchData
                 : TournamentProcessingStatus.NeedsApproval,
             SubmittedByUserId = submitterUserId,
-            Matches = submittedMatchIds
+            Matches = [.. submittedMatchIds
                 .Except(existingMatchIds)
-                .Select(matchId => new Match { OsuId = matchId, SubmittedByUserId = submitterUserId })
-                .ToList(),
+                .Select(matchId => new Match { OsuId = matchId, SubmittedByUserId = submitterUserId })],
             PooledBeatmaps =
 
             [

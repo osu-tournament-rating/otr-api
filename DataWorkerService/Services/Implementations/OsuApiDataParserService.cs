@@ -43,7 +43,7 @@ public class OsuApiDataParserService(
         await LoadBeatmapsAsync(apiMatch.Events.Select(e => e.Game).OfType<MultiplayerGame>());
 
         // Parse games
-        match.Games = CreateGames(apiMatch).ToList();
+        match.Games = [.. CreateGames(apiMatch)];
 
         match.EndTime = DetermineMatchEndTime(apiMatch) ?? default;
 
@@ -52,7 +52,7 @@ public class OsuApiDataParserService(
 
     public async Task LoadPlayersAsync(IEnumerable<User> apiPlayers)
     {
-        apiPlayers = apiPlayers.ToList();
+        apiPlayers = [.. apiPlayers];
         var uncachedPlayerOsuIds = apiPlayers
             .Select(p => p.Id)
             .Distinct()
@@ -64,7 +64,7 @@ public class OsuApiDataParserService(
             return;
         }
 
-        IEnumerable<Player> fetchedPlayers = (await playersRepository.GetByOsuIdAsync(uncachedPlayerOsuIds)).ToList();
+        IEnumerable<Player> fetchedPlayers = [.. (await playersRepository.GetByOsuIdAsync(uncachedPlayerOsuIds))];
 
         foreach (var playerOsuId in uncachedPlayerOsuIds)
         {
@@ -89,7 +89,7 @@ public class OsuApiDataParserService(
 
     public async Task LoadBeatmapsAsync(IEnumerable<MultiplayerGame> apiGames)
     {
-        apiGames = apiGames.ToList();
+        apiGames = [.. apiGames];
 
         var uncachedBeatmapOsuIds = apiGames
             .Select(g => g.BeatmapId)
@@ -103,7 +103,7 @@ public class OsuApiDataParserService(
          */
         if (uncachedBeatmapOsuIds.Count != 0)
         {
-            IEnumerable<Beatmap> fetchedBeatmaps = (await beatmapsRepository.GetAsync(uncachedBeatmapOsuIds)).ToList();
+            IEnumerable<Beatmap> fetchedBeatmaps = [.. (await beatmapsRepository.GetAsync(uncachedBeatmapOsuIds))];
 
             foreach (var beatmapOsuId in uncachedBeatmapOsuIds)
             {
@@ -194,7 +194,7 @@ public class OsuApiDataParserService(
                 Mods = gameEvent.Game.Mods,
                 StartTime = gameEvent.Game.StartTime,
                 Beatmap = _beatmapsCache.FirstOrDefault(b => b.OsuId == gameEvent.Game.BeatmapId),
-                Scores = CreateScores(gameEvent.Game.Scores).ToList()
+                Scores = [.. CreateScores(gameEvent.Game.Scores)]
             };
 
             foreach (GameScore score in game.Scores)

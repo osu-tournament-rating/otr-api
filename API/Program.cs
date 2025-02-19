@@ -338,7 +338,7 @@ builder.Services.AddSwaggerGen(options =>
         {
             Type = "string",
             Description = "The possible roles assignable to a user or client",
-            Enum = new List<IOpenApiAny>(oauthScopes.Keys.Select(role => new OpenApiString(role))),
+            Enum = [.. oauthScopes.Keys.Select(role => new OpenApiString(role))],
             Extensions = new Dictionary<string, IOpenApiExtension>
             {
                 [ExtensionKeys.EnumNames] =

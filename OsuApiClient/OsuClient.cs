@@ -320,7 +320,7 @@ public sealed class OsuClient(
 
             // Add new data
             initialMatch.Events = [.. initialMatch.Events, .. nextBatch.Events];
-            initialMatch.Users = initialMatch.Users.Concat(nextBatch.Users).DistinctBy(u => u.Id).ToArray();
+            initialMatch.Users = [.. initialMatch.Users.Concat(nextBatch.Users).DistinctBy(u => u.Id)];
         }
 
         logger.LogDebug(
