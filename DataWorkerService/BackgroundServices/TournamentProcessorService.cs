@@ -81,7 +81,7 @@ public class TournamentProcessorService(
         tournament.VerificationStatus = VerificationStatus.Rejected;
         tournament.RejectionReason = TournamentRejectionReason.IncompleteData;
         tournament.ProcessingStatus = TournamentProcessingStatus.Done;
-        tournament.LastProcessingDate = DateTime.Now;
+        tournament.LastProcessingDate = DateTime.UtcNow;
 
         logger.LogWarning("Skipping processing for tournament with no matches [Id: {Id}]", tournament.Id);
     }
