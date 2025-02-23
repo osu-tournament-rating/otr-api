@@ -12,7 +12,7 @@ namespace DataWorkerService.Tests.Stats;
 public class MatchStatsProcessorTests
 {
     [Fact]
-    public void Processor_ProperlyCreates_MatchWinRecord()
+    public void Processor_ProperlyCreates_MatchRosterRecord()
     {
         // Arrange
         Match match = SeededMatch.ExampleMatch();
@@ -28,20 +28,26 @@ public class MatchStatsProcessorTests
             }
 
             GameStatsProcessor.AssignScorePlacements(game.Scores);
-            game.WinRecord = GameStatsProcessor.GenerateWinRecord(game.Scores);
+            game.Rosters = GameStatsProcessor.GenerateRosters(game.Scores);
         }
 
-        const Team expectedWinningTeam = Team.Blue;
-        const Team expectedLosingTeam = Team.Red;
-
         // Act
-        MatchWinRecord result = MatchStatsProcessor.GenerateWinRecord(match.Games);
+        ICollection<MatchRoster> rosters = MatchStatsProcessor.GenerateRosters(match.Games);
 
         // Assert
-        Assert.Equal(expectedWinningTeam, result.WinnerTeam);
-        Assert.Equal(expectedLosingTeam, result.LoserTeam);
-        Assert.Distinct(result.WinnerRoster);
-        Assert.Distinct(result.LoserRoster);
+        MatchRoster? redRoster = rosters.FirstOrDefault(r => r.Team == Team.Red);
+        MatchRoster? blueRoster = rosters.FirstOrDefault(r => r.Team == Team.Blue);
+
+        Assert.NotNull(blueRoster);
+        Assert.NotNull(redRoster);
+
+        Assert.NotEmpty(blueRoster.Roster);
+        Assert.NotEmpty(redRoster.Roster);
+
+        Assert.Equal(blueRoster.Roster.Distinct().Count(), blueRoster.Roster.Length);
+        Assert.Equal(redRoster.Roster.Distinct().Count(), redRoster.Roster.Length);
+
+        Assert.Equal(2, rosters.Count);
     }
 
     [Fact]

@@ -32,32 +32,37 @@ public class GameStatsProcessorTests
     }
 
     [Fact]
-    public void Processor_ProperlyCreates_GameWinRecord()
+    public void Processor_ProperlyCreates_Rosters()
     {
-        // Arrange
-        const Team expectedWinningTeam = Team.Blue;
-        const Team expectedLosingTeam = Team.Red;
+        Game game = SeededGame.Generate(id: 1);
 
+        // Arrange
         GameScore[] scores =
         [
-            SeededScore.Generate(id: 1, score: 600, team: expectedWinningTeam, player: SeededPlayer.Generate(id: 1)),
-            SeededScore.Generate(id: 2, score: 500, team: expectedWinningTeam, player: SeededPlayer.Generate(id: 2)),
-            SeededScore.Generate(id: 3, score: 400, team: expectedWinningTeam, player: SeededPlayer.Generate(id: 3)),
-            SeededScore.Generate(id: 4, score: 300, team: expectedLosingTeam, player: SeededPlayer.Generate(id: 4)),
-            SeededScore.Generate(id: 5, score: 200, team: expectedLosingTeam, player: SeededPlayer.Generate(id: 5)),
-            SeededScore.Generate(id: 6, score: 100, team: expectedLosingTeam, player: SeededPlayer.Generate(id: 6))
+            SeededScore.Generate(id: 1, score: 600, team: Team.Red, player: SeededPlayer.Generate(id: 1), game: game),
+            SeededScore.Generate(id: 2, score: 500, team: Team.Red, player: SeededPlayer.Generate(id: 2), game: game),
+            SeededScore.Generate(id: 3, score: 400, team: Team.Red, player: SeededPlayer.Generate(id: 3), game: game),
+            SeededScore.Generate(id: 4, score: 300, team: Team.Blue, player: SeededPlayer.Generate(id: 4), game: game),
+            SeededScore.Generate(id: 5, score: 200, team: Team.Blue, player: SeededPlayer.Generate(id: 5), game: game),
+            SeededScore.Generate(id: 6, score: 100, team: Team.Blue, player: SeededPlayer.Generate(id: 6), game: game)
         ];
 
         // Act
-        GameWinRecord result = GameStatsProcessor.GenerateWinRecord(scores);
+        ICollection<GameRoster> rosters = GameStatsProcessor.GenerateRosters(scores);
+
+        GameRoster redRoster = rosters.First(r => r.Team == Team.Red);
+        GameRoster blueRoster = rosters.First(r => r.Team == Team.Blue);
 
         // Assert
-        Assert.Equal(expectedWinningTeam, result.WinnerTeam);
-        Assert.Equal(expectedLosingTeam, result.LoserTeam);
-        Assert.Equal([1, 2, 3], result.WinnerRoster);
-        Assert.Equal([4, 5, 6], result.LoserRoster);
-        Assert.Equal(1500, result.WinnerScore);
-        Assert.Equal(600, result.LoserScore);
+        Assert.Equal(Team.Red, redRoster.Team);
+        Assert.Equal([1, 2, 3], redRoster.Roster);
+        Assert.Equal(600 + 500 + 400, redRoster.Score);
+
+        Assert.Equal(Team.Blue, blueRoster.Team);
+        Assert.Equal([4, 5, 6], blueRoster.Roster);
+        Assert.Equal(300 + 200 + 100, blueRoster.Score);
+
+        Assert.Equal(2, rosters.Count);
     }
 
     [Fact]
@@ -95,6 +100,6 @@ public class GameStatsProcessorTests
 
         // Assert
         Assert.Equal(GameProcessingStatus.Done, game.ProcessingStatus);
-        Assert.NotNull(game.WinRecord);
+        Assert.NotNull(game.Rosters);
     }
 }

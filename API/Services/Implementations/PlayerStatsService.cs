@@ -12,7 +12,7 @@ namespace API.Services.Implementations;
 
 public class PlayerStatsService(
     IPlayerRatingsService playerRatingsService,
-    IApiMatchWinRecordRepository matchWinRecordRepository,
+    IApiMatchRosterRepository matchRosterRepository,
     IApiPlayerMatchStatsRepository matchStatsRepository,
     IPlayersRepository playerRepository,
     IApiMatchRatingStatsRepository ratingStatsRepository,
@@ -141,14 +141,14 @@ public class PlayerStatsService(
             dateMax.Value
         );
 
-        IEnumerable<PlayerFrequencyDTO> frequentTeammates = await matchWinRecordRepository.GetFrequentTeammatesAsync(
+        IEnumerable<PlayerFrequencyDTO> frequentTeammates = await matchRosterRepository.GetFrequentTeammatesAsync(
             player.Id,
             ruleset.Value,
             dateMin.Value,
             dateMax.Value
         );
 
-        IEnumerable<PlayerFrequencyDTO> frequentOpponents = await matchWinRecordRepository.GetFrequentOpponentsAsync(
+        IEnumerable<PlayerFrequencyDTO> frequentOpponents = await matchRosterRepository.GetFrequentOpponentsAsync(
             player.Id,
             ruleset.Value,
             dateMin.Value,

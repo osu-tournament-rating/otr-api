@@ -4,7 +4,7 @@ using Database.Repositories.Interfaces;
 
 namespace API.Repositories.Interfaces;
 
-public interface IApiMatchWinRecordRepository : IMatchWinRecordRepository
+public interface IApiMatchRosterRepository : IMatchRosterRepository
 {
     Task<IEnumerable<PlayerFrequencyDTO>> GetFrequentTeammatesAsync(
         int playerId,

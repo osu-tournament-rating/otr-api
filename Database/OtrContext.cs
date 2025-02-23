@@ -38,11 +38,11 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     public virtual DbSet<GameScore> GameScores { get; set; }
     public virtual DbSet<GameScoreAdminNote> GameScoreAdminNotes { get; set; }
     public virtual DbSet<GameScoreAudit> GameScoreAudits { get; set; }
-    public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
+    public virtual DbSet<GameRoster> GameRosters { get; set; }
     public virtual DbSet<Match> Matches { get; set; }
     public virtual DbSet<MatchAdminNote> MatchAdminNotes { get; set; }
     public virtual DbSet<MatchAudit> MatchAudits { get; set; }
-    public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
+    public virtual DbSet<MatchRoster> MatchRosters { get; set; }
     public virtual DbSet<OAuthClient> OAuthClients { get; set; }
     public virtual DbSet<Player> Players { get; set; }
     public virtual DbSet<PlayerHighestRanks> PlayerHighestRanks { get; set; }
@@ -178,14 +178,14 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasOne(g => g.Beatmap)
                 .WithMany(b => b.Games)
                 .HasForeignKey(g => g.BeatmapId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Relation: GameWinRecord
+            // Relation: GameRoster
             entity
-                .HasOne(g => g.WinRecord)
-                .WithOne(gwr => gwr.Game)
-                .HasForeignKey<GameWinRecord>(gwr => gwr.GameId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .HasMany(g => g.Rosters)
+                .WithOne(gr => gr.Game)
+                .HasForeignKey(gr => gr.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: GameScore
             entity
@@ -199,7 +199,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasMany(g => g.Audits)
                 .WithOne()
                 .HasForeignKey(ga => ga.ReferenceId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Admin Notes
             entity
@@ -333,7 +333,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        modelBuilder.Entity<GameWinRecord>(entity =>
+        modelBuilder.Entity<GameRoster>(entity =>
         {
             entity.Property(gwr => gwr.Id).UseIdentityAlwaysColumn();
 
@@ -341,13 +341,15 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             // Relation: Game
             entity
-                .HasOne(gwr => gwr.Game)
-                .WithOne(g => g.WinRecord)
-                .HasForeignKey<GameWinRecord>(gwr => gwr.GameId)
+                .HasOne(gr => gr.Game)
+                .WithMany(g => g.Rosters)
+                .HasForeignKey(gr => gr.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(x => x.WinnerRoster);
-            entity.HasIndex(x => x.GameId).IsUnique();
+            entity.HasIndex(x => x.Roster);
+            entity.HasIndex(x => x.GameId);
+
+            entity.HasIndex(x => new { x.GameId, x.Roster }).IsUnique();
         });
 
         modelBuilder.Entity<Match>(entity =>
@@ -387,11 +389,11 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(m => m.VerifiedByUserId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Relation: MatchWinRecord
+            // Relation: MatchRoster
             entity
-                .HasOne(m => m.WinRecord)
-                .WithOne(mwr => mwr.Match)
-                .HasForeignKey<MatchWinRecord>(mwr => mwr.MatchId)
+                .HasMany(m => m.Rosters)
+                .WithOne(mr => mr.Match)
+                .HasForeignKey(mr => mr.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Games
@@ -472,22 +474,23 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        modelBuilder.Entity<MatchWinRecord>(entity =>
+        modelBuilder.Entity<MatchRoster>(entity =>
         {
-            entity.Property(mwr => mwr.Id).UseIdentityAlwaysColumn();
+            entity.Property(mr => mr.Id).UseIdentityAlwaysColumn();
 
-            entity.Property(mwr => mwr.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+            entity.Property(mr => mr.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
             // Relation: Match
             entity
-                .HasOne(mwr => mwr.Match)
-                .WithOne(m => m.WinRecord)
-                .HasForeignKey<MatchWinRecord>(mwr => mwr.MatchId)
+                .HasOne(mr => mr.Match)
+                .WithMany(m => m.Rosters)
+                .HasForeignKey(mr => mr.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(mwr => mwr.LoserRoster);
-            entity.HasIndex(mwr => mwr.WinnerRoster);
-            entity.HasIndex(mwr => mwr.MatchId).IsUnique();
+            entity.HasIndex(mr => mr.Roster);
+            entity.HasIndex(mr => mr.MatchId);
+
+            entity.HasIndex(mr => new { mr.MatchId, mr.Roster }).IsUnique();
         });
 
         modelBuilder.Entity<OAuthClient>(entity =>

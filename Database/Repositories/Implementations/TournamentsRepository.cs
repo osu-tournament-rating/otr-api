@@ -51,7 +51,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .Include(t => t.PooledBeatmaps)
             .Include(t => t.PlayerTournamentStats)
             .Include(t => t.Matches)
-            .ThenInclude(m => m.WinRecord)
+            .ThenInclude(m => m.Rosters)
             .Include(t => t.Matches)
             .ThenInclude(m => m.PlayerMatchStats)
             .Include(t => t.Matches)
@@ -65,7 +65,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .ThenInclude(s => s.Player)
             .Include(t => t.Matches)
             .ThenInclude(m => m.Games)
-            .ThenInclude(g => g.WinRecord)
+            .ThenInclude(g => g.Rosters)
             .Where(t => t.ProcessingStatus != TournamentProcessingStatus.Done &&
                         t.ProcessingStatus != TournamentProcessingStatus.NeedsApproval)
             .OrderBy(t => t.LastProcessingDate)

@@ -1,3 +1,5 @@
+using Database.Entities;
+
 namespace Database.Enums.Verification;
 
 /// <summary>
@@ -19,7 +21,7 @@ public enum GameProcessingStatus
     /// <summary>
     /// The <see cref="Entities.Game"/> needs stat calculation
     /// </summary>
-    /// <remarks>Generates the <see cref="Entities.GameWinRecord"/></remarks>
+    /// <remarks>Generates the <see cref="GameRoster"/></remarks>
     NeedsStatCalculation = 2,
 
     /// <summary>

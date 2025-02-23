@@ -255,9 +255,9 @@ public static class QueryExtensions
 
     /// <summary>
     /// Includes navigation properties for a <see cref="Match"/>
-    /// <br/>Includes: <see cref="Match.WinRecord"/>, <see cref="Match.PlayerMatchStats"/>,
+    /// <br/>Includes: <see cref="Match.Rosters"/>, <see cref="Match.PlayerMatchStats"/>,
     /// <see cref="Match.PlayerRatingAdjustments"/>, <see cref="Match.Games"/>
-    /// (<see cref="Game.Scores"/>, <see cref="Game.Beatmap"/>, <see cref="Game.WinRecord"/>)
+    /// (<see cref="Game.Scores"/>, <see cref="Game.Beatmap"/>, <see cref="Game.Rosters"/>)
     /// </summary>
     /// <param name="verified">Whether all navigations must be verified</param>
     public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query, bool verified)
@@ -271,7 +271,7 @@ public static class QueryExtensions
         }
 
         return query
-            .Include(m => m.WinRecord)
+            .Include(m => m.Rosters)
             .Include(m => m.PlayerMatchStats)
             .Include(m => m.PlayerRatingAdjustments)
             .ThenInclude(ra => ra.Player)
@@ -288,7 +288,7 @@ public static class QueryExtensions
             .ThenInclude(g => g.Beatmap)
             .ThenInclude(b => b!.Creators)
             .Include(m => m.Games)
-            .ThenInclude(g => g.WinRecord);
+            .ThenInclude(g => g.Rosters);
     }
 
     /// <summary>
@@ -391,7 +391,7 @@ public static class QueryExtensions
 
     /// <summary>
     /// Includes navigation properties for a <see cref="Game"/>
-    /// <br/>Includes: <see cref="Game.Beatmap"/>, <see cref="Game.WinRecord"/>,
+    /// <br/>Includes: <see cref="Game.Beatmap"/>, <see cref="Game.Rosters"/>,
     /// <see cref="Game.Scores"/>, <see cref="Game.AdminNotes"/>,
     /// <see cref="Game.Audits"/>
     /// </summary>
@@ -406,7 +406,7 @@ public static class QueryExtensions
 
         return query
             .Include(g => g.Beatmap)
-            .Include(g => g.WinRecord)
+            .Include(g => g.Rosters)
             .Include(g => g.Scores)
             .ThenInclude(s => s.Player)
             .Include(g => g.Scores)

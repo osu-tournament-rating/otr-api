@@ -91,9 +91,9 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     public User? VerifiedByUser { get; set; }
 
     /// <summary>
-    /// The <see cref="MatchWinRecord"/>
+    /// The <see cref="MatchRoster"/>
     /// </summary>
-    public MatchWinRecord? WinRecord { get; set; }
+    public ICollection<MatchRoster> Rosters { get; set; } = [];
 
     /// <summary>
     /// A collection of the <see cref="Game"/>s played in the match

@@ -48,12 +48,12 @@ public class MatchStatsProcessor(
             }
         }
 
-        IEnumerable<Game> verifiedGames = [.. entity.Games.Where(g => g is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: GameProcessingStatus.Done })];
+        List<Game> verifiedGames = [.. entity.Games.Where(g => g is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: GameProcessingStatus.Done })];
 
         // Sanity check
         foreach (Game game in verifiedGames)
         {
-            if (game.WinRecord is not null)
+            if (game.Rosters is not null)
             {
                 continue;
             }
@@ -62,61 +62,81 @@ public class MatchStatsProcessor(
                 "A verified game that has completed processing contains unexpected stats, aborting" +
                 "[Game Id: {Id} | Has WinRecord: {HasWinRecord}]",
                 game.Id,
-                game.WinRecord is not null
+                game.Rosters is not null
             );
 
             return;
         }
 
-        entity.WinRecord = GenerateWinRecord(verifiedGames);
+        entity.Rosters = GenerateRosters(verifiedGames);
         entity.PlayerMatchStats = [.. GeneratePlayerMatchStats(verifiedGames)];
-
         entity.ProcessingStatus = MatchProcessingStatus.NeedsRatingProcessorData;
     }
 
     /// <summary>
-    /// Generates a <see cref="MatchWinRecord"/> for a given list of <see cref="Game"/>s
+    /// Generates a <see cref="MatchRoster"/> for a given list of <see cref="Game"/>s
     /// </summary>
     /// <param name="games">List of <see cref="Game"/>s</param>
     /// <exception cref="ArgumentException">
-    /// If any given <see cref="Game"/>s contains a null <see cref="Game.WinRecord"/>
+    /// If any given <see cref="Game"/>s contains a null <see cref="Game.Rosters"/>
     /// </exception>
-    public static MatchWinRecord GenerateWinRecord(IEnumerable<Game> games)
+    public static ICollection<MatchRoster> GenerateRosters(IEnumerable<Game> games)
     {
         var eGames = games.ToList();
 
-        if (eGames.Any(g => g.WinRecord is null))
+        if (eGames.Any(g => g.Rosters.Count == 0))
         {
             throw new ArgumentException(
-                $"The property {nameof(Game.WinRecord)} must not be null in any object in the list",
+                $"The property {nameof(Game.Rosters)} must not be empty for any {nameof(Game)} in this collection",
                 nameof(games)
             );
         }
 
-        Team winningTeam = eGames
-            .Select(g => g.WinRecord)
-            .GroupBy(gwr => gwr!.WinnerTeam)
-            .OrderByDescending(group => group.Count())
-            .Select(group => group.Key)
-            .First();
+        IEnumerable<IGrouping<Team, GameRoster>> teamRosters = eGames
+            .SelectMany(g => g.Rosters)
+            .GroupBy(gr => gr.Team);
 
-        Team losingTeam = winningTeam.OppositeTeam();
+        Dictionary<Team, int> pointsEarned = [];
 
-        return new MatchWinRecord
+        foreach (Game? game in eGames)
         {
-            WinnerTeam = winningTeam,
-            LoserTeam = losingTeam,
-            WinnerRoster = [.. eGames
-                .Select(g => g.WinRecord)
-                .SelectMany(gwr => gwr!.WinnerTeam == winningTeam ? gwr.WinnerRoster : gwr.LoserRoster)
-                .Distinct()],
-            LoserRoster = [.. eGames
-                .Select(g => g.WinRecord)
-                .SelectMany(gwr => gwr!.WinnerTeam == losingTeam ? gwr.WinnerRoster : gwr.LoserRoster)
-                .Distinct()],
-            WinnerScore = eGames.Count(g => g.WinRecord!.WinnerTeam == winningTeam),
-            LoserScore = eGames.Count(g => g.WinRecord!.WinnerTeam == losingTeam),
-        };
+            // Group the game by Team, then sum the value of all GameScores.
+            var teamScores = game.Scores
+                .Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done })
+                .GroupBy(s => s.Team)
+                .Select(g => new
+                {
+                    Team = g.Key,
+                    TotalScore = g.Sum(s => s.Score)
+                })
+                .ToList();
+
+            // Determine the winning team for this game.
+            Team? winningTeam = teamScores
+                .OrderByDescending(ts => ts.TotalScore)
+                .FirstOrDefault()?.Team;
+
+            // If a winning team is found, increment their points.
+            if (winningTeam != null)
+            {
+                pointsEarned.TryAdd(winningTeam.Value, 0);
+                pointsEarned[winningTeam.Value]++;
+            }
+        }
+
+        var rosters = new List<MatchRoster>();
+
+        foreach (IGrouping<Team, GameRoster?> gameRoster in teamRosters)
+        {
+            rosters.Add(new MatchRoster
+            {
+                Team = gameRoster.Key,
+                Roster = [.. gameRoster.SelectMany(gr => gr!.Roster).Distinct()],
+                Score = pointsEarned.GetValueOrDefault(gameRoster.Key, 0)
+            });
+        }
+
+        return rosters;
     }
 
     /// <summary>
@@ -126,8 +146,8 @@ public class MatchStatsProcessor(
     /// <param name="games">List of <see cref="Game"/>s</param>
     /// <exception cref="ArgumentException">
     /// If the given list of <see cref="Game"/>s is empty
-    /// <br/>If any given <see cref="Game"/>s contains a null <see cref="Game.WinRecord"/>
-    /// <br/>If the parent <see cref="Match"/> contains a null <see cref="Match.WinRecord"/>
+    /// <br/>If any given <see cref="Game"/>s contains a null <see cref="Game.Rosters"/>
+    /// <br/>If the parent <see cref="Match"/> contains a null <see cref="Match.Rosters"/>
     /// </exception>
     public static IEnumerable<PlayerMatchStats> GeneratePlayerMatchStats(IEnumerable<Game> games)
     {
@@ -138,18 +158,18 @@ public class MatchStatsProcessor(
             throw new ArgumentException("The list of games must not be empty", nameof(games));
         }
 
-        if (eGames.Any(g => g.WinRecord is null))
+        if (eGames.Any(g => g.Rosters.Count == 0))
         {
             throw new ArgumentException(
-                $"The property {nameof(Game.WinRecord)} must not be null in any object in the list",
+                $"The property {nameof(Game.Rosters)} must not be empty",
                 nameof(games)
             );
         }
 
-        if (eGames.Any(g => g.Match.WinRecord is null))
+        if (eGames.Any(g => g.Match.Rosters.Count == 0))
         {
             throw new ArgumentException(
-                $"The property {nameof(Game.Match.WinRecord)} must not be null in any object in the list",
+                $"The property {nameof(Game.Match.Rosters)} must not be empty",
                 nameof(games)
             );
         }
@@ -172,6 +192,14 @@ public class MatchStatsProcessor(
             {
                 (var playerId, List<GameScore> scores) = group;
 
+                // Get the first game's roster for the player's team
+                Game firstGame = scores.First().Game;
+                Team playerTeam = scores.First().Team;
+                var playerRoster = firstGame.Rosters.FirstOrDefault(r => r.Team == playerTeam)?.Roster ?? [];
+
+                // Get the match roster for the player's team
+                var matchRoster = firstGame.Match.Rosters.FirstOrDefault(r => r.Team == playerTeam)?.Roster ?? [];
+
                 return new PlayerMatchStats
                 {
                     MatchCost = matchCosts[playerId],
@@ -180,9 +208,9 @@ public class MatchStatsProcessor(
                     AverageMisses = scores.Average(s => s.CountMiss),
                     AverageAccuracy = scores.Average(s => s.Accuracy),
                     GamesPlayed = scores.Count,
-                    GamesWon = scores.Count(s => s.Game.WinRecord!.WinnerRoster.Contains(playerId)),
-                    GamesLost = scores.Count(s => s.Game.WinRecord!.LoserRoster.Contains(playerId)),
-                    Won = scores.First().Game.Match.WinRecord!.WinnerRoster.Contains(playerId),
+                    GamesWon = scores.Count(s => playerRoster.Contains(playerId)),
+                    GamesLost = scores.Count(s => matchRoster.Contains(playerId) && s.Game.Rosters.Any(r => r.Team != playerTeam && r.Roster.Contains(playerId))),
+                    Won = matchRoster.Contains(playerId),
                     // Reusing score groupings to ensure score filtering
                     TeammateIds = [.. playerScoreGroups
                         .Where(g => g.Item2.All(s => s.Team == scores.First().Team))

@@ -94,9 +94,9 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     public Beatmap? Beatmap { get; set; }
 
     /// <summary>
-    /// The win record for the game
+    /// The rosters which participated in the game
     /// </summary>
-    public GameWinRecord? WinRecord { get; set; }
+    public ICollection<GameRoster> Rosters { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="GameScore"/>s set in the <see cref="Game"/>

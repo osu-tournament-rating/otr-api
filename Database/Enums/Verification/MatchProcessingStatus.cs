@@ -1,3 +1,5 @@
+using Database.Entities;
+
 namespace Database.Enums.Verification;
 
 // TODO: Make increment processing status static method
@@ -26,7 +28,7 @@ public enum MatchProcessingStatus
     /// <summary>
     /// The <see cref="Entities.Match"/> needs stat calculation
     /// </summary>
-    /// <remarks>Generates the <see cref="Entities.MatchWinRecord"/> and <see cref="Entities.PlayerMatchStats"/></remarks>
+    /// <remarks>Generates the <see cref="MatchRoster"/> and <see cref="Entities.PlayerMatchStats"/></remarks>
     NeedsStatCalculation = 3,
 
     /// <summary>

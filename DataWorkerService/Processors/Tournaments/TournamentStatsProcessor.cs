@@ -57,7 +57,7 @@ public class TournamentStatsProcessor(
             if (match.PlayerMatchStats.Count != 0
                 && match.PlayerRatingAdjustments.Count != 0
                 && match.PlayerMatchStats.Count == match.PlayerRatingAdjustments.Count
-                && match.WinRecord is not null
+                && match.Rosters is not null
                )
             {
                 continue;
@@ -71,7 +71,7 @@ public class TournamentStatsProcessor(
                 match.PlayerMatchStats.Count,
                 nameof(match.PlayerRatingAdjustments),
                 match.PlayerRatingAdjustments.Count,
-                match.WinRecord is not null
+                match.Rosters is not null
             );
 
             return;
