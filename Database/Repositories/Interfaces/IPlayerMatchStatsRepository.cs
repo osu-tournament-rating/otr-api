@@ -20,6 +20,13 @@ public interface IPlayerMatchStatsRepository
         DateTime dateMax
     );
 
+    Task<IEnumerable<int>> GetTeammateIdsAsync(int playerId,
+        Ruleset ruleset,
+        DateTime? dateMin,
+        DateTime? dateMax);
+
+    Task<IEnumerable<int>> GetOpponentIdsAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax);
+
     Task<IEnumerable<PlayerMatchStats>> TeammateStatsAsync(
         int playerId,
         int teammateId,
@@ -36,8 +43,6 @@ public interface IPlayerMatchStatsRepository
         DateTime dateMax
     );
 
-    Task InsertAsync(IEnumerable<PlayerMatchStats> items);
-    Task TruncateAsync();
     Task<int> CountMatchesPlayedAsync(
         int playerId,
         Ruleset ruleset,

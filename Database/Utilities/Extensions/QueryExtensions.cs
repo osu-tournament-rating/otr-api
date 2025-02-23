@@ -10,14 +10,6 @@ namespace Database.Utilities.Extensions;
 
 public static class QueryExtensions
 {
-    /// <summary>
-    /// Gets the desired "page" of a query
-    /// </summary>
-    /// <param name="limit">Page size</param>
-    /// <param name="page">Desired page (zero-indexed)</param>
-    public static IQueryable<T> Page<T>(this IQueryable<T> query, int limit, int page) =>
-        query.AsQueryable().Skip(limit * page).Take(limit);
-
     #region Beatmaps
 
     public static IQueryable<Beatmap> IncludeChildren(this IQueryable<Beatmap> query) =>

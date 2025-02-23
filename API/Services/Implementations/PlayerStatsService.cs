@@ -97,9 +97,9 @@ public class PlayerStatsService(
         dateMax ??= DateTime.MaxValue;
 
         // Fetch match stats for the player
-        IList<PlayerMatchStats> stats = [.. (await playerMatchStatsRepository.GetForPlayerAsync(
+        IList<PlayerMatchStats> stats = [.. await playerMatchStatsRepository.GetForPlayerAsync(
             playerId, ruleset, dateMin.Value, dateMax.Value
-        ))];
+        )];
 
         // Calculate frequencies for teammates and opponents
         Dictionary<int, int> frequencyTeammates = CalculateFrequencies(stats, stat => stat.TeammateIds);
@@ -205,8 +205,9 @@ public class PlayerStatsService(
         DateTime dateMax
     )
     {
+        Dictionary<Mods, int> modScores = await gameScoresRepository.GetAverageModScoresAsync(playerId, ruleset, dateMin, dateMax);
         return (await gameScoresRepository.GetModFrequenciesAsync(playerId, ruleset, dateMin, dateMax))
-            .Select(kvp => new PlayerModStatsDTO { Mods = kvp.Key, Count = kvp.Value });
+            .Select(kvp => new PlayerModStatsDTO { Mods = kvp.Key, Count = kvp.Value, AverageScore = modScores[kvp.Key] });
     }
 
     private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(

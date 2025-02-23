@@ -13,10 +13,5 @@ public interface IGameScoresRepository : IRepository<GameScore>
     new Task<GameScore?> GetAsync(int id);
 
     Task<Dictionary<Mods, int>> GetModFrequenciesAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax);
-
-    Task<int> AverageTeammateScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime);
-    Task<int> AverageOpponentScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime);
-    Task<int> AverageModScoreAsync(int playerId, Ruleset ruleset, int mods, DateTime dateMin, DateTime dateMax);
-
-    Task<int> CountModScoresAsync(int playerId, Ruleset ruleset, int mods, DateTime dateMin, DateTime dateMax);
+    Task<Dictionary<Mods, int>> GetAverageModScoresAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax);
 }
