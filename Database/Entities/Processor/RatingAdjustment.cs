@@ -95,11 +95,11 @@ public class RatingAdjustment : EntityBase
     /// Total change in rating
     /// </summary>
     [NotMapped]
-    public double RatingDelta => RatingBefore - RatingAfter;
+    public double RatingDelta => RatingAfter - RatingBefore;
 
     /// <summary>
     /// Total change in volatility
     /// </summary>
     [NotMapped]
-    public double VolatilityDelta => VolatilityBefore - VolatilityAfter;
+    public double VolatilityDelta => VolatilityAfter - VolatilityBefore;
 }

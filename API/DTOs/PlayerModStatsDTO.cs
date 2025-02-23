@@ -10,5 +10,4 @@ public class PlayerModStatsDTO
     public Mods Mods { get; set; }
     public int Count { get; set; }
     public int AverageScore { get; set; }
-    public string ModString => Mods.ToString();
 }

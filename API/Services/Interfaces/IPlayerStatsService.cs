@@ -19,11 +19,11 @@ public interface IPlayerStatsService
     /// <param name="dateMax">End of date range</param>
     /// <returns>
     /// Complete player statistics, or null if no player is found for the given key.
-    /// If the player has no data for the given ruleset, the <see cref="PlayerStatsDTO"/> is returned with
-    /// all optional fields null. <see cref="PlayerStatsDTO.PlayerInfo"/> will always be populated if a
+    /// If the player has no data for the given ruleset, the <see cref="PlayerDashboardStatsDTO"/> is returned with
+    /// all optional fields null. <see cref="PlayerDashboardStatsDTO.PlayerInfo"/> will always be populated if a
     /// player is found.
     /// </returns>
-    Task<PlayerStatsDTO?> GetAsync(
+    Task<PlayerDashboardStatsDTO?> GetAsync(
         string key,
         Ruleset? ruleset = null,
         DateTime? dateMin = null,

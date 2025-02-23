@@ -45,7 +45,7 @@ public partial class PlayersController(
     /// Gets player by versatile search.
     /// If no ruleset is provided, the player's default is used. <see cref="Ruleset.Osu"/> is used as a fallback.
     /// If a ruleset is provided but the player has no data for it, all optional fields of the response will be null.
-    /// <see cref="PlayerStatsDTO.PlayerInfo"/> will always be populated as long as a player is found.
+    /// <see cref="PlayerDashboardStatsDTO.PlayerInfo"/> will always be populated as long as a player is found.
     /// If no date range is provided, gets all stats without considering date
     /// </remarks>
     /// <param name="key">Search key</param>
@@ -57,7 +57,7 @@ public partial class PlayersController(
     [HttpGet("{key}/stats")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<PlayerStatsDTO>(StatusCodes.Status200OK)]
+    [ProducesResponseType<PlayerDashboardStatsDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStatsAsync(
         string key,
         [FromQuery] Ruleset? ruleset = null,
@@ -65,7 +65,7 @@ public partial class PlayersController(
         [FromQuery] DateTime? dateMax = null
     )
     {
-        PlayerStatsDTO? result = await playerStatsService.GetAsync(
+        PlayerDashboardStatsDTO? result = await playerStatsService.GetAsync(
             key,
             ruleset,
             dateMin ?? DateTime.MinValue,

@@ -15,7 +15,7 @@ public interface IPlayerRatingsService
     /// <returns></returns>
     Task<IEnumerable<PlayerRatingStatsDTO?>> GetAsync(long osuPlayerId);
 
-    Task<PlayerRatingStatsDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset);
+    Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset);
 
     Task<IEnumerable<PlayerRatingStatsDTO?>> GetLeaderboardAsync(
         Ruleset ruleset,

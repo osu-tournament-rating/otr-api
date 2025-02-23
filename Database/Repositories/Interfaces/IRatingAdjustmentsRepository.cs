@@ -3,7 +3,7 @@ using Database.Enums;
 
 namespace Database.Repositories.Interfaces;
 
-public interface IMatchRatingStatsRepository : IRepository<RatingAdjustment>
+public interface IRatingAdjustmentsRepository : IRepository<RatingAdjustment>
 {
     /// <summary>
     ///  Returns one entry per match, with each entry being all matches that occur on the same day.

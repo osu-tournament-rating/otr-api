@@ -24,6 +24,13 @@ public interface IPlayerRatingsRepository : IRepository<PlayerRating>
     Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset);
 
     /// <summary>
+    /// Get a list of rulesets for which the player has a rating
+    /// </summary>
+    /// <param name="playerId">Player id</param>
+    /// <returns>All rulesets which the player has a rating for</returns>
+    Task<IList<Ruleset>> GetActiveRulesetsAsync(int playerId);
+
+    /// <summary>
     ///  The highest numeric (aka the worst) rank of a player in our system.
     /// </summary>
     /// <param name="country"></param>

@@ -14,8 +14,8 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
     public async Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(
         int playerId,
         Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
+        DateTime? dateMin,
+        DateTime? dateMax
     )
     {
         return await context
@@ -50,8 +50,8 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         int playerId,
         int teammateId,
         Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
+        DateTime? dateMin,
+        DateTime? dateMax
     ) =>
         await context
             .PlayerMatchStats
@@ -67,8 +67,8 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         int playerId,
         int opponentId,
         Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
+        DateTime? dateMin,
+        DateTime? dateMax
     ) =>
         await context
             .PlayerMatchStats
@@ -129,4 +129,11 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
 
         return matchesWon / (double)matchesPlayed;
     }
+
+    public async Task<Dictionary<int, double>> GetMatchCostsAsync(int playerId, Ruleset ruleset,
+        DateTime? dateMin = null, DateTime? dateMax = null) =>
+        await context.PlayerMatchStats
+            .ApplyCommonFilters(ruleset, dateMin, dateMax)
+            .Where(pms => pms.PlayerId == playerId)
+            .ToDictionaryAsync(k => k.MatchId, v => v.MatchCost);
 }

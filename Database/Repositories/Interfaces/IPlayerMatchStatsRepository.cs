@@ -16,8 +16,8 @@ public interface IPlayerMatchStatsRepository
     Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(
         int playerId,
         Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
+        DateTime? dateMin,
+        DateTime? dateMax
     );
 
     Task<IEnumerable<int>> GetTeammateIdsAsync(int playerId,
@@ -31,16 +31,16 @@ public interface IPlayerMatchStatsRepository
         int playerId,
         int teammateId,
         Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
+        DateTime? dateMin,
+        DateTime? dateMax
     );
 
     Task<IEnumerable<PlayerMatchStats>> OpponentStatsAsync(
         int playerId,
         int opponentId,
         Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
+        DateTime? dateMin,
+        DateTime? dateMax
     );
 
     Task<int> CountMatchesPlayedAsync(
@@ -61,4 +61,8 @@ public interface IPlayerMatchStatsRepository
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
+
+    Task<Dictionary<int, double>> GetMatchCostsAsync(int playerId,
+        Ruleset ruleset, DateTime? dateMin = null,
+        DateTime? dateMax = null);
 }

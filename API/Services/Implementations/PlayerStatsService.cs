@@ -12,15 +12,15 @@ namespace API.Services.Implementations;
 
 public class PlayerStatsService(
     IMapper mapper,
-    IApiMatchRatingStatsRepository ratingStatsRepository,
     IApiTournamentsRepository tournamentsRepository,
     IGameScoresRepository gameScoresRepository,
     IPlayerMatchStatsRepository playerMatchStatsRepository,
     IPlayerRatingsService playerRatingsService,
-    IPlayersRepository playersRepository
+    IPlayersRepository playersRepository,
+    IRatingAdjustmentsRepository ratingAdjustmentsRepository
 ) : IPlayerStatsService
 {
-    public async Task<PlayerStatsDTO?> GetAsync(
+    public async Task<PlayerDashboardStatsDTO?> GetAsync(
         string key,
         Ruleset? ruleset = null,
         DateTime? dateMin = null,
@@ -45,7 +45,7 @@ public class PlayerStatsService(
 
         if (ratingStats is null)
         {
-            return new PlayerStatsDTO { PlayerInfo = playerInfo, Ruleset = ruleset.Value };
+            return new PlayerDashboardStatsDTO { PlayerInfo = playerInfo, Ruleset = ruleset.Value };
         }
 
         AggregatePlayerMatchStatsDTO? matchStats =
@@ -56,16 +56,9 @@ public class PlayerStatsService(
         PlayerTournamentStatsDTO tournamentStats =
             await GetTournamentStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
 
-        PlayerRatingChartDTO ratingChart = await ratingStatsRepository.GetRatingChartAsync(
-            player.Id,
-            ruleset.Value,
-            dateMin.Value,
-            dateMax.Value
-        );
-
         Dictionary<bool, List<PlayerFrequencyDTO>> frequentTeammatesOpponents = await GetFrequentMatchupsAsync(player.Id, ruleset.Value, dateMin, dateMax);
 
-        return new PlayerStatsDTO
+        return new PlayerDashboardStatsDTO
         {
             PlayerInfo = playerInfo,
             Ruleset = ruleset.Value,
@@ -73,7 +66,6 @@ public class PlayerStatsService(
             MatchStats = matchStats,
             ModStats = modStats,
             TournamentStats = tournamentStats,
-            RatingChart = ratingChart,
             FrequentTeammates = frequentTeammatesOpponents[true],
             FrequentOpponents = frequentTeammatesOpponents[false]
         };
@@ -82,7 +74,7 @@ public class PlayerStatsService(
     public async Task<double> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null,
         DateTime? dateMax = null)
     {
-        return (await ratingStatsRepository.GetForPlayerAsync(playerId, ruleset, dateMin, dateMax))
+        return (await ratingAdjustmentsRepository.GetForPlayerAsync(playerId, ruleset, dateMin, dateMax))
             .Max(ra => ra.RatingAfter);
     }
 
@@ -171,7 +163,7 @@ public class PlayerStatsService(
 
     private async Task<PlayerRatingStatsDTO?> GetCurrentAsync(int playerId, Ruleset ruleset)
     {
-        PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(null, playerId, ruleset);
+        PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(playerId, ruleset);
 
         if (ratingStats == null)
         {
@@ -256,7 +248,7 @@ public class PlayerStatsService(
     {
         var matchStats = (await playerMatchStatsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax)).ToList();
         var adjustments =
-            (await ratingStatsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax))
+            (await ratingAdjustmentsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax))
             .GroupBy(ra => ra.Timestamp)
             .SelectMany(ra => ra)
             .ToList();

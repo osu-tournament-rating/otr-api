@@ -23,8 +23,11 @@ public class MapperProfile : Profile
 
         CreateMap<GameScore, GameScoreDTO>();
 
+        CreateMap<Match, MatchCompactDTO>()
+            .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset));
+
         CreateMap<Match, MatchDTO>()
-            .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset))
+            .IncludeBase<Match, MatchCompactDTO>()
             .ForMember(x => x.Players, opt => opt.Ignore());
 
         CreateMap<Match, MatchSubmissionStatusDTO>();

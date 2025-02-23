@@ -7,7 +7,7 @@ namespace API.DTOs;
 /// Represents a collection of statistics for a player in a ruleset
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class PlayerStatsDTO
+public class PlayerDashboardStatsDTO
 {
     /// <summary>
     /// Player info
@@ -48,9 +48,4 @@ public class PlayerStatsDTO
     /// List of frequencies of the player's opponents
     /// </summary>
     public IEnumerable<PlayerFrequencyDTO>? FrequentOpponents { get; init; }
-
-    /// <summary>
-    /// Rating chart for the player
-    /// </summary>
-    public PlayerRatingChartDTO? RatingChart { get; init; }
 }

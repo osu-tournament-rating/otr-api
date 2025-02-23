@@ -13,37 +13,37 @@ namespace API.Services.Implementations;
 public class PlayerRatingsService(
     IApiPlayerRatingsRepository playerRatingsRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
-    IPlayersRepository playerRepository,
+    IPlayersRepository playersRepository,
     ITournamentsService tournamentsService,
     IMapper mapper
 ) : IPlayerRatingsService
 {
     public async Task<IEnumerable<PlayerRatingStatsDTO?>> GetAsync(long osuPlayerId)
     {
-        var id = await playerRepository.GetIdAsync(osuPlayerId);
+        var id = await playersRepository.GetIdAsync(osuPlayerId);
 
         if (!id.HasValue)
         {
             return [];
         }
 
-        IEnumerable<PlayerRating> playerRatings = await playerRatingsRepository.GetAsync(osuPlayerId);
-        var ret = new List<PlayerRatingStatsDTO?>();
+        IList<Ruleset> activeRulesets = await playerRatingsRepository.GetActiveRulesetsAsync(id.Value);
+        var allRulesetRatings = new List<PlayerRatingStatsDTO?>();
 
-        foreach (PlayerRating stat in playerRatings)
+        foreach (Ruleset ruleset in activeRulesets)
         {
             // One per ruleset
-            ret.Add(await GetAsync(stat, id.Value, stat.Ruleset));
+            allRulesetRatings.Add(await GetAsync(id.Value, ruleset));
         }
 
-        return ret;
+        return allRulesetRatings;
     }
 
-    public async Task<PlayerRatingStatsDTO?> GetAsync(PlayerRating? currentStats, int playerId, Ruleset ruleset)
+    public async Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset)
     {
-        currentStats ??= await playerRatingsRepository.GetAsync(playerId, ruleset);
+        PlayerRating? currentStats = await playerRatingsRepository.GetAsync(playerId, ruleset);
 
-        if (currentStats == null)
+        if (currentStats is null)
         {
             return null;
         }
@@ -101,7 +101,7 @@ public class PlayerRatingsService(
 
         foreach (PlayerRating rating in leaderboardRatings)
         {
-            leaderboard.Add(await GetAsync(rating, rating.PlayerId, ruleset));
+            leaderboard.Add(await GetAsync(rating.PlayerId, ruleset));
         }
 
         return leaderboard;

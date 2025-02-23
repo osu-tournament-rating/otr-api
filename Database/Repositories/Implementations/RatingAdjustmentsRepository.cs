@@ -9,8 +9,8 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class MatchRatingStatsRepository(OtrContext context)
-    : RepositoryBase<RatingAdjustment>(context), IMatchRatingStatsRepository
+public class RatingAdjustmentsRepository(OtrContext context)
+    : RepositoryBase<RatingAdjustment>(context), IRatingAdjustmentsRepository
 {
     private readonly OtrContext _context = context;
 
