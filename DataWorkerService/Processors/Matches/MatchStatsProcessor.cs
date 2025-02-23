@@ -53,16 +53,15 @@ public class MatchStatsProcessor(
         // Sanity check
         foreach (Game game in verifiedGames)
         {
-            if (game.Rosters is not null)
+            if (game.Rosters.Count != 0)
             {
                 continue;
             }
 
             logger.LogWarning(
-                "A verified game that has completed processing contains unexpected stats, aborting" +
-                "[Game Id: {Id} | Has WinRecord: {HasWinRecord}]",
-                game.Id,
-                game.Rosters is not null
+                "A verified game that has completed processing but does not contain any rosters, aborting " +
+                "[Game Id: {Id}]",
+                game.Id
             );
 
             return;
@@ -149,7 +148,7 @@ public class MatchStatsProcessor(
     /// <br/>If any given <see cref="Game"/>s contains a null <see cref="Game.Rosters"/>
     /// <br/>If the parent <see cref="Match"/> contains a null <see cref="Match.Rosters"/>
     /// </exception>
-    public static IEnumerable<PlayerMatchStats> GeneratePlayerMatchStats(IEnumerable<Game> games)
+    private static IEnumerable<PlayerMatchStats> GeneratePlayerMatchStats(IEnumerable<Game> games)
     {
         var eGames = games.ToList();
 
@@ -200,6 +199,7 @@ public class MatchStatsProcessor(
                 // Get the match roster for the player's team
                 var matchRoster = firstGame.Match.Rosters.FirstOrDefault(r => r.Team == playerTeam)?.Roster ?? [];
 
+                // TODO: GamesWon / GamesLost calculation does not appear to be correct
                 return new PlayerMatchStats
                 {
                     MatchCost = matchCosts[playerId],
@@ -208,7 +208,7 @@ public class MatchStatsProcessor(
                     AverageMisses = scores.Average(s => s.CountMiss),
                     AverageAccuracy = scores.Average(s => s.Accuracy),
                     GamesPlayed = scores.Count,
-                    GamesWon = scores.Count(s => playerRoster.Contains(playerId)),
+                    GamesWon = scores.Count(_ => playerRoster.Contains(playerId)),
                     GamesLost = scores.Count(s => matchRoster.Contains(playerId) && s.Game.Rosters.Any(r => r.Team != playerTeam && r.Roster.Contains(playerId))),
                     Won = matchRoster.Contains(playerId),
                     // Reusing score groupings to ensure score filtering

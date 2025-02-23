@@ -25,10 +25,27 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
         return await query.FirstOrDefaultAsync(gs => gs.Id == id);
     }
 
+    public async Task<Dictionary<Mods, int>> GetModFrequenciesAsync(int playerId, Ruleset ruleset, DateTime? dateMin,
+        DateTime? dateMax)
+    {
+        dateMin ??= DateTime.MinValue;
+        dateMax ??= DateTime.MaxValue;
+
+        return await
+            _context.GameScores
+                .WhereRuleset(ruleset)
+                .WhereVerified()
+                .Where(gs =>
+                    gs.PlayerId == playerId && gs.Game.Match.StartTime >= dateMin && gs.Game.Match.EndTime <= dateMax)
+                .GroupBy(gs => gs.Mods)
+                .ToDictionaryAsync(grouping => grouping.Key, v => v.Count());
+    }
+
     public async Task<int> AverageTeammateScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
     {
         return (int)await _context
-            .GameScores.WhereVerified()
+            .GameScores
+            .WhereVerified()
             .AfterDate(fromTime)
             .WhereRuleset(ruleset)
             .WhereTeammateOf(osuPlayerId)

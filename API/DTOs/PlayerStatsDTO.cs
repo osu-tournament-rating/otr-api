@@ -32,7 +32,7 @@ public class PlayerStatsDTO
     /// <summary>
     /// Mod stats for the player
     /// </summary>
-    public PlayerModStatsDTO? ModStats { get; init; }
+    public IEnumerable<PlayerModStatsDTO>? ModStats { get; init; }
 
     /// <summary>
     /// Tournament participation and performance stats for the player

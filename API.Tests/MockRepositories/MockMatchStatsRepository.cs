@@ -1,10 +1,10 @@
-using API.Repositories.Interfaces;
 using Database.Enums;
+using Database.Repositories.Interfaces;
 using Moq;
 
 namespace APITests.MockRepositories;
 
-public class MockMatchStatsRepository : Mock<IApiPlayerMatchStatsRepository>
+public class MockMatchStatsRepository : Mock<IPlayerMatchStatsRepository>
 {
     public MockMatchStatsRepository SetupCountMatchesPlayed()
     {

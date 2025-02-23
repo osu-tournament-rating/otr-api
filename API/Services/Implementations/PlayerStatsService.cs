@@ -11,14 +11,13 @@ using Database.Repositories.Interfaces;
 namespace API.Services.Implementations;
 
 public class PlayerStatsService(
-    IPlayerRatingsService playerRatingsService,
-    IMatchRosterRepository matchRosterRepository,
-    IApiPlayerMatchStatsRepository matchStatsRepository,
-    IPlayersRepository playersRepository,
+    IMapper mapper,
     IApiMatchRatingStatsRepository ratingStatsRepository,
     IApiTournamentsRepository tournamentsRepository,
+    IGameScoresRepository gameScoresRepository,
     IPlayerMatchStatsRepository playerMatchStatsRepository,
-    IMapper mapper
+    IPlayerRatingsService playerRatingsService,
+    IPlayersRepository playersRepository
 ) : IPlayerStatsService
 {
     public async Task<PlayerStatsDTO?> GetAsync(
@@ -52,8 +51,7 @@ public class PlayerStatsService(
         AggregatePlayerMatchStatsDTO? matchStats =
             await GetMatchStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
 
-        PlayerModStatsDTO modStats =
-            await GetModStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
+        IEnumerable<PlayerModStatsDTO> modStats = await GetModStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
 
         PlayerTournamentStatsDTO tournamentStats =
             await GetTournamentStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
@@ -180,8 +178,8 @@ public class PlayerStatsService(
             return null;
         }
 
-        var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
-        var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
+        var matchesPlayed = await playerMatchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
+        var winRate = await playerMatchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
 
         ratingStats.MatchesPlayed = matchesPlayed;
         ratingStats.WinRate = winRate;
@@ -200,12 +198,16 @@ public class PlayerStatsService(
         return ratingStats;
     }
 
-    private async Task<PlayerModStatsDTO> GetModStatsAsync(
+    private async Task<IEnumerable<PlayerModStatsDTO>> GetModStatsAsync(
         int playerId,
         Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
-    ) => await matchStatsRepository.GetModStatsAsync(playerId, ruleset, dateMin, dateMax);
+    )
+    {
+        return (await gameScoresRepository.GetModFrequenciesAsync(playerId, ruleset, dateMin, dateMax))
+            .Select(kvp => new PlayerModStatsDTO { Mods = kvp.Key, Count = kvp.Value });
+    }
 
     private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(
         int playerId,
@@ -251,7 +253,7 @@ public class PlayerStatsService(
         DateTime dateMax
     )
     {
-        var matchStats = (await matchStatsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax)).ToList();
+        var matchStats = (await playerMatchStatsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax)).ToList();
         var adjustments =
             (await ratingStatsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax))
             .GroupBy(ra => ra.Timestamp)
@@ -265,7 +267,7 @@ public class PlayerStatsService(
 
         /**
          * If the adjustments list contains an initial rating, we need to subtract the
-         * rating gained value by the initial rating. Essentially we are displaying
+         * rating gained value by the initial rating. Essentially we are displaying`
          * the net gain in rating without considering the initial rating.
          */
         var initialRatingValue = adjustments

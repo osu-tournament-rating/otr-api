@@ -19,7 +19,7 @@ public class MapperProfile : Profile
 
         CreateMap<Game, GameDTO>()
             .ForMember(x => x.Players, opt => opt.Ignore());
-        CreateMap<GameRoster, GameWinRecordDTO>();
+        CreateMap<GameRoster, GameRosterDTO>();
 
         CreateMap<GameScore, GameScoreDTO>();
 

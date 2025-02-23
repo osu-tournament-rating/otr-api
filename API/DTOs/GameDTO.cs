@@ -92,7 +92,7 @@ public class GameDTO
     /// <summary>
     /// Win record
     /// </summary>
-    public GameWinRecordDTO? WinRecord { get; init; }
+    public IEnumerable<GameRosterDTO> Rosters { get; init; } = [];
 
     /// <summary>
     /// All participating players
