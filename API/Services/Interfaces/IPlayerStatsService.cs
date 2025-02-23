@@ -30,22 +30,6 @@ public interface IPlayerStatsService
         DateTime? dateMax = null
     );
 
-    Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(
-        int playerId,
-        int teammateId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
-    );
-
-    Task<PlayerOpponentComparisonDTO> GetOpponentComparisonAsync(
-        int playerId,
-        int opponentId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
-    );
-
     /// <summary>
     /// Returns the peak rating of a player for a given ruleset and date range.
     /// </summary>
@@ -55,4 +39,16 @@ public interface IPlayerStatsService
     /// <param name="dateMax">The maximum of the date range</param>
     /// <returns></returns>
     Task<double> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
+
+    /// <summary>
+    /// Creates a dictionary mapping of player frequencies. The values mapping to 'true' in the result dictionary
+    /// are the player's teammates, the values mapped to 'false' are the player's opponents.
+    /// </summary>
+    /// <param name="playerId">Player id</param>
+    /// <param name="ruleset">Ruleset</param>
+    /// <param name="dateMin">Minimum lookup date</param>
+    /// <param name="dateMax">Maximum lookup date</param>
+    /// <returns></returns>
+    Task<Dictionary<bool, List<PlayerFrequencyDTO>>> GetFrequentMatchupsAsync(int playerId, Ruleset ruleset,
+        DateTime? dateMin = null, DateTime? dateMax = null);
 }

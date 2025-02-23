@@ -49,6 +49,7 @@ using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
+using IMatchRosterRepository = Database.Repositories.Interfaces.IMatchRosterRepository;
 
 #region WebApplicationBuilder Configuration
 

@@ -12,91 +12,15 @@ namespace API.Services.Implementations;
 
 public class PlayerStatsService(
     IPlayerRatingsService playerRatingsService,
-    IApiMatchRosterRepository matchRosterRepository,
+    IMatchRosterRepository matchRosterRepository,
     IApiPlayerMatchStatsRepository matchStatsRepository,
-    IPlayersRepository playerRepository,
+    IPlayersRepository playersRepository,
     IApiMatchRatingStatsRepository ratingStatsRepository,
     IApiTournamentsRepository tournamentsRepository,
+    IPlayerMatchStatsRepository playerMatchStatsRepository,
     IMapper mapper
 ) : IPlayerStatsService
 {
-    public async Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(
-        int playerId,
-        int teammateId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
-    )
-    {
-        var teammateRatingStats = (
-            await ratingStatsRepository.TeammateRatingStatsAsync(
-                playerId,
-                teammateId,
-                ruleset,
-                dateMin,
-                dateMax
-            )
-        ).ToList();
-        var teammateMatchStats = (
-            await matchStatsRepository.TeammateStatsAsync(playerId, teammateId, ruleset, dateMin, dateMax)
-        ).ToList();
-
-        var matchesPlayed = teammateMatchStats.Count;
-        var matchesWon = teammateMatchStats.Sum(x => x.Won ? 1 : 0);
-        var matchesLost = teammateMatchStats.Sum(x => x.Won ? 0 : 1);
-        var winRate = matchesWon / (double)matchesPlayed;
-
-        return new PlayerTeammateComparisonDTO
-        {
-            PlayerId = playerId,
-            TeammateId = teammateId,
-            GamesPlayed = teammateMatchStats.Sum(x => x.GamesPlayed),
-            MatchesPlayed = matchesPlayed,
-            MatchesWon = matchesWon,
-            MatchesLost = matchesLost,
-            RatingDelta = teammateRatingStats.Sum(x => x.RatingDelta),
-            WinRate = winRate
-        };
-    }
-
-    public async Task<PlayerOpponentComparisonDTO> GetOpponentComparisonAsync(
-        int playerId,
-        int opponentId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
-    )
-    {
-        var opponentRatingStats = (
-            await ratingStatsRepository.OpponentRatingStatsAsync(
-                playerId,
-                opponentId,
-                ruleset,
-                dateMin,
-                dateMax
-            )
-        ).ToList();
-        var opponentMatchStats = (
-            await matchStatsRepository.OpponentStatsAsync(playerId, opponentId, ruleset, dateMin, dateMax)
-        ).ToList();
-
-        var matchesWon = opponentMatchStats.Sum(x => x.Won ? 1 : 0);
-        var matchesPlayed = opponentMatchStats.Count;
-        var winRate = matchesWon / (double)matchesPlayed;
-
-        return new PlayerOpponentComparisonDTO
-        {
-            PlayerId = playerId,
-            OpponentId = opponentId,
-            GamesPlayed = opponentMatchStats.Sum(x => x.GamesPlayed),
-            MatchesPlayed = matchesPlayed,
-            MatchesWon = matchesWon,
-            MatchesLost = opponentMatchStats.Sum(x => x.Won ? 0 : 1),
-            RatingDelta = opponentRatingStats.Sum(x => x.RatingDelta),
-            WinRate = winRate
-        };
-    }
-
     public async Task<PlayerStatsDTO?> GetAsync(
         string key,
         Ruleset? ruleset = null,
@@ -107,7 +31,7 @@ public class PlayerStatsService(
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        Player? player = await playerRepository.GetVersatileAsync(key, true);
+        Player? player = await playersRepository.GetVersatileAsync(key, true);
 
         if (player is null)
         {
@@ -141,19 +65,7 @@ public class PlayerStatsService(
             dateMax.Value
         );
 
-        IEnumerable<PlayerFrequencyDTO> frequentTeammates = await matchRosterRepository.GetFrequentTeammatesAsync(
-            player.Id,
-            ruleset.Value,
-            dateMin.Value,
-            dateMax.Value
-        );
-
-        IEnumerable<PlayerFrequencyDTO> frequentOpponents = await matchRosterRepository.GetFrequentOpponentsAsync(
-            player.Id,
-            ruleset.Value,
-            dateMin.Value,
-            dateMax.Value
-        );
+        Dictionary<bool, List<PlayerFrequencyDTO>> frequentTeammatesOpponents = await GetFrequentMatchupsAsync(player.Id, ruleset.Value, dateMin, dateMax);
 
         return new PlayerStatsDTO
         {
@@ -164,8 +76,8 @@ public class PlayerStatsService(
             ModStats = modStats,
             TournamentStats = tournamentStats,
             RatingChart = ratingChart,
-            FrequentTeammates = frequentTeammates,
-            FrequentOpponents = frequentOpponents
+            FrequentTeammates = frequentTeammatesOpponents[true],
+            FrequentOpponents = frequentTeammatesOpponents[false]
         };
     }
 
@@ -175,6 +87,89 @@ public class PlayerStatsService(
         return (await ratingStatsRepository.GetForPlayerAsync(playerId, ruleset, dateMin, dateMax))
             .Max(ra => ra.RatingAfter);
     }
+
+    public async Task<Dictionary<bool, List<PlayerFrequencyDTO>>> GetFrequentMatchupsAsync(
+        int playerId,
+        Ruleset ruleset,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    )
+    {
+        dateMin ??= DateTime.MinValue;
+        dateMax ??= DateTime.MaxValue;
+
+        // Fetch match stats for the player
+        IList<PlayerMatchStats> stats = [.. (await playerMatchStatsRepository.GetForPlayerAsync(
+            playerId, ruleset, dateMin.Value, dateMax.Value
+        ))];
+
+        // Calculate frequencies for teammates and opponents
+        Dictionary<int, int> frequencyTeammates = CalculateFrequencies(stats, stat => stat.TeammateIds);
+        Dictionary<int, int> frequencyOpponents = CalculateFrequencies(stats, stat => stat.OpponentIds);
+
+        // Fetch all unique player IDs (teammates and opponents)
+        var uniquePlayerIds = frequencyTeammates.Keys.Union(frequencyOpponents.Keys).Distinct().ToList();
+
+        // Fetch player data in a single query
+        var players = (await playersRepository.GetAsync(uniquePlayerIds))
+                .ToDictionary(k => k.Id, v => v);
+
+        // Create the result dictionary
+        var result = new Dictionary<bool, List<PlayerFrequencyDTO>>
+        {
+            [true] = frequencyTeammates.Count > 0 ? CreatePlayerFrequencyList(frequencyTeammates, players) : [],
+            [false] = frequencyOpponents.Count > 0 ? CreatePlayerFrequencyList(frequencyOpponents, players) : []
+        };
+
+        if (result[true].Count + result[false].Count != uniquePlayerIds.Count)
+        {
+            throw new InvalidOperationException("Mismatch between frequency counts and player data. Some players could not be fetched from the database.");
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Helper method to calculate frequencies of players (teammates or opponents).
+    /// </summary>
+    private static Dictionary<int, int> CalculateFrequencies(
+        IEnumerable<PlayerMatchStats> stats,
+        Func<PlayerMatchStats, IEnumerable<int>> playerIdsSelector
+    )
+    {
+        var frequencyDict = new Dictionary<int, int>();
+
+        foreach (PlayerMatchStats stat in stats)
+        {
+            foreach (var id in playerIdsSelector(stat))
+            {
+                frequencyDict.TryAdd(id, 0);
+                frequencyDict[id]++;
+            }
+        }
+
+        return frequencyDict;
+    }
+
+    /// <summary>
+    /// Helper method to create a list of PlayerFrequencyDTO objects.
+    /// </summary>
+    private List<PlayerFrequencyDTO> CreatePlayerFrequencyList(
+        Dictionary<int, int> frequencyDict,
+        Dictionary<int, Player> players
+    )
+    {
+        return
+        [
+            .. frequencyDict
+                .Where(kvp => players.ContainsKey(kvp.Key)) // Ensure the player exists
+                .Select(kvp => new PlayerFrequencyDTO
+                {
+                    Player = mapper.Map<PlayerCompactDTO>(players[kvp.Key]), Frequency = kvp.Value
+                })
+        ];
+    }
+
 
     private async Task<PlayerRatingStatsDTO?> GetCurrentAsync(int playerId, Ruleset ruleset)
     {
