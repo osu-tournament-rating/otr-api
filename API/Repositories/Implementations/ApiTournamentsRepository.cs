@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Enums;
 using API.Repositories.Interfaces;
+using AutoMapper;
 using Database;
 using Database.Enums;
 using Database.Enums.Verification;
@@ -11,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class ApiTournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository) :
+public class ApiTournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository, IMapper mapper) :
     TournamentsRepository(context, beatmapsRepository), IApiTournamentsRepository
 {
     private readonly OtrContext _context = context;
@@ -65,12 +66,8 @@ public class ApiTournamentsRepository(OtrContext context, IBeatmapsRepository be
             .Select(t => new PlayerTournamentMatchCostDTO
             {
                 PlayerId = playerId,
-                Ruleset = ruleset,
-                TournamentId = t.Id,
-                TournamentName = t.Name,
-                TournamentAcronym = t.Abbreviation,
+                Tournament = mapper.Map<TournamentCompactDTO>(t),
                 MatchCost = t.Matches
-                    .Where(m => m.VerificationStatus == VerificationStatus.Verified)
                     .SelectMany(m => m.PlayerMatchStats)
                     .Where(pms => pms.PlayerId == playerId)
                     .Average(pms => pms.MatchCost)

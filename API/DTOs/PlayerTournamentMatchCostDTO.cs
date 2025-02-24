@@ -16,24 +16,9 @@ public class PlayerTournamentMatchCostDTO
     public int PlayerId { get; set; }
 
     /// <summary>
-    /// Id of the tournament
+    /// The associated tournament
     /// </summary>
-    public int TournamentId { get; set; }
-
-    /// <summary>
-    /// Name of the tournament
-    /// </summary>
-    public string TournamentName { get; set; } = null!;
-
-    /// <summary>
-    /// Abbreviated name of the tournament
-    /// </summary>
-    public string TournamentAcronym { get; set; } = null!;
-
-    /// <summary>
-    /// Ruleset of the tournament
-    /// </summary>
-    public Ruleset Ruleset { get; set; }
+    public TournamentCompactDTO Tournament { get; set; } = null!;
 
     /// <summary>
     /// Average match cost across the tournament for the player

@@ -281,6 +281,8 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         return _context.Tournaments
             .Include(t => t.Matches)
             .ThenInclude(m => m.PlayerRatingAdjustments)
+            .Include(t => t.SubmittedByUser)
+            .Include(t => t.VerifiedByUser)
             .Where(t =>
                 t.Ruleset == ruleset
                 // Contains *any* match that is:
