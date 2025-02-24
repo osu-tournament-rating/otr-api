@@ -157,6 +157,7 @@ public class PlayerStatsService(
                 {
                     Player = mapper.Map<PlayerCompactDTO>(players[kvp.Key]), Frequency = kvp.Value
                 })
+                .OrderByDescending(pf => pf.Frequency)
         ];
     }
 
