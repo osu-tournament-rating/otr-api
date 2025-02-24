@@ -269,8 +269,7 @@ public class PlayerStatsService(
 
         return new AggregatePlayerMatchStatsDTO
         {
-            // TODO: Different way of calcing this
-            // AverageMatchCostAggregate = ratingStats.Average(x => x.MatchCost),
+            AverageMatchCostAggregate = matchStats.Average(x => x.MatchCost),
             HighestRating = adjustments.Max(ra => ra.RatingAfter),
             RatingGained = adjustments.Sum(ra => ra.RatingDelta) - initialRatingValue,
             GamesWon = matchStats.Sum(ra => ra.GamesWon),
@@ -278,9 +277,6 @@ public class PlayerStatsService(
             GamesPlayed = matchStats.Sum(ra => ra.GamesPlayed),
             MatchesWon = matchStats.Count(ra => ra.Won),
             MatchesLost = matchStats.Count(ra => !ra.Won),
-            // TODO: Different way of calcing this
-            // AverageTeammateRating = ratingStats.Average(x => x.AverageTeammateRating),
-            // AverageOpponentRating = ratingStats.Average(x => x.AverageOpponentRating),
             BestWinStreak = GetHighestWinStreak(matchStats),
             MatchAverageScoreAggregate = matchStats.Average(pms => pms.AverageScore),
             MatchAverageAccuracyAggregate = matchStats.Average(pms => pms.AverageAccuracy),
