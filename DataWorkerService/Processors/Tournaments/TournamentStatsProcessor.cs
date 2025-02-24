@@ -46,7 +46,7 @@ public class TournamentStatsProcessor(
             }
         }
 
-        IEnumerable<Match> verifiedMatches = [.. entity.Matches
+        List<Match> verifiedMatches = [.. entity.Matches
             .Where(m => m is
             { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done })];
 
@@ -57,7 +57,7 @@ public class TournamentStatsProcessor(
             if (match.PlayerMatchStats.Count != 0
                 && match.PlayerRatingAdjustments.Count != 0
                 && match.PlayerMatchStats.Count == match.PlayerRatingAdjustments.Count
-                && match.Rosters is not null
+                && match.Rosters.Count > 0
                )
             {
                 continue;
@@ -71,7 +71,7 @@ public class TournamentStatsProcessor(
                 match.PlayerMatchStats.Count,
                 nameof(match.PlayerRatingAdjustments),
                 match.PlayerRatingAdjustments.Count,
-                match.Rosters is not null
+                match.Rosters.Count > 0
             );
 
             return;
@@ -84,7 +84,7 @@ public class TournamentStatsProcessor(
                      .DistinctBy(p => p.Id)
                 )
         {
-            IEnumerable<PlayerMatchStats> matchStats = [.. verifiedMatches
+            List<PlayerMatchStats> matchStats = [.. verifiedMatches
                 .SelectMany(m => m.PlayerMatchStats)
                 .Where(pms => pms.Player.Id == player.Id)];
 
@@ -99,7 +99,7 @@ public class TournamentStatsProcessor(
                 AverageScore = (int)matchStats.Average(pms => pms.AverageScore),
                 AveragePlacement = matchStats.Average(pms => pms.AveragePlacement),
                 AverageAccuracy = matchStats.Average(pms => pms.AverageAccuracy),
-                MatchesPlayed = matchStats.Count(),
+                MatchesPlayed = matchStats.Count,
                 MatchesWon = matchStats.Count(pms => pms.Won),
                 MatchesLost = matchStats.Count(pms => !pms.Won),
                 GamesPlayed = matchStats.Sum(pms => pms.GamesPlayed),

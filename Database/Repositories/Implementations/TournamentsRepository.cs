@@ -54,6 +54,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .ThenInclude(m => m.Rosters)
             .Include(t => t.Matches)
             .ThenInclude(m => m.PlayerMatchStats)
+            .ThenInclude(pms => pms.Player)
             .Include(t => t.Matches)
             .ThenInclude(m => m.PlayerRatingAdjustments)
             .Include(t => t.Matches)
