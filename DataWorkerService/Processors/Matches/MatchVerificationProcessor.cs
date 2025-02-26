@@ -27,7 +27,7 @@ public class MatchVerificationProcessor(
             return;
         }
 
-        if (!entity.Games.All(g => g.ProcessingStatus > GameProcessingStatus.NeedsVerification))
+        if (entity.Games.Count > 0 && !entity.Games.All(g => g.ProcessingStatus > GameProcessingStatus.NeedsVerification))
         {
             IProcessor<Game> gameVerificationProcessor = gameProcessorResolver.GetVerificationProcessor();
             foreach (Game game in entity.Games)
@@ -45,6 +45,10 @@ public class MatchVerificationProcessor(
 
                 return;
             }
+        }
+        else if (entity.Games.Count == 0)
+        {
+            entity.VerificationStatus = VerificationStatus.Rejected;
         }
 
         switch (entity.VerificationStatus)
