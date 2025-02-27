@@ -68,7 +68,7 @@ public interface ITournamentsService
     /// <summary>
     /// Updates a tournament entity with values from a <see cref="TournamentDTO"/>
     /// </summary>
-    Task<TournamentDTO?> UpdateAsync(int id, TournamentDTO wrapper);
+    Task<TournamentCompactDTO?> UpdateAsync(int id, TournamentCompactDTO wrapper);
 
     /// <summary>
     /// Deletes a tournament
