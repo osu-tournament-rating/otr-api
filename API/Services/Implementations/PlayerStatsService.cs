@@ -17,9 +17,12 @@ public class PlayerStatsService(
     IPlayerMatchStatsRepository playerMatchStatsRepository,
     IPlayerRatingsService playerRatingsService,
     IPlayersRepository playersRepository,
-    IRatingAdjustmentsRepository ratingAdjustmentsRepository
+    IRatingAdjustmentsRepository ratingAdjustmentsRepository,
+    IPlayerTournamentStatsRepository playerTournamentStatsRepository
 ) : IPlayerStatsService
 {
+    private const int MaxFrequencyTeammatesOpponents = 20;
+
     public async Task<PlayerDashboardStatsDTO?> GetAsync(
         string key,
         Ruleset? ruleset = null,
@@ -53,7 +56,7 @@ public class PlayerStatsService(
 
         IEnumerable<PlayerModStatsDTO> modStats = await GetModStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
 
-        PlayerTournamentStatsDTO tournamentStats =
+        PlayerTournamentPerformanceDTO tournamentPerformance =
             await GetTournamentStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
 
         Dictionary<bool, List<PlayerFrequencyDTO>> frequentTeammatesOpponents = await GetFrequentMatchupsAsync(player.Id, ruleset.Value, dateMin, dateMax);
@@ -65,9 +68,9 @@ public class PlayerStatsService(
             Rating = ratingStats,
             MatchStats = matchStats,
             ModStats = modStats,
-            TournamentStats = tournamentStats,
-            FrequentTeammates = frequentTeammatesOpponents[true],
-            FrequentOpponents = frequentTeammatesOpponents[false]
+            TournamentPerformanceStats = tournamentPerformance,
+            FrequentTeammates = frequentTeammatesOpponents[true].Take(MaxFrequencyTeammatesOpponents),
+            FrequentOpponents = frequentTeammatesOpponents[false].Take(MaxFrequencyTeammatesOpponents)
         };
     }
 
@@ -203,28 +206,29 @@ public class PlayerStatsService(
             .Select(kvp => new PlayerModStatsDTO { Mods = kvp.Key, Count = kvp.Value, AverageScore = modScores[kvp.Key] });
     }
 
-    private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(
+    private async Task<PlayerTournamentPerformanceDTO> GetTournamentStatsAsync(
         int playerId,
         Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     )
     {
-        const int maxTournaments = 5;
+        const int count = 5;
 
-        IEnumerable<PlayerTournamentMatchCostDTO> bestPerformances = await tournamentsRepository.GetPerformancesAsync(
+        ICollection<PlayerTournamentStats> bestPerformances = await playerTournamentStatsRepository.GetBestPerformancesAsync(
             playerId,
+            count,
             ruleset,
             dateMin,
-            dateMax,
-            maxTournaments, TournamentPerformanceResultType.Best);
+            dateMax);
 
-        IEnumerable<PlayerTournamentMatchCostDTO> recentPerformances = await tournamentsRepository.GetPerformancesAsync(
-            playerId,
-            ruleset,
-            dateMin,
-            dateMax,
-            maxTournaments, TournamentPerformanceResultType.Recent);
+        ICollection<PlayerTournamentStats> recentPerformances =
+            await playerTournamentStatsRepository.GetRecentPerformancesAsync(
+                playerId,
+                count,
+                ruleset,
+                dateMin,
+                dateMax);
 
         PlayerTournamentLobbySizeCountDTO counts = await tournamentsRepository.GetLobbySizeStatsAsync(
             playerId,
@@ -232,11 +236,11 @@ public class PlayerStatsService(
             dateMin,
             dateMax
         );
-        return new PlayerTournamentStatsDTO
+        return new PlayerTournamentPerformanceDTO
         {
             LobbySizeCounts = counts,
-            BestPerformances = bestPerformances,
-            RecentPerformances = recentPerformances
+            BestPerformances = mapper.Map<IEnumerable<PlayerTournamentStatsDTO>>(bestPerformances),
+            RecentPerformances = mapper.Map<IEnumerable<PlayerTournamentStatsDTO>>(recentPerformances)
         };
     }
 

@@ -6,7 +6,7 @@ namespace API.DTOs;
 /// Represents statistics for a player regarding tournament participation and performance
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class PlayerTournamentStatsDTO
+public class PlayerTournamentPerformanceDTO
 {
     /// <summary>
     /// Counts of participation in tournaments of differing team sizes for the player
@@ -16,12 +16,12 @@ public class PlayerTournamentStatsDTO
     /// <summary>
     /// List of best tournament performances for the player
     /// </summary>
-    public IEnumerable<PlayerTournamentMatchCostDTO> BestPerformances { get; set; } =
+    public IEnumerable<PlayerTournamentStatsDTO> BestPerformances { get; set; } =
         [];
 
     /// <summary>
     /// List of recent tournament performances for the player
     /// </summary>
-    public IEnumerable<PlayerTournamentMatchCostDTO> RecentPerformances { get; set; } =
+    public IEnumerable<PlayerTournamentStatsDTO> RecentPerformances { get; set; } =
         [];
 }

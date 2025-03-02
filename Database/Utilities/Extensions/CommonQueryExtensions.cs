@@ -44,4 +44,17 @@ public static class CommonQueryExtensions
         return query.Where(gs => gs.VerificationStatus == VerificationStatus.Verified && gs.Game.Match.Tournament.Ruleset == ruleset &&
                                                                    gs.Game.Match.StartTime >= dateMin && gs.Game.Match.StartTime <= dateMax);
     }
+
+    /// <inheritdoc cref="ApplyCommonFilters(System.Linq.IQueryable{Database.Entities.PlayerMatchStats},Database.Enums.Ruleset,System.DateTime?,System.DateTime?)"/>
+    public static IQueryable<PlayerTournamentStats> ApplyCommonFilters(this IQueryable<PlayerTournamentStats> query,
+        Ruleset ruleset,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null)
+    {
+        dateMin ??= DateTime.MinValue;
+        dateMax ??= DateTime.MaxValue;
+        return query.Where(pts => pts.Tournament.Ruleset == ruleset &&
+                                  pts.Tournament.StartTime >= dateMin &&
+                                  pts.Tournament.StartTime <= dateMax);
+    }
 }

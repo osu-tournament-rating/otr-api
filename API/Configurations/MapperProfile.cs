@@ -47,6 +47,7 @@ public class MapperProfile : Profile
         CreateMap<Player, PlayerCompactDTO>()
             .ForMember(x => x.UserId, opt => opt.MapFrom(y => y.User!.Id));
         CreateMap<PlayerOsuRulesetData, PlayerOsuRulesetDataDTO>();
+        CreateMap<PlayerTournamentStats, PlayerTournamentStatsDTO>();
 
         CreateMap<Tournament, TournamentCompactDTO>();
         CreateMap<Tournament, TournamentDTO>();

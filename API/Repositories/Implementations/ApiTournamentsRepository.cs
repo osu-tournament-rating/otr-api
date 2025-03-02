@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Repositories.Implementations;
 
-public class ApiTournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository, IMapper mapper) :
+public class ApiTournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository) :
     TournamentsRepository(context, beatmapsRepository), IApiTournamentsRepository
 {
     private readonly OtrContext _context = context;
@@ -52,35 +52,5 @@ public class ApiTournamentsRepository(OtrContext context, IBeatmapsRepository be
             Count4v4 = participatedTournaments.Count(x => x.TeamSize == 4),
             CountOther = participatedTournaments.Count(x => x.TeamSize > 4)
         };
-    }
-
-    public async Task<IEnumerable<PlayerTournamentMatchCostDTO>> GetPerformancesAsync(int playerId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax,
-        int count,
-        TournamentPerformanceResultType performanceType)
-    {
-        IQueryable<PlayerTournamentMatchCostDTO> query =
-            QueryForParticipation(playerId, ruleset, dateMin, dateMax)
-            .Select(t => new PlayerTournamentMatchCostDTO
-            {
-                PlayerId = playerId,
-                Tournament = mapper.Map<TournamentCompactDTO>(t),
-                MatchCost = t.Matches
-                    .SelectMany(m => m.PlayerMatchStats)
-                    .Where(pms => pms.PlayerId == playerId)
-                    .Average(pms => pms.MatchCost)
-            });
-
-        query = performanceType switch
-        {
-            TournamentPerformanceResultType.Best => query.OrderByDescending(d => d.MatchCost),
-            TournamentPerformanceResultType.Worst => query.OrderBy(d => d.MatchCost),
-            TournamentPerformanceResultType.Recent => query,
-            _ => throw new ArgumentOutOfRangeException(nameof(performanceType), performanceType, null)
-        };
-
-        return await query.Take(count).ToListAsync();
     }
 }

@@ -37,7 +37,7 @@ public class PlayerDashboardStatsDTO
     /// <summary>
     /// Tournament participation and performance stats for the player
     /// </summary>
-    public PlayerTournamentStatsDTO? TournamentStats { get; init; }
+    public PlayerTournamentPerformanceDTO? TournamentPerformanceStats { get; init; }
 
     /// <summary>
     /// List of frequencies of the player's teammates
