@@ -428,6 +428,54 @@ namespace Database.Migrations
                     b.ToTable("game_audits", (string)null);
                 });
 
+            modelBuilder.Entity("Database.Entities.GameRoster", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("integer")
+                        .HasColumnName("game_id");
+
+                    b.PrimitiveCollection<int[]>("Roster")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("roster");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("integer")
+                        .HasColumnName("score");
+
+                    b.Property<int>("Team")
+                        .HasColumnType("integer")
+                        .HasColumnName("team");
+
+                    b.HasKey("Id")
+                        .HasName("pk_game_rosters");
+
+                    b.HasIndex("GameId")
+                        .HasDatabaseName("ix_game_rosters_game_id");
+
+                    b.HasIndex("Roster")
+                        .HasDatabaseName("ix_game_rosters_roster");
+
+                    b.HasIndex("GameId", "Roster")
+                        .IsUnique()
+                        .HasDatabaseName("ix_game_rosters_game_id_roster");
+
+                    b.ToTable("game_rosters", (string)null);
+                });
+
             modelBuilder.Entity("Database.Entities.GameScore", b =>
                 {
                     b.Property<int>("Id")
@@ -638,64 +686,6 @@ namespace Database.Migrations
                     b.ToTable("game_score_audits", (string)null);
                 });
 
-            modelBuilder.Entity("Database.Entities.GameWinRecord", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int>("GameId")
-                        .HasColumnType("integer")
-                        .HasColumnName("game_id");
-
-                    b.PrimitiveCollection<int[]>("LoserRoster")
-                        .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("loser_roster");
-
-                    b.Property<int>("LoserScore")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_score");
-
-                    b.Property<int>("LoserTeam")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_team");
-
-                    b.PrimitiveCollection<int[]>("WinnerRoster")
-                        .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("winner_roster");
-
-                    b.Property<int>("WinnerScore")
-                        .HasColumnType("integer")
-                        .HasColumnName("winner_score");
-
-                    b.Property<int>("WinnerTeam")
-                        .HasColumnType("integer")
-                        .HasColumnName("winner_team");
-
-                    b.HasKey("Id")
-                        .HasName("pk_game_win_records");
-
-                    b.HasIndex("GameId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_game_win_records_game_id");
-
-                    b.HasIndex("WinnerRoster")
-                        .HasDatabaseName("ix_game_win_records_winner_roster");
-
-                    b.ToTable("game_win_records", (string)null);
-                });
-
             modelBuilder.Entity("Database.Entities.Match", b =>
                 {
                     b.Property<int>("Id")
@@ -889,7 +879,7 @@ namespace Database.Migrations
                     b.ToTable("match_audits", (string)null);
                 });
 
-            modelBuilder.Entity("Database.Entities.MatchWinRecord", b =>
+            modelBuilder.Entity("Database.Entities.MatchRoster", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -904,50 +894,37 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.PrimitiveCollection<int[]>("LoserRoster")
-                        .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("loser_roster");
-
-                    b.Property<int>("LoserScore")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_score");
-
-                    b.Property<int>("LoserTeam")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_team");
-
                     b.Property<int>("MatchId")
                         .HasColumnType("integer")
                         .HasColumnName("match_id");
 
-                    b.PrimitiveCollection<int[]>("WinnerRoster")
+                    b.PrimitiveCollection<int[]>("Roster")
                         .IsRequired()
                         .HasColumnType("integer[]")
-                        .HasColumnName("winner_roster");
+                        .HasColumnName("roster");
 
-                    b.Property<int>("WinnerScore")
+                    b.Property<int>("Score")
                         .HasColumnType("integer")
-                        .HasColumnName("winner_score");
+                        .HasColumnName("score");
 
-                    b.Property<int>("WinnerTeam")
+                    b.Property<int>("Team")
                         .HasColumnType("integer")
-                        .HasColumnName("winner_team");
+                        .HasColumnName("team");
 
                     b.HasKey("Id")
-                        .HasName("pk_match_win_records");
-
-                    b.HasIndex("LoserRoster")
-                        .HasDatabaseName("ix_match_win_records_loser_roster");
+                        .HasName("pk_match_rosters");
 
                     b.HasIndex("MatchId")
+                        .HasDatabaseName("ix_match_rosters_match_id");
+
+                    b.HasIndex("Roster")
+                        .HasDatabaseName("ix_match_rosters_roster");
+
+                    b.HasIndex("MatchId", "Roster")
                         .IsUnique()
-                        .HasDatabaseName("ix_match_win_records_match_id");
+                        .HasDatabaseName("ix_match_rosters_match_id_roster");
 
-                    b.HasIndex("WinnerRoster")
-                        .HasDatabaseName("ix_match_win_records_winner_roster");
-
-                    b.ToTable("match_win_records", (string)null);
+                    b.ToTable("match_rosters", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.OAuthClient", b =>
@@ -1942,7 +1919,7 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Beatmap", "Beatmap")
                         .WithMany("Games")
                         .HasForeignKey("BeatmapId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_games_beatmaps_beatmap_id");
 
                     b.HasOne("Database.Entities.Match", "Match")
@@ -1985,6 +1962,18 @@ namespace Database.Migrations
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_game_audits_games_reference_id");
+                });
+
+            modelBuilder.Entity("Database.Entities.GameRoster", b =>
+                {
+                    b.HasOne("Database.Entities.Game", "Game")
+                        .WithMany("Rosters")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_game_rosters_games_game_id");
+
+                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("Database.Entities.GameScore", b =>
@@ -2036,18 +2025,6 @@ namespace Database.Migrations
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_game_score_audits_game_scores_reference_id");
-                });
-
-            modelBuilder.Entity("Database.Entities.GameWinRecord", b =>
-                {
-                    b.HasOne("Database.Entities.Game", "Game")
-                        .WithOne("WinRecord")
-                        .HasForeignKey("Database.Entities.GameWinRecord", "GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_game_win_records_games_game_id");
-
-                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("Database.Entities.Match", b =>
@@ -2108,14 +2085,14 @@ namespace Database.Migrations
                         .HasConstraintName("fk_match_audits_matches_reference_id");
                 });
 
-            modelBuilder.Entity("Database.Entities.MatchWinRecord", b =>
+            modelBuilder.Entity("Database.Entities.MatchRoster", b =>
                 {
                     b.HasOne("Database.Entities.Match", "Match")
-                        .WithOne("WinRecord")
-                        .HasForeignKey("Database.Entities.MatchWinRecord", "MatchId")
+                        .WithMany("Rosters")
+                        .HasForeignKey("MatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_match_win_records_matches_match_id");
+                        .HasConstraintName("fk_match_rosters_matches_match_id");
 
                     b.Navigation("Match");
                 });
@@ -2395,9 +2372,9 @@ namespace Database.Migrations
 
                     b.Navigation("Audits");
 
-                    b.Navigation("Scores");
+                    b.Navigation("Rosters");
 
-                    b.Navigation("WinRecord");
+                    b.Navigation("Scores");
                 });
 
             modelBuilder.Entity("Database.Entities.GameScore", b =>
@@ -2419,7 +2396,7 @@ namespace Database.Migrations
 
                     b.Navigation("PlayerRatingAdjustments");
 
-                    b.Navigation("WinRecord");
+                    b.Navigation("Rosters");
                 });
 
             modelBuilder.Entity("Database.Entities.OAuthClient", b =>

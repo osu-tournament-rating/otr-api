@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Utilities;
 using API.Utilities.Extensions;
+using Database.Models;
 
 namespace APITests.Utilities;
 
@@ -9,61 +10,61 @@ public class LeaderboardExtensionsTests
     [Fact]
     public void IsEngaged_NullFilter_ReturnsFalse()
     {
-        LeaderboardTierFilterDTO? filter = null;
+        LeaderboardTierFilter? filter = null;
         Assert.False(filter.IsEngaged());
     }
 
     [Fact]
     public void IsEngaged_EmptyFilter_ReturnsFalse()
     {
-        var filter = new LeaderboardTierFilterDTO();
+        var filter = new LeaderboardTierFilter();
         Assert.False(filter.IsEngaged());
     }
 
     [Fact]
     public void IsEngaged_FilterWithAnyTrue_ReturnsTrue()
     {
-        var filter = new LeaderboardTierFilterDTO
+        var filter = new LeaderboardTierFilter
         {
             FilterBronze = true
         };
 
-        var filter2 = new LeaderboardTierFilterDTO
+        var filter2 = new LeaderboardTierFilter
         {
             FilterSilver = true
         };
 
-        var filter3 = new LeaderboardTierFilterDTO
+        var filter3 = new LeaderboardTierFilter
         {
             FilterGold = true
         };
 
-        var filter4 = new LeaderboardTierFilterDTO
+        var filter4 = new LeaderboardTierFilter
         {
             FilterPlatinum = true
         };
 
-        var filter5 = new LeaderboardTierFilterDTO
+        var filter5 = new LeaderboardTierFilter
         {
             FilterEmerald = true
         };
 
-        var filter6 = new LeaderboardTierFilterDTO
+        var filter6 = new LeaderboardTierFilter
         {
             FilterDiamond = true
         };
 
-        var filter7 = new LeaderboardTierFilterDTO
+        var filter7 = new LeaderboardTierFilter
         {
             FilterMaster = true
         };
 
-        var filter8 = new LeaderboardTierFilterDTO
+        var filter8 = new LeaderboardTierFilter
         {
             FilterGrandmaster = true
         };
 
-        var filter9 = new LeaderboardTierFilterDTO
+        var filter9 = new LeaderboardTierFilter
         {
             FilterEliteGrandmaster = true
         };

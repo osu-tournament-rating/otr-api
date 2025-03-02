@@ -1,16 +1,15 @@
-using System.ComponentModel.DataAnnotations.Schema;
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace Database.Entities;
 
 /// <summary>
-/// Data for a <see cref="Entities.Player"/> in a <see cref="Enums.Ruleset"/>
+/// Data for a <see cref="Entities.Player"/> in a <see cref="Common.Enums.Enums.Ruleset"/>
 /// obtained from the osu! API and/or osu!Track API
 /// </summary>
 public class PlayerOsuRulesetData : UpdateableEntityBase
 {
     /// <summary>
-    /// The <see cref="Enums.Ruleset"/> the <see cref="PlayerOsuRulesetData"/> is for
+    /// The <see cref="Common.Enums.Enums.Ruleset"/> the <see cref="PlayerOsuRulesetData"/> is for
     /// </summary>
     public Ruleset Ruleset { get; set; }
 

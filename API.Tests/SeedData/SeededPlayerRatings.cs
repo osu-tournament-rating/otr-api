@@ -1,7 +1,9 @@
 using API.DTOs;
 using API.Utilities;
 using API.Utilities.Extensions;
+using Common.Rating;
 using Database.Entities.Processor;
+using Database.Models;
 
 namespace APITests.SeedData;
 
@@ -32,10 +34,10 @@ public static class SeededPlayerRatings
         return lb;
     }
 
-    public static List<PlayerRating> GetLeaderboardFiltered(LeaderboardFilterDTO filter, int size = 25)
+    public static List<PlayerRating> GetLeaderboardFiltered(LeaderboardFilter filter, int size = 25)
     {
         var lb = new List<PlayerRating>();
-        LeaderboardTierFilterDTO? tiers = filter.TierFilters;
+        LeaderboardTierFilter? tiers = filter.TierFilters;
 
         if (tiers == null || !tiers.IsEngaged())
         {
@@ -103,62 +105,62 @@ public static class SeededPlayerRatings
         // Remove the tiers that are false
         if (tiers.FilterEliteGrandmaster == false)
         {
-            lb.RemoveAll(x => x.Rating >= RatingUtils.RatingEliteGrandmaster);
+            lb.RemoveAll(x => x.Rating >= RatingConstants.RatingEliteGrandmaster);
         }
 
         if (tiers.FilterGrandmaster == false)
         {
             lb.RemoveAll(x =>
-                x.Rating >= RatingUtils.RatingGrandmasterIII && x.Rating < RatingUtils.RatingEliteGrandmaster
+                x.Rating is >= RatingConstants.RatingGrandmasterIII and < RatingConstants.RatingEliteGrandmaster
             );
         }
 
         if (tiers.FilterMaster == false)
         {
             lb.RemoveAll(x =>
-                x.Rating >= RatingUtils.RatingMasterIII && x.Rating < RatingUtils.RatingGrandmasterIII
+                x.Rating is >= RatingConstants.RatingMasterIII and < RatingConstants.RatingGrandmasterIII
             );
         }
 
         if (tiers.FilterDiamond == false)
         {
             lb.RemoveAll(x =>
-                x.Rating >= RatingUtils.RatingDiamondIII && x.Rating < RatingUtils.RatingMasterIII
+                x.Rating is >= RatingConstants.RatingDiamondIII and < RatingConstants.RatingMasterIII
             );
         }
 
         if (tiers.FilterEmerald == false)
         {
             lb.RemoveAll(x =>
-                x.Rating >= RatingUtils.RatingEmeraldIII && x.Rating < RatingUtils.RatingDiamondIII
+                x.Rating is >= RatingConstants.RatingEmeraldIII and < RatingConstants.RatingDiamondIII
             );
         }
 
         if (tiers.FilterPlatinum == false)
         {
             lb.RemoveAll(x =>
-                x.Rating >= RatingUtils.RatingPlatinumIII && x.Rating < RatingUtils.RatingEmeraldIII
+                x.Rating is >= RatingConstants.RatingPlatinumIII and < RatingConstants.RatingEmeraldIII
             );
         }
 
         if (tiers.FilterGold == false)
         {
             lb.RemoveAll(x =>
-                x.Rating >= RatingUtils.RatingGoldIII && x.Rating < RatingUtils.RatingPlatinumIII
+                x.Rating is >= RatingConstants.RatingGoldIII and < RatingConstants.RatingPlatinumIII
             );
         }
 
         if (tiers.FilterSilver == false)
         {
             lb.RemoveAll(x =>
-                x.Rating >= RatingUtils.RatingSilverIII && x.Rating < RatingUtils.RatingGoldIII
+                x.Rating is >= RatingConstants.RatingSilverIII and < RatingConstants.RatingGoldIII
             );
         }
 
         if (tiers.FilterBronze == false)
         {
             lb.RemoveAll(x =>
-                x.Rating >= RatingUtils.RatingBronzeIII && x.Rating < RatingUtils.RatingSilverIII
+                x.Rating is >= RatingConstants.RatingBronzeIII and < RatingConstants.RatingSilverIII
             );
         }
 
@@ -167,55 +169,55 @@ public static class SeededPlayerRatings
 
     private static PlayerRating SetEliteGrandmaster(this PlayerRating b)
     {
-        b.Rating = RatingUtils.RatingEliteGrandmaster;
+        b.Rating = RatingConstants.RatingEliteGrandmaster;
         return b;
     }
 
     private static PlayerRating SetGrandmaster(this PlayerRating b)
     {
-        b.Rating = RatingUtils.RatingGrandmasterIII;
+        b.Rating = RatingConstants.RatingGrandmasterIII;
         return b;
     }
 
     private static PlayerRating SetMaster(this PlayerRating b)
     {
-        b.Rating = RatingUtils.RatingMasterIII;
+        b.Rating = RatingConstants.RatingMasterIII;
         return b;
     }
 
     private static PlayerRating SetDiamond(this PlayerRating b)
     {
-        b.Rating = RatingUtils.RatingDiamondIII;
+        b.Rating = RatingConstants.RatingDiamondIII;
         return b;
     }
 
     private static PlayerRating SetEmerald(this PlayerRating b)
     {
-        b.Rating = RatingUtils.RatingEmeraldIII;
+        b.Rating = RatingConstants.RatingEmeraldIII;
         return b;
     }
 
     private static PlayerRating SetPlatinum(this PlayerRating b)
     {
-        b.Rating = RatingUtils.RatingPlatinumIII;
+        b.Rating = RatingConstants.RatingPlatinumIII;
         return b;
     }
 
     private static PlayerRating SetGold(this PlayerRating b)
     {
-        b.Rating = RatingUtils.RatingGoldIII;
+        b.Rating = RatingConstants.RatingGoldIII;
         return b;
     }
 
     private static PlayerRating SetSilver(this PlayerRating b)
     {
-        b.Rating = RatingUtils.RatingSilverIII;
+        b.Rating = RatingConstants.RatingSilverIII;
         return b;
     }
 
     private static PlayerRating SetBronze(this PlayerRating b)
     {
-        b.Rating = RatingUtils.RatingBronzeIII;
+        b.Rating = RatingConstants.RatingBronzeIII;
         return b;
     }
 }

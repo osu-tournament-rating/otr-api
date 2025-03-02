@@ -1,12 +1,12 @@
+using Common.Enums.Enums.Verification;
 using Database.Entities;
-using Database.Enums.Verification;
 using DataWorkerService.Processors.Games;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 
 namespace DataWorkerService.Processors.Matches;
 
 /// <summary>
-/// Processor tasked with finalizing the <see cref="Database.Enums.Verification.VerificationStatus"/> for
+/// Processor tasked with finalizing the <see cref="VerificationStatus"/> for
 /// a <see cref="Match"/>
 /// </summary>
 public class MatchVerificationProcessor(
@@ -27,7 +27,7 @@ public class MatchVerificationProcessor(
             return;
         }
 
-        if (!entity.Games.All(g => g.ProcessingStatus > GameProcessingStatus.NeedsVerification))
+        if (entity.Games.Count > 0 && !entity.Games.All(g => g.ProcessingStatus > GameProcessingStatus.NeedsVerification))
         {
             IProcessor<Game> gameVerificationProcessor = gameProcessorResolver.GetVerificationProcessor();
             foreach (Game game in entity.Games)
@@ -45,6 +45,10 @@ public class MatchVerificationProcessor(
 
                 return;
             }
+        }
+        else if (entity.Games.Count == 0)
+        {
+            entity.VerificationStatus = VerificationStatus.Rejected;
         }
 
         switch (entity.VerificationStatus)

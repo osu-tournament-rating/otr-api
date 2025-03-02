@@ -1,14 +1,14 @@
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace OsuApiClient.Domain.Osu.Users.Attributes;
 
 /// <summary>
-/// Represents a compact version of <see cref="UserStatistics"/> for a variant of a <see cref="Database.Enums.Ruleset"/>
+/// Represents a compact version of <see cref="UserStatistics"/> for a variant of a <see cref="Common.Enums.Enums.Ruleset"/>
 /// </summary>
 public class UserStatisticsVariant : IModel
 {
     /// <summary>
-    /// Variant of a <see cref="Database.Enums.Ruleset"/>
+    /// Variant of a <see cref="Common.Enums.Enums.Ruleset"/>
     /// </summary>
     public Ruleset Ruleset { get; init; }
 

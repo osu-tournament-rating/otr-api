@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace API.DTOs;
 
@@ -50,5 +50,5 @@ public class RatingAdjustmentDTO
     /// <summary>
     /// Id of the match the adjustment was created for if available
     /// </summary>
-    public int? MatchId { get; init; }
+    public MatchCompactDTO? Match { get; init; }
 }

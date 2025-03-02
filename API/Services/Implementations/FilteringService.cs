@@ -1,6 +1,6 @@
 using API.DTOs;
 using API.Services.Interfaces;
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace API.Services.Implementations;
 
@@ -74,7 +74,7 @@ public class FilteringService(
         }
 
         PlayerRatingStatsDTO? ratingStats =
-            await playerRatingsService.GetAsync(null, playerInfo.Id, filteringRequest.Ruleset);
+            await playerRatingsService.GetAsync(playerInfo.Id, filteringRequest.Ruleset, false);
 
         if (ratingStats == null)
         {

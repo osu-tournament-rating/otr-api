@@ -1,13 +1,14 @@
-using API.DTOs;
-using API.Enums;
-using API.Repositories.Interfaces;
 using APITests.SeedData;
-using Database.Enums;
+using Common.Enums;
+using Common.Enums.Enums;
+using Database.Entities.Processor;
+using Database.Models;
+using Database.Repositories.Interfaces;
 using Moq;
 
 namespace APITests.MockRepositories;
 
-public class MockPlayerRatingsRepository : Mock<IApiPlayerRatingsRepository>
+public class MockPlayerRatingsRepository : Mock<IPlayerRatingsRepository>
 {
     public MockPlayerRatingsRepository SetupLeaderboardCount()
     {
@@ -15,7 +16,7 @@ public class MockPlayerRatingsRepository : Mock<IApiPlayerRatingsRepository>
                 x.LeaderboardCountAsync(
                     It.IsAny<Ruleset>(),
                     LeaderboardChartType.Global,
-                    new LeaderboardFilterDTO(),
+                    new LeaderboardFilter(),
                     null
                 )
             )
@@ -32,13 +33,45 @@ public class MockPlayerRatingsRepository : Mock<IApiPlayerRatingsRepository>
                     It.IsAny<int>(),
                     It.IsAny<Ruleset>(),
                     It.IsAny<LeaderboardChartType>(),
-                    It.IsAny<LeaderboardFilterDTO>(),
-                    It.IsAny<int?>()
+                    It.IsAny<LeaderboardFilter>(),
+                    It.IsAny<string?>()
                 )
             )
             .ReturnsAsync(
-                (int _, int pageSize, int _, LeaderboardChartType _, LeaderboardFilterDTO filter, int? _) =>
+                (int _, int pageSize, int _, LeaderboardChartType _, LeaderboardFilter filter, string? _) =>
                     SeededPlayerRatings.GetLeaderboardFiltered(filter, pageSize)
+            );
+
+        return this;
+    }
+
+    public MockPlayerRatingsRepository SetupGetAsync()
+    {
+        Setup(x =>
+                x.GetAsync(It.IsAny<int>(), It.IsAny<Ruleset>(),
+                    It.IsAny<bool>()))
+            .ReturnsAsync(
+                (int playerId, Ruleset ruleset, bool includeAdjustments) =>
+                    new PlayerRating
+                    {
+                        PlayerId = playerId,
+                        Ruleset = ruleset,
+                        Adjustments = includeAdjustments
+                            ?
+                            [
+                                new RatingAdjustment
+                                {
+                                    AdjustmentType = RatingAdjustmentType.Initial,
+                                    Ruleset = ruleset,
+                                    RatingBefore = 0,
+                                    RatingAfter = 1200,
+                                    VolatilityBefore = 0,
+                                    VolatilityAfter = 300,
+                                    PlayerId = playerId,
+                                }
+                            ]
+                            : []
+                    }
             );
 
         return this;
@@ -67,7 +100,7 @@ public class MockPlayerRatingsRepository : Mock<IApiPlayerRatingsRepository>
 
     public MockPlayerRatingsRepository SetupGetForPlayerAsync()
     {
-        Setup(x => x.GetAsync(It.IsAny<int>(), It.IsAny<Ruleset>())).ReturnsAsync(SeededPlayerRatings.Get());
+        Setup(x => x.GetAsync(It.IsAny<int>(), It.IsAny<Ruleset>(), true)).ReturnsAsync(SeededPlayerRatings.Get());
 
         return this;
     }

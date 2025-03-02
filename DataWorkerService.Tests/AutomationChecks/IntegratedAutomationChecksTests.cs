@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums.Enums;
+using Common.Enums.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 using DataWorkerService.Processors;
 using DataWorkerService.Tests.Mocks;
 using TestingUtils.SeededData;

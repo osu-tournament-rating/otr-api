@@ -1,5 +1,5 @@
+using Common.Enums.Enums;
 using Database.Entities;
-using Database.Enums;
 
 namespace Database.Repositories.Interfaces;
 
@@ -12,9 +12,6 @@ public interface IGameScoresRepository : IRepository<GameScore>
     /// <returns>A <see cref="GameScore"/> with navigation fields populated</returns>
     new Task<GameScore?> GetAsync(int id);
 
-    Task<int> AverageTeammateScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime);
-    Task<int> AverageOpponentScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime);
-    Task<int> AverageModScoreAsync(int playerId, Ruleset ruleset, int mods, DateTime dateMin, DateTime dateMax);
-
-    Task<int> CountModScoresAsync(int playerId, Ruleset ruleset, int mods, DateTime dateMin, DateTime dateMax);
+    Task<Dictionary<Mods, int>> GetModFrequenciesAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax);
+    Task<Dictionary<Mods, int>> GetAverageModScoresAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax);
 }

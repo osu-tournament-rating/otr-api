@@ -1,7 +1,5 @@
+using Common.Enums.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
-using Database.Utilities.Extensions;
 
 namespace DataWorkerService.Processors.Games;
 
@@ -34,7 +32,7 @@ public class GameStatsProcessor(
         ];
 
         AssignScorePlacements(verifiedScores);
-        entity.WinRecord = GenerateWinRecord(verifiedScores);
+        entity.Rosters = GenerateRosters(verifiedScores);
 
         entity.ProcessingStatus = GameProcessingStatus.Done;
 
@@ -54,30 +52,35 @@ public class GameStatsProcessor(
     }
 
     /// <summary>
-    /// Generates a <see cref="GameWinRecord"/> for a given list of <see cref="GameScore"/>s
+    /// Generates a <see cref="GameRoster"/> for a given list of <see cref="GameScore"/>s
     /// </summary>
     /// <param name="scores">List of <see cref="GameScore"/>s</param>
-    public static GameWinRecord GenerateWinRecord(IEnumerable<GameScore> scores)
+    public static ICollection<GameRoster> GenerateRosters(IEnumerable<GameScore> scores)
     {
         var eScores = scores.ToList();
 
-        Team winningTeam = eScores
-            .GroupBy(s => s.Team)
-            .Select(g => new { Team = g.Key, TotalScore = g.Sum(s => s.Score) })
-            .OrderByDescending(t => t.TotalScore)
-            .Select(t => t.Team)
-            .First();
-
-        Team losingTeam = winningTeam.OppositeTeam();
-
-        return new GameWinRecord
+        if (eScores.Count == 0)
         {
-            WinnerTeam = winningTeam,
-            LoserTeam = losingTeam,
-            WinnerRoster = [.. eScores.Where(s => s.Team == winningTeam).Select(s => s.PlayerId)],
-            LoserRoster = [.. eScores.Where(s => s.Team == losingTeam).Select(s => s.PlayerId)],
-            WinnerScore = eScores.Where(s => s.Team == winningTeam).Sum(s => s.Score),
-            LoserScore = eScores.Where(s => s.Team == losingTeam).Sum(s => s.Score)
-        };
+            return [];
+        }
+
+        // Sanity check for different game IDs
+        if (eScores.Select(gs => gs.GameId).Distinct().Count() > 1)
+        {
+            throw new InvalidOperationException("All scores must belong to the same game id");
+        }
+
+        var gameRosters = eScores
+            .GroupBy(gs => gs.Team) // Group by Team only
+            .Select(group => new GameRoster
+            {
+                GameId = group.First().GameId, // Use the GameId from the first score in the group
+                Team = group.Key,
+                Roster = [.. group.Select(gs => gs.PlayerId).Distinct()], // Ensure unique PlayerIds
+                Score = group.Sum(gs => gs.Score)
+            })
+            .ToList();
+
+        return gameRosters;
     }
 }

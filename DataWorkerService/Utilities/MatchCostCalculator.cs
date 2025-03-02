@@ -1,5 +1,5 @@
+using Common.Enums.Enums.Verification;
 using Database.Entities;
-using Database.Enums.Verification;
 using MathNet.Numerics.Distributions;
 using MathNet.Numerics.Statistics;
 
@@ -21,7 +21,7 @@ public static class MatchCostCalculator
     /// </remarks>
     public static IDictionary<int, double> CalculateOtrMatchCosts(IEnumerable<Game> games)
     {
-        games = [.. games];
+        games = (List<Game>)[.. games];
 
         var zScores = games
             .SelectMany(g => g.Scores)

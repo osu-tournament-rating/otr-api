@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums.Enums.Verification;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
-using Database.Enums.Verification;
 using Database.Utilities;
 
 namespace Database.Entities;
@@ -91,9 +91,9 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     public User? VerifiedByUser { get; set; }
 
     /// <summary>
-    /// The <see cref="MatchWinRecord"/>
+    /// The <see cref="MatchRoster"/>
     /// </summary>
-    public MatchWinRecord? WinRecord { get; set; }
+    public ICollection<MatchRoster> Rosters { get; set; } = [];
 
     /// <summary>
     /// A collection of the <see cref="Game"/>s played in the match

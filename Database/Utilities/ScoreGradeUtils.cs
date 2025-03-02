@@ -1,12 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums.Enums;
 using Database.Entities;
 using Database.Entities.Interfaces;
-using Database.Enums;
 
 namespace Database.Utilities;
 
 /// <summary>
-/// Helper for determining the <see cref="Database.Enums.ScoreGrade"/> of a <see cref="GameScore"/>
+/// Helper for determining the <see cref="ScoreGrade"/> of a <see cref="GameScore"/>
 /// </summary>
 /// <remarks>
 /// Calculations based on the <a href="https://osu.ppy.sh/wiki/en/Gameplay/Grade">osu! wiki - Grade</a>

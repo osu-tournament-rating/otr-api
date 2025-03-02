@@ -49,6 +49,7 @@ using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
+using IMatchRosterRepository = Database.Repositories.Interfaces.IMatchRosterRepository;
 
 #region WebApplicationBuilder Configuration
 
@@ -583,23 +584,18 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 
 #region Repositories
 
-builder.Services.AddScoped<IApiMatchRatingStatsRepository, ApiMatchRatingStatsRepository>();
-builder.Services.AddScoped<IApiMatchWinRecordRepository, ApiMatchWinRecordRepository>();
-builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRepository>();
-builder.Services.AddScoped<IApiPlayerRatingsRepository, ApiPlayerRatingsRepository>();
-builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
-
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
-builder.Services.AddScoped<IPlayerRatingsRepository, PlayerRatingsRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
+builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
-builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
-builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
-builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
+builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
+builder.Services.AddScoped<IMatchRosterRepository, MatchRosterRepository>();
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
+builder.Services.AddScoped<IPlayerRatingsRepository, PlayerRatingsRepository>();
+builder.Services.AddScoped<IPlayerTournamentStatsRepository, PlayerTournamentStatsRepository>();
 builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
 builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -613,9 +609,7 @@ builder.Services.AddScoped<IAdminNoteService, AdminNoteService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();
-builder.Services.AddScoped<IGameWinRecordsService, GameWinRecordsService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerRatingsService, PlayerRatingsService>();

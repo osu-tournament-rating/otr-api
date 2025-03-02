@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums.Enums;
 using Database.Entities;
-using Database.Enums;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -25,75 +25,43 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
         return await query.FirstOrDefaultAsync(gs => gs.Id == id);
     }
 
-    public async Task<int> AverageTeammateScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
+    public async Task<Dictionary<Mods, int>> GetModFrequenciesAsync(int playerId, Ruleset ruleset, DateTime? dateMin,
+        DateTime? dateMax)
     {
-        return (int)await _context
-            .GameScores.WhereVerified()
-            .AfterDate(fromTime)
-            .WhereRuleset(ruleset)
-            .WhereTeammateOf(osuPlayerId)
-            .Select(ms => ms.Score)
-            .AverageAsync();
+        return await
+            _context.GameScores
+                .ApplyCommonFilters(ruleset, dateMin, dateMax)
+                .WherePlayerId(playerId)
+                .GroupBy(gs => gs.Mods)
+                .ToDictionaryAsync(grouping => grouping.Key, v => v.Count());
     }
 
-    public Task<int> AverageOpponentScoreAsync(long osuPlayerId, Ruleset ruleset, DateTime fromTime)
-    {
-        // TODO: rewrite
-        // List<long> oppScoresHeadToHead = await _context
-        //     .GameScores.WhereVerified()
-        //     .After(fromTime)
-        //     .WhereRuleset(ruleset)
-        //     .WhereHeadToHead()
-        //     .WhereOpponent(osuPlayerId)
-        //     .Select(ms => ms.Score)
-        //     .ToListAsync();
-        //
-        // List<long> oppScoresTeamVs = await _context
-        //     .GameScores.WhereVerified()
-        //     .After(fromTime)
-        //     .WhereRuleset(ruleset)
-        //     .WhereTeamVs()
-        //     .WhereOpponent(osuPlayerId)
-        //     .Select(ms => ms.Score)
-        //     .ToListAsync();
-        //
-        // IEnumerable<long> oppScores = oppScoresHeadToHead.Concat(oppScoresTeamVs);
-        // return (int)oppScores.Average();
-        return Task.FromResult(1);
-    }
-
-    public async Task<int> AverageModScoreAsync(
+    public async Task<Dictionary<Mods, int>> GetAverageModScoresAsync(
         int playerId,
         Ruleset ruleset,
-        int mods,
-        DateTime dateMin,
-        DateTime dateMax)
+        DateTime? dateMin,
+        DateTime? dateMax)
     {
-        return (int)
-            await _context
-                .GameScores.WhereVerified()
-                .WhereRuleset(ruleset)
-                .WhereMods((Mods)mods)
+        return await
+            _context.GameScores
+                .ApplyCommonFilters(ruleset, dateMin, dateMax)
                 .WherePlayerId(playerId)
-                .WhereDateRange(dateMin, dateMax)
-                .Select(x => x.Score)
-                .DefaultIfEmpty()
-                .AverageAsync();
+                .GroupBy(gs => gs.Mods)
+                .ToDictionaryAsync(grouping => grouping.Key, v => (int)v.Average(gs => gs.Score));
     }
 
     public async Task<int> CountModScoresAsync(
         int playerId,
+        Mods mods,
         Ruleset ruleset,
-        int mods,
-        DateTime dateMin,
-        DateTime dateMax)
+        DateTime? dateMin,
+        DateTime? dateMax)
     {
         return await _context
-            .GameScores.WhereVerified()
-            .WhereRuleset(ruleset)
-            .WhereMods((Mods)mods)
+            .GameScores
+            .ApplyCommonFilters(ruleset, dateMin, dateMax)
+            .WhereMods(mods)
             .WherePlayerId(playerId)
-            .WhereDateRange(dateMin, dateMax)
             .CountAsync();
     }
 }
