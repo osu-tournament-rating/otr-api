@@ -27,7 +27,7 @@ public static class RatingUtils
     public static string GetTier(double rating) =>
         rating switch
         {
-            < RatingConstants.RatingBronzeIII => "Bronze III",
+            <= RatingConstants.RatingBronzeIII => "Bronze III",
             < RatingConstants.RatingBronzeI => "Bronze II",
             < RatingConstants.RatingSilverIII => "Bronze I",
             < RatingConstants.RatingSilverII => "Silver III",

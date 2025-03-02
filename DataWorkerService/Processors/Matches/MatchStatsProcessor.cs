@@ -150,7 +150,7 @@ public class MatchStatsProcessor(
     /// <br/>If any given <see cref="Game"/>s contains a null <see cref="Game.Rosters"/>
     /// <br/>If the parent <see cref="Match"/> contains a null <see cref="Match.Rosters"/>
     /// </exception>
-    private static IEnumerable<PlayerMatchStats> GeneratePlayerMatchStats(IEnumerable<Game> games, Dictionary<int, PlayerMatchStats> existingStats)
+    private IEnumerable<PlayerMatchStats> GeneratePlayerMatchStats(IEnumerable<Game> games, Dictionary<int, PlayerMatchStats> existingStats)
     {
         var eGames = games.ToList();
 
@@ -161,18 +161,14 @@ public class MatchStatsProcessor(
 
         if (eGames.Any(g => g.Rosters.Count == 0))
         {
-            throw new ArgumentException(
-                $"The property {nameof(Game.Rosters)} must not be empty",
-                nameof(games)
-            );
+            logger.LogWarning("1 or more games have an empty roster!");
+            return [];
         }
 
         if (eGames.Any(g => g.Match.Rosters.Count == 0))
         {
-            throw new ArgumentException(
-                $"The property {nameof(Game.Match.Rosters)} must not be empty",
-                nameof(games)
-            );
+            logger.LogWarning("Rosters are empty for 1 or more matches in the provided games list!");
+            return [];
         }
 
         // Calculate match costs
