@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace OsuApiClient.Domain.Osu.Multiplayer;
 
@@ -32,12 +32,12 @@ public class GameScore : IModel
     public int MaxCombo { get; init; }
 
     /// <summary>
-    /// The <see cref="Database.Enums.Ruleset"/> the score was set in
+    /// The <see cref="Common.Enums.Enums.Ruleset"/> the score was set in
     /// </summary>
     public Ruleset Ruleset { get; init; }
 
     /// <summary>
-    /// The enabled <see cref="Database.Enums.Mods"/>
+    /// The enabled <see cref="Common.Enums.Enums.Mods"/>
     /// </summary>
     public Mods Mods { get; init; }
 

@@ -1,17 +1,17 @@
 using API.DTOs;
-using API.Enums;
 using API.Services.Implementations;
 using API.Utilities;
 using APITests.MockRepositories;
 using AutoMapper;
-using Database.Enums;
+using Common.Enums;
+using Common.Enums.Enums;
 using MapperProfile = OsuApiClient.Configurations.MapperProfile;
 
 namespace APITests.Services;
 
 public class LeaderboardServiceTests
 {
-    private readonly LeaderboardService _leaderboardService;
+    private readonly PlayerRatingsService _playerRatingsService;
 
     public LeaderboardServiceTests()
     {
@@ -42,17 +42,12 @@ public class LeaderboardServiceTests
 
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
-        var playerRatingsService = new PlayerRatingsService(
+        _playerRatingsService = new PlayerRatingsService(
             playerRatingsRepository.Object,
             matchStatsRepository.Object,
             playerRepository.Object,
             tournamentsService,
             new Mapper(new MapperConfiguration(configuration => configuration.AddProfile(new MapperProfile())))
-        );
-
-        _leaderboardService = new LeaderboardService(
-            playerRepository.Object,
-            playerRatingsService
         );
     }
 
@@ -66,7 +61,7 @@ public class LeaderboardServiceTests
     public async Task GetLeaderboardAsync_ReturnsLeaderboard_WithCorrectMode(Ruleset ruleset)
     {
         // Arrange
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(
             new LeaderboardRequestQueryDTO { Ruleset = ruleset }
         );
         // Act
@@ -91,10 +86,10 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsEliteGrandmaster(x.Tier)));
+        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsEliteGrandmaster(x.CurrentTier)));
     }
 
     [Fact]
@@ -112,10 +107,10 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsGrandmaster(x.Tier)));
+        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsGrandmaster(x.CurrentTier)));
     }
 
     [Fact]
@@ -130,10 +125,10 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsMaster(x.Tier)));
+        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsMaster(x.CurrentTier)));
     }
 
     [Fact]
@@ -151,10 +146,10 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsDiamond(x.Tier)));
+        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsDiamond(x.CurrentTier)));
     }
 
     [Fact]
@@ -172,10 +167,10 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsEmerald(x.Tier)));
+        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsEmerald(x.CurrentTier)));
     }
 
     [Fact]
@@ -193,10 +188,10 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsPlatinum(x.Tier)));
+        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsPlatinum(x.CurrentTier)));
     }
 
     [Fact]
@@ -211,10 +206,10 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsGold(x.Tier)));
+        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsGold(x.CurrentTier)));
     }
 
     [Fact]
@@ -229,10 +224,10 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsSilver(x.Tier)));
+        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsSilver(x.CurrentTier)));
     }
 
     [Fact]
@@ -247,10 +242,10 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsBronze(x.Tier)));
+        Assert.All(lb.Leaderboard, x => Assert.True(RatingUtils.IsBronze(x.CurrentTier)));
     }
 
     [Fact]
@@ -278,19 +273,19 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.All(lb.Leaderboard, x => Assert.NotNull(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsEliteGrandmaster(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsGrandmaster(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsMaster(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsDiamond(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsEmerald(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsPlatinum(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsGold(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsSilver(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsBronze(x.Tier));
+        Assert.All(lb.Leaderboard, x => Assert.NotNull(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsEliteGrandmaster(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsGrandmaster(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsMaster(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsDiamond(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsEmerald(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsPlatinum(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsGold(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsSilver(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsBronze(x.CurrentTier));
     }
 
     [Fact]
@@ -307,18 +302,18 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsEliteGrandmaster(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsGrandmaster(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsMaster(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsDiamond(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsEmerald(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsPlatinum(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsGold(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsSilver(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsBronze(x.Tier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsEliteGrandmaster(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsGrandmaster(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsMaster(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsDiamond(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsEmerald(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsPlatinum(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsGold(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsSilver(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsBronze(x.CurrentTier));
     }
 
     [Fact]
@@ -340,17 +335,17 @@ public class LeaderboardServiceTests
         };
 
         // Act
-        LeaderboardDTO lb = await _leaderboardService.GetLeaderboardAsync(filter);
+        LeaderboardDTO lb = await _playerRatingsService.GetLeaderboardAsync(filter);
 
         // Assert
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsEliteGrandmaster(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsGrandmaster(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsMaster(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsDiamond(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsEmerald(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsPlatinum(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsGold(x.Tier));
-        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsSilver(x.Tier));
-        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsBronze(x.Tier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsEliteGrandmaster(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsGrandmaster(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsMaster(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsDiamond(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsEmerald(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsPlatinum(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsGold(x.CurrentTier));
+        Assert.Contains(lb.Leaderboard, x => RatingUtils.IsSilver(x.CurrentTier));
+        Assert.DoesNotContain(lb.Leaderboard, x => RatingUtils.IsBronze(x.CurrentTier));
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Common.Enums.Enums;
+using Common.Enums.Enums.Verification;
 using Database.Entities;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
-using Database.Enums;
-using Database.Enums.Verification;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;

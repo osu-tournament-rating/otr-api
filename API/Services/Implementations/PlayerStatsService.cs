@@ -2,8 +2,8 @@ using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities;
 using AutoMapper;
+using Common.Enums.Enums;
 using Database.Entities;
-using Database.Enums;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -165,7 +165,7 @@ public class PlayerStatsService(
 
     private async Task<PlayerRatingStatsDTO?> GetCurrentAsync(int playerId, Ruleset ruleset)
     {
-        PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(playerId, ruleset);
+        PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(playerId, ruleset, true);
 
         if (ratingStats == null)
         {

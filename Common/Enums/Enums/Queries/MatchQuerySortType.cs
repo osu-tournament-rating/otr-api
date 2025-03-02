@@ -1,4 +1,4 @@
-namespace Database.Enums.Queries;
+namespace Common.Enums.Enums.Queries;
 
 /// <summary>
 /// Denotes which property a query for <see cref="Database.Entities.Matches"/> will be sorted by

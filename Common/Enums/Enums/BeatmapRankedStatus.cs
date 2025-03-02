@@ -1,7 +1,7 @@
-namespace Database.Enums;
+namespace Common.Enums.Enums;
 
 /// <summary>
-/// Describes the ranked status of a <see cref="Entities.Beatmap"/>
+/// Describes the ranked status of a <see cref="Database.Entities.Beatmap"/>
 /// </summary>
 /// /// <copyright>
 /// ppy 2024 https://osu.ppy.sh/docs/index.html#beatmapset-rank-status

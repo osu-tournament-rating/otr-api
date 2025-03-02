@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace Database.Entities.Interfaces;
 
@@ -13,7 +13,7 @@ public interface IRoster
     public int[] Roster { get; }
 
     /// <summary>
-    /// The <see cref="Enums.Team"/> the roster played for
+    /// The <see cref="Common.Enums.Enums.Team"/> the roster played for
     /// </summary>
     public Team Team { get; }
 

@@ -11,7 +11,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class LeaderboardsController(ILeaderboardService leaderboardService) : Controller
+public class LeaderboardsController(IPlayerRatingsService playerRatingsService) : Controller
 {
     /// <summary>
     /// Get a leaderboard of players which fit an optional request query
@@ -29,7 +29,7 @@ public class LeaderboardsController(ILeaderboardService leaderboardService) : Co
         requestQuery.Filter = filter;
         requestQuery.Filter.TierFilters = tierFilter;
 
-        LeaderboardDTO leaderboard = await leaderboardService.GetLeaderboardAsync(requestQuery, User.GetSubjectId());
+        LeaderboardDTO leaderboard = await playerRatingsService.GetLeaderboardAsync(requestQuery);
         return Ok(leaderboard);
     }
 }

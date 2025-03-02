@@ -1,17 +1,18 @@
 using API.DTOs;
-using API.Enums;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
 using AutoMapper;
+using Common.Enums;
+using Common.Enums.Enums;
 using Database.Entities.Processor;
-using Database.Enums;
+using Database.Models;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
 public class PlayerRatingsService(
-    IApiPlayerRatingsRepository playerRatingsRepository,
+    IPlayerRatingsRepository playerRatingsRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
     IPlayersRepository playersRepository,
     ITournamentsService tournamentsService,
@@ -33,15 +34,15 @@ public class PlayerRatingsService(
         foreach (Ruleset ruleset in activeRulesets)
         {
             // One per ruleset
-            allRulesetRatings.Add(await GetAsync(id.Value, ruleset));
+            allRulesetRatings.Add(await GetAsync(id.Value, ruleset, true));
         }
 
         return allRulesetRatings;
     }
 
-    public async Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset)
+    public async Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset, bool includeAdjustments)
     {
-        PlayerRating? currentStats = await playerRatingsRepository.GetAsync(playerId, ruleset);
+        PlayerRating? currentStats = await playerRatingsRepository.GetAsync(playerId, ruleset, includeAdjustments);
 
         if (currentStats is null)
         {
@@ -64,7 +65,7 @@ public class PlayerRatingsService(
 
         return new PlayerRatingStatsDTO
         {
-            PlayerId = playerId,
+            Player = mapper.Map<PlayerCompactDTO>(currentStats.Player),
             CountryRank = currentStats.CountryRank,
             GlobalRank = currentStats.GlobalRank,
             MatchesPlayed = matchesPlayed,
@@ -79,50 +80,58 @@ public class PlayerRatingsService(
         };
     }
 
-    public async Task<IEnumerable<PlayerRatingStatsDTO?>> GetLeaderboardAsync(
-        Ruleset ruleset,
-        int page,
-        int pageSize,
-        LeaderboardChartType chartType,
-        LeaderboardFilterDTO filter,
-        int? playerId
+    public async Task<LeaderboardDTO> GetLeaderboardAsync(
+        LeaderboardRequestQueryDTO request
     )
     {
+        LeaderboardFilter? lbFilter = mapper.Map<LeaderboardFilter>(request.Filter);
         IEnumerable<PlayerRating> leaderboardRatings = await playerRatingsRepository.GetLeaderboardAsync(
-            page,
-            pageSize,
-            ruleset,
-            chartType,
-            filter,
-            playerId
+            request.Page,
+            request.PageSize,
+            request.Ruleset,
+            request.ChartType,
+            lbFilter,
+            request.Country
         );
 
-        var leaderboard = new List<PlayerRatingStatsDTO?>();
-
+        var ratingStats = new List<PlayerRatingStatsDTO>();
         foreach (PlayerRating rating in leaderboardRatings)
         {
-            leaderboard.Add(await GetAsync(rating.PlayerId, ruleset));
+            PlayerRatingStatsDTO? ratingStat = await GetAsync(rating.PlayerId, request.Ruleset, false);
+
+            if (ratingStat is not null)
+            {
+                ratingStats.Add(ratingStat);
+            }
         }
 
-        return leaderboard;
+        var counts = await LeaderboardCountAsync(request.Ruleset, request.ChartType, lbFilter, request.Country);
+        LeaderboardFilterDefaultsDTO defaults = await LeaderboardFilterDefaultsAsync(request.Ruleset);
+
+        return new LeaderboardDTO
+        {
+            Ruleset = request.Ruleset,
+            TotalPlayerCount = counts,
+            FilterDefaults = defaults,
+            Leaderboard = ratingStats
+        };
     }
 
-    public async Task<int> LeaderboardCountAsync(
-        Ruleset requestQueryRuleset,
+    private async Task<int> LeaderboardCountAsync(
+        Ruleset ruleset,
         LeaderboardChartType requestQueryChartType,
-        LeaderboardFilterDTO requestQueryFilter,
-        int? playerId
+        LeaderboardFilter requestQueryFilter,
+        string? country
     ) =>
         await playerRatingsRepository.LeaderboardCountAsync(
-            requestQueryRuleset,
+            ruleset,
             requestQueryChartType,
             requestQueryFilter,
-            playerId
+            country
         );
 
-    public async Task<LeaderboardFilterDefaultsDTO> LeaderboardFilterDefaultsAsync(
-        Ruleset requestQueryRuleset,
-        LeaderboardChartType requestQueryChartType
+    private async Task<LeaderboardFilterDefaultsDTO> LeaderboardFilterDefaultsAsync(
+        Ruleset requestQueryRuleset
     ) =>
         new()
         {

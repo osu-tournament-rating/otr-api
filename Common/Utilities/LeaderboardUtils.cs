@@ -1,4 +1,4 @@
-namespace API.Utilities;
+namespace Common.Utilities;
 
 public static class LeaderboardUtils
 {

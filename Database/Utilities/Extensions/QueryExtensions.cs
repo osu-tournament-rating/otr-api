@@ -1,9 +1,9 @@
+using Common.Enums.Enums;
+using Common.Enums.Enums.Queries;
+using Common.Enums.Enums.Verification;
 using Database.Entities;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
-using Database.Enums;
-using Database.Enums.Queries;
-using Database.Enums.Verification;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Utilities.Extensions;

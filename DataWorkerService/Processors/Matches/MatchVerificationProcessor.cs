@@ -1,12 +1,12 @@
+using Common.Enums.Enums.Verification;
 using Database.Entities;
-using Database.Enums.Verification;
 using DataWorkerService.Processors.Games;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 
 namespace DataWorkerService.Processors.Matches;
 
 /// <summary>
-/// Processor tasked with finalizing the <see cref="Database.Enums.Verification.VerificationStatus"/> for
+/// Processor tasked with finalizing the <see cref="VerificationStatus"/> for
 /// a <see cref="Match"/>
 /// </summary>
 public class MatchVerificationProcessor(

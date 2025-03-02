@@ -1,4 +1,5 @@
-using Database.Enums;
+using Common.Enums.Enums;
+using Common.Enums.Enums.Verification;
 
 namespace DataWorkerService.AutomationChecks;
 
@@ -22,9 +23,9 @@ public static class Constants
     /// <summary>
     /// Percentage threshold (0.0 to 1.0) that a <see cref="Database.Entities.Tournament"/>'s
     /// <see cref="Database.Entities.Tournament.Matches"/> having a
-    /// <see cref="Database.Enums.Verification.VerificationStatus"/> of
-    /// <see cref="Database.Enums.Verification.VerificationStatus.PreVerified"/> or
-    /// <see cref="Database.Enums.Verification.VerificationStatus.Verified"/> must meet or exceed to be considered valid
+    /// <see cref="VerificationStatus"/> of
+    /// <see cref="VerificationStatus.PreVerified"/> or
+    /// <see cref="VerificationStatus.Verified"/> must meet or exceed to be considered valid
     /// </summary>
     public const double TournamentVerifiedMatchesPercentageThreshold = 0.8;
 

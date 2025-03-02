@@ -1,7 +1,14 @@
-namespace Database.Enums.Verification;
+
+
+
+
+
+
+
+namespace Common.Enums.Enums.Verification;
 
 /// <summary>
-/// Warnings for irregularities in <see cref="Entities.Match"/> data that don't warrant an automatic
+/// Warnings for irregularities in <see cref="Database.Entities.Match"/> data that don't warrant an automatic
 /// <see cref="VerificationStatus"/> of <see cref="VerificationStatus.PreRejected"/>
 /// but should have attention drawn to them during manual review
 /// </summary>
@@ -9,18 +16,18 @@ namespace Database.Enums.Verification;
 public enum MatchWarningFlags
 {
     /// <summary>
-    /// The <see cref="Entities.Match"/> has no warnings
+    /// The <see cref="Database.Entities.Match"/> has no warnings
     /// </summary>
     None = 0,
 
     /// <summary>
-    /// The <see cref="Entities.Match"/>'s <see cref="Entities.Match.Name"/> does not follow common tournament
+    /// The <see cref="Database.Entities.Match"/>'s <see cref="Database.Entities.Match.Name"/> does not follow common tournament
     /// lobby title conventions
     /// </summary>
     UnexpectedNameFormat = 1 << 0,
 
     /// <summary>
-    /// The <see cref="Entities.Match"/>'s number of <see cref="Entities.Match.Games"/> is exactly 3 or 4
+    /// The <see cref="Database.Entities.Match"/>'s number of <see cref="Database.Entities.Match.Games"/> is exactly 3 or 4
     /// </summary>
     LowGameCount = 1 << 1,
 

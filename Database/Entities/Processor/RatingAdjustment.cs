@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace Database.Entities.Processor;
 

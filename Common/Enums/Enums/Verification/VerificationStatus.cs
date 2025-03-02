@@ -1,8 +1,13 @@
-namespace Database.Enums.Verification;
+
+
+
+
+
+namespace Common.Enums.Enums.Verification;
 
 /// <summary>
-/// The verification status of a <see cref="Entities.Tournament"/>,
-/// <see cref="Entities.Match"/>, <see cref="Entities.Game"/>, or <see cref="Entities.GameScore"/>
+/// The verification status of a <see cref="Database.Entities.Tournament"/>,
+/// <see cref="Database.Entities.Match"/>, <see cref="Database.Entities.Game"/>, or <see cref="Database.Entities.GameScore"/>
 /// </summary>
 public enum VerificationStatus
 {

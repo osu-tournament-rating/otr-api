@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Database.Enums;
+using Common.Enums.Enums;
 using OsuApiClient.Domain.Osu.Site;
 
 namespace OsuApiClient.Domain.Osu.Users.Attributes;

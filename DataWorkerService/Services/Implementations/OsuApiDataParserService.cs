@@ -1,6 +1,6 @@
+using Common.Enums.Enums;
 using Database;
 using Database.Entities;
-using Database.Enums;
 using DataWorkerService.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using OsuApiClient;

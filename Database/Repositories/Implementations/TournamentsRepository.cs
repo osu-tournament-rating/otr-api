@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums.Enums;
+using Common.Enums.Enums.Verification;
 using Database.Entities;
 using Database.Entities.Processor;
-using Database.Enums;
-using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;

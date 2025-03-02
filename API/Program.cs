@@ -584,8 +584,6 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 
 #region Repositories
 
-builder.Services.AddScoped<IApiPlayerRatingsRepository, ApiPlayerRatingsRepository>();
-
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
@@ -612,7 +610,6 @@ builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerRatingsService, PlayerRatingsService>();

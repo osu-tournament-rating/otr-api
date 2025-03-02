@@ -1,12 +1,12 @@
-using API.DTOs;
+using Database.Models;
 
 namespace API.Utilities.Extensions;
 
 public static class LeaderboardExtensions
 {
-    public static bool IsEngaged(this LeaderboardTierFilterDTO? filter)
+    public static bool IsEngaged(this LeaderboardTierFilter? filter)
     {
-        if (filter == null)
+        if (filter is null)
         {
             return false;
         }

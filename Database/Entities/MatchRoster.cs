@@ -1,5 +1,5 @@
+using Common.Enums.Enums;
 using Database.Entities.Interfaces;
-using Database.Enums;
 
 namespace Database.Entities;
 

@@ -1,10 +1,10 @@
+using Common.Enums.Enums.Verification;
 using Database.Entities;
-using Database.Enums.Verification;
 
 namespace DataWorkerService.Processors.Scores;
 
 /// <summary>
-/// Processor tasked with finalizing the <see cref="Database.Enums.Verification.VerificationStatus"/> for
+/// Processor tasked with finalizing the <see cref="VerificationStatus"/> for
 /// a <see cref="GameScore"/>
 /// </summary>
 public class ScoreVerificationProcessor(ILogger<ScoreVerificationProcessor> logger) : ProcessorBase<GameScore>(logger)

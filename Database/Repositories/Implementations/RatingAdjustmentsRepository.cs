@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums.Enums;
 using Database.Entities.Processor;
-using Database.Enums;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 

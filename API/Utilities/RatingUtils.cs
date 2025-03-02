@@ -1,3 +1,5 @@
+using Common.Rating;
+
 namespace API.Utilities;
 
 /// <summary>
@@ -19,71 +21,36 @@ public static class RatingUtils
      * Sub Tier - One of three "sub-divisions" for a major tier (i.e. SilverI, SilverII, SilverIII)
      */
 
-    // Bronze: 100 - 299
-    public const double RatingBronzeIII = 100;
-    public const double RatingBronzeII = 165;
-    public const double RatingBronzeI = 235;
-    // Silver: 300 - 499
-    public const double RatingSilverIII = 300;
-    public const double RatingSilverII = 365;
-    public const double RatingSilverI = 430;
-    // Gold: 500 - 699
-    public const double RatingGoldIII = 500;
-    public const double RatingGoldII = 570;
-    public const double RatingGoldI = 625;
-    // Platinum: 700 - 899
-    public const double RatingPlatinumIII = 700;
-    public const double RatingPlatinumII = 770;
-    public const double RatingPlatinumI = 825;
-    // Emerald: 900 - 1199
-    public const double RatingEmeraldIII = 900;
-    public const double RatingEmeraldII = 1000;
-    public const double RatingEmeraldI = 1100;
-    // Diamond: 1200 - 1499
-    public const double RatingDiamondIII = 1200;
-    public const double RatingDiamondII = 1300;
-    public const double RatingDiamondI = 1400;
-    // Master: 1500 - 1899
-    public const double RatingMasterIII = 1500;
-    public const double RatingMasterII = 1625;
-    public const double RatingMasterI = 1750;
-    // Grandmaster: 1900 - 2499
-    public const double RatingGrandmasterIII = 1900;
-    public const double RatingGrandmasterII = 2100;
-    public const double RatingGrandmasterI = 2300;
-    // Elite Grandmaster: 2500+
-    public const double RatingEliteGrandmaster = 2500;
-
     /// <summary>
     /// Gets the string representation of the given rating
     /// </summary>
     public static string GetTier(double rating) =>
         rating switch
         {
-            < RatingBronzeII => "Bronze III",
-            < RatingBronzeI => "Bronze II",
-            < RatingSilverIII => "Bronze I",
-            < RatingSilverII => "Silver III",
-            < RatingSilverI => "Silver II",
-            < RatingGoldIII => "Silver I",
-            < RatingGoldII => "Gold III",
-            < RatingGoldI => "Gold II",
-            < RatingPlatinumIII => "Gold I",
-            < RatingPlatinumII => "Platinum III",
-            < RatingPlatinumI => "Platinum II",
-            < RatingEmeraldIII => "Platinum I",
-            < RatingEmeraldII => "Emerald III",
-            < RatingEmeraldI => "Emerald II",
-            < RatingDiamondIII => "Emerald I",
-            < RatingDiamondII => "Diamond III",
-            < RatingDiamondI => "Diamond II",
-            < RatingMasterIII => "Diamond I",
-            < RatingMasterII => "Master III",
-            < RatingMasterI => "Master II",
-            < RatingGrandmasterIII => "Master I",
-            < RatingGrandmasterII => "Grandmaster III",
-            < RatingGrandmasterI => "Grandmaster II",
-            < RatingEliteGrandmaster => "Grandmaster I",
+            < RatingConstants.RatingBronzeIII => "Bronze III",
+            < RatingConstants.RatingBronzeI => "Bronze II",
+            < RatingConstants.RatingSilverIII => "Bronze I",
+            < RatingConstants.RatingSilverII => "Silver III",
+            < RatingConstants.RatingSilverI => "Silver II",
+            < RatingConstants.RatingGoldIII => "Silver I",
+            < RatingConstants.RatingGoldII => "Gold III",
+            < RatingConstants.RatingGoldI => "Gold II",
+            < RatingConstants.RatingPlatinumIII => "Gold I",
+            < RatingConstants.RatingPlatinumII => "Platinum III",
+            < RatingConstants.RatingPlatinumI => "Platinum II",
+            < RatingConstants.RatingEmeraldIII => "Platinum I",
+            < RatingConstants.RatingEmeraldII => "Emerald III",
+            < RatingConstants.RatingEmeraldI => "Emerald II",
+            < RatingConstants.RatingDiamondIII => "Emerald I",
+            < RatingConstants.RatingDiamondII => "Diamond III",
+            < RatingConstants.RatingDiamondI => "Diamond II",
+            < RatingConstants.RatingMasterIII => "Diamond I",
+            < RatingConstants.RatingMasterII => "Master III",
+            < RatingConstants.RatingMasterI => "Master II",
+            < RatingConstants.RatingGrandmasterIII => "Master I",
+            < RatingConstants.RatingGrandmasterII => "Grandmaster III",
+            < RatingConstants.RatingGrandmasterI => "Grandmaster II",
+            < RatingConstants.RatingEliteGrandmaster => "Grandmaster I",
             _ => "Elite Grandmaster"
         };
 
@@ -94,30 +61,30 @@ public static class RatingUtils
     public static int? GetSubTier(double rating) =>
         rating switch
         {
-            < RatingBronzeII => 3,
-            < RatingBronzeI => 2,
-            < RatingSilverIII => 1,
-            < RatingSilverII => 3,
-            < RatingSilverI => 2,
-            < RatingGoldIII => 1,
-            < RatingGoldII => 3,
-            < RatingGoldI => 2,
-            < RatingPlatinumIII => 1,
-            < RatingPlatinumII => 3,
-            < RatingPlatinumI => 2,
-            < RatingEmeraldIII => 1,
-            < RatingEmeraldII => 3,
-            < RatingEmeraldI => 2,
-            < RatingDiamondIII => 1,
-            < RatingDiamondII => 3,
-            < RatingDiamondI => 2,
-            < RatingMasterIII => 1,
-            < RatingMasterII => 3,
-            < RatingMasterI => 2,
-            < RatingGrandmasterIII => 1,
-            < RatingGrandmasterII => 3,
-            < RatingGrandmasterI => 2,
-            < RatingEliteGrandmaster => 1,
+            < RatingConstants.RatingBronzeII => 3,
+            < RatingConstants.RatingBronzeI => 2,
+            < RatingConstants.RatingSilverIII => 1,
+            < RatingConstants.RatingSilverII => 3,
+            < RatingConstants.RatingSilverI => 2,
+            < RatingConstants.RatingGoldIII => 1,
+            < RatingConstants.RatingGoldII => 3,
+            < RatingConstants.RatingGoldI => 2,
+            < RatingConstants.RatingPlatinumIII => 1,
+            < RatingConstants.RatingPlatinumII => 3,
+            < RatingConstants.RatingPlatinumI => 2,
+            < RatingConstants.RatingEmeraldIII => 1,
+            < RatingConstants.RatingEmeraldII => 3,
+            < RatingConstants.RatingEmeraldI => 2,
+            < RatingConstants.RatingDiamondIII => 1,
+            < RatingConstants.RatingDiamondII => 3,
+            < RatingConstants.RatingDiamondI => 2,
+            < RatingConstants.RatingMasterIII => 1,
+            < RatingConstants.RatingMasterII => 3,
+            < RatingConstants.RatingMasterI => 2,
+            < RatingConstants.RatingGrandmasterIII => 1,
+            < RatingConstants.RatingGrandmasterII => 3,
+            < RatingConstants.RatingGrandmasterI => 2,
+            < RatingConstants.RatingEliteGrandmaster => 1,
             _ => null
         };
 
@@ -128,30 +95,30 @@ public static class RatingUtils
     public static string? GetNextTier(double rating) =>
         rating switch
         {
-            < RatingBronzeII => GetTier(RatingBronzeII),
-            < RatingBronzeI => GetTier(RatingBronzeI),
-            < RatingSilverIII => GetTier(RatingSilverIII),
-            < RatingSilverII => GetTier(RatingSilverII),
-            < RatingSilverI => GetTier(RatingSilverI),
-            < RatingGoldIII => GetTier(RatingGoldIII),
-            < RatingGoldII => GetTier(RatingGoldII),
-            < RatingGoldI => GetTier(RatingGoldI),
-            < RatingPlatinumIII => GetTier(RatingPlatinumIII),
-            < RatingPlatinumII => GetTier(RatingPlatinumII),
-            < RatingPlatinumI => GetTier(RatingPlatinumI),
-            < RatingEmeraldIII => GetTier(RatingEmeraldIII),
-            < RatingEmeraldII => GetTier(RatingEmeraldII),
-            < RatingEmeraldI => GetTier(RatingEmeraldI),
-            < RatingDiamondIII => GetTier(RatingDiamondIII),
-            < RatingDiamondII => GetTier(RatingDiamondII),
-            < RatingDiamondI => GetTier(RatingDiamondI),
-            < RatingMasterIII => GetTier(RatingMasterIII),
-            < RatingMasterII => GetTier(RatingMasterII),
-            < RatingMasterI => GetTier(RatingMasterI),
-            < RatingGrandmasterIII => GetTier(RatingGrandmasterIII),
-            < RatingGrandmasterII => GetTier(RatingGrandmasterII),
-            < RatingGrandmasterI => GetTier(RatingGrandmasterI),
-            < RatingEliteGrandmaster => GetTier(RatingEliteGrandmaster),
+            < RatingConstants.RatingBronzeII => GetTier(RatingConstants.RatingBronzeII),
+            < RatingConstants.RatingBronzeI => GetTier(RatingConstants.RatingBronzeI),
+            < RatingConstants.RatingSilverIII => GetTier(RatingConstants.RatingSilverIII),
+            < RatingConstants.RatingSilverII => GetTier(RatingConstants.RatingSilverII),
+            < RatingConstants.RatingSilverI => GetTier(RatingConstants.RatingSilverI),
+            < RatingConstants.RatingGoldIII => GetTier(RatingConstants.RatingGoldIII),
+            < RatingConstants.RatingGoldII => GetTier(RatingConstants.RatingGoldII),
+            < RatingConstants.RatingGoldI => GetTier(RatingConstants.RatingGoldI),
+            < RatingConstants.RatingPlatinumIII => GetTier(RatingConstants.RatingPlatinumIII),
+            < RatingConstants.RatingPlatinumII => GetTier(RatingConstants.RatingPlatinumII),
+            < RatingConstants.RatingPlatinumI => GetTier(RatingConstants.RatingPlatinumI),
+            < RatingConstants.RatingEmeraldIII => GetTier(RatingConstants.RatingEmeraldIII),
+            < RatingConstants.RatingEmeraldII => GetTier(RatingConstants.RatingEmeraldII),
+            < RatingConstants.RatingEmeraldI => GetTier(RatingConstants.RatingEmeraldI),
+            < RatingConstants.RatingDiamondIII => GetTier(RatingConstants.RatingDiamondIII),
+            < RatingConstants.RatingDiamondII => GetTier(RatingConstants.RatingDiamondII),
+            < RatingConstants.RatingDiamondI => GetTier(RatingConstants.RatingDiamondI),
+            < RatingConstants.RatingMasterIII => GetTier(RatingConstants.RatingMasterIII),
+            < RatingConstants.RatingMasterII => GetTier(RatingConstants.RatingMasterII),
+            < RatingConstants.RatingMasterI => GetTier(RatingConstants.RatingMasterI),
+            < RatingConstants.RatingGrandmasterIII => GetTier(RatingConstants.RatingGrandmasterIII),
+            < RatingConstants.RatingGrandmasterII => GetTier(RatingConstants.RatingGrandmasterII),
+            < RatingConstants.RatingGrandmasterI => GetTier(RatingConstants.RatingGrandmasterI),
+            < RatingConstants.RatingEliteGrandmaster => GetTier(RatingConstants.RatingEliteGrandmaster),
             _ => null
         };
 
@@ -162,30 +129,30 @@ public static class RatingUtils
     public static double? GetNextTierRating(double rating) =>
         rating switch
         {
-            < RatingBronzeII => RatingBronzeII,
-            < RatingBronzeI => RatingBronzeI,
-            < RatingSilverIII => RatingSilverIII,
-            < RatingSilverII => RatingSilverII,
-            < RatingSilverI => RatingSilverI,
-            < RatingGoldIII => RatingGoldIII,
-            < RatingGoldII => RatingGoldII,
-            < RatingGoldI => RatingGoldI,
-            < RatingPlatinumIII => RatingPlatinumIII,
-            < RatingPlatinumII => RatingPlatinumII,
-            < RatingPlatinumI => RatingPlatinumI,
-            < RatingEmeraldIII => RatingEmeraldIII,
-            < RatingEmeraldII => RatingEmeraldII,
-            < RatingEmeraldI => RatingEmeraldI,
-            < RatingDiamondIII => RatingDiamondIII,
-            < RatingDiamondII => RatingDiamondII,
-            < RatingDiamondI => RatingDiamondI,
-            < RatingMasterIII => RatingMasterIII,
-            < RatingMasterII => RatingMasterII,
-            < RatingMasterI => RatingMasterI,
-            < RatingGrandmasterIII => RatingGrandmasterIII,
-            < RatingGrandmasterII => RatingGrandmasterII,
-            < RatingGrandmasterI => RatingGrandmasterI,
-            < RatingEliteGrandmaster => RatingEliteGrandmaster,
+            < RatingConstants.RatingBronzeII => RatingConstants.RatingBronzeII,
+            < RatingConstants.RatingBronzeI => RatingConstants.RatingBronzeI,
+            < RatingConstants.RatingSilverIII => RatingConstants.RatingSilverIII,
+            < RatingConstants.RatingSilverII => RatingConstants.RatingSilverII,
+            < RatingConstants.RatingSilverI => RatingConstants.RatingSilverI,
+            < RatingConstants.RatingGoldIII => RatingConstants.RatingGoldIII,
+            < RatingConstants.RatingGoldII => RatingConstants.RatingGoldII,
+            < RatingConstants.RatingGoldI => RatingConstants.RatingGoldI,
+            < RatingConstants.RatingPlatinumIII => RatingConstants.RatingPlatinumIII,
+            < RatingConstants.RatingPlatinumII => RatingConstants.RatingPlatinumII,
+            < RatingConstants.RatingPlatinumI => RatingConstants.RatingPlatinumI,
+            < RatingConstants.RatingEmeraldIII => RatingConstants.RatingEmeraldIII,
+            < RatingConstants.RatingEmeraldII => RatingConstants.RatingEmeraldII,
+            < RatingConstants.RatingEmeraldI => RatingConstants.RatingEmeraldI,
+            < RatingConstants.RatingDiamondIII => RatingConstants.RatingDiamondIII,
+            < RatingConstants.RatingDiamondII => RatingConstants.RatingDiamondII,
+            < RatingConstants.RatingDiamondI => RatingConstants.RatingDiamondI,
+            < RatingConstants.RatingMasterIII => RatingConstants.RatingMasterIII,
+            < RatingConstants.RatingMasterII => RatingConstants.RatingMasterII,
+            < RatingConstants.RatingMasterI => RatingConstants.RatingMasterI,
+            < RatingConstants.RatingGrandmasterIII => RatingConstants.RatingGrandmasterIII,
+            < RatingConstants.RatingGrandmasterII => RatingConstants.RatingGrandmasterII,
+            < RatingConstants.RatingGrandmasterI => RatingConstants.RatingGrandmasterI,
+            < RatingConstants.RatingEliteGrandmaster => RatingConstants.RatingEliteGrandmaster,
             _ => null
         };
 
@@ -196,30 +163,30 @@ public static class RatingUtils
     public static double GetNextTierRatingDelta(double rating) =>
         rating switch
         {
-            < RatingBronzeII => RatingBronzeII - rating,
-            < RatingBronzeI => RatingBronzeI - rating,
-            < RatingSilverIII => RatingSilverIII - rating,
-            < RatingSilverII => RatingSilverII - rating,
-            < RatingSilverI => RatingSilverI - rating,
-            < RatingGoldIII => RatingGoldIII - rating,
-            < RatingGoldII => RatingGoldII - rating,
-            < RatingGoldI => RatingGoldI - rating,
-            < RatingPlatinumIII => RatingPlatinumIII - rating,
-            < RatingPlatinumII => RatingPlatinumII - rating,
-            < RatingPlatinumI => RatingPlatinumI - rating,
-            < RatingEmeraldIII => RatingEmeraldIII - rating,
-            < RatingEmeraldII => RatingEmeraldII - rating,
-            < RatingEmeraldI => RatingEmeraldI - rating,
-            < RatingDiamondIII => RatingDiamondIII - rating,
-            < RatingDiamondII => RatingDiamondII - rating,
-            < RatingDiamondI => RatingDiamondI - rating,
-            < RatingMasterIII => RatingMasterIII - rating,
-            < RatingMasterII => RatingMasterII - rating,
-            < RatingMasterI => RatingMasterI - rating,
-            < RatingGrandmasterIII => RatingGrandmasterIII - rating,
-            < RatingGrandmasterII => RatingGrandmasterII - rating,
-            < RatingGrandmasterI => RatingGrandmasterI - rating,
-            < RatingEliteGrandmaster => RatingEliteGrandmaster - rating,
+            < RatingConstants.RatingBronzeII => RatingConstants.RatingBronzeII - rating,
+            < RatingConstants.RatingBronzeI => RatingConstants.RatingBronzeI - rating,
+            < RatingConstants.RatingSilverIII => RatingConstants.RatingSilverIII - rating,
+            < RatingConstants.RatingSilverII => RatingConstants.RatingSilverII - rating,
+            < RatingConstants.RatingSilverI => RatingConstants.RatingSilverI - rating,
+            < RatingConstants.RatingGoldIII => RatingConstants.RatingGoldIII - rating,
+            < RatingConstants.RatingGoldII => RatingConstants.RatingGoldII - rating,
+            < RatingConstants.RatingGoldI => RatingConstants.RatingGoldI - rating,
+            < RatingConstants.RatingPlatinumIII => RatingConstants.RatingPlatinumIII - rating,
+            < RatingConstants.RatingPlatinumII => RatingConstants.RatingPlatinumII - rating,
+            < RatingConstants.RatingPlatinumI => RatingConstants.RatingPlatinumI - rating,
+            < RatingConstants.RatingEmeraldIII => RatingConstants.RatingEmeraldIII - rating,
+            < RatingConstants.RatingEmeraldII => RatingConstants.RatingEmeraldII - rating,
+            < RatingConstants.RatingEmeraldI => RatingConstants.RatingEmeraldI - rating,
+            < RatingConstants.RatingDiamondIII => RatingConstants.RatingDiamondIII - rating,
+            < RatingConstants.RatingDiamondII => RatingConstants.RatingDiamondII - rating,
+            < RatingConstants.RatingDiamondI => RatingConstants.RatingDiamondI - rating,
+            < RatingConstants.RatingMasterIII => RatingConstants.RatingMasterIII - rating,
+            < RatingConstants.RatingMasterII => RatingConstants.RatingMasterII - rating,
+            < RatingConstants.RatingMasterI => RatingConstants.RatingMasterI - rating,
+            < RatingConstants.RatingGrandmasterIII => RatingConstants.RatingGrandmasterIII - rating,
+            < RatingConstants.RatingGrandmasterII => RatingConstants.RatingGrandmasterII - rating,
+            < RatingConstants.RatingGrandmasterI => RatingConstants.RatingGrandmasterI - rating,
+            < RatingConstants.RatingEliteGrandmaster => RatingConstants.RatingEliteGrandmaster - rating,
             _ => 0
         };
 
@@ -229,31 +196,31 @@ public static class RatingUtils
     public static double GetPreviousTierRating(double rating) =>
         rating switch
         {
-            < RatingBronzeII => RatingBronzeIII,
-            < RatingBronzeI => RatingBronzeII,
-            < RatingSilverIII => RatingBronzeI,
-            < RatingSilverII => RatingSilverIII,
-            < RatingSilverI => RatingSilverII,
-            < RatingGoldIII => RatingSilverI,
-            < RatingGoldII => RatingGoldIII,
-            < RatingGoldI => RatingGoldII,
-            < RatingPlatinumIII => RatingGoldI,
-            < RatingPlatinumII => RatingPlatinumIII,
-            < RatingPlatinumI => RatingPlatinumII,
-            < RatingEmeraldIII => RatingPlatinumI,
-            < RatingEmeraldII => RatingEmeraldIII,
-            < RatingEmeraldI => RatingEmeraldII,
-            < RatingDiamondIII => RatingEmeraldI,
-            < RatingDiamondII => RatingDiamondIII,
-            < RatingDiamondI => RatingDiamondII,
-            < RatingMasterIII => RatingDiamondI,
-            < RatingMasterII => RatingMasterIII,
-            < RatingMasterI => RatingMasterII,
-            < RatingGrandmasterIII => RatingMasterI,
-            < RatingGrandmasterII => RatingGrandmasterIII,
-            < RatingGrandmasterI => RatingGrandmasterII,
-            < RatingEliteGrandmaster => RatingGrandmasterI,
-            _ => RatingEliteGrandmaster
+            < RatingConstants.RatingBronzeII => RatingConstants.RatingBronzeIII,
+            < RatingConstants.RatingBronzeI => RatingConstants.RatingBronzeII,
+            < RatingConstants.RatingSilverIII => RatingConstants.RatingBronzeI,
+            < RatingConstants.RatingSilverII => RatingConstants.RatingSilverIII,
+            < RatingConstants.RatingSilverI => RatingConstants.RatingSilverII,
+            < RatingConstants.RatingGoldIII => RatingConstants.RatingSilverI,
+            < RatingConstants.RatingGoldII => RatingConstants.RatingGoldIII,
+            < RatingConstants.RatingGoldI => RatingConstants.RatingGoldII,
+            < RatingConstants.RatingPlatinumIII => RatingConstants.RatingGoldI,
+            < RatingConstants.RatingPlatinumII => RatingConstants.RatingPlatinumIII,
+            < RatingConstants.RatingPlatinumI => RatingConstants.RatingPlatinumII,
+            < RatingConstants.RatingEmeraldIII => RatingConstants.RatingPlatinumI,
+            < RatingConstants.RatingEmeraldII => RatingConstants.RatingEmeraldIII,
+            < RatingConstants.RatingEmeraldI => RatingConstants.RatingEmeraldII,
+            < RatingConstants.RatingDiamondIII => RatingConstants.RatingEmeraldI,
+            < RatingConstants.RatingDiamondII => RatingConstants.RatingDiamondIII,
+            < RatingConstants.RatingDiamondI => RatingConstants.RatingDiamondII,
+            < RatingConstants.RatingMasterIII => RatingConstants.RatingDiamondI,
+            < RatingConstants.RatingMasterII => RatingConstants.RatingMasterIII,
+            < RatingConstants.RatingMasterI => RatingConstants.RatingMasterII,
+            < RatingConstants.RatingGrandmasterIII => RatingConstants.RatingMasterI,
+            < RatingConstants.RatingGrandmasterII => RatingConstants.RatingGrandmasterIII,
+            < RatingConstants.RatingGrandmasterI => RatingConstants.RatingGrandmasterII,
+            < RatingConstants.RatingEliteGrandmaster => RatingConstants.RatingGrandmasterI,
+            _ => RatingConstants.RatingEliteGrandmaster
         };
 
     /// <summary>
@@ -263,14 +230,14 @@ public static class RatingUtils
     public static string? GetNextMajorTier(double rating) =>
         rating switch
         {
-            < RatingSilverIII => GetTier(RatingSilverIII),
-            < RatingGoldIII => GetTier(RatingGoldIII),
-            < RatingPlatinumIII => GetTier(RatingPlatinumIII),
-            < RatingEmeraldIII => GetTier(RatingEmeraldIII),
-            < RatingDiamondIII => GetTier(RatingDiamondIII),
-            < RatingMasterIII => GetTier(RatingMasterIII),
-            < RatingGrandmasterIII => GetTier(RatingGrandmasterIII),
-            < RatingEliteGrandmaster => GetTier(RatingEliteGrandmaster),
+            < RatingConstants.RatingSilverIII => GetTier(RatingConstants.RatingSilverIII),
+            < RatingConstants.RatingGoldIII => GetTier(RatingConstants.RatingGoldIII),
+            < RatingConstants.RatingPlatinumIII => GetTier(RatingConstants.RatingPlatinumIII),
+            < RatingConstants.RatingEmeraldIII => GetTier(RatingConstants.RatingEmeraldIII),
+            < RatingConstants.RatingDiamondIII => GetTier(RatingConstants.RatingDiamondIII),
+            < RatingConstants.RatingMasterIII => GetTier(RatingConstants.RatingMasterIII),
+            < RatingConstants.RatingGrandmasterIII => GetTier(RatingConstants.RatingGrandmasterIII),
+            < RatingConstants.RatingEliteGrandmaster => GetTier(RatingConstants.RatingEliteGrandmaster),
             _ => null
         };
 
@@ -281,14 +248,14 @@ public static class RatingUtils
     public static double? GetNextMajorTierRating(double rating) =>
         rating switch
         {
-            < RatingSilverIII => RatingSilverIII,
-            < RatingGoldIII => RatingGoldIII,
-            < RatingPlatinumIII => RatingPlatinumIII,
-            < RatingEmeraldIII => RatingEmeraldIII,
-            < RatingDiamondIII => RatingDiamondIII,
-            < RatingMasterIII => RatingMasterIII,
-            < RatingGrandmasterIII => RatingGrandmasterIII,
-            < RatingEliteGrandmaster => RatingEliteGrandmaster,
+            < RatingConstants.RatingSilverIII => RatingConstants.RatingSilverIII,
+            < RatingConstants.RatingGoldIII => RatingConstants.RatingGoldIII,
+            < RatingConstants.RatingPlatinumIII => RatingConstants.RatingPlatinumIII,
+            < RatingConstants.RatingEmeraldIII => RatingConstants.RatingEmeraldIII,
+            < RatingConstants.RatingDiamondIII => RatingConstants.RatingDiamondIII,
+            < RatingConstants.RatingMasterIII => RatingConstants.RatingMasterIII,
+            < RatingConstants.RatingGrandmasterIII => RatingConstants.RatingGrandmasterIII,
+            < RatingConstants.RatingEliteGrandmaster => RatingConstants.RatingEliteGrandmaster,
             _ => null
         };
 
@@ -299,14 +266,14 @@ public static class RatingUtils
     public static double GetNextMajorTierRatingDelta(double rating) =>
         rating switch
         {
-            < RatingSilverIII => RatingSilverIII - rating,
-            < RatingGoldIII => RatingGoldIII - rating,
-            < RatingPlatinumIII => RatingPlatinumIII - rating,
-            < RatingEmeraldIII => RatingEmeraldIII - rating,
-            < RatingDiamondIII => RatingDiamondIII - rating,
-            < RatingMasterIII => RatingMasterIII - rating,
-            < RatingGrandmasterIII => RatingGrandmasterIII - rating,
-            < RatingEliteGrandmaster => RatingEliteGrandmaster - rating,
+            < RatingConstants.RatingSilverIII => RatingConstants.RatingSilverIII - rating,
+            < RatingConstants.RatingGoldIII => RatingConstants.RatingGoldIII - rating,
+            < RatingConstants.RatingPlatinumIII => RatingConstants.RatingPlatinumIII - rating,
+            < RatingConstants.RatingEmeraldIII => RatingConstants.RatingEmeraldIII - rating,
+            < RatingConstants.RatingDiamondIII => RatingConstants.RatingDiamondIII - rating,
+            < RatingConstants.RatingMasterIII => RatingConstants.RatingMasterIII - rating,
+            < RatingConstants.RatingGrandmasterIII => RatingConstants.RatingGrandmasterIII - rating,
+            < RatingConstants.RatingEliteGrandmaster => RatingConstants.RatingEliteGrandmaster - rating,
             _ => 0
         };
 
@@ -316,15 +283,15 @@ public static class RatingUtils
     public static double GetMajorTierRating(double rating) =>
         rating switch
         {
-            < RatingSilverIII => RatingBronzeIII,
-            < RatingGoldIII => RatingSilverIII,
-            < RatingPlatinumIII => RatingGoldIII,
-            < RatingEmeraldIII => RatingPlatinumIII,
-            < RatingDiamondIII => RatingEmeraldIII,
-            < RatingMasterIII => RatingDiamondIII,
-            < RatingGrandmasterIII => RatingMasterIII,
-            < RatingEliteGrandmaster => RatingGrandmasterIII,
-            _ => RatingEliteGrandmaster
+            < RatingConstants.RatingSilverIII => RatingConstants.RatingBronzeIII,
+            < RatingConstants.RatingGoldIII => RatingConstants.RatingSilverIII,
+            < RatingConstants.RatingPlatinumIII => RatingConstants.RatingGoldIII,
+            < RatingConstants.RatingEmeraldIII => RatingConstants.RatingPlatinumIII,
+            < RatingConstants.RatingDiamondIII => RatingConstants.RatingEmeraldIII,
+            < RatingConstants.RatingMasterIII => RatingConstants.RatingDiamondIII,
+            < RatingConstants.RatingGrandmasterIII => RatingConstants.RatingMasterIII,
+            < RatingConstants.RatingEliteGrandmaster => RatingConstants.RatingGrandmasterIII,
+            _ => RatingConstants.RatingEliteGrandmaster
         };
 
     /// <summary>
@@ -383,69 +350,69 @@ public static class RatingUtils
     /// Denotes the given tier is Elite Grandmaster
     /// </summary>
     public static bool IsEliteGrandmaster(string tier) =>
-        tier == GetTier(RatingEliteGrandmaster);
+        tier == GetTier(RatingConstants.RatingEliteGrandmaster);
 
     /// <summary>
     /// Denotes the given tier is any Grandmaster tier
     /// </summary>
     public static bool IsGrandmaster(string tier) =>
-        tier == GetTier(RatingGrandmasterIII) ||
-        tier == GetTier(RatingGrandmasterII) ||
-        tier == GetTier(RatingGrandmasterI);
+        tier == GetTier(RatingConstants.RatingGrandmasterIII) ||
+        tier == GetTier(RatingConstants.RatingGrandmasterII) ||
+        tier == GetTier(RatingConstants.RatingGrandmasterI);
 
     /// <summary>
     /// Denotes the given tier is any Master tier
     /// </summary>
     public static bool IsMaster(string tier) =>
-        tier == GetTier(RatingMasterIII) ||
-        tier == GetTier(RatingMasterII) ||
-        tier == GetTier(RatingMasterI);
+        tier == GetTier(RatingConstants.RatingMasterIII) ||
+        tier == GetTier(RatingConstants.RatingMasterII) ||
+        tier == GetTier(RatingConstants.RatingMasterI);
 
     /// <summary>
     /// Denotes the given tier is any Diamond tier
     /// </summary>
     public static bool IsDiamond(string tier) =>
-        tier == GetTier(RatingDiamondIII) ||
-        tier == GetTier(RatingDiamondII) ||
-        tier == GetTier(RatingDiamondI);
+        tier == GetTier(RatingConstants.RatingDiamondIII) ||
+        tier == GetTier(RatingConstants.RatingDiamondII) ||
+        tier == GetTier(RatingConstants.RatingDiamondI);
 
     /// <summary>
     /// Denotes the given tier is any Emerald tier
     /// </summary>
     public static bool IsEmerald(string tier) =>
-        tier == GetTier(RatingEmeraldIII) ||
-        tier == GetTier(RatingEmeraldII) ||
-        tier == GetTier(RatingEmeraldI);
+        tier == GetTier(RatingConstants.RatingEmeraldIII) ||
+        tier == GetTier(RatingConstants.RatingEmeraldII) ||
+        tier == GetTier(RatingConstants.RatingEmeraldI);
 
     /// <summary>
     /// Denotes the given tier is any Platinum tier
     /// </summary>
     public static bool IsPlatinum(string tier) =>
-        tier == GetTier(RatingPlatinumIII) ||
-        tier == GetTier(RatingPlatinumII) ||
-        tier == GetTier(RatingPlatinumI);
+        tier == GetTier(RatingConstants.RatingPlatinumIII) ||
+        tier == GetTier(RatingConstants.RatingPlatinumII) ||
+        tier == GetTier(RatingConstants.RatingPlatinumI);
 
     /// <summary>
     /// Denotes the given tier is any Gold tier
     /// </summary>
     public static bool IsGold(string tier) =>
-        tier == GetTier(RatingGoldIII) ||
-        tier == GetTier(RatingGoldII) ||
-        tier == GetTier(RatingGoldI);
+        tier == GetTier(RatingConstants.RatingGoldIII) ||
+        tier == GetTier(RatingConstants.RatingGoldII) ||
+        tier == GetTier(RatingConstants.RatingGoldI);
 
     /// <summary>
     /// Denotes the given tier is any Silver tier
     /// </summary>
     public static bool IsSilver(string tier) =>
-        tier == GetTier(RatingSilverIII) ||
-        tier == GetTier(RatingSilverII) ||
-        tier == GetTier(RatingSilverI);
+        tier == GetTier(RatingConstants.RatingSilverIII) ||
+        tier == GetTier(RatingConstants.RatingSilverII) ||
+        tier == GetTier(RatingConstants.RatingSilverI);
 
     /// <summary>
     /// Denotes the given tier is any Bronze tier
     /// </summary>
     public static bool IsBronze(string tier) =>
-        tier == GetTier(RatingBronzeIII) ||
-        tier == GetTier(RatingBronzeII) ||
-        tier == GetTier(RatingBronzeI);
+        tier == GetTier(RatingConstants.RatingBronzeIII) ||
+        tier == GetTier(RatingConstants.RatingBronzeII) ||
+        tier == GetTier(RatingConstants.RatingBronzeI);
 }

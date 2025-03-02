@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums.Enums;
 using JetBrains.Annotations;
 
 namespace Database.Entities;

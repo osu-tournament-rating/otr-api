@@ -1,6 +1,6 @@
 using API.Services.Interfaces;
+using Common.Enums.Enums;
 using Database.Entities;
-using Database.Enums;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;

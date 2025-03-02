@@ -1,4 +1,4 @@
-namespace API.Enums;
+namespace Common.Enums;
 
 public enum LeaderboardChartType
 {

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Database.Enums;
+namespace Common.Enums.Enums;
 
 /// <summary>
 /// Represents osu! play modes

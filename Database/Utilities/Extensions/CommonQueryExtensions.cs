@@ -1,6 +1,6 @@
+using Common.Enums.Enums;
+using Common.Enums.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 
 namespace Database.Utilities.Extensions;
 
@@ -33,7 +33,7 @@ public static class CommonQueryExtensions
                                                                            pms.Match.StartTime >= dateMin && pms.Match.StartTime <= dateMax);
     }
 
-    /// <inheritdoc cref="ApplyCommonFilters(System.Linq.IQueryable{Database.Entities.PlayerMatchStats},Database.Enums.Ruleset,System.DateTime?,System.DateTime?)"/>
+    /// <inheritdoc cref="ApplyCommonFilters(System.Linq.IQueryable{Database.Entities.PlayerMatchStats},Ruleset,System.DateTime?,System.DateTime?)"/>
     public static IQueryable<GameScore> ApplyCommonFilters(this IQueryable<GameScore> query,
         Ruleset ruleset,
         DateTime? dateMin = null,
@@ -45,7 +45,7 @@ public static class CommonQueryExtensions
                                                                    gs.Game.Match.StartTime >= dateMin && gs.Game.Match.StartTime <= dateMax);
     }
 
-    /// <inheritdoc cref="ApplyCommonFilters(System.Linq.IQueryable{Database.Entities.PlayerMatchStats},Database.Enums.Ruleset,System.DateTime?,System.DateTime?)"/>
+    /// <inheritdoc cref="ApplyCommonFilters(System.Linq.IQueryable{Database.Entities.PlayerMatchStats},Ruleset,System.DateTime?,System.DateTime?)"/>
     public static IQueryable<PlayerTournamentStats> ApplyCommonFilters(this IQueryable<PlayerTournamentStats> query,
         Ruleset ruleset,
         DateTime? dateMin = null,

@@ -1,7 +1,5 @@
 using API.DTOs;
-using API.Enums;
-using API.Repositories.Interfaces;
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace API.Services.Interfaces;
 
@@ -14,27 +12,10 @@ public interface IPlayerRatingsService
     /// <returns></returns>
     Task<IEnumerable<PlayerRatingStatsDTO?>> GetAsync(long osuPlayerId);
 
-    Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset);
+    Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset, bool includeAdjustments);
 
-    Task<IEnumerable<PlayerRatingStatsDTO?>> GetLeaderboardAsync(
-        Ruleset ruleset,
-        int page,
-        int pageSize,
-        LeaderboardChartType chartType,
-        LeaderboardFilterDTO filter,
-        int? playerId
-    );
-
-    Task<int> LeaderboardCountAsync(
-        Ruleset requestQueryRuleset,
-        LeaderboardChartType requestQueryChartType,
-        LeaderboardFilterDTO requestQueryFilter,
-        int? playerId
-    );
-
-    Task<LeaderboardFilterDefaultsDTO> LeaderboardFilterDefaultsAsync(
-        Ruleset requestQueryRuleset,
-        LeaderboardChartType requestQueryChartType
+    Task<LeaderboardDTO> GetLeaderboardAsync(
+        LeaderboardRequestQueryDTO request
     );
 
     /// <summary>

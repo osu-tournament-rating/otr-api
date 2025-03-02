@@ -4,6 +4,7 @@ using API.Utilities.Extensions;
 using AutoMapper;
 using Database.Entities;
 using Database.Entities.Processor;
+using Database.Models;
 
 namespace API.Configurations;
 
@@ -20,8 +21,10 @@ public class MapperProfile : Profile
         CreateMap<Game, GameDTO>()
             .ForMember(x => x.Players, opt => opt.Ignore());
         CreateMap<GameRoster, GameRosterDTO>();
-
         CreateMap<GameScore, GameScoreDTO>();
+
+        CreateMap<LeaderboardFilterDTO, LeaderboardFilter>();
+        CreateMap<LeaderboardTierFilterDTO, LeaderboardTierFilter>();
 
         CreateMap<Match, MatchCompactDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset));

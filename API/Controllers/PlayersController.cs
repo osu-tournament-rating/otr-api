@@ -2,8 +2,8 @@ using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
 using Asp.Versioning;
+using Common.Enums.Enums;
 using Database.Entities;
-using Database.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

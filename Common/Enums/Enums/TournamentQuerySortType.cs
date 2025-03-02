@@ -1,4 +1,4 @@
-namespace Database.Enums;
+namespace Common.Enums.Enums;
 
 /// <summary>
 /// Defines how to sort the results of fetching all tournaments

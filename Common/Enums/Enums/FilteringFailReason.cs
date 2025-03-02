@@ -1,4 +1,4 @@
-namespace Database.Enums;
+namespace Common.Enums.Enums;
 
 /// <summary>
 /// Explains why the player failed filtering

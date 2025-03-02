@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Database.Enums;
+namespace Common.Enums.Enums;
 
 /// <summary>
 /// Represents the judgement statistics of a score as a letter grade

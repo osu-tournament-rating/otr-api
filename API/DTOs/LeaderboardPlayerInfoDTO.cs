@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace API.DTOs;
 
@@ -8,7 +8,6 @@ namespace API.DTOs;
 public class LeaderboardPlayerInfoDTO
 {
     public int PlayerId { get; set; }
-    public long OsuId { get; set; }
     public int GlobalRank { get; set; }
     public string Name { get; set; } = null!;
     public string Tier { get; set; } = string.Empty;

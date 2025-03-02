@@ -1,5 +1,5 @@
+using Common.Enums.Enums.Verification;
 using Database.Entities;
-using Database.Enums.Verification;
 
 namespace DataWorkerService.AutomationChecks.Tournaments;
 

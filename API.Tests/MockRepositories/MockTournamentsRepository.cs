@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums.Enums;
 using Database.Repositories.Interfaces;
 using Moq;
 

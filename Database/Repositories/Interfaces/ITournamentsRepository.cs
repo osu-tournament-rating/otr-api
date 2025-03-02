@@ -1,6 +1,6 @@
+using Common.Enums.Enums;
+using Common.Enums.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 
 namespace Database.Repositories.Interfaces;
 
@@ -28,8 +28,8 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Tournament?> GetVerifiedAsync(int id);
 
     /// <summary>
-    /// Gets tournaments with a <see cref="Enums.Verification.TournamentProcessingStatus"/>
-    /// that is not <see cref="Enums.Verification.TournamentProcessingStatus.Done"/>
+    /// Gets tournaments with a <see cref="TournamentProcessingStatus"/>
+    /// that is not <see cref="TournamentProcessingStatus.Done"/>
     /// </summary>
     /// <param name="limit">Maximum number of tournaments</param>
     Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit);
