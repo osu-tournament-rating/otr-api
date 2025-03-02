@@ -1,7 +1,5 @@
 using Database.Entities;
-using Database.Enums;
 using Database.Enums.Verification;
-using Database.Utilities.Extensions;
 
 namespace DataWorkerService.Processors.Games;
 

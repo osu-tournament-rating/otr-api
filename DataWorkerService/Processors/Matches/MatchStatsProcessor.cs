@@ -1,7 +1,6 @@
 using Database.Entities;
 using Database.Enums;
 using Database.Enums.Verification;
-using Database.Utilities.Extensions;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 using DataWorkerService.Utilities;
 

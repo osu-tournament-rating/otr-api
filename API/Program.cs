@@ -585,7 +585,6 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 #region Repositories
 
 builder.Services.AddScoped<IApiPlayerRatingsRepository, ApiPlayerRatingsRepository>();
-builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
 
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();

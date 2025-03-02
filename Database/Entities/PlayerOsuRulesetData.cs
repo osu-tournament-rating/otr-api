@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
 using Database.Enums;
 
 namespace Database.Entities;

@@ -1,6 +1,4 @@
 using API.DTOs;
-using API.Enums;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
 using AutoMapper;
@@ -12,7 +10,7 @@ namespace API.Services.Implementations;
 
 public class PlayerStatsService(
     IMapper mapper,
-    IApiTournamentsRepository tournamentsRepository,
+    ITournamentsRepository tournamentsRepository,
     IGameScoresRepository gameScoresRepository,
     IPlayerMatchStatsRepository playerMatchStatsRepository,
     IPlayerRatingsService playerRatingsService,
@@ -230,15 +228,25 @@ public class PlayerStatsService(
                 dateMin,
                 dateMax);
 
-        PlayerTournamentLobbySizeCountDTO counts = await tournamentsRepository.GetLobbySizeStatsAsync(
+        Dictionary<int, int> counts = await tournamentsRepository.GetLobbySizeStatsAsync(
             playerId,
             ruleset,
             dateMin,
             dateMax
         );
+
+        var lobbyStats = new PlayerTournamentLobbySizeCountDTO
+        {
+            Count1v1 = counts[1],
+            Count2v2 = counts[2],
+            Count3v3 = counts[3],
+            Count4v4 = counts[4],
+            CountOther = counts[-1]
+        };
+
         return new PlayerTournamentPerformanceDTO
         {
-            LobbySizeCounts = counts,
+            LobbySizeCounts = lobbyStats,
             BestPerformances = mapper.Map<IEnumerable<PlayerTournamentStatsDTO>>(bestPerformances),
             RecentPerformances = mapper.Map<IEnumerable<PlayerTournamentStatsDTO>>(recentPerformances)
         };

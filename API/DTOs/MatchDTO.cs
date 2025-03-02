@@ -1,7 +1,4 @@
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using Database.Enums;
-using Database.Enums.Verification;
 
 namespace API.DTOs;
 

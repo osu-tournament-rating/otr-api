@@ -4,7 +4,6 @@ using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Enums;
 using Database.Enums.Verification;
-using Database.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;

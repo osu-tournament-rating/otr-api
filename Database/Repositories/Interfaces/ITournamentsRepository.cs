@@ -137,6 +137,35 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<ICollection<Beatmap>> GetPooledBeatmapsAsync(int id);
 
     /// <summary>
+    /// Retrieves team size statistics for a specific player within a given ruleset and date range.
+    /// The statistics are returned as a dictionary where the key represents the team size (number of players in a team)
+    /// and the value represents the count of tournaments the player participated in with that team size.
+    /// </summary>
+    /// <param name="playerId">The unique identifier of the player for whom the statistics are being retrieved.</param>
+    /// <param name="ruleset">The ruleset (e.g., osu!, osu!taiko, osu!catch, osu!mania) to filter the tournaments.</param>
+    /// <param name="dateMin">The lower bound of the date range to filter tournaments. Only tournaments occurring on or after this date will be included.</param>
+    /// <param name="dateMax">The upper bound of the date range to filter tournaments. Only tournaments occurring on or before this date will be included.</param>
+    /// <returns>
+    /// A dictionary where each key is a team size (integer) and the corresponding value is the count of tournaments
+    /// the player participated in with that team size. If no tournaments match the criteria, the keys are populated with a value of 0.
+    /// </returns>
+    /// <remarks>
+    /// Lookup -1 for "Other" format statistics
+    /// </remarks>
+    Task<Dictionary<int, int>> GetLobbySizeStatsAsync(
+        int playerId,
+        Ruleset ruleset,
+        DateTime dateMin,
+        DateTime dateMax
+    );
+
+    /// <summary>
+    /// Search for a tournament by name or acronym
+    /// </summary>
+    /// <param name="name">Tournament name or acronym</param>
+    public Task<IList<Tournament>> SearchAsync(string name);
+
+    /// <summary>
     /// Adds a collection of osu! beatmap ids to the <see cref="Tournament"/>'s <see cref="Tournament.PooledBeatmaps"/>
     /// collection
     /// </summary>

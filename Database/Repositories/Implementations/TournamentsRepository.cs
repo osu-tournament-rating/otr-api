@@ -170,6 +170,44 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         (await _context.Tournaments.Include(t => t.PooledBeatmaps)
             .FirstOrDefaultAsync(t => t.Id == id))?.PooledBeatmaps ?? [];
 
+    public async Task<Dictionary<int, int>> GetLobbySizeStatsAsync(
+        int playerId,
+        Ruleset ruleset,
+        DateTime dateMin,
+        DateTime dateMax
+    )
+    {
+        var participatedTournaments =
+            await QueryForParticipation(playerId, ruleset, dateMin, dateMax)
+                .Select(t => new { TournamentId = t.Id, TeamSize = t.LobbySize })
+                .Distinct() // Ensures each tournament is counted once
+                .ToListAsync();
+
+        // Group by team size and count occurrences
+        var lobbySizeCounts = participatedTournaments
+            .GroupBy(t => t.TeamSize)
+            .ToDictionary(g => g.Key, g => g.Count());
+
+        // Ensure all team sizes are represented, even if count is zero
+        var result = new Dictionary<int, int>
+        {
+            { 1, lobbySizeCounts.GetValueOrDefault(1, 0) },
+            { 2, lobbySizeCounts.GetValueOrDefault(2, 0) },
+            { 3, lobbySizeCounts.GetValueOrDefault(3, 0) },
+            { 4, lobbySizeCounts.GetValueOrDefault(4, 0) },
+            { -1, lobbySizeCounts.Where(kvp => kvp.Key > 4).Sum(kvp => kvp.Value) } // "Other" category
+        };
+
+        return result;
+    }
+
+    public async Task<IList<Tournament>> SearchAsync(string name) =>
+        await _context.Tournaments
+            .AsNoTracking()
+            .WhereSearchQuery(name)
+            .Take(30)
+            .ToListAsync();
+
     public async Task<ICollection<Beatmap>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds)
     {
         Tournament? tournament = await _context.Tournaments
