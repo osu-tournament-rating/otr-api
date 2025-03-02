@@ -9,19 +9,6 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
 {
     private readonly OtrContext _context = context;
 
-    public async Task<Player?> GetByOsuIdAsync(long osuId) =>
-        LocalView.FirstOrDefault(p => p.OsuId == osuId)
-        ?? await _context.Players.FirstOrDefaultAsync(p => p.OsuId == osuId);
-
-    public async Task<IEnumerable<Player>> GetByOsuIdAsync(IEnumerable<long> osuIds)
-    {
-        // Load local instances
-        IEnumerable<Player> result = [.. LocalView.Where(p => osuIds.Contains(p.OsuId))];
-        // Query db for non-local instances
-        IEnumerable<long> remainingIds = osuIds.Except(result.Select(p => p.OsuId));
-        return (await _context.Players.Where(p => remainingIds.Contains(p.OsuId)).ToListAsync()).Concat(result);
-    }
-
     public override async Task<ICollection<Player>> GetAsync(IEnumerable<int> ids) =>
         await _context.Players
             .Include(p => p.User)
