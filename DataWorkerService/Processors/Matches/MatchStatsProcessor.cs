@@ -67,8 +67,11 @@ public class MatchStatsProcessor(
             return;
         }
 
+        var currentStats = entity.PlayerMatchStats.ToDictionary(k => k.PlayerId, v => v);
+        IEnumerable<PlayerMatchStats> generatedStats = GeneratePlayerMatchStats(verifiedGames, currentStats);
+
         entity.Rosters = GenerateRosters(verifiedGames);
-        entity.PlayerMatchStats = [.. GeneratePlayerMatchStats(verifiedGames)];
+        entity.PlayerMatchStats = [.. generatedStats];
         entity.ProcessingStatus = MatchProcessingStatus.NeedsRatingProcessorData;
     }
 
@@ -148,7 +151,7 @@ public class MatchStatsProcessor(
     /// <br/>If any given <see cref="Game"/>s contains a null <see cref="Game.Rosters"/>
     /// <br/>If the parent <see cref="Match"/> contains a null <see cref="Match.Rosters"/>
     /// </exception>
-    private static IEnumerable<PlayerMatchStats> GeneratePlayerMatchStats(IEnumerable<Game> games)
+    private static IEnumerable<PlayerMatchStats> GeneratePlayerMatchStats(IEnumerable<Game> games, Dictionary<int, PlayerMatchStats> existingStats)
     {
         var eGames = games.ToList();
 
@@ -176,52 +179,104 @@ public class MatchStatsProcessor(
         // Calculate match costs
         IDictionary<int, double> matchCosts = MatchCostCalculator.CalculateOtrMatchCosts(eGames);
 
+        // Precompute winning team for each game
+        var gameWinningTeams = new Dictionary<Game, Team?>();
+        foreach (Game game in eGames)
+        {
+            var teamScores = game.Scores
+                .Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done })
+                .GroupBy(s => s.Team)
+                .Select(g => new
+                {
+                    Team = g.Key,
+                    TotalScore = g.Sum(s => s.Score)
+                })
+                .ToList();
+
+            Team? winningTeam = teamScores
+                .OrderByDescending(ts => ts.TotalScore)
+                .FirstOrDefault()?.Team;
+
+            gameWinningTeams[game] = winningTeam;
+        }
+
+        // Precompute max match score from match rosters
+        ICollection<MatchRoster> matchRosters = eGames.First().Match.Rosters;
+        var maxMatchScore = matchRosters.Max(r => r.Score);
+
         // Filter scores and group by player
         var playerScoreGroups = eGames
             .SelectMany(g => g.Scores.Where(s =>
-                    s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done }
-                )
+                s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done })
+                .GroupBy(s => s.Player.Id)
+                .Select(group => (group.Key, group.ToList()))
             )
-            .GroupBy(s => s.Player.Id)
-            .Select(group => (group.Key, group.ToList()))
             .ToList();
 
         return playerScoreGroups
-            .Select(group =>
+    .Select(group =>
+    {
+        (var playerId, List<GameScore> scores) = group;
+
+        // Determine games the player participated in
+        var playerGames = scores.Select(s => s.Game).Distinct().ToList();
+
+        var gamesWon = 0;
+        var gamesLost = 0;
+
+        foreach (Game game in playerGames)
+        {
+            // Player's team in this specific game
+            Team playerTeamInGame = scores.First(s => s.Game == game).Team;
+            Team? winningTeam = gameWinningTeams[game];
+
+            if (winningTeam == playerTeamInGame)
             {
-                (var playerId, List<GameScore> scores) = group;
+                gamesWon++;
+            }
+            else if (winningTeam != null)
+            {
+                gamesLost++;
+            }
+        }
 
-                // Get the first game's roster for the player's team
-                Game firstGame = scores.First().Game;
-                Team playerTeam = scores.First().Team;
-                var playerRoster = firstGame.Rosters.FirstOrDefault(r => r.Team == playerTeam)?.Roster ?? [];
+        // Determine match outcome for the player's team
+        MatchRoster? playerMatchRoster = matchRosters.FirstOrDefault(r => r.Roster.Contains(playerId));
+        var won = playerMatchRoster != null && playerMatchRoster.Score == maxMatchScore;
 
-                // Get the match roster for the player's team
-                var matchRoster = firstGame.Match.Rosters.FirstOrDefault(r => r.Team == playerTeam)?.Roster ?? [];
+        // Determine teammate and opponent IDs based on match rosters
+        List<int> teammateIds = playerMatchRoster?.Roster.Where(id => id != playerId).ToList() ?? [];
+        var opponentIds = matchRosters
+            .Where(r => r.Team != playerMatchRoster?.Team)
+            .SelectMany(r => r.Roster)
+            .Distinct()
+            .Where(id => id != playerId)
+            .ToList();
 
-                // TODO: GamesWon / GamesLost calculation does not appear to be correct
-                return new PlayerMatchStats
-                {
-                    MatchCost = matchCosts[playerId],
-                    AverageScore = scores.Average(s => s.Score),
-                    AveragePlacement = scores.Average(s => s.Placement),
-                    AverageMisses = scores.Average(s => s.CountMiss),
-                    AverageAccuracy = scores.Average(s => s.Accuracy),
-                    GamesPlayed = scores.Count,
-                    GamesWon = scores.Count(_ => playerRoster.Contains(playerId)),
-                    GamesLost = scores.Count(s => matchRoster.Contains(playerId) && s.Game.Rosters.Any(r => r.Team != playerTeam && r.Roster.Contains(playerId))),
-                    Won = matchRoster.Contains(playerId),
-                    // Reusing score groupings to ensure score filtering
-                    TeammateIds = [.. playerScoreGroups
-                        .Where(g => g.Item2.All(s => s.Team == scores.First().Team))
-                        .Select(g => g.Key)
-                        .Where(id => id != playerId)],
-                    OpponentIds = [.. playerScoreGroups
-                        .Where(g => g.Item2.All(s => s.Team != scores.First().Team))
-                        .Select(g => g.Key)
-                        .Where(id => id != playerId)],
-                    PlayerId = playerId
-                };
-            });
+        // Create or update the player stats
+        if (!existingStats.TryGetValue(playerId, out PlayerMatchStats? stat))
+        {
+            stat = new PlayerMatchStats
+            {
+                PlayerId = playerId
+            };
+            existingStats[playerId] = stat;
+        }
+
+        // Update the stats
+        stat.MatchCost = matchCosts[playerId];
+        stat.AverageScore = scores.Average(s => s.Score);
+        stat.AveragePlacement = scores.Average(s => s.Placement);
+        stat.AverageMisses = scores.Average(s => s.CountMiss);
+        stat.AverageAccuracy = scores.Average(s => s.Accuracy);
+        stat.GamesPlayed = scores.Count;
+        stat.GamesWon = gamesWon;
+        stat.GamesLost = gamesLost;
+        stat.Won = won;
+        stat.TeammateIds = [.. teammateIds];
+        stat.OpponentIds = [.. opponentIds];
+
+        return stat;
+    });
     }
 }

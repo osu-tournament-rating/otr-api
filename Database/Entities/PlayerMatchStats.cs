@@ -12,75 +12,75 @@ public class PlayerMatchStats : EntityBase
     /// <summary>
     /// Match cost
     /// </summary>
-    public double MatchCost { get; init; }
+    public double MatchCost { get; set; }
 
     /// <summary>
     /// Average score
     /// </summary>
-    public double AverageScore { get; init; }
+    public double AverageScore { get; set; }
 
     /// <summary>
     /// Average placement based on score
     /// </summary>
-    public double AveragePlacement { get; init; }
+    public double AveragePlacement { get; set; }
 
     /// <summary>
     /// Average miss count
     /// </summary>
-    public double AverageMisses { get; init; }
+    public double AverageMisses { get; set; }
 
     /// <summary>
     /// Average accuracy
     /// </summary>
-    public double AverageAccuracy { get; init; }
+    public double AverageAccuracy { get; set; }
 
     /// <summary>
     /// Total number of games played
     /// </summary>
-    public int GamesPlayed { get; init; }
+    public int GamesPlayed { get; set; }
 
     /// <summary>
     /// Total number of games won
     /// </summary>
-    public int GamesWon { get; init; }
+    public int GamesWon { get; set; }
 
     /// <summary>
     /// Total number of games lost
     /// </summary>
-    public int GamesLost { get; init; }
+    public int GamesLost { get; set; }
 
     /// <summary>
     /// Denotes if the <see cref="Player"/> won
     /// </summary>
-    public bool Won { get; init; }
+    public bool Won { get; set; }
 
     /// <summary>
     /// List of ids of the <see cref="Player"/>'s teammates
     /// </summary>
-    public int[] TeammateIds { get; init; } = [];
+    public int[] TeammateIds { get; set; } = [];
 
     /// <summary>
     /// List of ids of the <see cref="Player"/>'s opponents
     /// </summary>
-    public int[] OpponentIds { get; init; } = [];
+    public int[] OpponentIds { get; set; } = [];
 
     /// <summary>
     /// Id of the <see cref="Entities.Player"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public int PlayerId { get; init; }
+    public int PlayerId { get; set; }
 
     /// <summary>
     /// The <see cref="Entities.Player"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public Player Player { get; init; } = null!;
+    public Player Player { get; set; } = null!;
 
     /// <summary>
     /// Id of the <see cref="Entities.Match"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public int MatchId { get; init; }
+    public int MatchId { get; set; }
 
     /// <summary>
     /// The <see cref="Entities.Match"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public Match Match { get; init; } = null!;
+    public Match Match { get; set; } = null!;
 }
