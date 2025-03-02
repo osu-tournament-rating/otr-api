@@ -8,8 +8,14 @@ namespace Database.Entities;
 /// </summary>
 public class GameRoster : EntityBase, IRoster
 {
+    /// <summary>
+    /// The player ids who are on this roster
+    /// </summary>
     public int[] Roster { get; init; } = [];
 
+    /// <summary>
+    /// The team of the roster
+    /// </summary>
     public Team Team { get; init; }
 
     /// <summary>

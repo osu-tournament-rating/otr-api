@@ -17,5 +17,8 @@ public interface IRoster
     /// </summary>
     public Team Team { get; }
 
+    /// <summary>
+    /// Total score of the roster
+    /// </summary>
     public int Score { get; }
 }

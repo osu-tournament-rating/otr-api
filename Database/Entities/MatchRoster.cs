@@ -12,9 +12,6 @@ public class MatchRoster : EntityBase, IRoster
 
     public Team Team { get; init; }
 
-    /// <summary>
-    /// Number of points earned by the <see cref="Team"/> during the match
-    /// </summary>
     public int Score { get; init; }
 
     /// <summary>
