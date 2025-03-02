@@ -5,6 +5,9 @@ namespace API.DTOs;
 /// </summary>
 public class PlayerFrequencyDTO
 {
+    /// <summary>
+    /// The player
+    /// </summary>
     public PlayerCompactDTO Player { get; set; } = null!;
 
     /// <summary>

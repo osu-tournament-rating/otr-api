@@ -1,10 +1,3 @@
-
-
-
-
-
-
-
 namespace Common.Enums.Enums.Verification;
 
 /// <summary>
