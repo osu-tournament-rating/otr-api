@@ -27,7 +27,7 @@ public class CodeAuthorizationTest(
             return true;
         }
 
-        OsuCredentials? credentials = await client.AuthorizeUserWithCodeAsync(authCode, cancellationToken);
+        OsuCredentials? credentials = await client.AuthorizeUserWithCodeAsync(authCode, cancellationToken: cancellationToken);
 
         if (credentials is null)
         {

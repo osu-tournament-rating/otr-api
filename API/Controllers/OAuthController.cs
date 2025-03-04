@@ -7,6 +7,8 @@ using API.Utilities.Extensions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace API.Controllers;
 
@@ -15,22 +17,33 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class OAuthController(IOAuthHandler oAuthHandler, IOAuthClientService oAuthClientService) : Controller
 {
+    private readonly JsonSerializerSettings _serializerSettings = new()
+    {
+        ContractResolver = new DefaultContractResolver
+        {
+            NamingStrategy = new SnakeCaseNamingStrategy()
+        }
+    };
+
     /// <summary>
     /// Authorize using an osu! authorization code
     /// </summary>
     /// <param name="code">osu! authorization code</param>
     /// <response code="401">There was an error during authorization</response>
     /// <response code="200">Returns user access credentials</response>
-    [HttpPost("authorize")]
     [AllowAnonymous]
+    [HttpPost("authorize")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<AccessCredentialsDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> AuthorizeAsync([FromQuery][Required] string code)
+    public async Task<IActionResult> AuthorizeAsync(
+        [FromForm][Required] string code,
+        [FromForm(Name = "code_verifier")][Required] string codeVerifier
+    )
     {
-        AccessCredentialsDTO? result = await oAuthHandler.AuthorizeAsync(code);
+        AccessCredentialsDTO? result = await oAuthHandler.AuthorizeAsync(code, codeVerifier);
 
         return result is not null
-            ? Ok(result)
+            ? Content(JsonConvert.SerializeObject(result, _serializerSettings), "application/json")
             : Unauthorized();
     }
 

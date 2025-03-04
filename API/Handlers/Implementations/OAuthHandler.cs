@@ -26,7 +26,7 @@ public class OAuthHandler(
     IPasswordHasher<OAuthClient> clientSecretHasher
     ) : IOAuthHandler
 {
-    public async Task<AccessCredentialsDTO?> AuthorizeAsync(string osuAuthCode)
+    public async Task<AccessCredentialsDTO?> AuthorizeAsync(string osuAuthCode, string osuAuthCodeVerifier)
     {
         logger.LogDebug("Attempting authorization via osu! Auth Code");
 
@@ -36,7 +36,7 @@ public class OAuthHandler(
             return null;
         }
 
-        OsuUser? osuUser = await AuthorizeOsuUserAsync(osuAuthCode);
+        OsuUser? osuUser = await AuthorizeOsuUserAsync(osuAuthCode, osuAuthCodeVerifier);
         if (osuUser is null)
         {
             logger.LogDebug("Could not authorize user with the osu! API");
@@ -52,8 +52,7 @@ public class OAuthHandler(
         {
             AccessToken = jwtService.GenerateAccessToken(user),
             RefreshToken = jwtService.GenerateRefreshToken(user),
-            AccessExpiration = jwtService.AccessDurationSeconds,
-            RefreshExpiration = jwtService.RefreshDurationSeconds
+            ExpiresIn = jwtService.AccessDurationSeconds
         };
     }
 
@@ -82,8 +81,7 @@ public class OAuthHandler(
             {
                 AccessToken = jwtService.GenerateAccessToken(client),
                 RefreshToken = jwtService.GenerateRefreshToken(client),
-                AccessExpiration = jwtService.AccessDurationSeconds,
-                RefreshExpiration = jwtService.RefreshDurationSeconds
+                ExpiresIn = jwtService.AccessDurationSeconds
             }
         };
     }
@@ -146,7 +144,7 @@ public class OAuthHandler(
                 : new AccessCredentialsDTO
                 {
                     AccessToken = accessToken,
-                    AccessExpiration = jwtService.AccessDurationSeconds
+                    ExpiresIn = jwtService.AccessDurationSeconds
                 },
             ErrorDetail = string.IsNullOrEmpty(accessToken)
                 ? "Unable to refresh credentials"
@@ -157,11 +155,12 @@ public class OAuthHandler(
     /// <summary>
     /// Uses OsuSharp to authorize the current user via osu! API v2
     /// </summary>
-    /// <param name="osuCode">The authorization code for the user</param>
+    /// <param name="osuCode">Authorization code grant</param>
+    /// <param name="osuCodeVerifier">Challenge code</param>
     /// <returns>The authorized user</returns>
-    private async Task<OsuUser?> AuthorizeOsuUserAsync(string osuCode)
+    private async Task<OsuUser?> AuthorizeOsuUserAsync(string osuCode, string osuCodeVerifier)
     {
-        await osuClient.AuthorizeUserWithCodeAsync(osuCode);
+        await osuClient.AuthorizeUserWithCodeAsync(osuCode, osuCodeVerifier);
         return await osuClient.GetCurrentUserAsync();
     }
 

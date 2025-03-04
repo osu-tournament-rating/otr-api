@@ -12,8 +12,9 @@ public interface IOAuthHandler
     /// See <a href="https://osu.ppy.sh/docs/index.html#authorization-code-grant">
     /// osu! Authorization Code Grant documentation</a>
     /// </param>
+    /// <param name="osuAuthCodeVerifier">Proof of key code exchange (PKCE)</param>
     /// <returns>Access credentials for the associated user, or null if there was a problem with authorization</returns>
-    Task<AccessCredentialsDTO?> AuthorizeAsync(string osuAuthCode);
+    Task<AccessCredentialsDTO?> AuthorizeAsync(string osuAuthCode, string osuAuthCodeVerifier);
 
     /// <summary>
     /// Authorize an OAuth client via client credentials
