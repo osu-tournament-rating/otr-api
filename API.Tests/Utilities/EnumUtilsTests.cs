@@ -1,4 +1,4 @@
-using Database.Enums.Verification;
+using Common.Enums.Enums.Verification;
 using Database.Utilities;
 
 namespace APITests.Utilities;

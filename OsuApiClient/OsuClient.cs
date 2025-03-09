@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums.Enums;
 using Microsoft.Extensions.Logging;
 using OsuApiClient.Configurations.Interfaces;
 using OsuApiClient.Domain.Osu;

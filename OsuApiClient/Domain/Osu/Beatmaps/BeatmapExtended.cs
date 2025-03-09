@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace OsuApiClient.Domain.Osu.Beatmaps;
 
@@ -54,7 +54,7 @@ public class BeatmapExtended : Beatmap
     public int? MaxCombo { get; init; }
 
     /// <summary>
-    /// Denotes if the beatmap was converted from another <see cref="Database.Enums.Ruleset"/>
+    /// Denotes if the beatmap was converted from another <see cref="Ruleset"/>
     /// </summary>
     public bool Convert { get; init; }
 

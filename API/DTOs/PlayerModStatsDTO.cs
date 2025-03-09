@@ -1,3 +1,5 @@
+using Common.Enums.Enums;
+
 namespace API.DTOs;
 
 /// <summary>
@@ -6,52 +8,17 @@ namespace API.DTOs;
 public class PlayerModStatsDTO
 {
     /// <summary>
-    /// Number of games played with no mods
+    /// The combination of mods used
     /// </summary>
-    public ModStatsDTO? PlayedNM { get; set; }
+    public Mods Mods { get; set; }
 
     /// <summary>
-    /// Number of games played with easy
+    /// The number of times the player participated with this mod combination
     /// </summary>
-    public ModStatsDTO? PlayedEZ { get; set; }
+    public int Count { get; set; }
 
     /// <summary>
-    /// Number of games played with half time
+    /// The average score achieved by the player with this mod combination.
     /// </summary>
-    public ModStatsDTO? PlayedHT { get; set; }
-
-    /// <summary>
-    /// Number of games played with hidden
-    /// </summary>
-    public ModStatsDTO? PlayedHD { get; set; }
-
-    /// <summary>
-    /// Number of games played with hard rock
-    /// </summary>
-    public ModStatsDTO? PlayedHR { get; set; }
-
-    /// <summary>
-    /// Number of games played with double time
-    /// </summary>
-    public ModStatsDTO? PlayedDT { get; set; }
-
-    /// <summary>
-    /// Number of games played with flashlight
-    /// </summary>
-    public ModStatsDTO? PlayedFL { get; set; }
-
-    /// <summary>
-    /// Number of games played with both hidden and hard rock
-    /// </summary>
-    public ModStatsDTO? PlayedHDHR { get; set; }
-
-    /// <summary>
-    /// Number of games played with both hidden and double time
-    /// </summary>
-    public ModStatsDTO? PlayedHDDT { get; set; }
-
-    /// <summary>
-    /// Number of games played with both hidden and easy
-    /// </summary>
-    public ModStatsDTO? PlayedHDEZ { get; set; }
+    public int AverageScore { get; set; }
 }

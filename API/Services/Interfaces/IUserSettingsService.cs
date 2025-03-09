@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace API.Services.Interfaces;
 

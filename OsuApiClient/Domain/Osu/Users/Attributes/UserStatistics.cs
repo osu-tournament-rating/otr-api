@@ -1,12 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
-using Database.Enums;
+using Common.Enums.Enums;
 using OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 
 namespace OsuApiClient.Domain.Osu.Users.Attributes;
 
 /// <summary>
-/// Represents an aggregate of statistics for a <see cref="User"/> in a <see cref="Database.Enums.Ruleset"/>
+/// Represents an aggregate of statistics for a <see cref="User"/> in a <see cref="Ruleset"/>
 /// </summary>
 [AutoMap(typeof(UserStatisticsJsonModel))]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]

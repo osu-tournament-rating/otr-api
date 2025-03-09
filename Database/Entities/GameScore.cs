@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums.Enums;
+using Common.Enums.Enums.Verification;
 using Database.Entities.Interfaces;
-using Database.Enums;
-using Database.Enums.Verification;
 using Database.Utilities;
 
 namespace Database.Entities;
@@ -58,17 +58,17 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     public ScoreGrade Grade { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.Mods"/> enabled for the score
+    /// The <see cref="Common.Enums.Enums.Mods"/> enabled for the score
     /// </summary>
     public Mods Mods { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.Team"/> the <see cref="Player"/> played for in the game
+    /// The <see cref="Common.Enums.Enums.Team"/> the <see cref="Player"/> played for in the game
     /// </summary>
     public Team Team { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.Ruleset"/> the score was set in
+    /// The <see cref="Common.Enums.Enums.Ruleset"/> the score was set in
     /// </summary>
     public Ruleset Ruleset { get; set; }
 

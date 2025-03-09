@@ -160,14 +160,14 @@ public partial class TournamentsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
+    [ProducesResponseType<TournamentCompactDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateAsync(
         int id,
-        [FromBody] JsonPatchDocument<TournamentDTO> patch
+        [FromBody] JsonPatchDocument<TournamentCompactDTO> patch
     )
     {
         // Ensure target tournament exists
-        TournamentDTO? tournament = await tournamentsService.GetAsync(id);
+        TournamentCompactDTO? tournament = await tournamentsService.GetAsync(id, false);
         if (tournament is null)
         {
             return NotFound();
@@ -187,7 +187,7 @@ public partial class TournamentsController(
         }
 
         // Apply patched values to entity
-        TournamentDTO? updatedTournament = await tournamentsService.UpdateAsync(id, tournament);
+        TournamentCompactDTO? updatedTournament = await tournamentsService.UpdateAsync(id, tournament);
         return Ok(updatedTournament!);
     }
 

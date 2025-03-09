@@ -1,5 +1,5 @@
+using Common.Enums.Enums;
 using Database.Entities;
-using Database.Enums;
 
 namespace TestingUtils.SeededData;
 

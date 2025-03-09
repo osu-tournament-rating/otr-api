@@ -1,7 +1,7 @@
 using System.Diagnostics;
+using Common.Enums.Enums.Verification;
 using Database;
 using Database.Entities;
-using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 using DataWorkerService.Configurations;
 using DataWorkerService.Processors;

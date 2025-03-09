@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums.Enums;
 
 namespace OsuApiClient.Domain.OsuTrack;
 
@@ -59,17 +60,17 @@ public class UserStatUpdate : IModel
     public double Accuracy { get; init; }
 
     /// <summary>
-    /// Number of scores set with a grade of <see cref="Database.Enums.ScoreGrade.SS"/>
+    /// Number of scores set with a grade of <see cref="ScoreGrade.SS"/>
     /// </summary>
     public int CountSs { get; init; }
 
     /// <summary>
-    /// Number of scores set with a grade of <see cref="Database.Enums.ScoreGrade.S"/>
+    /// Number of scores set with a grade of <see cref="ScoreGrade.S"/>
     /// </summary>
     public int CountS { get; init; }
 
     /// <summary>
-    /// Number of scores set with a grade of <see cref="Database.Enums.ScoreGrade.A"/>
+    /// Number of scores set with a grade of <see cref="ScoreGrade.A"/>
     /// </summary>
     public int CountA { get; init; }
 

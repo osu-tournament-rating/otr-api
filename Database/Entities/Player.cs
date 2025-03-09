@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums.Enums;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
-using Database.Enums;
 
 namespace Database.Entities;
 
@@ -43,7 +43,7 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     }
 
     /// <summary>
-    /// <see cref="Enums.Ruleset"/> as set on the <see cref="Player"/>'s osu! profile
+    /// <see cref="Ruleset"/> as set on the <see cref="Player"/>'s osu! profile
     /// </summary>
     public Ruleset DefaultRuleset { get; set; }
 
@@ -58,7 +58,7 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     public DateTime OsuTrackLastFetch { get; set; }
 
     /// <summary>
-    /// A collection of <see cref="PlayerOsuRulesetData"/>, one for each <see cref="Enums.Ruleset"/>
+    /// A collection of <see cref="PlayerOsuRulesetData"/>, one for each <see cref="Ruleset"/>
     /// </summary>
     public ICollection<PlayerOsuRulesetData> RulesetData { get; set; } = [];
 

@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using Database.Enums;
-using Database.Enums.Verification;
+using Common.Enums.Enums;
+using Common.Enums.Enums.Verification;
 using JetBrains.Annotations;
 
 namespace API.DTOs;
@@ -92,7 +92,7 @@ public class GameDTO
     /// <summary>
     /// Win record
     /// </summary>
-    public GameWinRecordDTO? WinRecord { get; init; }
+    public IEnumerable<GameRosterDTO> Rosters { get; init; } = [];
 
     /// <summary>
     /// All participating players

@@ -1,3 +1,5 @@
+using API.Utilities;
+
 namespace API.DTOs;
 
 /// <summary>
@@ -19,6 +21,11 @@ public class PlayerRatingStatsDTO : PlayerRatingDTO
     /// Match win rate
     /// </summary>
     public double WinRate { get; set; }
+
+    /// <summary>
+    /// Current tier
+    /// </summary>
+    public string CurrentTier => RatingUtils.GetTier(Rating);
 
     /// <summary>
     /// Rating tier progress information

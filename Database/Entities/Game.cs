@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums.Enums;
+using Common.Enums.Enums.Verification;
 using Database.Entities.Interfaces;
-using Database.Enums;
-using Database.Enums.Verification;
 using Database.Utilities;
 
 namespace Database.Entities;
@@ -21,22 +21,22 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     public long OsuId { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.Ruleset"/> the game was played in
+    /// The <see cref="Common.Enums.Enums.Ruleset"/> the game was played in
     /// </summary>
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.ScoringType"/> used
+    /// The <see cref="Common.Enums.Enums.ScoringType"/> used
     /// </summary>
     public ScoringType ScoringType { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.TeamType"/> used
+    /// The <see cref="Common.Enums.Enums.TeamType"/> used
     /// </summary>
     public TeamType TeamType { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.Mods"/> enabled for the game
+    /// The <see cref="Common.Enums.Enums.Mods"/> enabled for the game
     /// </summary>
     /// <remarks>
     /// Mods set on the game level are "forced" on all scores
@@ -94,9 +94,9 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     public Beatmap? Beatmap { get; set; }
 
     /// <summary>
-    /// The win record for the game
+    /// The rosters which participated in the game
     /// </summary>
-    public GameWinRecord? WinRecord { get; set; }
+    public ICollection<GameRoster> Rosters { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="GameScore"/>s set in the <see cref="Game"/>

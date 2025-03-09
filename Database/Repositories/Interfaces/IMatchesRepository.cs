@@ -1,7 +1,7 @@
+using Common.Enums.Enums;
+using Common.Enums.Enums.Queries;
+using Common.Enums.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Queries;
-using Database.Enums.Verification;
 
 namespace Database.Repositories.Interfaces;
 

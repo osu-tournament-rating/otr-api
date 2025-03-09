@@ -1,14 +1,14 @@
+using Common.Enums.Enums;
+using Common.Enums.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 
 namespace DataWorkerService.AutomationChecks.Matches;
 
 /// <summary>
 /// Checks (and attempts to fix) <see cref="Match"/>es played in a <see cref="Tournament"/> with a
 /// <see cref="Tournament.LobbySize"/> of 1 where all <see cref="Match.Games"/> were played with a
-/// <see cref="Database.Enums.TeamType"/> of <see cref="Database.Enums.TeamType.HeadToHead"/>
-/// instead of <see cref="Database.Enums.TeamType.TeamVs"/>
+/// <see cref="TeamType"/> of <see cref="TeamType.HeadToHead"/>
+/// instead of <see cref="TeamType.TeamVs"/>
 /// </summary>
 /// <remarks>
 /// Functionally this automation check attempts to programatically correct 1v1 Tournament games where the match was

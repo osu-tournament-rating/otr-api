@@ -1,5 +1,4 @@
-using System.ComponentModel.DataAnnotations.Schema;
-using Database.Enums;
+using Common.Enums.Enums;
 
 namespace Database.Entities;
 

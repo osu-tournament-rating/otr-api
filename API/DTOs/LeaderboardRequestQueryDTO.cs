@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using API.DTOs.Interfaces;
-using API.Enums;
-using Database.Enums;
+using Common.Enums;
+using Common.Enums.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -38,6 +38,14 @@ public class LeaderboardRequestQueryDTO : IPaginated
     [DefaultValue(LeaderboardChartType.Global)]
     [EnumDataType(typeof(LeaderboardChartType))]
     public LeaderboardChartType ChartType { get; init; } = LeaderboardChartType.Global;
+
+    /// <summary>
+    /// An optional country code to filter by
+    /// </summary>
+    /// <remarks>ChartType must be set to Country for this to apply</remarks>
+    [FromQuery]
+    [DefaultValue(null)]
+    public string? Country { get; set; }
 
     [BindNever]
     public LeaderboardFilterDTO Filter { get; set; } = new();

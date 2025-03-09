@@ -6,19 +6,9 @@ namespace API.DTOs;
 public class PlayerFrequencyDTO
 {
     /// <summary>
-    /// Id of the teammate or opponent
+    /// The player
     /// </summary>
-    public int PlayerId { get; set; }
-
-    /// <summary>
-    /// osu! id of the teammate or opponent
-    /// </summary>
-    public long OsuId { get; set; }
-
-    /// <summary>
-    /// osu! username of the teammate or opponent
-    /// </summary>
-    public string? Username { get; set; }
+    public PlayerCompactDTO Player { get; set; } = null!;
 
     /// <summary>
     /// Number of times this teammate or opponent has played with the player
