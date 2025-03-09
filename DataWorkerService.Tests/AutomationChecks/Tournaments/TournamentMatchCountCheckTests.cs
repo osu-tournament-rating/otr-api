@@ -54,7 +54,10 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
         {
             foreach (var _ in Enumerable.Range(1, totalMatchCount - verifiedMatchCount))
             {
-                SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, tournament: tournament);
+                SeededMatch.Generate(
+                    verificationStatus: VerificationStatus.Rejected,
+                    tournament: tournament,
+                    rejectionReason: MatchRejectionReason.NoValidGames);
             }
         }
 
