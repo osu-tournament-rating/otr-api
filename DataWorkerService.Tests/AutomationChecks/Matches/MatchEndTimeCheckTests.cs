@@ -27,11 +27,11 @@ public class MatchEndTimeCheckTests : AutomationChecksTestBase<MatchEndTimeCheck
     }
 
     [Fact]
-    public void Check_GivenDefaultDateTime_Fails()
+    public void Check_GivenEmptyDateTime_Fails()
     {
         // Arrange
         Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None);
-        match.EndTime = default;
+        match.EndTime = null;
 
         // Act
         var actualPass = AutomationCheck.Check(match);
