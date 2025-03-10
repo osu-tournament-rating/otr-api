@@ -1,3 +1,4 @@
+using Common.Enums.Enums;
 using Common.Enums.Enums.Verification;
 using Database.Entities;
 using DataWorkerService.AutomationChecks.Games;
@@ -74,7 +75,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
     }
 
     [Fact]
-    public void Check_GivenVerifiedScoresCount_LessThanTournamentLobbySize_FailsWith_LobbySizeMissMatch()
+    public void Check_GivenVerifiedScoresCount_LessThanTournamentLobbySize_FailsWith_LobbySizeMismatch()
     {
         // Arrange
         Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);
@@ -82,7 +83,27 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         SeededScore.Generate(verificationStatus: VerificationStatus.PreVerified, game: game);
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, game: game);
 
-        game.Match.Tournament.LobbySize = 4;
+        game.Match.Tournament.LobbyTeamSize = 4;
+
+        // Act
+        var actualPass = AutomationCheck.Check(game);
+
+        // Assert
+        Assert.False(actualPass);
+        Assert.Equal(GameRejectionReason.LobbySizeMismatch, game.RejectionReason);
+    }
+
+    [Fact]
+    public void Check_GivenUnequalTeamSizes_EqualToTournamentLobbySize_FailsWith_LobbySizeMismatch()
+    {
+        // Arrange
+        Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);
+
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, game: game);
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
+        game.Match.Tournament.LobbyTeamSize = 2;
 
         // Act
         var actualPass = AutomationCheck.Check(game);
@@ -128,7 +149,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
             }
         }
 
-        game.Match.Tournament.LobbySize = tournamentTeamSize;
+        game.Match.Tournament.LobbyTeamSize = tournamentTeamSize;
 
         // Act
         var actualPass = AutomationCheck.Check(game);
