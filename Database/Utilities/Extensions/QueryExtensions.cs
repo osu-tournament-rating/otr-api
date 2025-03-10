@@ -195,7 +195,7 @@ public static class QueryExtensions
     /// <param name="lobbySize">Lobby size</param>
     /// <remarks>Does nothing if <paramref name="lobbySize"/> is null</remarks>
     public static IQueryable<Tournament> WhereLobbySize(this IQueryable<Tournament> query, int? lobbySize = null) =>
-        lobbySize.HasValue ? query.Where(t => t.LobbySize == lobbySize.Value) : query;
+        lobbySize.HasValue ? query.Where(t => t.LobbyTeamSize == lobbySize.Value) : query;
 
     /// <summary>
     /// Orders the query based on the specified sort type and direction.
@@ -222,8 +222,8 @@ public static class QueryExtensions
                 ? query.OrderByDescending(t => t.Created)
                 : query.OrderBy(t => t.Created),
             TournamentQuerySortType.LobbySize => descending
-                ? query.OrderByDescending(t => t.LobbySize)
-                : query.OrderBy(t => t.LobbySize),
+                ? query.OrderByDescending(t => t.LobbyTeamSize)
+                : query.OrderBy(t => t.LobbyTeamSize),
             _ => query
         };
 
