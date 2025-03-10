@@ -1,3 +1,4 @@
+using Common.Enums.Enums;
 using Common.Enums.Enums.Verification;
 using Database.Entities;
 
@@ -27,8 +28,21 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
             return false;
         }
 
-        // Number of scores matches expected team size
-        if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.LobbyTeamSize)
+        if (entity.TeamType is TeamType.TeamVs or TeamType.TagTeamVs)
+        {
+            var redValidScoresCount = entity.Scores
+                .Count(gs => gs is { Team: Team.Red, VerificationStatus: VerificationStatus.PreVerified or VerificationStatus.Verified });
+            var blueValidScoresCount = entity.Scores
+                .Count(gs => gs is { Team: Team.Blue, VerificationStatus: VerificationStatus.PreVerified or VerificationStatus.Verified });
+
+            if (redValidScoresCount == blueValidScoresCount &&
+                redValidScoresCount == entity.Match.Tournament.LobbyTeamSize &&
+                redValidScoresCount + blueValidScoresCount == validScoresCount)
+            {
+                return true;
+            }
+        }
+        else if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.LobbyTeamSize)
         {
             return true;
         }

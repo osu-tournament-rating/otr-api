@@ -149,6 +149,15 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
             }
         }
 
+        foreach ((GameScore score, var i) in game.Scores.Select((score, i) => (score, i)))
+        {
+            score.Team = game.TeamType is TeamType.HeadToHead or TeamType.TagCoop
+                ? Team.NoTeam
+                : i % 2 == 0
+                    ? Team.Red
+                    : Team.Blue;
+        }
+
         game.Match.Tournament.LobbyTeamSize = tournamentTeamSize;
 
         // Act

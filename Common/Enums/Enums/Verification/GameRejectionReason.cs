@@ -49,9 +49,10 @@ public enum GameRejectionReason
     NoValidScores = 1 << 6,
 
     /// <summary>
-    /// The <see cref="Database.Entities.Game"/>'s number of <see cref="Database.Entities.Game.Scores"/> with a <see cref="VerificationStatus"/>
+    /// The game's number of scores with a <see cref="VerificationStatus"/>
     /// of <see cref="VerificationStatus.Verified"/> or <see cref="VerificationStatus.PreVerified"/> divided by 2 is
-    /// not equal to the <see cref="Database.Entities.Tournament.LobbySize"/> of the parent <see cref="Database.Entities.Tournament"/>
+    /// not equal to the lobby size of the parent tournament in case of head-to-head games.
+    /// Or the number of validated team red and blue scores is not valid in case of team games.
     /// </summary>
     LobbySizeMismatch = 1 << 7,
 
