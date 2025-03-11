@@ -32,7 +32,7 @@ public class MatchGameCountCheck(ILogger<MatchGameCountCheck> logger) : Automati
             case < 3:
                 entity.RejectionReason |= MatchRejectionReason.UnexpectedGameCount;
                 return false;
-            case 4 or 5:
+            case 3 or 4:
                 entity.WarningFlags |= MatchWarningFlags.LowGameCount;
                 return true;
             // Number of games satisfies a "best of X" situation
