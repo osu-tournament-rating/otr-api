@@ -8,7 +8,7 @@ namespace DataWorkerService.Tests.AutomationChecks.Matches;
 public class MatchEndTimeCheckTests : AutomationChecksTestBase<MatchEndTimeCheck>
 {
     [Theory]
-    [ClassData(typeof(SharedTestData.EndTimeTestData))]
+    [ClassData(typeof(SharedTestData.EndTimeNullableTestData))]
     public void Check_PassesWhenExpected(DateTime? endTime, bool expectedPass)
     {
         // Arrange
