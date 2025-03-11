@@ -1,4 +1,5 @@
 using Common.Enums.Enums.Verification;
+using Common.Utilities.Extensions;
 using Database.Entities;
 
 namespace DataWorkerService.AutomationChecks.Matches;
@@ -20,7 +21,7 @@ public class MatchGameCountCheck(ILogger<MatchGameCountCheck> logger) : Automati
         }
 
         var validGamesCount = entity.Games
-            .Count(g => g.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified);
+            .Count(g => g.VerificationStatus.IsPreVerifiedOrVerified());
 
         switch (validGamesCount)
         {

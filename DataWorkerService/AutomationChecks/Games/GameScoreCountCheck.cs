@@ -1,5 +1,6 @@
 using Common.Enums.Enums;
 using Common.Enums.Enums.Verification;
+using Common.Utilities.Extensions;
 using Database.Entities;
 
 namespace DataWorkerService.AutomationChecks.Games;
@@ -18,8 +19,8 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
             return false;
         }
 
-        var validScoresCount = entity.Scores
-            .Count(gs => gs.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified);
+        GameScore[] validScores = [.. entity.Scores.Where(gs => gs.VerificationStatus.IsPreVerifiedOrVerified())];
+        var validScoresCount = validScores.Length;
 
         // Game has no valid scores
         if (validScoresCount == 0)
@@ -30,10 +31,8 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
 
         if (entity.TeamType is TeamType.TeamVs or TeamType.TagTeamVs)
         {
-            var redValidScoresCount = entity.Scores
-                .Count(gs => gs is { Team: Team.Red, VerificationStatus: VerificationStatus.PreVerified or VerificationStatus.Verified });
-            var blueValidScoresCount = entity.Scores
-                .Count(gs => gs is { Team: Team.Blue, VerificationStatus: VerificationStatus.PreVerified or VerificationStatus.Verified });
+            var redValidScoresCount = validScores.Count(gs => gs.Team == Team.Red);
+            var blueValidScoresCount = validScores.Count(gs => gs.Team == Team.Blue);
 
             if (redValidScoresCount == blueValidScoresCount &&
                 redValidScoresCount == entity.Match.Tournament.LobbyTeamSize &&

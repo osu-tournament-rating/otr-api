@@ -1,5 +1,6 @@
 using Common.Enums.Enums;
 using Common.Enums.Enums.Verification;
+using Common.Utilities.Extensions;
 using Database.Entities;
 using DataWorkerService.AutomationChecks.Games;
 using TestingUtils.SeededData;
@@ -45,7 +46,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         // Assert
         Assert.False(actualPass);
         Assert.DoesNotContain(game.Scores, score =>
-            score.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified
+            score.VerificationStatus.IsPreVerifiedOrVerified()
         );
         Assert.Equal(GameRejectionReason.NoValidScores, game.RejectionReason);
     }
@@ -97,7 +98,9 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
     public void Check_GivenUnequalTeamSizes_EqualToTournamentLobbySize_FailsWith_LobbySizeMismatch()
     {
         // Arrange
-        Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);
+        Game game = SeededGame.Generate(
+            teamType: TeamType.TeamVs,
+            rejectionReason: GameRejectionReason.None);
 
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, game: game);
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
