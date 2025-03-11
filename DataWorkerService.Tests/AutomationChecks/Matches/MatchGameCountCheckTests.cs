@@ -128,9 +128,9 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
     }
 
     [Theory]
-    [InlineData(3, false)]
+    [InlineData(3, true)]
     [InlineData(4, true)]
-    [InlineData(5, true)]
+    [InlineData(5, false)]
     [InlineData(6, false)]
     public void Check_AppliesWarningFlag_WhenExpected(int gameCount, bool expectedWarning)
     {
