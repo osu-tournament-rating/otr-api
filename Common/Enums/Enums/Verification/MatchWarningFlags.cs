@@ -31,8 +31,8 @@ public enum MatchWarningFlags
     UnexpectedBeatmapsFound = 1 << 2,
 
     /// <summary>
-    /// The <see cref="Match"/> has 1 or more <see cref="Player"/>s that played in different <see cref="Team"/>s
-    /// in different <see cref="Game"/>s
+    /// The <see cref="Database.Entities.Match"/> has 1 or more <see cref="Database.Entities.Player"/>s that played in different <see cref="Team"/>s
+    /// in different <see cref="Database.Entities.Game"/>s
     /// </summary>
     SamePlayerInBothTeams = 1 << 3,
 }
