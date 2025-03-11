@@ -1,5 +1,5 @@
 -- Update tournaments, matches, games, and game scores
--- such that the processor will re-generate automated checks on unverified data.
+-- such that the DataWorkerService will re-generate automated checks on unverified data.
 
 UPDATE tournaments
 SET rejection_reason = 0,
