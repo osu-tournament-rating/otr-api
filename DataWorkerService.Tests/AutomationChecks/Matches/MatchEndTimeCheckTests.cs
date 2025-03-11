@@ -9,7 +9,7 @@ public class MatchEndTimeCheckTests : AutomationChecksTestBase<MatchEndTimeCheck
 {
     [Theory]
     [ClassData(typeof(SharedTestData.EndTimeTestData))]
-    public void Check_PassesWhenExpected(DateTime endTime, bool expectedPass)
+    public void Check_PassesWhenExpected(DateTime? endTime, bool expectedPass)
     {
         // Arrange
         MatchRejectionReason expectedRejectionReason = expectedPass

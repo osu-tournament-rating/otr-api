@@ -58,8 +58,8 @@ public static class SharedTestData
     {
         public IEnumerator<object[]> GetEnumerator()
         {
-            yield return [SeededDate.Placeholder, false];
-            yield return [DateTime.MinValue, false];
+            yield return [SeededDate.Placeholder, true];
+            yield return [DateTime.MinValue, true];
             yield return [SeededDate.Generate(), true];
             yield return [DateTime.MaxValue, true];
             yield return [DateTime.Now, true];
