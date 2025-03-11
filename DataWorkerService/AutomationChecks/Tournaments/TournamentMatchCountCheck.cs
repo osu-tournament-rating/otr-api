@@ -23,8 +23,10 @@ public class TournamentMatchCountCheck(
             return false;
         }
 
+        var matchesWithGamesCount = entity.Matches.Count(m => m.RejectionReason != MatchRejectionReason.NoGames);
+
         // Number of valid matches is above the threshold
-        if (validMatchesCount / (double)entity.Matches.Count >= Constants.TournamentVerifiedMatchesPercentageThreshold)
+        if (validMatchesCount / (double)matchesWithGamesCount >= Constants.TournamentVerifiedMatchesPercentageThreshold)
         {
             return true;
         }
