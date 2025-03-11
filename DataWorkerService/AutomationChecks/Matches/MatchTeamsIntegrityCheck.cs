@@ -14,7 +14,7 @@ public class MatchTeamsIntegrityCheck(ILogger<MatchTeamsIntegrityCheck> logger) 
 
     protected override bool OnChecking(Match entity)
     {
-        IEnumerable<GameScore> validScores = [.. entity.Games
+        GameScore[] validScores = [.. entity.Games
             .Where(x => x.VerificationStatus.IsPreVerifiedOrVerified())
             .SelectMany(x => x.Scores)
             .Where(x => x.VerificationStatus.IsPreVerifiedOrVerified())];
