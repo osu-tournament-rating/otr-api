@@ -21,6 +21,8 @@ public class OsuApiDataParserService(
     IOsuClient osuClient
 ) : IOsuApiDataParserService
 {
+    private const double EzScoreMultiplier = 1.75;
+
     private readonly Dictionary<long, Beatmapset> _beatmapSetCache = [];
     private readonly Dictionary<long, Beatmap> _beatmapCache = [];
     private readonly Dictionary<long, Player> _playerCache = [];
@@ -80,7 +82,7 @@ public class OsuApiDataParserService(
                 {
                     // Scale up EZ scores
                     Score = mpScore.Mods.HasFlag(Mods.Easy)
-                        ? (int)(mpScore.Score * 1.75) // TODO: parametrize
+                        ? (int)(mpScore.Score * EzScoreMultiplier)
                         : mpScore.Score,
                     MaxCombo = mpScore.MaxCombo,
                     Count50 = mpScore.Statistics.Count50,
