@@ -27,7 +27,7 @@ public class MatchEndTimeCheckTests : AutomationChecksTestBase<MatchEndTimeCheck
     }
 
     [Fact]
-    public void Check_GivenEmptyDateTime_Fails()
+    public void Check_GivenEmptyDateTime_FailsWith_NoEndTime()
     {
         // Arrange
         Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None);
