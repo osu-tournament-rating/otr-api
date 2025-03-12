@@ -47,7 +47,7 @@ public class MatchTeamsIntegrityCheckTests : AutomationChecksTestBase<MatchTeams
 
         // Assert
         Assert.True(actualPass);
-        Assert.Equal(MatchWarningFlags.SamePlayerInBothTeams, match.WarningFlags);
+        Assert.Equal(MatchWarningFlags.SamePlayerAmongTeams, match.WarningFlags);
     }
 
     [Fact]

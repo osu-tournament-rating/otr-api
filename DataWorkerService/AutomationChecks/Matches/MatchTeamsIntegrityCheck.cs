@@ -2,11 +2,12 @@
 using Common.Enums.Enums.Verification;
 using Common.Utilities.Extensions;
 using Database.Entities;
+using DataWorkerService.Utilities;
 
 namespace DataWorkerService.AutomationChecks.Matches;
 
 /// <summary>
-/// Checks for <see cref="Match"/>es with the same <see cref="Player"/> in both <see cref="Team"/>s
+/// Checks for <see cref="Match"/>es with the same <see cref="Player"/> among <see cref="Team"/>s
 /// </summary>
 public class MatchTeamsIntegrityCheck(ILogger<MatchTeamsIntegrityCheck> logger) : AutomationCheckBase<Match>(logger)
 {
@@ -14,23 +15,31 @@ public class MatchTeamsIntegrityCheck(ILogger<MatchTeamsIntegrityCheck> logger) 
 
     protected override bool OnChecking(Match entity)
     {
-        GameScore[] validScores = [.. entity.Games
-            .Where(x => x.VerificationStatus.IsPreVerifiedOrVerified())
-            .SelectMany(x => x.Scores)
-            .Where(x => x.VerificationStatus.IsPreVerifiedOrVerified())];
-
-        var teamRedPlayers = validScores
-            .Where(x => x.Team == Team.Red)
-            .Select(x => x.PlayerId)
-            .ToHashSet();
-
-        IEnumerable<int> teamBluePlayers = validScores
-            .Where(x => x.Team == Team.Blue)
-            .Select(x => x.PlayerId);
-
-        if (teamBluePlayers.Any(teamRedPlayers.Contains))
+        Game[] validGames = [.. entity.Games.Where(x => x.VerificationStatus.IsPreVerifiedOrVerified())];
+        foreach (Game game in validGames)
         {
-            entity.WarningFlags |= MatchWarningFlags.SamePlayerInBothTeams;
+            IEnumerable<GameScore> validScores = game.Scores.Where(x => x.VerificationStatus.IsPreVerifiedOrVerified());
+            game.Rosters = RostersHelper.GenerateRosters(validScores);
+        }
+
+        ICollection<MatchRoster> rosters = RostersHelper.GenerateRosters(validGames);
+        HashSet<int>[] playerIdsPerRoster = [.. rosters.Select(x => x.Roster.ToHashSet())];
+
+        if (playerIdsPerRoster.Length == 1)
+        {
+            return true;
+        }
+
+        for (var i = 0; i < playerIdsPerRoster.Length; ++i)
+        {
+            for (var j = i + 1; j < playerIdsPerRoster.Length; ++j)
+            {
+                if (playerIdsPerRoster[i].Overlaps(playerIdsPerRoster[j]))
+                {
+                    entity.WarningFlags |= MatchWarningFlags.SamePlayerAmongTeams;
+                    return true;
+                }
+            }
         }
 
         return true;

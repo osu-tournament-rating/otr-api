@@ -2,6 +2,7 @@ using Common.Enums.Enums;
 using Common.Enums.Enums.Verification;
 using Database.Entities;
 using DataWorkerService.Processors.Games;
+using DataWorkerService.Utilities;
 using Microsoft.Extensions.Logging;
 using Serilog.Extensions.Logging;
 using TestingUtils.SeededData;
@@ -48,7 +49,7 @@ public class GameStatsProcessorTests
         ];
 
         // Act
-        ICollection<GameRoster> rosters = GameStatsProcessor.GenerateRosters(scores);
+        ICollection<GameRoster> rosters = RostersHelper.GenerateRosters(scores);
 
         GameRoster redRoster = rosters.First(r => r.Team == Team.Red);
         GameRoster blueRoster = rosters.First(r => r.Team == Team.Blue);
