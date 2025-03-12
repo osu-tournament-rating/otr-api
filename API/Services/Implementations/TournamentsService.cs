@@ -38,7 +38,7 @@ public class TournamentsService(
             ForumUrl = submission.ForumUrl,
             RankRangeLowerBound = submission.RankRangeLowerBound,
             Ruleset = submission.Ruleset,
-            LobbyTeamSize = submission.LobbySize,
+            TeamLobbySize = submission.LobbySize,
             ProcessingStatus = preApprove
                 ? TournamentProcessingStatus.NeedsMatchData
                 : TournamentProcessingStatus.NeedsApproval,
@@ -143,7 +143,7 @@ public class TournamentsService(
         existing.ForumUrl = wrapper.ForumUrl;
         existing.Ruleset = wrapper.Ruleset;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
-        existing.LobbyTeamSize = wrapper.LobbySize;
+        existing.TeamLobbySize = wrapper.LobbySize;
         existing.ProcessingStatus = wrapper.ProcessingStatus;
         existing.VerificationStatus = wrapper.VerificationStatus;
         existing.RejectionReason = wrapper.RejectionReason;

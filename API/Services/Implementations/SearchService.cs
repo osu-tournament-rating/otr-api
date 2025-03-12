@@ -40,7 +40,7 @@ public class SearchService(
         {
             Id = t.Id,
             Ruleset = t.Ruleset,
-            LobbySize = t.LobbyTeamSize,
+            LobbySize = t.TeamLobbySize,
             Name = t.Name
         })];
 

@@ -47,7 +47,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// Expected in-match team size
     /// </summary>
-    public int LobbyTeamSize { get; set; }
+    public int TeamLobbySize { get; set; }
 
     public VerificationStatus VerificationStatus { get; set; }
 

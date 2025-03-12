@@ -35,7 +35,7 @@ public static class SeededTournament
             ForumUrl = forumUrl ?? string.Empty,
             RankRangeLowerBound = rankRangeLowerBound ?? s_rand.NextInclusive(1_000_000),
             Ruleset = ruleset ?? s_rand.NextEnum<Ruleset>(),
-            LobbyTeamSize = teamSize ?? s_rand.NextInclusive(1, 8),
+            TeamLobbySize = teamSize ?? s_rand.NextInclusive(1, 8),
             VerificationStatus = verificationStatus ?? s_rand.NextEnum<VerificationStatus>(),
             RejectionReason = rejectionReason ?? s_rand.NextEnum<TournamentRejectionReason>(),
             ProcessingStatus = processingStatus ?? s_rand.NextEnum<TournamentProcessingStatus>()

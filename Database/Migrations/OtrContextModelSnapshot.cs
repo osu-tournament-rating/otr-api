@@ -1589,10 +1589,6 @@ namespace Database.Migrations
                         .HasColumnName("last_processing_date")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
-                    b.Property<int>("LobbyTeamSize")
-                        .HasColumnType("integer")
-                        .HasColumnName("lobby_team_size");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(512)
@@ -1628,6 +1624,10 @@ namespace Database.Migrations
                     b.Property<int?>("SubmittedByUserId")
                         .HasColumnType("integer")
                         .HasColumnName("submitted_by_user_id");
+
+                    b.Property<int>("TeamLobbySize")
+                        .HasColumnType("integer")
+                        .HasColumnName("team_lobby_size");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")

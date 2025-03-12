@@ -37,12 +37,12 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
 
             if (playerCountPerTeam.Length > 1 && // more than one team
                 playerCountPerTeam.All(x => x == playerCountPerTeam[0]) && // all counts are equal
-                playerCountPerTeam[0] == entity.Match.Tournament.LobbyTeamSize) // all counts are correct
+                playerCountPerTeam[0] == entity.Match.Tournament.TeamLobbySize) // all counts are correct
             {
                 return true;
             }
         }
-        else if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.LobbyTeamSize)
+        else if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.TeamLobbySize)
         {
             return true;
         }

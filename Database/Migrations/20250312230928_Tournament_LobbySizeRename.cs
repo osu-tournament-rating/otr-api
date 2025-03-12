@@ -11,18 +11,18 @@ namespace Database.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.RenameColumn(
-                name: "lobby_size",
+                name: "LobbySize",
                 table: "tournaments",
-                newName: "lobby_team_size");
+                newName: "team_lobby_size");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.RenameColumn(
-                name: "lobby_team_size",
+                name: "team_lobby_size",
                 table: "tournaments",
-                newName: "lobby_size");
+                newName: "LobbySize");
         }
     }
 }
