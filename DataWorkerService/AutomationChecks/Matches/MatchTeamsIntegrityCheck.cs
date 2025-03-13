@@ -31,7 +31,7 @@ public class MatchTeamsIntegrityCheck(ILogger<MatchTeamsIntegrityCheck> logger) 
             {
                 if (playerIdsPerRoster[i].Overlaps(playerIdsPerRoster[j]))
                 {
-                    entity.WarningFlags |= MatchWarningFlags.RostersNotUnique;
+                    entity.WarningFlags |= MatchWarningFlags.OverlappingRosters;
                     return true;
                 }
             }

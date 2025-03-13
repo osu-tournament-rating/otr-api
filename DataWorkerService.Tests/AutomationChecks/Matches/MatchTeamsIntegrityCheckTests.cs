@@ -9,7 +9,7 @@ namespace DataWorkerService.Tests.AutomationChecks.Matches;
 public class MatchTeamsIntegrityCheckTests : AutomationChecksTestBase<MatchTeamsIntegrityCheck>
 {
     [Fact]
-    public void Check_WithSamePlayerInBothTeams_PassesWithWarning_SamePlayerInBothTeams()
+    public void Check_WithSamePlayerInBothTeams_PassesWithWarning_OverlappingRosters()
     {
         // Arrange
         Match match = SeededMatch.Generate(
@@ -47,7 +47,7 @@ public class MatchTeamsIntegrityCheckTests : AutomationChecksTestBase<MatchTeams
 
         // Assert
         Assert.True(actualPass);
-        Assert.Equal(MatchWarningFlags.RostersNotUnique, match.WarningFlags);
+        Assert.Equal(MatchWarningFlags.OverlappingRosters, match.WarningFlags);
     }
 
     [Fact]

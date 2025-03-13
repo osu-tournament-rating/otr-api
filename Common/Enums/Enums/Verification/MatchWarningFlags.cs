@@ -34,5 +34,5 @@ public enum MatchWarningFlags
     /// The <see cref="Database.Entities.Match"/> has 1 or more <see cref="Database.Entities.Player"/>s that played in different <see cref="Team"/>s
     /// in different <see cref="Database.Entities.Game"/>s
     /// </summary>
-    RostersNotUnique = 1 << 3,
+    OverlappingRosters = 1 << 3,
 }
