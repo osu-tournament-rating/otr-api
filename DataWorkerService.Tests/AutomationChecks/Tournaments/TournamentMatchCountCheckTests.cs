@@ -93,7 +93,7 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
         // Arrange
         Tournament tournament = SeededTournament.Generate(rejectionReason: TournamentRejectionReason.None);
 
-        SeededMatch.Generate(verificationStatus: VerificationStatus.Verified, tournament: tournament);
+        SeededMatch.Generate(verificationStatus: VerificationStatus.Verified, rejectionReason: MatchRejectionReason.None, tournament: tournament);
         SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, rejectionReason: MatchRejectionReason.NoGames, tournament: tournament);
 
         // Act
@@ -109,7 +109,7 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
         // Arrange
         Tournament tournament = SeededTournament.Generate(rejectionReason: TournamentRejectionReason.None);
 
-        SeededMatch.Generate(verificationStatus: VerificationStatus.Verified, tournament: tournament);
+        SeededMatch.Generate(verificationStatus: VerificationStatus.Verified, rejectionReason: MatchRejectionReason.None, tournament: tournament);
         SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, rejectionReason: MatchRejectionReason.NoGames, tournament: tournament);
         SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, rejectionReason: MatchRejectionReason.NoValidGames, tournament: tournament);
 
