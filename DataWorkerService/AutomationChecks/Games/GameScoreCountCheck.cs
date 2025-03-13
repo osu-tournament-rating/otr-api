@@ -30,21 +30,15 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
             return false;
         }
 
-        if (entity.TeamType is TeamType.TeamVs)
+        if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.LobbySize)
         {
             ICollection<GameRoster> rosters = RostersHelper.GenerateRosters(validScores);
             var playerCountPerTeam = rosters.Select(x => x.Roster.Length).ToArray();
 
-            if (playerCountPerTeam.Length > 1 && // more than one team
-                playerCountPerTeam.All(x => x == playerCountPerTeam[0]) && // all counts are equal
-                playerCountPerTeam[0] == entity.Match.Tournament.LobbySize) // all counts are correct
+            if (playerCountPerTeam.Distinct().Count() == 1)
             {
                 return true;
             }
-        }
-        else if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.LobbySize)
-        {
-            return true;
         }
 
         entity.RejectionReason |= GameRejectionReason.LobbySizeMismatch;
