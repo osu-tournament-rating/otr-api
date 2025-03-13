@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20250310020151_TournamentAndMatch_StartAndEndTimesNullable")]
+    partial class TournamentAndMatch_StartAndEndTimesNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1583,6 +1586,10 @@ namespace Database.Migrations
                         .HasColumnName("last_processing_date")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
+                    b.Property<int>("LobbySize")
+                        .HasColumnType("integer")
+                        .HasColumnName("lobby_size");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(512)
@@ -1616,10 +1623,6 @@ namespace Database.Migrations
                     b.Property<int?>("SubmittedByUserId")
                         .HasColumnType("integer")
                         .HasColumnName("submitted_by_user_id");
-
-                    b.Property<int>("TeamLobbySize")
-                        .HasColumnType("integer")
-                        .HasColumnName("team_lobby_size");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")

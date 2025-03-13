@@ -51,7 +51,7 @@ public static class SeededMatch
         }
 
         seededMatch.StartTime = startTime ?? SeededDate.Generate();
-        seededMatch.EndTime = endTime ?? SeededDate.GenerateAfter(seededMatch.StartTime);
+        seededMatch.EndTime = endTime ?? SeededDate.GenerateAfter(seededMatch.StartTime.Value);
 
         seededTournament.Matches.Add(seededMatch);
 

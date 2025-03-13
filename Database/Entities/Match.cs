@@ -33,12 +33,12 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// <summary>
     /// Timestamp for the beginning of the match
     /// </summary>
-    public DateTime StartTime { get; set; }
+    public DateTime? StartTime { get; set; }
 
     /// <summary>
     /// Timestamp for the end of the match
     /// </summary>
-    public DateTime EndTime { get; set; }
+    public DateTime? EndTime { get; set; }
 
     public VerificationStatus VerificationStatus { get; set; }
 

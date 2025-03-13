@@ -21,6 +21,8 @@ public class OsuApiDataParserService(
     IOsuClient osuClient
 ) : IOsuApiDataParserService
 {
+    private const double EzScoreMultiplier = 1.75;
+
     private readonly Dictionary<long, Beatmapset> _beatmapSetCache = [];
     private readonly Dictionary<long, Beatmap> _beatmapCache = [];
     private readonly Dictionary<long, Player> _playerCache = [];
@@ -28,7 +30,6 @@ public class OsuApiDataParserService(
     public async Task ParseMatchAsync(Match match, MultiplayerMatch apiMatch)
     {
         match.Name = apiMatch.Match.Name;
-        match.StartTime = apiMatch.Match.StartTime;
 
         await LoadPlayersAsync(apiMatch.Users);
         await ProcessBeatmapsAsync(apiMatch.Events.Select(ev => ev.Game).OfType<MultiplayerGame>().Select(g => g.BeatmapId));
@@ -81,7 +82,7 @@ public class OsuApiDataParserService(
                 {
                     // Scale up EZ scores
                     Score = mpScore.Mods.HasFlag(Mods.Easy)
-                        ? (int)(mpScore.Score * 1.75)
+                        ? (int)(mpScore.Score * EzScoreMultiplier)
                         : mpScore.Score,
                     MaxCombo = mpScore.MaxCombo,
                     Count50 = mpScore.Statistics.Count50,
@@ -116,20 +117,22 @@ public class OsuApiDataParserService(
             match.Games.Add(game);
         }
 
-        // Determine match end time
+        // Determine match time borders
+        DateTime? matchStartTime = apiMatch.Match.StartTime == DateTime.MinValue ? null : apiMatch.Match.StartTime;
         DateTime? matchEndTime = apiMatch.Match.EndTime;
 
-        // Try to use the timestamp of a disband event if available
+        // Try to use the timestamp of an event if available
+        matchStartTime ??= apiMatch.Events
+            .FirstOrDefault(ev => ev.Detail.Type == MultiplayerEventType.MatchCreated)?.Timestamp;
         matchEndTime ??= apiMatch.Events
             .FirstOrDefault(ev => ev.Detail.Type == MultiplayerEventType.MatchDisbanded)?.Timestamp;
 
-        // Try to use the end time of the last game if available
-        matchEndTime ??= match.Games.Select(g => g.EndTime).Max();
+        // Try to use times of the games if available
+        matchStartTime ??= match.Games.Min(g => g.StartTime);
+        matchEndTime ??= match.Games.Max(g => g.EndTime);
 
-        if (matchEndTime.HasValue)
-        {
-            match.EndTime = matchEndTime.Value;
-        }
+        match.StartTime ??= matchStartTime;
+        match.EndTime ??= matchEndTime;
     }
 
     public async Task ProcessBeatmapsAsync(IEnumerable<long> beatmapOsuIds)
