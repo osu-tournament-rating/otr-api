@@ -15,7 +15,7 @@ public class MatchTeamsIntegrityCheck(ILogger<MatchTeamsIntegrityCheck> logger) 
 
     protected override bool OnChecking(Match entity)
     {
-        Game[] validGames = [.. entity.Games.Where(x => x.VerificationStatus.IsPreVerifiedOrVerified())];
+        Game[] validGames = entity.Games.Where(x => x.VerificationStatus.IsPreVerifiedOrVerified()).ToArray();
         foreach (Game game in validGames)
         {
             IEnumerable<GameScore> validScores = game.Scores.Where(x => x.VerificationStatus.IsPreVerifiedOrVerified());
@@ -23,12 +23,7 @@ public class MatchTeamsIntegrityCheck(ILogger<MatchTeamsIntegrityCheck> logger) 
         }
 
         ICollection<MatchRoster> rosters = RostersHelper.GenerateRosters(validGames);
-        HashSet<int>[] playerIdsPerRoster = [.. rosters.Select(x => x.Roster.ToHashSet())];
-
-        if (playerIdsPerRoster.Length == 1)
-        {
-            return true;
-        }
+        HashSet<int>[] playerIdsPerRoster = rosters.Select(x => x.Roster.ToHashSet()).ToArray();
 
         for (var i = 0; i < playerIdsPerRoster.Length; ++i)
         {
