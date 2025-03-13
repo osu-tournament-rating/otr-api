@@ -116,6 +116,26 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         Assert.Equal(GameRejectionReason.LobbySizeMismatch, game.RejectionReason);
     }
 
+    [Fact]
+    public void Check_GivenSingleTeamInLobby_FailsWith_LobbySizeMismatch()
+    {
+        // Arrange
+        Game game = SeededGame.Generate(
+            teamType: TeamType.TeamVs,
+            rejectionReason: GameRejectionReason.None);
+
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
+        game.Match.Tournament.LobbySize = 1;
+
+        // Act
+        var actualPass = AutomationCheck.Check(game);
+
+        // Assert
+        Assert.False(actualPass);
+        Assert.Equal(GameRejectionReason.LobbySizeMismatch, game.RejectionReason);
+    }
+
     [Theory]
     [InlineData(0, 0, 1, false, GameRejectionReason.NoScores)]
     [InlineData(0, 2, 1, false, GameRejectionReason.NoValidScores)]
@@ -134,7 +154,9 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
     )
     {
         // Arrange
-        Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);
+        Game game = SeededGame.Generate(
+            rejectionReason: GameRejectionReason.None,
+            teamType: TeamType.TeamVs);
 
         if (verifiedScores >= 1)
         {
@@ -154,11 +176,9 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
 
         foreach ((GameScore score, var i) in game.Scores.Select((score, i) => (score, i)))
         {
-            score.Team = game.TeamType is TeamType.HeadToHead
-                ? Team.NoTeam
-                : i % 2 == 0
-                    ? Team.Red
-                    : Team.Blue;
+            score.Team = i % 2 == 0
+                ? Team.Red
+                : Team.Blue;
         }
 
         game.Match.Tournament.LobbySize = tournamentTeamSize;

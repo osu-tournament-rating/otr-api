@@ -34,7 +34,8 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
         {
             ICollection<GameRoster> rosters = RostersHelper.GenerateRosters(validScores);
 
-            if (rosters.DistinctBy(x => x.Roster.Length).Count() == 1)
+            if (rosters.Count > 1 &&
+                rosters.DistinctBy(x => x.Roster.Length).Count() == 1)
             {
                 return true;
             }
