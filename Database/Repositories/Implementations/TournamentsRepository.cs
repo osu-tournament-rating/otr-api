@@ -179,7 +179,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     {
         var participatedTournaments =
             await QueryForParticipation(playerId, ruleset, dateMin, dateMax)
-                .Select(t => new { TournamentId = t.Id, TeamSize = t.TeamLobbySize })
+                .Select(t => new { TournamentId = t.Id, TeamSize = t.LobbySize })
                 .Distinct() // Ensures each tournament is counted once
                 .ToListAsync();
 
