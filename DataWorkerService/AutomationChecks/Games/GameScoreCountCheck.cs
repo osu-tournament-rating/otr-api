@@ -33,9 +33,8 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
         if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.LobbySize)
         {
             ICollection<GameRoster> rosters = RostersHelper.GenerateRosters(validScores);
-            var playerCountPerTeam = rosters.Select(x => x.Roster.Length).ToArray();
 
-            if (playerCountPerTeam.Distinct().Count() == 1)
+            if (rosters.DistinctBy(x => x.Roster.Length).Count() == 1)
             {
                 return true;
             }
