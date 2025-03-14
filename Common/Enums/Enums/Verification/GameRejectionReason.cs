@@ -53,7 +53,7 @@ public enum GameRejectionReason
     /// of <see cref="VerificationStatus.Verified"/> or <see cref="VerificationStatus.PreVerified"/> divided by 2 is
     /// not equal to the <see cref="Database.Entities.Tournament.LobbySize"/> of the parent <see cref="Database.Entities.Tournament"/>
     /// in case of <see cref="TeamType.HeadToHead"/> <see cref="Database.Entities.Game"/>s.
-    /// Or the number of validated team <see cref="Team.Red"/> and <see cref="Team.Blue"/> scores is not valid in case of team games.
+    /// In the case of 2 or more teams, ensures that there are an equal number of players in the lobby for each team.
     /// </summary>
     LobbySizeMismatch = 1 << 7,
 
