@@ -52,7 +52,7 @@ public class TournamentProcessorService(
             scope.ServiceProvider.GetRequiredService<ITournamentProcessorResolver>();
 
         var tournaments = (await tournamentsRepository.GetNeedingProcessingAsync(_config.BatchSize)).ToList();
-        var tasks = new List<Task>();
+        var multiThreadedTasks = new List<Task>();
 
         foreach (Tournament tournament in tournaments)
         {
@@ -62,10 +62,19 @@ public class TournamentProcessorService(
                 continue;
             }
 
-            tasks.Add(ProcessAsync(tournament, tournamentProcessorResolver, stoppingToken));
+            if (tournament.ProcessingStatus == TournamentProcessingStatus.NeedsMatchData)
+            {
+                // Pause execution between each run - this data processing is NOT thread safe
+                await ProcessAsync(tournament, tournamentProcessorResolver, stoppingToken);
+            }
+            else
+            {
+                // Run in parallel
+                multiThreadedTasks.Add(ProcessAsync(tournament, tournamentProcessorResolver, stoppingToken));
+            }
         }
 
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(multiThreadedTasks);
         await context.SaveChangesAsync(stoppingToken);
 
         _stopwatch.Stop();
