@@ -15,19 +15,19 @@ public class MatchTeamsIntegrityCheck(ILogger<MatchTeamsIntegrityCheck> logger) 
 
     protected override bool OnChecking(Match entity)
     {
-        Game[] validGames = entity.Games.Where(x => x.VerificationStatus.IsPreVerifiedOrVerified()).ToArray();
+        Game[] validGames = entity.Games.Where(g => g.VerificationStatus.IsPreVerifiedOrVerified()).ToArray();
         foreach (Game game in validGames)
         {
-            IEnumerable<GameScore> validScores = game.Scores.Where(x => x.VerificationStatus.IsPreVerifiedOrVerified());
+            IEnumerable<GameScore> validScores = game.Scores.Where(gs => gs.VerificationStatus.IsPreVerifiedOrVerified());
             game.Rosters = RostersHelper.GenerateRosters(validScores);
         }
 
         ICollection<MatchRoster> rosters = RostersHelper.GenerateRosters(validGames);
-        HashSet<int>[] playerIdsPerRoster = rosters.Select(x => x.Roster.ToHashSet()).ToArray();
+        HashSet<int>[] playerIdsPerRoster = rosters.Select(mr => mr.Roster.ToHashSet()).ToArray();
 
-        for (var i = 0; i < playerIdsPerRoster.Length; ++i)
+        for (var i = 0; i < playerIdsPerRoster.Length; i++)
         {
-            for (var j = i + 1; j < playerIdsPerRoster.Length; ++j)
+            for (var j = i + 1; j < playerIdsPerRoster.Length; j++)
             {
                 if (playerIdsPerRoster[i].Overlaps(playerIdsPerRoster[j]))
                 {
