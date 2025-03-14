@@ -85,7 +85,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Filters results for only tournaments verified by a user with a specified id
     /// </param>
     /// <param name="teamLobbySize">
-    /// Filters results for only tournaments played with a specified lobby size
+    /// Filters results for only tournaments played with a specified team lobby size
     /// </param>
     /// <param name="descending">Whether to sort the results in descending order</param>
     /// <remarks>None of the entities returned will be tracked by the context</remarks>
