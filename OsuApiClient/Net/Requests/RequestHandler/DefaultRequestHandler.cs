@@ -21,6 +21,8 @@ internal sealed class DefaultRequestHandler(
     IOsuClientConfiguration configuration
 ) : IRequestHandler
 {
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
+
     private readonly HttpClient _httpClient = new()
     {
         DefaultRequestHeaders =
@@ -103,10 +105,11 @@ internal sealed class DefaultRequestHandler(
     )
     {
         HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
-
         HttpResponseMessage? response = null;
+
         try
         {
+            await _semaphore.WaitAsync(cancellationToken);
             response = await _httpClient.SendAsync(requestMessage, cancellationToken);
         }
         catch (HttpRequestException ex)
@@ -116,6 +119,10 @@ internal sealed class DefaultRequestHandler(
                 request.Platform.ToString(),
                 ex
             );
+        }
+        finally
+        {
+            _semaphore.Release();
         }
 
         return response is not null
