@@ -11,168 +11,158 @@ public class MatchTeamsIntegrityCheckTests : AutomationChecksTestBase<MatchTeams
     [Fact]
     public void Check_WithSamePlayerInBothTeams_PassesWithWarning_OverlappingRosters()
     {
-        // Arrange
-        Match match = SeededMatch.Generate(
-            rejectionReason: MatchRejectionReason.None,
-            warningFlags: MatchWarningFlags.None);
-
-        Game firstGame = SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-        Game secondGame = SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-
-        Player[] teamRedPlayers =
+        GameAttributes[] games =
         [
-            SeededPlayer.Generate(),
-            SeededPlayer.Generate()
-        ];
-        Player[] teamBluePlayers =
-        [
-            SeededPlayer.Generate(),
-            SeededPlayer.Generate()
+            new(VerificationStatus.Verified),
+            new(VerificationStatus.Verified)
         ];
 
-        // first game is correct
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[0], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[1], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[0], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[1], game: firstGame);
+        ScoreAttributes[] scores =
+        [
+            // first game is correct
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 0, 0),
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 1, 0),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 0, 0),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 1, 0),
+            // second game first players are swapped
+            new(VerificationStatus.Verified, Team.Blue, Team.Red, 0, 1),
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 1, 1),
+            new(VerificationStatus.Verified, Team.Red, Team.Blue, 0, 1),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 1, 1)
+        ];
 
-        // second game first players are swapped
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamRedPlayers[0], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[1], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamBluePlayers[0], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[1], game: secondGame);
-
-        // Act
-        var actualPass = AutomationCheck.Check(match);
-
-        // Assert
-        Assert.True(actualPass);
-        Assert.Equal(MatchWarningFlags.OverlappingRosters, match.WarningFlags);
+        AssertForMatch(games, scores, true, MatchWarningFlags.OverlappingRosters);
     }
 
     [Fact]
     public void Check_WithDifferentPlayersInBothTeams_PassesWithoutWarning()
     {
-        // Arrange
-        Match match = SeededMatch.Generate(
-            rejectionReason: MatchRejectionReason.None,
-            warningFlags: MatchWarningFlags.None);
-
-        Game firstGame = SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-        Game secondGame = SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-
-        Player[] teamRedPlayers =
+        GameAttributes[] games =
         [
-            SeededPlayer.Generate(),
-            SeededPlayer.Generate()
-        ];
-        Player[] teamBluePlayers =
-        [
-            SeededPlayer.Generate(),
-            SeededPlayer.Generate()
+            new(VerificationStatus.Verified),
+            new(VerificationStatus.Verified)
         ];
 
-        // first game is correct
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[0], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[1], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[0], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[1], game: firstGame);
+        ScoreAttributes[] scores =
+        [
+            // first game is correct
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 0, 0),
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 1, 0),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 0, 0),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 1, 0),
+            // second game is correct
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 0, 1),
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 1, 1),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 0, 1),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 1, 1)
+        ];
 
-        // second game is correct
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[0], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[1], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[0], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[1], game: secondGame);
-
-        // Act
-        var actualPass = AutomationCheck.Check(match);
-
-        // Assert
-        Assert.True(actualPass);
-        Assert.Equal(MatchWarningFlags.None, match.WarningFlags);
+        AssertForMatch(games, scores, true, MatchWarningFlags.None);
     }
 
     [Fact]
     public void Check_WithInvalidGameAndSamePlayerInBothTeams_PassesWithoutWarning()
     {
-        // Arrange
-        Match match = SeededMatch.Generate(
-            rejectionReason: MatchRejectionReason.None,
-            warningFlags: MatchWarningFlags.None);
-
-        Game firstGame = SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-        Game secondGame = SeededGame.Generate(verificationStatus: VerificationStatus.Rejected, match: match);
-
-        Player[] teamRedPlayers =
+        GameAttributes[] games =
         [
-            SeededPlayer.Generate(),
-            SeededPlayer.Generate()
-        ];
-        Player[] teamBluePlayers =
-        [
-            SeededPlayer.Generate(),
-            SeededPlayer.Generate()
+            new(VerificationStatus.Verified),
+            new(VerificationStatus.Rejected)
         ];
 
-        // first game is correct
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[0], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[1], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[0], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[1], game: firstGame);
+        ScoreAttributes[] scores =
+        [
+            // first game is correct
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 0, 0),
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 1, 0),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 0, 0),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 1, 0),
+            // second game first players are swapped
+            new(VerificationStatus.Verified, Team.Blue, Team.Red, 0, 1),
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 1, 1),
+            new(VerificationStatus.Verified, Team.Red, Team.Blue, 0, 1),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 1, 1)
+        ];
 
-        // second game first players are swapped
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamRedPlayers[0], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[1], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamBluePlayers[0], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[1], game: secondGame);
-
-        // Act
-        var actualPass = AutomationCheck.Check(match);
-
-        // Assert
-        Assert.True(actualPass);
-        Assert.Equal(MatchWarningFlags.None, match.WarningFlags);
+        AssertForMatch(games, scores, true, MatchWarningFlags.None);
     }
 
     [Fact]
     public void Check_WithInvalidScoresAndSamePlayerInBothTeams_PassesWithoutWarning()
     {
-        // Arrange
+        GameAttributes[] games =
+        [
+            new(VerificationStatus.Verified),
+            new(VerificationStatus.Verified)
+        ];
+
+        ScoreAttributes[] scores =
+        [
+            // first game is correct
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 0, 0),
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 1, 0),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 0, 0),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 1, 0),
+            // second game first players are swapped
+            new(VerificationStatus.Rejected, Team.Blue, Team.Red, 0, 1),
+            new(VerificationStatus.Verified, Team.Red, Team.Red, 1, 1),
+            new(VerificationStatus.Rejected, Team.Red, Team.Blue, 0, 1),
+            new(VerificationStatus.Verified, Team.Blue, Team.Blue, 1, 1)
+        ];
+
+        AssertForMatch(games, scores, true, MatchWarningFlags.None);
+    }
+
+    private static void AssertForMatch(
+        GameAttributes[] gameAttributes,
+        ScoreAttributes[] scoreAttributes,
+        bool expectedPass,
+        MatchWarningFlags expectedWarningFlags,
+        int teamLobbySize = 2)
+    {
         Match match = SeededMatch.Generate(
             rejectionReason: MatchRejectionReason.None,
             warningFlags: MatchWarningFlags.None);
 
-        Game firstGame = SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
-        Game secondGame = SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
+        Game[] games = gameAttributes
+            .Select(gameAttribute =>
+                SeededGame.Generate(verificationStatus: gameAttribute.VerificationStatus, match: match))
+            .ToArray();
 
-        Player[] teamRedPlayers =
-        [
-            SeededPlayer.Generate(),
-            SeededPlayer.Generate()
-        ];
-        Player[] teamBluePlayers =
-        [
-            SeededPlayer.Generate(),
-            SeededPlayer.Generate()
-        ];
+        Dictionary<Team, Player[]> players = GeneratePlayers(teamLobbySize);
 
-        // first game is correct
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[0], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[1], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[0], game: firstGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[1], game: firstGame);
-
-        // second game first players are swapped
-        SeededScore.Generate(verificationStatus: VerificationStatus.Rejected, team: Team.Blue, player: teamRedPlayers[0], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, player: teamRedPlayers[1], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Rejected, team: Team.Red, player: teamBluePlayers[0], game: secondGame);
-        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, player: teamBluePlayers[1], game: secondGame);
+        GameScore[] _ = scoreAttributes
+            .Select(scoreAttribute => SeededScore.Generate(
+                verificationStatus: scoreAttribute.VerificationStatus,
+                team: scoreAttribute.ScoreTeam,
+                player: players[scoreAttribute.PlayerTeam][scoreAttribute.PlayerIndex],
+                game: games[scoreAttribute.GameIndex]))
+            .ToArray();
 
         // Act
         var actualPass = AutomationCheck.Check(match);
 
         // Assert
-        Assert.True(actualPass);
-        Assert.Equal(MatchWarningFlags.None, match.WarningFlags);
+        Assert.Equal(expectedPass, actualPass);
+        Assert.Equal(expectedWarningFlags, match.WarningFlags);
     }
+
+    private static Dictionary<Team, Player[]> GeneratePlayers(int teamLobbySize) =>
+        new()
+        {
+            [Team.Red] = Enumerable.Range(0, teamLobbySize)
+                .Select(i => SeededPlayer.Generate())
+                .ToArray(),
+            [Team.Blue] = Enumerable.Range(0, teamLobbySize)
+                .Select(i => SeededPlayer.Generate())
+                .ToArray()
+        };
+
+    private record GameAttributes(VerificationStatus VerificationStatus);
+
+    private record ScoreAttributes(
+        VerificationStatus VerificationStatus,
+        Team ScoreTeam,
+        Team PlayerTeam,
+        int PlayerIndex,
+        int GameIndex);
 }
