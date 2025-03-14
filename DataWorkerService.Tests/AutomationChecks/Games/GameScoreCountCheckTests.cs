@@ -76,7 +76,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
     }
 
     [Fact]
-    public void Check_GivenVerifiedScoresCount_LessThanTournamentLobbySize_FailsWith_LobbySizeMismatch()
+    public void Check_GivenVerifiedScoresCount_LessThanTournamentTeamLobbySize_FailsWith_LobbySizeMismatch()
     {
         // Arrange
         Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);
@@ -84,7 +84,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         SeededScore.Generate(verificationStatus: VerificationStatus.PreVerified, game: game);
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, game: game);
 
-        game.Match.Tournament.LobbySize = 4;
+        game.Match.Tournament.TeamLobbySize = 4;
 
         // Act
         var actualPass = AutomationCheck.Check(game);
@@ -95,7 +95,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
     }
 
     [Fact]
-    public void Check_GivenUnequalTeamSizes_EqualToTournamentLobbySize_FailsWith_LobbySizeMismatch()
+    public void Check_GivenUnequalTeamLobbySizes_EqualToTournamentTeamLobbySize_FailsWith_LobbySizeMismatch()
     {
         // Arrange
         Game game = SeededGame.Generate(
@@ -106,7 +106,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
-        game.Match.Tournament.LobbySize = 2;
+        game.Match.Tournament.TeamLobbySize = 2;
 
         // Act
         var actualPass = AutomationCheck.Check(game);
@@ -126,7 +126,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
 
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
-        game.Match.Tournament.LobbySize = 1;
+        game.Match.Tournament.TeamLobbySize = 1;
 
         // Act
         var actualPass = AutomationCheck.Check(game);
@@ -148,7 +148,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
     public void Check_PassesWhenExpected(
         int verifiedScores,
         int rejectedScores,
-        int tournamentTeamSize,
+        int teamLobbySize,
         bool expectedPass,
         GameRejectionReason expectedRejectionReason
     )
@@ -181,7 +181,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
                 : Team.Blue;
         }
 
-        game.Match.Tournament.LobbySize = tournamentTeamSize;
+        game.Match.Tournament.TeamLobbySize = teamLobbySize;
 
         // Act
         var actualPass = AutomationCheck.Check(game);

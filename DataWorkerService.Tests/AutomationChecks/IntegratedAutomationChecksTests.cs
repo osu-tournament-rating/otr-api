@@ -21,7 +21,7 @@ public class IntegratedAutomationChecksTests
             name: "osu! World Cup 2023",
             abbreviation: "OWC2023",
             ruleset: Ruleset.Osu,
-            teamSize: 4
+            teamLobbySize: 4
         );
 
         Match match = SeededMatch.ExampleMatch();

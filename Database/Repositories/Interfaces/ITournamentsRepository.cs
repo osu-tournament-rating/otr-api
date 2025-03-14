@@ -84,7 +84,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="verifiedBy">
     /// Filters results for only tournaments verified by a user with a specified id
     /// </param>
-    /// <param name="lobbySize">
+    /// <param name="teamLobbySize">
     /// Filters results for only tournaments played with a specified lobby size
     /// </param>
     /// <param name="descending">Whether to sort the results in descending order</param>
@@ -103,7 +103,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
         TournamentProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
-        int? lobbySize = null,
+        int? teamLobbySize = null,
         bool descending = true
     );
 
@@ -138,21 +138,21 @@ public interface ITournamentsRepository : IRepository<Tournament>
 
     /// <summary>
     /// Retrieves team size statistics for a specific player within a given ruleset and date range.
-    /// The statistics are returned as a dictionary where the key represents the team size (number of players in a team)
-    /// and the value represents the count of tournaments the player participated in with that team size.
+    /// The statistics are returned as a dictionary where the key represents the team lobby size (number of players in a lobby for a single team)
+    /// and the value represents the count of tournaments the player participated in with that size.
     /// </summary>
     /// <param name="playerId">The unique identifier of the player for whom the statistics are being retrieved.</param>
     /// <param name="ruleset">The ruleset (e.g., osu!, osu!taiko, osu!catch, osu!mania) to filter the tournaments.</param>
     /// <param name="dateMin">The lower bound of the date range to filter tournaments. Only tournaments occurring on or after this date will be included.</param>
     /// <param name="dateMax">The upper bound of the date range to filter tournaments. Only tournaments occurring on or before this date will be included.</param>
     /// <returns>
-    /// A dictionary where each key is a team size (integer) and the corresponding value is the count of tournaments
+    /// A dictionary where each key is a team lobby size (integer) and the corresponding value is the count of tournaments
     /// the player participated in with that team size. If no tournaments match the criteria, the keys are populated with a value of 0.
     /// </returns>
     /// <remarks>
     /// Lookup -1 for "Other" format statistics
     /// </remarks>
-    Task<Dictionary<int, int>> GetLobbySizeStatsAsync(
+    Task<Dictionary<int, int>> GetTeamLobbySizeStatsAsync(
         int playerId,
         Ruleset ruleset,
         DateTime dateMin,

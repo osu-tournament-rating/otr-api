@@ -31,7 +31,7 @@ public enum TournamentQuerySortType
     Created,
 
     /// <summary>
-    /// Sort by lobby size
+    /// Sort by team lobby size
     /// </summary>
-    LobbySize
+    TeamLobbySize
 }

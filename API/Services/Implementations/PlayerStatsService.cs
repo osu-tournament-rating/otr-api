@@ -228,14 +228,14 @@ public class PlayerStatsService(
                 dateMin,
                 dateMax);
 
-        Dictionary<int, int> counts = await tournamentsRepository.GetLobbySizeStatsAsync(
+        Dictionary<int, int> counts = await tournamentsRepository.GetTeamLobbySizeStatsAsync(
             playerId,
             ruleset,
             dateMin,
             dateMax
         );
 
-        var lobbyStats = new PlayerTournamentLobbySizeCountDTO
+        var formatStats = new PlayerTournamentFormatCountDTO
         {
             Count1v1 = counts[1],
             Count2v2 = counts[2],
@@ -246,7 +246,7 @@ public class PlayerStatsService(
 
         return new PlayerTournamentPerformanceDTO
         {
-            LobbySizeCounts = lobbyStats,
+            TournamentFormatCounts = formatStats,
             BestPerformances = mapper.Map<IEnumerable<PlayerTournamentStatsDTO>>(bestPerformances),
             RecentPerformances = mapper.Map<IEnumerable<PlayerTournamentStatsDTO>>(recentPerformances)
         };

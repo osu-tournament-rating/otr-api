@@ -31,11 +31,11 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
     [InlineData(6)]
     [InlineData(7)]
     [InlineData(8)]
-    public void Check_GivenInvalidTournamentLobbySizes_PassesWithNoRejectionReason(int tournamentLobbySize)
+    public void Check_GivenInvalidTournamentTeamLobbySizes_PassesWithNoRejectionReason(int tournamentTeamLobbySize)
     {
         // Arrange
         Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None);
-        match.Tournament.LobbySize = tournamentLobbySize;
+        match.Tournament.TeamLobbySize = tournamentTeamLobbySize;
 
         SeededGame.Generate(match: match);
 
@@ -64,7 +64,7 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
     {
         // Arrange
         Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None);
-        match.Tournament.LobbySize = 1;
+        match.Tournament.TeamLobbySize = 1;
 
         foreach (var idx in Enumerable.Range(0, 2))
         {
@@ -107,7 +107,7 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
     {
         // Arrange
         Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None);
-        match.Tournament.LobbySize = 1;
+        match.Tournament.TeamLobbySize = 1;
 
         // Creates 2 games, 2 scores each, with players having osu! ids of 1, 2, or 3
         Game gameOne = SeededGame.Generate(
@@ -166,7 +166,7 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
     {
         // Arrange
         Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None);
-        match.Tournament.LobbySize = 1;
+        match.Tournament.TeamLobbySize = 1;
 
         // Creates 2 games, 2 scores each, with players having osu! ids of 1 and 2
         Game gameOne = SeededGame.Generate(

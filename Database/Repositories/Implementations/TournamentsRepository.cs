@@ -97,7 +97,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         TournamentProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
-        int? lobbySize = null,
+        int? teamLobbySize = null,
         bool descending = true
     )
     {
@@ -113,7 +113,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .WhereProcessingStatus(processingStatus)
             .WhereSubmittedBy(submittedBy)
             .WhereVerifiedBy(verifiedBy)
-            .WhereLobbySize(lobbySize);
+            .WhereTeamLobbySize(teamLobbySize);
 
         if (verified)
         {
@@ -170,7 +170,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         (await _context.Tournaments.Include(t => t.PooledBeatmaps)
             .FirstOrDefaultAsync(t => t.Id == id))?.PooledBeatmaps ?? [];
 
-    public async Task<Dictionary<int, int>> GetLobbySizeStatsAsync(
+    public async Task<Dictionary<int, int>> GetTeamLobbySizeStatsAsync(
         int playerId,
         Ruleset ruleset,
         DateTime dateMin,
@@ -179,23 +179,23 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     {
         var participatedTournaments =
             await QueryForParticipation(playerId, ruleset, dateMin, dateMax)
-                .Select(t => new { TournamentId = t.Id, TeamSize = t.LobbySize })
+                .Select(t => new { TournamentId = t.Id, t.TeamLobbySize })
                 .Distinct() // Ensures each tournament is counted once
                 .ToListAsync();
 
-        // Group by team size and count occurrences
-        var lobbySizeCounts = participatedTournaments
-            .GroupBy(t => t.TeamSize)
+        // Group by team lobby size and count occurrences
+        var teamLobbySizeCounts = participatedTournaments
+            .GroupBy(t => t.TeamLobbySize)
             .ToDictionary(g => g.Key, g => g.Count());
 
         // Ensure all team sizes are represented, even if count is zero
         var result = new Dictionary<int, int>
         {
-            { 1, lobbySizeCounts.GetValueOrDefault(1, 0) },
-            { 2, lobbySizeCounts.GetValueOrDefault(2, 0) },
-            { 3, lobbySizeCounts.GetValueOrDefault(3, 0) },
-            { 4, lobbySizeCounts.GetValueOrDefault(4, 0) },
-            { -1, lobbySizeCounts.Where(kvp => kvp.Key > 4).Sum(kvp => kvp.Value) } // "Other" category
+            { 1, teamLobbySizeCounts.GetValueOrDefault(1, 0) },
+            { 2, teamLobbySizeCounts.GetValueOrDefault(2, 0) },
+            { 3, teamLobbySizeCounts.GetValueOrDefault(3, 0) },
+            { 4, teamLobbySizeCounts.GetValueOrDefault(4, 0) },
+            { -1, teamLobbySizeCounts.Where(kvp => kvp.Key > 4).Sum(kvp => kvp.Value) } // "Other" category
         };
 
         return result;

@@ -75,9 +75,9 @@ public class TournamentRequestQueryDTO : IPaginated
     public int? VerifiedBy { get; init; }
 
     /// <summary>
-    /// Filters results for only tournaments played with a specified lobby size
+    /// Filters results for only tournaments played with a specified team lobby size
     /// </summary>
-    public int? LobbySize { get; init; }
+    public int? TeamLobbySize { get; init; }
 
     /// <summary>
     /// The key used to sort results by

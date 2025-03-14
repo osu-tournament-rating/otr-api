@@ -30,7 +30,7 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
             return false;
         }
 
-        if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.LobbySize)
+        if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.TeamLobbySize)
         {
             ICollection<GameRoster> rosters = RostersHelper.GenerateRosters(validScores);
 

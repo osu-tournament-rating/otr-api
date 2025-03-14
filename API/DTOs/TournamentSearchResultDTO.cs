@@ -20,7 +20,7 @@ public class TournamentSearchResultDTO
     /// <summary>
     /// Expected in-match team size
     /// </summary>
-    public int LobbySize { get; set; }
+    public int TeamLobbySize { get; set; }
 
     /// <summary>
     /// Name of the tournament
