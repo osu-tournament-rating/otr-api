@@ -1,4 +1,5 @@
 using Common.Enums.Enums.Verification;
+using Common.Utilities.Extensions;
 using Database.Entities;
 
 namespace DataWorkerService.AutomationChecks.Tournaments;
@@ -13,7 +14,7 @@ public class TournamentMatchCountCheck(
     protected override bool OnChecking(Tournament entity)
     {
         var validMatchesCount = entity.Matches.Count(m =>
-            m.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified);
+            m.VerificationStatus.IsPreVerifiedOrVerified());
 
         // Tournament has no valid matches
         if (validMatchesCount == 0)
