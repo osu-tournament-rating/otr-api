@@ -48,8 +48,8 @@ public class TournamentDataProcessor(
         // If all matches completed data processing, advance processing status
         if (entity.Matches.All(m => m.ProcessingStatus > MatchProcessingStatus.NeedsData))
         {
-            entity.StartTime = entity.Matches.DefaultIfEmpty().Min(x => x?.StartTime ?? DateTime.MinValue);
-            entity.EndTime = entity.Matches.DefaultIfEmpty().Max(x => x?.EndTime ?? DateTime.MinValue);
+            entity.StartTime ??= entity.Matches.DefaultIfEmpty().Min(x => x?.StartTime);
+            entity.EndTime ??= entity.Matches.DefaultIfEmpty().Max(x => x?.EndTime);
 
             entity.ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
         }

@@ -7,23 +7,6 @@ namespace DataWorkerService.Tests.AutomationChecks.Tournaments;
 
 public class TournamentMatchCountCheckTests : AutomationChecksTestBase<TournamentMatchCountCheck>
 {
-    [Fact]
-    public void Check_GivenNoVerifiedMatches_FailsWith_NoVerifiedMatches()
-    {
-        // Arrange
-        Tournament tournament = SeededTournament.Generate(rejectionReason: TournamentRejectionReason.None);
-
-        SeededMatch.Generate(verificationStatus: VerificationStatus.PreRejected, tournament: tournament);
-        SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, tournament: tournament);
-
-        // Act
-        var actualPass = AutomationCheck.Check(tournament);
-
-        // Assert
-        Assert.False(actualPass);
-        Assert.Equal(TournamentRejectionReason.NoVerifiedMatches, tournament.RejectionReason);
-    }
-
     [Theory]
     [InlineData(1, 0, false)] // 0%
     [InlineData(2, 1, false)] // 50%
@@ -46,7 +29,12 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
         {
             foreach (var _ in Enumerable.Range(1, verifiedMatchCount))
             {
-                SeededMatch.Generate(verificationStatus: VerificationStatus.Verified, tournament: tournament);
+                SeededMatch.Generate(
+                    verificationStatus: VerificationStatus.Verified,
+                    rejectionReason: MatchRejectionReason.None,
+                    processingStatus: MatchProcessingStatus.Done,
+                    warningFlags: MatchWarningFlags.None,
+                    tournament: tournament);
             }
         }
 
@@ -54,7 +42,10 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
         {
             foreach (var _ in Enumerable.Range(1, totalMatchCount - verifiedMatchCount))
             {
-                SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, tournament: tournament);
+                SeededMatch.Generate(
+                    verificationStatus: VerificationStatus.Rejected,
+                    tournament: tournament,
+                    rejectionReason: MatchRejectionReason.NoValidGames);
             }
         }
 
@@ -63,5 +54,87 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
 
         // Assert
         Assert.Equal(expectedPass, actualPass);
+    }
+
+    [Fact]
+    public void Check_GivenNoMatches_FailsWith_NoVerifiedMatches()
+    {
+        // Arrange
+        Tournament tournament = SeededTournament.Generate(rejectionReason: TournamentRejectionReason.None);
+
+        // Act
+        var actualPass = AutomationCheck.Check(tournament);
+
+        // Assert
+        Assert.False(actualPass);
+        Assert.Equal(TournamentRejectionReason.NoVerifiedMatches, tournament.RejectionReason);
+    }
+
+    [Fact]
+    public void Check_GivenNoVerifiedMatches_FailsWith_NoVerifiedMatches()
+    {
+        // Arrange
+        Tournament tournament = SeededTournament.Generate(rejectionReason: TournamentRejectionReason.None);
+
+        SeededMatch.Generate(verificationStatus: VerificationStatus.PreRejected, tournament: tournament);
+        SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, tournament: tournament);
+
+        // Act
+        var actualPass = AutomationCheck.Check(tournament);
+
+        // Assert
+        Assert.False(actualPass);
+        Assert.Equal(TournamentRejectionReason.NoVerifiedMatches, tournament.RejectionReason);
+    }
+
+    [Fact]
+    public void Check_GivenVerifiedAndEmptyMatches_Passes()
+    {
+        // Arrange
+        Tournament tournament = SeededTournament.Generate(rejectionReason: TournamentRejectionReason.None);
+
+        SeededMatch.Generate(verificationStatus: VerificationStatus.Verified, rejectionReason: MatchRejectionReason.None, tournament: tournament);
+        SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, rejectionReason: MatchRejectionReason.NoGames, tournament: tournament);
+
+        // Act
+        var actualPass = AutomationCheck.Check(tournament);
+
+        // Assert
+        Assert.True(actualPass);
+    }
+
+    [Fact]
+    public void Check_GivenVerifiedAndRejectedAndEmptyMatches_FailsWith_NotEnoughVerifiedMatches()
+    {
+        // Arrange
+        Tournament tournament = SeededTournament.Generate(rejectionReason: TournamentRejectionReason.None);
+
+        SeededMatch.Generate(verificationStatus: VerificationStatus.Verified, rejectionReason: MatchRejectionReason.None, tournament: tournament);
+        SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, rejectionReason: MatchRejectionReason.NoGames, tournament: tournament);
+        SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, rejectionReason: MatchRejectionReason.NoValidGames, tournament: tournament);
+
+        // Act
+        var actualPass = AutomationCheck.Check(tournament);
+
+        // Assert
+        Assert.False(actualPass);
+        Assert.Equal(TournamentRejectionReason.NotEnoughVerifiedMatches, tournament.RejectionReason);
+    }
+
+    [Fact]
+    public void Check_GivenEmptyMatches_FailsWith_NoVerifiedMatches()
+    {
+        // Arrange
+        Tournament tournament = SeededTournament.Generate(rejectionReason: TournamentRejectionReason.None);
+
+        SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, rejectionReason: MatchRejectionReason.NoGames, tournament: tournament);
+        SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, rejectionReason: MatchRejectionReason.NoGames, tournament: tournament);
+
+        // Act
+        var actualPass = AutomationCheck.Check(tournament);
+
+        // Assert
+        Assert.False(actualPass);
+        Assert.Equal(TournamentRejectionReason.NoVerifiedMatches, tournament.RejectionReason);
     }
 }

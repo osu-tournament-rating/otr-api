@@ -66,10 +66,12 @@ public class MatchStatsProcessor(
             return;
         }
 
+        // Ordering here matters, GeneratePlayerMatchStats relies on the game.Match having a populated roster.
+        entity.Rosters = GenerateRosters(verifiedGames);
+
         var currentStats = entity.PlayerMatchStats.ToDictionary(k => k.PlayerId, v => v);
         IEnumerable<PlayerMatchStats> generatedStats = GeneratePlayerMatchStats(verifiedGames, currentStats);
 
-        entity.Rosters = GenerateRosters(verifiedGames);
         entity.PlayerMatchStats = [.. generatedStats];
         entity.ProcessingStatus = MatchProcessingStatus.NeedsRatingProcessorData;
     }
