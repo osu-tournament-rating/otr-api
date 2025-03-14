@@ -241,18 +241,9 @@ builder.Services.AddSwaggerGen(options =>
     options.DescribeAllParametersInCamelCase();
 
     // Allow use of in-code XML documentation tags like <summary> and <remarks>
-    string[] xmlDocPaths =
-    [
-        $"{AppDomain.CurrentDomain.BaseDirectory}API.xml",
-        $"{AppDomain.CurrentDomain.BaseDirectory}Database.xml"
-    ];
+    options.IncludeXmlCommentsWithRemarks($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
 
-    foreach (var xmlDoc in xmlDocPaths)
-    {
-        options.IncludeXmlCommentsWithRemarks(xmlDoc);
-    }
-
-    // Register custom filters
+    // Register custom filters.
     // Filters are executed in order of: Operation, Parameter, Schema, Document
     options.OperationFilter<SecurityMetadataOperationFilter>();
     options.OperationFilter<DiscardNestedParametersOperationFilter>();
