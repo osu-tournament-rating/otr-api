@@ -4,7 +4,6 @@ using API.Services.Interfaces;
 using API.Utilities;
 using AutoMapper;
 using Common.Enums;
-using Common.Enums.Enums;
 using Database.Entities.Processor;
 using Database.Models;
 using Database.Repositories.Interfaces;
