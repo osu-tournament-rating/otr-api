@@ -1,4 +1,4 @@
-using Common.Enums.Enums;
+using Common.Enums;
 using Database;
 using Database.Entities;
 using DataWorkerService.Services.Interfaces;

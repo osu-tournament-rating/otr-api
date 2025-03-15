@@ -1,4 +1,4 @@
-namespace Common.Enums.Enums.Verification;
+namespace Common.Enums.Verification;
 
 /// <summary>
 /// The reason why a <see cref="Database.Entities.GameScore"/> is rejected

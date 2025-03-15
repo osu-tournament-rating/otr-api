@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Common.Enums.Enums;
+using Common.Enums;
 using OsuApiClient.Domain.Osu.Multiplayer;
 
 namespace OsuApiClient.Domain.Osu.Beatmaps;
@@ -26,7 +26,7 @@ public class Beatmap : IModel
     public double StarRating { get; init; }
 
     /// <summary>
-    /// The <see cref="Common.Enums.Enums.Ruleset"/> this beatmap is playable on
+    /// The <see cref="Common.Enums.Ruleset"/> this beatmap is playable on
     /// </summary>
     public Ruleset Ruleset { get; init; }
 

@@ -1,4 +1,4 @@
-namespace Common.Enums.Enums.Verification;
+namespace Common.Enums.Verification;
 
 /// <summary>
 /// Warnings for irregularities in <see cref="Database.Entities.Game"/> data that don't warrant an automatic

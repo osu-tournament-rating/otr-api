@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Common.Enums.Enums;
+using Common.Enums;
 
 namespace API.DTOs;
 

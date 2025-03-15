@@ -1,6 +1,6 @@
 
 
-namespace Common.Enums.Enums;
+namespace Common.Enums;
 
 /// <summary>
 /// Represents the scoring method (win condition) for a <see cref="Database.Entities.Game"/>

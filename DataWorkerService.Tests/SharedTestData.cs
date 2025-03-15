@@ -1,5 +1,5 @@
 using System.Collections;
-using Common.Enums.Enums;
+using Common.Enums;
 using DataWorkerService.AutomationChecks;
 using Microsoft.Extensions.Logging;
 using Serilog.Extensions.Logging;

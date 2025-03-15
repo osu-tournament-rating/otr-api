@@ -1,5 +1,5 @@
 using API.Services.Interfaces;
-using Common.Enums.Enums;
+using Common.Enums;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 

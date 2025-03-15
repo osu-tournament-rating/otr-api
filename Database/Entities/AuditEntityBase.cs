@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Common.Enums.Enums;
+using Common.Enums;
 using Database.Entities.Interfaces;
 using Database.Utilities;
 using Microsoft.EntityFrameworkCore;

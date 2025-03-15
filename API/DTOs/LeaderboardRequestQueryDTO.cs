@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using API.DTOs.Interfaces;
 using Common.Enums;
-using Common.Enums.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 

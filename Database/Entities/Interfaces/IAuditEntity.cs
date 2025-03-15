@@ -1,4 +1,4 @@
-﻿using Common.Enums.Enums;
+﻿using Common.Enums;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Database.Entities.Interfaces;

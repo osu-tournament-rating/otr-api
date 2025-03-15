@@ -1,4 +1,4 @@
-namespace Common.Enums.Enums.Verification;
+namespace Common.Enums.Verification;
 
 /// <summary>
 /// The verification status of a <see cref="Database.Entities.Tournament"/>,

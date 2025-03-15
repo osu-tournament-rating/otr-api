@@ -1,8 +1,8 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
-using Common.Enums.Enums;
-using Common.Enums.Enums.Verification;
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 
@@ -38,7 +38,7 @@ public class TournamentsService(
             ForumUrl = submission.ForumUrl,
             RankRangeLowerBound = submission.RankRangeLowerBound,
             Ruleset = submission.Ruleset,
-            LobbySize = submission.LobbySize,
+            TeamLobbySize = submission.TeamLobbySize,
             ProcessingStatus = preApprove
                 ? TournamentProcessingStatus.NeedsMatchData
                 : TournamentProcessingStatus.NeedsApproval,
@@ -114,7 +114,7 @@ public class TournamentsService(
             processingStatus: requestQuery.ProcessingStatus,
             submittedBy: requestQuery.SubmittedBy,
             verifiedBy: requestQuery.VerifiedBy,
-            lobbySize: requestQuery.LobbySize,
+            teamLobbySize: requestQuery.TeamLobbySize,
             descending: requestQuery.Descending
         ));
     }
@@ -143,7 +143,7 @@ public class TournamentsService(
         existing.ForumUrl = wrapper.ForumUrl;
         existing.Ruleset = wrapper.Ruleset;
         existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
-        existing.LobbySize = wrapper.LobbySize;
+        existing.TeamLobbySize = wrapper.TeamLobbySize;
         existing.ProcessingStatus = wrapper.ProcessingStatus;
         existing.VerificationStatus = wrapper.VerificationStatus;
         existing.RejectionReason = wrapper.RejectionReason;

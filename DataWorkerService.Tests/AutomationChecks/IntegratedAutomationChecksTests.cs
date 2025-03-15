@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using Common.Enums.Enums;
-using Common.Enums.Enums.Verification;
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
 using DataWorkerService.Processors;
 using DataWorkerService.Tests.Mocks;
@@ -21,7 +21,7 @@ public class IntegratedAutomationChecksTests
             name: "osu! World Cup 2023",
             abbreviation: "OWC2023",
             ruleset: Ruleset.Osu,
-            teamSize: 4
+            teamLobbySize: 4
         );
 
         Match match = SeededMatch.ExampleMatch();

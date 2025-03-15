@@ -1,6 +1,6 @@
 
 
-namespace Common.Enums.Enums;
+namespace Common.Enums;
 
 /// <summary>
 /// Represents the team type used for a <see cref="Database.Entities.Game"/>

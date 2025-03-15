@@ -1,6 +1,5 @@
 using APITests.SeedData;
 using Common.Enums;
-using Common.Enums.Enums;
 using Database.Entities.Processor;
 using Database.Models;
 using Database.Repositories.Interfaces;

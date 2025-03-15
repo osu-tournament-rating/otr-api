@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using Common.Enums.Enums;
+using Common.Enums;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 

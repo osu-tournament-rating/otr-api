@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Common.Enums.Enums;
+using Common.Enums;
 using Newtonsoft.Json;
 
 namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;

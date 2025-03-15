@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using Common.Enums.Enums.Verification;
+using Common.Enums.Verification;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Utilities;

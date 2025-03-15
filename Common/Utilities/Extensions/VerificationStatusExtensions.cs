@@ -1,4 +1,4 @@
-﻿using Common.Enums.Enums.Verification;
+﻿using Common.Enums.Verification;
 
 namespace Common.Utilities.Extensions;
 

@@ -1,6 +1,6 @@
 using API.DTOs;
 using API.Services.Interfaces;
-using Common.Enums.Enums;
+using Common.Enums;
 
 namespace API.Services.Implementations;
 

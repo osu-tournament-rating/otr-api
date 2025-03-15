@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using API.Utilities.DataAnnotations;
-using Common.Enums.Enums;
-using Common.Enums.Enums.Verification;
+using Common.Enums;
+using Common.Enums.Verification;
 
 namespace API.DTOs;
 

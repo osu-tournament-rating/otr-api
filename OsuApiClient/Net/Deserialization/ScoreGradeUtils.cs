@@ -1,4 +1,4 @@
-using Common.Enums.Enums;
+using Common.Enums;
 using OsuApiClient.Net.Deserialization.ValueConverters;
 using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 using DbScoreGradeUtils = Database.Utilities.ScoreGradeUtils;

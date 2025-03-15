@@ -1,4 +1,4 @@
-namespace Common.Enums.Enums;
+namespace Common.Enums;
 
 /// <summary>
 /// Defines how to sort the results of fetching all tournaments
@@ -31,7 +31,7 @@ public enum TournamentQuerySortType
     Created,
 
     /// <summary>
-    /// Sort by lobby size
+    /// Sort by team lobby size
     /// </summary>
-    LobbySize
+    TeamLobbySize
 }

@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using API.DTOs.Interfaces;
-using Common.Enums.Enums;
-using Common.Enums.Enums.Verification;
+using Common.Enums;
+using Common.Enums.Verification;
 
 namespace API.DTOs;
 
@@ -75,9 +75,9 @@ public class TournamentRequestQueryDTO : IPaginated
     public int? VerifiedBy { get; init; }
 
     /// <summary>
-    /// Filters results for only tournaments played with a specified lobby size
+    /// Filters results for only tournaments played with a specified team lobby size
     /// </summary>
-    public int? LobbySize { get; init; }
+    public int? TeamLobbySize { get; init; }
 
     /// <summary>
     /// The key used to sort results by

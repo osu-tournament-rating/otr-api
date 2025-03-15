@@ -9,9 +9,9 @@ namespace API.DTOs;
 public class PlayerTournamentPerformanceDTO
 {
     /// <summary>
-    /// Counts of participation in tournaments of differing team sizes for the player
+    /// Counts of participation in tournaments of differing formats for the player
     /// </summary>
-    public PlayerTournamentLobbySizeCountDTO LobbySizeCounts { get; set; } = new();
+    public PlayerTournamentFormatCountDTO TournamentFormatCounts { get; set; } = new();
 
     /// <summary>
     /// List of best tournament performances for the player

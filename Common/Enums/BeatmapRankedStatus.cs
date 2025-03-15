@@ -1,4 +1,4 @@
-namespace Common.Enums.Enums;
+namespace Common.Enums;
 
 /// <summary>
 /// Describes the ranked status of a <see cref="Database.Entities.Beatmap"/>
