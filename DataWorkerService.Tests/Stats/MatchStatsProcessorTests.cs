@@ -5,6 +5,7 @@ using DataWorkerService.Processors;
 using DataWorkerService.Processors.Games;
 using DataWorkerService.Processors.Matches;
 using DataWorkerService.Tests.Mocks;
+using DataWorkerService.Utilities;
 using TestingUtils.SeededData;
 
 namespace DataWorkerService.Tests.Stats;
@@ -28,11 +29,11 @@ public class MatchStatsProcessorTests
             }
 
             GameStatsProcessor.AssignScorePlacements(game.Scores);
-            game.Rosters = GameStatsProcessor.GenerateRosters(game.Scores);
+            game.Rosters = RostersHelper.GenerateRosters(game.Scores);
         }
 
         // Act
-        ICollection<MatchRoster> rosters = MatchStatsProcessor.GenerateRosters(match.Games);
+        ICollection<MatchRoster> rosters = RostersHelper.GenerateRosters(match.Games);
 
         // Assert
         MatchRoster? redRoster = rosters.FirstOrDefault(r => r.Team == Team.Red);
