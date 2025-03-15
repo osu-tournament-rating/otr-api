@@ -1,17 +1,17 @@
 using System.Diagnostics.CodeAnalysis;
-using Common.Enums.Enums;
+using Common.Enums;
 
 namespace Database.Entities;
 
 /// <summary>
-/// Represents the highest o!TR ranks of a <see cref="Entities.Player"/> in a <see cref="Common.Enums.Enums.Ruleset"/>
+/// Represents the highest o!TR ranks of a <see cref="Entities.Player"/> in a <see cref="Common.Enums.Ruleset"/>
 /// </summary>
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class PlayerHighestRanks : UpdateableEntityBase
 {
     /// <summary>
-    /// The <see cref="Common.Enums.Enums.Ruleset"/> in which the ranks were recorded in
+    /// The <see cref="Common.Enums.Ruleset"/> in which the ranks were recorded in
     /// </summary>
     public Ruleset Ruleset { get; set; }
 

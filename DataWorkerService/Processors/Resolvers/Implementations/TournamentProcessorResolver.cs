@@ -1,4 +1,4 @@
-using Common.Enums.Enums.Verification;
+using Common.Enums.Verification;
 using Database.Entities;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 using DataWorkerService.Processors.Tournaments;

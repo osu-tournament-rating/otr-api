@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
-using Common.Enums.Enums;
+using Common.Enums;
 using OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 
 namespace OsuApiClient.Domain.Osu.Users.Attributes;

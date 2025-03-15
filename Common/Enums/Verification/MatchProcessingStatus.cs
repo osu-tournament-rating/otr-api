@@ -1,4 +1,4 @@
-namespace Common.Enums.Enums.Verification;
+namespace Common.Enums.Verification;
 
 /// <summary>
 /// The status of a <see cref="Database.Entities.Match"/> in the processing flow

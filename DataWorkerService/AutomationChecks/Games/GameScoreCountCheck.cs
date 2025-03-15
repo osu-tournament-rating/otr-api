@@ -1,5 +1,4 @@
-using Common.Enums.Enums;
-using Common.Enums.Enums.Verification;
+using Common.Enums.Verification;
 using Common.Utilities.Extensions;
 using Database.Entities;
 using DataWorkerService.Utilities;
