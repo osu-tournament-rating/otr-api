@@ -46,15 +46,17 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
 
         logger.LogInformation("Attempting to convert HeadToHead games to TeamVs [Id: {Id}]", entity.Id);
 
-        IEnumerable<Game> preRejectedGames = [.. entity.Games.Where(g => g.VerificationStatus is VerificationStatus.PreRejected)];
+        var preRejectedGames = entity.Games
+            .Where(g => g.VerificationStatus is VerificationStatus.PreRejected)
+            .ToList();
 
         // Decide which players are Red and Blue
         var firstGameScores = preRejectedGames.First().Scores
             .Where(s => s.VerificationStatus is VerificationStatus.PreVerified)
             .ToList();
 
-        var bluePlayerOsuId = firstGameScores.ElementAt(0).Player.OsuId;
-        var redPlayerOsuId = firstGameScores.ElementAt(1).Player.OsuId;
+        var bluePlayerOsuId = firstGameScores[0].Player.OsuId;
+        var redPlayerOsuId = firstGameScores[1].Player.OsuId;
 
         if (preRejectedGames.Any(g => g.Scores
                 .Where(s => s.VerificationStatus is VerificationStatus.PreVerified)

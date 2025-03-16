@@ -67,79 +67,13 @@ public class MatchStatsProcessor(
         }
 
         // Ordering here matters, GeneratePlayerMatchStats relies on the game.Match having a populated roster.
-        entity.Rosters = GenerateRosters(verifiedGames);
+        entity.Rosters = RostersHelper.GenerateRosters(verifiedGames);
 
         var currentStats = entity.PlayerMatchStats.ToDictionary(k => k.PlayerId, v => v);
         IEnumerable<PlayerMatchStats> generatedStats = GeneratePlayerMatchStats(verifiedGames, currentStats);
 
         entity.PlayerMatchStats = [.. generatedStats];
         entity.ProcessingStatus = MatchProcessingStatus.NeedsRatingProcessorData;
-    }
-
-    /// <summary>
-    /// Generates a <see cref="MatchRoster"/> for a given list of <see cref="Game"/>s
-    /// </summary>
-    /// <param name="games">List of <see cref="Game"/>s</param>
-    /// <exception cref="ArgumentException">
-    /// If any given <see cref="Game"/>s contains a null <see cref="Game.Rosters"/>
-    /// </exception>
-    public static ICollection<MatchRoster> GenerateRosters(IEnumerable<Game> games)
-    {
-        var eGames = games.ToList();
-
-        if (eGames.Any(g => g.Rosters.Count == 0))
-        {
-            throw new ArgumentException(
-                $"The property {nameof(Game.Rosters)} must not be empty for any {nameof(Game)} in this collection",
-                nameof(games)
-            );
-        }
-
-        IEnumerable<IGrouping<Team, GameRoster>> teamRosters = eGames
-            .SelectMany(g => g.Rosters)
-            .GroupBy(gr => gr.Team);
-
-        Dictionary<Team, int> pointsEarned = [];
-
-        foreach (Game? game in eGames)
-        {
-            // Group the game by Team, then sum the value of all GameScores.
-            var teamScores = game.Scores
-                .Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done })
-                .GroupBy(s => s.Team)
-                .Select(g => new
-                {
-                    Team = g.Key,
-                    TotalScore = g.Sum(s => s.Score)
-                })
-                .ToList();
-
-            // Determine the winning team for this game.
-            Team? winningTeam = teamScores
-                .OrderByDescending(ts => ts.TotalScore)
-                .FirstOrDefault()?.Team;
-
-            // If a winning team is found, increment their points.
-            if (winningTeam != null)
-            {
-                pointsEarned.TryAdd(winningTeam.Value, 0);
-                pointsEarned[winningTeam.Value]++;
-            }
-        }
-
-        var rosters = new List<MatchRoster>();
-
-        foreach (IGrouping<Team, GameRoster?> gameRoster in teamRosters)
-        {
-            rosters.Add(new MatchRoster
-            {
-                Team = gameRoster.Key,
-                Roster = [.. gameRoster.SelectMany(gr => gr!.Roster).Distinct()],
-                Score = pointsEarned.GetValueOrDefault(gameRoster.Key, 0)
-            });
-        }
-
-        return rosters;
     }
 
     /// <summary>

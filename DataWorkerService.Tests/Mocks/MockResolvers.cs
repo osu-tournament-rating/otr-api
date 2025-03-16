@@ -58,7 +58,8 @@ public static class MockResolvers
                 new MatchGameCountCheck(Logger<MatchGameCountCheck>()),
                 new MatchHeadToHeadCheck(Logger<MatchHeadToHeadCheck>()),
                 new MatchNamePrefixCheck(Logger<MatchNamePrefixCheck>()),
-                new MatchNameFormatCheck(Logger<MatchNameFormatCheck>())
+                new MatchNameFormatCheck(Logger<MatchNameFormatCheck>()),
+                new MatchTeamsIntegrityCheck(Logger<MatchTeamsIntegrityCheck>()),
             ],
             GameProcessorResolver
         )

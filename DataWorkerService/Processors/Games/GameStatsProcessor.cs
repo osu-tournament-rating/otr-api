@@ -1,5 +1,6 @@
 using Common.Enums.Enums.Verification;
 using Database.Entities;
+using DataWorkerService.Utilities;
 
 namespace DataWorkerService.Processors.Games;
 
@@ -32,7 +33,7 @@ public class GameStatsProcessor(
         ];
 
         AssignScorePlacements(verifiedScores);
-        entity.Rosters = GenerateRosters(verifiedScores);
+        entity.Rosters = RostersHelper.GenerateRosters(verifiedScores);
 
         entity.ProcessingStatus = GameProcessingStatus.Done;
 
@@ -49,38 +50,5 @@ public class GameStatsProcessor(
         {
             p.Score.Placement = p.Index;
         }
-    }
-
-    /// <summary>
-    /// Generates a <see cref="GameRoster"/> for a given list of <see cref="GameScore"/>s
-    /// </summary>
-    /// <param name="scores">List of <see cref="GameScore"/>s</param>
-    public static ICollection<GameRoster> GenerateRosters(IEnumerable<GameScore> scores)
-    {
-        var eScores = scores.ToList();
-
-        if (eScores.Count == 0)
-        {
-            return [];
-        }
-
-        // Sanity check for different game IDs
-        if (eScores.Select(gs => gs.GameId).Distinct().Count() > 1)
-        {
-            throw new InvalidOperationException("All scores must belong to the same game id");
-        }
-
-        var gameRosters = eScores
-            .GroupBy(gs => gs.Team) // Group by Team only
-            .Select(group => new GameRoster
-            {
-                GameId = group.First().GameId, // Use the GameId from the first score in the group
-                Team = group.Key,
-                Roster = [.. group.Select(gs => gs.PlayerId).Distinct()], // Ensure unique PlayerIds
-                Score = group.Sum(gs => gs.Score)
-            })
-            .ToList();
-
-        return gameRosters;
     }
 }
