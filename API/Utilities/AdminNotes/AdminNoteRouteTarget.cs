@@ -16,7 +16,7 @@ public class AdminNoteRouteTarget : IParsable<AdminNoteRouteTarget>
 
     public static AdminNoteRouteTarget Parse(string s, IFormatProvider? provider)
     {
-        if (!TryParse(s, provider, out AdminNoteRouteTarget result))
+        if (!TryParse(s, provider, out AdminNoteRouteTarget? result))
         {
             throw new ArgumentException("Could not parse admin note route target", nameof(s));
         }
