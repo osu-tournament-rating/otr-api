@@ -265,11 +265,14 @@ builder.Services.AddSwaggerGen(options =>
             return;
         }
 
-        // TODO: Enum extensions
-        var values = AdminNotesHelper.GetAdminNoteableEntityRoutes().ToList();
-
         schema.Type = "string";
-        schema.Enum = values.ToOpenApiArray();
+        schema.Enum = AdminNotesHelper.GetAdminNoteableEntityRoutes().ToOpenApiArray();
+        schema.Extensions = new Dictionary<string, IOpenApiExtension>
+        {
+            [ExtensionKeys.EnumNames] = AdminNotesHelper.GetAdminNoteableEntityTypes()
+                .Select(t => t.Name)
+                .ToOpenApiArray()
+        };
     });
 
     options.SchemaFilter<EnumMetadataSchemaFilter>();
