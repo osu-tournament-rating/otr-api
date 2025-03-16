@@ -40,10 +40,26 @@ public class PlayerRatingsRepository(OtrContext context)
         bool silver = false, bool gold = false, bool platinum = false, bool emerald = false, bool diamond = false,
         bool master = false, bool grandmaster = false, bool eliteGrandmaster = false)
     {
-        return await LeaderboardQuery(page, pageSize, ruleset, country, minRank, maxRank, minRating, maxRating,
-            minMatches, maxMatches, minWinRate, maxWinRate, bronze, silver, gold, platinum, emerald, diamond, master,
-            grandmaster, eliteGrandmaster).ToListAsync();
+        return await LeaderboardQuery(ruleset, country, minRank, maxRank, minRating, maxRating,
+                minMatches, maxMatches, minWinRate, maxWinRate, bronze, silver, gold, platinum, emerald, diamond,
+                master,
+                grandmaster, eliteGrandmaster)
+            .Page(page, pageSize)
+            .ToListAsync();
     }
+
+    public async Task<int> PageCountAsync(int pageSize = 25, Ruleset ruleset = Ruleset.Osu,
+        string? country = null, int? minRank = null,
+        int? maxRank = null, int? minRating = null, int? maxRating = null, int? minMatches = null,
+        int? maxMatches = null,
+        double? minWinRate = null, double? maxWinRate = null, bool bronze = false, bool silver = false,
+        bool gold = false,
+        bool platinum = false, bool emerald = false, bool diamond = false, bool master = false,
+        bool grandmaster = false,
+        bool eliteGrandmaster = false) =>
+        await LeaderboardQuery(ruleset, country, minRank, maxRank, minRating, maxRating, minMatches, maxMatches,
+            minWinRate, maxWinRate, bronze, silver, gold, platinum, emerald, diamond, master, grandmaster,
+            eliteGrandmaster).CountAsync() / pageSize + 1;
 
     public async Task<IList<Ruleset>> GetActiveRulesetsAsync(int playerId) =>
         await _context.PlayerRatings
@@ -84,8 +100,7 @@ public class PlayerRatingsRepository(OtrContext context)
     }
 
     private IQueryable<PlayerRating> LeaderboardQuery(
-        int page = 1, int pageSize = 25, Ruleset ruleset = Ruleset.Osu,
-        string? country = null,
+        Ruleset ruleset = Ruleset.Osu, string? country = null,
         int? minRank = null, int? maxRank = null, int? minRating = null, int? maxRating = null, int? minMatches = null,
         int? maxMatches = null, double? minWinRate = null, double? maxWinRate = null, bool bronze = false,
         bool silver = false, bool gold = false, bool platinum = false, bool emerald = false, bool diamond = false,
@@ -107,8 +122,7 @@ public class PlayerRatingsRepository(OtrContext context)
             eliteGrandmaster);
 
         baseQuery = baseQuery
-            .OrderByDescending(pr => pr.Rating)
-            .Page(page, pageSize);
+            .OrderByDescending(pr => pr.Rating);
 
         return baseQuery;
     }

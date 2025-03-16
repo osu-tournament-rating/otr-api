@@ -36,6 +36,12 @@ public class PlayerStatsService(
             request.Diamond, request.Master, request.Grandmaster, request.EliteGrandmaster
         );
 
+        var pageCount = await playerRatingsRepository.PageCountAsync(request.PageSize, request.Ruleset, request.Country,
+            request.MinOsuRank, request.MaxOsuRank, request.MinRating, request.MaxRating,
+            request.MinMatches, request.MaxMatches, request.MinWinRate, request.MaxWinRate,
+            request.Bronze, request.Silver, request.Gold, request.Platinum, request.Emerald,
+            request.Diamond, request.Master, request.Grandmaster, request.EliteGrandmaster);
+
         IDictionary<int, IList<PlayerTournamentStats>> tournamentStats =
             await playerTournamentStatsRepository.GetAsync(leaderboardRatings.Select(lb => lb.PlayerId), request.Ruleset);
 
@@ -66,6 +72,7 @@ public class PlayerStatsService(
 
         return new LeaderboardDTO
         {
+            Pages = pageCount,
             Ruleset = request.Ruleset,
             Leaderboard = stats
         };
