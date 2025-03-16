@@ -6,6 +6,14 @@ namespace Database.Repositories.Interfaces;
 public interface IPlayerTournamentStatsRepository : IRepository<PlayerTournamentStats>
 {
     /// <summary>
+    /// Retrieves all tournament statistics for all player ids provided for the given ruleset
+    /// </summary>
+    /// <param name="playerIds">The ids of the players to fetch stats for</param>
+    /// <param name="ruleset">The ruleset to filter the tournament statistics by</param>
+    /// <returns>A Dictionary of <see cref="PlayerTournamentStats"/> with the key equal to the player's id</returns>
+    Task<IDictionary<int, IList<PlayerTournamentStats>>> GetAsync(IEnumerable<int> playerIds, Ruleset ruleset);
+
+    /// <summary>
     /// Retrieves all tournament statistics for a specific player based on the provided criteria.
     /// </summary>
     /// <param name="playerId">The unique identifier of the player.</param>

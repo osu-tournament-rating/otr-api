@@ -4,11 +4,13 @@ using API.Utilities;
 using AutoMapper;
 using Common.Enums.Enums;
 using Database.Entities;
+using Database.Entities.Processor;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
 public class PlayerStatsService(
+    ILogger<PlayerStatsService> logger,
     IMapper mapper,
     ITournamentsRepository tournamentsRepository,
     IGameScoresRepository gameScoresRepository,
@@ -16,10 +18,58 @@ public class PlayerStatsService(
     IPlayerRatingsService playerRatingsService,
     IPlayersRepository playersRepository,
     IRatingAdjustmentsRepository ratingAdjustmentsRepository,
-    IPlayerTournamentStatsRepository playerTournamentStatsRepository
+    IPlayerTournamentStatsRepository playerTournamentStatsRepository,
+    IPlayerRatingsRepository playerRatingsRepository
 ) : IPlayerStatsService
 {
     private const int MaxFrequencyTeammatesOpponents = 20;
+
+    public async Task<LeaderboardDTO> GetLeaderboardAsync(
+        LeaderboardRequestQueryDTO request
+    )
+    {
+        IList<PlayerRating> leaderboardRatings = await playerRatingsRepository.GetAsync(
+            request.Page, request.PageSize, request.Ruleset, request.Country,
+            request.MinOsuRank, request.MaxOsuRank, request.MinRating, request.MaxRating,
+            request.MinMatches, request.MaxMatches, request.MinWinRate, request.MaxWinRate,
+            request.Bronze, request.Silver, request.Gold, request.Platinum, request.Emerald,
+            request.Diamond, request.Master, request.Grandmaster, request.EliteGrandmaster
+        );
+
+        IDictionary<int, IList<PlayerTournamentStats>> tournamentStats =
+            await playerTournamentStatsRepository.GetAsync(leaderboardRatings.Select(lb => lb.PlayerId), request.Ruleset);
+
+        var stats = new List<PlayerRatingStatsDTO>();
+        foreach (PlayerRating pr in leaderboardRatings)
+        {
+            if (!tournamentStats.TryGetValue(pr.PlayerId, out IList<PlayerTournamentStats>? pts))
+            {
+                logger.LogWarning("Expected to find PlayerTournamentStats for player {Player} and ruleset {Ruleset}" +
+                                  " but no results were found!", pr.PlayerId, request.Ruleset);
+            }
+
+            stats.Add(new PlayerRatingStatsDTO
+            {
+                Ruleset = pr.Ruleset,
+                Rating = pr.Rating,
+                Volatility = pr.Volatility,
+                Percentile = pr.Percentile,
+                GlobalRank = pr.GlobalRank,
+                CountryRank = pr.CountryRank,
+                Player = mapper.Map<PlayerCompactDTO>(pr.Player),
+                Adjustments = [], // We don't need adjustments for leaderboards
+                TournamentsPlayed = pts?.Count ?? 0,
+                MatchesPlayed = pts?.Sum(s => s.MatchesPlayed) ?? 0,
+                WinRate = pts?.Average(s => s.MatchWinRate) ?? 0
+            });
+        }
+
+        return new LeaderboardDTO
+        {
+            Ruleset = request.Ruleset,
+            Leaderboard = stats
+        };
+    }
 
     public async Task<PlayerDashboardStatsDTO?> GetAsync(
         string key,

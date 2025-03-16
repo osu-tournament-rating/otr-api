@@ -10,6 +10,14 @@ public class PlayerTournamentStatsRepository(OtrContext context) : RepositoryBas
 {
     private readonly OtrContext _context = context;
 
+    public async Task<IDictionary<int, IList<PlayerTournamentStats>>> GetAsync(IEnumerable<int> playerIds, Ruleset ruleset)
+    {
+        return await _context.PlayerTournamentStats
+            .Where(pts => playerIds.Contains(pts.PlayerId) && pts.Tournament.Ruleset == ruleset)
+        .GroupBy(pts => pts.PlayerId)
+        .ToDictionaryAsync(g => g.Key, IList<PlayerTournamentStats> (g) => g.ToList());
+    }
+
     public async Task<ICollection<PlayerTournamentStats>> GetForPlayerAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax)
     {
         return await _context.PlayerTournamentStats

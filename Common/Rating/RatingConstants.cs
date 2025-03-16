@@ -1,7 +1,7 @@
 // ReSharper disable InconsistentNaming
 namespace Common.Rating;
 
-public class RatingConstants
+public static class RatingConstants
 {
     // Bronze: 100 - 299
     public const double RatingBronzeIII = 100;

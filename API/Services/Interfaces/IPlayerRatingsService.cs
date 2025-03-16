@@ -14,10 +14,6 @@ public interface IPlayerRatingsService
 
     Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset, bool includeAdjustments);
 
-    Task<LeaderboardDTO> GetLeaderboardAsync(
-        LeaderboardRequestQueryDTO request
-    );
-
     /// <summary>
     /// See <see cref="IApiPlayerRatingsRepository.GetHistogramAsync"/>
     /// </summary>

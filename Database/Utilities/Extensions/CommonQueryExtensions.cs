@@ -9,10 +9,10 @@ public static class CommonQueryExtensions
     /// <summary>
     /// Gets the desired "page" of a query
     /// </summary>
-    /// <param name="limit">Page size</param>
-    /// <param name="page">Desired page (zero-indexed)</param>
-    public static IQueryable<T> Page<T>(this IQueryable<T> query, int limit, int page) =>
-        query.AsQueryable().Skip(limit * page).Take(limit);
+    /// <param name="page">Desired page (one-indexed)</param>
+    /// <param name="pageSize">Page size</param>
+    public static IQueryable<T> Page<T>(this IQueryable<T> query, int page, int pageSize) =>
+        query.AsQueryable().Skip(pageSize * (page - 1)).Take(pageSize);
 
     /// <summary>
     /// Applies common query filters and ensures verified data is returned
