@@ -5,9 +5,12 @@ namespace API.Services.Interfaces;
 
 public interface IAdminNoteService
 {
+    /// <summary>
+    /// Checks for existence of an admin note matching the given id
+    /// </summary>
+    /// <param name="id">Admin note id</param>
+    /// <typeparam name="TAdminNote">Admin note type</typeparam>
     Task<bool> ExistsAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase;
-
-    Task<bool> ExistsAsync(Type adminNoteType, int id);
 
     /// <summary>
     /// Creates a <typeparamref name="TAdminNote"/>
@@ -15,7 +18,7 @@ public interface IAdminNoteService
     /// <param name="referenceId">Id of the parent entity</param>
     /// <param name="adminUserId">Id of the admin <see cref="User"/> creating the <typeparamref name="TAdminNote"/></param>
     /// <param name="note">Content of the <typeparamref name="TAdminNote"/></param>
-    /// <typeparam name="TAdminNote">The type of admin note being created</typeparam>
+    /// <typeparam name="TAdminNote">Admin note type</typeparam>
     /// <returns>
     /// The created <see cref="AdminNoteDTO"/> if successful, or null if a <see cref="User"/> for the
     /// given <paramref name="adminUserId"/> does not exist
@@ -30,59 +33,37 @@ public interface IAdminNoteService
         string note
     ) where TAdminNote : AdminNoteEntityBase, new();
 
-
-    Task<AdminNoteDTO?> CreateAsync(
-        Type adminNoteType,
-        int referenceId,
-        int userId,
-        string note
-    );
-
     /// <summary>
     /// Gets an <see cref="AdminNoteDTO"/>
     /// </summary>
     /// <param name="id">Id of the <typeparamref name="TAdminNote"/></param>
-    /// <typeparam name="TAdminNote">The type of admin note being retrieved</typeparam>
+    /// <typeparam name="TAdminNote">Admin note type</typeparam>
     /// <returns>The <see cref="AdminNoteDTO"/>, or null if not found</returns>
     Task<AdminNoteDTO?> GetAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase;
-
-    Task<AdminNoteDTO?> GetAsync(Type adminNoteType, int id);
 
     /// <summary>
     /// Gets a collection of <see cref="AdminNoteDTO"/>s by their parent reference Id.
     /// </summary>
     /// <param name="referenceId">Id of the parent entity</param>
-    /// <typeparam name="TAdminNote">The type of admin note being retrieved</typeparam>
+    /// <typeparam name="TAdminNote">Admin note type</typeparam>
     /// <returns>A collection of <see cref="AdminNoteDTO"/>s for the given referenceId</returns>
     Task<IEnumerable<AdminNoteDTO>> ListAsync<TAdminNote>(int referenceId) where TAdminNote : AdminNoteEntityBase;
-
-    Task<IEnumerable<AdminNoteDTO>> ListAsync(
-        Type adminNoteType,
-        int referenceId
-    );
 
     /// <summary>
     /// Updates the <see cref="AdminNoteEntityBase.Note"/> of a <typeparamref name="TAdminNote"/>
     /// </summary>
     /// <param name="updatedNote">The updated admin note</param>
-    /// <typeparam name="TAdminNote">The type of admin note being updated</typeparam>
+    /// <typeparam name="TAdminNote">Admin note type</typeparam>
     /// <returns>The updated <see cref="AdminNoteDTO"/>, or null if not found</returns>
     Task<AdminNoteDTO?> UpdateAsync<TAdminNote>(AdminNoteDTO updatedNote) where TAdminNote : AdminNoteEntityBase;
-
-    Task<AdminNoteDTO?> UpdateAsync(
-        Type adminNoteType,
-        AdminNoteDTO updatedNote
-    );
 
     /// <summary>
     /// Deletes a <typeparamref name="TAdminNote"/>
     /// </summary>
     /// <param name="id">Id of the <typeparamref name="TAdminNote"/></param>
-    /// <typeparam name="TAdminNote">The type of admin note being deleted</typeparam>
+    /// <typeparam name="TAdminNote">Admin note type</typeparam>
     /// <returns>
     /// True if successful, false if a <see cref="AdminNoteDTO"/> for the given id does not exist
     /// </returns>
     Task<bool> DeleteAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase;
-
-    Task<bool> DeleteAsync(Type adminNoteType, int id);
 }
