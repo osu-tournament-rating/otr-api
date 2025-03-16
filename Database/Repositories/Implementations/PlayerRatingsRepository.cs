@@ -186,13 +186,13 @@ public class PlayerRatingsRepository(OtrContext context)
         if (minMatches.HasValue)
         {
             query = query.Where(x =>
-                x.Player.MatchStats.Count(ms => ms.Match.Tournament.Ruleset == ruleset) >= minMatches.Value);
+                x.Player.TournamentStats.Where(pts => pts.Tournament.Ruleset == ruleset).Sum(pts => pts.MatchesPlayed) >= minMatches.Value);
         }
 
         if (maxMatches.HasValue)
         {
             query = query.Where(x =>
-                x.Player.MatchStats.Count(ms => ms.Match.Tournament.Ruleset == ruleset) <= maxMatches.Value);
+                x.Player.TournamentStats.Where(pts => pts.Tournament.Ruleset == ruleset).Sum(pts => pts.MatchesPlayed) <= maxMatches.Value);
         }
 
         return query;
@@ -210,7 +210,7 @@ public class PlayerRatingsRepository(OtrContext context)
             query = query.Where(pr =>
                 pr.Player.TournamentStats
                     .Where(ts => ts.Tournament.Ruleset == ruleset)
-                    .Average(ts => ts.MatchesWon) >= minWinRate.Value);
+                    .Average(ts => ts.MatchesWon / (double)ts.MatchesPlayed) >= minWinRate.Value);
         }
 
         if (maxWinRate.HasValue)
@@ -218,7 +218,7 @@ public class PlayerRatingsRepository(OtrContext context)
             query = query.Where(pr =>
                 pr.Player.TournamentStats
                     .Where(ts => ts.Tournament.Ruleset == ruleset)
-                    .Average(ts => ts.MatchesWon) <= maxWinRate.Value);
+                    .Average(ts => ts.MatchesWon / (double)ts.MatchesPlayed) <= maxWinRate.Value);
         }
 
         return query;
