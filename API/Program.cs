@@ -257,9 +257,19 @@ builder.Services.AddSwaggerGen(options =>
     options.OperationFilter<SecurityMetadataOperationFilter>();
     options.OperationFilter<DiscardNestedParametersOperationFilter>();
 
-    options.SchemaFilter<OverrideSchemaFilter<AdminNoteRouteTarget>>((OpenApiSchema schema, SchemaFilterContext ctx) =>
+    options.SchemaFilter<OverrideSchemaFilter<AdminNoteRouteTarget>>((OpenApiSchema schema, SchemaFilterContext _) =>
     {
+        // Only target the schema definition, not references
+        if (schema.AllOf.Any())
+        {
+            return;
+        }
 
+        // TODO: Enum extensions
+        var values = AdminNotesHelper.GetAdminNoteableEntityRoutes().ToList();
+
+        schema.Type = "string";
+        schema.Enum = values.ToOpenApiArray();
     });
 
     options.SchemaFilter<EnumMetadataSchemaFilter>();

@@ -20,6 +20,12 @@ public static class AdminNotesHelper
             ) ?? [];
 
     /// <summary>
+    /// Gets all valid API route segments for admin note actions
+    /// </summary>
+    public static IEnumerable<string> GetAdminNoteableEntityRoutes() =>
+        GetAdminNoteableEntityTypes().Select(t => t.Name.ToLower());
+
+    /// <summary>
     /// Gets the type for the concrete implementation of an <see cref="IAdminNoteEntity"/> for a given type that
     /// implements <see cref="IAdminNotableEntity{TAdminNote}"/>
     /// </summary>
