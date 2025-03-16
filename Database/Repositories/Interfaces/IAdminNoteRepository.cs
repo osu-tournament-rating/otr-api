@@ -1,10 +1,14 @@
 using Database.Entities;
-using Database.Entities.Interfaces;
 
 namespace Database.Repositories.Interfaces;
 
 public interface IAdminNoteRepository
 {
+    /// <summary>
+    /// Checks for existence of a <typeparamref name="TAdminNote"/> matching the given id
+    /// </summary>
+    /// <param name="id">Admin note id</param>
+    /// <typeparam name="TAdminNote">Admin note type</typeparam>
     Task<bool> ExistsAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase;
 
     /// <summary>

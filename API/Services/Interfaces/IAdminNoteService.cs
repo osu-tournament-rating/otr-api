@@ -6,7 +6,7 @@ namespace API.Services.Interfaces;
 public interface IAdminNoteService
 {
     /// <summary>
-    /// Checks for existence of an admin note matching the given id
+    /// Checks for existence of a <typeparamref name="TAdminNote"/> matching the given id
     /// </summary>
     /// <param name="id">Admin note id</param>
     /// <typeparam name="TAdminNote">Admin note type</typeparam>
