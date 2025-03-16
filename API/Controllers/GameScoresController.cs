@@ -3,7 +3,6 @@ using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities.Extensions;
 using Asp.Versioning;
-using Database.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -13,8 +12,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public partial class GameScoresController(IGameScoresService gameScoresService, IAdminNoteService adminNoteService)
-    : Controller
+public class GameScoresController(IGameScoresService gameScoresService) : Controller
 {
     /// <summary>
     /// Get a score
@@ -96,25 +94,5 @@ public partial class GameScoresController(IGameScoresService gameScoresService, 
 
         await gameScoresService.DeleteAsync(id);
         return NoContent();
-    }
-
-    /// <summary>
-    /// List all admin notes for a score
-    /// </summary>
-    /// <param name="id">Score id</param>
-    /// <response code="404">A score matching the given id does not exist</response>
-    /// <response code="200">Returns all admin notes from a score</response>
-    [HttpGet("{id:int}/notes")]
-    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<IEnumerable<AdminNoteDTO>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ListAdminNotesAsync(int id)
-    {
-        if (!await gameScoresService.ExistsAsync(id))
-        {
-            return NotFound();
-        }
-
-        return Ok(await adminNoteService.ListAsync<GameScoreAdminNote>(id));
     }
 }
