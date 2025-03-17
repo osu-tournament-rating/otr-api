@@ -218,7 +218,7 @@ public static class QueryExtensions
             TournamentQuerySortType.EndTime => descending
                 ? query.OrderByDescending(t => t.EndTime ?? DateTime.MinValue)
                 : query.OrderBy(t => t.EndTime),
-            TournamentQuerySortType.Created => descending
+            TournamentQuerySortType.SubmissionDate => descending
                 ? query.OrderByDescending(t => t.Created)
                 : query.OrderBy(t => t.Created),
             TournamentQuerySortType.LobbySize => descending
