@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using Database.Entities.Interfaces;
 using JetBrains.Annotations;
 using Swashbuckle.AspNetCore.Annotations;
@@ -55,7 +54,7 @@ public class AdminNoteRouteTarget : IParsable<AdminNoteRouteTarget>
 
         Type? entityType = AdminNotesHelper
             .GetAdminNoteableEntityTypes()
-            .FirstOrDefault(t => JsonNamingPolicy.CamelCase.ConvertName(t.Name) == s);
+            .FirstOrDefault(t => t.ToAdminNoteableEntityRoute() == s);
 
         Type? adminNoteType = entityType?.GetAdminNoteType();
         if (entityType is null || adminNoteType is null || !typeof(IAdminNoteEntity).IsAssignableFrom(adminNoteType))

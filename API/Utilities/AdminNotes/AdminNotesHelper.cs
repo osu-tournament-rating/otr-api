@@ -23,7 +23,13 @@ public static class AdminNotesHelper
     /// Gets all valid API route segments for admin note actions
     /// </summary>
     public static IEnumerable<string> GetAdminNoteableEntityRoutes() =>
-        GetAdminNoteableEntityTypes().Select(t => t.Name.ToLower());
+        GetAdminNoteableEntityTypes().Select(t => t.ToAdminNoteableEntityRoute());
+
+    /// <summary>
+    /// Gets the valid admin note API route segment for a type
+    /// </summary>
+    public static string ToAdminNoteableEntityRoute(this Type type) =>
+        type.Name.ToLower();
 
     /// <summary>
     /// Gets the type for the concrete implementation of an <see cref="IAdminNoteEntity"/> for a given type that
@@ -31,8 +37,8 @@ public static class AdminNotesHelper
     /// </summary>
     /// <returns>The type of <see cref="IAdminNoteEntity"/> if available</returns>
     public static Type? GetAdminNoteType(this Type type) =>
-     type.GetInterfaces()
-         .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAdminNotableEntity<>))
-         ?.GetGenericArguments()
-         .FirstOrDefault();
+        type.GetInterfaces()
+            .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAdminNotableEntity<>))
+            ?.GetGenericArguments()
+            .FirstOrDefault();
 }
