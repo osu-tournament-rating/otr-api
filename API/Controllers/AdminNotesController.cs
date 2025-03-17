@@ -147,8 +147,7 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
     /// <response code="404">An admin note matching the given noteId does not exist </response>
     /// <response code="400">The deletion was not successful</response>
     /// <response code="204">The admin note was deleted</response>
-    // [Authorize(Roles = OtrClaims.Roles.Admin)]
-    [AllowAnonymous]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
     [HttpDelete("notes/{noteId:int}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
