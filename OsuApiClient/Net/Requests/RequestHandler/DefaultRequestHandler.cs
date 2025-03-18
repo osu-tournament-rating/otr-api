@@ -22,8 +22,8 @@ internal sealed class DefaultRequestHandler(
     IOsuClientConfiguration configuration
 ) : IRequestHandler
 {
-    private const string GlobalMutexName = "OTR_2b1c2e2f-9c62-4433-9066-dfb7a397d03d";
-    private static readonly Mutex s_mutex = new(true, GlobalMutexName);
+    private const string GlobalMutexName = "Global\OTR_2b1c2e2f-9c62-4433-9066-dfb7a397d03d";
+    private static readonly Mutex s_mutex = new(false, GlobalMutexName);
 
     private readonly HttpClient _httpClient = new()
     {
@@ -99,10 +99,10 @@ internal sealed class DefaultRequestHandler(
     /// Sends a request
     /// </summary>
     /// <remarks>
-    /// Everything inside of this method is controlled by a named <see cref="Mutex"/>.
+    /// Execution of this method is protected by a named <see cref="Mutex"/>.
     /// Each operation must execute on the same thread, therefore asynchronous calls are not possible.
-    /// The Mutex exists to prevent the situation where multiple processes are using the same
-    /// osu! API client and calling multiple requests against it simultaneously.
+    /// The mutex exists to prevent situations where multiple processes utilizing the request handler
+    /// attempt to make network requests at the same time
     /// </remarks>
     /// <param name="request">Request details</param>
     /// <param name="cancellationToken">Cancellation token</param>
