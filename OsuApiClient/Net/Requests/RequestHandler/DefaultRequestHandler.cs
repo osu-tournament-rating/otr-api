@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using AutoMapper;
@@ -104,13 +105,17 @@ internal sealed class DefaultRequestHandler(
         CancellationToken cancellationToken = default
     )
     {
-        HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
-        HttpResponseMessage? response = null;
-
         try
         {
             await _semaphore.WaitAsync(cancellationToken);
-            response = await _httpClient.SendAsync(requestMessage, cancellationToken);
+
+            HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
+            HttpResponseMessage response = await _httpClient.SendAsync(requestMessage, cancellationToken);
+
+            var responseContent = await OnResponseReceivedAsync(request.Platform, response, cancellationToken);
+
+            _semaphore.Release();
+            return responseContent;
         }
         catch (HttpRequestException ex)
         {
@@ -122,12 +127,13 @@ internal sealed class DefaultRequestHandler(
         }
         finally
         {
-            _semaphore.Release();
+            if (_semaphore.CurrentCount == 0)
+            {
+                _semaphore.Release();
+            }
         }
 
-        return response is not null
-            ? await OnResponseReceivedAsync(request.Platform, response, cancellationToken)
-            : null;
+        return null;
     }
 
     /// <summary>
@@ -239,6 +245,19 @@ internal sealed class DefaultRequestHandler(
     }
 
     /// <summary>
+    /// Forcefully throttle the client for the specified duration
+    /// </summary>
+    /// <remarks>Fail-safe in the event we are being rate limited</remarks>
+    /// <param name="platform">The platform being fetched</param>
+    private void ForceRateLimitCooldown(FetchPlatform platform, int durationSeconds = 300)
+    {
+        FixedWindowRateLimit rateLimit = _rateLimits[platform];
+        rateLimit.ForcefullyCooldown(TimeSpan.FromSeconds(durationSeconds));
+
+        logger.LogWarning("Rate limit forcefully cooling down [Platform: {Platform} | Duration: {Duration} seconds]", platform, durationSeconds);
+    }
+
+    /// <summary>
     /// Performs post-request operations for the given <see cref="FetchPlatform"/>.
     /// Validates the response, updates the rate limit, and reads the response content
     /// </summary>
@@ -298,6 +317,14 @@ internal sealed class DefaultRequestHandler(
                 ? string.Join("", responseContent.Take(500)) + "..."
                 : responseContent
         );
+
+        if (response.StatusCode != HttpStatusCode.TooManyRequests)
+        {
+            return false;
+        }
+
+        logger.LogWarning("We are being rate limited, pausing...");
+        ForceRateLimitCooldown(platform);
 
         return false;
     }
