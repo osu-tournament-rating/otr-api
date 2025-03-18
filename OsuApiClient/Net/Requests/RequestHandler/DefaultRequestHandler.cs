@@ -22,7 +22,8 @@ internal sealed class DefaultRequestHandler(
     IOsuClientConfiguration configuration
 ) : IRequestHandler
 {
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private const string GlobalMutexName = "OTR_INTERPROCESS_REQUEST_CONTROL";
+    private static readonly Mutex s_mutex = new(true, GlobalMutexName);
 
     private readonly HttpClient _httpClient = new()
     {
@@ -97,25 +98,33 @@ internal sealed class DefaultRequestHandler(
     /// <summary>
     /// Sends a request
     /// </summary>
+    /// <remarks>
+    /// Everything inside of this method is controlled by a named <see cref="Mutex"/>.
+    /// Each operation must execute on the same thread, therefore asynchronous calls are not possible.
+    /// The Mutex exists to prevent the situation where multiple processes are using the same
+    /// osu! API client and calling multiple requests against it simultaneously.
+    /// </remarks>
     /// <param name="request">Request details</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The resulting <see cref="HttpResponseMessage"/> content as a string, or null if not successful</returns>
-    private async Task<string?> SendRequestAsync(
+    private Task<string?> SendRequestAsync(
         IApiRequest request,
         CancellationToken cancellationToken = default
     )
     {
         try
         {
-            await _semaphore.WaitAsync(cancellationToken);
+            s_mutex.WaitOne();
 
-            HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
-            HttpResponseMessage response = await _httpClient.SendAsync(requestMessage, cancellationToken);
+            HttpRequestMessage requestMessage =
+                PrepareRequestAsync(request, cancellationToken).GetAwaiter().GetResult();
+            HttpResponseMessage response =
+                _httpClient.SendAsync(requestMessage, cancellationToken).GetAwaiter().GetResult();
 
-            var responseContent = await OnResponseReceivedAsync(request.Platform, response, cancellationToken);
+            var responseContent = OnResponseReceivedAsync(request.Platform, response, cancellationToken).GetAwaiter()
+                .GetResult();
 
-            _semaphore.Release();
-            return responseContent;
+            return Task.FromResult(responseContent);
         }
         catch (HttpRequestException ex)
         {
@@ -124,16 +133,12 @@ internal sealed class DefaultRequestHandler(
                 request.Platform.ToString(),
                 ex
             );
+            return Task.FromResult<string?>(null);
         }
         finally
         {
-            if (_semaphore.CurrentCount == 0)
-            {
-                _semaphore.Release();
-            }
+            s_mutex.ReleaseMutex();
         }
-
-        return null;
     }
 
     /// <summary>
