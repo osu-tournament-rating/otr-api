@@ -26,9 +26,9 @@ public enum TournamentQuerySortType
     SearchQueryRelevance,
 
     /// <summary>
-    /// Sort by created date
+    /// Sort by submission date
     /// </summary>
-    Created,
+    SubmissionDate,
 
     /// <summary>
     /// Sort by lobby size

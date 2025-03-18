@@ -213,12 +213,12 @@ public static class QueryExtensions
                 ? query.OrderByDescending(t => t.Name)
                 : query.OrderBy(t => t.Name),
             TournamentQuerySortType.StartTime => descending
-                ? query.OrderByDescending(t => t.StartTime)
+                ? query.OrderByDescending(t => t.StartTime ?? DateTime.MinValue)
                 : query.OrderBy(t => t.StartTime),
             TournamentQuerySortType.EndTime => descending
-                ? query.OrderByDescending(t => t.EndTime)
+                ? query.OrderByDescending(t => t.EndTime ?? DateTime.MinValue)
                 : query.OrderBy(t => t.EndTime),
-            TournamentQuerySortType.Created => descending
+            TournamentQuerySortType.SubmissionDate => descending
                 ? query.OrderByDescending(t => t.Created)
                 : query.OrderBy(t => t.Created),
             TournamentQuerySortType.LobbySize => descending
@@ -354,10 +354,10 @@ public static class QueryExtensions
             MatchQuerySortType.OsuId =>
                 descending ? query.OrderByDescending(m => m.OsuId) : query.OrderBy(m => m.OsuId),
             MatchQuerySortType.StartTime => descending
-                ? query.OrderByDescending(m => m.StartTime)
+                ? query.OrderByDescending(m => m.StartTime ?? DateTime.MinValue)
                 : query.OrderBy(m => m.StartTime),
             MatchQuerySortType.EndTime => descending
-                ? query.OrderByDescending(m => m.EndTime)
+                ? query.OrderByDescending(m => m.EndTime ?? DateTime.MinValue)
                 : query.OrderBy(m => m.EndTime),
             MatchQuerySortType.Created => descending
                 ? query.OrderByDescending(m => m.Created)
