@@ -22,7 +22,7 @@ internal sealed class DefaultRequestHandler(
     IOsuClientConfiguration configuration
 ) : IRequestHandler
 {
-    private const string GlobalMutexName = "OTR_INTERPROCESS_REQUEST_CONTROL";
+    private const string GlobalMutexName = "OTR_2b1c2e2f-9c62-4433-9066-dfb7a397d03d";
     private static readonly Mutex s_mutex = new(true, GlobalMutexName);
 
     private readonly HttpClient _httpClient = new()
@@ -254,12 +254,14 @@ internal sealed class DefaultRequestHandler(
     /// </summary>
     /// <remarks>Fail-safe in the event we are being rate limited</remarks>
     /// <param name="platform">The platform being fetched</param>
-    private void ForceRateLimitCooldown(FetchPlatform platform, int durationSeconds = 300)
+    private async Task ForceRateLimitCooldown(FetchPlatform platform, int durationSeconds = 300, CancellationToken cancellationToken = default)
     {
         FixedWindowRateLimit rateLimit = _rateLimits[platform];
-        rateLimit.ForcefullyCooldown(TimeSpan.FromSeconds(durationSeconds));
+        rateLimit.ClearRemainingTokens();
 
-        logger.LogWarning("Rate limit forcefully cooling down [Platform: {Platform} | Duration: {Duration} seconds]", platform, durationSeconds);
+        logger.LogInformation("Rate limit forcefully cooling down [Platform: {Platform} | Duration: {Duration} seconds]", platform, durationSeconds);
+
+        await RespectRateLimitAsync(platform, cancellationToken);
     }
 
     /// <summary>
@@ -289,7 +291,7 @@ internal sealed class DefaultRequestHandler(
         );
 
         // Check validity
-        return ResponseIsSuccessful(platform, response, responseContent)
+        return await ResponseIsSuccessful(platform, response, responseContent, cancellationToken)
             ? responseContent
             : null;
     }
@@ -300,10 +302,11 @@ internal sealed class DefaultRequestHandler(
     /// <param name="platform">The platform being fetched</param>
     /// <param name="response">API response</param>
     /// <returns>True if <see cref="HttpResponseMessage.IsSuccessStatusCode"/> denotes a successful response</returns>
-    private bool ResponseIsSuccessful(
+    private async Task<bool> ResponseIsSuccessful(
         FetchPlatform platform,
         HttpResponseMessage response,
-        string responseContent
+        string responseContent,
+        CancellationToken cancellationToken = default
     )
     {
         if (response.IsSuccessStatusCode)
@@ -311,7 +314,7 @@ internal sealed class DefaultRequestHandler(
             return true;
         }
 
-        logger.LogWarning(
+        logger.LogInformation(
             "Fetch was unsuccessful [Platform: {Platform} | Route: {Route} | Code: {Code} | Reason: {Reason} | Response: {Response}]",
             platform,
             response.RequestMessage?.RequestUri,
@@ -328,9 +331,7 @@ internal sealed class DefaultRequestHandler(
             return false;
         }
 
-        logger.LogWarning("We are being rate limited, pausing...");
-        ForceRateLimitCooldown(platform);
-
+        await ForceRateLimitCooldown(platform, cancellationToken: cancellationToken);
         return false;
     }
 

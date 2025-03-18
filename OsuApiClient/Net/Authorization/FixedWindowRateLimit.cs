@@ -44,9 +44,8 @@ internal sealed class FixedWindowRateLimit(int? rateLimitOverride)
         RemainingTokens = TokenLimit;
     }
 
-    public void ForcefullyCooldown(TimeSpan duration)
+    public void ClearRemainingTokens()
     {
-        Created = DateTimeOffset.Now.Add(duration);
         RemainingTokens = 0;
     }
 
