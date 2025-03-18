@@ -22,7 +22,7 @@ internal sealed class DefaultRequestHandler(
     IOsuClientConfiguration configuration
 ) : IRequestHandler
 {
-    private const string GlobalMutexName = "Global\OTR_2b1c2e2f-9c62-4433-9066-dfb7a397d03d";
+    private const string GlobalMutexName = @"Global\OTR_2b1c2e2f-9c62-4433-9066-dfb7a397d03d";
     private static readonly Mutex s_mutex = new(false, GlobalMutexName);
 
     private readonly HttpClient _httpClient = new()
