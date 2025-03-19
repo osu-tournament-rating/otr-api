@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using AutoMapper;
@@ -21,7 +22,8 @@ internal sealed class DefaultRequestHandler(
     IOsuClientConfiguration configuration
 ) : IRequestHandler
 {
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private const string GlobalMutexName = @"Global\OTR_2b1c2e2f-9c62-4433-9066-dfb7a397d03d";
+    private static readonly Mutex s_mutex = new(false, GlobalMutexName);
 
     private readonly HttpClient _httpClient = new()
     {
@@ -96,21 +98,33 @@ internal sealed class DefaultRequestHandler(
     /// <summary>
     /// Sends a request
     /// </summary>
+    /// <remarks>
+    /// Execution of this method is protected by a named <see cref="Mutex"/>.
+    /// Each operation must execute on the same thread, therefore asynchronous calls are not possible.
+    /// The mutex exists to prevent situations where multiple processes utilizing the request handler
+    /// attempt to make network requests at the same time
+    /// </remarks>
     /// <param name="request">Request details</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The resulting <see cref="HttpResponseMessage"/> content as a string, or null if not successful</returns>
-    private async Task<string?> SendRequestAsync(
+    private Task<string?> SendRequestAsync(
         IApiRequest request,
         CancellationToken cancellationToken = default
     )
     {
-        HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
-        HttpResponseMessage? response = null;
-
         try
         {
-            await _semaphore.WaitAsync(cancellationToken);
-            response = await _httpClient.SendAsync(requestMessage, cancellationToken);
+            s_mutex.WaitOne();
+
+            HttpRequestMessage requestMessage =
+                PrepareRequestAsync(request, cancellationToken).GetAwaiter().GetResult();
+            HttpResponseMessage response =
+                _httpClient.SendAsync(requestMessage, cancellationToken).GetAwaiter().GetResult();
+
+            var responseContent = OnResponseReceivedAsync(request.Platform, response, cancellationToken).GetAwaiter()
+                .GetResult();
+
+            return Task.FromResult(responseContent);
         }
         catch (HttpRequestException ex)
         {
@@ -119,15 +133,12 @@ internal sealed class DefaultRequestHandler(
                 request.Platform.ToString(),
                 ex
             );
+            return Task.FromResult<string?>(null);
         }
         finally
         {
-            _semaphore.Release();
+            s_mutex.ReleaseMutex();
         }
-
-        return response is not null
-            ? await OnResponseReceivedAsync(request.Platform, response, cancellationToken)
-            : null;
     }
 
     /// <summary>
@@ -239,6 +250,21 @@ internal sealed class DefaultRequestHandler(
     }
 
     /// <summary>
+    /// Forcefully throttle the client for the specified duration
+    /// </summary>
+    /// <remarks>Fail-safe in the event we are being rate limited</remarks>
+    /// <param name="platform">The platform being fetched</param>
+    private async Task ForceRateLimitCooldown(FetchPlatform platform, int durationSeconds = 300, CancellationToken cancellationToken = default)
+    {
+        FixedWindowRateLimit rateLimit = _rateLimits[platform];
+        rateLimit.ClearRemainingTokens();
+
+        logger.LogInformation("Rate limit forcefully cooling down [Platform: {Platform} | Duration: {Duration} seconds]", platform, durationSeconds);
+
+        await RespectRateLimitAsync(platform, cancellationToken);
+    }
+
+    /// <summary>
     /// Performs post-request operations for the given <see cref="FetchPlatform"/>.
     /// Validates the response, updates the rate limit, and reads the response content
     /// </summary>
@@ -265,7 +291,7 @@ internal sealed class DefaultRequestHandler(
         );
 
         // Check validity
-        return ResponseIsSuccessful(platform, response, responseContent)
+        return await ResponseIsSuccessful(platform, response, responseContent, cancellationToken)
             ? responseContent
             : null;
     }
@@ -276,10 +302,11 @@ internal sealed class DefaultRequestHandler(
     /// <param name="platform">The platform being fetched</param>
     /// <param name="response">API response</param>
     /// <returns>True if <see cref="HttpResponseMessage.IsSuccessStatusCode"/> denotes a successful response</returns>
-    private bool ResponseIsSuccessful(
+    private async Task<bool> ResponseIsSuccessful(
         FetchPlatform platform,
         HttpResponseMessage response,
-        string responseContent
+        string responseContent,
+        CancellationToken cancellationToken = default
     )
     {
         if (response.IsSuccessStatusCode)
@@ -287,7 +314,7 @@ internal sealed class DefaultRequestHandler(
             return true;
         }
 
-        logger.LogWarning(
+        logger.LogInformation(
             "Fetch was unsuccessful [Platform: {Platform} | Route: {Route} | Code: {Code} | Reason: {Reason} | Response: {Response}]",
             platform,
             response.RequestMessage?.RequestUri,
@@ -299,6 +326,12 @@ internal sealed class DefaultRequestHandler(
                 : responseContent
         );
 
+        if (response.StatusCode != HttpStatusCode.TooManyRequests)
+        {
+            return false;
+        }
+
+        await ForceRateLimitCooldown(platform, cancellationToken: cancellationToken);
         return false;
     }
 
