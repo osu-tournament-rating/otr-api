@@ -18,7 +18,7 @@ public class LeaderboardRequestQueryDTO : IPaginated, IValidatableObject
     /// The one-indexed page number
     /// </summary>
     [FromQuery]
-    [Range(1, int.MaxValue)]
+    [Positive]
     [DefaultValue(1)]
     public int Page { get; init; } = 1;
 
@@ -40,9 +40,9 @@ public class LeaderboardRequestQueryDTO : IPaginated, IValidatableObject
     public Ruleset Ruleset { get; init; } = Ruleset.Osu;
 
     /// <summary>
-    /// An optional country code to filter by
+    /// ISO country code
     /// </summary>
-    /// <remarks>Returns the global leaderboard if not provided</remarks>
+    /// <remarks>Leaderboard will be global if not provided</remarks>
     [FromQuery]
     [DefaultValue(null)]
     public string? Country { get; init; }

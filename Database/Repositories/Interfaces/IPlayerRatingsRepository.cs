@@ -18,7 +18,7 @@ public interface IPlayerRatingsRepository : IRepository<PlayerRating>
     Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset, bool includeAdjustments = false);
 
     /// <summary>
-    /// Get a collection of PlayerRatings with extensive filtering support.
+    /// Get a collection of ratings
     /// </summary>
     /// <param name="page">The one-indexed page number to retrieve.</param>
     /// <param name="pageSize">The number of elements to include on each page.</param>

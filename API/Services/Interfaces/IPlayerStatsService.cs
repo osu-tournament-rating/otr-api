@@ -12,7 +12,7 @@ public interface IPlayerStatsService
     /// This method fetches a leaderboard that matches the criteria specified in the <see cref="LeaderboardRequestQueryDTO"/>.
     /// The leaderboard can be filtered and sorted according to the properties defined in the request object.
     /// </remarks>
-    /// <param name="request">The query parameters used to filter and sort the leaderboard. This includes criteria such as ruleset, date range, and ranking type.</param>
+    /// <param name="request">Parameters used to filter and sort the leaderboard</param>
     /// <returns>
     /// A <see cref="LeaderboardDTO"/> object containing the leaderboard data, including player rankings and associated statistics.
     /// </returns>

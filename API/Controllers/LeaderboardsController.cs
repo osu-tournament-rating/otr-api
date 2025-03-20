@@ -20,7 +20,7 @@ public class LeaderboardsController(IPlayerStatsService playerStatsService) : Co
     [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType<LeaderboardDTO>(StatusCodes.Status200OK)]
     public async Task<ActionResult<LeaderboardDTO>> GetAsync(
-        LeaderboardRequestQueryDTO requestQuery
+       [FromQuery] LeaderboardRequestQueryDTO requestQuery
     )
     {
         LeaderboardDTO leaderboard = await playerStatsService.GetLeaderboardAsync(requestQuery);
