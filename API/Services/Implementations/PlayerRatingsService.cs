@@ -1,5 +1,4 @@
 using API.DTOs;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
 using AutoMapper;
@@ -12,32 +11,10 @@ namespace API.Services.Implementations;
 public class PlayerRatingsService(
     IPlayerRatingsRepository playerRatingsRepository,
     IPlayerMatchStatsRepository matchStatsRepository,
-    IPlayersRepository playersRepository,
     ITournamentsService tournamentsService,
     IMapper mapper
 ) : IPlayerRatingsService
 {
-    public async Task<IEnumerable<PlayerRatingStatsDTO?>> GetAsync(long osuPlayerId)
-    {
-        var id = await playersRepository.GetIdAsync(osuPlayerId);
-
-        if (!id.HasValue)
-        {
-            return [];
-        }
-
-        IList<Ruleset> activeRulesets = await playerRatingsRepository.GetActiveRulesetsAsync(id.Value);
-        var allRulesetRatings = new List<PlayerRatingStatsDTO?>();
-
-        foreach (Ruleset ruleset in activeRulesets)
-        {
-            // One per ruleset
-            allRulesetRatings.Add(await GetAsync(id.Value, ruleset, true));
-        }
-
-        return allRulesetRatings;
-    }
-
     public async Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset, bool includeAdjustments)
     {
         PlayerRating? currentStats = await playerRatingsRepository.GetAsync(playerId, ruleset, includeAdjustments);

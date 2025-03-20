@@ -21,6 +21,8 @@ public static class RatingUtils
      * Sub Tier - One of three "sub-divisions" for a major tier (i.e. SilverI, SilverII, SilverIII)
      */
 
+    public const int RatingMinimum = 100;
+
     /// <summary>
     /// Gets the string representation of the given rating
     /// </summary>

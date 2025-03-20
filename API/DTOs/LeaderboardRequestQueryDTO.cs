@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using API.DTOs.Interfaces;
+using API.Utilities;
 using API.Utilities.DataAnnotations;
 using Common.Enums.Enums;
 using JetBrains.Annotations;
@@ -14,18 +15,11 @@ namespace API.DTOs;
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public class LeaderboardRequestQueryDTO : IPaginated, IValidatableObject
 {
-    /// <summary>
-    /// The one-indexed page number
-    /// </summary>
     [FromQuery]
     [Positive]
     [DefaultValue(1)]
     public int Page { get; init; } = 1;
 
-    /// <summary>
-    /// The number of elements on each page
-    /// </summary>
-    /// <remarks>Minimum 10, maximum 100</remarks>
     [FromQuery]
     [Range(10, 100)]
     [DefaultValue(25)]
@@ -77,7 +71,7 @@ public class LeaderboardRequestQueryDTO : IPaginated, IValidatableObject
     /// If given, only players with a rating greater than or equal to this value will be included
     /// </remarks>
     [FromQuery]
-    [Range(100, int.MaxValue)]
+    [Range(RatingUtils.RatingMinimum, int.MaxValue)]
     public int? MinRating { get; init; }
 
     /// <summary>
@@ -88,7 +82,7 @@ public class LeaderboardRequestQueryDTO : IPaginated, IValidatableObject
     /// If given, only players with a rating less than or equal to this value will be included
     /// </remarks>
     [FromQuery]
-    [Range(100, int.MaxValue)]
+    [Range(RatingUtils.RatingMinimum, int.MaxValue)]
     public int? MaxRating { get; init; }
 
     /// <summary>
@@ -120,17 +114,17 @@ public class LeaderboardRequestQueryDTO : IPaginated, IValidatableObject
     public double? MaxWinRate { get; init; }
 
     /*
-         * A collection of booleans representing which tiers to filter on the leaderboard.
-         *
-         * False = Default, no behavioral change
-         * True = Explicitly included in leaderboard results
-         *
-         * If *all* tiers are set to false, or all tiers are set to true, the leaderboard will return
-         * as if no tier filters were applied.
-         *
-         * For example, if Bronze and Emerald are true and everything else is false,
-         * then only Bronze and Emerald players will show up in the leaderboard
-         * (specifically, Bronze III-I and Emerald III-I)
+     * A collection of booleans representing which tiers to filter on the leaderboard.
+     *
+     * False = Default, no behavioral change
+     * True = Explicitly included in leaderboard results
+     *
+     * If *all* tiers are set to false, or all tiers are set to true, the leaderboard will return
+     * as if no tier filters were applied.
+     *
+     * For example, if Bronze and Emerald are true and everything else is false,
+     * then only Bronze and Emerald players will show up in the leaderboard
+     * (specifically, Bronze III-I and Emerald III-I)
     */
 
     /// <summary>
