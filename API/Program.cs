@@ -16,6 +16,7 @@ using API.Services.Interfaces;
 using API.SwaggerGen;
 using API.SwaggerGen.Filters;
 using API.Utilities;
+using API.Utilities.AdminNotes;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
@@ -240,23 +241,32 @@ builder.Services.AddSwaggerGen(options =>
     options.DescribeAllParametersInCamelCase();
 
     // Allow use of in-code XML documentation tags like <summary> and <remarks>
-    string[] xmlDocPaths =
-    [
-        $"{AppDomain.CurrentDomain.BaseDirectory}API.xml",
-        $"{AppDomain.CurrentDomain.BaseDirectory}Database.xml"
-    ];
+    options.IncludeXmlCommentsWithRemarks($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
 
-    foreach (var xmlDoc in xmlDocPaths)
-    {
-        options.IncludeXmlCommentsWithRemarks(xmlDoc);
-    }
-
-    // Register custom filters
+    // Register custom filters.
     // Filters are executed in order of: Operation, Parameter, Schema, Document
     options.OperationFilter<SecurityMetadataOperationFilter>();
     options.OperationFilter<DiscardNestedParametersOperationFilter>();
 
-    options.SchemaFilter<EnumMetadataSchemaFilter>((object)xmlDocPaths);
+    options.SchemaFilter<OverrideSchemaFilter<AdminNoteRouteTarget>>((OpenApiSchema schema, SchemaFilterContext _) =>
+    {
+        // Only target the schema definition, not references
+        if (schema.AllOf.Any())
+        {
+            return;
+        }
+
+        schema.Type = "string";
+        schema.Enum = AdminNotesHelper.GetAdminNoteableEntityRoutes().ToOpenApiArray();
+        schema.Extensions = new Dictionary<string, IOpenApiExtension>
+        {
+            [ExtensionKeys.EnumNames] = AdminNotesHelper.GetAdminNoteableEntityTypes()
+                .Select(t => t.Name)
+                .ToOpenApiArray()
+        };
+    });
+
+    options.SchemaFilter<EnumMetadataSchemaFilter>();
     options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
 
     // Populate the document's info
@@ -285,8 +295,7 @@ builder.Services.AddSwaggerGen(options =>
         }
         else
         {
-            method = $"method_{unknownMethodCount}";
-            unknownMethodCount++;
+            method = $"method_{unknownMethodCount++}";
         }
 
         return $"{controller}_{method}";

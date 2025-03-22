@@ -12,29 +12,37 @@ public class AdminNoteService(
     IMapper mapper
 ) : IAdminNoteService
 {
-    public async Task<AdminNoteDTO?> CreateAsync<TAdminNote>(int referenceId, int adminUserId, string note)
-        where TAdminNote : AdminNoteEntityBase, new()
+    public async Task<bool> ExistsAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase =>
+        await adminNoteRepository.ExistsAsync<TAdminNote>(id);
+
+    public async Task<AdminNoteDTO?> CreateAsync<TAdminNote>(
+        int referenceId,
+        int adminUserId,
+        string note
+    ) where TAdminNote : AdminNoteEntityBase, new()
     {
         if (!await userRepository.ExistsAsync(adminUserId))
         {
             return null;
         }
 
-        var entity = new TAdminNote
+        TAdminNote entity = await adminNoteRepository.CreateAsync(new TAdminNote
         {
             ReferenceId = referenceId,
             AdminUserId = adminUserId,
             Note = note
-        };
+        });
+        // Get after creation to load navigations
+        await adminNoteRepository.GetAsync<TAdminNote>(entity.Id);
 
-        await adminNoteRepository.CreateAsync(entity);
-        return mapper.Map<AdminNoteDTO>(await adminNoteRepository.GetAsync<TAdminNote>(entity.Id));
+        return mapper.Map<AdminNoteDTO>(entity);
     }
 
     public async Task<AdminNoteDTO?> GetAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase =>
-        mapper.Map<AdminNoteDTO>(await adminNoteRepository.GetAsync<TAdminNote>(id));
+        mapper.Map<AdminNoteDTO?>(await adminNoteRepository.GetAsync<TAdminNote>(id));
 
-    public async Task<IEnumerable<AdminNoteDTO>> ListAsync<TAdminNote>(int referenceId) where TAdminNote : AdminNoteEntityBase =>
+    public async Task<IEnumerable<AdminNoteDTO>> ListAsync<TAdminNote>(int referenceId)
+        where TAdminNote : AdminNoteEntityBase =>
         mapper.Map<IEnumerable<AdminNoteDTO>>(await adminNoteRepository.ListAsync<TAdminNote>(referenceId));
 
     public async Task<AdminNoteDTO?> UpdateAsync<TAdminNote>(AdminNoteDTO updatedNote) where TAdminNote : AdminNoteEntityBase
