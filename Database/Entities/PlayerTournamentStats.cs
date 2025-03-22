@@ -62,6 +62,11 @@ public class PlayerTournamentStats : EntityBase
     public int GamesLost { get; set; }
 
     /// <summary>
+    /// The win rate across all matches
+    /// </summary>
+    public double MatchWinRate => MatchesWon / (double)MatchesPlayed;
+
+    /// <summary>
     /// Ids of all <see cref="Entities.Player"/>s that appeared on the <see cref="Player"/>'s team
     /// </summary>
     public int[] TeammateIds { get; set; } = [];

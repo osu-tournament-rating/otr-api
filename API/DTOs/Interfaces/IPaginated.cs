@@ -6,7 +6,7 @@ namespace API.DTOs.Interfaces;
 public interface IPaginated
 {
     /// <summary>
-    /// Page number
+    /// The one-indexed page number
     /// </summary>
     public int Page { get; init; }
 

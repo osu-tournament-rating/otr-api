@@ -124,7 +124,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
 
         return await query
             .OrderBy(querySortType, descending)
-            .Page(pageSize, page - 1)
+            .Page(page, pageSize)
             .ToListAsync();
     }
 
