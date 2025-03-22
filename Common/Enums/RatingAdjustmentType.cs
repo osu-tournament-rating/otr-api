@@ -1,4 +1,4 @@
-namespace Common.Enums.Enums;
+namespace Common.Enums;
 
 /// <summary>
 /// Represents the different types of events that result in the generation of a <see cref="Database.Entities.Processor.RatingAdjustment"/>

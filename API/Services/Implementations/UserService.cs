@@ -1,7 +1,7 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
-using Common.Enums.Enums.Verification;
+using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 
