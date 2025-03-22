@@ -8,26 +8,26 @@ namespace API.Utilities.AdminNotes;
 /// <summary>
 /// Type of entity to target for admin note actions
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public class AdminNoteRouteTarget : IParsable<AdminNoteRouteTarget>
 {
     /// <summary>
     /// Original input to the route segment
     /// </summary>
     [SwaggerIgnore]
-    public string Original { get; [UsedImplicitly] init; } = string.Empty;
+    public string Original { get; init; } = string.Empty;
 
     /// <summary>
     /// Type of the parent entity
     /// </summary>
     [SwaggerIgnore]
-    [UsedImplicitly]
     public Type EntityType { get; init; } = null!;
 
     /// <summary>
     /// Type of the admin note entity
     /// </summary>
     [SwaggerIgnore]
-    public Type AdminNoteType { get; [UsedImplicitly] init; } = null!;
+    public Type AdminNoteType { get; init; } = null!;
 
     public static AdminNoteRouteTarget Parse(string s, IFormatProvider? provider)
     {
