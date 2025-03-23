@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using Common.Enums.Enums.Verification;
+using Common.Enums.Verification;
 using Match = Database.Entities.Match;
 
 namespace DataWorkerService.AutomationChecks.Matches;

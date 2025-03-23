@@ -1,4 +1,4 @@
-using Common.Enums.Enums;
+using Common.Enums;
 using OsuApiClient.Domain.Osu.Beatmaps;
 using OsuApiClient.Domain.Osu.Multiplayer;
 using OsuApiClient.Domain.Osu.Users;

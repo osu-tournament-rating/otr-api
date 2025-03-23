@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using Common.Enums.Enums.Verification;
+using Common.Enums.Verification;
 using Database;
 using Database.Entities;
 using Database.Repositories.Interfaces;

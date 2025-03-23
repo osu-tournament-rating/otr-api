@@ -1,4 +1,4 @@
-using Common.Enums.Enums;
+using Common.Enums;
 using Common.Rating;
 using Common.Utilities;
 using Database.Entities.Processor;

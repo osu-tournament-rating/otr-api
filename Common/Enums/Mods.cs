@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Common.Enums.Enums;
+namespace Common.Enums;
 
 /// <summary>
 /// Score multiplier values for any applicable <see cref="Mods"/>

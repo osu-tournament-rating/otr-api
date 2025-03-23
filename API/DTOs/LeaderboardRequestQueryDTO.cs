@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using API.DTOs.Interfaces;
+using Common.Enums;
 using API.Utilities;
 using API.Utilities.DataAnnotations;
-using Common.Enums.Enums;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 

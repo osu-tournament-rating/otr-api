@@ -1,4 +1,4 @@
-namespace Common.Enums.Enums;
+namespace Common.Enums;
 
 /// <summary>
 /// Indicates whether a player passed or failed filtering

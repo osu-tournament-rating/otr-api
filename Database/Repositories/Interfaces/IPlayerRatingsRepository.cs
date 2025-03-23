@@ -1,5 +1,4 @@
 using Common.Enums;
-using Common.Enums.Enums;
 using Database.Entities.Processor;
 
 namespace Database.Repositories.Interfaces;

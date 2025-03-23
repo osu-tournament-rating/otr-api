@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Common.Enums.Enums;
+using Common.Enums;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
