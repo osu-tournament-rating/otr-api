@@ -1,4 +1,4 @@
-﻿namespace Common.Enums.Enums;
+﻿namespace Common.Enums;
 
 /// <summary>
 /// Denotes the type of action taken on an entity for an audit
