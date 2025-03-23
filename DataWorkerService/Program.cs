@@ -23,8 +23,11 @@ using DataWorkerService.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
 using OsuApiClient.Extensions;
+using RedLockNet.SERedis;
+using RedLockNet.SERedis.Configuration;
 using Serilog;
 using Serilog.Events;
+using StackExchange.Redis;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
@@ -96,6 +99,14 @@ builder.Services.AddDbContext<OtrContext>(o =>
     .AddInterceptors(new AuditingInterceptor())
     .UseSnakeCaseNamingConvention();
 });
+
+// Redis lock factory (distributed resource access control)
+var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+{
+    new(ConnectionMultiplexer.Connect(builder.Configuration
+        .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
+});
+builder.Services.AddSingleton(redLockFactory);
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 

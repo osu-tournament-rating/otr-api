@@ -44,9 +44,12 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OsuApiClient.Extensions;
+using RedLockNet.SERedis;
+using RedLockNet.SERedis.Configuration;
 using Serilog;
 using Serilog.AspNetCore;
 using Serilog.Events;
+using StackExchange.Redis;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
@@ -580,6 +583,14 @@ builder.Services.AddSingleton<ICacheHandler>(
             .RedisConnection
     )
 );
+
+// Redis lock factory (distributed resource access control)
+var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+{
+    new(ConnectionMultiplexer.Connect(builder.Configuration
+        .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
+});
+builder.Services.AddSingleton(redLockFactory);
 
 builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthClient>>();
 
