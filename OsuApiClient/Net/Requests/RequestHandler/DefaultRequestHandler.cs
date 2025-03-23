@@ -11,20 +11,24 @@ using OsuApiClient.Extensions;
 using OsuApiClient.Net.Authorization;
 using OsuApiClient.Net.Constants;
 using OsuApiClient.Net.JsonModels;
+using RedLockNet;
+using RedLockNet.SERedis;
 
 namespace OsuApiClient.Net.Requests.RequestHandler;
 
 /// <summary>
 /// The default implementation of the handler that makes direct requests to the osu! API
 /// </summary>
+/// <remarks>
+/// Any program which uses the OsuClient MUST have a Redis and RedLock configuration.
+/// This class contains resources which are managed by a distributed locker (RedLock).
+/// </remarks>
 internal sealed class DefaultRequestHandler(
     ILogger<DefaultRequestHandler> logger,
+    RedLockFactory redLockFactory,
     IOsuClientConfiguration configuration
 ) : IRequestHandler
 {
-    private const string GlobalMutexName = @"Global\OTR_2b1c2e2f-9c62-4433-9066-dfb7a397d03d";
-    private static readonly Mutex s_mutex = new(false, GlobalMutexName);
-
     private readonly HttpClient _httpClient = new()
     {
         DefaultRequestHeaders =
@@ -99,32 +103,34 @@ internal sealed class DefaultRequestHandler(
     /// Sends a request
     /// </summary>
     /// <remarks>
-    /// Execution of this method is protected by a named <see cref="Mutex"/>.
-    /// Each operation must execute on the same thread, therefore asynchronous calls are not possible.
-    /// The mutex exists to prevent situations where multiple processes utilizing the request handler
-    /// attempt to make network requests at the same time
+    /// Requests targeting the osu! platform are protected by a distributed lock.
     /// </remarks>
     /// <param name="request">Request details</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The resulting <see cref="HttpResponseMessage"/> content as a string, or null if not successful</returns>
-    private Task<string?> SendRequestAsync(
+    private async Task<string?> SendRequestAsync(
         IApiRequest request,
         CancellationToken cancellationToken = default
     )
     {
+        const string resource = "osu-api-default-request-handler-send-async";
+        var expiry = TimeSpan.FromSeconds(10);
+        var wait = TimeSpan.FromSeconds(10);
+        var retry = TimeSpan.FromSeconds(1);
+
+        await using IRedLock? redLock = await redLockFactory.CreateLockAsync(resource, expiry, wait, retry);
         try
         {
-            s_mutex.WaitOne();
+            // Short-circuit the lock if we're making an osu!track request.
+            // This should help with the fact that the DataWorkerService is competing
+            // with the API /oauth/authorize endpoint
+            if (request.Platform == FetchPlatform.OsuTrack || redLock.IsAcquired)
+            {
+                HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
+                HttpResponseMessage response = await _httpClient.SendAsync(requestMessage, cancellationToken);
 
-            HttpRequestMessage requestMessage =
-                PrepareRequestAsync(request, cancellationToken).GetAwaiter().GetResult();
-            HttpResponseMessage response =
-                _httpClient.SendAsync(requestMessage, cancellationToken).GetAwaiter().GetResult();
-
-            var responseContent = OnResponseReceivedAsync(request.Platform, response, cancellationToken).GetAwaiter()
-                .GetResult();
-
-            return Task.FromResult(responseContent);
+                return await OnResponseReceivedAsync(request.Platform, response, cancellationToken);
+            }
         }
         catch (HttpRequestException ex)
         {
@@ -133,12 +139,9 @@ internal sealed class DefaultRequestHandler(
                 request.Platform.ToString(),
                 ex
             );
-            return Task.FromResult<string?>(null);
         }
-        finally
-        {
-            s_mutex.ReleaseMutex();
-        }
+
+        return null;
     }
 
     /// <summary>
