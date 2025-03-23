@@ -122,11 +122,11 @@ public class TournamentStatsProcessor(
         existingStats.AverageAccuracy = matchStats.Average(pms => pms.AverageAccuracy);
         existingStats.MatchesPlayed = matchStats.Count;
         existingStats.MatchesWon = matchStats.Count(pms => pms.Won);
-        existingStats.MatchesLost = matchStats.Count(pms => !pms.Won);
+        existingStats.MatchesLost = matchStats.Count - existingStats.MatchesWon;
         existingStats.GamesPlayed = matchStats.Sum(pms => pms.GamesPlayed);
         existingStats.GamesWon = matchStats.Sum(pms => pms.GamesWon);
         existingStats.GamesLost = matchStats.Sum(pms => pms.GamesLost);
-        existingStats.MatchWinRate = matchStats.Count(pms => pms.Won) / (double)matchStats.Count;
+        existingStats.MatchWinRate = existingStats.MatchesWon / (double)matchStats.Count;
         existingStats.TeammateIds = [.. matchStats.SelectMany(pms => pms.TeammateIds).Distinct()];
     }
 }
