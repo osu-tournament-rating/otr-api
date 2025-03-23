@@ -10,8 +10,8 @@ public interface IPlayerTournamentStatsRepository : IRepository<PlayerTournament
     /// </summary>
     /// <param name="playerIds">The ids of the players to fetch stats for</param>
     /// <param name="ruleset">The ruleset to filter the tournament statistics by</param>
-    /// <returns>A Dictionary of <see cref="PlayerTournamentStats"/> with the key equal to the player's id</returns>
-    Task<IDictionary<int, IList<PlayerTournamentStats>>> GetAsync(IEnumerable<int> playerIds, Ruleset ruleset);
+    /// <returns>A dictionary mapping player IDs to their tournament statistics (sum of tournaments, sum of matches, and average match win rate).</returns>
+    Task<IDictionary<int, (int sumTournaments, int sumMatches, double averageMatchWinRate)>> GetLeaderboardStatsAsync(IEnumerable<int> playerIds, Ruleset ruleset);
 
     /// <summary>
     /// Retrieves all tournament statistics for a specific player based on the provided criteria.

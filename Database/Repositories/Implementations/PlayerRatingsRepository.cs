@@ -43,6 +43,7 @@ public class PlayerRatingsRepository(OtrContext context)
                 minMatches, maxMatches, minWinRate, maxWinRate, bronze, silver, gold, platinum, emerald, diamond,
                 master,
                 grandmaster, eliteGrandmaster)
+            .OrderByDescending(pr => pr.Rating)
             .Page(page, pageSize)
             .ToListAsync();
     }
@@ -107,7 +108,9 @@ public class PlayerRatingsRepository(OtrContext context)
     )
     {
         IQueryable<PlayerRating> baseQuery = _context.PlayerRatings
+            .AsNoTracking()
             .Include(pr => pr.Player)
+            .AsSplitQuery()
             .WhereRuleset(ruleset)
             // Filter out players who only have the initial adjustment
             .Where(pr => pr.Adjustments.Count > 1);
@@ -119,9 +122,6 @@ public class PlayerRatingsRepository(OtrContext context)
         baseQuery = FilterByWinRate(baseQuery, ruleset, minWinRate, maxWinRate);
         baseQuery = FilterByTier(baseQuery, bronze, silver, gold, platinum, emerald, diamond, master, grandmaster,
             eliteGrandmaster);
-
-        baseQuery = baseQuery
-            .OrderByDescending(pr => pr.Rating);
 
         return baseQuery;
     }
@@ -157,16 +157,14 @@ public class PlayerRatingsRepository(OtrContext context)
         if (minRank.HasValue)
         {
             query = query.Where(x =>
-                x.Player.RulesetData.Any(rd => rd.Ruleset == ruleset)
-                && x.Player.RulesetData.FirstOrDefault(rd => rd.Ruleset == ruleset)!.GlobalRank >= minRank
+                x.Player.RulesetData.FirstOrDefault(rd => rd.Ruleset == ruleset)!.GlobalRank >= minRank
             );
         }
 
         if (maxRank.HasValue)
         {
             query = query.Where(x =>
-                x.Player.RulesetData.Any(rd => rd.Ruleset == ruleset)
-                && x.Player.RulesetData.FirstOrDefault(rd => rd.Ruleset == ruleset)!.GlobalRank <= maxRank
+                x.Player.RulesetData.FirstOrDefault(rd => rd.Ruleset == ruleset)!.GlobalRank <= maxRank
             );
         }
 
