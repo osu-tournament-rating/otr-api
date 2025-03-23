@@ -64,7 +64,7 @@ public class PlayerTournamentStats : EntityBase
     /// <summary>
     /// The win rate across all matches
     /// </summary>
-    public double MatchWinRate => MatchesWon / (double)MatchesPlayed;
+    public double MatchWinRate { get; set; }
 
     /// <summary>
     /// Ids of all <see cref="Entities.Player"/>s that appeared on the <see cref="Player"/>'s team

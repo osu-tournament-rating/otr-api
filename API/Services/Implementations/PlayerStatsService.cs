@@ -42,13 +42,13 @@ public class PlayerStatsService(
             request.Bronze, request.Silver, request.Gold, request.Platinum, request.Emerald,
             request.Diamond, request.Master, request.Grandmaster, request.EliteGrandmaster);
 
-        IDictionary<int, IList<PlayerTournamentStats>> tournamentStats =
-            await playerTournamentStatsRepository.GetAsync(leaderboardRatings.Select(lb => lb.PlayerId), request.Ruleset);
+        IDictionary<int, (int sumTournaments, int sumMatches, double averageMatchWinRate)> tournamentStats =
+            await playerTournamentStatsRepository.GetLeaderboardStatsAsync(leaderboardRatings.Select(lb => lb.PlayerId), request.Ruleset);
 
         var stats = new List<PlayerRatingStatsDTO>();
         foreach (PlayerRating pr in leaderboardRatings)
         {
-            if (!tournamentStats.TryGetValue(pr.PlayerId, out IList<PlayerTournamentStats>? pts))
+            if (!tournamentStats.TryGetValue(pr.PlayerId, out (int sumTournaments, int sumMatches, double averageMatchWinRate) pts))
             {
                 logger.LogWarning("Expected to find PlayerTournamentStats for player {Player} and ruleset {Ruleset}" +
                                   " but no results were found!", pr.PlayerId, request.Ruleset);
@@ -64,9 +64,9 @@ public class PlayerStatsService(
                 CountryRank = pr.CountryRank,
                 Player = mapper.Map<PlayerCompactDTO>(pr.Player),
                 Adjustments = [], // We don't need adjustments for leaderboards
-                TournamentsPlayed = pts?.Count ?? 0,
-                MatchesPlayed = pts?.Sum(s => s.MatchesPlayed) ?? 0,
-                WinRate = pts?.Average(s => s.MatchWinRate) ?? 0
+                TournamentsPlayed = pts.sumTournaments,
+                MatchesPlayed = pts.sumMatches,
+                WinRate = pts.averageMatchWinRate
             });
         }
 

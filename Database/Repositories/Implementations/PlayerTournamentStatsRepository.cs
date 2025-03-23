@@ -10,12 +10,29 @@ public class PlayerTournamentStatsRepository(OtrContext context) : RepositoryBas
 {
     private readonly OtrContext _context = context;
 
-    public async Task<IDictionary<int, IList<PlayerTournamentStats>>> GetAsync(IEnumerable<int> playerIds, Ruleset ruleset) =>
-         await _context.PlayerTournamentStats
-            .Where(pts => playerIds.Contains(pts.PlayerId) && pts.Tournament.Ruleset == ruleset)
+    public async Task<IDictionary<int, (int sumTournaments, int sumMatches, double averageMatchWinRate)>> GetLeaderboardStatsAsync(
+        IEnumerable<int> playerIds,
+        Ruleset ruleset) => await _context.PlayerTournamentStats
+        .AsNoTracking()
+        .Where(pts => playerIds.Contains(pts.PlayerId))
+        .Where(pts => pts.Tournament.Ruleset == ruleset)
         .GroupBy(pts => pts.PlayerId)
-        .ToDictionaryAsync(g => g.Key, IList<PlayerTournamentStats> (g) => g.ToList());
-
+        .Select(grouping => new
+        {
+            PlayerId = grouping.Key,
+            SumTournaments = grouping.Count(),
+            SumMatches = grouping.Sum(pts => pts.MatchesPlayed),
+            AverageWinRate = grouping.Average(pts => pts.MatchWinRate),
+            TotalMatches = grouping.Sum(pts => pts.MatchesPlayed)
+        })
+        .ToDictionaryAsync(
+            x => x.PlayerId,
+            x => (
+                x.SumTournaments,
+                x.SumMatches,
+                x.AverageWinRate
+            )
+        );
     public async Task<ICollection<PlayerTournamentStats>> GetForPlayerAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax) =>
         await _context.PlayerTournamentStats
             .Include(pts => pts.Player)

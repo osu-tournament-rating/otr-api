@@ -601,6 +601,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(x => x.OsuId).IsUnique();
+            entity.HasIndex(p => p.Country);
         });
 
         modelBuilder.Entity<PlayerMatchStats>(entity =>
@@ -641,7 +642,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(rd => rd.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(rd => new { rd.PlayerId, rd.Ruleset }).IsUnique();
+            entity.HasIndex(rd => new { rd.PlayerId, rd.Ruleset }).IsUnique(); entity.HasIndex(rd => new { rd.PlayerId, rd.Ruleset }).IsUnique();
+            entity.HasIndex(rd => new { rd.PlayerId, rd.Ruleset, rd.GlobalRank }).IsUnique();
         });
 
         modelBuilder.Entity<PlayerTournamentStats>(entity =>
@@ -719,7 +721,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.HasIndex(pr => pr.Ruleset);
             entity.HasIndex(pr => pr.PlayerId);
-            entity.HasIndex(pr => pr.Rating).IsDescending(true);
+            entity.HasIndex(pr => pr.Rating).IsDescending(true);         // ruleset, rating
+            entity.HasIndex(pr => new { pr.Ruleset, pr.Rating }).IsDescending(false, true);
             entity.HasIndex(pr => new { pr.PlayerId, pr.Ruleset }).IsUnique();
         });
 
