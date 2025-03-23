@@ -643,7 +643,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(rd => new { rd.PlayerId, rd.Ruleset }).IsUnique();
-            entity.HasIndex(rd => new { rd.PlayerId, rd.Ruleset }).IsUnique();
             entity.HasIndex(rd => new { rd.PlayerId, rd.Ruleset, rd.GlobalRank }).IsUnique();
         });
 
