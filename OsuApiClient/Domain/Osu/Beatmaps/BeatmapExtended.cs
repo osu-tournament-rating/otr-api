@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Common.Enums.Enums;
+using Common.Enums;
 
 namespace OsuApiClient.Domain.Osu.Beatmaps;
 

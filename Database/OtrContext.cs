@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Common.Enums.Enums;
-using Common.Enums.Enums.Verification;
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;

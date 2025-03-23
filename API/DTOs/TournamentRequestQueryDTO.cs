@@ -2,8 +2,8 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using API.DTOs.Interfaces;
 using API.Utilities.DataAnnotations;
-using Common.Enums.Enums;
-using Common.Enums.Enums.Verification;
+using Common.Enums;
+using Common.Enums.Verification;
 using JetBrains.Annotations;
 
 namespace API.DTOs;

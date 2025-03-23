@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using Common.Enums.Enums;
-using Common.Enums.Enums.Verification;
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities.Interfaces;
 using Database.Utilities;
 
@@ -21,22 +21,22 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     public long OsuId { get; set; }
 
     /// <summary>
-    /// The <see cref="Common.Enums.Enums.Ruleset"/> the game was played in
+    /// The <see cref="Common.Enums.Ruleset"/> the game was played in
     /// </summary>
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// The <see cref="Common.Enums.Enums.ScoringType"/> used
+    /// The <see cref="Common.Enums.ScoringType"/> used
     /// </summary>
     public ScoringType ScoringType { get; set; }
 
     /// <summary>
-    /// The <see cref="Common.Enums.Enums.TeamType"/> used
+    /// The <see cref="Common.Enums.TeamType"/> used
     /// </summary>
     public TeamType TeamType { get; set; }
 
     /// <summary>
-    /// The <see cref="Common.Enums.Enums.Mods"/> enabled for the game
+    /// The <see cref="Common.Enums.Mods"/> enabled for the game
     /// </summary>
     /// <remarks>
     /// Mods set on the game level are "forced" on all scores

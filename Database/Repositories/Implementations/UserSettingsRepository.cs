@@ -1,4 +1,4 @@
-using Common.Enums.Enums;
+using Common.Enums;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
