@@ -86,7 +86,7 @@ public static class RostersHelper
             }
         }
 
-        MatchRoster[] rosters = [.. eGames
+        List<MatchRoster> rosters = [.. eGames
             .SelectMany(g => g.Rosters)
             .GroupBy(
                 gr => gr.Team,
