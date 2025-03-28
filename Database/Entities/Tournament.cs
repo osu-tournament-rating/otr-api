@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities.Interfaces;
-using Database.Enums;
-using Database.Enums.Verification;
 using Database.Utilities;
 
 namespace Database.Entities;
@@ -87,12 +87,12 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// The start date of the first <see cref="Match"/> played in the tournament
     /// </summary>
-    public DateTime StartTime { get; set; }
+    public DateTime? StartTime { get; set; }
 
     /// <summary>
     /// The end date of the last <see cref="Match"/> played in the tournament
     /// </summary>
-    public DateTime EndTime { get; set; }
+    public DateTime? EndTime { get; set; }
 
     /// <summary>
     /// A collection of <see cref="Match"/>es played in the tournament

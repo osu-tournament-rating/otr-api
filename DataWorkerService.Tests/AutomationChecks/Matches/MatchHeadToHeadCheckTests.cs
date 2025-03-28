@@ -1,6 +1,6 @@
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 using DataWorkerService.AutomationChecks.Matches;
 using TestingUtils.SeededData;
 

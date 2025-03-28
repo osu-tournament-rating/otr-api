@@ -1,5 +1,5 @@
 using System.Collections;
-using Database.Enums;
+using Common.Enums;
 using DataWorkerService.AutomationChecks;
 using Microsoft.Extensions.Logging;
 using Serilog.Extensions.Logging;
@@ -60,6 +60,26 @@ public static class SharedTestData
         {
             yield return [SeededDate.Placeholder, false];
             yield return [DateTime.MinValue, false];
+            yield return [SeededDate.Generate(), true];
+            yield return [DateTime.MaxValue, true];
+            yield return [DateTime.Now, true];
+            yield return [new DateTime(2009, 9, 16), true];
+            yield return [new DateTime(2018, 5, 29), true];
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    /// <summary>
+    /// <see cref="Nullable{DateTime}"/> test cases for EndTime validity tests. <br/>
+    /// Formatted { <see cref="Nullable{DateTime}"/> mod, bool expectedPass }
+    /// </summary>
+    public class EndTimeNullableTestData : IEnumerable<object?[]>
+    {
+        public IEnumerator<object?[]> GetEnumerator()
+        {
+            yield return [SeededDate.Placeholder, true];
+            yield return [DateTime.MinValue, true];
             yield return [SeededDate.Generate(), true];
             yield return [DateTime.MaxValue, true];
             yield return [DateTime.Now, true];

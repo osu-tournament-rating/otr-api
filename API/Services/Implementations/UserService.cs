@@ -1,8 +1,8 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;

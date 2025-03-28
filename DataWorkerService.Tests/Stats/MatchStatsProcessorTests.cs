@@ -1,10 +1,11 @@
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 using DataWorkerService.Processors;
 using DataWorkerService.Processors.Games;
 using DataWorkerService.Processors.Matches;
 using DataWorkerService.Tests.Mocks;
+using DataWorkerService.Utilities;
 using TestingUtils.SeededData;
 
 namespace DataWorkerService.Tests.Stats;
@@ -12,7 +13,7 @@ namespace DataWorkerService.Tests.Stats;
 public class MatchStatsProcessorTests
 {
     [Fact]
-    public void Processor_ProperlyCreates_MatchWinRecord()
+    public void Processor_ProperlyCreates_MatchRosterRecord()
     {
         // Arrange
         Match match = SeededMatch.ExampleMatch();
@@ -28,20 +29,26 @@ public class MatchStatsProcessorTests
             }
 
             GameStatsProcessor.AssignScorePlacements(game.Scores);
-            game.WinRecord = GameStatsProcessor.GenerateWinRecord(game.Scores);
+            game.Rosters = RostersHelper.GenerateRosters(game.Scores);
         }
 
-        const Team expectedWinningTeam = Team.Blue;
-        const Team expectedLosingTeam = Team.Red;
-
         // Act
-        MatchWinRecord result = MatchStatsProcessor.GenerateWinRecord(match.Games);
+        ICollection<MatchRoster> rosters = RostersHelper.GenerateRosters(match.Games);
 
         // Assert
-        Assert.Equal(expectedWinningTeam, result.WinnerTeam);
-        Assert.Equal(expectedLosingTeam, result.LoserTeam);
-        Assert.Distinct(result.WinnerRoster);
-        Assert.Distinct(result.LoserRoster);
+        MatchRoster? redRoster = rosters.FirstOrDefault(r => r.Team == Team.Red);
+        MatchRoster? blueRoster = rosters.FirstOrDefault(r => r.Team == Team.Blue);
+
+        Assert.NotNull(blueRoster);
+        Assert.NotNull(redRoster);
+
+        Assert.NotEmpty(blueRoster.Roster);
+        Assert.NotEmpty(redRoster.Roster);
+
+        Assert.Equal(blueRoster.Roster.Distinct().Count(), blueRoster.Roster.Length);
+        Assert.Equal(redRoster.Roster.Distinct().Count(), redRoster.Roster.Length);
+
+        Assert.Equal(2, rosters.Count);
     }
 
     [Fact]

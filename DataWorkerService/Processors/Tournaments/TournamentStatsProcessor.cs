@@ -1,6 +1,6 @@
+using Common.Enums.Verification;
 using Database.Entities;
 using Database.Entities.Processor;
-using Database.Enums.Verification;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 
 namespace DataWorkerService.Processors.Tournaments;
@@ -46,7 +46,7 @@ public class TournamentStatsProcessor(
             }
         }
 
-        IEnumerable<Match> verifiedMatches = [.. entity.Matches
+        List<Match> verifiedMatches = [.. entity.Matches
             .Where(m => m is
             { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: MatchProcessingStatus.Done })];
 
@@ -57,7 +57,7 @@ public class TournamentStatsProcessor(
             if (match.PlayerMatchStats.Count != 0
                 && match.PlayerRatingAdjustments.Count != 0
                 && match.PlayerMatchStats.Count == match.PlayerRatingAdjustments.Count
-                && match.WinRecord is not null
+                && match.Rosters.Count > 0
                )
             {
                 continue;
@@ -71,20 +71,23 @@ public class TournamentStatsProcessor(
                 match.PlayerMatchStats.Count,
                 nameof(match.PlayerRatingAdjustments),
                 match.PlayerRatingAdjustments.Count,
-                match.WinRecord is not null
+                match.Rosters.Count > 0
             );
 
             return;
         }
 
-        // Create a PlayerTournamentStats for each Player
+        // Create a dictionary to track existing PlayerTournamentStats by PlayerId
+        var playerTournamentStatsDict = entity.PlayerTournamentStats
+            .ToDictionary(pts => pts.PlayerId);
+
+        // Create or update a PlayerTournamentStats for each Player
         foreach (Player player in verifiedMatches
                      .SelectMany(m => m.PlayerMatchStats)
                      .Select(pms => pms.Player)
-                     .DistinctBy(p => p.Id)
-                )
+             .DistinctBy(p => p.Id))
         {
-            IEnumerable<PlayerMatchStats> matchStats = [.. verifiedMatches
+            List<PlayerMatchStats> matchStats = [.. verifiedMatches
                 .SelectMany(m => m.PlayerMatchStats)
                 .Where(pms => pms.Player.Id == player.Id)];
 
@@ -92,25 +95,38 @@ public class TournamentStatsProcessor(
                 .SelectMany(m => m.PlayerRatingAdjustments)
                 .Where(ra => ra.Player.Id == player.Id)];
 
-            entity.PlayerTournamentStats.Add(new PlayerTournamentStats
+            if (playerTournamentStatsDict.TryGetValue(player.Id, out PlayerTournamentStats? existingStats))
             {
-                AverageRatingDelta = matchAdjustments.Average(ra => ra.RatingDelta),
-                AverageMatchCost = matchStats.Average(pms => pms.MatchCost),
-                AverageScore = (int)matchStats.Average(pms => pms.AverageScore),
-                AveragePlacement = matchStats.Average(pms => pms.AveragePlacement),
-                AverageAccuracy = matchStats.Average(pms => pms.AverageAccuracy),
-                MatchesPlayed = matchStats.Count(),
-                MatchesWon = matchStats.Count(pms => pms.Won),
-                MatchesLost = matchStats.Count(pms => !pms.Won),
-                GamesPlayed = matchStats.Sum(pms => pms.GamesPlayed),
-                GamesWon = matchStats.Sum(pms => pms.GamesWon),
-                GamesLost = matchStats.Sum(pms => pms.GamesLost),
-                TeammateIds = [.. matchStats.SelectMany(pms => pms.TeammateIds).Distinct()],
-                PlayerId = player.Id,
-                TournamentId = entity.Id
-            });
+                UpdatePlayerTournamentStats(existingStats, matchAdjustments, matchStats);
+            }
+            else
+            {
+                // Add a new PlayerTournamentStats
+                var stats = new PlayerTournamentStats { PlayerId = player.Id, TournamentId = entity.Id };
+                UpdatePlayerTournamentStats(stats, matchAdjustments, matchStats);
+
+                entity.PlayerTournamentStats.Add(stats);
+            }
         }
 
         entity.ProcessingStatus = TournamentProcessingStatus.Done;
+    }
+
+    private static void UpdatePlayerTournamentStats(PlayerTournamentStats existingStats, IEnumerable<RatingAdjustment> matchAdjustments,
+        List<PlayerMatchStats> matchStats)
+    {
+        existingStats.AverageRatingDelta = matchAdjustments.Average(ra => ra.RatingDelta);
+        existingStats.AverageMatchCost = matchStats.Average(pms => pms.MatchCost);
+        existingStats.AverageScore = (int)matchStats.Average(pms => pms.AverageScore);
+        existingStats.AveragePlacement = matchStats.Average(pms => pms.AveragePlacement);
+        existingStats.AverageAccuracy = matchStats.Average(pms => pms.AverageAccuracy);
+        existingStats.MatchesPlayed = matchStats.Count;
+        existingStats.MatchesWon = matchStats.Count(pms => pms.Won);
+        existingStats.MatchesLost = matchStats.Count - existingStats.MatchesWon;
+        existingStats.GamesPlayed = matchStats.Sum(pms => pms.GamesPlayed);
+        existingStats.GamesWon = matchStats.Sum(pms => pms.GamesWon);
+        existingStats.GamesLost = matchStats.Sum(pms => pms.GamesLost);
+        existingStats.MatchWinRate = existingStats.MatchesWon / (double)matchStats.Count;
+        existingStats.TeammateIds = [.. matchStats.SelectMany(pms => pms.TeammateIds).Distinct()];
     }
 }

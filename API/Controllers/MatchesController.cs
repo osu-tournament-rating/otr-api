@@ -3,7 +3,6 @@ using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities.Extensions;
 using Asp.Versioning;
-using Database.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +12,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public partial class MatchesController(IMatchesService matchesService, IAdminNoteService adminNoteService) : Controller
+public class MatchesController(IMatchesService matchesService) : Controller
 {
     /// <summary>
     /// Get all matches which fit an optional request query
@@ -103,25 +102,5 @@ public partial class MatchesController(IMatchesService matchesService, IAdminNot
 
         await matchesService.DeleteAsync(id);
         return NoContent();
-    }
-
-    /// <summary>
-    /// List all admin notes from a match
-    /// </summary>
-    /// <param name="id">Match id</param>
-    /// <response code="404">A match matching the given id does not exist</response>
-    /// <response code="200">Returns all admin notes from a match</response>
-    [HttpGet("{id:int}/notes")]
-    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<IEnumerable<AdminNoteDTO>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ListAdminNotesAsync(int id)
-    {
-        if (!await matchesService.ExistsAsync(id))
-        {
-            return NotFound();
-        }
-
-        return Ok(await adminNoteService.ListAsync<MatchAdminNote>(id));
     }
 }

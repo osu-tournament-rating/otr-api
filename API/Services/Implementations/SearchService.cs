@@ -1,15 +1,15 @@
 using API.DTOs;
 using API.Handlers.Interfaces;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
+using Database.Entities;
 using Database.Entities.Processor;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
 public class SearchService(
-    IApiTournamentsRepository tournamentsRepository,
+    ITournamentsRepository tournamentsRepository,
     IMatchesService matchesService,
     IPlayersRepository playerRepository,
     ICacheHandler cacheHandler
@@ -18,15 +18,15 @@ public class SearchService(
     public async Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey) =>
         new()
         {
-            Tournaments = [.. (await SearchTournamentsByNameAsync(searchKey))],
-            Matches = [.. (await SearchMatchesByNameAsync(searchKey))],
-            Players = [.. (await SearchPlayersByNameAsync(searchKey))]
+            Tournaments = [.. await SearchTournamentsByNameAsync(searchKey)],
+            Matches = [.. await SearchMatchesByNameAsync(searchKey)],
+            Players = [.. await SearchPlayersByNameAsync(searchKey)]
         };
 
     private async Task<IEnumerable<TournamentSearchResultDTO>> SearchTournamentsByNameAsync(string tournamentName)
     {
-        IEnumerable<TournamentSearchResultDTO>? result =
-            await cacheHandler.Cache.GetObjectAsync<IEnumerable<TournamentSearchResultDTO>>(
+        IList<TournamentSearchResultDTO>? result =
+            await cacheHandler.Cache.GetObjectAsync<IList<TournamentSearchResultDTO>>(
                 CacheUtils.TournamentSearchKey(tournamentName));
 
         if (result is not null)
@@ -34,9 +34,17 @@ public class SearchService(
             return result;
         }
 
-        result = [.. (await tournamentsRepository.SearchAsync(tournamentName))];
-        await cacheHandler.SetTournamentSearchResultAsync(result, tournamentName);
+        IList<Tournament> searchResult = await tournamentsRepository.SearchAsync(tournamentName);
 
+        result = [.. searchResult.Select(t => new TournamentSearchResultDTO
+        {
+            Id = t.Id,
+            Ruleset = t.Ruleset,
+            LobbySize = t.LobbySize,
+            Name = t.Name
+        })];
+
+        await cacheHandler.SetTournamentSearchResultAsync(result, tournamentName);
         return result;
     }
 

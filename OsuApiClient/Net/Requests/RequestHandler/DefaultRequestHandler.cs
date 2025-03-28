@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using AutoMapper;
@@ -10,14 +11,21 @@ using OsuApiClient.Extensions;
 using OsuApiClient.Net.Authorization;
 using OsuApiClient.Net.Constants;
 using OsuApiClient.Net.JsonModels;
+using RedLockNet;
+using RedLockNet.SERedis;
 
 namespace OsuApiClient.Net.Requests.RequestHandler;
 
 /// <summary>
 /// The default implementation of the handler that makes direct requests to the osu! API
 /// </summary>
+/// <remarks>
+/// Any program which uses the OsuClient MUST have a Redis and RedLock configuration.
+/// This class contains resources which are managed by a distributed locker (RedLock).
+/// </remarks>
 internal sealed class DefaultRequestHandler(
     ILogger<DefaultRequestHandler> logger,
+    RedLockFactory redLockFactory,
     IOsuClientConfiguration configuration
 ) : IRequestHandler
 {
@@ -94,6 +102,9 @@ internal sealed class DefaultRequestHandler(
     /// <summary>
     /// Sends a request
     /// </summary>
+    /// <remarks>
+    /// Requests targeting the osu! platform are protected by a distributed lock.
+    /// </remarks>
     /// <param name="request">Request details</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The resulting <see cref="HttpResponseMessage"/> content as a string, or null if not successful</returns>
@@ -102,12 +113,24 @@ internal sealed class DefaultRequestHandler(
         CancellationToken cancellationToken = default
     )
     {
-        HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
+        const string resource = "osu-api-default-request-handler-send-async";
+        var expiry = TimeSpan.FromSeconds(10);
+        var wait = TimeSpan.FromSeconds(10);
+        var retry = TimeSpan.FromSeconds(1);
 
-        HttpResponseMessage? response = null;
+        await using IRedLock? redLock = await redLockFactory.CreateLockAsync(resource, expiry, wait, retry);
         try
         {
-            response = await _httpClient.SendAsync(requestMessage, cancellationToken);
+            // Short-circuit the lock if we're making an osu!track request.
+            // This should help with the fact that the DataWorkerService is competing
+            // with the API /oauth/authorize endpoint
+            if (request.Platform == FetchPlatform.OsuTrack || redLock.IsAcquired)
+            {
+                HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
+                HttpResponseMessage response = await _httpClient.SendAsync(requestMessage, cancellationToken);
+
+                return await OnResponseReceivedAsync(request.Platform, response, cancellationToken);
+            }
         }
         catch (HttpRequestException ex)
         {
@@ -118,9 +141,7 @@ internal sealed class DefaultRequestHandler(
             );
         }
 
-        return response is not null
-            ? await OnResponseReceivedAsync(request.Platform, response, cancellationToken)
-            : null;
+        return null;
     }
 
     /// <summary>
@@ -232,6 +253,21 @@ internal sealed class DefaultRequestHandler(
     }
 
     /// <summary>
+    /// Forcefully throttle the client for the specified duration
+    /// </summary>
+    /// <remarks>Fail-safe in the event we are being rate limited</remarks>
+    /// <param name="platform">The platform being fetched</param>
+    private async Task ForceRateLimitCooldown(FetchPlatform platform, int durationSeconds = 300, CancellationToken cancellationToken = default)
+    {
+        FixedWindowRateLimit rateLimit = _rateLimits[platform];
+        rateLimit.ClearRemainingTokens();
+
+        logger.LogInformation("Rate limit forcefully cooling down [Platform: {Platform} | Duration: {Duration} seconds]", platform, durationSeconds);
+
+        await RespectRateLimitAsync(platform, cancellationToken);
+    }
+
+    /// <summary>
     /// Performs post-request operations for the given <see cref="FetchPlatform"/>.
     /// Validates the response, updates the rate limit, and reads the response content
     /// </summary>
@@ -258,7 +294,7 @@ internal sealed class DefaultRequestHandler(
         );
 
         // Check validity
-        return ResponseIsSuccessful(platform, response, responseContent)
+        return await ResponseIsSuccessful(platform, response, responseContent, cancellationToken)
             ? responseContent
             : null;
     }
@@ -269,10 +305,11 @@ internal sealed class DefaultRequestHandler(
     /// <param name="platform">The platform being fetched</param>
     /// <param name="response">API response</param>
     /// <returns>True if <see cref="HttpResponseMessage.IsSuccessStatusCode"/> denotes a successful response</returns>
-    private bool ResponseIsSuccessful(
+    private async Task<bool> ResponseIsSuccessful(
         FetchPlatform platform,
         HttpResponseMessage response,
-        string responseContent
+        string responseContent,
+        CancellationToken cancellationToken = default
     )
     {
         if (response.IsSuccessStatusCode)
@@ -280,7 +317,7 @@ internal sealed class DefaultRequestHandler(
             return true;
         }
 
-        logger.LogWarning(
+        logger.LogInformation(
             "Fetch was unsuccessful [Platform: {Platform} | Route: {Route} | Code: {Code} | Reason: {Reason} | Response: {Response}]",
             platform,
             response.RequestMessage?.RequestUri,
@@ -292,6 +329,12 @@ internal sealed class DefaultRequestHandler(
                 : responseContent
         );
 
+        if (response.StatusCode != HttpStatusCode.TooManyRequests)
+        {
+            return false;
+        }
+
+        await ForceRateLimitCooldown(platform, cancellationToken: cancellationToken);
         return false;
     }
 

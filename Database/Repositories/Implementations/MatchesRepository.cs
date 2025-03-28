@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums;
+using Common.Enums.Queries;
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Queries;
-using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -84,7 +84,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
             query = query.OrderBy(querySortType.Value, sortDescending ?? false);
         }
 
-        return await query.Page(limit, page - 1).AsNoTracking().ToListAsync();
+        return await query.Page(page, limit).AsNoTracking().ToListAsync();
     }
 
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>

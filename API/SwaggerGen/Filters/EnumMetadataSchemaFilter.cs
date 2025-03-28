@@ -15,11 +15,38 @@ namespace API.SwaggerGen.Filters;
 /// </summary>
 /// <param name="xmlDocPaths">A list of paths to xml documents used to extract documentation</param>
 [UsedImplicitly]
-public class EnumMetadataSchemaFilter(string[] xmlDocPaths) : ISchemaFilter
+public class EnumMetadataSchemaFilter : ISchemaFilter
 {
-    private readonly IList<XPathNavigator> _xmlNavigators = [.. xmlDocPaths
-        .Where(File.Exists)
-        .Select(path => new XPathDocument(path).CreateNavigator())];
+    private readonly IList<XPathNavigator> _xmlNavigators = [];
+
+    /// <summary>
+    /// Determines if XML documentation can be retrieved for a given type
+    /// </summary>
+    private bool CanRetrieveDocumentation(Type type)
+    {
+        var asmName = type.Assembly.GetName().Name;
+
+        if (string.IsNullOrEmpty(asmName))
+        {
+            return false;
+        }
+
+        // Look for xml that has already been loaded
+        if (_xmlNavigators.Any(nav => nav.BaseURI.EndsWith(asmName + ".xml")))
+        {
+            return true;
+        }
+
+        // Try to load xml
+        var xmlPath = AppDomain.CurrentDomain.BaseDirectory + asmName + ".xml";
+        if (!File.Exists(xmlPath))
+        {
+            return false;
+        }
+
+        _xmlNavigators.Add(new XPathDocument(xmlPath).CreateNavigator());
+        return true;
+    }
 
     public void Apply(OpenApiSchema schema, SchemaFilterContext context)
     {
@@ -49,7 +76,7 @@ public class EnumMetadataSchemaFilter(string[] xmlDocPaths) : ISchemaFilter
         }
 
         // Add the enum descriptions extension
-        if (schema.Extensions.ContainsKey(ExtensionKeys.EnumDescriptions))
+        if (schema.Extensions.ContainsKey(ExtensionKeys.EnumDescriptions) || !CanRetrieveDocumentation(type))
         {
             return;
         }

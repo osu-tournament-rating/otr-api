@@ -23,8 +23,11 @@ using DataWorkerService.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
 using OsuApiClient.Extensions;
+using RedLockNet.SERedis;
+using RedLockNet.SERedis.Configuration;
 using Serilog;
 using Serilog.Events;
+using StackExchange.Redis;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
@@ -97,6 +100,14 @@ builder.Services.AddDbContext<OtrContext>(o =>
     .UseSnakeCaseNamingConvention();
 });
 
+// Redis lock factory (distributed resource access control)
+var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+{
+    new(ConnectionMultiplexer.Connect(builder.Configuration
+        .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
+});
+builder.Services.AddSingleton(redLockFactory);
+
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 #endregion
@@ -146,6 +157,7 @@ builder.Services.AddSingleton<IAutomationCheck<Match>, MatchEndTimeCheck>();
 builder.Services.AddSingleton<IAutomationCheck<Match>, MatchGameCountCheck>();
 builder.Services.AddSingleton<IAutomationCheck<Match>, MatchHeadToHeadCheck>();
 builder.Services.AddSingleton<IAutomationCheck<Match>, MatchNamePrefixCheck>();
+builder.Services.AddSingleton<IAutomationCheck<Match>, MatchTeamsIntegrityCheck>();
 
 builder.Services.AddSingleton<IAutomationCheck<Tournament>, TournamentMatchCountCheck>();
 

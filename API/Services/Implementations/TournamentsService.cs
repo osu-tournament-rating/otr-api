@@ -1,9 +1,9 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -130,7 +130,7 @@ public class TournamentsService(
     ) => await tournamentsRepository.CountPlayedAsync(playerId, ruleset, dateMin ?? DateTime.MinValue,
         dateMax ?? DateTime.MaxValue);
 
-    public async Task<TournamentDTO?> UpdateAsync(int id, TournamentDTO wrapper)
+    public async Task<TournamentCompactDTO?> UpdateAsync(int id, TournamentCompactDTO wrapper)
     {
         Tournament? existing = await tournamentsRepository.GetAsync(id);
         if (existing is null)
@@ -149,7 +149,7 @@ public class TournamentsService(
         existing.RejectionReason = wrapper.RejectionReason;
 
         await tournamentsRepository.UpdateAsync(existing);
-        return mapper.Map<TournamentDTO>(existing);
+        return mapper.Map<TournamentCompactDTO>(existing);
     }
 
     public async Task DeleteAsync(int id) => await tournamentsRepository.DeleteAsync(id);

@@ -6,7 +6,8 @@
     }
   },
   "ConnectionStrings": {
-    "DefaultConnection": ""
+    "DefaultConnection": "",
+    "RedisConnection": ""
   },
   "Osu": {
     "ClientId": "",
@@ -19,21 +20,21 @@
     "Osu": {
       "Enabled": true,
       "MarkAllOutdated": false,
-      "BatchSize": 30,
-      "BatchIntervalSeconds": 30,
-      "PlayerOutdatedAfterDays": 7
+      "BatchSize": 2,
+      "BatchIntervalSeconds": 1,
+      "PlayerOutdatedAfterDays": 14
     },
     "OsuTrack": {
       "Enabled": true,
       "MarkAllOutdated": false,
-      "BatchSize": 30,
-      "BatchIntervalSeconds": 30,
+      "BatchSize": 5,
+      "BatchIntervalSeconds": 1,
       "PlayerOutdatedAfterDays": 14
     }
   },
   "Tournaments": {
     "Enabled": true,
-    "BatchSize": 3,
-    "BatchIntervalSeconds": 15
+    "BatchSize": 5,
+    "BatchIntervalSeconds": 1
   }
 }

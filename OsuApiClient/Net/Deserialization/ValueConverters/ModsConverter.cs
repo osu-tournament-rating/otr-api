@@ -1,5 +1,5 @@
 using AutoMapper;
-using Database.Enums;
+using Common.Enums;
 
 namespace OsuApiClient.Net.Deserialization.ValueConverters;
 

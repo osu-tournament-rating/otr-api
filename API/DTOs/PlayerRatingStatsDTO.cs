@@ -1,8 +1,12 @@
+using API.Utilities;
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Describes tournament rating based information for a player in a ruleset with additional statistics
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public class PlayerRatingStatsDTO : PlayerRatingDTO
 {
     /// <summary>
@@ -21,6 +25,11 @@ public class PlayerRatingStatsDTO : PlayerRatingDTO
     public double WinRate { get; set; }
 
     /// <summary>
+    /// Current tier
+    /// </summary>
+    public string CurrentTier => RatingUtils.GetTier(Rating);
+
+    /// <summary>
     /// Rating tier progress information
     /// </summary>
     public RankProgressDTO RankProgress { get; set; } = new();
@@ -28,5 +37,5 @@ public class PlayerRatingStatsDTO : PlayerRatingDTO
     /// <summary>
     /// Denotes the current rating as being provisional
     /// </summary>
-    public bool IsProvisional { get; set; }
+    public bool IsProvisional => RatingUtils.IsProvisional(Volatility, MatchesPlayed, TournamentsPlayed);
 }

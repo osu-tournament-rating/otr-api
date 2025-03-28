@@ -16,6 +16,7 @@ using API.Services.Interfaces;
 using API.SwaggerGen;
 using API.SwaggerGen.Filters;
 using API.Utilities;
+using API.Utilities.AdminNotes;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
@@ -43,12 +44,16 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OsuApiClient.Extensions;
+using RedLockNet.SERedis;
+using RedLockNet.SERedis.Configuration;
 using Serilog;
 using Serilog.AspNetCore;
 using Serilog.Events;
+using StackExchange.Redis;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
+using IMatchRosterRepository = Database.Repositories.Interfaces.IMatchRosterRepository;
 
 #region WebApplicationBuilder Configuration
 
@@ -237,23 +242,32 @@ builder.Services.AddSwaggerGen(options =>
     options.DescribeAllParametersInCamelCase();
 
     // Allow use of in-code XML documentation tags like <summary> and <remarks>
-    string[] xmlDocPaths =
-    [
-        $"{AppDomain.CurrentDomain.BaseDirectory}API.xml",
-        $"{AppDomain.CurrentDomain.BaseDirectory}Database.xml"
-    ];
+    options.IncludeXmlCommentsWithRemarks($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
 
-    foreach (var xmlDoc in xmlDocPaths)
-    {
-        options.IncludeXmlCommentsWithRemarks(xmlDoc);
-    }
-
-    // Register custom filters
+    // Register custom filters.
     // Filters are executed in order of: Operation, Parameter, Schema, Document
     options.OperationFilter<SecurityMetadataOperationFilter>();
     options.OperationFilter<DiscardNestedParametersOperationFilter>();
 
-    options.SchemaFilter<EnumMetadataSchemaFilter>((object)xmlDocPaths);
+    options.SchemaFilter<OverrideSchemaFilter<AdminNoteRouteTarget>>((OpenApiSchema schema, SchemaFilterContext _) =>
+    {
+        // Only target the schema definition, not references
+        if (schema.AllOf.Any())
+        {
+            return;
+        }
+
+        schema.Type = "string";
+        schema.Enum = AdminNotesHelper.GetAdminNoteableEntityRoutes().ToOpenApiArray();
+        schema.Extensions = new Dictionary<string, IOpenApiExtension>
+        {
+            [ExtensionKeys.EnumNames] = AdminNotesHelper.GetAdminNoteableEntityTypes()
+                .Select(t => t.Name)
+                .ToOpenApiArray()
+        };
+    });
+
+    options.SchemaFilter<EnumMetadataSchemaFilter>();
     options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
 
     // Populate the document's info
@@ -282,8 +296,7 @@ builder.Services.AddSwaggerGen(options =>
         }
         else
         {
-            method = $"method_{unknownMethodCount}";
-            unknownMethodCount++;
+            method = $"method_{unknownMethodCount++}";
         }
 
         return $"{controller}_{method}";
@@ -569,6 +582,14 @@ builder.Services.AddSingleton<ICacheHandler>(
     )
 );
 
+// Redis lock factory (distributed resource access control)
+var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+{
+    new(ConnectionMultiplexer.Connect(builder.Configuration
+        .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
+});
+builder.Services.AddSingleton(redLockFactory);
+
 builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthClient>>();
 
 #endregion
@@ -581,23 +602,18 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 
 #region Repositories
 
-builder.Services.AddScoped<IApiMatchRatingStatsRepository, ApiMatchRatingStatsRepository>();
-builder.Services.AddScoped<IApiMatchWinRecordRepository, ApiMatchWinRecordRepository>();
-builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRepository>();
-builder.Services.AddScoped<IApiPlayerRatingsRepository, ApiPlayerRatingsRepository>();
-builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
-
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
-builder.Services.AddScoped<IPlayerRatingsRepository, PlayerRatingsRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
+builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
-builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
-builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
-builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
+builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
+builder.Services.AddScoped<IMatchRosterRepository, MatchRosterRepository>();
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
+builder.Services.AddScoped<IPlayerRatingsRepository, PlayerRatingsRepository>();
+builder.Services.AddScoped<IPlayerTournamentStatsRepository, PlayerTournamentStatsRepository>();
 builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
 builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -611,9 +627,7 @@ builder.Services.AddScoped<IAdminNoteService, AdminNoteService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();
-builder.Services.AddScoped<IGameWinRecordsService, GameWinRecordsService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerRatingsService, PlayerRatingsService>();

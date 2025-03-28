@@ -1,103 +1,84 @@
 using API.DTOs;
-using API.Enums;
-using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
 using AutoMapper;
+using Common.Enums;
 using Database.Entities;
-using Database.Enums;
+using Database.Entities.Processor;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
 public class PlayerStatsService(
+    ILogger<PlayerStatsService> logger,
+    IMapper mapper,
+    ITournamentsRepository tournamentsRepository,
+    IGameScoresRepository gameScoresRepository,
+    IPlayerMatchStatsRepository playerMatchStatsRepository,
     IPlayerRatingsService playerRatingsService,
-    IApiMatchWinRecordRepository matchWinRecordRepository,
-    IApiPlayerMatchStatsRepository matchStatsRepository,
-    IPlayersRepository playerRepository,
-    IApiMatchRatingStatsRepository ratingStatsRepository,
-    IApiTournamentsRepository tournamentsRepository,
-    IMapper mapper
+    IPlayersRepository playersRepository,
+    IRatingAdjustmentsRepository ratingAdjustmentsRepository,
+    IPlayerTournamentStatsRepository playerTournamentStatsRepository,
+    IPlayerRatingsRepository playerRatingsRepository
 ) : IPlayerStatsService
 {
-    public async Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(
-        int playerId,
-        int teammateId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
+    private const int MaxFrequencyTeammatesOpponents = 20;
+
+    public async Task<LeaderboardDTO> GetLeaderboardAsync(
+        LeaderboardRequestQueryDTO request
     )
     {
-        var teammateRatingStats = (
-            await ratingStatsRepository.TeammateRatingStatsAsync(
-                playerId,
-                teammateId,
-                ruleset,
-                dateMin,
-                dateMax
-            )
-        ).ToList();
-        var teammateMatchStats = (
-            await matchStatsRepository.TeammateStatsAsync(playerId, teammateId, ruleset, dateMin, dateMax)
-        ).ToList();
+        IList<PlayerRating> leaderboardRatings = await playerRatingsRepository.GetAsync(
+            request.Page, request.PageSize, request.Ruleset, request.Country,
+            request.MinOsuRank, request.MaxOsuRank, request.MinRating, request.MaxRating,
+            request.MinMatches, request.MaxMatches, request.MinWinRate, request.MaxWinRate,
+            request.Bronze, request.Silver, request.Gold, request.Platinum, request.Emerald,
+            request.Diamond, request.Master, request.Grandmaster, request.EliteGrandmaster
+        );
 
-        var matchesPlayed = teammateMatchStats.Count;
-        var matchesWon = teammateMatchStats.Sum(x => x.Won ? 1 : 0);
-        var matchesLost = teammateMatchStats.Sum(x => x.Won ? 0 : 1);
-        var winRate = matchesWon / (double)matchesPlayed;
+        var pageCount = await playerRatingsRepository.PageCountAsync(request.PageSize, request.Ruleset, request.Country,
+            request.MinOsuRank, request.MaxOsuRank, request.MinRating, request.MaxRating,
+            request.MinMatches, request.MaxMatches, request.MinWinRate, request.MaxWinRate,
+            request.Bronze, request.Silver, request.Gold, request.Platinum, request.Emerald,
+            request.Diamond, request.Master, request.Grandmaster, request.EliteGrandmaster);
 
-        return new PlayerTeammateComparisonDTO
+        IDictionary<int, (int sumTournaments, int sumMatches, double averageMatchWinRate)> tournamentStats =
+            await playerTournamentStatsRepository.GetLeaderboardStatsAsync(leaderboardRatings.Select(lb => lb.PlayerId), request.Ruleset);
+
+        var stats = new List<PlayerRatingStatsDTO>();
+        foreach (PlayerRating pr in leaderboardRatings)
         {
-            PlayerId = playerId,
-            TeammateId = teammateId,
-            GamesPlayed = teammateMatchStats.Sum(x => x.GamesPlayed),
-            MatchesPlayed = matchesPlayed,
-            MatchesWon = matchesWon,
-            MatchesLost = matchesLost,
-            RatingDelta = teammateRatingStats.Sum(x => x.RatingDelta),
-            WinRate = winRate
+            if (!tournamentStats.TryGetValue(pr.PlayerId, out (int sumTournaments, int sumMatches, double averageMatchWinRate) pts))
+            {
+                logger.LogWarning("Expected to find PlayerTournamentStats for player {Player} and ruleset {Ruleset}" +
+                                  " but no results were found!", pr.PlayerId, request.Ruleset);
+            }
+
+            stats.Add(new PlayerRatingStatsDTO
+            {
+                Ruleset = pr.Ruleset,
+                Rating = pr.Rating,
+                Volatility = pr.Volatility,
+                Percentile = pr.Percentile,
+                GlobalRank = pr.GlobalRank,
+                CountryRank = pr.CountryRank,
+                Player = mapper.Map<PlayerCompactDTO>(pr.Player),
+                Adjustments = [], // We don't need adjustments for leaderboards
+                TournamentsPlayed = pts.sumTournaments,
+                MatchesPlayed = pts.sumMatches,
+                WinRate = pts.averageMatchWinRate
+            });
+        }
+
+        return new LeaderboardDTO
+        {
+            Pages = pageCount,
+            Ruleset = request.Ruleset,
+            Leaderboard = stats
         };
     }
 
-    public async Task<PlayerOpponentComparisonDTO> GetOpponentComparisonAsync(
-        int playerId,
-        int opponentId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
-    )
-    {
-        var opponentRatingStats = (
-            await ratingStatsRepository.OpponentRatingStatsAsync(
-                playerId,
-                opponentId,
-                ruleset,
-                dateMin,
-                dateMax
-            )
-        ).ToList();
-        var opponentMatchStats = (
-            await matchStatsRepository.OpponentStatsAsync(playerId, opponentId, ruleset, dateMin, dateMax)
-        ).ToList();
-
-        var matchesWon = opponentMatchStats.Sum(x => x.Won ? 1 : 0);
-        var matchesPlayed = opponentMatchStats.Count;
-        var winRate = matchesWon / (double)matchesPlayed;
-
-        return new PlayerOpponentComparisonDTO
-        {
-            PlayerId = playerId,
-            OpponentId = opponentId,
-            GamesPlayed = opponentMatchStats.Sum(x => x.GamesPlayed),
-            MatchesPlayed = matchesPlayed,
-            MatchesWon = matchesWon,
-            MatchesLost = opponentMatchStats.Sum(x => x.Won ? 0 : 1),
-            RatingDelta = opponentRatingStats.Sum(x => x.RatingDelta),
-            WinRate = winRate
-        };
-    }
-
-    public async Task<PlayerStatsDTO?> GetAsync(
+    public async Task<PlayerDashboardStatsDTO?> GetAsync(
         string key,
         Ruleset? ruleset = null,
         DateTime? dateMin = null,
@@ -107,7 +88,7 @@ public class PlayerStatsService(
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        Player? player = await playerRepository.GetVersatileAsync(key, true);
+        Player? player = await playersRepository.GetVersatileAsync(key, true);
 
         if (player is null)
         {
@@ -122,71 +103,134 @@ public class PlayerStatsService(
 
         if (ratingStats is null)
         {
-            return new PlayerStatsDTO { PlayerInfo = playerInfo, Ruleset = ruleset.Value };
+            return new PlayerDashboardStatsDTO { PlayerInfo = playerInfo, Ruleset = ruleset.Value };
         }
 
         AggregatePlayerMatchStatsDTO? matchStats =
             await GetMatchStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
 
-        PlayerModStatsDTO modStats =
-            await GetModStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
+        IEnumerable<PlayerModStatsDTO> modStats = await GetModStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
 
-        PlayerTournamentStatsDTO tournamentStats =
+        PlayerTournamentPerformanceDTO tournamentPerformance =
             await GetTournamentStatsAsync(player.Id, ruleset.Value, dateMin.Value, dateMax.Value);
 
-        PlayerRatingChartDTO ratingChart = await ratingStatsRepository.GetRatingChartAsync(
-            player.Id,
-            ruleset.Value,
-            dateMin.Value,
-            dateMax.Value
-        );
+        Dictionary<bool, List<PlayerFrequencyDTO>> frequentTeammatesOpponents = await GetFrequentMatchupsAsync(player.Id, ruleset.Value, dateMin, dateMax);
 
-        IEnumerable<PlayerFrequencyDTO> frequentTeammates = await matchWinRecordRepository.GetFrequentTeammatesAsync(
-            player.Id,
-            ruleset.Value,
-            dateMin.Value,
-            dateMax.Value
-        );
-
-        IEnumerable<PlayerFrequencyDTO> frequentOpponents = await matchWinRecordRepository.GetFrequentOpponentsAsync(
-            player.Id,
-            ruleset.Value,
-            dateMin.Value,
-            dateMax.Value
-        );
-
-        return new PlayerStatsDTO
+        return new PlayerDashboardStatsDTO
         {
             PlayerInfo = playerInfo,
             Ruleset = ruleset.Value,
             Rating = ratingStats,
             MatchStats = matchStats,
             ModStats = modStats,
-            TournamentStats = tournamentStats,
-            RatingChart = ratingChart,
-            FrequentTeammates = frequentTeammates,
-            FrequentOpponents = frequentOpponents
+            TournamentPerformanceStats = tournamentPerformance,
+            FrequentTeammates = frequentTeammatesOpponents[true].Take(MaxFrequencyTeammatesOpponents),
+            FrequentOpponents = frequentTeammatesOpponents[false].Take(MaxFrequencyTeammatesOpponents)
         };
     }
 
     public async Task<double> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null,
         DateTime? dateMax = null)
     {
-        return (await ratingStatsRepository.GetForPlayerAsync(playerId, ruleset, dateMin, dateMax))
+        return (await ratingAdjustmentsRepository.GetForPlayerAsync(playerId, ruleset, dateMin, dateMax))
             .Max(ra => ra.RatingAfter);
     }
 
+    public async Task<Dictionary<bool, List<PlayerFrequencyDTO>>> GetFrequentMatchupsAsync(
+        int playerId,
+        Ruleset ruleset,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    )
+    {
+        dateMin ??= DateTime.MinValue;
+        dateMax ??= DateTime.MaxValue;
+
+        // Fetch match stats for the player
+        IList<PlayerMatchStats> stats = [.. await playerMatchStatsRepository.GetForPlayerAsync(
+            playerId, ruleset, dateMin.Value, dateMax.Value
+        )];
+
+        // Calculate frequencies for teammates and opponents
+        Dictionary<int, int> frequencyTeammates = CalculateFrequencies(stats, stat => stat.TeammateIds);
+        Dictionary<int, int> frequencyOpponents = CalculateFrequencies(stats, stat => stat.OpponentIds);
+
+        // Fetch all unique player IDs (teammates and opponents)
+        var uniquePlayerIds = frequencyTeammates.Keys.Union(frequencyOpponents.Keys).Distinct().ToList();
+
+        // Fetch player data in a single query
+        var players = (await playersRepository.GetAsync(uniquePlayerIds))
+                .ToDictionary(k => k.Id, v => v);
+
+        // Create the result dictionary
+        var result = new Dictionary<bool, List<PlayerFrequencyDTO>>
+        {
+            [true] = frequencyTeammates.Count > 0 ? CreatePlayerFrequencyList(frequencyTeammates, players) : [],
+            [false] = frequencyOpponents.Count > 0 ? CreatePlayerFrequencyList(frequencyOpponents, players) : []
+        };
+
+        if (result[true].Count + result[false].Count != uniquePlayerIds.Count)
+        {
+            throw new InvalidOperationException("Mismatch between frequency counts and player data. Some players could not be fetched from the database.");
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Helper method to calculate frequencies of players (teammates or opponents).
+    /// </summary>
+    private static Dictionary<int, int> CalculateFrequencies(
+        IEnumerable<PlayerMatchStats> stats,
+        Func<PlayerMatchStats, IEnumerable<int>> playerIdsSelector
+    )
+    {
+        var frequencyDict = new Dictionary<int, int>();
+
+        foreach (PlayerMatchStats stat in stats)
+        {
+            foreach (var id in playerIdsSelector(stat))
+            {
+                frequencyDict.TryAdd(id, 0);
+                frequencyDict[id]++;
+            }
+        }
+
+        return frequencyDict;
+    }
+
+    /// <summary>
+    /// Helper method to create a list of PlayerFrequencyDTO objects.
+    /// </summary>
+    private List<PlayerFrequencyDTO> CreatePlayerFrequencyList(
+        Dictionary<int, int> frequencyDict,
+        Dictionary<int, Player> players
+    )
+    {
+        return
+        [
+            .. frequencyDict
+                .Where(kvp => players.ContainsKey(kvp.Key)) // Ensure the player exists
+                .Select(kvp => new PlayerFrequencyDTO
+                {
+                    Player = mapper.Map<PlayerCompactDTO>(players[kvp.Key]), Frequency = kvp.Value
+                })
+                .OrderByDescending(pf => pf.Frequency)
+        ];
+    }
+
+
     private async Task<PlayerRatingStatsDTO?> GetCurrentAsync(int playerId, Ruleset ruleset)
     {
-        PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(null, playerId, ruleset);
+        PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(playerId, ruleset, true);
 
         if (ratingStats == null)
         {
             return null;
         }
 
-        var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
-        var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
+        var matchesPlayed = await playerMatchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
+        var winRate = await playerMatchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
 
         ratingStats.MatchesPlayed = matchesPlayed;
         ratingStats.WinRate = winRate;
@@ -205,47 +249,63 @@ public class PlayerStatsService(
         return ratingStats;
     }
 
-    private async Task<PlayerModStatsDTO> GetModStatsAsync(
-        int playerId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
-    ) => await matchStatsRepository.GetModStatsAsync(playerId, ruleset, dateMin, dateMax);
-
-    private async Task<PlayerTournamentStatsDTO> GetTournamentStatsAsync(
+    private async Task<IEnumerable<PlayerModStatsDTO>> GetModStatsAsync(
         int playerId,
         Ruleset ruleset,
         DateTime dateMin,
         DateTime dateMax
     )
     {
-        const int maxTournaments = 5;
+        Dictionary<Mods, int> modScores = await gameScoresRepository.GetAverageModScoresAsync(playerId, ruleset, dateMin, dateMax);
+        return (await gameScoresRepository.GetModFrequenciesAsync(playerId, ruleset, dateMin, dateMax))
+            .Select(kvp => new PlayerModStatsDTO { Mods = kvp.Key, Count = kvp.Value, AverageScore = modScores[kvp.Key] });
+    }
 
-        IEnumerable<PlayerTournamentMatchCostDTO> bestPerformances = await tournamentsRepository.GetPerformancesAsync(
+    private async Task<PlayerTournamentPerformanceDTO> GetTournamentStatsAsync(
+        int playerId,
+        Ruleset ruleset,
+        DateTime dateMin,
+        DateTime dateMax
+    )
+    {
+        const int count = 5;
+
+        ICollection<PlayerTournamentStats> bestPerformances = await playerTournamentStatsRepository.GetBestPerformancesAsync(
             playerId,
+            count,
             ruleset,
             dateMin,
-            dateMax,
-            maxTournaments, TournamentPerformanceResultType.Best);
+            dateMax);
 
-        IEnumerable<PlayerTournamentMatchCostDTO> recentPerformances = await tournamentsRepository.GetPerformancesAsync(
-            playerId,
-            ruleset,
-            dateMin,
-            dateMax,
-            maxTournaments, TournamentPerformanceResultType.Recent);
+        ICollection<PlayerTournamentStats> recentPerformances =
+            await playerTournamentStatsRepository.GetRecentPerformancesAsync(
+                playerId,
+                count,
+                ruleset,
+                dateMin,
+                dateMax);
 
-        PlayerTournamentLobbySizeCountDTO counts = await tournamentsRepository.GetLobbySizeStatsAsync(
+        Dictionary<int, int> counts = await tournamentsRepository.GetLobbySizeStatsAsync(
             playerId,
             ruleset,
             dateMin,
             dateMax
         );
-        return new PlayerTournamentStatsDTO
+
+        var lobbyStats = new PlayerTournamentLobbySizeCountDTO
         {
-            LobbySizeCounts = counts,
-            BestPerformances = bestPerformances,
-            RecentPerformances = recentPerformances
+            Count1v1 = counts[1],
+            Count2v2 = counts[2],
+            Count3v3 = counts[3],
+            Count4v4 = counts[4],
+            CountOther = counts[-1]
+        };
+
+        return new PlayerTournamentPerformanceDTO
+        {
+            LobbySizeCounts = lobbyStats,
+            BestPerformances = mapper.Map<IEnumerable<PlayerTournamentStatsDTO>>(bestPerformances),
+            RecentPerformances = mapper.Map<IEnumerable<PlayerTournamentStatsDTO>>(recentPerformances)
         };
     }
 
@@ -256,9 +316,9 @@ public class PlayerStatsService(
         DateTime dateMax
     )
     {
-        var matchStats = (await matchStatsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax)).ToList();
+        var matchStats = (await playerMatchStatsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax)).ToList();
         var adjustments =
-            (await ratingStatsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax))
+            (await ratingAdjustmentsRepository.GetForPlayerAsync(id, ruleset, dateMin, dateMax))
             .GroupBy(ra => ra.Timestamp)
             .SelectMany(ra => ra)
             .ToList();
@@ -270,7 +330,7 @@ public class PlayerStatsService(
 
         /**
          * If the adjustments list contains an initial rating, we need to subtract the
-         * rating gained value by the initial rating. Essentially we are displaying
+         * rating gained value by the initial rating. Essentially we are displaying`
          * the net gain in rating without considering the initial rating.
          */
         var initialRatingValue = adjustments
@@ -279,8 +339,7 @@ public class PlayerStatsService(
 
         return new AggregatePlayerMatchStatsDTO
         {
-            // TODO: Different way of calcing this
-            // AverageMatchCostAggregate = ratingStats.Average(x => x.MatchCost),
+            AverageMatchCostAggregate = matchStats.Average(x => x.MatchCost),
             HighestRating = adjustments.Max(ra => ra.RatingAfter),
             RatingGained = adjustments.Sum(ra => ra.RatingDelta) - initialRatingValue,
             GamesWon = matchStats.Sum(ra => ra.GamesWon),
@@ -288,9 +347,6 @@ public class PlayerStatsService(
             GamesPlayed = matchStats.Sum(ra => ra.GamesPlayed),
             MatchesWon = matchStats.Count(ra => ra.Won),
             MatchesLost = matchStats.Count(ra => !ra.Won),
-            // TODO: Different way of calcing this
-            // AverageTeammateRating = ratingStats.Average(x => x.AverageTeammateRating),
-            // AverageOpponentRating = ratingStats.Average(x => x.AverageOpponentRating),
             BestWinStreak = GetHighestWinStreak(matchStats),
             MatchAverageScoreAggregate = matchStats.Average(pms => pms.AverageScore),
             MatchAverageAccuracyAggregate = matchStats.Average(pms => pms.AverageAccuracy),

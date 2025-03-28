@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums;
 using OsuApiClient.Domain.Osu.Beatmaps;
 using OsuApiClient.Domain.Osu.Multiplayer;
 using OsuApiClient.Domain.Osu.Users;
@@ -40,6 +40,7 @@ public interface IOsuClient : IDisposable
     /// </returns>
     Task<OsuCredentials?> AuthorizeUserWithCodeAsync(
         string authorizationCode,
+        string? authorizationCodeVerifier = null,
         CancellationToken cancellationToken = default
     );
 

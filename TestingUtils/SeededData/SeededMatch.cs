@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 
 namespace TestingUtils.SeededData;
 
@@ -51,7 +51,7 @@ public static class SeededMatch
         }
 
         seededMatch.StartTime = startTime ?? SeededDate.Generate();
-        seededMatch.EndTime = endTime ?? SeededDate.GenerateAfter(seededMatch.StartTime);
+        seededMatch.EndTime = endTime ?? SeededDate.GenerateAfter(seededMatch.StartTime.Value);
 
         seededTournament.Matches.Add(seededMatch);
 

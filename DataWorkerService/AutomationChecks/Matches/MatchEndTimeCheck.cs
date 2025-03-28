@@ -1,5 +1,5 @@
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums.Verification;
 using DataWorkerService.Utilities.Extensions;
 
 namespace DataWorkerService.AutomationChecks.Matches;
@@ -10,7 +10,7 @@ namespace DataWorkerService.AutomationChecks.Matches;
 public class MatchEndTimeCheck(ILogger<MatchEndTimeCheck> logger) : AutomationCheckBase<Match>(logger)
 {
     protected override bool OnChecking(Match entity) =>
-        !entity.EndTime.IsPlaceholder();
+        entity.EndTime is not null;
 
     protected override void OnFail(Match entity)
     {

@@ -4,7 +4,6 @@ using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities.Extensions;
 using Asp.Versioning;
-using Database.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +13,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public partial class TournamentsController(
-    ITournamentsService tournamentsService,
-    IAdminNoteService adminNoteService
-) : Controller
+public partial class TournamentsController(ITournamentsService tournamentsService) : Controller
 {
     /// <summary>
     /// Get all tournaments which fit an optional request query
@@ -160,14 +156,14 @@ public partial class TournamentsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<string>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
+    [ProducesResponseType<TournamentCompactDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateAsync(
         int id,
-        [FromBody] JsonPatchDocument<TournamentDTO> patch
+        [FromBody] JsonPatchDocument<TournamentCompactDTO> patch
     )
     {
         // Ensure target tournament exists
-        TournamentDTO? tournament = await tournamentsService.GetAsync(id);
+        TournamentCompactDTO? tournament = await tournamentsService.GetAsync(id, false);
         if (tournament is null)
         {
             return NotFound();
@@ -187,7 +183,7 @@ public partial class TournamentsController(
         }
 
         // Apply patched values to entity
-        TournamentDTO? updatedTournament = await tournamentsService.UpdateAsync(id, tournament);
+        TournamentCompactDTO? updatedTournament = await tournamentsService.UpdateAsync(id, tournament);
         return Ok(updatedTournament!);
     }
 
@@ -213,26 +209,6 @@ public partial class TournamentsController(
     }
 
     /// <summary>
-    /// Delete a tournament
-    /// </summary>
-    /// <param name="id">Tournament id</param>
-    /// <response code="404">A tournament matching the given id does not exist</response>
-    /// <response code="204">The tournament was deleted successfully</response>
-    [HttpDelete("{id:int}")]
-    [Authorize(Roles = OtrClaims.Roles.Admin)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> DeleteAsync(int id)
-    {
-        if (!await tournamentsService.ExistsAsync(id))
-        {
-            return NotFound();
-        }
-
-        await tournamentsService.DeleteAsync(id);
-        return NoContent();
-    }
-
-    /// <summary>
     /// Get all beatmaps pooled by a tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
@@ -250,25 +226,5 @@ public partial class TournamentsController(
         }
 
         return Ok(await tournamentsService.GetPooledBeatmapsAsync(id));
-    }
-
-    /// <summary>
-    /// List all admin notes from a tournament
-    /// </summary>
-    /// <param name="id">Tournament id</param>
-    /// <response code="404">A tournament matching the given id does not exist</response>
-    /// <response code="200">Returns all admin notes from a tournament</response>
-    [HttpGet("{id:int}/notes")]
-    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<IEnumerable<AdminNoteDTO>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ListAdminNotesAsync(int id)
-    {
-        if (!await tournamentsService.ExistsAsync(id))
-        {
-            return NotFound();
-        }
-
-        return Ok(await adminNoteService.ListAsync<TournamentAdminNote>(id));
     }
 }

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using API.Controllers;
-using Database.Enums;
+using Common.Enums;
 
 namespace API.DTOs;
 

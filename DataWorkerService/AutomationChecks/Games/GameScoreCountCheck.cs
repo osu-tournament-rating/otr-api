@@ -1,5 +1,7 @@
+using Common.Enums.Verification;
+using Common.Utilities.Extensions;
 using Database.Entities;
-using Database.Enums.Verification;
+using DataWorkerService.Utilities;
 
 namespace DataWorkerService.AutomationChecks.Games;
 
@@ -17,8 +19,8 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
             return false;
         }
 
-        var validScoresCount = entity.Scores
-            .Count(gs => gs.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified);
+        GameScore[] validScores = [.. entity.Scores.Where(gs => gs.VerificationStatus.IsPreVerifiedOrVerified())];
+        var validScoresCount = validScores.Length;
 
         // Game has no valid scores
         if (validScoresCount == 0)
@@ -27,10 +29,15 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
             return false;
         }
 
-        // Number of scores matches expected team size
         if (validScoresCount % 2 == 0 && validScoresCount / 2 == entity.Match.Tournament.LobbySize)
         {
-            return true;
+            ICollection<GameRoster> rosters = RostersHelper.GenerateRosters(validScores);
+
+            if (rosters.Count > 1 &&
+                rosters.DistinctBy(x => x.Roster.Length).Count() == 1)
+            {
+                return true;
+            }
         }
 
         entity.RejectionReason |= GameRejectionReason.LobbySizeMismatch;

@@ -1,5 +1,6 @@
+using Common.Enums.Verification;
+using Common.Utilities.Extensions;
 using Database.Entities;
-using Database.Enums.Verification;
 
 namespace DataWorkerService.AutomationChecks.Matches;
 
@@ -20,7 +21,7 @@ public class MatchGameCountCheck(ILogger<MatchGameCountCheck> logger) : Automati
         }
 
         var validGamesCount = entity.Games
-            .Count(g => g.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified);
+            .Count(g => g.VerificationStatus.IsPreVerifiedOrVerified());
 
         switch (validGamesCount)
         {
@@ -31,7 +32,7 @@ public class MatchGameCountCheck(ILogger<MatchGameCountCheck> logger) : Automati
             case < 3:
                 entity.RejectionReason |= MatchRejectionReason.UnexpectedGameCount;
                 return false;
-            case 4 or 5:
+            case 3 or 4:
                 entity.WarningFlags |= MatchWarningFlags.LowGameCount;
                 return true;
             // Number of games satisfies a "best of X" situation

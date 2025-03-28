@@ -1,5 +1,6 @@
+using Common.Enums.Verification;
+using Common.Utilities.Extensions;
 using Database.Entities;
-using Database.Enums.Verification;
 
 namespace DataWorkerService.AutomationChecks.Tournaments;
 
@@ -13,7 +14,7 @@ public class TournamentMatchCountCheck(
     protected override bool OnChecking(Tournament entity)
     {
         var validMatchesCount = entity.Matches.Count(m =>
-            m.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified);
+            m.VerificationStatus.IsPreVerifiedOrVerified());
 
         // Tournament has no valid matches
         if (validMatchesCount == 0)
@@ -22,8 +23,10 @@ public class TournamentMatchCountCheck(
             return false;
         }
 
+        var matchesWithGamesCount = entity.Matches.Count(m => m.RejectionReason != MatchRejectionReason.NoGames);
+
         // Number of valid matches is above the threshold
-        if (validMatchesCount / (double)entity.Matches.Count >= Constants.TournamentVerifiedMatchesPercentageThreshold)
+        if (validMatchesCount / (double)matchesWithGamesCount >= Constants.TournamentVerifiedMatchesPercentageThreshold)
         {
             return true;
         }

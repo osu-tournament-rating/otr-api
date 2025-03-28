@@ -1,5 +1,6 @@
+using Common.Enums.Verification;
+using Common.Utilities.Extensions;
 using Database.Entities;
-using Database.Enums.Verification;
 using DataWorkerService.AutomationChecks.Matches;
 using TestingUtils.SeededData;
 
@@ -38,9 +39,7 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
 
         // Assert
         Assert.False(actualPass);
-        Assert.DoesNotContain(match.Games, game =>
-            game.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified
-        );
+        Assert.DoesNotContain(match.Games, game => game.VerificationStatus.IsPreVerifiedOrVerified());
         Assert.Equal(MatchRejectionReason.NoValidGames, match.RejectionReason);
     }
 
@@ -128,9 +127,9 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
     }
 
     [Theory]
-    [InlineData(3, false)]
+    [InlineData(3, true)]
     [InlineData(4, true)]
-    [InlineData(5, true)]
+    [InlineData(5, false)]
     [InlineData(6, false)]
     public void Check_AppliesWarningFlag_WhenExpected(int gameCount, bool expectedWarning)
     {

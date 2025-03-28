@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using API.Utilities;
 using API.Utilities.DataAnnotations;
 
 namespace API.Configurations;

@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums;
 using Microsoft.Extensions.Logging;
 using OsuApiClient.Configurations.Interfaces;
 using OsuApiClient.Domain.Osu;
@@ -111,6 +111,7 @@ public sealed class OsuClient(
 
     public async Task<OsuCredentials?> AuthorizeUserWithCodeAsync(
         string authorizationCode,
+        string? authorizationCodeVerifier = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -125,14 +126,18 @@ public sealed class OsuClient(
             ["redirect_uri"] = Configuration.RedirectUrl
         };
 
-        Uri.TryCreate(Endpoints.Osu.Credentials, UriKind.Relative, out Uri? uri);
+        if (!string.IsNullOrEmpty(authorizationCodeVerifier))
+        {
+            body.Add("code_verifier", authorizationCodeVerifier);
+        }
+
         AccessCredentialsModel? response = await _handler
             .FetchAsync<AccessCredentialsModel, AccessCredentialsJsonModel>(
                 new ApiRequest
                 {
                     Credentials = _credentials,
                     Method = HttpMethod.Post,
-                    Route = uri!,
+                    Route = new Uri(Endpoints.Osu.Credentials, UriKind.Relative),
                     RequestBody = body
                 }, cancellationToken);
 

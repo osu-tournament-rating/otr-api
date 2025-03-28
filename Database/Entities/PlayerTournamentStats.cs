@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Database.Entities;
 
 /// <summary>
@@ -62,6 +60,11 @@ public class PlayerTournamentStats : EntityBase
     /// Total number of <see cref="Game"/>s lost
     /// </summary>
     public int GamesLost { get; set; }
+
+    /// <summary>
+    /// The win rate across all matches
+    /// </summary>
+    public double MatchWinRate { get; set; }
 
     /// <summary>
     /// Ids of all <see cref="Entities.Player"/>s that appeared on the <see cref="Player"/>'s team
