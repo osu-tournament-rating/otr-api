@@ -105,6 +105,12 @@ builder.Services
 
 #region OpenTelemetry Tracing/Metrics Configuration
 
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+});
+
 builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
 {
     options.EnrichWithException = (activity, exception) =>
@@ -124,17 +130,9 @@ builder
     .WithTracing(tracing =>
         tracing
             .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
             .AddNpgsql()
-            .AddOtlpExporter(options =>
-            {
-                options.Endpoint = new Uri(
-                    builder
-                        .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-                            ConnectionStringsConfiguration.Position
-                        )
-                        .CollectorConnection
-                );
-            })
+            .AddOtlpExporter()
     )
     .WithMetrics(b =>
         b.AddAspNetCoreInstrumentation()
