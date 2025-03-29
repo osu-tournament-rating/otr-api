@@ -134,6 +134,7 @@ builder
     )
     .WithTracing(tracing =>
         tracing
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName: builder.Environment.ApplicationName))
             .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
             .AddNpgsql()
@@ -566,7 +567,11 @@ builder.Services.AddScoped<AuditBlamingInterceptor>();
 builder.Services.AddDbContext<OtrContext>((services, options) =>
 {
     options
-        .UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection)
+        .UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection,
+            o => o.ConfigureDataSource(
+                dataSourceBuilder =>
+                    dataSourceBuilder.ConfigureTracing(options2 =>
+                    options2.ConfigureCommandSpanNameProvider(cmd => cmd.CommandText))))
         .AddInterceptors(services.GetRequiredService<AuditBlamingInterceptor>())
         .UseSnakeCaseNamingConvention();
 });
