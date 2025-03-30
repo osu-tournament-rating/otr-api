@@ -270,8 +270,10 @@ public static class QueryExtensions
             .Include(m => m.Games)
             .ThenInclude(g => g.Scores)
             .ThenInclude(gs => gs.AdminNotes)
+            .ThenInclude(an => an.AdminUser.Player)
             .Include(m => m.Games)
             .ThenInclude(g => g.AdminNotes)
+            .ThenInclude(an => an.AdminUser.Player)
             .Include(m => m.Games)
             .ThenInclude(g => g.Beatmap)
             .ThenInclude(b => b!.Beatmapset)
@@ -403,7 +405,9 @@ public static class QueryExtensions
             .ThenInclude(s => s.Player)
             .Include(g => g.Scores)
             .ThenInclude(gs => gs.AdminNotes)
+            .ThenInclude(an => an.AdminUser.Player)
             .Include(g => g.AdminNotes)
+            .ThenInclude(an => an.AdminUser.Player)
             .Include(g => g.Audits);
     }
 
@@ -550,10 +554,18 @@ public static class QueryExtensions
 
     #region Admin Notes
 
+    /// <summary>
+    /// Includes admin notes, with all required children, for a given <typeparamref name="TEntity"/>
+    /// </summary>
+    /// <param name="query"></param>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TAdminNote"></typeparam>
+    /// <returns></returns>
     public static IQueryable<TEntity> IncludeAdminNotes<TEntity, TAdminNote>(this IQueryable<TEntity> query)
         where TEntity : class, IAdminNotableEntity<TAdminNote>
         where TAdminNote : IAdminNoteEntity
-        => query.Include(e => e.AdminNotes);
+        => query.Include(e => e.AdminNotes)
+            .ThenInclude(an => an.AdminUser.Player);
 
     #endregion
 }
