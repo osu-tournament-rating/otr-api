@@ -32,7 +32,7 @@ public class PlayerRatingStatsDTO : PlayerRatingDTO
     /// <summary>
     /// Rating tier progress information
     /// </summary>
-    public RankProgressDTO RankProgress { get; set; } = new();
+    public required RankProgressDTO RankProgress { get; set; }
 
     /// <summary>
     /// Denotes the current rating as being provisional
