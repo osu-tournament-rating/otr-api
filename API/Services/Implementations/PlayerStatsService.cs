@@ -242,7 +242,6 @@ public class PlayerStatsService(
 
         ratingStats.RankProgress = new RankProgressDTO
         {
-            CurrentTier = RatingUtils.GetTier(ratingStats.Rating),
             CurrentSubTier = RatingUtils.GetSubTier(ratingStats.Rating),
             RatingForNextTier = RatingUtils.GetNextTierRatingDelta(ratingStats.Rating),
             RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(ratingStats.Rating),

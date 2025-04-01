@@ -6,11 +6,6 @@ namespace API.DTOs;
 public class RankProgressDTO
 {
     /// <summary>
-    /// Current tier
-    /// </summary>
-    public string CurrentTier { get; set; } = null!;
-
-    /// <summary>
     /// Current sub tier
     /// </summary>
     public int? CurrentSubTier { get; set; }

@@ -27,7 +27,7 @@ public class PlayerRatingStatsDTO : PlayerRatingDTO
     /// <summary>
     /// Current tier
     /// </summary>
-    public string CurrentTier => RatingUtils.GetTier(Rating);
+    public string CurrentTier => RatingUtils.GetMajorTier(Rating);
 
     /// <summary>
     /// Rating tier progress information

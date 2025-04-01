@@ -29,7 +29,6 @@ public class PlayerRatingsService(
         var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset);
         var rankProgress = new RankProgressDTO
         {
-            CurrentTier = RatingUtils.GetTier(currentStats.Rating),
             CurrentSubTier = RatingUtils.GetSubTier(currentStats.Rating),
             RatingForNextTier = RatingUtils.GetNextTierRatingDelta(currentStats.Rating),
             RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(currentStats.Rating),
