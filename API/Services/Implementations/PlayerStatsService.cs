@@ -169,9 +169,14 @@ public class PlayerStatsService(
             [false] = frequencyOpponents.Count > 0 ? CreatePlayerFrequencyList(frequencyOpponents, players) : []
         };
 
-        if (result[true].Count + result[false].Count != uniquePlayerIds.Count)
+        // Log a warning if some players couldn't be fetched, but don't throw an exception.
+        // The CreatePlayerFrequencyList helper already filters out missing players.
+        var foundPlayerIds = players.Keys.ToHashSet();
+        var missingPlayerIds = uniquePlayerIds.Where(id => !foundPlayerIds.Contains(id)).ToList();
+        if (missingPlayerIds.Count > 0)
         {
-            throw new InvalidOperationException("Mismatch between frequency counts and player data. Some players could not be fetched from the database.");
+            logger.LogWarning("Could not fetch player data for the following IDs involved in frequent matchups for player {PlayerId}: {MissingPlayerIds}",
+                playerId, string.Join(", ", missingPlayerIds));
         }
 
         return result;
