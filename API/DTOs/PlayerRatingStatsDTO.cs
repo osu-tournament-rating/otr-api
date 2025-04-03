@@ -25,11 +25,6 @@ public class PlayerRatingStatsDTO : PlayerRatingDTO
     public double WinRate { get; set; }
 
     /// <summary>
-    /// Current tier
-    /// </summary>
-    public string CurrentTier => RatingUtils.GetMajorTier(Rating);
-
-    /// <summary>
     /// Rating tier progress information
     /// </summary>
     public required RankProgressDTO RankProgress { get; set; }

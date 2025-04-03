@@ -10,6 +10,11 @@ namespace API.DTOs;
 public class RankProgressDTO(double rating)
 {
     /// <summary>
+    /// Current tier
+    /// </summary>
+    public string CurrentTier { get; set; } = RatingUtils.GetMajorTier(rating);
+
+    /// <summary>
     /// Current sub tier
     /// </summary>
     public int? CurrentSubTier { get; set; } = RatingUtils.GetSubTier(rating);
