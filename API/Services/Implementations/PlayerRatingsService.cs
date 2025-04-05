@@ -27,7 +27,7 @@ public class PlayerRatingsService(
         var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
         var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
         var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset);
-        var rankProgress = new RankProgressDTO(currentStats.Rating);
+        var tierProgress = new TierProgressDTO(currentStats.Rating);
 
         return new PlayerRatingStatsDTO
         {
@@ -41,7 +41,7 @@ public class PlayerRatingsService(
             Volatility = currentStats.Volatility,
             WinRate = winRate,
             TournamentsPlayed = tournamentsPlayed,
-            RankProgress = rankProgress,
+            TierProgress = tierProgress,
             Adjustments = mapper.Map<ICollection<RatingAdjustmentDTO>>(currentStats.Adjustments.OrderBy(a => a.Timestamp))
         };
     }

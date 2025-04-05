@@ -67,7 +67,7 @@ public class PlayerStatsService(
                 TournamentsPlayed = pts.sumTournaments,
                 MatchesPlayed = pts.sumMatches,
                 WinRate = pts.averageMatchWinRate,
-                RankProgress = new RankProgressDTO(pr.Rating)
+                TierProgress = new TierProgressDTO(pr.Rating)
             });
         }
 
@@ -241,7 +241,7 @@ public class PlayerStatsService(
         ratingStats.MatchesPlayed = matchesPlayed;
         ratingStats.WinRate = winRate;
 
-        ratingStats.RankProgress = new RankProgressDTO(ratingStats.Rating);
+        ratingStats.TierProgress = new TierProgressDTO(ratingStats.Rating);
 
         return ratingStats;
     }

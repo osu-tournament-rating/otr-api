@@ -7,7 +7,7 @@ namespace API.DTOs;
 /// Represents rating tier progress data
 /// </summary>
 [UsedImplicitly(ImplicitUseTargetFlags.Members)]
-public class RankProgressDTO(double rating)
+public class TierProgressDTO(double rating)
 {
     /// <summary>
     /// Current tier
