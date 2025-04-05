@@ -36,8 +36,7 @@ public class MatchesService(
 
     public async Task<MatchDTO?> GetAsync(int id, bool verified)
     {
-        MatchDTO? match = mapper
-            .Map<MatchDTO?>(await matchesRepository.GetFullAsync(id, verified));
+        MatchDTO? match = mapper.Map<MatchDTO?>(await matchesRepository.GetFullAsync(id, verified));
 
         if (match is null)
         {

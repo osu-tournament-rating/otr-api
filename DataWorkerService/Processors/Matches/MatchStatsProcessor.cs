@@ -145,69 +145,69 @@ public class MatchStatsProcessor(
             .ToList();
 
         return playerScoreGroups
-    .Select(group =>
-    {
-        (var playerId, List<GameScore> scores) = group;
-
-        // Determine games the player participated in
-        var playerGames = scores.Select(s => s.Game).Distinct().ToList();
-
-        var gamesWon = 0;
-        var gamesLost = 0;
-
-        foreach (Game game in playerGames)
+        .Select(group =>
         {
-            // Player's team in this specific game
-            Team playerTeamInGame = scores.First(s => s.Game == game).Team;
-            Team? winningTeam = gameWinningTeams[game];
+            (var playerId, List<GameScore> scores) = group;
 
-            if (winningTeam == playerTeamInGame)
+            // Determine games the player participated in
+            var playerGames = scores.Select(s => s.Game).Distinct().ToList();
+
+            var gamesWon = 0;
+            var gamesLost = 0;
+
+            foreach (Game game in playerGames)
             {
-                gamesWon++;
+                // Player's team in this specific game
+                Team playerTeamInGame = scores.First(s => s.Game == game).Team;
+                Team? winningTeam = gameWinningTeams[game];
+
+                if (winningTeam == playerTeamInGame)
+                {
+                    gamesWon++;
+                }
+                else if (winningTeam != null)
+                {
+                    gamesLost++;
+                }
             }
-            else if (winningTeam != null)
+
+            // Determine match outcome for the player's team
+            MatchRoster? playerMatchRoster = matchRosters.FirstOrDefault(r => r.Roster.Contains(playerId));
+            var won = playerMatchRoster != null && playerMatchRoster.Score == maxMatchScore;
+
+            // Determine teammate and opponent IDs based on match rosters
+            List<int> teammateIds = playerMatchRoster?.Roster.Where(id => id != playerId).ToList() ?? [];
+            var opponentIds = matchRosters
+                .Where(r => r.Team != playerMatchRoster?.Team)
+                .SelectMany(r => r.Roster)
+                .Distinct()
+                .Where(id => id != playerId)
+                .ToList();
+
+            // Create or update the player stats
+            if (!existingStats.TryGetValue(playerId, out PlayerMatchStats? stat))
             {
-                gamesLost++;
+                stat = new PlayerMatchStats
+                {
+                    PlayerId = playerId
+                };
+                existingStats[playerId] = stat;
             }
-        }
 
-        // Determine match outcome for the player's team
-        MatchRoster? playerMatchRoster = matchRosters.FirstOrDefault(r => r.Roster.Contains(playerId));
-        var won = playerMatchRoster != null && playerMatchRoster.Score == maxMatchScore;
+            // Update the stats
+            stat.MatchCost = matchCosts[playerId];
+            stat.AverageScore = scores.Average(s => s.Score);
+            stat.AveragePlacement = scores.Average(s => s.Placement);
+            stat.AverageMisses = scores.Average(s => s.CountMiss);
+            stat.AverageAccuracy = scores.Average(s => s.Accuracy);
+            stat.GamesPlayed = scores.Count;
+            stat.GamesWon = gamesWon;
+            stat.GamesLost = gamesLost;
+            stat.Won = won;
+            stat.TeammateIds = [.. teammateIds];
+            stat.OpponentIds = [.. opponentIds];
 
-        // Determine teammate and opponent IDs based on match rosters
-        List<int> teammateIds = playerMatchRoster?.Roster.Where(id => id != playerId).ToList() ?? [];
-        var opponentIds = matchRosters
-            .Where(r => r.Team != playerMatchRoster?.Team)
-            .SelectMany(r => r.Roster)
-            .Distinct()
-            .Where(id => id != playerId)
-            .ToList();
-
-        // Create or update the player stats
-        if (!existingStats.TryGetValue(playerId, out PlayerMatchStats? stat))
-        {
-            stat = new PlayerMatchStats
-            {
-                PlayerId = playerId
-            };
-            existingStats[playerId] = stat;
-        }
-
-        // Update the stats
-        stat.MatchCost = matchCosts[playerId];
-        stat.AverageScore = scores.Average(s => s.Score);
-        stat.AveragePlacement = scores.Average(s => s.Placement);
-        stat.AverageMisses = scores.Average(s => s.CountMiss);
-        stat.AverageAccuracy = scores.Average(s => s.Accuracy);
-        stat.GamesPlayed = scores.Count;
-        stat.GamesWon = gamesWon;
-        stat.GamesLost = gamesLost;
-        stat.Won = won;
-        stat.TeammateIds = [.. teammateIds];
-        stat.OpponentIds = [.. opponentIds];
-
-        return stat;
-    });
+            return stat;
+        });
     }
 }
