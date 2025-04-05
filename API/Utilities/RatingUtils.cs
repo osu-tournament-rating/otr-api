@@ -308,24 +308,38 @@ public static class RatingUtils
     /// <remarks>Will return null for given ratings at or above <see cref="RatingGrandmasterI"/></remarks>
     public static int? GetNextSubTier(double rating)
     {
+        // First get the current sub-tier (1, 2, or 3) for the given rating
+        // This will be null for Elite Grandmaster
         var currentSubTier = GetSubTier(rating);
 
         switch (currentSubTier)
         {
+            // If current sub-tier is null (Elite Grandmaster), there is no next tier
             case null:
                 return null;
+
+            // If current sub-tier is 2 or 3, the next sub-tier is simply one less
+            // (Sub-tiers count down: 3 → 2 → 1 within each major tier)
+            // Example: Bronze III (3) → Bronze II (2) → Bronze I (1)
             case > 1:
                 return currentSubTier - 1;
+
+            // If current sub-tier is 1, we need to move to the next major tier
             default:
                 {
-                    // Check if there's a next major tier
+                    // Check if there's a next major tier available
                     var nextMajorTier = GetNextMajorTier(rating);
 
+                    // Elite Grandmaster is the highest tier, so there's no next tier after it.
+                    // Therefore, there is no sub tier and we return null.
                     if (nextMajorTier == "Elite Grandmaster")
                     {
                         return null;
                     }
 
+                    // If there is a next major tier, return 3 (the highest sub-tier of that major tier)
+                    // Example: Bronze I (1) → Silver III (3)
+                    // If there's no next major tier, return null
                     return nextMajorTier != null ? 3 : null;
                 }
         }
