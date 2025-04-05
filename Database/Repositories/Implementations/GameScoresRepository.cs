@@ -14,13 +14,10 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
 {
     private readonly OtrContext _context = context;
 
-    public async Task<bool> ExistsAsync(long osuId) =>
-        await _context.GameScores.AnyAsync(gs => gs.GameId == osuId);
-
     public override async Task<GameScore?> GetAsync(int id)
     {
         IQueryable<GameScore> query = _context.GameScores
-            .Include(gs => gs.AdminNotes);
+            .IncludeAdminNotes<GameScore, GameScoreAdminNote>();
 
         return await query.FirstOrDefaultAsync(gs => gs.Id == id);
     }

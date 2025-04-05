@@ -4,23 +4,20 @@ about: New feature template (maintainer use only)
 title: ''
 labels: type:feature
 assignees: ''
-
 ---
 
-# Feature Name
-
-## Overview
+# Overview
 
 <!---
 high-level overview of the feature
 -->
 
-## Dependencies
+# Dependencies
 
 <!---
 Link to any dependent issues in bullet form or subtask form
 -->
 
-## Tasks
+# Tasks
 
 - [ ] Tasks which must be completed ("acceptance criteria")
