@@ -25,14 +25,9 @@ public class PlayerRatingStatsDTO : PlayerRatingDTO
     public double WinRate { get; set; }
 
     /// <summary>
-    /// Current tier
-    /// </summary>
-    public string CurrentTier => RatingUtils.GetTier(Rating);
-
-    /// <summary>
     /// Rating tier progress information
     /// </summary>
-    public RankProgressDTO RankProgress { get; set; } = new();
+    public required TierProgressDTO TierProgress { get; set; }
 
     /// <summary>
     /// Denotes the current rating as being provisional

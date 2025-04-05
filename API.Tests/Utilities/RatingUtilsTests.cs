@@ -6,37 +6,37 @@ namespace APITests.Utilities;
 public class RatingUtilsTests
 {
     [Theory]
-    [InlineData(RatingConstants.RatingBronzeIII, "Bronze III")]
-    [InlineData(RatingConstants.RatingBronzeII, "Bronze II")]
-    [InlineData(RatingConstants.RatingBronzeI, "Bronze I")]
-    [InlineData(RatingConstants.RatingSilverIII, "Silver III")]
-    [InlineData(RatingConstants.RatingSilverII, "Silver II")]
-    [InlineData(RatingConstants.RatingSilverI, "Silver I")]
-    [InlineData(RatingConstants.RatingGoldIII, "Gold III")]
-    [InlineData(RatingConstants.RatingGoldII, "Gold II")]
-    [InlineData(RatingConstants.RatingGoldI, "Gold I")]
-    [InlineData(RatingConstants.RatingPlatinumIII, "Platinum III")]
-    [InlineData(RatingConstants.RatingPlatinumII, "Platinum II")]
-    [InlineData(RatingConstants.RatingPlatinumI, "Platinum I")]
-    [InlineData(RatingConstants.RatingEmeraldIII, "Emerald III")]
-    [InlineData(RatingConstants.RatingEmeraldII, "Emerald II")]
-    [InlineData(RatingConstants.RatingEmeraldI, "Emerald I")]
-    [InlineData(RatingConstants.RatingDiamondIII, "Diamond III")]
-    [InlineData(RatingConstants.RatingDiamondII, "Diamond II")]
-    [InlineData(RatingConstants.RatingDiamondI, "Diamond I")]
-    [InlineData(RatingConstants.RatingMasterIII, "Master III")]
-    [InlineData(RatingConstants.RatingMasterII, "Master II")]
-    [InlineData(RatingConstants.RatingMasterI, "Master I")]
-    [InlineData(RatingConstants.RatingGrandmasterIII, "Grandmaster III")]
-    [InlineData(RatingConstants.RatingGrandmasterII, "Grandmaster II")]
-    [InlineData(RatingConstants.RatingGrandmasterI, "Grandmaster I")]
+    [InlineData(RatingConstants.RatingBronzeIII, "Bronze")]
+    [InlineData(RatingConstants.RatingBronzeII, "Bronze")]
+    [InlineData(RatingConstants.RatingBronzeI, "Bronze")]
+    [InlineData(RatingConstants.RatingSilverIII, "Silver")]
+    [InlineData(RatingConstants.RatingSilverII, "Silver")]
+    [InlineData(RatingConstants.RatingSilverI, "Silver")]
+    [InlineData(RatingConstants.RatingGoldIII, "Gold")]
+    [InlineData(RatingConstants.RatingGoldII, "Gold")]
+    [InlineData(RatingConstants.RatingGoldI, "Gold")]
+    [InlineData(RatingConstants.RatingPlatinumIII, "Platinum")]
+    [InlineData(RatingConstants.RatingPlatinumII, "Platinum")]
+    [InlineData(RatingConstants.RatingPlatinumI, "Platinum")]
+    [InlineData(RatingConstants.RatingEmeraldIII, "Emerald")]
+    [InlineData(RatingConstants.RatingEmeraldII, "Emerald")]
+    [InlineData(RatingConstants.RatingEmeraldI, "Emerald")]
+    [InlineData(RatingConstants.RatingDiamondIII, "Diamond")]
+    [InlineData(RatingConstants.RatingDiamondII, "Diamond")]
+    [InlineData(RatingConstants.RatingDiamondI, "Diamond")]
+    [InlineData(RatingConstants.RatingMasterIII, "Master")]
+    [InlineData(RatingConstants.RatingMasterII, "Master")]
+    [InlineData(RatingConstants.RatingMasterI, "Master")]
+    [InlineData(RatingConstants.RatingGrandmasterIII, "Grandmaster")]
+    [InlineData(RatingConstants.RatingGrandmasterII, "Grandmaster")]
+    [InlineData(RatingConstants.RatingGrandmasterI, "Grandmaster")]
     [InlineData(RatingConstants.RatingEliteGrandmaster, "Elite Grandmaster")]
     public void GetTier_ReturnsCorrectTier(double rating, string expectedTier)
     {
         // Arrange
 
         // Act
-        var actualTier = RatingUtils.GetTier(rating);
+        var actualTier = RatingUtils.GetMajorTier(rating);
 
         // Assert
         Assert.Equal(expectedTier, actualTier);
@@ -92,41 +92,37 @@ public class RatingUtilsTests
     }
 
     [Theory]
-    [InlineData(RatingConstants.RatingBronzeII)]
-    [InlineData(RatingConstants.RatingBronzeI)]
-    [InlineData(RatingConstants.RatingSilverIII)]
-    [InlineData(RatingConstants.RatingSilverII)]
-    [InlineData(RatingConstants.RatingSilverI)]
-    [InlineData(RatingConstants.RatingGoldIII)]
-    [InlineData(RatingConstants.RatingGoldII)]
-    [InlineData(RatingConstants.RatingGoldI)]
-    [InlineData(RatingConstants.RatingPlatinumIII)]
-    [InlineData(RatingConstants.RatingPlatinumII)]
-    [InlineData(RatingConstants.RatingPlatinumI)]
-    [InlineData(RatingConstants.RatingEmeraldIII)]
-    [InlineData(RatingConstants.RatingEmeraldII)]
-    [InlineData(RatingConstants.RatingEmeraldI)]
-    [InlineData(RatingConstants.RatingDiamondIII)]
-    [InlineData(RatingConstants.RatingDiamondII)]
-    [InlineData(RatingConstants.RatingDiamondI)]
-    [InlineData(RatingConstants.RatingMasterIII)]
-    [InlineData(RatingConstants.RatingMasterII)]
-    [InlineData(RatingConstants.RatingMasterI)]
-    [InlineData(RatingConstants.RatingGrandmasterIII)]
-    [InlineData(RatingConstants.RatingGrandmasterII)]
-    [InlineData(RatingConstants.RatingGrandmasterI)]
-    [InlineData(RatingConstants.RatingEliteGrandmaster)]
-    public void GetNextTier_ReturnsCorrectNextTier(double rating)
+    [InlineData(RatingConstants.RatingBronzeII, 1)]
+    [InlineData(RatingConstants.RatingBronzeI, 3)]
+    [InlineData(RatingConstants.RatingSilverIII, 2)]
+    [InlineData(RatingConstants.RatingSilverII, 1)]
+    [InlineData(RatingConstants.RatingSilverI, 3)]
+    [InlineData(RatingConstants.RatingGoldIII, 2)]
+    [InlineData(RatingConstants.RatingGoldII, 1)]
+    [InlineData(RatingConstants.RatingGoldI, 3)]
+    [InlineData(RatingConstants.RatingPlatinumIII, 2)]
+    [InlineData(RatingConstants.RatingPlatinumII, 1)]
+    [InlineData(RatingConstants.RatingPlatinumI, 3)]
+    [InlineData(RatingConstants.RatingEmeraldIII, 2)]
+    [InlineData(RatingConstants.RatingEmeraldII, 1)]
+    [InlineData(RatingConstants.RatingEmeraldI, 3)]
+    [InlineData(RatingConstants.RatingDiamondIII, 2)]
+    [InlineData(RatingConstants.RatingDiamondII, 1)]
+    [InlineData(RatingConstants.RatingDiamondI, 3)]
+    [InlineData(RatingConstants.RatingMasterIII, 2)]
+    [InlineData(RatingConstants.RatingMasterII, 1)]
+    [InlineData(RatingConstants.RatingMasterI, 3)]
+    [InlineData(RatingConstants.RatingGrandmasterIII, 2)]
+    [InlineData(RatingConstants.RatingGrandmasterII, 1)]
+    [InlineData(RatingConstants.RatingGrandmasterI, null)]
+    [InlineData(RatingConstants.RatingEliteGrandmaster, null)]
+    public void GetNextSubTier_ReturnsCorrectNextSubTier(double rating, int? expectedSubTier)
     {
-        // Arrange
-        var belowRating = rating - 1;
-        var expectedTier = RatingUtils.GetTier(rating);
-
         // Act
-        var actualNextTier = RatingUtils.GetNextTier(belowRating);
+        var actualNextSubTier = RatingUtils.GetNextSubTier(rating);
 
         // Assert
-        Assert.Equal(actualNextTier, expectedTier);
+        Assert.Equal(expectedSubTier, actualNextSubTier);
     }
 
     [Fact]
@@ -136,7 +132,7 @@ public class RatingUtilsTests
         const double aboveEliteGrandmaster = RatingConstants.RatingEliteGrandmaster + 1;
 
         // Act
-        var nextTier = RatingUtils.GetNextTier(aboveEliteGrandmaster);
+        var nextTier = RatingUtils.GetNextMajorTier(aboveEliteGrandmaster);
 
         // Assert
         Assert.Null(nextTier);
@@ -295,7 +291,7 @@ public class RatingUtilsTests
     {
         // Arrange
         var belowRating = rating - 1;
-        var expectedMajorTier = RatingUtils.GetTier(rating);
+        var expectedMajorTier = RatingUtils.GetMajorTier(rating);
 
         // Act
         var nextMajorTier = RatingUtils.GetNextMajorTier(belowRating);
@@ -550,156 +546,5 @@ public class RatingUtilsTests
 
         // Assert
         Assert.False(isProvisional);
-    }
-
-    [Theory]
-    [InlineData("Bronze III", true)]
-    [InlineData("Bronze II", true)]
-    [InlineData("Bronze I", true)]
-    [InlineData("Garbage", false)]
-    [InlineData("Silver III", false)]
-    public void IsBronze_ReturnsCorrectBool(string tier, bool expected)
-    {
-        // Arrange
-
-        // Act
-        var actual = RatingUtils.IsBronze(tier);
-
-        // Assert
-        Assert.Equal(expected, actual);
-    }
-
-    [Theory]
-    [InlineData("Silver III", true)]
-    [InlineData("Silver II", true)]
-    [InlineData("Silver I", true)]
-    [InlineData("Garbage", false)]
-    [InlineData("Gold III", false)]
-    public void IsSilver_ReturnsCorrectBool(string tier, bool expected)
-    {
-        // Arrange
-
-        // Act
-        var actual = RatingUtils.IsSilver(tier);
-
-        // Assert
-        Assert.Equal(expected, actual);
-    }
-
-    [Theory]
-    [InlineData("Gold III", true)]
-    [InlineData("Gold II", true)]
-    [InlineData("Gold I", true)]
-    [InlineData("Garbage", false)]
-    [InlineData("Platinum III", false)]
-    public void IsGold_ReturnsCorrectBool(string tier, bool expected)
-    {
-        // Arrange
-
-        // Act
-        var actual = RatingUtils.IsGold(tier);
-
-        // Assert
-        Assert.Equal(expected, actual);
-    }
-
-    [Theory]
-    [InlineData("Platinum III", true)]
-    [InlineData("Platinum II", true)]
-    [InlineData("Platinum I", true)]
-    [InlineData("Garbage", false)]
-    [InlineData("Emerald III", false)]
-    public void IsPlatinum_ReturnsCorrectBool(string tier, bool expected)
-    {
-        // Arrange
-
-        // Act
-        var actual = RatingUtils.IsPlatinum(tier);
-
-        // Assert
-        Assert.Equal(expected, actual);
-    }
-
-    [Theory]
-    [InlineData("Emerald III", true)]
-    [InlineData("Emerald II", true)]
-    [InlineData("Emerald I", true)]
-    [InlineData("Garbage", false)]
-    [InlineData("Diamond III", false)]
-    public void IsEmerald_ReturnsCorrectBool(string tier, bool expected)
-    {
-        // Arrange
-
-        // Act
-        var actual = RatingUtils.IsEmerald(tier);
-
-        // Assert
-        Assert.Equal(expected, actual);
-    }
-
-    [Theory]
-    [InlineData("Diamond III", true)]
-    [InlineData("Diamond II", true)]
-    [InlineData("Diamond I", true)]
-    [InlineData("Garbage", false)]
-    [InlineData("Master III", false)]
-    public void IsDiamond_ReturnsCorrectBool(string tier, bool expected)
-    {
-        // Arrange
-
-        // Act
-        var actual = RatingUtils.IsDiamond(tier);
-
-        // Assert
-        Assert.Equal(expected, actual);
-    }
-
-    [Theory]
-    [InlineData("Master III", true)]
-    [InlineData("Master II", true)]
-    [InlineData("Master I", true)]
-    [InlineData("Garbage", false)]
-    [InlineData("Grandmaster III", false)]
-    public void IsMaster_ReturnsCorrectBool(string tier, bool expected)
-    {
-        // Arrange
-
-        // Act
-        var actual = RatingUtils.IsMaster(tier);
-
-        // Assert
-        Assert.Equal(expected, actual);
-    }
-
-    [Theory]
-    [InlineData("Grandmaster III", true)]
-    [InlineData("Grandmaster II", true)]
-    [InlineData("Grandmaster I", true)]
-    [InlineData("Garbage", false)]
-    [InlineData("Elite Grandmaster", false)]
-    public void IsGrandmaster_ReturnsCorrectBool(string tier, bool expected)
-    {
-        // Arrange
-
-        // Act
-        var actual = RatingUtils.IsGrandmaster(tier);
-
-        // Assert
-        Assert.Equal(expected, actual);
-    }
-
-    [Theory]
-    [InlineData("Elite Grandmaster", true)]
-    [InlineData("Garbage", false)]
-    [InlineData("Grandmaster III", false)]
-    public void IsEliteGrandmaster_ReturnsCorrectBool(string tier, bool expected)
-    {
-        // Arrange
-
-        // Act
-        var actual = RatingUtils.IsEliteGrandmaster(tier);
-
-        // Assert
-        Assert.Equal(expected, actual);
     }
 }

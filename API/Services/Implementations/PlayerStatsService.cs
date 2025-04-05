@@ -66,7 +66,8 @@ public class PlayerStatsService(
                 Adjustments = [], // We don't need adjustments for leaderboards
                 TournamentsPlayed = pts.sumTournaments,
                 MatchesPlayed = pts.sumMatches,
-                WinRate = pts.averageMatchWinRate
+                WinRate = pts.averageMatchWinRate,
+                TierProgress = new TierProgressDTO(pr.Rating)
             });
         }
 
@@ -240,16 +241,7 @@ public class PlayerStatsService(
         ratingStats.MatchesPlayed = matchesPlayed;
         ratingStats.WinRate = winRate;
 
-        ratingStats.RankProgress = new RankProgressDTO
-        {
-            CurrentTier = RatingUtils.GetTier(ratingStats.Rating),
-            CurrentSubTier = RatingUtils.GetSubTier(ratingStats.Rating),
-            RatingForNextTier = RatingUtils.GetNextTierRatingDelta(ratingStats.Rating),
-            RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(ratingStats.Rating),
-            NextMajorTier = RatingUtils.GetNextMajorTier(ratingStats.Rating),
-            SubTierFillPercentage = RatingUtils.GetNextTierFillPercentage(ratingStats.Rating),
-            MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(ratingStats.Rating)
-        };
+        ratingStats.TierProgress = new TierProgressDTO(ratingStats.Rating);
 
         return ratingStats;
     }

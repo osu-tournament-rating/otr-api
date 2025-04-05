@@ -27,16 +27,7 @@ public class PlayerRatingsService(
         var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
         var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
         var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset);
-        var rankProgress = new RankProgressDTO
-        {
-            CurrentTier = RatingUtils.GetTier(currentStats.Rating),
-            CurrentSubTier = RatingUtils.GetSubTier(currentStats.Rating),
-            RatingForNextTier = RatingUtils.GetNextTierRatingDelta(currentStats.Rating),
-            RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(currentStats.Rating),
-            NextMajorTier = RatingUtils.GetNextMajorTier(currentStats.Rating),
-            SubTierFillPercentage = RatingUtils.GetNextTierFillPercentage(currentStats.Rating),
-            MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(currentStats.Rating)
-        };
+        var tierProgress = new TierProgressDTO(currentStats.Rating);
 
         return new PlayerRatingStatsDTO
         {
@@ -50,7 +41,7 @@ public class PlayerRatingsService(
             Volatility = currentStats.Volatility,
             WinRate = winRate,
             TournamentsPlayed = tournamentsPlayed,
-            RankProgress = rankProgress,
+            TierProgress = tierProgress,
             Adjustments = mapper.Map<ICollection<RatingAdjustmentDTO>>(currentStats.Adjustments.OrderBy(a => a.Timestamp))
         };
     }
