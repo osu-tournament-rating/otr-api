@@ -30,9 +30,24 @@ public class TierProgressDTO(double rating)
     public double RatingForNextMajorTier { get; set; } = RatingUtils.GetNextMajorTierRatingDelta(rating);
 
     /// <summary>
-    /// Next major tier following current tier
+    /// Major tier name of the next tier
+    /// </summary>
+    /// <remarks>
+    /// This will only be different from the current tier if the
+    /// next tier is a major tier change. Useful to avoid having to calculate this manually based on
+    /// the current tier.
+    /// </remarks>
+    public string? NextTier { get; set; } = RatingUtils.GetNextTierRating(rating).HasValue ? RatingUtils.GetMajorTier(RatingUtils.GetNextTierRating(rating)!.Value) : null;
+
+    /// <summary>
+    /// Major tier following current major tier
     /// </summary>
     public string? NextMajorTier { get; set; } = RatingUtils.GetNextMajorTier(rating);
+
+    /// <summary>
+    /// Sub tier following current sub tier
+    /// </summary>
+    public int? NextSubTier { get; set; } = RatingUtils.GetNextSubTier(rating);
 
     /// <summary>
     /// Progress to the next sub tier as a percentage
