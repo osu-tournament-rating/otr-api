@@ -94,6 +94,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
     {
         IQueryable<Match> query = _context.Matches
             .AsNoTracking()
+            .AsSplitQuery()
             .IncludeChildren(verified)
             .IncludeTournament()
             .IncludeAdminNotes<Match, MatchAdminNote>();
