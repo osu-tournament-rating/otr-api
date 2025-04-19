@@ -73,6 +73,10 @@ public class MapperProfile : Profile
         CreateMap<PlayerTournamentStats, PlayerTournamentStatsDTO>();
 
         CreateMap<Tournament, TournamentCompactDTO>();
+        CreateMap<TournamentCompactDTO, Tournament>(MemberList.Source)
+            .ForMember(x => x.SubmittedByUser, opt => opt.Ignore())
+            .ForMember(x => x.VerifiedByUser, opt => opt.Ignore());
+
         CreateMap<Tournament, TournamentDTO>();
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()

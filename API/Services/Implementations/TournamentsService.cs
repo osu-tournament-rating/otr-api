@@ -138,15 +138,7 @@ public class TournamentsService(
             return null;
         }
 
-        existing.Name = wrapper.Name;
-        existing.Abbreviation = wrapper.Abbreviation;
-        existing.ForumUrl = wrapper.ForumUrl;
-        existing.Ruleset = wrapper.Ruleset;
-        existing.RankRangeLowerBound = wrapper.RankRangeLowerBound;
-        existing.LobbySize = wrapper.LobbySize;
-        existing.ProcessingStatus = wrapper.ProcessingStatus;
-        existing.VerificationStatus = wrapper.VerificationStatus;
-        existing.RejectionReason = wrapper.RejectionReason;
+        mapper.Map(wrapper, existing);
 
         await tournamentsRepository.UpdateAsync(existing);
         return mapper.Map<TournamentCompactDTO>(existing);
