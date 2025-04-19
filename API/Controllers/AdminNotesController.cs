@@ -53,11 +53,13 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
     /// <param name="entityId">Entity id</param>
     /// <param name="note">Content of the admin note</param>
     /// <response code="404">An entity matching the given id does not exist</response>
+    /// <response code="401">User is not authorized to perform this action</response>
     /// <response code="400">The authorized user does not exist</response>
     /// <response code="201">Returns the created admin note</response>
     [HttpPost("{entityId:int}/notes")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> CreateNoteAsync(
@@ -65,6 +67,11 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
         [FromBody][Required] string note
     )
     {
+        if (!HttpContext.User.IsAdmin())
+        {
+            return Unauthorized();
+        }
+
         // Check if target entity exists
         if (await context.FindAsync(DynamicRouteTarget.EntityType, entityId) is null)
         {
@@ -114,12 +121,14 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
     /// </summary>
     /// <param name="noteId">Admin note id</param>
     /// <param name="note">New content of the admin note</param>
-    /// <response code="404">An admin note matching the given noteId does not exist </response>
+    /// <response code="404">An admin note matching the given noteId does not exist</response>
+    /// <response code="401">User is not authorized to perform this action</response>
     /// <response code="400">The update was not successful</response>
     /// <response code="200">Returns the updated admin note</response>
     [HttpPatch("notes/{noteId:int}")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> UpdateNoteAsync(
@@ -127,11 +136,21 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
         [FromBody][Required] string note
     )
     {
+        if (!HttpContext.User.IsAdmin())
+        {
+            return Unauthorized();
+        }
+
         AdminNoteDTO? existingNote = await DynamicAdminNoteService.GetAsync(noteId);
 
         if (existingNote is null)
         {
             return NotFound();
+        }
+
+        if (existingNote.AdminUser.Id != User.GetSubjectId())
+        {
+            return Unauthorized();
         }
 
         existingNote.Note = note;
@@ -145,20 +164,32 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
     /// </summary>
     /// <param name="noteId">Admin note id</param>
     /// <response code="404">An admin note matching the given noteId does not exist </response>
+    /// <response code="401">User is not authorized to perform this action</response>
     /// <response code="400">The deletion was not successful</response>
     /// <response code="204">The admin note was deleted</response>
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [HttpDelete("notes/{noteId:int}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteNoteAsync(
         int noteId
     )
     {
+        if (!HttpContext.User.IsAdmin())
+        {
+            return Unauthorized();
+        }
+
         if (!await DynamicAdminNoteService.ExistsAsync(noteId))
         {
             return NotFound();
+        }
+
+        if ((await DynamicAdminNoteService.GetAsync(noteId))?.AdminUser.Id != User.GetSubjectId())
+        {
+            return Unauthorized();
         }
 
         var success = await DynamicAdminNoteService.DeleteAsync(noteId);
