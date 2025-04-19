@@ -46,6 +46,9 @@ public class MapperProfile : Profile
         CreateMap<Match, MatchCompactDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset));
 
+        CreateMap<MatchCompactDTO, Match>(MemberList.Source)
+            .ForSourceMember(x => x.Ruleset, opt => opt.DoNotValidate());
+
         CreateMap<Match, MatchDTO>()
             .IncludeBase<Match, MatchCompactDTO>()
             .ForMember(x => x.Players, opt => opt.Ignore());
