@@ -19,6 +19,18 @@ public class MapperProfile : Profile
 
         CreateMap<Game, GameDTO>()
             .ForMember(x => x.Players, opt => opt.Ignore());
+
+        CreateMap<GameDTO, Game>(MemberList.Source)
+            .ForMember(x => x.Beatmap, opt => opt.Ignore())
+            .ForMember(x => x.Rosters, opt => opt.Ignore())
+            .ForMember(x => x.Match, opt => opt.Ignore())
+            .ForMember(x => x.AdminNotes, opt => opt.Ignore())
+            .ForMember(x => x.IsFreeMod, opt => opt.UseDestinationValue())
+            .ForSourceMember(x => x.Rosters, opt => opt.DoNotValidate())
+            .ForSourceMember(x => x.AdminNotes, opt => opt.DoNotValidate())
+            .ForSourceMember(x => x.IsFreeMod, opt => opt.DoNotValidate())
+            .ForSourceMember(x => x.Players, opt => opt.DoNotValidate());
+
         CreateMap<GameRoster, GameRosterDTO>();
 
         // Two-way mapping between entity and DTO,
@@ -26,11 +38,9 @@ public class MapperProfile : Profile
         // from the DTO to the entity.
         CreateMap<GameScore, GameScoreDTO>();
         CreateMap<GameScoreDTO, GameScore>(MemberList.Source)
-            .ForSourceMember(x => x.Accuracy, opt => opt.DoNotValidate())
-            .ForMember(x => x.Id, opt => opt.UseDestinationValue())
-            .ForMember(x => x.PlayerId, opt => opt.UseDestinationValue())
             .ForMember(x => x.Accuracy, opt => opt.UseDestinationValue())
             .ForMember(x => x.AdminNotes, opt => opt.Ignore())
+            .ForSourceMember(x => x.Accuracy, opt => opt.DoNotValidate())
             .ForSourceMember(x => x.AdminNotes, opt => opt.DoNotValidate());
 
         CreateMap<Match, MatchCompactDTO>()
