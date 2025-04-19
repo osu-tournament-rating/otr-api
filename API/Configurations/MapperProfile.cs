@@ -20,7 +20,18 @@ public class MapperProfile : Profile
         CreateMap<Game, GameDTO>()
             .ForMember(x => x.Players, opt => opt.Ignore());
         CreateMap<GameRoster, GameRosterDTO>();
+
+        // Two-way mapping between entity and DTO,
+        // ignores fields which should not be mapped
+        // from the DTO to the entity.
         CreateMap<GameScore, GameScoreDTO>();
+        CreateMap<GameScoreDTO, GameScore>(MemberList.Source)
+            .ForSourceMember(x => x.Accuracy, opt => opt.DoNotValidate())
+            .ForMember(x => x.Id, opt => opt.UseDestinationValue())
+            .ForMember(x => x.PlayerId, opt => opt.UseDestinationValue())
+            .ForMember(x => x.Accuracy, opt => opt.UseDestinationValue())
+            .ForMember(x => x.AdminNotes, opt => opt.Ignore())
+            .ForSourceMember(x => x.AdminNotes, opt => opt.DoNotValidate());
 
         CreateMap<Match, MatchCompactDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset));

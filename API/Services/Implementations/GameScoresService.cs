@@ -19,13 +19,7 @@ public class GameScoresService(IGameScoresRepository gameScoresRepository, IMapp
             return null;
         }
 
-        existing.Team = score.Team;
-        existing.Score = score.Score;
-        existing.Mods = score.Mods;
-        existing.CountMiss = score.CountMiss;
-        existing.VerificationStatus = score.VerificationStatus;
-        existing.ProcessingStatus = score.ProcessingStatus;
-        existing.RejectionReason = score.RejectionReason;
+        mapper.Map(score, existing);
 
         await gameScoresRepository.UpdateAsync(existing);
         return mapper.Map<GameScoreDTO>(existing);
