@@ -1,11 +1,10 @@
 using Common.Enums;
 using Common.Rating;
 using Common.Utilities;
-using Database.Entities;
 using Database.Entities.Processor;
-using Database.Models;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
+using LinqKit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
@@ -15,13 +14,13 @@ public class PlayerRatingsRepository(OtrContext context)
 {
     private readonly OtrContext _context = context;
 
-    public async Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset, bool includeAdjustments)
+    public async Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null, bool includeAdjustments = false)
     {
         if (includeAdjustments)
         {
             return await _context.PlayerRatings
                 .Include(pr => pr.Player.User)
-                .Include(pr => pr.Adjustments)
+                .Include(pr => pr.Adjustments.Where(ra => ra.Timestamp >= dateMin && ra.Timestamp <= dateMax))
                 .ThenInclude(a => a.Match)
                 .Where(pr => pr.PlayerId == playerId && pr.Ruleset == ruleset)
                 .FirstOrDefaultAsync();
@@ -33,68 +32,41 @@ public class PlayerRatingsRepository(OtrContext context)
             .FirstOrDefaultAsync();
     }
 
+    public async Task<IList<PlayerRating>> GetAsync(int page = 1, int pageSize = 25, Ruleset ruleset = Ruleset.Osu,
+        string? country = null,
+        int? minRank = null, int? maxRank = null, int? minRating = null, int? maxRating = null, int? minMatches = null,
+        int? maxMatches = null, double? minWinRate = null, double? maxWinRate = null, bool bronze = false,
+        bool silver = false, bool gold = false, bool platinum = false, bool emerald = false, bool diamond = false,
+        bool master = false, bool grandmaster = false, bool eliteGrandmaster = false)
+    {
+        return await LeaderboardQuery(ruleset, country, minRank, maxRank, minRating, maxRating,
+                minMatches, maxMatches, minWinRate, maxWinRate, bronze, silver, gold, platinum, emerald, diamond,
+                master,
+                grandmaster, eliteGrandmaster)
+            .OrderByDescending(pr => pr.Rating)
+            .Page(page, pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> PageCountAsync(int pageSize = 25, Ruleset ruleset = Ruleset.Osu,
+        string? country = null, int? minRank = null,
+        int? maxRank = null, int? minRating = null, int? maxRating = null, int? minMatches = null,
+        int? maxMatches = null,
+        double? minWinRate = null, double? maxWinRate = null, bool bronze = false, bool silver = false,
+        bool gold = false,
+        bool platinum = false, bool emerald = false, bool diamond = false, bool master = false,
+        bool grandmaster = false,
+        bool eliteGrandmaster = false) =>
+        await LeaderboardQuery(ruleset, country, minRank, maxRank, minRating, maxRating, minMatches, maxMatches,
+            minWinRate, maxWinRate, bronze, silver, gold, platinum, emerald, diamond, master, grandmaster,
+            eliteGrandmaster).CountAsync() / pageSize + 1;
+
     public async Task<IList<Ruleset>> GetActiveRulesetsAsync(int playerId) =>
         await _context.PlayerRatings
+            .Include(pr => pr.Player)
             .Where(pr => pr.PlayerId == playerId)
             .Select(pr => pr.Ruleset)
             .ToListAsync();
-
-
-    public async Task<int> HighestRankAsync(Ruleset ruleset, string? country = null)
-    {
-        IQueryable<PlayerRating> query = _context
-            .PlayerRatings
-            .AsNoTracking()
-            .WhereRuleset(ruleset);
-
-        if (country != null)
-        {
-            query = query.Where(pr => pr.Player.Country == country);
-        }
-
-        return await query
-            .Select(x => x.GlobalRank)
-            .DefaultIfEmpty()
-            .MaxAsync();
-    }
-
-    public async Task<double> HighestRatingAsync(Ruleset ruleset, string? country = null)
-    {
-        IQueryable<PlayerRating> query = _context
-            .PlayerRatings
-            .AsNoTracking()
-            .Where(x => x.Ruleset == ruleset);
-
-        if (country != null)
-        {
-            query = query.Where(pr => pr.Player.Country == country);
-        }
-
-        return await query
-            .Select(x => x.Rating)
-            .DefaultIfEmpty()
-            .MaxAsync();
-    }
-
-    public async Task<int> HighestMatchesAsync(Ruleset ruleset, string? country = null)
-    {
-        IQueryable<PlayerMatchStats> query = _context
-            .Players
-            .AsNoTracking()
-            .SelectMany(p => p.MatchStats)
-            .Where(ms => ms.Match.Tournament.Ruleset == ruleset);
-
-        if (country != null)
-        {
-            query = query.Where(pms => pms.Player.Country == country);
-        }
-
-        return await query
-            .GroupBy(ms => ms.PlayerId)
-            .OrderByDescending(g => g.Count())
-            .Select(g => g.Count())
-            .FirstOrDefaultAsync();
-    }
 
     public async Task<IDictionary<int, int>> GetHistogramAsync(Ruleset ruleset)
     {
@@ -127,91 +99,52 @@ public class PlayerRatingsRepository(OtrContext context)
         return histogram;
     }
 
-    public async Task<IEnumerable<PlayerRating>> GetLeaderboardAsync(
-        int page,
-        int pageSize,
-        Ruleset ruleset,
-        LeaderboardChartType chartType,
-        LeaderboardFilter? filter,
-        string? country
-    )
-    {
-        IQueryable<PlayerRating> query = LeaderboardQuery(
-            ruleset,
-            chartType,
-            filter,
-            country
-        );
-
-        return await query
-            .OrderByRatingDescending()
-            .Page(pageSize, page - 1)
-            .AsNoTracking()
-            .ToListAsync();
-    }
-
-    public async Task<int> LeaderboardCountAsync(
-        Ruleset requestQueryRuleset,
-        LeaderboardChartType chartType,
-        LeaderboardFilter filter,
-        string? country
-    )
-    {
-        IQueryable<PlayerRating> query = LeaderboardQuery(requestQueryRuleset, chartType, filter, country);
-
-        return await query.CountAsync();
-    }
-
     private IQueryable<PlayerRating> LeaderboardQuery(
-        Ruleset ruleset,
-        LeaderboardChartType chartType,
-        LeaderboardFilter? filter,
-        string? country
+        Ruleset ruleset = Ruleset.Osu, string? country = null,
+        int? minRank = null, int? maxRank = null, int? minRating = null, int? maxRating = null, int? minMatches = null,
+        int? maxMatches = null, double? minWinRate = null, double? maxWinRate = null, bool bronze = false,
+        bool silver = false, bool gold = false, bool platinum = false, bool emerald = false, bool diamond = false,
+        bool master = false, bool grandmaster = false, bool eliteGrandmaster = false
     )
     {
         IQueryable<PlayerRating> baseQuery = _context.PlayerRatings
+            .AsNoTracking()
+            .Include(pr => pr.Player)
+            .AsSplitQuery()
             .WhereRuleset(ruleset)
             // Filter out players who only have the initial adjustment
             .Where(pr => pr.Adjustments.Count > 1);
 
-        if (chartType == LeaderboardChartType.Country && country is not null)
-        {
-            // Addresses players in dependent territories having a *very* small country leaderboard.
-            if (
-                LeaderboardUtils.DependentTerritoriesMapping.TryGetValue(
-                    country,
-                    out var mappedCountry
-                )
-            )
-            {
-                baseQuery = baseQuery.Where(x => x.Player.Country == mappedCountry);
-            }
-        }
-
-        if (filter == null)
-        {
-            return baseQuery;
-        }
-
-        baseQuery = FilterByRank(ruleset, baseQuery, filter.MinRank, filter.MaxRank);
-        baseQuery = FilterByRating(baseQuery, filter.MinRating, filter.MaxRating);
-        baseQuery = FilterByMatchesPlayed(baseQuery, filter.MinMatches, filter.MaxMatches);
-
-        if (filter?.TierFilters != null && HasActiveTierFilter(filter.TierFilters))
-        {
-            baseQuery = FilterByTier(baseQuery, filter.TierFilters);
-        }
+        baseQuery = FilterByCountry(country, baseQuery);
+        baseQuery = FilterByRank(ruleset, baseQuery, minRank, maxRank);
+        baseQuery = FilterByRating(baseQuery, minRating, maxRating);
+        baseQuery = FilterByMatchesPlayed(baseQuery, ruleset, minMatches, maxMatches);
+        baseQuery = FilterByWinRate(baseQuery, ruleset, minWinRate, maxWinRate);
+        baseQuery = FilterByTier(baseQuery, bronze, silver, gold, platinum, emerald, diamond, master, grandmaster,
+            eliteGrandmaster);
 
         return baseQuery;
     }
 
-    private static bool HasActiveTierFilter(LeaderboardTierFilter tierFilter)
+    private static IQueryable<PlayerRating> FilterByCountry(string? country, IQueryable<PlayerRating> baseQuery)
     {
-        return tierFilter.FilterBronze || tierFilter.FilterSilver ||
-               tierFilter.FilterGold || tierFilter.FilterPlatinum ||
-               tierFilter.FilterEmerald || tierFilter.FilterDiamond ||
-               tierFilter.FilterMaster || tierFilter.FilterGrandmaster ||
-               tierFilter.FilterEliteGrandmaster;
+        if (country is null)
+        {
+            return baseQuery;
+        }
+
+        // Addresses players in dependent territories having a *very* small country leaderboard.
+        if (
+            LeaderboardUtils.DependentTerritoriesMapping.TryGetValue(
+                country,
+                out var mappedCountry
+            )
+        )
+        {
+            baseQuery = baseQuery.Where(x => x.Player.Country == mappedCountry);
+        }
+
+        return baseQuery;
     }
 
     private static IQueryable<PlayerRating> FilterByRank(
@@ -224,16 +157,14 @@ public class PlayerRatingsRepository(OtrContext context)
         if (minRank.HasValue)
         {
             query = query.Where(x =>
-                x.Player.RulesetData.Any(rd => rd.Ruleset == ruleset)
-                && x.Player.RulesetData.FirstOrDefault(rd => rd.Ruleset == ruleset)!.GlobalRank >= minRank
+                x.Player.RulesetData.FirstOrDefault(rd => rd.Ruleset == ruleset)!.GlobalRank >= minRank
             );
         }
 
         if (maxRank.HasValue)
         {
             query = query.Where(x =>
-                x.Player.RulesetData.Any(rd => rd.Ruleset == ruleset)
-                && x.Player.RulesetData.FirstOrDefault(rd => rd.Ruleset == ruleset)!.GlobalRank <= maxRank
+                x.Player.RulesetData.FirstOrDefault(rd => rd.Ruleset == ruleset)!.GlobalRank <= maxRank
             );
         }
 
@@ -258,23 +189,47 @@ public class PlayerRatingsRepository(OtrContext context)
 
     private static IQueryable<PlayerRating> FilterByMatchesPlayed(
         IQueryable<PlayerRating> query,
+        Ruleset ruleset,
         int? minMatches,
         int? maxMatches
     )
     {
-        if (minMatches.HasValue || maxMatches.HasValue)
-        {
-            query = query.Include(x => x.Player).ThenInclude(x => x.MatchStats);
-        }
-
         if (minMatches.HasValue)
         {
-            query = query.Where(x => x.Player.MatchStats.Count >= minMatches.Value);
+            query = query.Where(x =>
+                x.Player.TournamentStats.Where(pts => pts.Tournament.Ruleset == ruleset).Sum(pts => pts.MatchesPlayed) >= minMatches.Value);
         }
 
         if (maxMatches.HasValue)
         {
-            query = query.Where(x => x.Player.MatchStats.Count <= maxMatches.Value);
+            query = query.Where(x =>
+                x.Player.TournamentStats.Where(pts => pts.Tournament.Ruleset == ruleset).Sum(pts => pts.MatchesPlayed) <= maxMatches.Value);
+        }
+
+        return query;
+    }
+
+    private static IQueryable<PlayerRating> FilterByWinRate(
+        IQueryable<PlayerRating> query,
+        Ruleset ruleset,
+        double? minWinRate,
+        double? maxWinRate
+    )
+    {
+        if (minWinRate.HasValue)
+        {
+            query = query.Where(pr =>
+                pr.Player.TournamentStats
+                    .Where(ts => ts.Tournament.Ruleset == ruleset)
+                    .Average(ts => ts.MatchesWon / (double)ts.MatchesPlayed) >= minWinRate.Value);
+        }
+
+        if (maxWinRate.HasValue)
+        {
+            query = query.Where(pr =>
+                pr.Player.TournamentStats
+                    .Where(ts => ts.Tournament.Ruleset == ruleset)
+                    .Average(ts => ts.MatchesWon / (double)ts.MatchesPlayed) <= maxWinRate.Value);
         }
 
         return query;
@@ -282,30 +237,79 @@ public class PlayerRatingsRepository(OtrContext context)
 
     private static IQueryable<PlayerRating> FilterByTier(
         IQueryable<PlayerRating> query,
-        LeaderboardTierFilter tierFilter
+        bool bronze, bool silver, bool gold, bool platinum, bool emerald, bool diamond,
+        bool master, bool grandmaster, bool eliteGrandmaster
     )
     {
-        var includeBronze = tierFilter.FilterBronze;
-        var includeSilver = tierFilter.FilterSilver;
-        var includeGold = tierFilter.FilterGold;
-        var includePlatinum = tierFilter.FilterPlatinum;
-        var includeEmerald = tierFilter.FilterEmerald;
-        var includeDiamond = tierFilter.FilterDiamond;
-        var includeMaster = tierFilter.FilterMaster;
-        var includeGrandmaster = tierFilter.FilterGrandmaster;
-        var includeEliteGrandmaster = tierFilter.FilterEliteGrandmaster;
+        // Check if all flags are true or all are false
+        var allTrue = bronze && silver && gold && platinum && emerald && diamond && master && grandmaster &&
+                      eliteGrandmaster;
+        var allFalse = !bronze && !silver && !gold && !platinum && !emerald && !diamond && !master && !grandmaster &&
+                       !eliteGrandmaster;
 
-        return query.Where(x =>
-            (includeBronze && x.Rating < RatingConstants.RatingSilverIII)
-            || (includeSilver && x.Rating >= RatingConstants.RatingSilverIII && x.Rating < RatingConstants.RatingGoldIII)
-            || (includeGold && x.Rating >= RatingConstants.RatingGoldIII && x.Rating < RatingConstants.RatingPlatinumIII)
-            || (includePlatinum && x.Rating >= RatingConstants.RatingPlatinumIII && x.Rating < RatingConstants.RatingEmeraldIII)
-            || (includeEmerald && x.Rating >= RatingConstants.RatingEmeraldIII && x.Rating < RatingConstants.RatingDiamondIII)
-            || (includeDiamond && x.Rating >= RatingConstants.RatingDiamondIII && x.Rating < RatingConstants.RatingMasterIII)
-            || (includeMaster && x.Rating >= RatingConstants.RatingMasterIII && x.Rating < RatingConstants.RatingGrandmasterIII)
-            || (includeGrandmaster && x.Rating >= RatingConstants.RatingGrandmasterIII &&
-                x.Rating < RatingConstants.RatingEliteGrandmaster)
-            || (includeEliteGrandmaster && x.Rating >= RatingConstants.RatingEliteGrandmaster)
-        );
+        // If all flags are true or all are false, return the original query
+        if (allTrue || allFalse)
+        {
+            return query;
+        }
+
+        // Otherwise, build the predicate dynamically
+        ExpressionStarter<PlayerRating>? predicate = PredicateBuilder.New<PlayerRating>(false);
+
+        if (bronze)
+        {
+            predicate = predicate.Or(p =>
+                p.Rating >= RatingConstants.RatingBronzeIII && p.Rating < RatingConstants.RatingSilverIII);
+        }
+
+        if (silver)
+        {
+            predicate = predicate.Or(p =>
+                p.Rating >= RatingConstants.RatingSilverIII && p.Rating < RatingConstants.RatingGoldIII);
+        }
+
+        if (gold)
+        {
+            predicate = predicate.Or(p =>
+                p.Rating >= RatingConstants.RatingGoldIII && p.Rating < RatingConstants.RatingPlatinumIII);
+        }
+
+        if (platinum)
+        {
+            predicate = predicate.Or(p =>
+                p.Rating >= RatingConstants.RatingPlatinumIII && p.Rating < RatingConstants.RatingEmeraldIII);
+        }
+
+        if (emerald)
+        {
+            predicate = predicate.Or(p =>
+                p.Rating >= RatingConstants.RatingEmeraldIII && p.Rating < RatingConstants.RatingDiamondIII);
+        }
+
+        if (diamond)
+        {
+            predicate = predicate.Or(p =>
+                p.Rating >= RatingConstants.RatingDiamondIII && p.Rating < RatingConstants.RatingMasterIII);
+        }
+
+        if (master)
+        {
+            predicate = predicate.Or(p =>
+                p.Rating >= RatingConstants.RatingMasterIII && p.Rating < RatingConstants.RatingGrandmasterIII);
+        }
+
+        if (grandmaster)
+        {
+            predicate = predicate.Or(p =>
+                p.Rating >= RatingConstants.RatingGrandmasterIII && p.Rating < RatingConstants.RatingEliteGrandmaster);
+        }
+
+        if (eliteGrandmaster)
+        {
+            predicate = predicate.Or(p => p.Rating >= RatingConstants.RatingEliteGrandmaster);
+        }
+
+        // Apply the predicate to the query
+        return query.AsExpandable().Where(predicate);
     }
 }

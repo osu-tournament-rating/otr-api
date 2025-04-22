@@ -36,8 +36,7 @@ public class MatchesService(
 
     public async Task<MatchDTO?> GetAsync(int id, bool verified)
     {
-        MatchDTO? match = mapper
-            .Map<MatchDTO?>(await matchesRepository.GetFullAsync(id, verified));
+        MatchDTO? match = mapper.Map<MatchDTO?>(await matchesRepository.GetFullAsync(id, verified));
 
         if (match is null)
         {
@@ -79,12 +78,7 @@ public class MatchesService(
             return null;
         }
 
-        existing.Name = match.Name;
-        existing.StartTime = match.StartTime ?? existing.StartTime;
-        existing.EndTime = match.EndTime ?? existing.EndTime;
-        existing.VerificationStatus = match.VerificationStatus;
-        existing.RejectionReason = match.RejectionReason;
-        existing.ProcessingStatus = match.ProcessingStatus;
+        mapper.Map(match, existing);
 
         await matchesRepository.UpdateAsync(existing);
         return mapper.Map<MatchDTO>(existing);

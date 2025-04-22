@@ -6,6 +6,14 @@ namespace API.Services.Interfaces;
 public interface IPlayerStatsService
 {
     /// <summary>
+    /// Retrieves a leaderboard based on the provided query parameters.
+    /// </summary>
+    /// <param name="request">Parameters used to filter and sort the leaderboard</param>
+    Task<LeaderboardDTO> GetLeaderboardAsync(
+        LeaderboardRequestQueryDTO request
+    );
+
+    /// <summary>
     /// Gets player stats for the given ruleset in the given date range
     /// </summary>
     /// <remarks>

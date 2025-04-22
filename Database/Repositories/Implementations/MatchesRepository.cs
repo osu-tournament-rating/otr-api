@@ -84,7 +84,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
             query = query.OrderBy(querySortType.Value, sortDescending ?? false);
         }
 
-        return await query.Page(limit, page - 1).AsNoTracking().ToListAsync();
+        return await query.Page(page, limit).AsNoTracking().ToListAsync();
     }
 
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
@@ -93,6 +93,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
     public async Task<Match?> GetFullAsync(int id, bool verified)
     {
         IQueryable<Match> query = _context.Matches
+            .AsSplitQuery()
             .AsNoTracking()
             .IncludeChildren(verified)
             .IncludeTournament()

@@ -40,6 +40,7 @@ public interface IOsuClient : IDisposable
     /// </returns>
     Task<OsuCredentials?> AuthorizeUserWithCodeAsync(
         string authorizationCode,
+        string? authorizationCodeVerifier = null,
         CancellationToken cancellationToken = default
     );
 

@@ -1,7 +1,6 @@
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities.Extensions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +10,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class LeaderboardsController(IPlayerRatingsService playerRatingsService) : Controller
+public class LeaderboardsController(IPlayerStatsService playerStatsService) : Controller
 {
     /// <summary>
     /// Get a leaderboard of players which fit an optional request query
@@ -21,15 +20,10 @@ public class LeaderboardsController(IPlayerRatingsService playerRatingsService) 
     [Authorize(Roles = OtrClaims.Roles.User)]
     [ProducesResponseType<LeaderboardDTO>(StatusCodes.Status200OK)]
     public async Task<ActionResult<LeaderboardDTO>> GetAsync(
-        LeaderboardRequestQueryDTO requestQuery,
-        LeaderboardFilterDTO filter,
-        LeaderboardTierFilterDTO tierFilter
+       [FromQuery] LeaderboardRequestQueryDTO requestQuery
     )
     {
-        requestQuery.Filter = filter;
-        requestQuery.Filter.TierFilters = tierFilter;
-
-        LeaderboardDTO leaderboard = await playerRatingsService.GetLeaderboardAsync(requestQuery);
+        LeaderboardDTO leaderboard = await playerStatsService.GetLeaderboardAsync(requestQuery);
         return Ok(leaderboard);
     }
 }
