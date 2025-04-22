@@ -79,8 +79,8 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     public async Task<int> CountPlayedAsync(
         int playerId,
         Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
+        DateTime? dateMin,
+        DateTime? dateMax
     ) => await QueryForParticipation(playerId, ruleset, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
 
     public async Task<ICollection<Tournament>> GetAsync(
@@ -173,8 +173,8 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     public async Task<Dictionary<int, int>> GetLobbySizeStatsAsync(
         int playerId,
         Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
+        DateTime? dateMin,
+        DateTime? dateMax
     )
     {
         var participatedTournaments =
