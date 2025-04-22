@@ -93,6 +93,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
     public async Task<Match?> GetFullAsync(int id, bool verified)
     {
         IQueryable<Match> query = _context.Matches
+            .AsSplitQuery()
             .AsNoTracking()
             .IncludeChildren(verified)
             .IncludeTournament()

@@ -10,11 +10,14 @@ public interface IPlayerRatingsRepository : IRepository<PlayerRating>
     /// </summary>
     /// <param name="playerId">Player id</param>
     /// <param name="ruleset">Ruleset</param>
+    /// <param name="dateMin">Date lower bound</param>
+    /// <param name="dateMax">Date upper bound</param>
+    /// <remarks>dateMin and dateMax are only used for filtering the rating adjustments. Other data is always current</remarks>
     /// <returns>
     /// A <see cref="PlayerRating" /> for the given playerId and <see cref="Ruleset" />,
     /// or null if not found
     /// </returns>
-    Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset, bool includeAdjustments = false);
+    Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null, bool includeAdjustments = false);
 
     /// <summary>
     /// Get a collection of ratings

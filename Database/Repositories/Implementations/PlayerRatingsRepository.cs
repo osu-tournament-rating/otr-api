@@ -14,13 +14,13 @@ public class PlayerRatingsRepository(OtrContext context)
 {
     private readonly OtrContext _context = context;
 
-    public async Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset, bool includeAdjustments)
+    public async Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null, bool includeAdjustments = false)
     {
         if (includeAdjustments)
         {
             return await _context.PlayerRatings
                 .Include(pr => pr.Player.User)
-                .Include(pr => pr.Adjustments)
+                .Include(pr => pr.Adjustments.Where(ra => ra.Timestamp >= dateMin && ra.Timestamp <= dateMax))
                 .ThenInclude(a => a.Match)
                 .Where(pr => pr.PlayerId == playerId && pr.Ruleset == ruleset)
                 .FirstOrDefaultAsync();
