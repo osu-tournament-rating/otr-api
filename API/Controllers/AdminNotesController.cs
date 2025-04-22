@@ -114,12 +114,14 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
     /// </summary>
     /// <param name="noteId">Admin note id</param>
     /// <param name="note">New content of the admin note</param>
-    /// <response code="404">An admin note matching the given noteId does not exist </response>
+    /// <response code="404">An admin note matching the given noteId does not exist</response>
+    /// <response code="403">User is attempting to update a note which they do not own</response>
     /// <response code="400">The update was not successful</response>
     /// <response code="200">Returns the updated admin note</response>
     [HttpPatch("notes/{noteId:int}")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status201Created)]
     public async Task<IActionResult> UpdateNoteAsync(
@@ -134,6 +136,11 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
             return NotFound();
         }
 
+        if (existingNote.AdminUser.Id != User.GetSubjectId())
+        {
+            return Forbid();
+        }
+
         existingNote.Note = note;
         AdminNoteDTO? updatedNote = await DynamicAdminNoteService.UpdateAsync(existingNote);
 
@@ -145,11 +152,13 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
     /// </summary>
     /// <param name="noteId">Admin note id</param>
     /// <response code="404">An admin note matching the given noteId does not exist </response>
+    /// <response code="403">User is attempting to delete a note which they do not own</response>
     /// <response code="400">The deletion was not successful</response>
     /// <response code="204">The admin note was deleted</response>
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [HttpDelete("notes/{noteId:int}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteNoteAsync(
@@ -159,6 +168,11 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
         if (!await DynamicAdminNoteService.ExistsAsync(noteId))
         {
             return NotFound();
+        }
+
+        if ((await DynamicAdminNoteService.GetAsync(noteId))?.AdminUser.Id != User.GetSubjectId())
+        {
+            return Forbid();
         }
 
         var success = await DynamicAdminNoteService.DeleteAsync(noteId);

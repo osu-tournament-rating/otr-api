@@ -15,18 +15,19 @@ public class PlayerRatingsService(
     IMapper mapper
 ) : IPlayerRatingsService
 {
-    public async Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset, bool includeAdjustments)
+    public async Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null, bool includeAdjustments = false)
     {
-        PlayerRating? currentStats = await playerRatingsRepository.GetAsync(playerId, ruleset, includeAdjustments);
+        // Note: Adjustments are the only property filtered by time
+        PlayerRating? currentStats = await playerRatingsRepository.GetAsync(playerId, ruleset, dateMin, dateMax, includeAdjustments);
 
         if (currentStats is null)
         {
             return null;
         }
 
-        var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
-        var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
-        var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset);
+        var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset, dateMin, dateMax);
+        var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset, dateMin, dateMax);
+        var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset, dateMin, dateMax);
         var tierProgress = new TierProgressDTO(currentStats.Rating);
 
         return new PlayerRatingStatsDTO
