@@ -20,6 +20,19 @@ public class TierProgressDTO(double rating)
     public int? CurrentSubTier { get; set; } = RatingUtils.GetSubTier(rating);
 
     /// <summary>
+    /// Name of the next major tier
+    /// </summary>
+    /// <remarks>
+    /// Null if there is no next major tier, e.g. when the rating value is within the maximum tier
+    /// </remarks>
+    public string? NextTier { get; set; } = RatingUtils.GetNextTierRating(rating).HasValue ? RatingUtils.GetMajorTier(RatingUtils.GetNextTierRating(rating)!.Value) : null;
+
+    /// <summary>
+    /// Next sub tier
+    /// </summary>
+    public int? NextSubTier { get; set; } = RatingUtils.GetNextSubTier(rating);
+
+    /// <summary>
     /// Rating required to reach next sub tier
     /// </summary>
     public double RatingForNextTier { get; set; } = RatingUtils.GetNextTierRatingDelta(rating);
@@ -30,24 +43,9 @@ public class TierProgressDTO(double rating)
     public double RatingForNextMajorTier { get; set; } = RatingUtils.GetNextMajorTierRatingDelta(rating);
 
     /// <summary>
-    /// Major tier name of the next tier
-    /// </summary>
-    /// <remarks>
-    /// This will only be different from the current tier if the
-    /// next tier is a major tier change. Useful to avoid having to calculate this manually based on
-    /// the current tier.
-    /// </remarks>
-    public string? NextTier { get; set; } = RatingUtils.GetNextTierRating(rating).HasValue ? RatingUtils.GetMajorTier(RatingUtils.GetNextTierRating(rating)!.Value) : null;
-
-    /// <summary>
     /// Major tier following current major tier
     /// </summary>
     public string? NextMajorTier { get; set; } = RatingUtils.GetNextMajorTier(rating);
-
-    /// <summary>
-    /// Sub tier following current sub tier
-    /// </summary>
-    public int? NextSubTier { get; set; } = RatingUtils.GetNextSubTier(rating);
 
     /// <summary>
     /// Progress to the next sub tier as a percentage
