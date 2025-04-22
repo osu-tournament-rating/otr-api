@@ -29,15 +29,7 @@ public class GamesService(IGamesRepository gamesRepository, IPlayersRepository p
             return null;
         }
 
-        existing.Ruleset = game.Ruleset;
-        existing.ScoringType = game.ScoringType;
-        existing.TeamType = game.TeamType;
-        existing.Mods = game.Mods;
-        existing.VerificationStatus = game.VerificationStatus;
-        existing.ProcessingStatus = game.ProcessingStatus;
-        existing.RejectionReason = game.RejectionReason;
-        existing.StartTime = game.StartTime;
-        existing.EndTime = game.EndTime ?? existing.EndTime;
+        mapper.Map(game, existing);
 
         await gamesRepository.UpdateAsync(existing);
         return mapper.Map<GameDTO>(existing);

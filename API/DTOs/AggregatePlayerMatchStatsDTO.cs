@@ -98,10 +98,10 @@ public class AggregatePlayerMatchStatsDTO
     /// <summary>
     /// The beginning of the period for which the statistics are calculated.
     /// </summary>
-    public DateTime PeriodStart { get; set; }
+    public DateTime? PeriodStart { get; set; }
 
     /// <summary>
     /// The end of the period for which the statistics are calculated.
     /// </summary>
-    public DateTime PeriodEnd { get; set; }
+    public DateTime? PeriodEnd { get; set; }
 }

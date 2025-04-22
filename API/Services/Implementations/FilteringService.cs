@@ -74,7 +74,7 @@ public class FilteringService(
         }
 
         PlayerRatingStatsDTO? ratingStats =
-            await playerRatingsService.GetAsync(playerInfo.Id, filteringRequest.Ruleset, false);
+            await playerRatingsService.GetAsync(playerInfo.Id, filteringRequest.Ruleset, includeAdjustments: false);
 
         if (ratingStats == null)
         {
