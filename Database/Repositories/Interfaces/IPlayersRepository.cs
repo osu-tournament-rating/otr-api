@@ -14,7 +14,7 @@ public interface IPlayersRepository : IRepository<Player>
     /// <summary>
     /// Gets a player filtering by the following, in order of priority: (id, osu! id, username)
     /// </summary>
-    /// <remarks>Username filter uses strict matching, case insensitive</remarks>
+    /// <remarks>Username filter uses strict matching, case-insensitive</remarks>
     /// <param name="key">The dynamic key to filter for</param>
     /// <param name="eagerLoad">If true, includes the <see cref="User"/> and <see cref="UserSettings"/></param>
     /// <returns>A player, or null if not found</returns>

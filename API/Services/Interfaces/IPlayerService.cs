@@ -4,39 +4,23 @@ namespace API.Services.Interfaces;
 
 public interface IPlayerService
 {
-    Task<IEnumerable<PlayerCompactDTO>> GetAllAsync();
-
-    Task<int?> GetIdAsync(int userId);
-
     /// <summary>
-    /// Dynamically searches for players via the following, in order of priority:
-    ///
-    /// If the key can be parsed as an integer:
-    /// - The player id
-    /// - The osu id
-    ///
-    /// Searches for the username (case insensitive) otherwise.
-    ///
-    /// Returns null if no matches found.
+    /// Searches for a player using the provided key.
+    /// Priority is given to numerical keys, attempting to interpret them as either a player ID or an osu! ID (in that order).
+    /// If the key is not a number, a case-insensitive username search is performed.
     /// </summary>
-    /// <param name="key">The dynamic key of the player to look for</param>
-    /// <returns></returns>
+    /// <param name="key">The search key for identifying the player</param>
+    /// <returns>Returns null if no matching player is found</returns>
     Task<PlayerCompactDTO?> GetVersatileAsync(string key);
 
     /// <summary>
-    /// Gets player information for a list of osu! ids
+    /// Retrieves player information for a collection of osu! IDs
     /// </summary>
-    /// <param name="osuIds">The osu! player ids</param>
-    /// <returns>A list of <see cref="PlayerCompactDTO"/>, one per provided osu! id.
-    /// If a provided osu! id does not belong to a player in the database,
-    /// the <see cref="PlayerCompactDTO"/> will be returned in a default state,
-    /// except the <see cref="PlayerCompactDTO.OsuId"/> value will be set</returns>
-    Task<IEnumerable<PlayerCompactDTO>> GetAsync(IEnumerable<long> osuIds);
-
-    /// <summary>
-    /// Checks if the player exists
-    /// </summary>
-    /// <param name="id">The player id</param>
-    /// <returns>True if the player exists, false otherwise</returns>
-    Task<bool> ExistsAsync(int id);
+    /// <param name="osuIds">A collection of osu! player IDs to look up</param>
+    /// <returns>
+    /// A collection of <see cref="PlayerCompactDTO"/> objects matching the order of the provided osu! IDs.
+    /// If a player with a specific osu! ID is not found in the database, null is returned at that position.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="osuIds"/> is null</exception>
+    Task<IEnumerable<PlayerCompactDTO?>> GetAsync(IEnumerable<long> osuIds);
 }

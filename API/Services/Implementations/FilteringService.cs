@@ -12,113 +12,118 @@ public class FilteringService(
 {
     public async Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO filteringRequest)
     {
+        ArgumentNullException.ThrowIfNull(filteringRequest);
+
         var idList = filteringRequest.OsuPlayerIds.ToList();
 
         if (idList.Count == 0)
         {
-            throw new Exception("Filtering id list cannot be empty");
+            throw new ArgumentException("Filtering id list cannot be empty", nameof(filteringRequest));
         }
 
-        var passed = 0;
-        var failed = 0;
+        IEnumerable<PlayerCompactDTO?> players = await playerService.GetAsync(idList);
 
-        IEnumerable<PlayerCompactDTO> playerInfoCollection = await playerService.GetAsync(idList);
-        var resultCollection = new List<PlayerFilteringResultDTO>();
+        var results = new List<PlayerFilteringResultDTO>();
 
-        foreach (PlayerCompactDTO playerInfo in playerInfoCollection)
+        foreach (PlayerCompactDTO? playerInfo in players)
         {
-            (FilteringResult result, FilteringFailReason? failReason) = await FilterAsync(filteringRequest, playerInfo);
-
-            switch (result)
-            {
-                case FilteringResult.Pass:
-                    passed++;
-                    break;
-                case FilteringResult.Fail:
-                    failed++;
-                    break;
-                default:
-                    throw new Exception("This FilteringResult is not handled!");
-            }
-
-            resultCollection.Add(new PlayerFilteringResultDTO
-            {
-                PlayerId = playerInfo.Id,
-                Username = playerInfo.Username,
-                OsuId = playerInfo.OsuId,
-                FilteringResult = result,
-                FilteringFailReason = failReason
-            });
+            PlayerFilteringResultDTO result = await ProcessPlayerAsync(playerInfo, filteringRequest);
+            results.Add(result);
         }
+
+        // Count results and create result DTO
+        var passed = results.Count(r => r.FilteringResult == FilteringResult.Pass);
+        var failed = results.Count(r => r.FilteringResult == FilteringResult.Fail);
 
         return new FilteringResultDTO
         {
             PlayersPassed = passed,
             PlayersFailed = failed,
-            FilteringResults = resultCollection
+            FilteringResults = results.ToList()
+        };
+    }
+
+    private async Task<PlayerFilteringResultDTO> ProcessPlayerAsync(
+        PlayerCompactDTO? playerInfo,
+        FilteringRequestDTO request)
+    {
+        (FilteringResult result, FilteringFailReason? failReason) = await FilterAsync(request, playerInfo);
+
+        return new PlayerFilteringResultDTO
+        {
+            PlayerId = playerInfo?.Id,
+            Username = playerInfo?.Username,
+            OsuId = playerInfo?.OsuId ?? 0,
+            FilteringResult = result,
+            FilteringFailReason = failReason
         };
     }
 
     private async Task<(FilteringResult result, FilteringFailReason? failReason)> FilterAsync(
-        FilteringRequestDTO filteringRequest,
+        FilteringRequestDTO request,
         PlayerCompactDTO? playerInfo)
     {
-        FilteringResult result = FilteringResult.Fail;
-        FilteringFailReason? failReason = FilteringFailReason.None;
-
+        // Handle null player info case
         if (playerInfo == null)
         {
-            failReason |= FilteringFailReason.NoData;
-
-            return (result, failReason);
+            return (FilteringResult.Fail, FilteringFailReason.NoData);
         }
 
-        PlayerRatingStatsDTO? ratingStats =
-            await playerRatingsService.GetAsync(playerInfo.Id, filteringRequest.Ruleset, includeAdjustments: false);
+        PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(
+            playerInfo.Id,
+            request.Ruleset,
+            includeAdjustments: false);
 
         if (ratingStats == null)
         {
-            failReason |= FilteringFailReason.NoData;
-
-            return (result, failReason);
+            return (FilteringResult.Fail, FilteringFailReason.NoData);
         }
 
-        if (ratingStats.Rating < filteringRequest.MinRating)
-        {
-            failReason |= FilteringFailReason.MinRating;
-        }
+        FilteringFailReason failReason = CheckFilteringConditions(request, ratingStats);
 
-        if (ratingStats.Rating > filteringRequest.MaxRating)
-        {
-            failReason |= FilteringFailReason.MaxRating;
-        }
-
-        if (!filteringRequest.AllowProvisional && ratingStats.IsProvisional)
-        {
-            failReason |= FilteringFailReason.IsProvisional;
-        }
-
-        if (ratingStats.MatchesPlayed < filteringRequest.MatchesPlayed)
-        {
-            failReason |= FilteringFailReason.NotEnoughMatches;
-        }
-
-        if (ratingStats.TournamentsPlayed < filteringRequest.TournamentsPlayed)
-        {
-            failReason |= FilteringFailReason.NotEnoughTournaments;
-        }
-
-        var peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, filteringRequest.Ruleset);
-        if (peakRating > filteringRequest.PeakRating)
+        var peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, request.Ruleset);
+        if (peakRating > request.PeakRating)
         {
             failReason |= FilteringFailReason.PeakRatingTooHigh;
         }
 
-        if (failReason == FilteringFailReason.None)
-        {
-            result = FilteringResult.Pass;
-        }
+        FilteringResult result = failReason == FilteringFailReason.None ? FilteringResult.Pass : FilteringResult.Fail;
 
         return (result, failReason);
+    }
+
+    private static FilteringFailReason CheckFilteringConditions(
+        FilteringRequestDTO request,
+        PlayerRatingStatsDTO ratingStats)
+    {
+        FilteringFailReason failReason = FilteringFailReason.None;
+
+        // Apply all basic filtering conditions
+        if (ratingStats.Rating < request.MinRating)
+        {
+            failReason |= FilteringFailReason.MinRating;
+        }
+
+        if (ratingStats.Rating > request.MaxRating)
+        {
+            failReason |= FilteringFailReason.MaxRating;
+        }
+
+        if (!request.AllowProvisional && ratingStats.IsProvisional)
+        {
+            failReason |= FilteringFailReason.IsProvisional;
+        }
+
+        if (ratingStats.MatchesPlayed < request.MatchesPlayed)
+        {
+            failReason |= FilteringFailReason.NotEnoughMatches;
+        }
+
+        if (ratingStats.TournamentsPlayed < request.TournamentsPlayed)
+        {
+            failReason |= FilteringFailReason.NotEnoughTournaments;
+        }
+
+        return failReason;
     }
 }

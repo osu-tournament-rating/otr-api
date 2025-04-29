@@ -8,45 +8,26 @@ namespace API.Services.Implementations;
 
 public class PlayerService(IPlayersRepository playerRepository, IMapper mapper) : IPlayerService
 {
-    public async Task<IEnumerable<PlayerCompactDTO>> GetAllAsync() =>
-        mapper.Map<IEnumerable<PlayerCompactDTO>>(await playerRepository.GetAsync());
-
-    public async Task<int?> GetIdAsync(int userId)
-    {
-        return await playerRepository.GetIdAsync(userId);
-    }
-
     public async Task<PlayerCompactDTO?> GetVersatileAsync(string key) =>
         mapper.Map<PlayerCompactDTO?>(await playerRepository.GetVersatileAsync(key, false));
 
-    public async Task<IEnumerable<PlayerCompactDTO>> GetAsync(IEnumerable<long> osuIds)
+    public async Task<IEnumerable<PlayerCompactDTO?>> GetAsync(IEnumerable<long> osuIds)
     {
+        ArgumentNullException.ThrowIfNull(osuIds);
+
         var idList = osuIds.ToList();
-        var players = (await playerRepository.GetAsync(idList)).ToList();
-        var dtos = new List<PlayerCompactDTO>();
 
-        // Iterate through the players, on null items create a default DTO but store the osuId.
-        // This tells the caller that we don't have info on a specific player.
+        // Get players and create a dictionary with OsuId as key
+        var players = (await playerRepository.GetAsync(idList))
+            .Where(p => p is not null)
+            .ToDictionary(p => p!.OsuId);  // Assuming Player has OsuId property
 
-        for (var i = 0; i < players.Count; i++)
-        {
-            Player? curPlayer = players[i];
-            if (curPlayer is not null)
-            {
-                dtos.Add(mapper.Map<PlayerCompactDTO>(curPlayer));
-            }
-            else
-            {
-                dtos.Add(new PlayerCompactDTO
-                {
-                    OsuId = idList.ElementAt(i)
-                });
-            }
-        }
-
-        return dtos;
+        // Return a list matching the input order:
+        // - If the player exists in our dictionary, return the mapped DTO
+        // - If not found, return null
+        return idList.Select(id =>
+            players.TryGetValue(id, out Player? player)
+                ? mapper.Map<PlayerCompactDTO>(player)
+                : null);
     }
-
-    public async Task<bool> ExistsAsync(int id) =>
-        await playerRepository.ExistsAsync(id);
 }

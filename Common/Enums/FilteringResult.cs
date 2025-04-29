@@ -9,6 +9,7 @@ public enum FilteringResult
     /// Indicates the player passed filtering
     /// </summary>
     Pass,
+
     /// <summary>
     /// Indicates the player failed filtering
     /// </summary>
