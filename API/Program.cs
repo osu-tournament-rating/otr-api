@@ -187,6 +187,14 @@ builder.Services.AddRateLimiter(options =>
     // Configure the rate limit partitioning rules
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
     {
+        // Unlimited partition for anonymous requests, as doing so
+        // would cripple the ability for the platform to support
+        // an influx of legitimate anonymous requests
+        if (context.User.Identity is null or { IsAuthenticated: false })
+        {
+            return RateLimitPartition.GetNoLimiter("anonymous");
+        }
+
         // Partition for each unique user / client
         return RateLimitPartition.GetFixedWindowLimiter(
             $"{context.User.GetSubjectType()}_{context.User.GetSubjectId()}",
