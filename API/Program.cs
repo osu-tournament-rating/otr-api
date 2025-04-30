@@ -190,7 +190,7 @@ builder.Services.AddRateLimiter(options =>
         // Unlimited partition for anonymous requests, as doing so
         // would cripple the ability for the platform to support
         // an influx of legitimate anonymous requests
-        if (context.User.Identity is null or { IsAuthenticated: false })
+        if (context.User.Identity is { IsAuthenticated: false })
         {
             return RateLimitPartition.GetNoLimiter("anonymous");
         }
