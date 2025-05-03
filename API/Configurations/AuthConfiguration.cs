@@ -10,7 +10,7 @@ public class AuthConfiguration
     public bool EnforceWhitelist { get; init; }
 
     /// <summary>
-    /// Allows CORS requests from the given origins
+    /// Allows CORS requests from the configured origins
     /// </summary>
     public string[] CorsOrigins { get; init; } = [];
 }

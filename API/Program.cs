@@ -313,45 +313,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     // Add documentation about authentication schemes
-    var oauthScopes = OtrClaims.Roles.ValidRoles
+    var authRoles = OtrClaims.Roles.ValidRoles
         .Select(r => new KeyValuePair<string, string>(r, OtrClaims.GetDescription(r)))
         .ToDictionary();
-
-    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme,
-        new OpenApiSecurityScheme
-        {
-            In = ParameterLocation.Header,
-            Name = "JWT Authentication",
-            Type = SecuritySchemeType.Http,
-            Description =
-                "JWT Authorization using the Bearer scheme. Paste **ONLY** your JWT in the text box below",
-            Scheme = JwtBearerDefaults.AuthenticationScheme,
-            BearerFormat = "JWT"
-        });
-
-    options.AddSecurityDefinition(SecurityRequirements.OAuthSecurityRequirementId,
-        new OpenApiSecurityScheme
-        {
-            Name = "OAuth2 Authentication",
-            In = ParameterLocation.Header,
-            Type = SecuritySchemeType.OAuth2,
-            Description = "OAuth2 Authentication",
-            Flows = new OpenApiOAuthFlows
-            {
-                AuthorizationCode = new OpenApiOAuthFlow
-                {
-                    AuthorizationUrl = new Uri("api/v1.0/OAuth/authorize", UriKind.Relative),
-                    RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
-                    Scopes = oauthScopes
-                },
-                ClientCredentials = new OpenApiOAuthFlow
-                {
-                    TokenUrl = new Uri("api/v1.0/OAuth/token", UriKind.Relative),
-                    RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
-                    Scopes = oauthScopes
-                }
-            }
-        });
 
     // Register custom enum schemas describing authorization roles and policies
     options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(OtrClaims.Roles),
@@ -359,16 +323,15 @@ builder.Services.AddSwaggerGen(options =>
         {
             Type = "string",
             Description = "The possible roles assignable to a user or client",
-            Enum = [.. oauthScopes.Keys.Select(role => new OpenApiString(role))],
+            Enum = [.. authRoles.Keys.Select(role => new OpenApiString(role))],
             Extensions = new Dictionary<string, IOpenApiExtension>
             {
                 [ExtensionKeys.EnumNames] =
-                    oauthScopes.Keys.Select(k => char.ToUpper(k[0]) + k[1..]).ToOpenApiArray(),
-                [ExtensionKeys.EnumDescriptions] = oauthScopes.Values.ToOpenApiArray()
+                    authRoles.Keys.Select(k => char.ToUpper(k[0]) + k[1..]).ToOpenApiArray(),
+                [ExtensionKeys.EnumDescriptions] = authRoles.Values.ToOpenApiArray()
             }
         });
 
-    // Register custom enum schemas describing authorization roles and policies
     options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(AuthorizationPolicies), new OpenApiSchema
     {
         Type = "string",
@@ -384,6 +347,18 @@ builder.Services.AddSwaggerGen(options =>
                 .ToOpenApiArray()
         }
     });
+
+    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme,
+        new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Name = "JWT Authentication",
+            Type = SecuritySchemeType.Http,
+            Description =
+                "JWT Authorization using the Bearer scheme. Paste **ONLY** your JWT in the text box below",
+            Scheme = JwtBearerDefaults.AuthenticationScheme,
+            BearerFormat = "JWT"
+        });
 
     // Add the ability to authenticate with swagger ui
     options.AddSecurityRequirement(SecurityRequirements.BearerSecurityRequirement);
