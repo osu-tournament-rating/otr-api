@@ -25,9 +25,8 @@ public class PlayerFilteringResultDTO
     public long OsuId { get; set; }
 
     /// <summary>
-    /// Whether the player successfully passed through the filter.
-    /// If this value is true, the player meets all constraints
-    /// specified in the filter.
+    /// Whether the player successfully passes all
+    /// conditions of the filter
     /// </summary>
     /// <example>
     /// Consider a filter which only wants to allow players
@@ -43,9 +42,4 @@ public class PlayerFilteringResultDTO
     /// If the user failed filtering, the fail reason
     /// </summary>
     public FilteringFailReason? FilteringFailReason { get; set; }
-
-    /// <summary>
-    /// The <see cref="FilteringFailReason"/> in string form
-    /// </summary>
-    public string? FilteringFailReasonMessage => FilteringFailReason is null ? null : FilteringFailReasonMessage;
 }

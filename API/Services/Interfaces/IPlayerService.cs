@@ -21,6 +21,5 @@ public interface IPlayerService
     /// A collection of <see cref="PlayerCompactDTO"/> objects matching the order of the provided osu! IDs.
     /// If a player with a specific osu! ID is not found in the database, null is returned at that position.
     /// </returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="osuIds"/> is null</exception>
     Task<IEnumerable<PlayerCompactDTO?>> GetAsync(IEnumerable<long> osuIds);
 }

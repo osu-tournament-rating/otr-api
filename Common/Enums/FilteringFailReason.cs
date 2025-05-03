@@ -7,7 +7,7 @@ namespace Common.Enums;
 public enum FilteringFailReason
 {
     /// <summary>
-    /// The player does not exist in the system at all
+    /// The player is not indexed by o!TR
     /// </summary>
     DoesNotExist = 0,
 

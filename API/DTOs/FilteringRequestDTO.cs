@@ -60,6 +60,6 @@ public class FilteringRequestDTO
     /// <summary>
     /// A list of osu! player ids that will be filtered
     /// </summary>
-    [MinLength(1, ErrorMessage = "At least one osu! player ID is required.")]
+    [MinLength(1)]
     public required ICollection<long> OsuPlayerIds { get; set; } = [];
 }

@@ -17,8 +17,8 @@ public class PlayerService(IPlayersRepository playerRepository, IMapper mapper) 
 
         // Get players and create a dictionary with OsuId as key
         var players = (await playerRepository.GetAsync(idList))
-            .Where(p => p is not null)
-            .ToDictionary(p => p!.OsuId);  // Assuming Player has OsuId property
+            .OfType<Player>()
+            .ToDictionary(p => p.OsuId);
 
         // Return a list matching the input order:
         // - If the player exists in our dictionary, return the mapped DTO
