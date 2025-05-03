@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a filtering result for a collection of players
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class FilteringResultDTO
 {
     /// <summary>
