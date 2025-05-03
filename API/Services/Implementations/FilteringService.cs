@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using API.DTOs;
 using API.Services.Interfaces;
 using Common.Enums;
@@ -12,19 +13,21 @@ public class FilteringService(
 {
     public async Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO request)
     {
-        IEnumerable<PlayerCompactDTO?> players = await playerService.GetAsync(request.OsuPlayerIds);
+        var osuIdHashSet = request.OsuPlayerIds.ToImmutableHashSet();
+        IEnumerable<PlayerCompactDTO> players = (await playerService.GetAsync(osuIdHashSet)).ToList();
 
         var results = new List<PlayerFilteringResultDTO>();
-        foreach (PlayerCompactDTO? playerInfo in players)
+        foreach (PlayerCompactDTO playerInfo in players)
         {
-            FilteringFailReason? failReason = await FilterPlayerAsync(request, playerInfo);
+            FilteringFailReason failReason = await FilterPlayerAsync(request, playerInfo);
 
             results.Add(new PlayerFilteringResultDTO
             {
-                PlayerId = playerInfo?.Id,
-                Username = playerInfo?.Username,
-                OsuId = playerInfo?.OsuId ?? 0,
-                FilteringFailReason = failReason
+                PlayerId = playerInfo.Id,
+                Username = playerInfo.Username,
+                OsuId = playerInfo.OsuId,
+                IsSuccess = failReason == FilteringFailReason.None,
+                FailureReason = failReason
             });
         }
 
@@ -32,19 +35,15 @@ public class FilteringService(
         {
             PlayersPassed = results.Count(r => r.IsSuccess),
             PlayersFailed = results.Count(r => !r.IsSuccess),
+            NotFoundOsuIds = [.. osuIdHashSet.Except(players.Select(p => p.OsuId))],
             FilteringResults = results.ToList()
         };
     }
 
-    private async Task<FilteringFailReason?> FilterPlayerAsync(
+    private async Task<FilteringFailReason> FilterPlayerAsync(
         FilteringRequestDTO request,
-        PlayerCompactDTO? playerInfo)
+        PlayerCompactDTO playerInfo)
     {
-        if (playerInfo is null)
-        {
-            return FilteringFailReason.NoData;
-        }
-
         PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(
             playerInfo.Id,
             request.Ruleset,
@@ -58,7 +57,7 @@ public class FilteringService(
         // Separate database call as adjustments are not included from the initial call
         // In the future, the processor could store this field in the database
         var peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, request.Ruleset);
-        FilteringFailReason? failReason = EnforceFilteringConditions(request, ratingStats, peakRating);
+        FilteringFailReason failReason = EnforceFilteringConditions(request, ratingStats, peakRating);
 
         return failReason;
     }
@@ -71,12 +70,12 @@ public class FilteringService(
     /// <param name="ratingStats">Rating stats of the player we are checking</param>
     /// <param name="peakRating">The player's all-time peak rating</param>
     /// <returns></returns>
-    private static FilteringFailReason? EnforceFilteringConditions(
+    private static FilteringFailReason EnforceFilteringConditions(
         FilteringRequestDTO request,
         PlayerRatingStatsDTO ratingStats,
         double peakRating)
     {
-        FilteringFailReason? failReason = null;
+        FilteringFailReason failReason = FilteringFailReason.None;
 
         if (ratingStats.Rating < request.MinRating)
         {

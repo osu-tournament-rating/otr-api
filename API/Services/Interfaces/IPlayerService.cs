@@ -18,8 +18,8 @@ public interface IPlayerService
     /// </summary>
     /// <param name="osuIds">A collection of osu! player IDs to look up</param>
     /// <returns>
-    /// A collection of <see cref="PlayerCompactDTO"/> objects matching the order of the provided osu! IDs.
-    /// If a player with a specific osu! ID is not found in the database, null is returned at that position.
+    /// A collection of <see cref="PlayerCompactDTO"/> objects.
+    /// Players who cannot be identified will not be in the returned collection.
     /// </returns>
-    Task<IEnumerable<PlayerCompactDTO?>> GetAsync(IEnumerable<long> osuIds);
+    Task<IEnumerable<PlayerCompactDTO>> GetAsync(IEnumerable<long> osuIds);
 }

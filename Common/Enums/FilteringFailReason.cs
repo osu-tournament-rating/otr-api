@@ -7,9 +7,9 @@ namespace Common.Enums;
 public enum FilteringFailReason
 {
     /// <summary>
-    /// The player is not indexed by o!TR
+    /// No failure reason
     /// </summary>
-    DoesNotExist = 0,
+    None = 0,
 
     /// <summary>
     /// The player does not have a rating for the ruleset

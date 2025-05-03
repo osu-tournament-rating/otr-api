@@ -39,7 +39,7 @@ public class PlayerFilteringResultDTO
     public bool IsSuccess { get; set; }
 
     /// <summary>
-    /// If the user failed filtering, the fail reason
+    /// If the player failed filtering, the fail reason
     /// </summary>
-    public FilteringFailReason? FilteringFailReason { get; set; }
+    public FilteringFailReason? FailureReason { get; set; }
 }

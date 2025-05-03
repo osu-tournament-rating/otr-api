@@ -49,7 +49,7 @@ public interface IPlayersRepository : IRepository<Player>
     /// </summary>
     /// <param name="osuIds">The osu! player ids</param>
     /// <returns>One <see cref="Player"/> per osu! id match, null if no match found</returns>
-    Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds);
+    Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds);
 
     /// <summary>
     /// Returns the id of the player that has this osuId

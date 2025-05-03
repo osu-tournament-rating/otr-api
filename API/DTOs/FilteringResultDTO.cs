@@ -16,6 +16,11 @@ public class FilteringResultDTO
     public int PlayersFailed { get; set; }
 
     /// <summary>
+    /// osu! ids of any players not found during filtering
+    /// </summary>
+    public long[] NotFoundOsuIds { get; set; } = [];
+
+    /// <summary>
     /// A collection of filtering results, one per submitted player,
     /// in the same order as submitted in the <see cref="FilteringRequestDTO"/>
     /// </summary>
