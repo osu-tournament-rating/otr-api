@@ -30,15 +30,6 @@ public class GeneratorOptions : JwtUtilsOptionsBase
     public string SubjectType { get; set; } = OtrClaims.Roles.User;
 
     [Option(
-        "token-type",
-        Required = false,
-        HelpText = $"Type of token being generated." +
-                   $"\nPossible values: ['{OtrClaims.TokenTypes.AccessToken}', '{OtrClaims.TokenTypes.RefreshToken}']",
-        Default = OtrClaims.TokenTypes.AccessToken
-    )]
-    public string TokenType { get; set; } = OtrClaims.TokenTypes.AccessToken;
-
-    [Option(
         "roles",
         Required = false,
         HelpText = $"Any number of role claims granted to the subject." +
@@ -58,8 +49,8 @@ public class GeneratorOptions : JwtUtilsOptionsBase
     [Option(
         "expiry",
         Required = false,
-        HelpText = "The lifetime of the token (in seconds)." +
-                   "\nDefault: 3600 (1 hour) for access tokens, 1_209_600 (2 weeks) for refresh tokens"
+        HelpText = "The lifetime of the token (in seconds)",
+        Default = 3600
     )]
-    public int? ExpiresIn { get; set; }
+    public int ExpiresIn { get; set; } = 3600;
 }

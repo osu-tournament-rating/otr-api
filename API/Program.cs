@@ -522,20 +522,6 @@ builder.Services
             jwtConfiguration.Key,
             jwtConfiguration.Audience
         );
-
-        options.Events = new JwtBearerEvents
-        {
-            // Reject authentication challenges not using an access token (or that don't contain a token type)
-            OnTokenValidated = context =>
-            {
-                if (context.Principal?.GetTokenType() is not OtrClaims.TokenTypes.AccessToken)
-                {
-                    context.Fail("Invalid token type. Only access tokens are accepted.");
-                }
-
-                return Task.CompletedTask;
-            }
-        };
     })
     .AddCookie(options =>
     {
@@ -693,12 +679,6 @@ builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthCli
 
 #endregion
 
-#region Handlers
-
-builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
-
-#endregion
-
 #region Repositories
 
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
@@ -726,7 +706,6 @@ builder.Services.AddScoped<IAdminNoteService, AdminNoteService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();
-builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerRatingsService, PlayerRatingsService>();

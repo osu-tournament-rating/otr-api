@@ -1,3 +1,6 @@
+using System.ComponentModel.DataAnnotations;
+using API.DTOs;
+using API.Services.Interfaces;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -8,7 +11,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController(IOAuthClientService oAuthClientService) : ControllerBase
 {
     /// <summary>
     /// Logs in to o!TR
@@ -31,5 +34,27 @@ public class AuthController : ControllerBase
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return Ok();
+    }
+
+    /// <summary>
+    /// Authenticate using client credentials
+    /// </summary>
+    /// <param name="clientId">Client id</param>
+    /// <param name="clientSecret">Client secret</param>
+    /// <response code="401">Could not authenticate</response>
+    /// <response code="200">Returns client access credentials</response>
+    [HttpPost("token")]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<AccessCredentialsDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> AuthenticateClientAsync(
+        [FromQuery][Required] int clientId,
+        [FromQuery][Required] string clientSecret
+    )
+    {
+        AccessCredentialsDTO? result = await oAuthClientService.AuthenticateAsync(clientId, clientSecret);
+
+        return result is not null
+            ? Ok(result)
+            : Unauthorized();
     }
 }
