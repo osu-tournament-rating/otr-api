@@ -4,5 +4,13 @@ public class AuthConfiguration
 {
     public const string Position = "Auth";
 
+    /// <summary>
+    /// If the global whitelist should be enforced
+    /// </summary>
     public bool EnforceWhitelist { get; init; }
+
+    /// <summary>
+    /// Allows CORS requests from the given origins
+    /// </summary>
+    public string[] CorsOrigins { get; init; } = [];
 }

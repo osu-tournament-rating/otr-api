@@ -23,7 +23,10 @@
     "Issuer": ""
   },
   "Auth": {
-    "EnforceWhitelist": false
+    "EnforceWhitelist": false,
+    "CorsOrigins": [
+      "http://localhost"
+    ]
   },
   "RateLimit": {
     "PermitLimit": 30,
