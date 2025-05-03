@@ -47,6 +47,9 @@ public sealed class OsuClient(
         _disposed = true;
     }
 
+    public OsuCredentials SetCredentials(OsuCredentials credentials) =>
+        _credentials = credentials;
+
     public async Task<OsuCredentials?> UpdateCredentialsAsync(CancellationToken cancellationToken = default)
     {
         CheckDisposed();
@@ -90,12 +93,12 @@ public sealed class OsuClient(
 
         if (response is not null)
         {
-            OsuCredentials newCredentials = _credentials = new OsuCredentials
+            OsuCredentials newCredentials = SetCredentials(new OsuCredentials
             {
                 AccessToken = response.AccessToken,
                 RefreshToken = response.RefreshToken,
                 ExpiresInSeconds = response.ExpiresIn
-            };
+            });
 
             logger.LogDebug(
                 "Obtained new access credentials [Access Expires In: {Expiry}]",
@@ -143,12 +146,12 @@ public sealed class OsuClient(
 
         if (response is not null)
         {
-            OsuCredentials newCredentials = _credentials = new OsuCredentials
+            OsuCredentials newCredentials = SetCredentials(new OsuCredentials
             {
                 AccessToken = response.AccessToken,
                 RefreshToken = response.RefreshToken,
                 ExpiresInSeconds = response.ExpiresIn
-            };
+            });
 
             logger.LogDebug(
                 "Obtained new access credentials [Access Expires In: {Expiry}]",
@@ -169,7 +172,7 @@ public sealed class OsuClient(
     {
         CheckDisposed();
 
-        _credentials = new OsuCredentials { AccessToken = "", RefreshToken = refreshToken, ExpiresInSeconds = 0 };
+        SetCredentials(new OsuCredentials { AccessToken = "", RefreshToken = refreshToken, ExpiresInSeconds = 0 });
 
         return await UpdateCredentialsAsync(cancellationToken);
     }

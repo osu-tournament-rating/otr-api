@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using API.Authorization;
@@ -25,7 +26,9 @@ using Database;
 using Database.Entities;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -43,7 +46,10 @@ using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OsuApiClient;
+using OsuApiClient.Domain.Osu.Users;
 using OsuApiClient.Extensions;
+using OsuApiClient.Net.Authorization;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
 using Serilog;
@@ -54,6 +60,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
 using IMatchRosterRepository = Database.Repositories.Interfaces.IMatchRosterRepository;
+using User = Database.Entities.User;
 
 #region WebApplicationBuilder Configuration
 
@@ -105,6 +112,8 @@ builder.Services
         o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     })
     .AddNewtonsoftJson(o => { o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver(); });
+
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 #endregion
 
@@ -482,8 +491,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddRouting(options => options.LowercaseUrls = true);
-
 #endregion
 
 #region Authentication Configuration
@@ -495,7 +502,13 @@ JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
 
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication("CompositeAuthentication")
+    .AddPolicyScheme("CompositeAuthentication", "CompositeAuthentication", options =>
+    {
+        options.ForwardDefaultSelector = context => context.Request.Cookies.ContainsKey("otr-session")
+            ? CookieAuthenticationDefaults.AuthenticationScheme
+            : JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(options =>
     {
         JwtConfiguration jwtConfiguration = builder.Configuration.BindAndValidate<JwtConfiguration>(
@@ -521,6 +534,90 @@ builder.Services
                 }
 
                 return Task.CompletedTask;
+            }
+        };
+    })
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "otr-session";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+
+        options.ExpireTimeSpan = TimeSpan.FromDays(14);
+        options.SlidingExpiration = true;
+
+        // For API endpoints that return 401 instead of redirect
+        options.Events = new CookieAuthenticationEvents
+        {
+            OnRedirectToLogin = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            },
+            OnRedirectToAccessDenied = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return Task.CompletedTask;
+            }
+        };
+    })
+    .AddOAuth("osu", options =>
+    {
+        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
+        OsuConfiguration osuConfig = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
+        options.ClientId = osuConfig.ClientId.ToString();
+        options.ClientSecret = osuConfig.ClientSecret;
+
+        options.CallbackPath = new PathString("/api/v1/auth/callback");
+        options.AuthorizationEndpoint = "https://osu.ppy.sh/oauth/authorize";
+        options.TokenEndpoint = "https://osu.ppy.sh/oauth/token";
+
+        options.Scope.Add("public");
+        options.Scope.Add("friends.read");
+
+        options.SaveTokens = true;
+
+        options.Events = new OAuthEvents
+        {
+            OnCreatingTicket = async context =>
+            {
+                IPlayersRepository playersRepository =
+                    context.HttpContext.RequestServices.GetRequiredService<IPlayersRepository>();
+                IUserRepository usersRepository =
+                    context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
+                IOsuClient osuClient = context.HttpContext.RequestServices.GetRequiredService<IOsuClient>();
+
+                osuClient.SetCredentials(new OsuCredentials
+                {
+                    AccessToken = context.AccessToken ?? string.Empty,
+                    RefreshToken = context.RefreshToken,
+                    ExpiresInSeconds = (long?)context.ExpiresIn?.TotalSeconds ?? DateTime.Now.Second,
+                });
+
+                UserExtended? osuUser = await osuClient.GetCurrentUserAsync(
+                    cancellationToken: context.HttpContext.RequestAborted
+                );
+
+                Player player = await playersRepository.GetOrCreateAsync(osuUser!.Id);
+
+                User user = await usersRepository.GetByPlayerIdOrCreateAsync(player.Id);
+                user.LastLogin = DateTime.UtcNow;
+                await usersRepository.UpdateAsync(user);
+
+                var claims = new List<Claim>
+                {
+                    new(OtrClaims.Role, OtrClaims.Roles.User), new(OtrClaims.Subject, user.Id.ToString())
+                };
+                claims.AddRange(user.Scopes.Select(r => new Claim(OtrClaims.Role, r)));
+
+                context.Principal = new ClaimsPrincipal(new ClaimsIdentity(
+                    claims,
+                    context.Scheme.Name,
+                    OtrClaims.Subject,
+                    OtrClaims.Role
+                ));
             }
         };
     });
