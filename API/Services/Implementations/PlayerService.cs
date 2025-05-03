@@ -13,8 +13,6 @@ public class PlayerService(IPlayersRepository playerRepository, IMapper mapper) 
 
     public async Task<IEnumerable<PlayerCompactDTO?>> GetAsync(IEnumerable<long> osuIds)
     {
-        ArgumentNullException.ThrowIfNull(osuIds);
-
         var idList = osuIds.ToList();
 
         // Get players and create a dictionary with OsuId as key

@@ -1,6 +1,6 @@
 using Common.Enums.Verification;
 
-namespace Database.Utilities;
+namespace Common.Utilities;
 
 public static class EnumUtils
 {

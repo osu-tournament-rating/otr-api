@@ -10,63 +10,39 @@ public class FilteringService(
     IPlayerStatsService
         playerStatsService) : IFilteringService
 {
-    public async Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO filteringRequest)
+    public async Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO request)
     {
-        ArgumentNullException.ThrowIfNull(filteringRequest);
-
-        var idList = filteringRequest.OsuPlayerIds.ToList();
-
-        if (idList.Count == 0)
-        {
-            throw new ArgumentException("Filtering id list cannot be empty", nameof(filteringRequest));
-        }
-
-        IEnumerable<PlayerCompactDTO?> players = await playerService.GetAsync(idList);
+        IEnumerable<PlayerCompactDTO?> players = await playerService.GetAsync(request.OsuPlayerIds);
 
         var results = new List<PlayerFilteringResultDTO>();
-
         foreach (PlayerCompactDTO? playerInfo in players)
         {
-            PlayerFilteringResultDTO result = await ProcessPlayerAsync(playerInfo, filteringRequest);
-            results.Add(result);
-        }
+            FilteringFailReason? failReason = await FilterPlayerAsync(request, playerInfo);
 
-        // Count results and create result DTO
-        var passed = results.Count(r => r.FilteringResult == FilteringResult.Pass);
-        var failed = results.Count(r => r.FilteringResult == FilteringResult.Fail);
+            results.Add(new PlayerFilteringResultDTO
+            {
+                PlayerId = playerInfo?.Id,
+                Username = playerInfo?.Username,
+                OsuId = playerInfo?.OsuId ?? 0,
+                FilteringFailReason = failReason
+            });
+        }
 
         return new FilteringResultDTO
         {
-            PlayersPassed = passed,
-            PlayersFailed = failed,
+            PlayersPassed = results.Count(r => r.IsSuccess),
+            PlayersFailed = results.Count(r => !r.IsSuccess),
             FilteringResults = results.ToList()
         };
     }
 
-    private async Task<PlayerFilteringResultDTO> ProcessPlayerAsync(
-        PlayerCompactDTO? playerInfo,
-        FilteringRequestDTO request)
-    {
-        (FilteringResult result, FilteringFailReason? failReason) = await FilterAsync(request, playerInfo);
-
-        return new PlayerFilteringResultDTO
-        {
-            PlayerId = playerInfo?.Id,
-            Username = playerInfo?.Username,
-            OsuId = playerInfo?.OsuId ?? 0,
-            FilteringResult = result,
-            FilteringFailReason = failReason
-        };
-    }
-
-    private async Task<(FilteringResult result, FilteringFailReason? failReason)> FilterAsync(
+    private async Task<FilteringFailReason?> FilterPlayerAsync(
         FilteringRequestDTO request,
         PlayerCompactDTO? playerInfo)
     {
-        // Handle null player info case
-        if (playerInfo == null)
+        if (playerInfo is null)
         {
-            return (FilteringResult.Fail, FilteringFailReason.NoData);
+            return FilteringFailReason.NoData;
         }
 
         PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(
@@ -74,31 +50,34 @@ public class FilteringService(
             request.Ruleset,
             includeAdjustments: false);
 
-        if (ratingStats == null)
+        if (ratingStats is null)
         {
-            return (FilteringResult.Fail, FilteringFailReason.NoData);
+            return FilteringFailReason.NoData;
         }
 
-        FilteringFailReason failReason = CheckFilteringConditions(request, ratingStats);
-
+        // Separate database call as adjustments are not included from the initial call
+        // In the future, the processor could store this field in the database
         var peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, request.Ruleset);
-        if (peakRating > request.PeakRating)
-        {
-            failReason |= FilteringFailReason.PeakRatingTooHigh;
-        }
+        FilteringFailReason? failReason = EnforceFilteringConditions(request, ratingStats, peakRating);
 
-        FilteringResult result = failReason == FilteringFailReason.None ? FilteringResult.Pass : FilteringResult.Fail;
-
-        return (result, failReason);
+        return failReason;
     }
 
-    private static FilteringFailReason CheckFilteringConditions(
+    /// <summary>
+    /// Checks all fields of the filter against a player
+    /// and applies the appropriate fail reason if needed
+    /// </summary>
+    /// <param name="request">Filter request</param>
+    /// <param name="ratingStats">Rating stats of the player we are checking</param>
+    /// <param name="peakRating">The player's all-time peak rating</param>
+    /// <returns></returns>
+    private static FilteringFailReason? EnforceFilteringConditions(
         FilteringRequestDTO request,
-        PlayerRatingStatsDTO ratingStats)
+        PlayerRatingStatsDTO ratingStats,
+        double peakRating)
     {
-        FilteringFailReason failReason = FilteringFailReason.None;
+        FilteringFailReason? failReason = null;
 
-        // Apply all basic filtering conditions
         if (ratingStats.Rating < request.MinRating)
         {
             failReason |= FilteringFailReason.MinRating;
@@ -114,14 +93,19 @@ public class FilteringService(
             failReason |= FilteringFailReason.IsProvisional;
         }
 
-        if (ratingStats.MatchesPlayed < request.MatchesPlayed)
-        {
-            failReason |= FilteringFailReason.NotEnoughMatches;
-        }
-
         if (ratingStats.TournamentsPlayed < request.TournamentsPlayed)
         {
             failReason |= FilteringFailReason.NotEnoughTournaments;
+        }
+
+        if (peakRating > request.PeakRating)
+        {
+            failReason |= FilteringFailReason.PeakRatingTooHigh;
+        }
+
+        if (ratingStats.MatchesPlayed < request.MatchesPlayed)
+        {
+            failReason |= FilteringFailReason.NotEnoughMatches;
         }
 
         return failReason;

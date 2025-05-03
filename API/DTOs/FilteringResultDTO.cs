@@ -1,7 +1,7 @@
 namespace API.DTOs;
 
 /// <summary>
-/// Represents a filterings result for a collection of players
+/// Represents a filtering result for a collection of players
 /// </summary>
 public class FilteringResultDTO
 {

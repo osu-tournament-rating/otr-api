@@ -26,8 +26,8 @@ public class FilteringController(IFilteringService filteringService) : Controlle
     [ProducesResponseType<FilteringResultDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> FilterAsync([FromBody][Required] FilteringRequestDTO filteringRequest)
     {
-        // Filter out duplicate ids
-        filteringRequest.OsuPlayerIds = filteringRequest.OsuPlayerIds.Distinct();
+        // Remove duplicate ids
+        filteringRequest.OsuPlayerIds = filteringRequest.OsuPlayerIds.Distinct().ToList();
 
         FilteringResultDTO filteringResult = await filteringService.FilterAsync(filteringRequest);
         return Ok(filteringResult);
