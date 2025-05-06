@@ -12,5 +12,5 @@ public class AuthConfiguration
     /// <summary>
     /// Allows CORS requests from the configured origins
     /// </summary>
-    public string[] CorsOrigins { get; init; } = [];
+    public string AllowedHosts { get; init; } = string.Empty;
 }

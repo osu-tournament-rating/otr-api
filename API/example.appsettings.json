@@ -24,9 +24,7 @@
   },
   "Auth": {
     "EnforceWhitelist": false,
-    "CorsOrigins": [
-      "http://localhost"
-    ]
+    "AllowedHosts": ""
   },
   "RateLimit": {
     "PermitLimit": 30,

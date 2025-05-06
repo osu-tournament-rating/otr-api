@@ -455,16 +455,18 @@ builder.Services.Configure<RequestLoggingOptions>(o =>
 
 builder.Services.AddCors(options =>
 {
-    AuthConfiguration authConfiguration = builder.Configuration.BindAndValidate<AuthConfiguration>(
-        AuthConfiguration.Position
-    );
+    options.AddDefaultPolicy(policy =>
+    {
+        AuthConfiguration authConfiguration = builder.Configuration.BindAndValidate<AuthConfiguration>(
+            AuthConfiguration.Position
+        );
 
-    options.AddDefaultPolicy(policy => policy
-        .WithOrigins(authConfiguration.CorsOrigins)
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials()
-    );
+        policy
+            .WithOrigins(authConfiguration.AllowedHosts)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
 });
 
 #endregion
