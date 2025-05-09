@@ -483,6 +483,7 @@ builder.Services
     .AddAuthentication("CompositeAuthentication")
     .AddPolicyScheme("CompositeAuthentication", "CompositeAuthentication", options =>
     {
+        // Use cookie-based authentication if possible and fallback to JWT Bearer
         options.ForwardDefaultSelector = context => context.Request.Cookies.ContainsKey("otr-session")
             ? CookieAuthenticationDefaults.AuthenticationScheme
             : JwtBearerDefaults.AuthenticationScheme;
@@ -494,7 +495,6 @@ builder.Services
         );
 
         options.MapInboundClaims = false;
-
         options.TokenValidationParameters = DefaultTokenValidationParameters.Get(
             jwtConfiguration.Issuer,
             jwtConfiguration.Key,
@@ -511,7 +511,7 @@ builder.Services
         options.ExpireTimeSpan = TimeSpan.FromDays(14);
         options.SlidingExpiration = true;
 
-        // For API endpoints that return 401 instead of redirect
+        // By default, cookie-based authentication will try to redirect to a "login" endpoint
         options.Events = new CookieAuthenticationEvents
         {
             OnRedirectToLogin = context =>
@@ -528,23 +528,25 @@ builder.Services
     })
     .AddOAuth("osu", options =>
     {
+        // Set cookie scheme to persist user identity
         options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        // This url needs to be added to the osu! OAuth client callback url
+        options.CallbackPath = new PathString("/api/v1/auth/callback");
 
+        // Configure osu! OAuth
+        // https://osu.ppy.sh/docs/#authorization-code-grant
         OsuConfiguration osuConfig = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
         options.ClientId = osuConfig.ClientId.ToString();
         options.ClientSecret = osuConfig.ClientSecret;
-
-        options.CallbackPath = new PathString("/api/v1/auth/callback");
-        options.AuthorizationEndpoint = "https://osu.ppy.sh/oauth/authorize";
-        options.TokenEndpoint = "https://osu.ppy.sh/oauth/token";
-
         options.Scope.Add("public");
         options.Scope.Add("friends.read");
-
+        options.AuthorizationEndpoint = "https://osu.ppy.sh/oauth/authorize";
+        options.TokenEndpoint = "https://osu.ppy.sh/oauth/token";
         options.SaveTokens = true;
 
         options.Events = new OAuthEvents
         {
+            // Event fired when the client successfully gets osu! access credentials for a user
             OnCreatingTicket = async context =>
             {
                 IPlayersRepository playersRepository =
@@ -560,27 +562,31 @@ builder.Services
                     ExpiresInSeconds = (long?)context.ExpiresIn?.TotalSeconds ?? DateTime.Now.Second,
                 });
 
+                // Get user data from osu! API
                 UserExtended? osuUser = await osuClient.GetCurrentUserAsync(
                     cancellationToken: context.HttpContext.RequestAborted
                 );
 
+                // Get or create necessary entities
                 Player player = await playersRepository.GetOrCreateAsync(osuUser!.Id);
 
                 User user = await usersRepository.GetByPlayerIdOrCreateAsync(player.Id);
                 user.LastLogin = DateTime.UtcNow;
                 await usersRepository.UpdateAsync(user);
 
+                // Build user identity
                 var claims = new List<Claim>
                 {
-                    new(OtrClaims.Role, OtrClaims.Roles.User), new(OtrClaims.Subject, user.Id.ToString())
+                    new(OtrClaims.Role, OtrClaims.Roles.User),
+                    new(OtrClaims.Subject, user.Id.ToString())
                 };
                 claims.AddRange(user.Scopes.Select(r => new Claim(OtrClaims.Role, r)));
 
                 context.Principal = new ClaimsPrincipal(new ClaimsIdentity(
-                    claims,
-                    context.Scheme.Name,
-                    OtrClaims.Subject,
-                    OtrClaims.Role
+                    claims: claims,
+                    authenticationType: context.Scheme.Name,
+                    nameType: OtrClaims.Subject,
+                    roleType: OtrClaims.Role
                 ));
             }
         };
