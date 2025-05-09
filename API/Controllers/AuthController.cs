@@ -29,11 +29,15 @@ public class AuthController(IOAuthClientService oAuthClientService) : Controller
     /// <summary>
     /// Logs out from o!TR
     /// </summary>
+    /// <param name="redirectUri">Redirects the client to the given uri after logout</param>
     [HttpGet("logout")]
-    public async Task<IActionResult> LogoutAsync()
+    public async Task<IActionResult> LogoutAsync([FromQuery] string? redirectUri = null)
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return Ok();
+
+        return !string.IsNullOrEmpty(redirectUri)
+            ? Redirect(redirectUri)
+            : Ok();
     }
 
     /// <summary>
