@@ -16,8 +16,19 @@ public class FilteringService(
         var osuIdHashSet = request.OsuPlayerIds.ToImmutableHashSet();
         IEnumerable<PlayerCompactDTO> players = (await playerService.GetAsync(osuIdHashSet)).ToList();
 
-        var results = new List<PlayerFilteringResultDTO>();
-        foreach (PlayerCompactDTO playerInfo in players)
+        // Store missing players first
+        var results = osuIdHashSet
+            .Except(players.Select(p => p.OsuId))
+            .Select(osuId => new PlayerFilteringResultDTO
+            {
+                OsuId = osuId,
+                IsSuccess = false,
+                FailureReason = FilteringFailReason.NoData
+            }).ToList();
+
+        // ReSharper disable once SimplifyLinqExpressionUseAll
+        // Iterate all players which are not already stored as missing
+        foreach (PlayerCompactDTO playerInfo in players.Where(p => !results.Any(r => r.OsuId == p.OsuId)))
         {
             FilteringFailReason failReason = await FilterPlayerAsync(request, playerInfo);
 
@@ -35,7 +46,6 @@ public class FilteringService(
         {
             PlayersPassed = results.Count(r => r.IsSuccess),
             PlayersFailed = results.Count(r => !r.IsSuccess),
-            NotFoundOsuIds = [.. osuIdHashSet.Except(players.Select(p => p.OsuId))],
             FilteringResults = results.ToList()
         };
     }
