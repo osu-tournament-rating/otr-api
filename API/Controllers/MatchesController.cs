@@ -45,6 +45,13 @@ public class MatchesController(IMatchesService matchesService) : Controller
             : Ok(match);
     }
 
+    /// <summary>
+    /// Merge the games from provided matches into the parent match, then delete the provided matches.
+    /// </summary>
+    /// <param name="id">The parent match id</param>
+    /// <param name="matchIds">The match ids which games should be moved from before being deleted</param>
+    /// <response code="404">The parent match id could not be found</response>
+    /// <response code="200">The newly updated match after the merge operation</response>
     [HttpPost("{id:int}:merge")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
