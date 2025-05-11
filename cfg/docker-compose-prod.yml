@@ -41,6 +41,10 @@ services:
   prometheus:
     container_name: prometheus
     image: prom/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--enable-feature=remote-write-receiver'
+      - '--enable-feature=exemplar-storage'
     ports:
       - "9090:9090"
     volumes:
@@ -79,23 +83,49 @@ services:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: collector
     command: [ "--config=/etc/collector.yml" ]
-    ports:
-      - "4317:4317"
     volumes:
       - ./otel-collector-config.yml:/etc/collector.yml:ro
     depends_on:
-      - clickhouse
+      - tempo
     restart: always
-  clickhouse:
-    image: clickhouse/clickhouse-server:head
-    container_name: clickhouse
+  tempo:
+    image: grafana/tempo
+    container_name: tempo
+    command: [ "--config.file=/etc/tempo.yml" ]
+    volumes:
+      - ./tempo.yml:/etc/tempo.yml
+      - tempo_storage:/var/lib/tempo
     ports:
-      - "9000:9000"
-      - "8143:8143"
-    ulimits:
-      nofile:
-        soft: 262144
-        hard: 262144
+      - "3200:3200" # tempo
+      - "4317:4317"
+    restart: always
+  loki:
+    image: grafana/loki
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: [ "--config.file=/etc/loki/loki.yml" ]
+    volumes:
+      - loki_storage:/loki
+      - ./loki.yml:/etc/loki/loki.yml
+    restart: always
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    command: minio server --console-address ":9001" --address ":9000" /minio/data
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - 'minio_data:/minio/data'
+    env_file:
+      - ./minio.env
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 30s
     restart: always
 volumes:
   db_data:

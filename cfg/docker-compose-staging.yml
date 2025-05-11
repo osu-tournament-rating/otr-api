@@ -7,8 +7,6 @@ services:
       - "3700:8080"
     env_file:
       - api.env
-    environment:
-      loki: http://loki:3100
     depends_on:
       - db
       - redis
@@ -83,9 +81,6 @@ services:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: collector
     command: [ "--config=/etc/collector.yml" ]
-#    ports:
-#      - "4317:4317"
-#      - "4318:4318"
     volumes:
       - ./otel-collector-config.yml:/etc/collector.yml:ro
     depends_on:

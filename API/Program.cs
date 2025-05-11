@@ -164,7 +164,11 @@ builder
             .AddNpgsql()
             .AddOtlpExporter(options =>
             {
-                options.Endpoint = new Uri(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).CollectorConnection);
+                options.Endpoint = new Uri(builder
+                    .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+                        ConnectionStringsConfiguration.Position
+                    )
+                    .CollectorConnection);
             })
     )
     .WithMetrics(b =>
