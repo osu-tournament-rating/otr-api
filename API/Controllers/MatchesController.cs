@@ -45,6 +45,19 @@ public class MatchesController(IMatchesService matchesService) : Controller
             : Ok(match);
     }
 
+    [HttpPost("{id:int}:merge")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> MergeAsync(int id, [FromBody] IEnumerable<int> matchIds)
+    {
+        MatchDTO? mergedMatch = await matchesService.MergeAsync(id, matchIds);
+
+        return mergedMatch is null
+            ? NotFound()
+            : Ok(mergedMatch);
+    }
+
     /// <summary>
     /// Amend match data
     /// </summary>

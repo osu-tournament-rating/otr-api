@@ -5,6 +5,7 @@ using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
+using LinqKit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
@@ -113,6 +114,35 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
             .Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\"))
             .Take(30)
             .ToListAsync();
+    }
+
+    public async Task<Match?> MergeAsync(int parentId, IEnumerable<int> matchIds)
+    {
+        Match? parentMatch = await GetAsync(parentId);
+
+        if (parentMatch is null)
+        {
+            return null;
+        }
+
+        ICollection<Match> childMatches = await _context.Matches
+            .Include(m => m.Games)
+            .Where(m => matchIds.Contains(m.Id))
+            .ToListAsync();
+
+        childMatches.ForEach(child => child.Games.ForEach(childGame =>
+        {
+            childGame.Match = parentMatch;
+            MarkUpdated(childGame);
+        }));
+
+        // Save before deleting child matches
+        await _context.SaveChangesAsync();
+
+        // Delete child matches (this operation saves immediately)
+        await _context.Matches.Where(m => childMatches.Select(cm => cm.Id).Contains(m.Id)).ExecuteDeleteAsync();
+
+        return (await GetFullAsync(parentId, false))!;
     }
 
     public async Task<Match?> UpdateVerificationStatusAsync(
