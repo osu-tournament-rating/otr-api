@@ -15,28 +15,20 @@ public class PlayerRatingsService(
     IMapper mapper
 ) : IPlayerRatingsService
 {
-    public async Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset, bool includeAdjustments)
+    public async Task<PlayerRatingStatsDTO?> GetAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null, bool includeAdjustments = false)
     {
-        PlayerRating? currentStats = await playerRatingsRepository.GetAsync(playerId, ruleset, includeAdjustments);
+        // Note: Adjustments are the only property filtered by time
+        PlayerRating? currentStats = await playerRatingsRepository.GetAsync(playerId, ruleset, dateMin, dateMax, includeAdjustments);
 
         if (currentStats is null)
         {
             return null;
         }
 
-        var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset);
-        var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset);
-        var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset);
-        var rankProgress = new RankProgressDTO
-        {
-            CurrentTier = RatingUtils.GetTier(currentStats.Rating),
-            CurrentSubTier = RatingUtils.GetSubTier(currentStats.Rating),
-            RatingForNextTier = RatingUtils.GetNextTierRatingDelta(currentStats.Rating),
-            RatingForNextMajorTier = RatingUtils.GetNextMajorTierRatingDelta(currentStats.Rating),
-            NextMajorTier = RatingUtils.GetNextMajorTier(currentStats.Rating),
-            SubTierFillPercentage = RatingUtils.GetNextTierFillPercentage(currentStats.Rating),
-            MajorTierFillPercentage = RatingUtils.GetNextMajorTierFillPercentage(currentStats.Rating)
-        };
+        var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset, dateMin, dateMax);
+        var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset, dateMin, dateMax);
+        var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset, dateMin, dateMax);
+        var tierProgress = new TierProgressDTO(currentStats.Rating);
 
         return new PlayerRatingStatsDTO
         {
@@ -50,7 +42,7 @@ public class PlayerRatingsService(
             Volatility = currentStats.Volatility,
             WinRate = winRate,
             TournamentsPlayed = tournamentsPlayed,
-            RankProgress = rankProgress,
+            TierProgress = tierProgress,
             Adjustments = mapper.Map<ICollection<RatingAdjustmentDTO>>(currentStats.Adjustments.OrderBy(a => a.Timestamp))
         };
     }

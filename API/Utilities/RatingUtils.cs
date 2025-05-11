@@ -24,37 +24,23 @@ public static class RatingUtils
     public const int RatingMinimum = 100;
 
     /// <summary>
-    /// Gets the string representation of the given rating
+    /// Gets the major tier representation of the specified rating
     /// </summary>
-    public static string GetTier(double rating) =>
-        rating switch
+    public static string GetMajorTier(double rating)
+    {
+        return rating switch
         {
-            <= RatingConstants.RatingBronzeIII => "Bronze III",
-            < RatingConstants.RatingBronzeI => "Bronze II",
-            < RatingConstants.RatingSilverIII => "Bronze I",
-            < RatingConstants.RatingSilverII => "Silver III",
-            < RatingConstants.RatingSilverI => "Silver II",
-            < RatingConstants.RatingGoldIII => "Silver I",
-            < RatingConstants.RatingGoldII => "Gold III",
-            < RatingConstants.RatingGoldI => "Gold II",
-            < RatingConstants.RatingPlatinumIII => "Gold I",
-            < RatingConstants.RatingPlatinumII => "Platinum III",
-            < RatingConstants.RatingPlatinumI => "Platinum II",
-            < RatingConstants.RatingEmeraldIII => "Platinum I",
-            < RatingConstants.RatingEmeraldII => "Emerald III",
-            < RatingConstants.RatingEmeraldI => "Emerald II",
-            < RatingConstants.RatingDiamondIII => "Emerald I",
-            < RatingConstants.RatingDiamondII => "Diamond III",
-            < RatingConstants.RatingDiamondI => "Diamond II",
-            < RatingConstants.RatingMasterIII => "Diamond I",
-            < RatingConstants.RatingMasterII => "Master III",
-            < RatingConstants.RatingMasterI => "Master II",
-            < RatingConstants.RatingGrandmasterIII => "Master I",
-            < RatingConstants.RatingGrandmasterII => "Grandmaster III",
-            < RatingConstants.RatingGrandmasterI => "Grandmaster II",
-            < RatingConstants.RatingEliteGrandmaster => "Grandmaster I",
+            < RatingConstants.RatingSilverIII => "Bronze",
+            < RatingConstants.RatingGoldIII => "Silver",
+            < RatingConstants.RatingPlatinumIII => "Gold",
+            < RatingConstants.RatingEmeraldIII => "Platinum",
+            < RatingConstants.RatingDiamondIII => "Emerald",
+            < RatingConstants.RatingMasterIII => "Diamond",
+            < RatingConstants.RatingGrandmasterIII => "Master",
+            < RatingConstants.RatingEliteGrandmaster => "Grandmaster",
             _ => "Elite Grandmaster"
         };
+    }
 
     /// <summary>
     /// Gets the integer representation of the sub-tier for the given rating
@@ -87,40 +73,6 @@ public static class RatingUtils
             < RatingConstants.RatingGrandmasterII => 3,
             < RatingConstants.RatingGrandmasterI => 2,
             < RatingConstants.RatingEliteGrandmaster => 1,
-            _ => null
-        };
-
-    /// <summary>
-    /// Gets the string representation of the next tier for the given rating
-    /// </summary>
-    /// <remarks>Will return null for given ratings greater than <see cref="RatingEliteGrandmaster"/></remarks>
-    public static string? GetNextTier(double rating) =>
-        rating switch
-        {
-            < RatingConstants.RatingBronzeII => GetTier(RatingConstants.RatingBronzeII),
-            < RatingConstants.RatingBronzeI => GetTier(RatingConstants.RatingBronzeI),
-            < RatingConstants.RatingSilverIII => GetTier(RatingConstants.RatingSilverIII),
-            < RatingConstants.RatingSilverII => GetTier(RatingConstants.RatingSilverII),
-            < RatingConstants.RatingSilverI => GetTier(RatingConstants.RatingSilverI),
-            < RatingConstants.RatingGoldIII => GetTier(RatingConstants.RatingGoldIII),
-            < RatingConstants.RatingGoldII => GetTier(RatingConstants.RatingGoldII),
-            < RatingConstants.RatingGoldI => GetTier(RatingConstants.RatingGoldI),
-            < RatingConstants.RatingPlatinumIII => GetTier(RatingConstants.RatingPlatinumIII),
-            < RatingConstants.RatingPlatinumII => GetTier(RatingConstants.RatingPlatinumII),
-            < RatingConstants.RatingPlatinumI => GetTier(RatingConstants.RatingPlatinumI),
-            < RatingConstants.RatingEmeraldIII => GetTier(RatingConstants.RatingEmeraldIII),
-            < RatingConstants.RatingEmeraldII => GetTier(RatingConstants.RatingEmeraldII),
-            < RatingConstants.RatingEmeraldI => GetTier(RatingConstants.RatingEmeraldI),
-            < RatingConstants.RatingDiamondIII => GetTier(RatingConstants.RatingDiamondIII),
-            < RatingConstants.RatingDiamondII => GetTier(RatingConstants.RatingDiamondII),
-            < RatingConstants.RatingDiamondI => GetTier(RatingConstants.RatingDiamondI),
-            < RatingConstants.RatingMasterIII => GetTier(RatingConstants.RatingMasterIII),
-            < RatingConstants.RatingMasterII => GetTier(RatingConstants.RatingMasterII),
-            < RatingConstants.RatingMasterI => GetTier(RatingConstants.RatingMasterI),
-            < RatingConstants.RatingGrandmasterIII => GetTier(RatingConstants.RatingGrandmasterIII),
-            < RatingConstants.RatingGrandmasterII => GetTier(RatingConstants.RatingGrandmasterII),
-            < RatingConstants.RatingGrandmasterI => GetTier(RatingConstants.RatingGrandmasterI),
-            < RatingConstants.RatingEliteGrandmaster => GetTier(RatingConstants.RatingEliteGrandmaster),
             _ => null
         };
 
@@ -228,18 +180,20 @@ public static class RatingUtils
     /// <summary>
     /// Gets the string representation of the next major tier for the given rating
     /// </summary>
-    /// <remarks>Will return null for given ratings greater than <see cref="RatingEliteGrandmaster"/></remarks>
+    /// <remarks>
+    /// Will return null for given ratings greater than <see cref="RatingEliteGrandmaster"/>
+    /// </remarks>
     public static string? GetNextMajorTier(double rating) =>
         rating switch
         {
-            < RatingConstants.RatingSilverIII => GetTier(RatingConstants.RatingSilverIII),
-            < RatingConstants.RatingGoldIII => GetTier(RatingConstants.RatingGoldIII),
-            < RatingConstants.RatingPlatinumIII => GetTier(RatingConstants.RatingPlatinumIII),
-            < RatingConstants.RatingEmeraldIII => GetTier(RatingConstants.RatingEmeraldIII),
-            < RatingConstants.RatingDiamondIII => GetTier(RatingConstants.RatingDiamondIII),
-            < RatingConstants.RatingMasterIII => GetTier(RatingConstants.RatingMasterIII),
-            < RatingConstants.RatingGrandmasterIII => GetTier(RatingConstants.RatingGrandmasterIII),
-            < RatingConstants.RatingEliteGrandmaster => GetTier(RatingConstants.RatingEliteGrandmaster),
+            < RatingConstants.RatingSilverIII => GetMajorTier(RatingConstants.RatingSilverIII),
+            < RatingConstants.RatingGoldIII => GetMajorTier(RatingConstants.RatingGoldIII),
+            < RatingConstants.RatingPlatinumIII => GetMajorTier(RatingConstants.RatingPlatinumIII),
+            < RatingConstants.RatingEmeraldIII => GetMajorTier(RatingConstants.RatingEmeraldIII),
+            < RatingConstants.RatingDiamondIII => GetMajorTier(RatingConstants.RatingDiamondIII),
+            < RatingConstants.RatingMasterIII => GetMajorTier(RatingConstants.RatingMasterIII),
+            < RatingConstants.RatingGrandmasterIII => GetMajorTier(RatingConstants.RatingGrandmasterIII),
+            < RatingConstants.RatingEliteGrandmaster => GetMajorTier(RatingConstants.RatingEliteGrandmaster),
             _ => null
         };
 
@@ -349,72 +303,45 @@ public static class RatingUtils
         volatility >= 200.0 || matchesPlayed <= 8 || tournamentsPlayed <= 2;
 
     /// <summary>
-    /// Denotes the given tier is Elite Grandmaster
+    /// Gets the integer representation of the next sub-tier for the given rating
     /// </summary>
-    public static bool IsEliteGrandmaster(string tier) =>
-        tier == GetTier(RatingConstants.RatingEliteGrandmaster);
+    /// <remarks>Will return null for given ratings at or above <see cref="RatingGrandmasterI"/></remarks>
+    public static int? GetNextSubTier(double rating)
+    {
+        // First get the current sub-tier (1, 2, or 3) for the given rating
+        // This will be null for Elite Grandmaster
+        var currentSubTier = GetSubTier(rating);
 
-    /// <summary>
-    /// Denotes the given tier is any Grandmaster tier
-    /// </summary>
-    public static bool IsGrandmaster(string tier) =>
-        tier == GetTier(RatingConstants.RatingGrandmasterIII) ||
-        tier == GetTier(RatingConstants.RatingGrandmasterII) ||
-        tier == GetTier(RatingConstants.RatingGrandmasterI);
+        switch (currentSubTier)
+        {
+            // If current sub-tier is null (Elite Grandmaster), there is no next tier
+            case null:
+                return null;
 
-    /// <summary>
-    /// Denotes the given tier is any Master tier
-    /// </summary>
-    public static bool IsMaster(string tier) =>
-        tier == GetTier(RatingConstants.RatingMasterIII) ||
-        tier == GetTier(RatingConstants.RatingMasterII) ||
-        tier == GetTier(RatingConstants.RatingMasterI);
+            // If current sub-tier is 2 or 3, the next sub-tier is simply one less
+            // (Sub-tiers count down: 3 → 2 → 1 within each major tier)
+            // Example: Bronze III (3) → Bronze II (2) → Bronze I (1)
+            case > 1:
+                return currentSubTier - 1;
 
-    /// <summary>
-    /// Denotes the given tier is any Diamond tier
-    /// </summary>
-    public static bool IsDiamond(string tier) =>
-        tier == GetTier(RatingConstants.RatingDiamondIII) ||
-        tier == GetTier(RatingConstants.RatingDiamondII) ||
-        tier == GetTier(RatingConstants.RatingDiamondI);
+            // If current sub-tier is 1, we need to move to the next major tier
+            default:
+                {
+                    // Check if there's a next major tier available
+                    var nextMajorTier = GetNextMajorTier(rating);
 
-    /// <summary>
-    /// Denotes the given tier is any Emerald tier
-    /// </summary>
-    public static bool IsEmerald(string tier) =>
-        tier == GetTier(RatingConstants.RatingEmeraldIII) ||
-        tier == GetTier(RatingConstants.RatingEmeraldII) ||
-        tier == GetTier(RatingConstants.RatingEmeraldI);
+                    // Elite Grandmaster is the highest tier, so there's no next tier after it.
+                    // Therefore, there is no sub tier and we return null.
+                    if (nextMajorTier == "Elite Grandmaster")
+                    {
+                        return null;
+                    }
 
-    /// <summary>
-    /// Denotes the given tier is any Platinum tier
-    /// </summary>
-    public static bool IsPlatinum(string tier) =>
-        tier == GetTier(RatingConstants.RatingPlatinumIII) ||
-        tier == GetTier(RatingConstants.RatingPlatinumII) ||
-        tier == GetTier(RatingConstants.RatingPlatinumI);
-
-    /// <summary>
-    /// Denotes the given tier is any Gold tier
-    /// </summary>
-    public static bool IsGold(string tier) =>
-        tier == GetTier(RatingConstants.RatingGoldIII) ||
-        tier == GetTier(RatingConstants.RatingGoldII) ||
-        tier == GetTier(RatingConstants.RatingGoldI);
-
-    /// <summary>
-    /// Denotes the given tier is any Silver tier
-    /// </summary>
-    public static bool IsSilver(string tier) =>
-        tier == GetTier(RatingConstants.RatingSilverIII) ||
-        tier == GetTier(RatingConstants.RatingSilverII) ||
-        tier == GetTier(RatingConstants.RatingSilverI);
-
-    /// <summary>
-    /// Denotes the given tier is any Bronze tier
-    /// </summary>
-    public static bool IsBronze(string tier) =>
-        tier == GetTier(RatingConstants.RatingBronzeIII) ||
-        tier == GetTier(RatingConstants.RatingBronzeII) ||
-        tier == GetTier(RatingConstants.RatingBronzeI);
+                    // If there is a next major tier, return 3 (the highest sub-tier of that major tier)
+                    // Example: Bronze I (1) → Silver III (3)
+                    // If there's no next major tier, return null
+                    return nextMajorTier != null ? 3 : null;
+                }
+        }
+    }
 }

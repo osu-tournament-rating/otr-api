@@ -30,7 +30,7 @@ public class PlayerSearchResultDTO
     /// <summary>
     /// Current rating tier of the player for the given ruleset
     /// </summary>
-    public string? RatingTier => Rating.HasValue ? RatingUtils.GetTier(Rating.Value) : null;
+    public string? RatingTier => Rating.HasValue ? RatingUtils.GetMajorTier(Rating.Value) : null;
 
     /// <summary>
     /// osu! username of the player

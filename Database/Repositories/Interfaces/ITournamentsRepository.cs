@@ -46,7 +46,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="ruleset">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
-    Task<int> CountPlayedAsync(int playerId, Ruleset ruleset, DateTime dateMin, DateTime dateMax);
+    Task<int> CountPlayedAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax);
 
     /// <summary>
     /// Gets all tournaments with pagination
@@ -155,8 +155,8 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Dictionary<int, int>> GetLobbySizeStatsAsync(
         int playerId,
         Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
+        DateTime? dateMin,
+        DateTime? dateMax
     );
 
     /// <summary>
