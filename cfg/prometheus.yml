@@ -13,6 +13,7 @@ scrape_configs:
   - job_name: services
     static_configs:
       - targets: ["api:8080"]
+    scrape_interval: 20s
 
   - job_name: postgres-exporter
     static_configs:

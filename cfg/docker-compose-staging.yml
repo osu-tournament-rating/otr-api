@@ -7,6 +7,8 @@ services:
       - "3700:8080"
     env_file:
       - api.env
+    environment:
+      loki: http://loki:3100
     depends_on:
       - db
       - redis
@@ -39,6 +41,10 @@ services:
   prometheus:
     container_name: prometheus
     image: prom/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--enable-feature=remote-write-receiver'
+      - '--enable-feature=exemplar-storage'
     ports:
       - "9090:9090"
     volumes:
@@ -68,7 +74,7 @@ services:
     ports:
       - "9187:9187"
     env_file:
-      - ./postgres_exporter.env
+      - postgres_exporter.env
     links:
       - db
       - prometheus
@@ -77,9 +83,9 @@ services:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: collector
     command: [ "--config=/etc/collector.yml" ]
-    #ports:
-     # - "4317:4317"
-      #- "4318:4318"
+#    ports:
+#      - "4317:4317"
+#      - "4318:4318"
     volumes:
       - ./otel-collector-config.yml:/etc/collector.yml:ro
     depends_on:
@@ -101,14 +107,33 @@ services:
     container_name: loki
     ports:
       - "3100:3100"
-    command: [ "--config.file=/etc/loki.yml" ]
+    command: [ "--config.file=/etc/loki/loki.yml" ]
     volumes:
-      - loki_storage:/var/lib/loki
-      - ./loki.yml:/etc/loki.yml
+      - loki_storage:/loki
+      - ./loki.yml:/etc/loki/loki.yml
+    restart: always
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    command: minio server --console-address ":9001" --address ":9000" /minio/data
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - 'minio_data:/minio/data'
+    env_file:
+      - ./minio.env
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+      start_period: 30s
     restart: always
 volumes:
   db_data:
   grafana_storage:
   tempo_storage:
   loki_storage:
+  minio_data:
   redis:
