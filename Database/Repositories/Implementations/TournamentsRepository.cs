@@ -9,8 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance",
-    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository)
     : RepositoryBase<Tournament>(context), ITournamentsRepository
