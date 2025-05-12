@@ -12,10 +12,10 @@ public class TournamentPlatformStatsService(ITournamentsRepository tournamentsRe
         Dictionary<VerificationStatus, int> countsByStatuses = await tournamentsRepository.GetVerificationStatusesStatsAsync();
         var totalCount = countsByStatuses.Sum(x => x.Value);
 
-        return new TournamentPlatformStatsDTO()
+        return new TournamentPlatformStatsDTO
         {
             TotalCount = totalCount,
-            CountsByVerificationStatuses = countsByStatuses,
+            CountsByVerificationStatuses = countsByStatuses
         };
     }
 }

@@ -92,7 +92,7 @@ builder
 
 #region Controller Configuration
 
-builder.Services.AddOutputCache(); // makes available but not enables
+builder.Services.AddOutputCache();
 builder.Services
     .AddControllers(o =>
     {

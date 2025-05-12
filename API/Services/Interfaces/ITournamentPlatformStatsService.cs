@@ -5,7 +5,7 @@ namespace API.Services.Interfaces;
 public interface ITournamentPlatformStatsService
 {
     /// <summary>
-    /// Gets various platform-wide stats related to tournaments
+    /// Gets various platform-wide tournament stats
     /// </summary>
     public Task<TournamentPlatformStatsDTO> GetAsync();
 }

@@ -191,7 +191,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds);
 
     /// <summary>
-    /// Retrieves a mapping of <see cref="VerificationStatus"/>es to the number of <see cref="Tournament"/>s having corresponding status
+    /// Gets a map of <see cref="Common.Enums.Verification.VerificationStatus"/>es to the number of <see cref="Database.Entities.Tournament"/>s with the status
     /// </summary>
     Task<Dictionary<VerificationStatus, int>> GetVerificationStatusesStatsAsync();
 }
