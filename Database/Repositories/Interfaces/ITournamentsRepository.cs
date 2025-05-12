@@ -189,4 +189,9 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="id">Tournament id</param>
     /// <param name="beatmapIds">Collection of beatmap ids to remove from the tournament's collection of pooled beatmaps</param>
     Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds);
+
+    /// <summary>
+    /// Retrieves a mapping of <see cref="VerificationStatus"/>es to the number of <see cref="Tournament"/>s having corresponding status
+    /// </summary>
+    Task<Dictionary<VerificationStatus, int>> GetVerificationStatusesStatsAsync();
 }

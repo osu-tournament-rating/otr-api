@@ -9,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
+[SuppressMessage("Performance",
+    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository)
     : RepositoryBase<Tournament>(context), ITournamentsRepository
@@ -293,6 +294,17 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
 
         await UpdateAsync(tournament);
     }
+
+    public async Task<Dictionary<VerificationStatus, int>> GetVerificationStatusesStatsAsync() =>
+        await _context.Tournaments
+            .GroupBy(
+                x => x.VerificationStatus,
+                (x, y) => new
+                {
+                    Status = x,
+                    Count = y.Count()
+                })
+            .ToDictionaryAsync(x => x.Status, x => x.Count);
 
     /// <summary>
     /// Returns a queryable containing tournaments for <see cref="ruleset"/>
