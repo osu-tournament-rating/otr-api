@@ -3,17 +3,17 @@
 namespace API.DTOs;
 
 /// <summary>
-/// Represents statistics on all <see cref="Database.Entities.Tournament"/>s existing in a system
+/// Represents platform-wide <see cref="Database.Entities.Tournament"/> stats
 /// </summary>
 public class TournamentPlatformStatsDTO
 {
     /// <summary>
-    /// Total number of all <see cref="Database.Entities.Tournament"/>s in the system
+    /// Total number of <see cref="Database.Entities.Tournament"/>s
     /// </summary>
     public int TotalCount { get; init; }
 
     /// <summary>
-    /// Mapping of <see cref="Common.Enums.Verification.VerificationStatus"/>es to number of <see cref="Database.Entities.Tournament"/>s having corresponding status
+    /// Map of <see cref="Common.Enums.Verification.VerificationStatus"/>es to the number of <see cref="Database.Entities.Tournament"/>s with the status
     /// </summary>
     public Dictionary<VerificationStatus, int> CountsByVerificationStatuses { get; init; } = new();
 }

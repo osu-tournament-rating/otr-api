@@ -6,7 +6,7 @@
 public class PlatformStatsDTO
 {
     /// <summary>
-    /// Statistics on all <see cref="Database.Entities.Tournament"/>s existing in the system
+    /// Platform-wide tournament stats
     /// </summary>
     public TournamentPlatformStatsDTO TournamentsStats { get; init; } = null!;
 }

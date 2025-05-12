@@ -7,7 +7,7 @@ public class PlatformStatsService(ITournamentPlatformStatsService tournamentPlat
 {
     public async Task<PlatformStatsDTO> GetAsync() => new()
     {
-        TournamentsStats = await tournamentPlatformStatsService.GetAsync(),
+        TournamentsStats = await tournamentPlatformStatsService.GetAsync()
     };
 }
 
