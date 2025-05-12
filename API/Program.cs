@@ -95,6 +95,7 @@ builder
 
 #region Controller Configuration
 
+builder.Services.AddOutputCache();
 builder.Services
     .AddControllers(o =>
     {
@@ -690,6 +691,8 @@ builder.Services.AddScoped<ITournamentsService, TournamentsService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
+builder.Services.AddScoped<IPlatformStatsService, PlatformStatsService>();
+builder.Services.AddScoped<ITournamentPlatformStatsService, TournamentPlatformStatsService>();
 
 #endregion
 
@@ -716,6 +719,9 @@ app.UseSerilogRequestLogging();
 app.UseRouting();
 // Placed after UseRouting and before UseAuthentication and UseAuthorization
 app.UseCors();
+
+// After UseCors
+app.UseOutputCache();
 
 app.UseAuthentication();
 app.UseAuthorization();
