@@ -4,9 +4,9 @@ server:
   log_level: info
 
 distributor:
-  receivers:      # this configuration will listen on all ports and protocols that tempo is capable of.
-    otlp:         # the receives all come from the OpenTelemetry collector.  more configuration information can
-      protocols:  # be found there: https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver
+  receivers:      # This configuration will listen on all ports and protocols that tempo is capable of.
+    otlp:         # The receivers all come from the OpenTelemetry collector.  More configuration information can
+      protocols:  # be found here: https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver
         grpc:
           endpoint: "tempo:4317"
 
@@ -50,8 +50,8 @@ storage:
     s3:
       bucket: tempo
       endpoint: minio:9000
-      access_key:
-      secret_key:
+      access_key: Iokdj94bNp5YXRyQMsHC
+      secret_key: Hqisob9H3uzSxdEMYo9zyQsix8uhRlp41dZCPoi2
       insecure: true
       region: east-us
 

@@ -1,7 +1,7 @@
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using API.Authorization;
 using API.Authorization.Handlers;
@@ -26,7 +26,6 @@ using Database;
 using Database.Entities;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
-using Humanizer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -34,17 +33,14 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
 using Newtonsoft.Json.Serialization;
 using Npgsql;
 using OpenTelemetry.Instrumentation.AspNetCore;
-using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -53,10 +49,8 @@ using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
 using Serilog;
 using Serilog.AspNetCore;
-using Serilog.Core;
 using Serilog.Enrichers.Span;
 using Serilog.Events;
-using Serilog.Formatting.Display;
 using Serilog.Sinks.Grafana.Loki;
 using StackExchange.Redis;
 using Swashbuckle.AspNetCore.Swagger;
@@ -119,6 +113,8 @@ builder.Services
 
 #region OpenTelemetry Tracing/Metrics Configuration
 
+const string serviceName = "otr-api";
+
 builder.Logging.AddOpenTelemetry(logging =>
 {
     logging.IncludeScopes = true;
@@ -139,11 +135,11 @@ builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
 builder
     .Services.AddOpenTelemetry()
     .ConfigureResource(resource =>
-        resource.AddService(serviceName: "otr-api")
+        resource.AddService(serviceName: serviceName)
     )
     .WithTracing(tracing =>
         tracing
-            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName: "otr-api"))
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName: serviceName))
             .AddAspNetCoreInstrumentation(options =>
             {
                 options.RecordException = true;
@@ -446,7 +442,7 @@ builder.Services.AddSerilog(configuration =>
         .Enrich.WithSpan()
         .WriteTo.GrafanaLoki(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).LokiConnection, new List<LokiLabel>
         {
-            new() { Key = "app", Value = "otr-api" }
+            new() { Key = "app", Value = serviceName }
         }, ["app"])
         .WriteTo.Console(
             outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [trace_id: {TraceId} span_id: {SpanId}] {NewLine} {Message:lj}{NewLine}{Exception}"
@@ -607,16 +603,16 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 #region Database Context
 
 builder.Services.AddScoped<AuditBlamingInterceptor>();
-builder.Services.AddDbContext<OtrContext>((services, options) =>
+builder.Services.AddDbContext<OtrContext>((services, sqlOptions) =>
 {
-    options
+    sqlOptions
         .UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection,
-            o => o.ConfigureDataSource(
+            dataSourceOptions => dataSourceOptions.ConfigureDataSource(
                 dataSourceBuilder =>
-                    dataSourceBuilder.ConfigureTracing(options2 =>
-                    //This only returns the actual command, unfortunately there's no other way to do this afaik
-                    options2.ConfigureCommandSpanNameProvider(cmd => cmd.CommandText[..15])
-                            //Filter out commands that shouldn't be related to API operations
+                    dataSourceBuilder.ConfigureTracing(tracingOptions =>
+                    // This only returns the actual command, unfortunately there's no other way to do this afaik
+                    tracingOptions.ConfigureCommandSpanNameProvider(cmd => MyRegex().Split(cmd.CommandText[..15])[0])
+                            // Filter out commands that shouldn't be related to API operations
                             .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("COMMIT", StringComparison.OrdinalIgnoreCase))
                             .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("DROP", StringComparison.OrdinalIgnoreCase))
                             .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("CREATE", StringComparison.OrdinalIgnoreCase))
@@ -790,3 +786,8 @@ if (args.Contains("--swagger-to-file"))
 app.Logger.LogInformation("Running!");
 
 app.Run();
+partial class Program
+{
+    [GeneratedRegex("[a-z]+")]
+    private static partial Regex MyRegex();
+}
