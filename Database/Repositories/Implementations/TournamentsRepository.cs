@@ -294,7 +294,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         await UpdateAsync(tournament);
     }
 
-    public async Task<Dictionary<VerificationStatus, int>> GetVerificationStatusesStatsAsync() =>
+    public async Task<Dictionary<VerificationStatus, int>> GetVerificationStatusStatsAsync() =>
         await _context.Tournaments
             .GroupBy(
                 x => x.VerificationStatus,

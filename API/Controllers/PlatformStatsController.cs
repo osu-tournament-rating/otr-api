@@ -17,6 +17,7 @@ public class PlatformStatsController(IPlatformStatsService statsService) : Contr
     /// <summary>
     /// Get various platform-wide stats
     /// </summary>
+    /// <response code="200">Returns various platform-wide stats</response>
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType<PlatformStatsDTO>(StatusCodes.Status200OK)]

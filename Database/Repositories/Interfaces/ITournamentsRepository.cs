@@ -193,5 +193,5 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <summary>
     /// Retrieves a mapping of <see cref="VerificationStatus"/>es to the number of <see cref="Tournament"/>s having corresponding status
     /// </summary>
-    Task<Dictionary<VerificationStatus, int>> GetVerificationStatusesStatsAsync();
+    Task<Dictionary<VerificationStatus, int>> GetVerificationStatusStatsAsync();
 }

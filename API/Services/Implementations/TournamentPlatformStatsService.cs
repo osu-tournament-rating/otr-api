@@ -9,7 +9,7 @@ public class TournamentPlatformStatsService(ITournamentsRepository tournamentsRe
 {
     public async Task<TournamentPlatformStatsDTO> GetAsync()
     {
-        Dictionary<VerificationStatus, int> countsByStatuses = await tournamentsRepository.GetVerificationStatusesStatsAsync();
+        Dictionary<VerificationStatus, int> countsByStatuses = await tournamentsRepository.GetVerificationStatusStatsAsync();
         var totalCount = countsByStatuses.Sum(x => x.Value);
 
         return new TournamentPlatformStatsDTO()
