@@ -133,7 +133,6 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         childMatches.ForEach(child => child.Games.ForEach(childGame =>
         {
             childGame.Match = parentMatch;
-            MarkUpdated(childGame);
         }));
 
         // Save before deleting child matches
