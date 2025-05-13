@@ -6,6 +6,7 @@ namespace API.DTOs;
 /// <summary>
 /// Describes tournament rating based information for a player in a ruleset with additional statistics
 /// </summary>
+/// <remarks>If filtered by time, all fields in this class will change.</remarks>
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public class PlayerRatingStatsDTO : PlayerRatingDTO
 {
@@ -28,6 +29,11 @@ public class PlayerRatingStatsDTO : PlayerRatingDTO
     /// Rating tier progress information
     /// </summary>
     public required TierProgressDTO TierProgress { get; set; }
+
+    /// <summary>
+    /// A collection of adjustments that describe the changes resulting in the final rating
+    /// </summary>
+    public ICollection<RatingAdjustmentDTO> Adjustments { get; set; } = [];
 
     /// <summary>
     /// Denotes the current rating as being provisional

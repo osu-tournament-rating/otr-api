@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums.Verification;
+using Common.Utilities;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Utilities;

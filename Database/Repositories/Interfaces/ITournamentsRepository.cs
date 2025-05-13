@@ -46,7 +46,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="ruleset">Ruleset</param>
     /// <param name="dateMin">Date lower bound</param>
     /// <param name="dateMax">Date upper bound</param>
-    Task<int> CountPlayedAsync(int playerId, Ruleset ruleset, DateTime dateMin, DateTime dateMax);
+    Task<int> CountPlayedAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax);
 
     /// <summary>
     /// Gets all tournaments with pagination
@@ -155,8 +155,8 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Dictionary<int, int>> GetLobbySizeStatsAsync(
         int playerId,
         Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
+        DateTime? dateMin,
+        DateTime? dateMax
     );
 
     /// <summary>
@@ -189,4 +189,9 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="id">Tournament id</param>
     /// <param name="beatmapIds">Collection of beatmap ids to remove from the tournament's collection of pooled beatmaps</param>
     Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds);
+
+    /// <summary>
+    /// Gets a map of <see cref="Common.Enums.Verification.VerificationStatus"/>es to the number of <see cref="Database.Entities.Tournament"/>s with the status
+    /// </summary>
+    Task<Dictionary<VerificationStatus, int>> GetVerificationStatusStatsAsync();
 }

@@ -14,7 +14,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
             .Include(p => p.User)
             .Where(p => ids.Contains(p.Id)).ToListAsync();
 
-    public async Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds) =>
+    public async Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds) =>
         await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
     public async Task<IEnumerable<Player>> GetAsync(bool eagerLoad)
