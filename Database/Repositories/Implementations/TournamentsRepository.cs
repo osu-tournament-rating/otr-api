@@ -295,15 +295,22 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     }
 
     public async Task<Dictionary<VerificationStatus, int>> GetVerificationStatusStatsAsync() =>
+        await _context.Tournaments.ToCountStatisticsDictionaryAsync(x => x.VerificationStatus);
+
+    public async Task<Dictionary<int, int>> GetYearStatsAsync() =>
         await _context.Tournaments
-            .GroupBy(
-                x => x.VerificationStatus,
-                (x, y) => new
-                {
-                    Status = x,
-                    Count = y.Count()
-                })
-            .ToDictionaryAsync(x => x.Status, x => x.Count);
+            .Where(x => x.StartTime.HasValue && x.VerificationStatus == VerificationStatus.Verified)
+            .ToCountStatisticsDictionaryAsync(x => x.StartTime!.Value.Year);
+
+    public async Task<Dictionary<Ruleset, int>> GetRulesetStatsAsync() =>
+        await _context.Tournaments
+            .Where(x => x.VerificationStatus == VerificationStatus.Verified)
+            .ToCountStatisticsDictionaryAsync(x => x.Ruleset);
+
+    public async Task<Dictionary<int, int>> GetLobbySizeStatsAsync() =>
+        await _context.Tournaments
+            .Where(x => x.VerificationStatus == VerificationStatus.Verified)
+            .ToCountStatisticsDictionaryAsync(x => x.LobbySize);
 
     /// <summary>
     /// Returns a queryable containing tournaments for <see cref="ruleset"/>

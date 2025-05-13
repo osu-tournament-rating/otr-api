@@ -194,4 +194,19 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Gets a map of <see cref="Common.Enums.Verification.VerificationStatus"/>es to the number of <see cref="Database.Entities.Tournament"/>s with the status
     /// </summary>
     Task<Dictionary<VerificationStatus, int>> GetVerificationStatusStatsAsync();
+
+    /// <summary>
+    /// Gets a map of years to the number of <see cref="Database.Entities.Tournament"/>s in that year
+    /// </summary>
+    Task<Dictionary<int, int>> GetYearStatsAsync();
+
+    /// <summary>
+    /// Gets a map of <see cref="Common.Enums.Ruleset"/>s to the number of <see cref="Database.Entities.Tournament"/>s in that ruleset
+    /// </summary>
+    Task<Dictionary<Ruleset, int>> GetRulesetStatsAsync();
+
+    /// <summary>
+    /// Gets a map of lobby sizes to the number of <see cref="Database.Entities.Tournament"/>s with that lobby size
+    /// </summary>
+    Task<Dictionary<int, int>> GetLobbySizeStatsAsync();
 }
