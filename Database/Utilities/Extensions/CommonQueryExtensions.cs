@@ -1,6 +1,8 @@
+using System.Linq.Expressions;
 using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Database.Utilities.Extensions;
 
@@ -57,4 +59,23 @@ public static class CommonQueryExtensions
                                   pts.Tournament.StartTime >= dateMin &&
                                   pts.Tournament.StartTime <= dateMax);
     }
+
+    /// <summary>
+    /// Converts the results of a query into a dictionary where keys are the values of a selected property
+    /// and values are the count of occurrences of those keys in the query result
+    /// </summary>
+    /// <typeparam name="TEntity">The entity type of the query</typeparam>
+    /// <typeparam name="TProp">The type of the property to group and count</typeparam>
+    /// <param name="query">The query to execute and process</param>
+    /// <param name="propertySelector">An expression used to select the property for grouping and counting</param>
+    /// <returns>A dictionary where the keys are property values and the values are their counts</returns>
+    public static async Task<Dictionary<TProp, int>> ToCountStatisticsDictionaryAsync<TEntity, TProp>(
+        this IQueryable<TEntity> query,
+        Expression<Func<TEntity, TProp>> propertySelector)
+        where TProp : notnull =>
+        await query
+            .GroupBy(
+                propertySelector,
+                (x, y) => new { Prop = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Prop, x => x.Count);
 }

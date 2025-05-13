@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using Common.Enums;
 using Common.Enums.Queries;
 using Common.Enums.Verification;
@@ -569,14 +568,4 @@ public static class QueryExtensions
             .ThenInclude(an => an.AdminUser.Player);
 
     #endregion
-
-    public static async Task<Dictionary<TProp, int>> ToCountStatisticsDictionaryAsync<TEntity, TProp>(
-        this IQueryable<TEntity> query,
-        Expression<Func<TEntity, TProp>> propertySelector)
-        where TProp : notnull =>
-        await query
-            .GroupBy(
-                propertySelector,
-                (x, y) => new { Prop = x, Count = y.Count() })
-            .ToDictionaryAsync(x => x.Prop, x => x.Count);
 }
