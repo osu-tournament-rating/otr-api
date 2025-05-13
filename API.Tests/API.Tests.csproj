@@ -33,6 +33,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\API\API.csproj"/>
+        <ProjectReference Include="..\TestingUtils\TestingUtils.csproj" />
     </ItemGroup>
 
 </Project>
