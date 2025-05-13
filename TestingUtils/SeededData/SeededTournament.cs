@@ -1,3 +1,4 @@
+using Common.Constants;
 using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
@@ -35,7 +36,7 @@ public static class SeededTournament
             ForumUrl = forumUrl ?? string.Empty,
             RankRangeLowerBound = rankRangeLowerBound ?? s_rand.NextInclusive(1_000_000),
             Ruleset = ruleset ?? s_rand.NextEnum<Ruleset>(),
-            LobbySize = teamSize ?? s_rand.NextInclusive(1, 8),
+            LobbySize = teamSize ?? s_rand.NextInclusive(LobbySizeConstants.MinValue, LobbySizeConstants.MaxValue),
             VerificationStatus = verificationStatus ?? s_rand.NextEnum<VerificationStatus>(),
             RejectionReason = rejectionReason ?? s_rand.NextEnum<TournamentRejectionReason>(),
             ProcessingStatus = processingStatus ?? s_rand.NextEnum<TournamentProcessingStatus>()
