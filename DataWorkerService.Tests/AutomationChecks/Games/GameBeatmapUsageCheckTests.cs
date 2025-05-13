@@ -57,7 +57,7 @@ public class GameBeatmapUsageCheckTests : AutomationChecksTestBase<GameBeatmapUs
 
         Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None,
             warningFlags: MatchWarningFlags.None, tournament: tournament);
-        Beatmap beatmap = SeededBeatmap.Generate(-1, beatmapOsuId);
+        Beatmap beatmap = SeededBeatmap.Generate(osuId: beatmapOsuId);
         Game _ = SeededGame.Generate(rejectionReason: GameRejectionReason.None, warningFlags: GameWarningFlags.None,
             match: match, beatmap: beatmap);
 

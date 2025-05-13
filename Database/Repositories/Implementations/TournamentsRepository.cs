@@ -318,7 +318,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     /// <param name="dateMax">Date upper bound</param>
     /// <remarks>Since filter uses Any, invalid matches can still exist in the resulting query</remarks>
     /// <returns></returns>
-    protected IQueryable<Tournament> QueryForParticipation(
+    private IQueryable<Tournament> QueryForParticipation(
         int playerId,
         Ruleset ruleset,
         DateTime? dateMin,
