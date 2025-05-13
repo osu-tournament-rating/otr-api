@@ -58,6 +58,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
 using IMatchRosterRepository = Database.Repositories.Interfaces.IMatchRosterRepository;
 
+#pragma warning disable SYSLIB1045
 #region WebApplicationBuilder Configuration
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -612,7 +613,7 @@ builder.Services.AddDbContext<OtrContext>((services, sqlOptions) =>
                 dataSourceBuilder =>
                     dataSourceBuilder.ConfigureTracing(tracingOptions =>
                     // This only returns the actual command, unfortunately there's no other way to do this afaik
-                    tracingOptions.ConfigureCommandSpanNameProvider(cmd => MyRegex().Split(cmd.CommandText[..15])[0])
+                    tracingOptions.ConfigureCommandSpanNameProvider(cmd => Regex.Split(cmd.CommandText[..15], "[a-z]+")[0])
                             // Filter out commands that shouldn't be related to API operations
                             .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("COMMIT", StringComparison.OrdinalIgnoreCase))
                             .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("DROP", StringComparison.OrdinalIgnoreCase))
@@ -792,8 +793,3 @@ if (args.Contains("--swagger-to-file"))
 app.Logger.LogInformation("Running!");
 
 app.Run();
-partial class Program
-{
-    [GeneratedRegex("[a-z]+")]
-    private static partial Regex MyRegex();
-}
