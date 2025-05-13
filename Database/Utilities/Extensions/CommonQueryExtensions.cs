@@ -61,14 +61,15 @@ public static class CommonQueryExtensions
     }
 
     /// <summary>
-    /// Converts the results of a query into a dictionary where keys are the values of a selected property
-    /// and values are the count of occurrences of those keys in the query result
+    /// Materializes a query into a dictionary where the key is a property of <typeparamref name="TEntity"/> selected by
+    /// <paramref name="propertySelector"/>, and the value is the count of corresponding <typeparamref name="TEntity"/> items
     /// </summary>
-    /// <typeparam name="TEntity">The entity type of the query</typeparam>
-    /// <typeparam name="TProp">The type of the property to group and count</typeparam>
-    /// <param name="query">The query to execute and process</param>
-    /// <param name="propertySelector">An expression used to select the property for grouping and counting</param>
-    /// <returns>A dictionary where the keys are property values and the values are their counts</returns>
+    /// <typeparam name="TEntity">The type of the queried entities</typeparam>
+    /// <typeparam name="TProp">The type of the property to count by</typeparam>
+    /// <param name="query">The query to materialize</param>
+    /// <param name="propertySelector">An expression that selects the property to count by</param>
+    /// <returns>A dictionary mapping each unique <typeparamref name="TProp"/> value to
+    /// the number of <typeparamref name="TEntity"/> items with that property value</returns>
     public static async Task<Dictionary<TProp, int>> ToCountStatisticsDictionaryAsync<TEntity, TProp>(
         this IQueryable<TEntity> query,
         Expression<Func<TEntity, TProp>> propertySelector)
