@@ -16,7 +16,7 @@ public static class SeededTournament
     /// </summary>
     /// <remarks>Any properties not given will be randomized</remarks>
     public static Tournament Generate(
-        int? id = null,
+        int id = 0,
         string? name = null,
         string? abbreviation = null,
         string? forumUrl = null,
@@ -29,7 +29,7 @@ public static class SeededTournament
     ) =>
         new()
         {
-            Id = id ?? s_rand.Next(),
+            Id = id,
             Name = name ?? string.Empty,
             Abbreviation = abbreviation ?? string.Empty,
             ForumUrl = forumUrl ?? string.Empty,

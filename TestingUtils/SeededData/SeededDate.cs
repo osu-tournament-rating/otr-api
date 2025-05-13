@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace TestingUtils.SeededData;
 
 /// <summary>
@@ -8,7 +10,7 @@ public static class SeededDate
     /// <summary>
     /// Placeholder date used by the database
     /// </summary>
-    public static readonly DateTime Placeholder = new(2007, 9, 17);
+    public static readonly DateTime Placeholder = new(new DateOnly(2007, 9, 17), new TimeOnly(), DateTimeKind.Utc);
 
     private static readonly Random s_rand = new();
 

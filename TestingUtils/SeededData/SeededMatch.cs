@@ -17,7 +17,7 @@ public static class SeededMatch
     /// </summary>
     /// <remarks>Any properties not given will be randomized</remarks>
     public static Match Generate(
-        int? id = null,
+        int id = 0,
         long? osuId = null,
         string? name = null,
         DateTime? startTime = null,
@@ -33,7 +33,7 @@ public static class SeededMatch
 
         var seededMatch = new Match
         {
-            Id = id ?? s_rand.Next(),
+            Id = id,
             OsuId = osuId ?? s_rand.NextInt64(),
             Name = name ?? string.Empty,
             VerificationStatus = verificationStatus ?? s_rand.NextEnum<VerificationStatus>(),

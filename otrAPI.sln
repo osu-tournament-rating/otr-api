@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API.Utils.Jwt", "API.Utils.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{ADDB0136-2631-4791-9160-DE254770447E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database.Tests", "Database.Tests\Database.Tests.csproj", "{3FE07A61-4E10-4D11-9605-5D3A78FD3716}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,5 +74,9 @@ Global
 		{ADDB0136-2631-4791-9160-DE254770447E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADDB0136-2631-4791-9160-DE254770447E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADDB0136-2631-4791-9160-DE254770447E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FE07A61-4E10-4D11-9605-5D3A78FD3716}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FE07A61-4E10-4D11-9605-5D3A78FD3716}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FE07A61-4E10-4D11-9605-5D3A78FD3716}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FE07A61-4E10-4D11-9605-5D3A78FD3716}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

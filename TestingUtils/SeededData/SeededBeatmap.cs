@@ -27,7 +27,8 @@ public static class SeededBeatmap
     /// </summary>
     /// <remarks>Any properties not given will be randomized</remarks>
     public static Beatmap Generate(
-        int? id = null,
+        int id = 0,
+        int? creatorPlayerId = null,
         long? osuId = null,
         bool? hasData = null,
         string? artist = null,
@@ -51,7 +52,7 @@ public static class SeededBeatmap
     {
         var seededBeatmap = new Beatmap
         {
-            Id = id ?? s_rand.Next(),
+            Id = id,
             OsuId = osuId ?? s_rand.NextInt64(),
             HasData = hasData ?? s_rand.NextBool(),
             DiffName = diffName ?? string.Empty,
@@ -73,7 +74,7 @@ public static class SeededBeatmap
             Created = default,
             Updated = null,
             OsuId = 0,
-            CreatorId = 0,
+            CreatorId = creatorPlayerId ?? 0,
             Artist = artist ?? "Example Artist",
             Title = title ?? "Example Title",
             RankedStatus = BeatmapRankedStatus.Pending,
