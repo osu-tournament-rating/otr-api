@@ -50,8 +50,8 @@ storage:
     s3:
       bucket: tempo
       endpoint: minio:9000
-      access_key: Iokdj94bNp5YXRyQMsHC
-      secret_key: Hqisob9H3uzSxdEMYo9zyQsix8uhRlp41dZCPoi2
+      access_key: test
+      secret_key: test
       insecure: true
       region: east-us
 

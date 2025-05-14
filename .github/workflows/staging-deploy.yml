@@ -55,6 +55,30 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Set loki.yml storage_config
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: './cfg/loki.yml'
+          propertyPath: 'storage_config.aws.s3'
+          value: ${{ secrets.LOKI_S3 }}
+          commitChange: false
+
+      - name: Set tempo.yml access_key 
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: './cfg/tempo.yml'
+          propertyPath: 'storage.trace.s3.access_key'
+          value: ${{ secrets.TEMPO_ACCESS_KEY }}
+          commitChange: false
+
+      - name: Set tempo.yml secret_key 
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: './cfg/tempo.yml'
+          propertyPath: 'storage.trace.s3.secret_key'
+          value: ${{ secrets.TEMPO_SECRET_KEY }}
+          commitChange: false
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -79,7 +103,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "api.env,dataworkerservice.env,db.env,postgres_exporter.env,minio.env,./cfg/docker-compose-staging.yml,./cfg/otel-collector-config.yml,./cfg/prometheus.yml,script.sql"
+          source: "*.env,./cfg/*.yml,script.sql"
           target: "~/otr-api-dataworker/"
 
       - name: Apply migrations and deploy
