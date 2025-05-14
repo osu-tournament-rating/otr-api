@@ -46,7 +46,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     restart: always
   db:
     container_name: db
@@ -91,7 +91,7 @@ services:
     container_name: tempo
     command: [ "--config.file=/etc/tempo.yml" ]
     volumes:
-      - ./tempo.yml:/etc/tempo.yml
+      - ./tempo.yml:/etc/tempo.yml:ro
       - tempo_storage:/var/lib/tempo
     ports:
       - "3200:3200"
@@ -105,7 +105,7 @@ services:
     command: [ "--config.file=/etc/loki/loki.yml" ]
     volumes:
       - loki_storage:/loki
-      - ./loki.yml:/etc/loki/loki.yml
+      - ./loki.yml:/etc/loki/loki.yml:ro
     restart: always
   minio:
     image: minio/minio:latest
