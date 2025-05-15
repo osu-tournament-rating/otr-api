@@ -36,18 +36,6 @@ public static class OptionsExtensions
             return;
         }
 
-        // Validate token type
-        if (o.TokenType is not OtrClaims.TokenTypes.AccessToken
-            && o.TokenType is not OtrClaims.TokenTypes.RefreshToken)
-        {
-            LogConfigureError(
-                o.GetArgLongName(nameof(o.TokenType)),
-                o.TokenType,
-                $"Must be one of: '{OtrClaims.TokenTypes.AccessToken}' or '{OtrClaims.TokenTypes.RefreshToken}'"
-            );
-            return;
-        }
-
         // Validate roles
         foreach (var role in o.Roles)
         {
@@ -92,23 +80,6 @@ public static class OptionsExtensions
         if (o.PermitLimit is <= 0)
         {
             LogConfigureError(o.GetArgLongName(nameof(o.PermitLimit)), o.PermitLimit);
-            return;
-        }
-
-        // Validate expiry
-        o.ExpiresIn ??= o.TokenType switch
-        {
-            OtrClaims.TokenTypes.RefreshToken => 1_209_600,
-            _ => 3600
-        };
-        if (o.ExpiresIn <= 0)
-        {
-            LogConfigureError(o.GetArgLongName(nameof(o.ExpiresIn)), o.ExpiresIn);
-            return;
-        }
-
-        if (!o.ValidateJwtConfig())
-        {
             return;
         }
 

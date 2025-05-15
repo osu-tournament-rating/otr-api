@@ -1,5 +1,3 @@
-using JetBrains.Annotations;
-
 namespace API.DTOs;
 
 /// <summary>
@@ -13,18 +11,7 @@ public class AccessCredentialsDTO
     public string AccessToken { get; set; } = string.Empty;
 
     /// <summary>
-    /// Refresh token
-    /// </summary>
-    public string RefreshToken { get; set; } = string.Empty;
-
-    /// <summary>
     /// Lifetime of the access token in seconds
     /// </summary>
     public int ExpiresIn { get; set; }
-
-    /// <summary>
-    /// Token type
-    /// </summary>
-    [UsedImplicitly]
-    public string TokenType { get; set; } = "Bearer";
 }

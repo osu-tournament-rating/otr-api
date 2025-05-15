@@ -23,7 +23,8 @@
     "Issuer": ""
   },
   "Auth": {
-    "EnforceWhitelist": false
+    "EnforceWhitelist": false,
+    "AllowedHosts": ""
   },
   "RateLimit": {
     "PermitLimit": 30,

@@ -45,7 +45,6 @@ public static class Program
         // Build claims
         var claims = new List<Claim>
         {
-            new(OtrClaims.TokenType, o.TokenType),
             new(OtrClaims.Subject, o.Subject.ToString()),
             new(OtrClaims.Role, o.SubjectType),
             new(OtrClaims.Instance, Guid.NewGuid().ToString())
@@ -64,7 +63,7 @@ public static class Program
         {
             Subject = new ClaimsIdentity(claims),
             IssuedAt = DateTime.UtcNow,
-            Expires = DateTime.UtcNow.AddSeconds(o.ExpiresIn!.Value),
+            Expires = DateTime.UtcNow.AddSeconds(o.ExpiresIn),
             Audience = o.Audience,
             Issuer = o.Issuer,
             SigningCredentials = new SigningCredentials(
@@ -73,7 +72,6 @@ public static class Program
             )
         }));
 
-        Log.Information("");
         Log.Information("Token Created");
         Log.Information("----------------------------------------");
         Log.Information(token);
