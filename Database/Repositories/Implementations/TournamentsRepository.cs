@@ -294,6 +294,17 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         await UpdateAsync(tournament);
     }
 
+    public async Task<Dictionary<VerificationStatus, int>> GetVerificationStatusStatsAsync() =>
+        await _context.Tournaments
+            .GroupBy(
+                x => x.VerificationStatus,
+                (x, y) => new
+                {
+                    Status = x,
+                    Count = y.Count()
+                })
+            .ToDictionaryAsync(x => x.Status, x => x.Count);
+
     /// <summary>
     /// Returns a queryable containing tournaments for <see cref="ruleset"/>
     /// with *any* match applicable to all the following criteria:

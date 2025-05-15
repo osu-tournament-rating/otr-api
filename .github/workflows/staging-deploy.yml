@@ -3,26 +3,26 @@ name: Staging Deploy
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build_test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
 
-    - name: Build
-      run: dotnet build -c Release
+      - name: Build
+        run: dotnet build -c Release
 
-    - name: Test
-      run: dotnet test -c Release --verbosity normal
+      - name: Test
+        run: dotnet test -c Release --verbosity normal
 
   publish:
     needs: build_test
@@ -55,10 +55,34 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Set loki.yml storage_config
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: './cfg/loki.yml'
+          propertyPath: 'storage_config.aws.s3'
+          value: ${{ secrets.LOKI_S3 }}
+          commitChange: false
+
+      - name: Set tempo.yml access_key 
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: './cfg/tempo.yml'
+          propertyPath: 'storage.trace.s3.access_key'
+          value: ${{ secrets.TEMPO_ACCESS_KEY }}
+          commitChange: false
+
+      - name: Set tempo.yml secret_key 
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: './cfg/tempo.yml'
+          propertyPath: 'storage.trace.s3.secret_key'
+          value: ${{ secrets.TEMPO_SECRET_KEY }}
+          commitChange: false
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: "9.0.x"
 
       - name: Create .env files
         run: |
@@ -66,6 +90,7 @@ jobs:
           echo "${{ secrets.DATAWORKERSERVICE_ENV }}" > dataworkerservice.env
           echo "${{ secrets.DB_ENV }}" > db.env
           echo "${{ secrets.POSTGRES_EXPORTER_ENV }}" > postgres_exporter.env
+          echo "${{ secrets.MINIO_ENV }}" > minio.env
 
       - name: Generate migrations script
         run: |
@@ -78,7 +103,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "api.env,dataworkerservice.env,db.env,postgres_exporter.env,./cfg/docker-compose-staging.yml,./cfg/otel-collector-config.yml,./cfg/prometheus.yml,script.sql"
+          source: "*.env,./cfg/*.yml,script.sql"
           target: "~/otr-api-dataworker/"
 
       - name: Apply migrations and deploy
