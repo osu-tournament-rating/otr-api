@@ -31,7 +31,7 @@ storage_config:
     bucketnames: loki
     endpoint: minio:9000/loki
     region: east-us
-    access_key_id: test 
+    access_key_id: test
     secret_access_key: test
     insecure: true
     http_config:
@@ -46,7 +46,7 @@ storage_config:
 
 schema_config:
   configs:
-    - from: 2025-04-16
+    - from: '2025-04-16'
       store: tsdb
       object_store: s3
       schema: v13
