@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Common.Constants;
 using Common.Enums;
 using Common.Enums.Verification;
 
@@ -41,7 +42,7 @@ public class TournamentSubmissionDTO
     /// Expected in-match team size
     /// </summary>
     /// <example>For a 2v2 team size 4 tournament, this value should be 2</example>
-    [Range(1, 8)]
+    [Range(LobbySizeConstants.MinValue, LobbySizeConstants.MaxValue)]
     public int LobbySize { get; set; }
 
     /// <summary>

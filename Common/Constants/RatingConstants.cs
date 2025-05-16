@@ -1,5 +1,5 @@
 // ReSharper disable InconsistentNaming
-namespace Common.Rating;
+namespace Common.Constants;
 
 public static class RatingConstants
 {

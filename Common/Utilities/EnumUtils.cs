@@ -20,4 +20,7 @@ public static class EnumUtils
             VerificationStatus.PreVerified => VerificationStatus.Verified,
             _ => status
         };
+
+    public static T? MinValue<T>() where T : struct, Enum => Enum.GetValues<T>().Min();
+    public static T? MaxValue<T>() where T : struct, Enum => Enum.GetValues<T>().Max();
 }
