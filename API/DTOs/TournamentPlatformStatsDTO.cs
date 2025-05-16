@@ -16,20 +16,20 @@ public class TournamentPlatformStatsDTO
     /// <summary>
     /// Map of <see cref="Common.Enums.Verification.VerificationStatus"/>es to the number of <see cref="Database.Entities.Tournament"/>s with the status
     /// </summary>
-    public Dictionary<VerificationStatus, int> CountsByVerificationStatuses { get; init; } = new();
+    public Dictionary<VerificationStatus, int> CountByVerificationStatus { get; init; } = new();
 
     /// <summary>
     /// Map of years to the number of verified <see cref="Database.Entities.Tournament"/>s in that year
     /// </summary>
-    public Dictionary<int, int> VerifiedCountsByYears { get; init; } = new();
+    public Dictionary<int, int> VerifiedByYear { get; init; } = new();
 
     /// <summary>
     /// Map of <see cref="Common.Enums.Ruleset"/>s to the number of verified <see cref="Database.Entities.Tournament"/>s in that ruleset
     /// </summary>
-    public Dictionary<Ruleset, int> VerifiedCountsByRulesets { get; init; } = new();
+    public Dictionary<Ruleset, int> VerifiedByRuleset { get; init; } = new();
 
     /// <summary>
     /// Map of lobby sizes to the number of verified <see cref="Database.Entities.Tournament"/>s with that lobby size
     /// </summary>
-    public Dictionary<int, int> VerifiedCountsByLobbySizes { get; init; } = new();
+    public Dictionary<int, int> VerifiedByLobbySize { get; init; } = new();
 }

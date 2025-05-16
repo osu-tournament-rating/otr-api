@@ -29,10 +29,10 @@ public class TournamentPlatformStatsService(ITournamentsRepository tournamentsRe
         return new TournamentPlatformStatsDTO
         {
             TotalCount = totalCount,
-            CountsByVerificationStatuses = countsByStatuses,
-            VerifiedCountsByYears = countsByYears,
-            VerifiedCountsByRulesets = countsByRulesets,
-            VerifiedCountsByLobbySizes = countsByLobbySizes,
+            CountByVerificationStatus = countsByStatuses,
+            VerifiedByYear = countsByYears,
+            VerifiedByRuleset = countsByRulesets,
+            VerifiedByLobbySize = countsByLobbySizes,
         };
     }
 
