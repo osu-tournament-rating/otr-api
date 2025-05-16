@@ -64,9 +64,9 @@ public static class CommonQueryExtensions
     /// Materializes a query into a dictionary where the key is a property of <typeparamref name="TEntity"/> selected by
     /// <paramref name="propertySelector"/>, and the value is the count of corresponding <typeparamref name="TEntity"/> items
     /// </summary>
-    /// <typeparam name="TEntity">The type of the queried entities</typeparam>
-    /// <typeparam name="TProp">The type of the property to count by</typeparam>
-    /// <param name="query">The query to materialize</param>
+    /// <typeparam name="TEntity">Entity type</typeparam>
+    /// <typeparam name="TProp">Selector property type</typeparam>
+    /// <param name="query">The query</param>
     /// <param name="propertySelector">An expression that selects the property to count by</param>
     /// <returns>A dictionary mapping each unique <typeparamref name="TProp"/> value to
     /// the number of <typeparamref name="TEntity"/> items with that property value</returns>
