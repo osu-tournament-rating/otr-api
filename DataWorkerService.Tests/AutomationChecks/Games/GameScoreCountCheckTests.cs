@@ -1,5 +1,7 @@
+using Common.Enums;
+using Common.Enums.Verification;
+using Common.Utilities.Extensions;
 using Database.Entities;
-using Database.Enums.Verification;
 using DataWorkerService.AutomationChecks.Games;
 using TestingUtils.SeededData;
 
@@ -44,7 +46,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         // Assert
         Assert.False(actualPass);
         Assert.DoesNotContain(game.Scores, score =>
-            score.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified
+            score.VerificationStatus.IsPreVerifiedOrVerified()
         );
         Assert.Equal(GameRejectionReason.NoValidScores, game.RejectionReason);
     }
@@ -74,7 +76,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
     }
 
     [Fact]
-    public void Check_GivenVerifiedScoresCount_LessThanTournamentLobbySize_FailsWith_LobbySizeMissMatch()
+    public void Check_GivenVerifiedScoresCount_LessThanTournamentLobbySize_FailsWith_LobbySizeMismatch()
     {
         // Arrange
         Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);
@@ -83,6 +85,48 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         SeededScore.Generate(verificationStatus: VerificationStatus.Verified, game: game);
 
         game.Match.Tournament.LobbySize = 4;
+
+        // Act
+        var actualPass = AutomationCheck.Check(game);
+
+        // Assert
+        Assert.False(actualPass);
+        Assert.Equal(GameRejectionReason.LobbySizeMismatch, game.RejectionReason);
+    }
+
+    [Fact]
+    public void Check_GivenUnequalTeamSizes_EqualToTournamentLobbySize_FailsWith_LobbySizeMismatch()
+    {
+        // Arrange
+        Game game = SeededGame.Generate(
+            teamType: TeamType.TeamVs,
+            rejectionReason: GameRejectionReason.None);
+
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Blue, game: game);
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
+        game.Match.Tournament.LobbySize = 2;
+
+        // Act
+        var actualPass = AutomationCheck.Check(game);
+
+        // Assert
+        Assert.False(actualPass);
+        Assert.Equal(GameRejectionReason.LobbySizeMismatch, game.RejectionReason);
+    }
+
+    [Fact]
+    public void Check_GivenSingleTeamInLobby_FailsWith_LobbySizeMismatch()
+    {
+        // Arrange
+        Game game = SeededGame.Generate(
+            teamType: TeamType.TeamVs,
+            rejectionReason: GameRejectionReason.None);
+
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
+        SeededScore.Generate(verificationStatus: VerificationStatus.Verified, team: Team.Red, game: game);
+        game.Match.Tournament.LobbySize = 1;
 
         // Act
         var actualPass = AutomationCheck.Check(game);
@@ -110,7 +154,9 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
     )
     {
         // Arrange
-        Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);
+        Game game = SeededGame.Generate(
+            rejectionReason: GameRejectionReason.None,
+            teamType: TeamType.TeamVs);
 
         if (verifiedScores >= 1)
         {
@@ -126,6 +172,13 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
             {
                 SeededScore.Generate(verificationStatus: VerificationStatus.Rejected, game: game);
             }
+        }
+
+        foreach ((GameScore score, var i) in game.Scores.Select((score, i) => (score, i)))
+        {
+            score.Team = i % 2 == 0
+                ? Team.Red
+                : Team.Blue;
         }
 
         game.Match.Tournament.LobbySize = tournamentTeamSize;

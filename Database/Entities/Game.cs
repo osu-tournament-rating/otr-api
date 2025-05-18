@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums;
+using Common.Enums.Verification;
+using Common.Utilities;
 using Database.Entities.Interfaces;
-using Database.Enums;
-using Database.Enums.Verification;
 using Database.Utilities;
 
 namespace Database.Entities;
@@ -10,7 +11,6 @@ namespace Database.Entities;
 /// <summary>
 /// A game played in a <see cref="Match"/>
 /// </summary>
-[Table("games")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>,
@@ -19,73 +19,64 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// <summary>
     /// osu! id
     /// </summary>
-    [Column("osu_id")]
     public long OsuId { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.Ruleset"/> the game was played in
+    /// The <see cref="Common.Enums.Ruleset"/> the game was played in
     /// </summary>
-    [Column("ruleset")]
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.ScoringType"/> used
+    /// The <see cref="Common.Enums.ScoringType"/> used
     /// </summary>
-    [Column("scoring_type")]
     public ScoringType ScoringType { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.TeamType"/> used
+    /// The <see cref="Common.Enums.TeamType"/> used
     /// </summary>
-    [Column("team_type")]
     public TeamType TeamType { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.Mods"/> enabled for the game
+    /// The <see cref="Common.Enums.Mods"/> enabled for the game
     /// </summary>
-    [Column("mods")]
+    /// <remarks>
+    /// Mods set on the game level are "forced" on all scores
+    /// </remarks>
     public Mods Mods { get; set; }
 
     /// <summary>
     /// Timestamp for the beginning of the game
     /// </summary>
-    [Column("start_time")]
     public DateTime StartTime { get; set; }
 
     /// <summary>
     /// Timestamp for the end of the game
     /// </summary>
-    [Column("end_time")]
     public DateTime EndTime { get; set; }
 
-    [Column("verification_status")] public VerificationStatus VerificationStatus { get; set; }
+    public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
     /// Rejection reason
     /// </summary>
-    [Column("rejection_reason")]
     public GameRejectionReason RejectionReason { get; set; }
 
     /// <summary>
     /// Warning flags
     /// </summary>
-    [Column("warning_flags")]
     public GameWarningFlags WarningFlags { get; set; }
 
     /// <summary>
     /// Processing status
     /// </summary>
-    [Column("processing_status")]
     public GameProcessingStatus ProcessingStatus { get; set; }
 
     [AuditIgnore]
-    [Column("last_processing_date")]
     public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Match"/> that the game was played in
     /// </summary>
-    [Column("match_id")]
     public int MatchId { get; set; }
 
     /// <summary>
@@ -96,7 +87,6 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// <summary>
     /// Id of the <see cref="Entities.Beatmap"/> played during the game
     /// </summary>
-    [Column("beatmap_id")]
     public int? BeatmapId { get; set; }
 
     /// <summary>
@@ -105,9 +95,9 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     public Beatmap? Beatmap { get; set; }
 
     /// <summary>
-    /// The win record for the game
+    /// The rosters which participated in the game
     /// </summary>
-    public GameWinRecord? WinRecord { get; set; }
+    public ICollection<GameRoster> Rosters { get; set; } = [];
 
     /// <summary>
     /// A collection of <see cref="GameScore"/>s set in the <see cref="Game"/>
@@ -124,7 +114,13 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// Denotes if the mod setting was "free mod"
     /// </summary>
     [NotMapped]
-    public bool IsFreeMod => Mods is Mods.None;
+    public bool IsFreeMod =>
+        // No forced mod
+        Mods is Mods.None
+        // The forced mod is only HT or DT
+        || (Mods is Mods.HalfTime or Mods.DoubleTime
+            // Any scores include HT or DT, but are not only HT or DT
+            && Scores.Any(s => s.Mods.HasFlag(Mods) && s.Mods != Mods));
 
     public void ResetAutomationStatuses(bool force)
     {

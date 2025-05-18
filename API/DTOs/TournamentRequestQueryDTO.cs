@@ -1,23 +1,28 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using API.DTOs.Interfaces;
-using Database.Enums;
-using Database.Enums.Verification;
+using API.Utilities.DataAnnotations;
+using Common.Enums;
+using Common.Enums.Verification;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Filtering parameters for tournaments requests
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public class TournamentRequestQueryDTO : IPaginated
 {
     [Required]
-    [Range(1, int.MaxValue)]
-    public int Page { get; init; }
+    [Positive]
+    [DefaultValue(1)]
+    public int Page { get; init; } = 1;
 
     [Required]
     [Range(1, 100)]
-    public int PageSize { get; init; }
+    [DefaultValue(25)]
+    public int PageSize { get; init; } = 25;
 
     /// <summary>
     /// Filters results for only tournaments that are verified

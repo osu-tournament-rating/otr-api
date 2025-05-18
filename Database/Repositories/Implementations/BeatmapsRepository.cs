@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Repositories.Interfaces;
+using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
@@ -14,20 +15,24 @@ public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(co
 
     public async Task<Beatmap?> GetAsync(long osuId) =>
         LocalView.FirstOrDefault(b => b.OsuId == osuId)
-        ?? await _context.Beatmaps.FirstOrDefaultAsync(x => x.OsuId == osuId);
+        ?? await _context.Beatmaps
+            .IncludeChildren()
+            .FirstOrDefaultAsync(x => x.OsuId == osuId);
 
     public async Task<IEnumerable<Beatmap>> GetAsync(IEnumerable<long> osuIds)
     {
         // Load local instances
-        IEnumerable<Beatmap> result = LocalView.Where(b => osuIds.Contains(b.OsuId)).ToList();
+        IEnumerable<Beatmap> result = [.. LocalView.Where(b => osuIds.Contains(b.OsuId))];
         // Query db for non-local instances
         IEnumerable<long> remainingIds = osuIds.Except(result.Select(p => p.OsuId));
-        return (await _context.Beatmaps.Where(b => remainingIds.Contains(b.OsuId)).ToListAsync()).Concat(result);
+        return (await _context.Beatmaps
+            .IncludeChildren()
+            .Where(b => remainingIds.Contains(b.OsuId)).ToListAsync()).Concat(result);
     }
 
     public async Task<ICollection<Beatmap>> GetOrCreateAsync(IEnumerable<long> osuIds, bool save)
     {
-        osuIds = osuIds.ToList();
+        osuIds = [.. osuIds];
 
         // Identify existing beatmaps
         var existing = (await GetAsync(osuIds)).ToList();

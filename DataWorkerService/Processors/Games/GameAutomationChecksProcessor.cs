@@ -1,5 +1,5 @@
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums.Verification;
 using DataWorkerService.AutomationChecks;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 

@@ -1,14 +1,14 @@
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 
 namespace DataWorkerService.AutomationChecks.Matches;
 
 /// <summary>
 /// Checks (and attempts to fix) <see cref="Match"/>es played in a <see cref="Tournament"/> with a
 /// <see cref="Tournament.LobbySize"/> of 1 where all <see cref="Match.Games"/> were played with a
-/// <see cref="Database.Enums.TeamType"/> of <see cref="Database.Enums.TeamType.HeadToHead"/>
-/// instead of <see cref="Database.Enums.TeamType.TeamVs"/>
+/// <see cref="TeamType"/> of <see cref="TeamType.HeadToHead"/>
+/// instead of <see cref="TeamType.TeamVs"/>
 /// </summary>
 /// <remarks>
 /// Functionally this automation check attempts to programatically correct 1v1 Tournament games where the match was
@@ -46,7 +46,7 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
 
         logger.LogInformation("Attempting to convert HeadToHead games to TeamVs [Id: {Id}]", entity.Id);
 
-        IEnumerable<Game> preRejectedGames = entity.Games
+        var preRejectedGames = entity.Games
             .Where(g => g.VerificationStatus is VerificationStatus.PreRejected)
             .ToList();
 
@@ -55,8 +55,8 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
             .Where(s => s.VerificationStatus is VerificationStatus.PreVerified)
             .ToList();
 
-        var bluePlayerOsuId = firstGameScores.ElementAt(0).Player.OsuId;
-        var redPlayerOsuId = firstGameScores.ElementAt(1).Player.OsuId;
+        var bluePlayerOsuId = firstGameScores[0].Player.OsuId;
+        var redPlayerOsuId = firstGameScores[1].Player.OsuId;
 
         if (preRejectedGames.Any(g => g.Scores
                 .Where(s => s.VerificationStatus is VerificationStatus.PreVerified)

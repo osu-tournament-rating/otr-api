@@ -1,5 +1,5 @@
+using Common.Enums;
 using Database.Entities;
-using Database.Enums;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +16,6 @@ public class UserSettingsRepository(OtrContext context, IPlayersRepository playe
     {
         Player? player = await playerRepository.GetAsync(id: playerId);
 
-        return new UserSettings() { DefaultRuleset = player?.Ruleset ?? Ruleset.Osu };
+        return new UserSettings() { DefaultRuleset = player?.DefaultRuleset ?? Ruleset.Osu };
     }
 }

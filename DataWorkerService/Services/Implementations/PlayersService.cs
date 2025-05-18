@@ -1,6 +1,6 @@
+using Common.Enums;
 using Database;
 using Database.Entities;
-using Database.Enums;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
 using DataWorkerService.Configurations;
@@ -74,7 +74,7 @@ public class PlayersService(
             {
                 player.Username = result.Username;
                 player.Country = result.CountryCode;
-                player.Ruleset = result.Ruleset;
+                player.DefaultRuleset = result.Ruleset;
 
                 if (player.User?.Settings is { DefaultRulesetIsControlled: false })
                 {

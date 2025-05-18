@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums;
 
 namespace API.DTOs;
 
@@ -30,7 +30,7 @@ public class PlayerCompactDTO
     /// <summary>
     /// The player's primary osu! ruleset
     /// </summary>
-    public Ruleset Ruleset { get; init; }
+    public Ruleset DefaultRuleset { get; init; }
 
     /// <summary>
     /// Id of the associated user, if available

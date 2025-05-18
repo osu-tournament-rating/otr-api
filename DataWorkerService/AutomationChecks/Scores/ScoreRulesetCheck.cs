@@ -1,10 +1,11 @@
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums.Verification;
 
 namespace DataWorkerService.AutomationChecks.Scores;
 
 /// <summary>
-/// Checks for <see cref="GameScore"/>s set in a <see cref="Database.Enums.Ruleset"/>
+/// Checks for <see cref="GameScore"/>s set in a <see cref="Ruleset"/>
 /// differing from the parent <see cref="Tournament"/>
 /// </summary>
 public class ScoreRulesetCheck(ILogger<ScoreRulesetCheck> logger) : AutomationCheckBase<GameScore>(logger)

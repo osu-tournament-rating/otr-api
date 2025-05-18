@@ -5,7 +5,7 @@ using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities.Extensions;
 using Asp.Versioning;
-using Database.Enums;
+using Common.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -55,7 +55,7 @@ public class UsersController(
     [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateScopesAsync(int id, [FromBody][Required] List<string> scopes)
     {
-        scopes = scopes.Select(s => s.ToLower()).ToList();
+        scopes = [.. scopes.Select(s => s.ToLower())];
         foreach (var scope in scopes)
         {
             if (!OtrClaims.Roles.IsUserAssignableRole(scope))

@@ -1,22 +1,24 @@
+using Common.Enums;
+using Common.Enums.Queries;
+using Common.Enums.Verification;
 using Database.Entities;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
-using Database.Enums;
-using Database.Enums.Queries;
-using Database.Enums.Verification;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Utilities.Extensions;
 
 public static class QueryExtensions
 {
-    /// <summary>
-    /// Gets the desired "page" of a query
-    /// </summary>
-    /// <param name="limit">Page size</param>
-    /// <param name="page">Desired page (zero-indexed)</param>
-    public static IQueryable<T> Page<T>(this IQueryable<T> query, int limit, int page) =>
-        query.AsQueryable().Skip(limit * page).Take(limit);
+    #region Beatmaps
+
+    public static IQueryable<Beatmap> IncludeChildren(this IQueryable<Beatmap> query) =>
+        query
+            .Include(b => b.Beatmapset)
+            .Include(b => b.Creators)
+            .Include(b => b.Attributes);
+
+    #endregion
 
     #region Ratings
 
@@ -211,12 +213,12 @@ public static class QueryExtensions
                 ? query.OrderByDescending(t => t.Name)
                 : query.OrderBy(t => t.Name),
             TournamentQuerySortType.StartTime => descending
-                ? query.OrderByDescending(t => t.StartTime)
+                ? query.OrderByDescending(t => t.StartTime ?? DateTime.MinValue)
                 : query.OrderBy(t => t.StartTime),
             TournamentQuerySortType.EndTime => descending
-                ? query.OrderByDescending(t => t.EndTime)
+                ? query.OrderByDescending(t => t.EndTime ?? DateTime.MinValue)
                 : query.OrderBy(t => t.EndTime),
-            TournamentQuerySortType.Created => descending
+            TournamentQuerySortType.SubmissionDate => descending
                 ? query.OrderByDescending(t => t.Created)
                 : query.OrderBy(t => t.Created),
             TournamentQuerySortType.LobbySize => descending
@@ -245,9 +247,9 @@ public static class QueryExtensions
 
     /// <summary>
     /// Includes navigation properties for a <see cref="Match"/>
-    /// <br/>Includes: <see cref="Match.WinRecord"/>, <see cref="Match.PlayerMatchStats"/>,
+    /// <br/>Includes: <see cref="Match.Rosters"/>, <see cref="Match.PlayerMatchStats"/>,
     /// <see cref="Match.PlayerRatingAdjustments"/>, <see cref="Match.Games"/>
-    /// (<see cref="Game.Scores"/>, <see cref="Game.Beatmap"/>, <see cref="Game.WinRecord"/>)
+    /// (<see cref="Game.Scores"/>, <see cref="Game.Beatmap"/>, <see cref="Game.Rosters"/>)
     /// </summary>
     /// <param name="verified">Whether all navigations must be verified</param>
     public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query, bool verified)
@@ -260,23 +262,28 @@ public static class QueryExtensions
                                                       s.ProcessingStatus == ScoreProcessingStatus.Done));
         }
 
-
         return query
-            .Include(m => m.Games)
-            .ThenInclude(g => g.Scores)
-            .ThenInclude(gs => gs.AdminNotes)
-            .Include(m => m.WinRecord)
+            .Include(m => m.Rosters)
             .Include(m => m.PlayerMatchStats)
             .Include(m => m.PlayerRatingAdjustments)
             .ThenInclude(ra => ra.Player)
             .Include(m => m.Games)
+            .ThenInclude(g => g.Scores)
+            .ThenInclude(gs => gs.AdminNotes)
+            .ThenInclude(an => an.AdminUser.Player)
+            .Include(m => m.Games)
             .ThenInclude(g => g.AdminNotes)
+            .ThenInclude(an => an.AdminUser.Player)
             .Include(m => m.Games)
             .ThenInclude(g => g.Beatmap)
+            .ThenInclude(b => b!.Beatmapset)
+            .ThenInclude(bs => bs!.Creator)
             .Include(m => m.Games)
-            .ThenInclude(g => g.WinRecord);
+            .ThenInclude(g => g.Beatmap)
+            .ThenInclude(b => b!.Creators)
+            .Include(m => m.Games)
+            .ThenInclude(g => g.Rosters);
     }
-
 
     /// <summary>
     /// Includes the <see cref="Tournament"/> navigation on this <see cref="Match"/>
@@ -349,10 +356,10 @@ public static class QueryExtensions
             MatchQuerySortType.OsuId =>
                 descending ? query.OrderByDescending(m => m.OsuId) : query.OrderBy(m => m.OsuId),
             MatchQuerySortType.StartTime => descending
-                ? query.OrderByDescending(m => m.StartTime)
+                ? query.OrderByDescending(m => m.StartTime ?? DateTime.MinValue)
                 : query.OrderBy(m => m.StartTime),
             MatchQuerySortType.EndTime => descending
-                ? query.OrderByDescending(m => m.EndTime)
+                ? query.OrderByDescending(m => m.EndTime ?? DateTime.MinValue)
                 : query.OrderBy(m => m.EndTime),
             MatchQuerySortType.Created => descending
                 ? query.OrderByDescending(m => m.Created)
@@ -378,7 +385,7 @@ public static class QueryExtensions
 
     /// <summary>
     /// Includes navigation properties for a <see cref="Game"/>
-    /// <br/>Includes: <see cref="Game.Beatmap"/>, <see cref="Game.WinRecord"/>,
+    /// <br/>Includes: <see cref="Game.Beatmap"/>, <see cref="Game.Rosters"/>,
     /// <see cref="Game.Scores"/>, <see cref="Game.AdminNotes"/>,
     /// <see cref="Game.Audits"/>
     /// </summary>
@@ -393,12 +400,14 @@ public static class QueryExtensions
 
         return query
             .Include(g => g.Beatmap)
-            .Include(g => g.WinRecord)
+            .Include(g => g.Rosters)
             .Include(g => g.Scores)
             .ThenInclude(s => s.Player)
             .Include(g => g.Scores)
             .ThenInclude(gs => gs.AdminNotes)
+            .ThenInclude(an => an.AdminUser.Player)
             .Include(g => g.AdminNotes)
+            .ThenInclude(an => an.AdminUser.Player)
             .Include(g => g.Audits);
     }
 
@@ -545,10 +554,18 @@ public static class QueryExtensions
 
     #region Admin Notes
 
+    /// <summary>
+    /// Includes admin notes, with all required children, for a given <typeparamref name="TEntity"/>
+    /// </summary>
+    /// <param name="query"></param>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TAdminNote"></typeparam>
+    /// <returns></returns>
     public static IQueryable<TEntity> IncludeAdminNotes<TEntity, TAdminNote>(this IQueryable<TEntity> query)
         where TEntity : class, IAdminNotableEntity<TAdminNote>
         where TAdminNote : IAdminNoteEntity
-        => query.Include(e => e.AdminNotes);
+        => query.Include(e => e.AdminNotes)
+            .ThenInclude(an => an.AdminUser.Player);
 
     #endregion
 }

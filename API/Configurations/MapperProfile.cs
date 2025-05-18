@@ -14,15 +14,43 @@ public class MapperProfile : Profile
         CreateMap<AdminNoteEntityBase, AdminNoteDTO>();
 
         CreateMap<Beatmap, BeatmapDTO>();
+        CreateMap<Beatmapset, BeatmapsetCompactDTO>();
+        CreateMap<BeatmapAttributes, BeatmapAttributesDTO>();
 
         CreateMap<Game, GameDTO>()
             .ForMember(x => x.Players, opt => opt.Ignore());
-        CreateMap<GameWinRecord, GameWinRecordDTO>();
 
+        CreateMap<GameDTO, Game>(MemberList.Source)
+            .ForMember(x => x.Beatmap, opt => opt.Ignore())
+            .ForMember(x => x.Rosters, opt => opt.Ignore())
+            .ForMember(x => x.Match, opt => opt.Ignore())
+            .ForMember(x => x.AdminNotes, opt => opt.Ignore())
+            .ForMember(x => x.IsFreeMod, opt => opt.UseDestinationValue())
+            .ForSourceMember(x => x.Rosters, opt => opt.DoNotValidate())
+            .ForSourceMember(x => x.AdminNotes, opt => opt.DoNotValidate())
+            .ForSourceMember(x => x.IsFreeMod, opt => opt.DoNotValidate())
+            .ForSourceMember(x => x.Players, opt => opt.DoNotValidate());
+
+        CreateMap<GameRoster, GameRosterDTO>();
+
+        // Two-way mapping between entity and DTO,
+        // ignores fields which should not be mapped
+        // from the DTO to the entity.
         CreateMap<GameScore, GameScoreDTO>();
+        CreateMap<GameScoreDTO, GameScore>(MemberList.Source)
+            .ForMember(x => x.Accuracy, opt => opt.UseDestinationValue())
+            .ForMember(x => x.AdminNotes, opt => opt.Ignore())
+            .ForSourceMember(x => x.Accuracy, opt => opt.DoNotValidate())
+            .ForSourceMember(x => x.AdminNotes, opt => opt.DoNotValidate());
+
+        CreateMap<Match, MatchCompactDTO>()
+            .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset));
+
+        CreateMap<MatchCompactDTO, Match>(MemberList.Source)
+            .ForSourceMember(x => x.Ruleset, opt => opt.DoNotValidate());
 
         CreateMap<Match, MatchDTO>()
-            .ForMember(x => x.Ruleset, opt => opt.MapFrom(x => x.Tournament.Ruleset))
+            .IncludeBase<Match, MatchCompactDTO>()
             .ForMember(x => x.Players, opt => opt.Ignore());
 
         CreateMap<Match, MatchSubmissionStatusDTO>();
@@ -42,8 +70,13 @@ public class MapperProfile : Profile
         CreateMap<Player, PlayerCompactDTO>()
             .ForMember(x => x.UserId, opt => opt.MapFrom(y => y.User!.Id));
         CreateMap<PlayerOsuRulesetData, PlayerOsuRulesetDataDTO>();
+        CreateMap<PlayerTournamentStats, PlayerTournamentStatsDTO>();
 
         CreateMap<Tournament, TournamentCompactDTO>();
+        CreateMap<TournamentCompactDTO, Tournament>(MemberList.Source)
+            .ForMember(x => x.SubmittedByUser, opt => opt.Ignore())
+            .ForMember(x => x.VerifiedByUser, opt => opt.Ignore());
+
         CreateMap<Tournament, TournamentDTO>();
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()

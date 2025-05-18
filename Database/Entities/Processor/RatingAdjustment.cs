@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using Database.Enums;
+using Common.Enums;
 
 namespace Database.Entities.Processor;
 
@@ -17,56 +17,47 @@ namespace Database.Entities.Processor;
 /// For example, a <see cref="RatingAdjustment"/> is created for each <see cref="Entities.Match"/> played
 /// or elapsed period of decay. This distinction is denoted by the <see cref="AdjustmentType"/>
 /// </remarks>
-[Table("rating_adjustments")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class RatingAdjustment : EntityBase
 {
     /// <summary>
     /// The <see cref="RatingAdjustmentType"/>
     /// </summary>
-    [Column("adjustment_type")]
     public RatingAdjustmentType AdjustmentType { get; init; }
 
     /// <summary>
     ///     The <see cref="Ruleset" />
     /// </summary>
-    [Column("ruleset")]
     public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Timestamp for when the adjustment was applied
     /// </summary>
-    [Column("timestamp")]
     public DateTime Timestamp { get; init; }
 
     /// <summary>
     /// Rating before the adjustment was considered
     /// </summary>
-    [Column("rating_before")]
     public double RatingBefore { get; init; }
 
     /// <summary>
     /// Rating after the adjustment was considered
     /// </summary>
-    [Column("rating_after")]
     public double RatingAfter { get; init; }
 
     /// <summary>
     /// Volatility before the adjustment was considered
     /// </summary>
-    [Column("volatility_before")]
     public double VolatilityBefore { get; init; }
 
     /// <summary>
     /// Volatility after the adjustment was considered
     /// </summary>
-    [Column("volatility_after")]
     public double VolatilityAfter { get; init; }
 
     /// <summary>
     /// Id of the <see cref="Processor.PlayerRating"/> that the adjustment affects
     /// </summary>
-    [Column("player_rating_id")]
     public int PlayerRatingId { get; init; }
 
     /// <summary>
@@ -77,7 +68,6 @@ public class RatingAdjustment : EntityBase
     /// <summary>
     /// Id of the <see cref="Entities.Player"/> the adjustment was generated for
     /// </summary>
-    [Column("player_id")]
     public int PlayerId { get; init; }
 
     /// <summary>
@@ -91,7 +81,6 @@ public class RatingAdjustment : EntityBase
     /// <remarks>
     /// Optional. Only populated if <see cref="AdjustmentType"/> is <see cref="RatingAdjustmentType.Match"/>
     /// </remarks>
-    [Column("match_id")]
     public int? MatchId { get; init; }
 
     /// <summary>
@@ -106,11 +95,11 @@ public class RatingAdjustment : EntityBase
     /// Total change in rating
     /// </summary>
     [NotMapped]
-    public double RatingDelta => RatingBefore - RatingAfter;
+    public double RatingDelta => RatingAfter - RatingBefore;
 
     /// <summary>
     /// Total change in volatility
     /// </summary>
     [NotMapped]
-    public double VolatilityDelta => VolatilityBefore - VolatilityAfter;
+    public double VolatilityDelta => VolatilityAfter - VolatilityBefore;
 }

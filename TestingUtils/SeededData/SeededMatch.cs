@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 
 namespace TestingUtils.SeededData;
 
@@ -51,7 +51,7 @@ public static class SeededMatch
         }
 
         seededMatch.StartTime = startTime ?? SeededDate.Generate();
-        seededMatch.EndTime = endTime ?? SeededDate.GenerateAfter(seededMatch.StartTime);
+        seededMatch.EndTime = endTime ?? SeededDate.GenerateAfter(seededMatch.StartTime.Value);
 
         seededTournament.Matches.Add(seededMatch);
 
@@ -207,8 +207,6 @@ public static class SeededMatch
                 id: 1,
                 osuId: 4368596,
                 hasData: true,
-                mapperId: 8473573,
-                mapperName: "funny",
                 artist: "youman feat. GUMI",
                 title: "Weenywalker",
                 diffName: "holy flip dude",
@@ -219,7 +217,7 @@ public static class SeededMatch
                 ar: 9.3,
                 hp: 5,
                 od: 9.3,
-                length: 237,
+                totalLength: 237,
                 ruleset: Ruleset.Osu,
                 circleCount: 860,
                 sliderCount: 391,
@@ -406,8 +404,6 @@ public static class SeededMatch
                 id: 2,
                 osuId: 3257371,
                 hasData: true,
-                mapperId: 5346261,
-                mapperName: "bob",
                 artist: "tsunamix_underground",
                 title: "Period. ~ Seishin no Kousoku to Jiyuu o Tsukamu Jouka (Cut Ver.)",
                 diffName: "hidden extra.",
@@ -418,7 +414,7 @@ public static class SeededMatch
                 ar: 8.5,
                 hp: 6,
                 od: 9,
-                length: 110,
+                totalLength: 110,
                 ruleset: Ruleset.Osu,
                 circleCount: 519,
                 sliderCount: 110,
@@ -605,8 +601,6 @@ public static class SeededMatch
                 id: 3,
                 osuId: 4368609,
                 hasData: true,
-                mapperId: 2848604,
-                mapperName: "toybot",
                 artist: "yuikonnu",
                 title: "Taifuu Ikka? Risan",
                 diffName: "I NEED YOU",
@@ -617,7 +611,7 @@ public static class SeededMatch
                 ar: 9.5,
                 hp: 5,
                 od: 9,
-                length: 177,
+                totalLength: 177,
                 ruleset: Ruleset.Osu,
                 circleCount: 449,
                 sliderCount: 470,
@@ -804,8 +798,6 @@ public static class SeededMatch
                 id: 4,
                 osuId: 4368554,
                 hasData: true,
-                mapperId: 4879380,
-                mapperName: "Aistre",
                 artist: "Umeri",
                 title: "paranoia",
                 diffName: "deppy's insane",
@@ -816,7 +808,7 @@ public static class SeededMatch
                 ar: 6,
                 hp: 7,
                 od: 8,
-                length: 216,
+                totalLength: 216,
                 ruleset: Ruleset.Osu,
                 circleCount: 519,
                 sliderCount: 179,
@@ -1003,8 +995,6 @@ public static class SeededMatch
                 id: 5,
                 osuId: 4368565,
                 hasData: true,
-                mapperId: 9119507,
-                mapperName: "Dada",
                 artist: "Motoki Zakuro",
                 title: "Intellectual Rapist ver-C",
                 diffName: "The Detective's Soliloquy",
@@ -1015,7 +1005,7 @@ public static class SeededMatch
                 ar: 9.6,
                 hp: 6.8,
                 od: 9.2,
-                length: 269,
+                totalLength: 269,
                 ruleset: Ruleset.Osu,
                 circleCount: 744,
                 sliderCount: 274,
@@ -1202,8 +1192,6 @@ public static class SeededMatch
                 id: 6,
                 osuId: 2040486,
                 hasData: true,
-                mapperId: 8688812,
-                mapperName: "Mir",
                 artist: "lapix",
                 title: "Horizon Blue feat. Kanata.N",
                 diffName: "Endless Expanse",
@@ -1214,7 +1202,7 @@ public static class SeededMatch
                 ar: 9.5,
                 hp: 4,
                 od: 9,
-                length: 220,
+                totalLength: 220,
                 ruleset: Ruleset.Osu,
                 circleCount: 558,
                 sliderCount: 561,
@@ -1401,8 +1389,6 @@ public static class SeededMatch
                 id: 59,
                 osuId: 4158054,
                 hasData: true,
-                mapperId: 7894340,
-                mapperName: "KnightC0re",
                 artist: "Satoshi Terashima",
                 title: "GO GET'EM",
                 diffName: "expert",
@@ -1413,7 +1399,7 @@ public static class SeededMatch
                 ar: 9.3,
                 hp: 5,
                 od: 9,
-                length: 98,
+                totalLength: 98,
                 ruleset: Ruleset.Osu,
                 circleCount: 442,
                 sliderCount: 178,

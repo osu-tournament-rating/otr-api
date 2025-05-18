@@ -1,6 +1,7 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using Database.Enums;
-using Database.Enums.Verification;
+using Common.Enums;
+using Common.Enums.Verification;
 using JetBrains.Annotations;
 
 namespace API.DTOs;
@@ -23,21 +24,25 @@ public class GameDTO
     /// <summary>
     /// The ruleset
     /// </summary>
+    [EnumDataType(typeof(Ruleset))]
     public Ruleset Ruleset { get; init; }
 
     /// <summary>
     /// The scoring type used
     /// </summary>
+    [EnumDataType(typeof(ScoringType))]
     public ScoringType ScoringType { get; init; }
 
     /// <summary>
     /// The team type used
     /// </summary>
+    [EnumDataType(typeof(TeamType))]
     public TeamType TeamType { get; init; }
 
     /// <summary>
     /// The mods enabled
     /// </summary>
+    [EnumDataType(typeof(Mods))]
     public Mods Mods { get; init; }
 
     /// <summary>
@@ -48,21 +53,25 @@ public class GameDTO
     /// <summary>
     /// The verification status
     /// </summary>
+    [EnumDataType(typeof(VerificationStatus))]
     public VerificationStatus VerificationStatus { get; init; }
 
     /// <summary>
     /// The processing status
     /// </summary>
+    [EnumDataType(typeof(GameProcessingStatus))]
     public GameProcessingStatus ProcessingStatus { get; init; }
 
     /// <summary>
     /// Warning flags
     /// </summary>
+    [EnumDataType(typeof(GameWarningFlags))]
     public GameWarningFlags WarningFlags { get; init; }
 
     /// <summary>
     /// The rejection reason
     /// </summary>
+    [EnumDataType(typeof(GameRejectionReason))]
     public GameRejectionReason RejectionReason { get; init; }
 
     /// <summary>
@@ -83,7 +92,7 @@ public class GameDTO
     /// <summary>
     /// Win record
     /// </summary>
-    public GameWinRecordDTO? WinRecord { get; init; }
+    public IEnumerable<GameRosterDTO> Rosters { get; init; } = [];
 
     /// <summary>
     /// All participating players

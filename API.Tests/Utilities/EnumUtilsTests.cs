@@ -1,5 +1,5 @@
-using Database.Enums.Verification;
-using Database.Utilities;
+using Common.Enums.Verification;
+using Common.Utilities;
 
 namespace APITests.Utilities;
 

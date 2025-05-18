@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
-using Database.Enums;
+using Common.Enums;
 using OsuApiClient.Net.Deserialization.ValueConverters;
 using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 
@@ -20,7 +20,7 @@ public class GameSlotInfo : IModel
     public int Slot { get; init; }
 
     /// <summary>
-    /// The <see cref="Database.Enums.Team"/> the player was on
+    /// The <see cref="Common.Enums.Team"/> the player was on
     /// </summary>
     [ValueConverter(typeof(TeamConverter))]
     public Team Team { get; init; }

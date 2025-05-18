@@ -9,14 +9,16 @@ namespace DataWorkerService.Services.Interfaces;
 public interface IOsuApiDataParserService
 {
     /// <summary>
-    /// Parses data from a <see cref="MultiplayerMatch"/> into a <see cref="Match"/>
+    /// Parses the contents of a <see cref="MultiplayerMatch"/> into a <see cref="Match"/>
     /// </summary>
-    /// <remarks>
-    /// Creates (or updates existing) <see cref="Game"/>s, <see cref="Player"/>s, <see cref="Beatmap"/>s,
-    /// and <see cref="Database.Entities.GameScore"/>s.
-    /// Does not save changes to the database.
-    /// </remarks>
-    /// <param name="match"><see cref="Match"/> to populate with data</param>
-    /// <param name="apiMatch"><see cref="MultiplayerMatch"/> data</param>
+    /// <param name="match">Database match</param>
+    /// <param name="apiMatch">osu! API match</param>
     Task ParseMatchAsync(Match match, MultiplayerMatch apiMatch);
+
+    /// <summary>
+    /// Gathers and parses all required information for <see cref="Beatmap"/>s and <see cref="BeatmapSet"/>s for a
+    /// list of osu! ids
+    /// </summary>
+    /// <param name="beatmapOsuIds">Beatmap osu! ids</param>
+    Task ProcessBeatmapsAsync(IEnumerable<long> beatmapOsuIds);
 }

@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using API.DTOs.Interfaces;
-using Database.Enums;
-using Database.Enums.Queries;
-using Database.Enums.Verification;
+using Common.Enums;
+using Common.Enums.Queries;
+using Common.Enums.Verification;
 
 namespace API.DTOs;
 

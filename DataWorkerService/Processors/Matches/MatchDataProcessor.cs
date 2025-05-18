@@ -1,6 +1,6 @@
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 using DataWorkerService.Services.Interfaces;
 using OsuApiClient;
 using OsuApiClient.Domain.Osu.Multiplayer;

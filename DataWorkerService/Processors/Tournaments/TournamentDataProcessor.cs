@@ -1,10 +1,7 @@
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums.Verification;
 using DataWorkerService.Processors.Resolvers.Interfaces;
-using DataWorkerService.Services.Implementations;
-using OsuApiClient;
-using OsuApiClient.Domain.Osu.Beatmaps;
-using Beatmap = Database.Entities.Beatmap;
+using DataWorkerService.Services.Interfaces;
 
 namespace DataWorkerService.Processors.Tournaments;
 
@@ -14,7 +11,7 @@ namespace DataWorkerService.Processors.Tournaments;
 public class TournamentDataProcessor(
     ILogger<TournamentDataProcessor> logger,
     IMatchProcessorResolver matchProcessorResolver,
-    IOsuClient osuClient
+    IOsuApiDataParserService osuApiDataParserService
 ) : ProcessorBase<Tournament>(logger)
 {
     protected override async Task OnProcessingAsync(Tournament entity, CancellationToken cancellationToken)
@@ -30,23 +27,12 @@ public class TournamentDataProcessor(
             return;
         }
 
+        await osuApiDataParserService.ProcessBeatmapsAsync(entity.PooledBeatmaps.Select(b => b.OsuId));
+
         IProcessor<Match> matchDataProcessor = matchProcessorResolver.GetDataProcessor();
         foreach (Match match in entity.Matches)
         {
             await matchDataProcessor.ProcessAsync(match, cancellationToken);
-        }
-
-        // Process data for pooled beatmaps that were not played
-        foreach (Beatmap beatmap in entity.PooledBeatmaps.Where(b => b.Games.Count == 0 && !b.HasData))
-        {
-            BeatmapExtended? apiBeatmap = await osuClient.GetBeatmapAsync(beatmap.OsuId, cancellationToken);
-
-            if (apiBeatmap is null)
-            {
-                continue;
-            }
-
-            OsuApiDataParserService.ParseBeatmap(beatmap, apiBeatmap);
         }
 
         logger.LogInformation(
@@ -62,8 +48,8 @@ public class TournamentDataProcessor(
         // If all matches completed data processing, advance processing status
         if (entity.Matches.All(m => m.ProcessingStatus > MatchProcessingStatus.NeedsData))
         {
-            entity.StartTime = entity.Matches.DefaultIfEmpty().Min(x => x?.StartTime ?? DateTime.MinValue);
-            entity.EndTime = entity.Matches.DefaultIfEmpty().Max(x => x?.EndTime ?? DateTime.MinValue);
+            entity.StartTime ??= entity.Matches.DefaultIfEmpty().Min(x => x?.StartTime);
+            entity.EndTime ??= entity.Matches.DefaultIfEmpty().Max(x => x?.EndTime);
 
             entity.ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
         }

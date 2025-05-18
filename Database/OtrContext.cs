@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
-using Database.Enums;
-using Database.Enums.Verification;
-using Database.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -18,8 +17,6 @@ namespace Database;
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(options)
 {
-    private readonly AuditingInterceptor _auditingInterceptor = new();
-
     /// <summary>
     /// SQL function for getting the current timestamp
     /// </summary>
@@ -32,15 +29,19 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     private const string SqlPlaceholderDate = "'2007-09-17T00:00:00'::timestamp";
 
     public virtual DbSet<Beatmap> Beatmaps { get; set; }
+    public virtual DbSet<BeatmapAttributes> BeatmapAttributes { get; set; }
+    public virtual DbSet<Beatmapset> Beatmapsets { get; set; }
     public virtual DbSet<Game> Games { get; set; }
+    public virtual DbSet<GameAdminNote> GameAdminNotes { get; set; }
     public virtual DbSet<GameAudit> GameAudits { get; set; }
     public virtual DbSet<GameScore> GameScores { get; set; }
+    public virtual DbSet<GameScoreAdminNote> GameScoreAdminNotes { get; set; }
     public virtual DbSet<GameScoreAudit> GameScoreAudits { get; set; }
-    public virtual DbSet<GameWinRecord> GameWinRecords { get; set; }
+    public virtual DbSet<GameRoster> GameRosters { get; set; }
     public virtual DbSet<Match> Matches { get; set; }
     public virtual DbSet<MatchAdminNote> MatchAdminNotes { get; set; }
     public virtual DbSet<MatchAudit> MatchAudits { get; set; }
-    public virtual DbSet<MatchWinRecord> MatchWinRecords { get; set; }
+    public virtual DbSet<MatchRoster> MatchRosters { get; set; }
     public virtual DbSet<OAuthClient> OAuthClients { get; set; }
     public virtual DbSet<Player> Players { get; set; }
     public virtual DbSet<PlayerHighestRanks> PlayerHighestRanks { get; set; }
@@ -54,9 +55,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     public virtual DbSet<TournamentAudit> TournamentAudits { get; set; }
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<UserSettings> UserSettings { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.AddInterceptors(_auditingInterceptor);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,12 +81,71 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(b => b.HasData).HasDefaultValue(true);
 
+            // Relation: BeatmapAttributes
+            entity
+                .HasMany(b => b.Attributes)
+                .WithOne(ba => ba.Beatmap)
+                .HasForeignKey(ba => ba.BeatmapId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: Beatmapset
+            entity
+                .HasOne(b => b.Beatmapset)
+                .WithMany(bs => bs.Beatmaps)
+                .HasForeignKey(b => b.BeatmapsetId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Relation: Games
             entity
                 .HasMany(b => b.Games)
                 .WithOne(g => g.Beatmap)
                 .HasForeignKey(g => g.BeatmapId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Relation: Players
+            entity
+                .HasMany(b => b.Creators)
+                .WithMany(p => p.CreatedBeatmaps)
+                .UsingEntity("join_beatmap_creators");
+
+            entity.HasIndex(b => b.OsuId).IsUnique();
+        });
+
+        modelBuilder.Entity<BeatmapAttributes>(entity =>
+        {
+            entity.Property(ba => ba.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(ba => ba.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Beatmap
+            entity
+                .HasOne(ba => ba.Beatmap)
+                .WithMany(b => b.Attributes)
+                .HasForeignKey(ba => ba.BeatmapId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(ba => new { ba.BeatmapId, ba.Mods }).IsUnique();
+        });
+
+        modelBuilder.Entity<Beatmapset>(entity =>
+        {
+            entity.Property(b => b.Id).UseIdentityAlwaysColumn();
+
+            entity.Property(b => b.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: Player (Creator)
+            entity
+                .HasOne(b => b.Creator)
+                .WithMany(p => p.CreatedBeatmapsets)
+                .HasForeignKey(b => b.CreatorId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: Beatmaps
+            entity
+                .HasMany(b => b.Beatmaps)
+                .WithOne(bm => bm.Beatmapset)
+                .HasForeignKey(bm => bm.BeatmapsetId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(b => b.OsuId).IsUnique();
         });
@@ -120,14 +177,14 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasOne(g => g.Beatmap)
                 .WithMany(b => b.Games)
                 .HasForeignKey(g => g.BeatmapId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Relation: GameWinRecord
+            // Relation: GameRoster
             entity
-                .HasOne(g => g.WinRecord)
-                .WithOne(gwr => gwr.Game)
-                .HasForeignKey<GameWinRecord>(gwr => gwr.GameId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .HasMany(g => g.Rosters)
+                .WithOne(gr => gr.Game)
+                .HasForeignKey(gr => gr.GameId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: GameScore
             entity
@@ -141,7 +198,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasMany(g => g.Audits)
                 .WithOne()
                 .HasForeignKey(ga => ga.ReferenceId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Admin Notes
             entity
@@ -183,6 +240,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(ga => ga.ActionType);
 
             entity.Property(ga => ga.Changes)
+                .HasColumnType("jsonb")
                 .HasConversion(auditChangesConverter)
                 .Metadata.SetValueComparer(auditChangesComparer);
 
@@ -262,6 +320,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(gsa => gsa.ActionType);
 
             entity.Property(gsa => gsa.Changes)
+                .HasColumnType("jsonb")
                 .HasConversion(auditChangesConverter)
                 .Metadata.SetValueComparer(auditChangesComparer);
 
@@ -273,7 +332,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        modelBuilder.Entity<GameWinRecord>(entity =>
+        modelBuilder.Entity<GameRoster>(entity =>
         {
             entity.Property(gwr => gwr.Id).UseIdentityAlwaysColumn();
 
@@ -281,13 +340,15 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             // Relation: Game
             entity
-                .HasOne(gwr => gwr.Game)
-                .WithOne(g => g.WinRecord)
-                .HasForeignKey<GameWinRecord>(gwr => gwr.GameId)
+                .HasOne(gr => gr.Game)
+                .WithMany(g => g.Rosters)
+                .HasForeignKey(gr => gr.GameId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(x => x.WinnerRoster);
-            entity.HasIndex(x => x.GameId).IsUnique();
+            entity.HasIndex(x => x.Roster);
+            entity.HasIndex(x => x.GameId);
+
+            entity.HasIndex(x => new { x.GameId, x.Roster }).IsUnique();
         });
 
         modelBuilder.Entity<Match>(entity =>
@@ -301,8 +362,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(m => m.ProcessingStatus).HasDefaultValue(MatchProcessingStatus.NeedsData);
 
             entity.Property(m => m.Created).HasDefaultValueSql(SqlCurrentTimestamp);
-            entity.Property(m => m.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
-            entity.Property(m => m.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
 
             entity.Property(m => m.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
 
@@ -327,11 +386,11 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .HasForeignKey(m => m.VerifiedByUserId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Relation: MatchWinRecord
+            // Relation: MatchRoster
             entity
-                .HasOne(m => m.WinRecord)
-                .WithOne(mwr => mwr.Match)
-                .HasForeignKey<MatchWinRecord>(mwr => mwr.MatchId)
+                .HasMany(m => m.Rosters)
+                .WithOne(mr => mr.Match)
+                .HasForeignKey(mr => mr.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Relation: Games
@@ -400,6 +459,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(ma => ma.ActionType);
 
             entity.Property(ma => ma.Changes)
+                .HasColumnType("jsonb")
                 .HasConversion(auditChangesConverter)
                 .Metadata.SetValueComparer(auditChangesComparer);
 
@@ -411,22 +471,23 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .OnDelete(DeleteBehavior.SetNull);
         });
 
-        modelBuilder.Entity<MatchWinRecord>(entity =>
+        modelBuilder.Entity<MatchRoster>(entity =>
         {
-            entity.Property(mwr => mwr.Id).UseIdentityAlwaysColumn();
+            entity.Property(mr => mr.Id).UseIdentityAlwaysColumn();
 
-            entity.Property(mwr => mwr.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+            entity.Property(mr => mr.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
             // Relation: Match
             entity
-                .HasOne(mwr => mwr.Match)
-                .WithOne(m => m.WinRecord)
-                .HasForeignKey<MatchWinRecord>(mwr => mwr.MatchId)
+                .HasOne(mr => mr.Match)
+                .WithMany(m => m.Rosters)
+                .HasForeignKey(mr => mr.MatchId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasIndex(mwr => mwr.LoserRoster);
-            entity.HasIndex(mwr => mwr.WinnerRoster);
-            entity.HasIndex(mwr => mwr.MatchId).IsUnique();
+            entity.HasIndex(mr => mr.Roster);
+            entity.HasIndex(mr => mr.MatchId);
+
+            entity.HasIndex(mr => new { mr.MatchId, mr.Roster }).IsUnique();
         });
 
         modelBuilder.Entity<OAuthClient>(entity =>
@@ -472,7 +533,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(p => p.Username).HasDefaultValue(string.Empty);
             entity.Property(p => p.Country).HasDefaultValue(string.Empty);
-            entity.Property(p => p.Ruleset).HasDefaultValue(Ruleset.Osu);
+            entity.Property(p => p.DefaultRuleset).HasDefaultValue(Ruleset.Osu);
             entity.Property(p => p.OsuLastFetch).HasDefaultValueSql(SqlPlaceholderDate);
             entity.Property(p => p.OsuTrackLastFetch).HasDefaultValueSql(SqlPlaceholderDate);
 
@@ -540,6 +601,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(x => x.OsuId).IsUnique();
+            entity.HasIndex(p => p.Country);
         });
 
         modelBuilder.Entity<PlayerMatchStats>(entity =>
@@ -581,6 +643,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(rd => new { rd.PlayerId, rd.Ruleset }).IsUnique();
+            entity.HasIndex(rd => new { rd.PlayerId, rd.Ruleset, rd.GlobalRank }).IsUnique();
         });
 
         modelBuilder.Entity<PlayerTournamentStats>(entity =>
@@ -658,7 +721,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.HasIndex(pr => pr.Ruleset);
             entity.HasIndex(pr => pr.PlayerId);
-            entity.HasIndex(pr => pr.Rating).IsDescending(true);
+            entity.HasIndex(pr => pr.Rating).IsDescending(true);         // ruleset, rating
+            entity.HasIndex(pr => new { pr.Ruleset, pr.Rating }).IsDescending(false, true);
             entity.HasIndex(pr => new { pr.PlayerId, pr.Ruleset }).IsUnique();
         });
 
@@ -700,9 +764,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(t => t.VerificationStatus).HasDefaultValue(VerificationStatus.None);
             entity.Property(t => t.RejectionReason).HasDefaultValue(TournamentRejectionReason.None);
             entity.Property(t => t.ProcessingStatus).HasDefaultValue(TournamentProcessingStatus.NeedsApproval);
-
-            entity.Property(t => t.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
-            entity.Property(t => t.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
 
             entity.Property(t => t.Created).HasDefaultValueSql(SqlCurrentTimestamp);
             entity.Property(t => t.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
@@ -753,16 +814,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity
                 .HasMany(t => t.PooledBeatmaps)
                 .WithMany(pb => pb.TournamentsPooledIn)
-                .UsingEntity<Dictionary<string, object>>(
-                    "__join__pooled_beatmaps",
-                    r => r.HasOne<Beatmap>()
-                        .WithMany()
-                        .HasForeignKey("beatmap_id")
-                        .HasConstraintName("FK_JoinTable_Beatmap"),
-                    l => l.HasOne<Tournament>()
-                        .WithMany()
-                        .HasForeignKey("tournament_id")
-                        .HasConstraintName("FK_JoinTable_Tournament"));
+                .UsingEntity("join_pooled_beatmaps");
 
             entity.HasIndex(t => t.Ruleset);
             entity.HasIndex(t => new { t.Name, t.Abbreviation }).IsUnique();
@@ -798,6 +850,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(ta => ta.ActionType);
 
             entity.Property(ta => ta.Changes)
+                .HasColumnType("jsonb")
                 .HasConversion(auditChangesConverter)
                 .Metadata.SetValueComparer(auditChangesComparer);
 
@@ -814,7 +867,9 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(u => u.Id).UseIdentityColumn();
             entity.Property(u => u.Scopes).HasDefaultValue(Array.Empty<string>());
             entity.Property(u => u.Created).HasDefaultValueSql(SqlCurrentTimestamp);
-            entity.Property(u => u.LastLogin).HasDefaultValueSql(SqlCurrentTimestamp);
+            entity.Property(u => u.LastLogin)
+                .HasColumnType("timestamp with time zone")
+                .HasDefaultValueSql(SqlCurrentTimestamp);
 
             entity.HasIndex(u => u.PlayerId);
 

@@ -1,10 +1,18 @@
 using API.DTOs;
-using Database.Enums;
+using Common.Enums;
 
 namespace API.Services.Interfaces;
 
 public interface IPlayerStatsService
 {
+    /// <summary>
+    /// Retrieves a leaderboard based on the provided query parameters.
+    /// </summary>
+    /// <param name="request">Parameters used to filter and sort the leaderboard</param>
+    Task<LeaderboardDTO> GetLeaderboardAsync(
+        LeaderboardRequestQueryDTO request
+    );
+
     /// <summary>
     /// Gets player stats for the given ruleset in the given date range
     /// </summary>
@@ -19,31 +27,15 @@ public interface IPlayerStatsService
     /// <param name="dateMax">End of date range</param>
     /// <returns>
     /// Complete player statistics, or null if no player is found for the given key.
-    /// If the player has no data for the given ruleset, the <see cref="PlayerStatsDTO"/> is returned with
-    /// all optional fields null. <see cref="PlayerStatsDTO.PlayerInfo"/> will always be populated if a
+    /// If the player has no data for the given ruleset, the <see cref="PlayerDashboardStatsDTO"/> is returned with
+    /// all optional fields null. <see cref="PlayerDashboardStatsDTO.PlayerInfo"/> will always be populated if a
     /// player is found.
     /// </returns>
-    Task<PlayerStatsDTO?> GetAsync(
+    Task<PlayerDashboardStatsDTO?> GetAsync(
         string key,
         Ruleset? ruleset = null,
         DateTime? dateMin = null,
         DateTime? dateMax = null
-    );
-
-    Task<PlayerTeammateComparisonDTO> GetTeammateComparisonAsync(
-        int playerId,
-        int teammateId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
-    );
-
-    Task<PlayerOpponentComparisonDTO> GetOpponentComparisonAsync(
-        int playerId,
-        int opponentId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
     );
 
     /// <summary>
@@ -55,4 +47,16 @@ public interface IPlayerStatsService
     /// <param name="dateMax">The maximum of the date range</param>
     /// <returns></returns>
     Task<double> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
+
+    /// <summary>
+    /// Creates a dictionary mapping of player frequencies. The values mapping to 'true' in the result dictionary
+    /// are the player's teammates, the values mapped to 'false' are the player's opponents.
+    /// </summary>
+    /// <param name="playerId">Player id</param>
+    /// <param name="ruleset">Ruleset</param>
+    /// <param name="dateMin">Minimum lookup date</param>
+    /// <param name="dateMax">Maximum lookup date</param>
+    /// <returns></returns>
+    Task<Dictionary<bool, List<PlayerFrequencyDTO>>> GetFrequentMatchupsAsync(int playerId, Ruleset ruleset,
+        DateTime? dateMin = null, DateTime? dateMax = null);
 }

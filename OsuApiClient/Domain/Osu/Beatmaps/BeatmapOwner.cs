@@ -12,7 +12,7 @@ public class BeatmapOwner : IModel
     /// <summary>
     /// osu! Id
     /// </summary>
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     /// osu! username

@@ -1,5 +1,5 @@
+using Common.Enums;
 using Database.Entities;
-using Database.Enums;
 
 namespace TestingUtils.SeededData;
 
@@ -29,7 +29,7 @@ public static class SeededPlayer
             OsuId = osuId ?? s_rand.NextInt64(),
             Username = username ?? string.Empty,
             Country = country ?? string.Empty,
-            Ruleset = ruleset ?? Ruleset.Osu,
+            DefaultRuleset = ruleset ?? Ruleset.Osu,
             OsuLastFetch = osuLastFetch ?? SeededDate.Placeholder,
             OsuTrackLastFetch = osuTrackLastFetch ?? SeededDate.Placeholder
         };

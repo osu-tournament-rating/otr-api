@@ -1,5 +1,5 @@
 using API.DTOs;
-using Database.Enums;
+using Common.Enums;
 
 namespace API.Services.Interfaces;
 
@@ -45,6 +45,18 @@ public interface IMatchesService
     /// <param name="id">The match id</param>
     /// <returns>True if the match exists, false otherwise</returns>
     Task<bool> ExistsAsync(int id);
+
+    /// <summary>
+    /// Links the games of each provided match to the parent match, then deletes the provided matches
+    /// </summary>
+    /// <param name="matchIds">
+    /// Ids of the matches to merge into the parent match
+    /// </param>
+    /// <returns>
+    /// The updated parent match with child navigations, or null if the parent could not be found.
+    /// If this method returns null, no data is modified.
+    /// </returns>
+    Task<MatchDTO?> MergeAsync(int parentId, IEnumerable<int> matchIds);
 
     /// <summary>
     /// Deletes a match

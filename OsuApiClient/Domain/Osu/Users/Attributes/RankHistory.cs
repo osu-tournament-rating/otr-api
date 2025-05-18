@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
-using Database.Enums;
+using Common.Enums;
 using OsuApiClient.Net.Deserialization.ValueConverters;
 using OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 

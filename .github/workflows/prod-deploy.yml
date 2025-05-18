@@ -1,6 +1,7 @@
-name: .NET CI/CD
+name: Production Deploy
 
 on:
+  workflow_dispatch:     
   push:
     tags:
       - "v*"
@@ -66,6 +67,7 @@ jobs:
           echo "${{ secrets.DATAWORKERSERVICE_ENV }}" > dataworkerservice.env
           echo "${{ secrets.DB_ENV }}" > db.env
           echo "${{ secrets.POSTGRES_EXPORTER_ENV }}" > postgres_exporter.env
+          echo "${{ secrets.MINIO_ENV }}" > minio.env
 
       - name: Generate migrations script
         run: |
@@ -78,7 +80,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "api.env,dataworkerservice.env,db.env,postgres_exporter.env,./cfg/docker-compose-prod.yml,./cfg/otel-collector-config.yml,./cfg/prometheus.yml,script.sql"
+          source: "api.env,dataworkerservice.env,db.env,postgres_exporter.env,minio.env,./cfg/docker-compose-prod.yml,./cfg/otel-collector-config.yml,./cfg/prometheus.yml,script.sql"
           target: "~/otr-api-dataworker/"
       
       - name: Deploy

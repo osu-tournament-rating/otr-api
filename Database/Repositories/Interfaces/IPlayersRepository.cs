@@ -5,20 +5,6 @@ namespace Database.Repositories.Interfaces;
 public interface IPlayersRepository : IRepository<Player>
 {
     /// <summary>
-    /// Gets a player for the given osu! id
-    /// </summary>
-    /// <param name="osuId">Player osu! id</param>
-    /// <returns>A player, or null if not found</returns>
-    Task<Player?> GetByOsuIdAsync(long osuId);
-
-    /// <summary>
-    /// Gets a player for each given osu! id
-    /// </summary>
-    /// <param name="osuIds">Player osu! ids</param>
-    /// <returns>A list containing a player for each osu! id. If one is not found, it will not be returned.</returns>
-    Task<IEnumerable<Player>> GetByOsuIdAsync(IEnumerable<long> osuIds);
-
-    /// <summary>
     /// Returns a list of players that matches the given username. Case insensitive
     /// </summary>
     /// <param name="username"></param>
@@ -28,7 +14,7 @@ public interface IPlayersRepository : IRepository<Player>
     /// <summary>
     /// Gets a player filtering by the following, in order of priority: (id, osu! id, username)
     /// </summary>
-    /// <remarks>Username filter uses strict matching, case insensitive</remarks>
+    /// <remarks>Username filter uses strict matching, case-insensitive</remarks>
     /// <param name="key">The dynamic key to filter for</param>
     /// <param name="eagerLoad">If true, includes the <see cref="User"/> and <see cref="UserSettings"/></param>
     /// <returns>A player, or null if not found</returns>
@@ -63,7 +49,7 @@ public interface IPlayersRepository : IRepository<Player>
     /// </summary>
     /// <param name="osuIds">The osu! player ids</param>
     /// <returns>One <see cref="Player"/> per osu! id match, null if no match found</returns>
-    Task<IEnumerable<Player?>> GetAsync(IEnumerable<long> osuIds);
+    Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds);
 
     /// <summary>
     /// Returns the id of the player that has this osuId

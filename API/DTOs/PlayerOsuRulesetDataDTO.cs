@@ -1,5 +1,5 @@
+using Common.Enums;
 using Database.Entities;
-using Database.Enums;
 
 namespace API.DTOs;
 
@@ -9,7 +9,7 @@ namespace API.DTOs;
 public class PlayerOsuRulesetDataDTO
 {
     /// <summary>
-    /// The <see cref="Database.Enums.Ruleset"/> the <see cref="PlayerOsuRulesetData"/> is for
+    /// The <see cref="Common.Enums.Ruleset"/> the <see cref="PlayerOsuRulesetData"/> is for
     /// </summary>
     public Ruleset Ruleset { get; set; }
 

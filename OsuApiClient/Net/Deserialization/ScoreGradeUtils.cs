@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums;
 using OsuApiClient.Net.Deserialization.ValueConverters;
 using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 using DbScoreGradeUtils = Database.Utilities.ScoreGradeUtils;
@@ -6,7 +6,7 @@ using DbScoreGradeUtils = Database.Utilities.ScoreGradeUtils;
 namespace OsuApiClient.Net.Deserialization;
 
 /// <summary>
-/// Helper for determining the <see cref="Database.Enums.ScoreGrade"/> of a <see cref="GameScoreJsonModel"/>
+/// Helper for determining the <see cref="ScoreGrade"/> of a <see cref="GameScoreJsonModel"/>
 /// </summary>
 public static class ScoreGradeUtils
 {

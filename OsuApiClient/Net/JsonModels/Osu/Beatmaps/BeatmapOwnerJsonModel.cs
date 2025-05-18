@@ -13,7 +13,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Beatmaps;
 public class BeatmapOwnerJsonModel : JsonModelBase
 {
     [JsonProperty("id")]
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     [JsonProperty("username")]
     public string Username { get; set; } = string.Empty;

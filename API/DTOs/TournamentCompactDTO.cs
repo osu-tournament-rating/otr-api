@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using Database.Enums;
-using Database.Enums.Verification;
+using API.Utilities.DataAnnotations;
+using Common.Enums;
+using Common.Enums.Verification;
 
 namespace API.DTOs;
 
@@ -24,6 +26,7 @@ public class TournamentCompactDTO
     /// <summary>
     /// Full name
     /// </summary>
+    [Required]
     public string Name { get; init; } = null!;
 
     /// <summary>
@@ -35,6 +38,7 @@ public class TournamentCompactDTO
     /// This value represents a short prefix which should, for the most part,
     /// be included at the start of all match titles in the tournament
     /// </summary>
+    [Required]
     public string Abbreviation { get; init; } = null!;
 
     /// <summary>
@@ -43,23 +47,27 @@ public class TournamentCompactDTO
     /// <remarks>
     /// If both are present, the osu! forum post should be used
     /// </remarks>
+    [Required]
     public string ForumUrl { get; init; } = null!;
 
     /// <summary>
     /// Lowest rank a player can be to participate
     /// </summary>
     /// <example>For a #10,000-50,000 tournament, this value would be 10,000</example>
+    [Positive]
     public int RankRangeLowerBound { get; init; }
 
     /// <summary>
     /// Ruleset in which all matches are played
     /// </summary>
+    [EnumDataType(typeof(Ruleset))]
     public Ruleset Ruleset { get; init; }
 
     /// <summary>
     /// Expected in-match team size
     /// </summary>
     /// <example>For a 2v2 team size 4 tournament, this value should be 2</example>
+    [Range(1, 8)]
     public int LobbySize { get; init; }
 
     /// <summary>
@@ -75,16 +83,19 @@ public class TournamentCompactDTO
     /// <summary>
     /// The state of verification
     /// </summary>
+    [EnumDataType(typeof(VerificationStatus))]
     public VerificationStatus VerificationStatus { get; init; }
 
     /// <summary>
     /// The state of processing
     /// </summary>
+    [EnumDataType(typeof(TournamentProcessingStatus))]
     public TournamentProcessingStatus ProcessingStatus { get; init; }
 
     /// <summary>
     /// The rejection reason
     /// </summary>
+    [EnumDataType(typeof(TournamentRejectionReason))]
     public TournamentRejectionReason RejectionReason { get; init; }
 
     /// <summary>

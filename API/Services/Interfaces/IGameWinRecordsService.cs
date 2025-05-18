@@ -4,6 +4,6 @@ namespace API.Services.Interfaces;
 
 public interface IGameWinRecordsService
 {
-    Task BatchInsertAsync(IEnumerable<GameWinRecordDTO> postBody);
+    Task BatchInsertAsync(IEnumerable<GameRosterDTO> postBody);
     Task TruncateAsync();
 }

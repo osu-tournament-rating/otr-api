@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums;
 
 namespace API.DTOs;
 
@@ -38,12 +38,7 @@ public class PlayerRatingDTO
     public int CountryRank { get; set; }
 
     /// <summary>
-    /// Player id
+    /// The player
     /// </summary>
-    public int PlayerId { get; set; }
-
-    /// <summary>
-    /// A collection of adjustments that describe the changes resulting in the final rating
-    /// </summary>
-    public ICollection<RatingAdjustmentDTO> Adjustments { get; set; } = [];
+    public PlayerCompactDTO Player { get; set; } = null!;
 }

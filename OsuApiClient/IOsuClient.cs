@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums;
 using OsuApiClient.Domain.Osu.Beatmaps;
 using OsuApiClient.Domain.Osu.Multiplayer;
 using OsuApiClient.Domain.Osu.Users;
@@ -40,6 +40,7 @@ public interface IOsuClient : IDisposable
     /// </returns>
     Task<OsuCredentials?> AuthorizeUserWithCodeAsync(
         string authorizationCode,
+        string? authorizationCodeVerifier = null,
         CancellationToken cancellationToken = default
     );
 
@@ -147,6 +148,18 @@ public interface IOsuClient : IDisposable
     /// <returns>A <see cref="BeatmapExtended"/>, or null if the request was unsuccessful</returns>
     Task<BeatmapExtended?> GetBeatmapAsync(
         long beatmapId,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Gets multiple beatmaps
+    /// </summary>
+    /// <remarks>See <a href="https://osu.ppy.sh/docs/index.html#get-beatmaps">Get Beatmaps</a></remarks>
+    /// <param name="beatmapIds">Beatmap ids</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A collection of <see cref="BeatmapExtended"/>, one for each provided id (if it exists)</returns>
+    Task<IEnumerable<BeatmapExtended>?> GetBeatmapsAsync(
+        ICollection<long> beatmapIds,
         CancellationToken cancellationToken = default
     );
 

@@ -1,4 +1,4 @@
-using Database.Enums.Verification;
+using Common.Enums.Verification;
 
 namespace Database.Entities.Interfaces;
 

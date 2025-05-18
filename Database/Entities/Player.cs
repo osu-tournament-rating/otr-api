@@ -1,16 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
-using Database.Enums;
 
 namespace Database.Entities;
 
 /// <summary>
 /// Represents a player
 /// </summary>
-[Table("players")]
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
@@ -22,14 +20,12 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     /// <summary>
     /// osu! id
     /// </summary>
-    [Column("osu_id")]
     public long OsuId { get; set; }
 
     /// <summary>
     /// osu! username
     /// </summary>
     [MaxLength(32)]
-    [Column("username")]
     public string Username
     {
         get => string.IsNullOrEmpty(_username) ? $"Player {Id}" : _username;
@@ -40,7 +36,6 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     /// ISO country code
     /// </summary>
     [MaxLength(4)]
-    [Column("country")]
     public string Country
     {
         get => string.IsNullOrEmpty(_country) ? "XX" : _country;
@@ -48,25 +43,22 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     }
 
     /// <summary>
-    /// <see cref="Enums.Ruleset"/> as set on the <see cref="Player"/>'s osu! profile
+    /// <see cref="Ruleset"/> as set on the <see cref="Player"/>'s osu! profile
     /// </summary>
-    [Column("default_ruleset")]
-    public Ruleset Ruleset { get; set; }
+    public Ruleset DefaultRuleset { get; set; }
 
     /// <summary>
     /// Timestamp for the last time <see cref="RulesetData"/> was updated with data from the osu! API
     /// </summary>
-    [Column("osu_last_fetch")]
     public DateTime OsuLastFetch { get; set; }
 
     /// <summary>
     /// Timestamp for the last time <see cref="RulesetData"/> was updated with data from the osu!Track API
     /// </summary>
-    [Column("osu_track_last_fetch")]
     public DateTime OsuTrackLastFetch { get; set; }
 
     /// <summary>
-    /// A collection of <see cref="PlayerOsuRulesetData"/>, one for each <see cref="Enums.Ruleset"/>
+    /// A collection of <see cref="PlayerOsuRulesetData"/>, one for each <see cref="Ruleset"/>
     /// </summary>
     public ICollection<PlayerOsuRulesetData> RulesetData { get; set; } = [];
 
@@ -106,7 +98,20 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     /// </summary>
     public ICollection<PlayerHighestRanks> HighestRanks { get; set; } = [];
 
+    /// <summary>
+    /// A collection of <see cref="PlayerAdminNote"/> associated with the <see cref="Player"/>
+    /// </summary>
     public ICollection<PlayerAdminNote> AdminNotes { get; set; } = [];
+
+    /// <summary>
+    /// A collection of <see cref="Beatmapset"/> created by the <see cref="Player"/>
+    /// </summary>
+    public ICollection<Beatmapset> CreatedBeatmapsets { get; set; } = [];
+
+    /// <summary>
+    /// A collection of <see cref="Beatmap"/> created by the <see cref="Player"/>
+    /// </summary>
+    public ICollection<Beatmap> CreatedBeatmaps { get; set; } = [];
 
     /// <summary>
     /// The inverse navigation of the <see cref="User.Friends"/> relationship

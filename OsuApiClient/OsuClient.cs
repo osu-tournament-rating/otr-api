@@ -1,4 +1,4 @@
-using Database.Enums;
+using Common.Enums;
 using Microsoft.Extensions.Logging;
 using OsuApiClient.Configurations.Interfaces;
 using OsuApiClient.Domain.Osu;
@@ -111,6 +111,7 @@ public sealed class OsuClient(
 
     public async Task<OsuCredentials?> AuthorizeUserWithCodeAsync(
         string authorizationCode,
+        string? authorizationCodeVerifier = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -125,14 +126,18 @@ public sealed class OsuClient(
             ["redirect_uri"] = Configuration.RedirectUrl
         };
 
-        Uri.TryCreate(Endpoints.Osu.Credentials, UriKind.Relative, out Uri? uri);
+        if (!string.IsNullOrEmpty(authorizationCodeVerifier))
+        {
+            body.Add("code_verifier", authorizationCodeVerifier);
+        }
+
         AccessCredentialsModel? response = await _handler
             .FetchAsync<AccessCredentialsModel, AccessCredentialsJsonModel>(
                 new ApiRequest
                 {
                     Credentials = _credentials,
                     Method = HttpMethod.Post,
-                    Route = uri!,
+                    Route = new Uri(Endpoints.Osu.Credentials, UriKind.Relative),
                     RequestBody = body
                 }, cancellationToken);
 
@@ -320,7 +325,7 @@ public sealed class OsuClient(
 
             // Add new data
             initialMatch.Events = [.. initialMatch.Events, .. nextBatch.Events];
-            initialMatch.Users = initialMatch.Users.Concat(nextBatch.Users).DistinctBy(u => u.Id).ToArray();
+            initialMatch.Users = [.. initialMatch.Users.Concat(nextBatch.Users).DistinctBy(u => u.Id)];
         }
 
         logger.LogDebug(
@@ -352,6 +357,27 @@ public sealed class OsuClient(
         );
     }
 
+    public async Task<IEnumerable<BeatmapExtended>?> GetBeatmapsAsync(ICollection<long> beatmapIds,
+        CancellationToken cancellationToken = default)
+    {
+        CheckDisposed();
+        await UpdateCredentialsAsync(cancellationToken);
+
+        return (await _handler.FetchAsync<BeatmapCollection, BeatmapCollectionJsonModel>(
+            new ApiRequest
+            {
+                Credentials = _credentials,
+                Method = HttpMethod.Get,
+                Route = new Uri(Endpoints.Osu.Beatmaps, UriKind.Relative),
+                QueryParameters = beatmapIds
+                    .Distinct()
+                    .Select((id, index) => new KeyValuePair<string, string>($"ids%5B{index}%5D", id.ToString()))
+                    .ToDictionary()
+            },
+            cancellationToken
+        ))?.Beatmaps;
+    }
+
     public async Task<BeatmapAttributes?> GetBeatmapAttributesAsync(
         long beatmapId,
         Mods mods,
@@ -366,7 +392,7 @@ public sealed class OsuClient(
             {
                 Credentials = _credentials,
                 Method = HttpMethod.Get,
-                Route = new Uri(string.Format(Endpoints.Osu.BeatmapAttributes, beatmapId)),
+                Route = new Uri(string.Format(Endpoints.Osu.BeatmapAttributes, beatmapId), UriKind.Relative),
                 QueryParameters = new Dictionary<string, string> { ["mods"] = mods.ToString() }
             },
             cancellationToken
@@ -386,7 +412,7 @@ public sealed class OsuClient(
             {
                 Credentials = _credentials,
                 Method = HttpMethod.Get,
-                Route = new Uri(string.Format(Endpoints.Osu.Beatmapsets, beatmapsetId))
+                Route = new Uri(string.Format(Endpoints.Osu.Beatmapsets, beatmapsetId), UriKind.Relative)
             },
             cancellationToken
         );

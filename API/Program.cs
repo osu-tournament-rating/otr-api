@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using API.Authorization;
 using API.Authorization.Handlers;
@@ -15,6 +16,8 @@ using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.SwaggerGen;
 using API.SwaggerGen.Filters;
+using API.Utilities;
+using API.Utilities.AdminNotes;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
@@ -42,13 +45,20 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OsuApiClient.Extensions;
+using RedLockNet.SERedis;
+using RedLockNet.SERedis.Configuration;
 using Serilog;
 using Serilog.AspNetCore;
+using Serilog.Enrichers.Span;
 using Serilog.Events;
+using Serilog.Sinks.Grafana.Loki;
+using StackExchange.Redis;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
+using IMatchRosterRepository = Database.Repositories.Interfaces.IMatchRosterRepository;
 
+#pragma warning disable SYSLIB1045
 #region WebApplicationBuilder Configuration
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -86,6 +96,7 @@ builder
 
 #region Controller Configuration
 
+builder.Services.AddOutputCache();
 builder.Services
     .AddControllers(o =>
     {
@@ -104,6 +115,14 @@ builder.Services
 
 #region OpenTelemetry Tracing/Metrics Configuration
 
+const string serviceName = "otr-api";
+
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+});
+
 builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
 {
     options.EnrichWithException = (activity, exception) =>
@@ -118,11 +137,28 @@ builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
 builder
     .Services.AddOpenTelemetry()
     .ConfigureResource(resource =>
-        resource.AddService(serviceName: builder.Environment.ApplicationName)
+        resource.AddService(serviceName: serviceName)
     )
     .WithTracing(tracing =>
         tracing
-            .AddAspNetCoreInstrumentation()
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName: serviceName))
+            .AddAspNetCoreInstrumentation(options =>
+            {
+                options.RecordException = true;
+                options.Filter = httpContext =>
+                {
+                    try
+                    {
+                        // Tracing does not need to be flooded with these requests from prometheus
+                        return httpContext.Request.Path.Value != "/metrics";
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                };
+            })
+            .AddHttpClientInstrumentation()
             .AddNpgsql()
             .AddOtlpExporter(options =>
             {
@@ -137,9 +173,14 @@ builder
     )
     .WithMetrics(b =>
         b.AddAspNetCoreInstrumentation()
+            .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
-            .AddRuntimeInstrumentation()
+            .AddMeter("Microsoft.AspNetCore.Hosting")
+            .AddMeter("Microsoft.AspNetCore.Routing")
+            .AddMeter("Microsoft.AspNetCore.Diagnostics")
+            .AddMeter("Microsoft.EntityFrameworkCore")
             .AddProcessInstrumentation()
+            .AddRuntimeInstrumentation()
             .AddPrometheusExporter(o => o.DisableTotalNameSuffixForCounters = true)
     );
 
@@ -181,13 +222,12 @@ builder.Services.AddRateLimiter(options =>
     // Configure the rate limit partitioning rules
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
     {
-        // Shared partition for anonymous requests
+        // Unlimited partition for anonymous requests, as doing so
+        // would cripple the ability for the platform to support
+        // an influx of legitimate anonymous requests
         if (context.User.Identity is { IsAuthenticated: false })
         {
-            return RateLimitPartition.GetFixedWindowLimiter(
-                "anonymous",
-                _ => GetRateLimiterOptions()
-            );
+            return RateLimitPartition.GetNoLimiter("anonymous");
         }
 
         // Partition for each unique user / client
@@ -238,23 +278,32 @@ builder.Services.AddSwaggerGen(options =>
     options.DescribeAllParametersInCamelCase();
 
     // Allow use of in-code XML documentation tags like <summary> and <remarks>
-    string[] xmlDocPaths =
-    [
-        $"{AppDomain.CurrentDomain.BaseDirectory}API.xml",
-        $"{AppDomain.CurrentDomain.BaseDirectory}Database.xml"
-    ];
+    options.IncludeXmlCommentsWithRemarks($"{AppDomain.CurrentDomain.BaseDirectory}API.xml");
 
-    foreach (var xmlDoc in xmlDocPaths)
-    {
-        options.IncludeXmlCommentsWithRemarks(xmlDoc);
-    }
-
-    // Register custom filters
+    // Register custom filters.
     // Filters are executed in order of: Operation, Parameter, Schema, Document
     options.OperationFilter<SecurityMetadataOperationFilter>();
     options.OperationFilter<DiscardNestedParametersOperationFilter>();
 
-    options.SchemaFilter<EnumMetadataSchemaFilter>((object)xmlDocPaths);
+    options.SchemaFilter<OverrideSchemaFilter<AdminNoteRouteTarget>>((OpenApiSchema schema, SchemaFilterContext _) =>
+    {
+        // Only target the schema definition, not references
+        if (schema.AllOf.Any())
+        {
+            return;
+        }
+
+        schema.Type = "string";
+        schema.Enum = AdminNotesHelper.GetAdminNoteableEntityRoutes().ToOpenApiArray();
+        schema.Extensions = new Dictionary<string, IOpenApiExtension>
+        {
+            [ExtensionKeys.EnumNames] = AdminNotesHelper.GetAdminNoteableEntityTypes()
+                .Select(t => t.Name)
+                .ToOpenApiArray()
+        };
+    });
+
+    options.SchemaFilter<EnumMetadataSchemaFilter>();
     options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
 
     // Populate the document's info
@@ -265,7 +314,8 @@ builder.Services.AddSwaggerGen(options =>
             Version = "v1",
             Title = "osu! Tournament Rating API",
             Description =
-                "The official resource for reading and writing data within the osu! Tournament Rating platform."
+                "The official resource for reading and writing data within the osu! Tournament Rating platform.",
+            TermsOfService = new Uri("https://docs.otr.stagec.xyz/About/Terms-of-Use"),
         }
     );
 
@@ -283,8 +333,7 @@ builder.Services.AddSwaggerGen(options =>
         }
         else
         {
-            method = $"method_{unknownMethodCount}";
-            unknownMethodCount++;
+            method = $"method_{unknownMethodCount++}";
         }
 
         return $"{controller}_{method}";
@@ -337,7 +386,7 @@ builder.Services.AddSwaggerGen(options =>
         {
             Type = "string",
             Description = "The possible roles assignable to a user or client",
-            Enum = new List<IOpenApiAny>(oauthScopes.Keys.Select(role => new OpenApiString(role))),
+            Enum = [.. oauthScopes.Keys.Select(role => new OpenApiString(role))],
             Extensions = new Dictionary<string, IOpenApiExtension>
             {
                 [ExtensionKeys.EnumNames] =
@@ -391,9 +440,15 @@ builder.Services.AddSerilog(configuration =>
             "Microsoft.EntityFrameworkCore.Database.Command",
             LogEventLevel.Warning
         )
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
         .Enrich.FromLogContext()
+        .Enrich.WithSpan()
+        .WriteTo.GrafanaLoki(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).LokiConnection, new List<LokiLabel>
+        {
+            new() { Key = "app", Value = serviceName }
+        }, ["app"])
         .WriteTo.Console(
-            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [trace_id: {TraceId} span_id: {SpanId}] {NewLine} {Message:lj}{NewLine}{Exception}"
         )
         .WriteTo.File(
             Path.Join("logs", "log.log"),
@@ -550,15 +605,24 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 #region Database Context
 
-builder.Services.AddDbContext<OtrContext>(o =>
+builder.Services.AddScoped<AuditBlamingInterceptor>();
+builder.Services.AddDbContext<OtrContext>((services, sqlOptions) =>
 {
-    o.UseNpgsql(
-        builder
-            .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-                ConnectionStringsConfiguration.Position
-            )
-            .DefaultConnection
-    );
+    sqlOptions
+        .UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection,
+            dataSourceOptions => dataSourceOptions.ConfigureDataSource(
+                dataSourceBuilder =>
+                    dataSourceBuilder.ConfigureTracing(tracingOptions =>
+                    // This only returns the actual command, unfortunately there's no other way to do this afaik
+                    tracingOptions.ConfigureCommandSpanNameProvider(cmd => Regex.Split(cmd.CommandText[..15], "[a-z]+")[0])
+                            // Filter out commands that shouldn't be related to API operations
+                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("COMMIT", StringComparison.OrdinalIgnoreCase))
+                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("DROP", StringComparison.OrdinalIgnoreCase))
+                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("CREATE", StringComparison.OrdinalIgnoreCase))
+                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("ALTER", StringComparison.OrdinalIgnoreCase)))))
+        .LogTo(Log.Logger.Information, LogLevel.Information)
+        .AddInterceptors(services.GetRequiredService<AuditBlamingInterceptor>())
+        .UseSnakeCaseNamingConvention();
 });
 
 // The Redis cache is registered as a singleton because it is meant to be re-used across instances
@@ -572,6 +636,14 @@ builder.Services.AddSingleton<ICacheHandler>(
     )
 );
 
+// Redis lock factory (distributed resource access control)
+var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+{
+    new(ConnectionMultiplexer.Connect(builder.Configuration
+        .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
+});
+builder.Services.AddSingleton(redLockFactory);
+
 builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthClient>>();
 
 #endregion
@@ -584,23 +656,18 @@ builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
 
 #region Repositories
 
-builder.Services.AddScoped<IApiMatchRatingStatsRepository, ApiMatchRatingStatsRepository>();
-builder.Services.AddScoped<IApiMatchWinRecordRepository, ApiMatchWinRecordRepository>();
-builder.Services.AddScoped<IApiPlayerMatchStatsRepository, ApiPlayerMatchStatsRepository>();
-builder.Services.AddScoped<IApiPlayerRatingsRepository, ApiPlayerRatingsRepository>();
-builder.Services.AddScoped<IApiTournamentsRepository, ApiTournamentsRepository>();
-
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
-builder.Services.AddScoped<IPlayerRatingsRepository, PlayerRatingsRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
+builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
 builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
-builder.Services.AddScoped<IMatchRatingStatsRepository, MatchRatingStatsRepository>();
-builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
-builder.Services.AddScoped<IMatchWinRecordRepository, MatchWinRecordRepository>();
+builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
+builder.Services.AddScoped<IMatchRosterRepository, MatchRosterRepository>();
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
+builder.Services.AddScoped<IPlayerRatingsRepository, PlayerRatingsRepository>();
+builder.Services.AddScoped<IPlayerTournamentStatsRepository, PlayerTournamentStatsRepository>();
 builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
 builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -614,9 +681,7 @@ builder.Services.AddScoped<IAdminNoteService, AdminNoteService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();
-builder.Services.AddScoped<IGameWinRecordsService, GameWinRecordsService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerRatingsService, PlayerRatingsService>();
@@ -628,6 +693,8 @@ builder.Services.AddScoped<ITournamentsService, TournamentsService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
+builder.Services.AddScoped<IPlatformStatsService, PlatformStatsService>();
+builder.Services.AddScoped<ITournamentPlatformStatsService, TournamentPlatformStatsService>();
 
 #endregion
 
@@ -654,6 +721,9 @@ app.UseSerilogRequestLogging();
 app.UseRouting();
 // Placed after UseRouting and before UseAuthentication and UseAuthorization
 app.UseCors();
+
+// After UseCors
+app.UseOutputCache();
 
 app.UseAuthentication();
 app.UseAuthorization();

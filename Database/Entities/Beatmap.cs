@@ -1,22 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
-using Database.Enums;
+using Common.Enums;
 
 namespace Database.Entities;
 
 /// <summary>
-/// An osu! beatmap
+/// Core beatmap information
 /// </summary>
-[Table("beatmaps")]
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
-public class Beatmap : EntityBase
+public class Beatmap : UpdateableEntityBase
 {
     /// <summary>
-    /// osu! id of the beatmap
+    /// osu! beatmap ID
     /// </summary>
-    [Column("osu_id")]
     public long OsuId { get; set; }
 
     /// <summary>
@@ -26,128 +22,111 @@ public class Beatmap : EntityBase
     /// Set only on creation. If the beatmap is deleted from osu! at
     /// the time of access, this value will be false and all properties will be unpopulated.
     /// </remarks>
-    [Column("has_data")]
     public bool HasData { get; set; }
 
     /// <summary>
-    /// osu! id of the mapper
+    /// Ruleset
     /// </summary>
-    [Column("mapper_id")]
-    public long MapperId { get; set; }
-
-    /// <summary>
-    /// osu! username of the mapper
-    /// </summary>
-    [MaxLength(32)]
-    [Column("mapper_name")]
-    public string MapperName { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Song artist
-    /// </summary>
-    [MaxLength(512)]
-    [Column("artist")]
-    public string Artist { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Song title
-    /// </summary>
-    [MaxLength(512)]
-    [Column("title")]
-    public string Title { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Difficulty name
-    /// </summary>
-    [MaxLength(255)]
-    [Column("diff_name")]
-    public string DiffName { get; set; } = string.Empty;
+    public Ruleset Ruleset { get; set; }
 
     /// <summary>
     /// Ranked status
     /// </summary>
-    [Column("ranked_status")]
     public BeatmapRankedStatus RankedStatus { get; set; }
 
     /// <summary>
-    /// Star rating
+    /// Difficulty name
     /// </summary>
-    [Column("sr")]
-    public double Sr { get; set; }
+    [MaxLength(512)]
+    public string DiffName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Total length in seconds
+    /// </summary>
+    public long TotalLength { get; set; }
+
+    /// <summary>
+    /// Drain length in seconds
+    /// </summary>
+    public int DrainLength { get; set; }
 
     /// <summary>
     /// Beats per minute
     /// </summary>
-    [Column("bpm")]
     public double Bpm { get; set; }
+
+    /// <summary>
+    /// Number of circles in the beatmap
+    /// </summary>
+    public int CountCircle { get; set; }
+
+    /// <summary>
+    /// Number of sliders in the beatmap
+    /// </summary>
+    public int CountSlider { get; set; }
+
+    /// <summary>
+    /// Number of spinners in the beatmap
+    /// </summary>
+    public int CountSpinner { get; set; }
 
     /// <summary>
     /// Circle size
     /// </summary>
-    [Column("cs")]
     public double Cs { get; set; }
 
     /// <summary>
-    /// Approach rate
+    /// HP drain rate
     /// </summary>
-    [Column("ar")]
-    public double Ar { get; set; }
-
-    /// <summary>
-    /// Hp
-    /// </summary>
-    [Column("hp")]
     public double Hp { get; set; }
 
     /// <summary>
     /// Overall difficulty
     /// </summary>
-    [Column("od")]
     public double Od { get; set; }
 
     /// <summary>
-    /// Total length of the song
+    /// Approach rate
     /// </summary>
-    [Column("length")]
-    public double Length { get; set; }
+    public double Ar { get; set; }
 
     /// <summary>
-    /// The <see cref="Enums.Ruleset"/> this <see cref="Beatmap"/> is playable on
+    /// Star rating (No Mod)
     /// </summary>
-    [Column("ruleset")]
-    public Ruleset Ruleset { get; set; }
+    public double Sr { get; set; }
 
     /// <summary>
-    /// Count of circles
+    /// Maximum combo, if available
     /// </summary>
-    [Column("circle_count")]
-    public int CircleCount { get; set; }
+    public int? MaxCombo { get; set; }
 
     /// <summary>
-    /// Count of sliders
+    /// Id of the associated beatmapset
     /// </summary>
-    [Column("slider_count")]
-    public int SliderCount { get; set; }
+    public int? BeatmapsetId { get; set; }
 
     /// <summary>
-    /// Count of spinners
+    /// The associated beatmapset, if available
     /// </summary>
-    [Column("spinner_count")]
-    public int SpinnerCount { get; set; }
+    public Beatmapset? Beatmapset { get; set; }
 
     /// <summary>
-    /// Max possible combo
+    /// Collection of players who created this beatmap
     /// </summary>
-    [Column("max_combo")]
-    public int MaxCombo { get; set; }
+    public ICollection<Player> Creators { get; set; } = [];
 
     /// <summary>
-    /// A collection of <see cref="Game"/>s played on the <see cref="Beatmap"/>
+    /// Collection of games played on this beatmap
     /// </summary>
     public ICollection<Game> Games { get; set; } = [];
 
     /// <summary>
-    /// A collection of <see cref="Tournament"/>s which pooled this beatmap
+    /// Collection of tournaments this beatmap is pooled in
     /// </summary>
     public ICollection<Tournament> TournamentsPooledIn { get; set; } = [];
+
+    /// <summary>
+    /// Collection of attributes for this beatmap
+    /// </summary>
+    public ICollection<BeatmapAttributes> Attributes { get; set; } = [];
 }

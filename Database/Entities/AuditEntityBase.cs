@@ -2,8 +2,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Common.Enums;
 using Database.Entities.Interfaces;
-using Database.Enums;
 using Database.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -21,26 +21,19 @@ public abstract class AuditEntityBase<TAuditable, TAudit> : IAuditEntity
     where TAudit : IAuditEntity
 {
     [Key]
-    [Column("id")]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; }
 
-    [Column("created")]
     public DateTime Created { get; }
 
-    [Column("ref_id_lock")]
     public int ReferenceIdLock { get; private set; }
 
-    [Column("ref_id")]
     public int? ReferenceId { get; private set; }
 
-    [Column("action_user_id")]
-    public int? ActionUserId { get; private set; }
+    public int? ActionUserId { get; set; }
 
-    [Column("action_type")]
     public AuditActionType ActionType { get; private set; }
 
-    [Column("changes", TypeName = "jsonb")]
     public IDictionary<string, AuditChangelogEntry> Changes { get; } = new Dictionary<string, AuditChangelogEntry>();
 
     public virtual bool GenerateAudit(EntityEntry origEntityEntry)

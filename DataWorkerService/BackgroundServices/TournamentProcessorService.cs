@@ -1,7 +1,7 @@
 using System.Diagnostics;
+using Common.Enums.Verification;
 using Database;
 using Database.Entities;
-using Database.Enums.Verification;
 using Database.Repositories.Interfaces;
 using DataWorkerService.Configurations;
 using DataWorkerService.Processors;
@@ -52,7 +52,7 @@ public class TournamentProcessorService(
             scope.ServiceProvider.GetRequiredService<ITournamentProcessorResolver>();
 
         var tournaments = (await tournamentsRepository.GetNeedingProcessingAsync(_config.BatchSize)).ToList();
-        var tasks = new List<Task>();
+        var parallelTasks = new List<Task>();
 
         foreach (Tournament tournament in tournaments)
         {
@@ -62,10 +62,19 @@ public class TournamentProcessorService(
                 continue;
             }
 
-            tasks.Add(ProcessAsync(tournament, tournamentProcessorResolver, stoppingToken));
+            if (tournament.ProcessingStatus == TournamentProcessingStatus.NeedsMatchData)
+            {
+                // Pause execution between each run - this data processing is NOT thread safe
+                await ProcessAsync(tournament, tournamentProcessorResolver, stoppingToken);
+            }
+            else
+            {
+                // Run in parallel
+                parallelTasks.Add(ProcessAsync(tournament, tournamentProcessorResolver, stoppingToken));
+            }
         }
 
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(parallelTasks);
         await context.SaveChangesAsync(stoppingToken);
 
         _stopwatch.Stop();
@@ -81,7 +90,7 @@ public class TournamentProcessorService(
         tournament.VerificationStatus = VerificationStatus.Rejected;
         tournament.RejectionReason = TournamentRejectionReason.IncompleteData;
         tournament.ProcessingStatus = TournamentProcessingStatus.Done;
-        tournament.LastProcessingDate = DateTime.Now;
+        tournament.LastProcessingDate = DateTime.UtcNow;
 
         logger.LogWarning("Skipping processing for tournament with no matches [Id: {Id}]", tournament.Id);
     }

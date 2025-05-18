@@ -35,19 +35,25 @@ namespace Database.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("ar");
 
-                    b.Property<string>("Artist")
-                        .IsRequired()
-                        .HasMaxLength(512)
-                        .HasColumnType("character varying(512)")
-                        .HasColumnName("artist");
+                    b.Property<int?>("BeatmapsetId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beatmapset_id");
 
                     b.Property<double>("Bpm")
                         .HasColumnType("double precision")
                         .HasColumnName("bpm");
 
-                    b.Property<int>("CircleCount")
+                    b.Property<int>("CountCircle")
                         .HasColumnType("integer")
-                        .HasColumnName("circle_count");
+                        .HasColumnName("count_circle");
+
+                    b.Property<int>("CountSlider")
+                        .HasColumnType("integer")
+                        .HasColumnName("count_slider");
+
+                    b.Property<int>("CountSpinner")
+                        .HasColumnType("integer")
+                        .HasColumnName("count_spinner");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -61,9 +67,13 @@ namespace Database.Migrations
 
                     b.Property<string>("DiffName")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
                         .HasColumnName("diff_name");
+
+                    b.Property<int>("DrainLength")
+                        .HasColumnType("integer")
+                        .HasColumnName("drain_length");
 
                     b.Property<bool>("HasData")
                         .ValueGeneratedOnAdd()
@@ -75,21 +85,7 @@ namespace Database.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("hp");
 
-                    b.Property<double>("Length")
-                        .HasColumnType("double precision")
-                        .HasColumnName("length");
-
-                    b.Property<long>("MapperId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("mapper_id");
-
-                    b.Property<string>("MapperName")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("mapper_name");
-
-                    b.Property<int>("MaxCombo")
+                    b.Property<int?>("MaxCombo")
                         .HasColumnType("integer")
                         .HasColumnName("max_combo");
 
@@ -109,17 +105,108 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("ruleset");
 
-                    b.Property<int>("SliderCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("slider_count");
+                    b.Property<double>("Sr")
+                        .HasColumnType("double precision")
+                        .HasColumnName("sr");
 
-                    b.Property<int>("SpinnerCount")
+                    b.Property<long>("TotalLength")
+                        .HasColumnType("bigint")
+                        .HasColumnName("total_length");
+
+                    b.Property<DateTime?>("Updated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated");
+
+                    b.HasKey("Id")
+                        .HasName("pk_beatmaps");
+
+                    b.HasIndex("BeatmapsetId")
+                        .HasDatabaseName("ix_beatmaps_beatmapset_id");
+
+                    b.HasIndex("OsuId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_beatmaps_osu_id");
+
+                    b.ToTable("beatmaps", (string)null);
+                });
+
+            modelBuilder.Entity("Database.Entities.BeatmapAttributes", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasColumnName("spinner_count");
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BeatmapId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beatmap_id");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("Mods")
+                        .HasColumnType("integer")
+                        .HasColumnName("mods");
 
                     b.Property<double>("Sr")
                         .HasColumnType("double precision")
                         .HasColumnName("sr");
+
+                    b.HasKey("Id")
+                        .HasName("pk_beatmap_attributes");
+
+                    b.HasIndex("BeatmapId", "Mods")
+                        .IsUnique()
+                        .HasDatabaseName("ix_beatmap_attributes_beatmap_id_mods");
+
+                    b.ToTable("beatmap_attributes", (string)null);
+                });
+
+            modelBuilder.Entity("Database.Entities.Beatmapset", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Artist")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("artist");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int?>("CreatorId")
+                        .HasColumnType("integer")
+                        .HasColumnName("creator_id");
+
+                    b.Property<long>("OsuId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("osu_id");
+
+                    b.Property<DateTime?>("RankedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ranked_date");
+
+                    b.Property<int>("RankedStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("ranked_status");
+
+                    b.Property<DateTime?>("SubmittedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_date");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -127,12 +214,21 @@ namespace Database.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("title");
 
-                    b.HasKey("Id");
+                    b.Property<DateTime?>("Updated")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated");
+
+                    b.HasKey("Id")
+                        .HasName("pk_beatmapsets");
+
+                    b.HasIndex("CreatorId")
+                        .HasDatabaseName("ix_beatmapsets_creator_id");
 
                     b.HasIndex("OsuId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_beatmapsets_osu_id");
 
-                    b.ToTable("beatmaps");
+                    b.ToTable("beatmapsets", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.Game", b =>
@@ -224,18 +320,23 @@ namespace Database.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("warning_flags");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_games");
 
-                    b.HasIndex("BeatmapId");
+                    b.HasIndex("BeatmapId")
+                        .HasDatabaseName("ix_games_beatmap_id");
 
-                    b.HasIndex("MatchId");
+                    b.HasIndex("MatchId")
+                        .HasDatabaseName("ix_games_match_id");
 
                     b.HasIndex("OsuId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_games_osu_id");
 
-                    b.HasIndex("StartTime");
+                    b.HasIndex("StartTime")
+                        .HasDatabaseName("ix_games_start_time");
 
-                    b.ToTable("games");
+                    b.ToTable("games", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.GameAdminNote", b =>
@@ -264,19 +365,22 @@ namespace Database.Migrations
 
                     b.Property<int>("ReferenceId")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnName("reference_id");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_game_admin_notes");
 
-                    b.HasIndex("AdminUserId");
+                    b.HasIndex("AdminUserId")
+                        .HasDatabaseName("ix_game_admin_notes_admin_user_id");
 
-                    b.HasIndex("ReferenceId");
+                    b.HasIndex("ReferenceId")
+                        .HasDatabaseName("ix_game_admin_notes_reference_id");
 
-                    b.ToTable("game_admin_notes");
+                    b.ToTable("game_admin_notes", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.GameAudit", b =>
@@ -309,17 +413,67 @@ namespace Database.Migrations
 
                     b.Property<int?>("ReferenceId")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnName("reference_id");
 
                     b.Property<int>("ReferenceIdLock")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
+                        .HasColumnName("reference_id_lock");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_game_audits");
 
-                    b.HasIndex("ReferenceId");
+                    b.HasIndex("ReferenceId")
+                        .HasDatabaseName("ix_game_audits_reference_id");
 
-                    b.ToTable("game_audits");
+                    b.ToTable("game_audits", (string)null);
+                });
+
+            modelBuilder.Entity("Database.Entities.GameRoster", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("integer")
+                        .HasColumnName("game_id");
+
+                    b.PrimitiveCollection<int[]>("Roster")
+                        .IsRequired()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("roster");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("integer")
+                        .HasColumnName("score");
+
+                    b.Property<int>("Team")
+                        .HasColumnType("integer")
+                        .HasColumnName("team");
+
+                    b.HasKey("Id")
+                        .HasName("pk_game_rosters");
+
+                    b.HasIndex("GameId")
+                        .HasDatabaseName("ix_game_rosters_game_id");
+
+                    b.HasIndex("Roster")
+                        .HasDatabaseName("ix_game_rosters_roster");
+
+                    b.HasIndex("GameId", "Roster")
+                        .IsUnique()
+                        .HasDatabaseName("ix_game_rosters_game_id_roster");
+
+                    b.ToTable("game_rosters", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.GameScore", b =>
@@ -333,15 +487,15 @@ namespace Database.Migrations
 
                     b.Property<int>("Count100")
                         .HasColumnType("integer")
-                        .HasColumnName("count_100");
+                        .HasColumnName("count100");
 
                     b.Property<int>("Count300")
                         .HasColumnType("integer")
-                        .HasColumnName("count_300");
+                        .HasColumnName("count300");
 
                     b.Property<int>("Count50")
                         .HasColumnType("integer")
-                        .HasColumnName("count_50");
+                        .HasColumnName("count50");
 
                     b.Property<int>("CountGeki")
                         .HasColumnType("integer")
@@ -427,16 +581,20 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("verification_status");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_game_scores");
 
-                    b.HasIndex("GameId");
+                    b.HasIndex("GameId")
+                        .HasDatabaseName("ix_game_scores_game_id");
 
-                    b.HasIndex("PlayerId");
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("ix_game_scores_player_id");
 
                     b.HasIndex("PlayerId", "GameId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_game_scores_player_id_game_id");
 
-                    b.ToTable("game_scores");
+                    b.ToTable("game_scores", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.GameScoreAdminNote", b =>
@@ -465,19 +623,22 @@ namespace Database.Migrations
 
                     b.Property<int>("ReferenceId")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnName("reference_id");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_game_score_admin_notes");
 
-                    b.HasIndex("AdminUserId");
+                    b.HasIndex("AdminUserId")
+                        .HasDatabaseName("ix_game_score_admin_notes_admin_user_id");
 
-                    b.HasIndex("ReferenceId");
+                    b.HasIndex("ReferenceId")
+                        .HasDatabaseName("ix_game_score_admin_notes_reference_id");
 
-                    b.ToTable("game_score_admin_notes");
+                    b.ToTable("game_score_admin_notes", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.GameScoreAudit", b =>
@@ -510,72 +671,19 @@ namespace Database.Migrations
 
                     b.Property<int?>("ReferenceId")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnName("reference_id");
 
                     b.Property<int>("ReferenceIdLock")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
+                        .HasColumnName("reference_id_lock");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_game_score_audits");
 
-                    b.HasIndex("ReferenceId");
+                    b.HasIndex("ReferenceId")
+                        .HasDatabaseName("ix_game_score_audits_reference_id");
 
-                    b.ToTable("game_score_audits");
-                });
-
-            modelBuilder.Entity("Database.Entities.GameWinRecord", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int>("GameId")
-                        .HasColumnType("integer")
-                        .HasColumnName("game_id");
-
-                    b.PrimitiveCollection<int[]>("LoserRoster")
-                        .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("loser_roster");
-
-                    b.Property<int>("LoserScore")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_score");
-
-                    b.Property<int>("LoserTeam")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_team");
-
-                    b.PrimitiveCollection<int[]>("WinnerRoster")
-                        .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("winner_roster");
-
-                    b.Property<int>("WinnerScore")
-                        .HasColumnType("integer")
-                        .HasColumnName("winner_score");
-
-                    b.Property<int>("WinnerTeam")
-                        .HasColumnType("integer")
-                        .HasColumnName("winner_team");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GameId")
-                        .IsUnique();
-
-                    b.HasIndex("WinnerRoster");
-
-                    b.ToTable("game_win_records");
+                    b.ToTable("game_score_audits", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.Match", b =>
@@ -593,11 +701,9 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<DateTime>("EndTime")
-                        .ValueGeneratedOnAdd()
+                    b.Property<DateTime?>("EndTime")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_time")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
+                        .HasColumnName("end_time");
 
                     b.Property<DateTime>("LastProcessingDate")
                         .ValueGeneratedOnAdd()
@@ -629,11 +735,9 @@ namespace Database.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("rejection_reason");
 
-                    b.Property<DateTime>("StartTime")
-                        .ValueGeneratedOnAdd()
+                    b.Property<DateTime?>("StartTime")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_time")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
+                        .HasColumnName("start_time");
 
                     b.Property<int?>("SubmittedByUserId")
                         .HasColumnType("integer")
@@ -663,18 +767,23 @@ namespace Database.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("warning_flags");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_matches");
 
                     b.HasIndex("OsuId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_matches_osu_id");
 
-                    b.HasIndex("SubmittedByUserId");
+                    b.HasIndex("SubmittedByUserId")
+                        .HasDatabaseName("ix_matches_submitted_by_user_id");
 
-                    b.HasIndex("TournamentId");
+                    b.HasIndex("TournamentId")
+                        .HasDatabaseName("ix_matches_tournament_id");
 
-                    b.HasIndex("VerifiedByUserId");
+                    b.HasIndex("VerifiedByUserId")
+                        .HasDatabaseName("ix_matches_verified_by_user_id");
 
-                    b.ToTable("matches");
+                    b.ToTable("matches", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.MatchAdminNote", b =>
@@ -703,19 +812,22 @@ namespace Database.Migrations
 
                     b.Property<int>("ReferenceId")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnName("reference_id");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_match_admin_notes");
 
-                    b.HasIndex("AdminUserId");
+                    b.HasIndex("AdminUserId")
+                        .HasDatabaseName("ix_match_admin_notes_admin_user_id");
 
-                    b.HasIndex("ReferenceId");
+                    b.HasIndex("ReferenceId")
+                        .HasDatabaseName("ix_match_admin_notes_reference_id");
 
-                    b.ToTable("match_admin_notes");
+                    b.ToTable("match_admin_notes", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.MatchAudit", b =>
@@ -748,20 +860,22 @@ namespace Database.Migrations
 
                     b.Property<int?>("ReferenceId")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnName("reference_id");
 
                     b.Property<int>("ReferenceIdLock")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
+                        .HasColumnName("reference_id_lock");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_match_audits");
 
-                    b.HasIndex("ReferenceId");
+                    b.HasIndex("ReferenceId")
+                        .HasDatabaseName("ix_match_audits_reference_id");
 
-                    b.ToTable("match_audits");
+                    b.ToTable("match_audits", (string)null);
                 });
 
-            modelBuilder.Entity("Database.Entities.MatchWinRecord", b =>
+            modelBuilder.Entity("Database.Entities.MatchRoster", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -776,46 +890,37 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.PrimitiveCollection<int[]>("LoserRoster")
-                        .IsRequired()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("loser_roster");
-
-                    b.Property<int>("LoserScore")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_score");
-
-                    b.Property<int>("LoserTeam")
-                        .HasColumnType("integer")
-                        .HasColumnName("loser_team");
-
                     b.Property<int>("MatchId")
                         .HasColumnType("integer")
                         .HasColumnName("match_id");
 
-                    b.PrimitiveCollection<int[]>("WinnerRoster")
+                    b.PrimitiveCollection<int[]>("Roster")
                         .IsRequired()
                         .HasColumnType("integer[]")
-                        .HasColumnName("winner_roster");
+                        .HasColumnName("roster");
 
-                    b.Property<int>("WinnerScore")
+                    b.Property<int>("Score")
                         .HasColumnType("integer")
-                        .HasColumnName("winner_score");
+                        .HasColumnName("score");
 
-                    b.Property<int>("WinnerTeam")
+                    b.Property<int>("Team")
                         .HasColumnType("integer")
-                        .HasColumnName("winner_team");
+                        .HasColumnName("team");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("LoserRoster");
+                    b.HasKey("Id")
+                        .HasName("pk_match_rosters");
 
                     b.HasIndex("MatchId")
-                        .IsUnique();
+                        .HasDatabaseName("ix_match_rosters_match_id");
 
-                    b.HasIndex("WinnerRoster");
+                    b.HasIndex("Roster")
+                        .HasDatabaseName("ix_match_rosters_roster");
 
-                    b.ToTable("match_win_records");
+                    b.HasIndex("MatchId", "Roster")
+                        .IsUnique()
+                        .HasDatabaseName("ix_match_rosters_match_id_roster");
+
+                    b.ToTable("match_rosters", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.OAuthClient", b =>
@@ -856,11 +961,13 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("user_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_o_auth_clients");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_o_auth_clients_user_id");
 
-                    b.ToTable("oauth_clients");
+                    b.ToTable("o_auth_clients", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.OAuthClientAdminNote", b =>
@@ -889,17 +996,19 @@ namespace Database.Migrations
 
                     b.Property<int>("ReferenceId")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnName("reference_id");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_o_auth_client_admin_note");
 
-                    b.HasIndex("ReferenceId");
+                    b.HasIndex("ReferenceId")
+                        .HasDatabaseName("ix_o_auth_client_admin_note_reference_id");
 
-                    b.ToTable("oauth_client_admin_notes");
+                    b.ToTable("o_auth_client_admin_note", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.Player", b =>
@@ -925,6 +1034,12 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<int>("DefaultRuleset")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0)
+                        .HasColumnName("default_ruleset");
+
                     b.Property<long>("OsuId")
                         .HasColumnType("bigint")
                         .HasColumnName("osu_id");
@@ -941,12 +1056,6 @@ namespace Database.Migrations
                         .HasColumnName("osu_track_last_fetch")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
-                    b.Property<int>("Ruleset")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("default_ruleset");
-
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
@@ -959,12 +1068,17 @@ namespace Database.Migrations
                         .HasDefaultValue("")
                         .HasColumnName("username");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_players");
+
+                    b.HasIndex("Country")
+                        .HasDatabaseName("ix_players_country");
 
                     b.HasIndex("OsuId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_players_osu_id");
 
-                    b.ToTable("players");
+                    b.ToTable("players", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerAdminNote", b =>
@@ -993,19 +1107,22 @@ namespace Database.Migrations
 
                     b.Property<int>("ReferenceId")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnName("reference_id");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_player_admin_notes");
 
-                    b.HasIndex("AdminUserId");
+                    b.HasIndex("AdminUserId")
+                        .HasDatabaseName("ix_player_admin_notes_admin_user_id");
 
-                    b.HasIndex("ReferenceId");
+                    b.HasIndex("ReferenceId")
+                        .HasDatabaseName("ix_player_admin_notes_reference_id");
 
-                    b.ToTable("player_admin_notes");
+                    b.ToTable("player_admin_notes", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerHighestRanks", b =>
@@ -1051,18 +1168,22 @@ namespace Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_player_highest_ranks");
 
                     b.HasIndex("CountryRank")
-                        .IsDescending();
+                        .IsDescending()
+                        .HasDatabaseName("ix_player_highest_ranks_country_rank");
 
                     b.HasIndex("GlobalRank")
-                        .IsDescending();
+                        .IsDescending()
+                        .HasDatabaseName("ix_player_highest_ranks_global_rank");
 
                     b.HasIndex("PlayerId", "Ruleset")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_player_highest_ranks_player_id_ruleset");
 
-                    b.ToTable("player_highest_ranks");
+                    b.ToTable("player_highest_ranks", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerMatchStats", b =>
@@ -1134,18 +1255,23 @@ namespace Database.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("won");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_player_match_stats");
 
-                    b.HasIndex("MatchId");
+                    b.HasIndex("MatchId")
+                        .HasDatabaseName("ix_player_match_stats_match_id");
 
-                    b.HasIndex("PlayerId");
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("ix_player_match_stats_player_id");
 
                     b.HasIndex("PlayerId", "MatchId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_player_match_stats_player_id_match_id");
 
-                    b.HasIndex("PlayerId", "Won");
+                    b.HasIndex("PlayerId", "Won")
+                        .HasDatabaseName("ix_player_match_stats_player_id_won");
 
-                    b.ToTable("player_match_stats");
+                    b.ToTable("player_match_stats", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerOsuRulesetData", b =>
@@ -1191,12 +1317,18 @@ namespace Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_player_osu_ruleset_data");
 
                     b.HasIndex("PlayerId", "Ruleset")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_player_osu_ruleset_data_player_id_ruleset");
 
-                    b.ToTable("player_osu_ruleset_data");
+                    b.HasIndex("PlayerId", "Ruleset", "GlobalRank")
+                        .IsUnique()
+                        .HasDatabaseName("ix_player_osu_ruleset_data_player_id_ruleset_global_rank");
+
+                    b.ToTable("player_osu_ruleset_data", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.PlayerTournamentStats", b =>
@@ -1246,6 +1378,10 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("games_won");
 
+                    b.Property<double>("MatchWinRate")
+                        .HasColumnType("double precision")
+                        .HasColumnName("match_win_rate");
+
                     b.Property<int>("MatchesLost")
                         .HasColumnType("integer")
                         .HasColumnName("matches_lost");
@@ -1271,14 +1407,17 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("tournament_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_player_tournament_stats");
 
-                    b.HasIndex("TournamentId");
+                    b.HasIndex("TournamentId")
+                        .HasDatabaseName("ix_player_tournament_stats_tournament_id");
 
                     b.HasIndex("PlayerId", "TournamentId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_player_tournament_stats_player_id_tournament_id");
 
-                    b.ToTable("player_tournament_stats");
+                    b.ToTable("player_tournament_stats", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.Processor.PlayerRating", b =>
@@ -1324,19 +1463,28 @@ namespace Database.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("volatility");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_player_ratings");
 
-                    b.HasIndex("PlayerId");
+                    b.HasIndex("PlayerId")
+                        .HasDatabaseName("ix_player_ratings_player_id");
 
                     b.HasIndex("Rating")
-                        .IsDescending();
+                        .IsDescending()
+                        .HasDatabaseName("ix_player_ratings_rating");
 
-                    b.HasIndex("Ruleset");
+                    b.HasIndex("Ruleset")
+                        .HasDatabaseName("ix_player_ratings_ruleset");
 
                     b.HasIndex("PlayerId", "Ruleset")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_player_ratings_player_id_ruleset");
 
-                    b.ToTable("player_ratings");
+                    b.HasIndex("Ruleset", "Rating")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_player_ratings_ruleset_rating");
+
+                    b.ToTable("player_ratings", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.Processor.RatingAdjustment", b =>
@@ -1394,18 +1542,23 @@ namespace Database.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("volatility_before");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_rating_adjustments");
 
-                    b.HasIndex("MatchId");
+                    b.HasIndex("MatchId")
+                        .HasDatabaseName("ix_rating_adjustments_match_id");
 
-                    b.HasIndex("PlayerRatingId");
+                    b.HasIndex("PlayerRatingId")
+                        .HasDatabaseName("ix_rating_adjustments_player_rating_id");
 
                     b.HasIndex("PlayerId", "MatchId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_rating_adjustments_player_id_match_id");
 
-                    b.HasIndex("PlayerId", "Timestamp");
+                    b.HasIndex("PlayerId", "Timestamp")
+                        .HasDatabaseName("ix_rating_adjustments_player_id_timestamp");
 
-                    b.ToTable("rating_adjustments");
+                    b.ToTable("rating_adjustments", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.Tournament", b =>
@@ -1429,11 +1582,9 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<DateTime>("EndTime")
-                        .ValueGeneratedOnAdd()
+                    b.Property<DateTime?>("EndTime")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_time")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
+                        .HasColumnName("end_time");
 
                     b.Property<string>("ForumUrl")
                         .IsRequired()
@@ -1477,11 +1628,9 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("ruleset");
 
-                    b.Property<DateTime>("StartTime")
-                        .ValueGeneratedOnAdd()
+                    b.Property<DateTime?>("StartTime")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_time")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
+                        .HasColumnName("start_time");
 
                     b.Property<int?>("SubmittedByUserId")
                         .HasColumnType("integer")
@@ -1501,18 +1650,23 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("verified_by_user_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_tournaments");
 
-                    b.HasIndex("Ruleset");
+                    b.HasIndex("Ruleset")
+                        .HasDatabaseName("ix_tournaments_ruleset");
 
-                    b.HasIndex("SubmittedByUserId");
+                    b.HasIndex("SubmittedByUserId")
+                        .HasDatabaseName("ix_tournaments_submitted_by_user_id");
 
-                    b.HasIndex("VerifiedByUserId");
+                    b.HasIndex("VerifiedByUserId")
+                        .HasDatabaseName("ix_tournaments_verified_by_user_id");
 
                     b.HasIndex("Name", "Abbreviation")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_tournaments_name_abbreviation");
 
-                    b.ToTable("tournaments");
+                    b.ToTable("tournaments", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.TournamentAdminNote", b =>
@@ -1541,19 +1695,22 @@ namespace Database.Migrations
 
                     b.Property<int>("ReferenceId")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnName("reference_id");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_tournament_admin_notes");
 
-                    b.HasIndex("AdminUserId");
+                    b.HasIndex("AdminUserId")
+                        .HasDatabaseName("ix_tournament_admin_notes_admin_user_id");
 
-                    b.HasIndex("ReferenceId");
+                    b.HasIndex("ReferenceId")
+                        .HasDatabaseName("ix_tournament_admin_notes_reference_id");
 
-                    b.ToTable("tournament_admin_notes");
+                    b.ToTable("tournament_admin_notes", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.TournamentAudit", b =>
@@ -1586,17 +1743,19 @@ namespace Database.Migrations
 
                     b.Property<int?>("ReferenceId")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id");
+                        .HasColumnName("reference_id");
 
                     b.Property<int>("ReferenceIdLock")
                         .HasColumnType("integer")
-                        .HasColumnName("ref_id_lock");
+                        .HasColumnName("reference_id_lock");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_tournament_audits");
 
-                    b.HasIndex("ReferenceId");
+                    b.HasIndex("ReferenceId")
+                        .HasDatabaseName("ix_tournament_audits_reference_id");
 
-                    b.ToTable("tournament_audits");
+                    b.ToTable("tournament_audits", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.User", b =>
@@ -1613,10 +1772,6 @@ namespace Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<DateTime?>("LastFriendsListUpdate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_friends_list_update");
 
                     b.Property<DateTime?>("LastLogin")
                         .ValueGeneratedOnAdd()
@@ -1639,12 +1794,14 @@ namespace Database.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_users");
 
                     b.HasIndex("PlayerId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_player_id");
 
-                    b.ToTable("users");
+                    b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("Database.Entities.UserSettings", b =>
@@ -1672,7 +1829,7 @@ namespace Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false)
-                        .HasColumnName("default_ruleset_controlled");
+                        .HasColumnName("default_ruleset_is_controlled");
 
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("timestamp with time zone")
@@ -1682,42 +1839,86 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("user_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_user_settings");
 
                     b.HasIndex("UserId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_settings_user_id");
 
-                    b.ToTable("user_settings");
+                    b.ToTable("user_settings", (string)null);
                 });
 
-            modelBuilder.Entity("__join__friends", b =>
+            modelBuilder.Entity("join_beatmap_creators", b =>
                 {
-                    b.Property<int>("player_id")
-                        .HasColumnType("integer");
+                    b.Property<int>("CreatedBeatmapsId")
+                        .HasColumnType("integer")
+                        .HasColumnName("created_beatmaps_id");
 
-                    b.Property<int>("user_id")
-                        .HasColumnType("integer");
+                    b.Property<int>("CreatorsId")
+                        .HasColumnType("integer")
+                        .HasColumnName("creators_id");
 
-                    b.HasKey("player_id", "user_id");
+                    b.HasKey("CreatedBeatmapsId", "CreatorsId")
+                        .HasName("pk_join_beatmap_creators");
 
-                    b.HasIndex("user_id");
+                    b.HasIndex("CreatorsId")
+                        .HasDatabaseName("ix_join_beatmap_creators_creators_id");
 
-                    b.ToTable("__join__friends");
+                    b.ToTable("join_beatmap_creators", (string)null);
                 });
 
-            modelBuilder.Entity("__join__pooled_beatmaps", b =>
+            modelBuilder.Entity("join_pooled_beatmaps", b =>
                 {
-                    b.Property<int>("beatmap_id")
-                        .HasColumnType("integer");
+                    b.Property<int>("PooledBeatmapsId")
+                        .HasColumnType("integer")
+                        .HasColumnName("pooled_beatmaps_id");
 
-                    b.Property<int>("tournament_id")
-                        .HasColumnType("integer");
+                    b.Property<int>("TournamentsPooledInId")
+                        .HasColumnType("integer")
+                        .HasColumnName("tournaments_pooled_in_id");
 
-                    b.HasKey("beatmap_id", "tournament_id");
+                    b.HasKey("PooledBeatmapsId", "TournamentsPooledInId")
+                        .HasName("pk_join_pooled_beatmaps");
 
-                    b.HasIndex("tournament_id");
+                    b.HasIndex("TournamentsPooledInId")
+                        .HasDatabaseName("ix_join_pooled_beatmaps_tournaments_pooled_in_id");
 
-                    b.ToTable("__join__pooled_beatmaps");
+                    b.ToTable("join_pooled_beatmaps", (string)null);
+                });
+
+            modelBuilder.Entity("Database.Entities.Beatmap", b =>
+                {
+                    b.HasOne("Database.Entities.Beatmapset", "Beatmapset")
+                        .WithMany("Beatmaps")
+                        .HasForeignKey("BeatmapsetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_beatmaps_beatmapsets_beatmapset_id");
+
+                    b.Navigation("Beatmapset");
+                });
+
+            modelBuilder.Entity("Database.Entities.BeatmapAttributes", b =>
+                {
+                    b.HasOne("Database.Entities.Beatmap", "Beatmap")
+                        .WithMany("Attributes")
+                        .HasForeignKey("BeatmapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_beatmap_attributes_beatmaps_beatmap_id");
+
+                    b.Navigation("Beatmap");
+                });
+
+            modelBuilder.Entity("Database.Entities.Beatmapset", b =>
+                {
+                    b.HasOne("Database.Entities.Player", "Creator")
+                        .WithMany("CreatedBeatmapsets")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_beatmapsets_players_creator_id");
+
+                    b.Navigation("Creator");
                 });
 
             modelBuilder.Entity("Database.Entities.Game", b =>
@@ -1725,13 +1926,15 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Beatmap", "Beatmap")
                         .WithMany("Games")
                         .HasForeignKey("BeatmapId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_games_beatmaps_beatmap_id");
 
                     b.HasOne("Database.Entities.Match", "Match")
                         .WithMany("Games")
                         .HasForeignKey("MatchId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_games_matches_match_id");
 
                     b.Navigation("Beatmap");
 
@@ -1744,13 +1947,15 @@ namespace Database.Migrations
                         .WithMany("GameAdminNotes")
                         .HasForeignKey("AdminUserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_game_admin_notes_users_admin_user_id");
 
                     b.HasOne("Database.Entities.Game", "Game")
                         .WithMany("AdminNotes")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_game_admin_notes_games_reference_id");
 
                     b.Navigation("AdminUser");
 
@@ -1762,7 +1967,20 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Game", null)
                         .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_game_audits_games_reference_id");
+                });
+
+            modelBuilder.Entity("Database.Entities.GameRoster", b =>
+                {
+                    b.HasOne("Database.Entities.Game", "Game")
+                        .WithMany("Rosters")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_game_rosters_games_game_id");
+
+                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("Database.Entities.GameScore", b =>
@@ -1771,13 +1989,15 @@ namespace Database.Migrations
                         .WithMany("Scores")
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_game_scores_games_game_id");
 
                     b.HasOne("Database.Entities.Player", "Player")
                         .WithMany("Scores")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_game_scores_players_player_id");
 
                     b.Navigation("Game");
 
@@ -1790,13 +2010,15 @@ namespace Database.Migrations
                         .WithMany("GameScoreAdminNotes")
                         .HasForeignKey("AdminUserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_game_score_admin_notes_users_admin_user_id");
 
                     b.HasOne("Database.Entities.GameScore", "Score")
                         .WithMany("AdminNotes")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_game_score_admin_notes_game_scores_reference_id");
 
                     b.Navigation("AdminUser");
 
@@ -1808,18 +2030,8 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.GameScore", null)
                         .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.SetNull);
-                });
-
-            modelBuilder.Entity("Database.Entities.GameWinRecord", b =>
-                {
-                    b.HasOne("Database.Entities.Game", "Game")
-                        .WithOne("WinRecord")
-                        .HasForeignKey("Database.Entities.GameWinRecord", "GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Game");
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_game_score_audits_game_scores_reference_id");
                 });
 
             modelBuilder.Entity("Database.Entities.Match", b =>
@@ -1827,18 +2039,21 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.User", "SubmittedByUser")
                         .WithMany("SubmittedMatches")
                         .HasForeignKey("SubmittedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_matches_users_submitted_by_user_id");
 
                     b.HasOne("Database.Entities.Tournament", "Tournament")
                         .WithMany("Matches")
                         .HasForeignKey("TournamentId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_matches_tournaments_tournament_id");
 
                     b.HasOne("Database.Entities.User", "VerifiedByUser")
                         .WithMany()
                         .HasForeignKey("VerifiedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_matches_users_verified_by_user_id");
 
                     b.Navigation("SubmittedByUser");
 
@@ -1853,13 +2068,15 @@ namespace Database.Migrations
                         .WithMany("MatchAdminNotes")
                         .HasForeignKey("AdminUserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_match_admin_notes_users_admin_user_id");
 
                     b.HasOne("Database.Entities.Match", "Match")
                         .WithMany("AdminNotes")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_match_admin_notes_matches_reference_id");
 
                     b.Navigation("AdminUser");
 
@@ -1871,16 +2088,18 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Match", null)
                         .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_match_audits_matches_reference_id");
                 });
 
-            modelBuilder.Entity("Database.Entities.MatchWinRecord", b =>
+            modelBuilder.Entity("Database.Entities.MatchRoster", b =>
                 {
                     b.HasOne("Database.Entities.Match", "Match")
-                        .WithOne("WinRecord")
-                        .HasForeignKey("Database.Entities.MatchWinRecord", "MatchId")
+                        .WithMany("Rosters")
+                        .HasForeignKey("MatchId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_match_rosters_matches_match_id");
 
                     b.Navigation("Match");
                 });
@@ -1891,7 +2110,8 @@ namespace Database.Migrations
                         .WithMany("Clients")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_o_auth_clients_users_user_id");
 
                     b.Navigation("User");
                 });
@@ -1902,7 +2122,8 @@ namespace Database.Migrations
                         .WithMany("AdminNotes")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_o_auth_client_admin_note_o_auth_clients_reference_id");
 
                     b.Navigation("OAuthClient");
                 });
@@ -1913,13 +2134,15 @@ namespace Database.Migrations
                         .WithMany("PlayerAdminNotes")
                         .HasForeignKey("AdminUserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_player_admin_notes_users_admin_user_id");
 
                     b.HasOne("Database.Entities.Player", "Player")
                         .WithMany("AdminNotes")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_player_admin_notes_players_reference_id");
 
                     b.Navigation("AdminUser");
 
@@ -1932,7 +2155,8 @@ namespace Database.Migrations
                         .WithMany("HighestRanks")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_player_highest_ranks_players_player_id");
 
                     b.Navigation("Player");
                 });
@@ -1943,13 +2167,15 @@ namespace Database.Migrations
                         .WithMany("PlayerMatchStats")
                         .HasForeignKey("MatchId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_player_match_stats_matches_match_id");
 
                     b.HasOne("Database.Entities.Player", "Player")
                         .WithMany("MatchStats")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_player_match_stats_players_player_id");
 
                     b.Navigation("Match");
 
@@ -1962,7 +2188,8 @@ namespace Database.Migrations
                         .WithMany("RulesetData")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_player_osu_ruleset_data_players_player_id");
 
                     b.Navigation("Player");
                 });
@@ -1973,13 +2200,15 @@ namespace Database.Migrations
                         .WithMany("TournamentStats")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_player_tournament_stats_players_player_id");
 
                     b.HasOne("Database.Entities.Tournament", "Tournament")
                         .WithMany("PlayerTournamentStats")
                         .HasForeignKey("TournamentId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_player_tournament_stats_tournaments_tournament_id");
 
                     b.Navigation("Player");
 
@@ -1992,7 +2221,8 @@ namespace Database.Migrations
                         .WithMany("Ratings")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_player_ratings_players_player_id");
 
                     b.Navigation("Player");
                 });
@@ -2002,19 +2232,22 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Match", "Match")
                         .WithMany("PlayerRatingAdjustments")
                         .HasForeignKey("MatchId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_rating_adjustments_matches_match_id");
 
                     b.HasOne("Database.Entities.Player", "Player")
                         .WithMany("RatingAdjustments")
                         .HasForeignKey("PlayerId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_rating_adjustments_players_player_id");
 
                     b.HasOne("Database.Entities.Processor.PlayerRating", "PlayerRating")
                         .WithMany("Adjustments")
                         .HasForeignKey("PlayerRatingId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_rating_adjustments_player_ratings_player_rating_id");
 
                     b.Navigation("Match");
 
@@ -2028,12 +2261,14 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.User", "SubmittedByUser")
                         .WithMany("SubmittedTournaments")
                         .HasForeignKey("SubmittedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_tournaments_users_submitted_by_user_id");
 
                     b.HasOne("Database.Entities.User", "VerifiedByUser")
                         .WithMany()
                         .HasForeignKey("VerifiedByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_tournaments_users_verified_by_user_id");
 
                     b.Navigation("SubmittedByUser");
 
@@ -2046,13 +2281,15 @@ namespace Database.Migrations
                         .WithMany("TournamentAdminNotes")
                         .HasForeignKey("AdminUserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_tournament_admin_notes_users_admin_user_id");
 
                     b.HasOne("Database.Entities.Tournament", "Tournament")
                         .WithMany("AdminNotes")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_tournament_admin_notes_tournaments_reference_id");
 
                     b.Navigation("AdminUser");
 
@@ -2064,7 +2301,8 @@ namespace Database.Migrations
                     b.HasOne("Database.Entities.Tournament", null)
                         .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_tournament_audits_tournaments_reference_id");
                 });
 
             modelBuilder.Entity("Database.Entities.User", b =>
@@ -2073,7 +2311,8 @@ namespace Database.Migrations
                         .WithOne("User")
                         .HasForeignKey("Database.Entities.User", "PlayerId")
                         .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_users_players_player_id");
 
                     b.Navigation("Player");
                 });
@@ -2084,46 +2323,54 @@ namespace Database.Migrations
                         .WithOne("Settings")
                         .HasForeignKey("Database.Entities.UserSettings", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_user_settings_users_user_id");
                 });
 
-            modelBuilder.Entity("__join__friends", b =>
-                {
-                    b.HasOne("Database.Entities.Player", null)
-                        .WithMany()
-                        .HasForeignKey("player_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK___join__friends_player");
-
-                    b.HasOne("Database.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK___join__friends_user");
-                });
-
-            modelBuilder.Entity("__join__pooled_beatmaps", b =>
+            modelBuilder.Entity("join_beatmap_creators", b =>
                 {
                     b.HasOne("Database.Entities.Beatmap", null)
                         .WithMany()
-                        .HasForeignKey("beatmap_id")
+                        .HasForeignKey("CreatedBeatmapsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_JoinTable_Beatmap");
+                        .HasConstraintName("fk_join_beatmap_creators_beatmaps_created_beatmaps_id");
+
+                    b.HasOne("Database.Entities.Player", null)
+                        .WithMany()
+                        .HasForeignKey("CreatorsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_join_beatmap_creators_players_creators_id");
+                });
+
+            modelBuilder.Entity("join_pooled_beatmaps", b =>
+                {
+                    b.HasOne("Database.Entities.Beatmap", null)
+                        .WithMany()
+                        .HasForeignKey("PooledBeatmapsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_join_pooled_beatmaps_beatmaps_pooled_beatmaps_id");
 
                     b.HasOne("Database.Entities.Tournament", null)
                         .WithMany()
-                        .HasForeignKey("tournament_id")
+                        .HasForeignKey("TournamentsPooledInId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("FK_JoinTable_Tournament");
+                        .HasConstraintName("fk_join_pooled_beatmaps_tournaments_tournaments_pooled_in_id");
                 });
 
             modelBuilder.Entity("Database.Entities.Beatmap", b =>
                 {
+                    b.Navigation("Attributes");
+
                     b.Navigation("Games");
+                });
+
+            modelBuilder.Entity("Database.Entities.Beatmapset", b =>
+                {
+                    b.Navigation("Beatmaps");
                 });
 
             modelBuilder.Entity("Database.Entities.Game", b =>
@@ -2132,9 +2379,9 @@ namespace Database.Migrations
 
                     b.Navigation("Audits");
 
-                    b.Navigation("Scores");
+                    b.Navigation("Rosters");
 
-                    b.Navigation("WinRecord");
+                    b.Navigation("Scores");
                 });
 
             modelBuilder.Entity("Database.Entities.GameScore", b =>
@@ -2156,7 +2403,7 @@ namespace Database.Migrations
 
                     b.Navigation("PlayerRatingAdjustments");
 
-                    b.Navigation("WinRecord");
+                    b.Navigation("Rosters");
                 });
 
             modelBuilder.Entity("Database.Entities.OAuthClient", b =>
@@ -2167,6 +2414,8 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Entities.Player", b =>
                 {
                     b.Navigation("AdminNotes");
+
+                    b.Navigation("CreatedBeatmapsets");
 
                     b.Navigation("HighestRanks");
 

@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Database.Entities;
 
@@ -10,7 +9,6 @@ namespace Database.Entities;
 /// Not to be confused with <see cref="Player"/>.
 /// Users only contain data tied to the o!TR platform and no data related to tournament participation or ratings
 /// </remarks>
-[Table("users")]
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 public class User : UpdateableEntityBase
@@ -18,7 +16,6 @@ public class User : UpdateableEntityBase
     /// <summary>
     /// Timestamp of the user's last login to the o!TR website
     /// </summary>
-    [Column("last_login", TypeName = "timestamp with time zone")]
     public DateTime? LastLogin { get; set; }
 
     /// <summary>
@@ -30,7 +27,6 @@ public class User : UpdateableEntityBase
     /// <summary>
     /// A collection of string literals denoting special permissions granted to the user
     /// </summary>
-    [Column("scopes")]
     public string[] Scopes { get; set; } = [];
 
     /// <summary>
@@ -41,7 +37,6 @@ public class User : UpdateableEntityBase
     /// <summary>
     /// Id of the <see cref="Entities.Player"/> associated to the user
     /// </summary>
-    [Column("player_id")]
     public int PlayerId { get; set; }
 
     /// <summary>

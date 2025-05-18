@@ -5,11 +5,18 @@ namespace Database.Repositories.Interfaces;
 public interface IAdminNoteRepository
 {
     /// <summary>
+    /// Checks for existence of a <typeparamref name="TAdminNote"/> matching the given id
+    /// </summary>
+    /// <param name="id">Admin note id</param>
+    /// <typeparam name="TAdminNote">Admin note type</typeparam>
+    Task<bool> ExistsAsync<TAdminNote>(int id) where TAdminNote : AdminNoteEntityBase;
+
+    /// <summary>
     /// Creates a <typeparamref name="TAdminNote"/>
     /// </summary>
     /// <param name="entity">The <typeparamref name="TAdminNote"/> to be created</param>
     /// <typeparam name="TAdminNote">The type of admin note being created</typeparam>
-    Task CreateAsync<TAdminNote>(TAdminNote entity) where TAdminNote : AdminNoteEntityBase;
+    Task<TAdminNote> CreateAsync<TAdminNote>(TAdminNote entity) where TAdminNote : AdminNoteEntityBase;
 
     /// <summary>
     /// Gets a <typeparamref name="TAdminNote"/>

@@ -5,40 +5,48 @@ receivers:
       http:
 
 exporters:
-  logging:
-  clickhouse:
-    endpoint: tcp://clickhouse:9000?dial_timeout=10s&compress=lz4
-    database: default
-    ttl_days: 3
-    traces_table_name: otel_traces
-    timeout: 5s
-    retry_on_failure:
-      enabled: true
-      initial_interval: 5s
-      max_interval: 30s
-      max_elapsed_time: 300s
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
 
   prometheus:
     endpoint: 0.0.0.0:8889
+    resource_to_telemetry_conversion:
+      enabled: true
 
-connectors:
-  spanmetrics:
-    histogram:
-      explicit:
-        buckets: [ 5ms, 10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1000ms ]
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+    tls:
+      insecure: true
 
 processors:
   batch:
     timeout: 5s
     send_batch_size: 100000
 
+  resource: # Resource spec https://opentelemetry.io/docs/specs/semconv/resource/
+    attributes:
+      - action: insert
+        key: loki.format
+        value: raw
+      - action: insert
+        key: loki.resource.labels
+        value: service.name, app, runtime
+
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging, clickhouse, spanmetrics]
+      exporters: [otlp]
 
     metrics:
-      receivers: [spanmetrics]
+      receivers: [otlp]
+      processors: [batch]
       exporters: [prometheus]
+
+    logs:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [loki]

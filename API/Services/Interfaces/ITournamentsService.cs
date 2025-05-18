@@ -1,5 +1,5 @@
 using API.DTOs;
-using Database.Enums;
+using Common.Enums;
 
 namespace API.Services.Interfaces;
 
@@ -68,7 +68,7 @@ public interface ITournamentsService
     /// <summary>
     /// Updates a tournament entity with values from a <see cref="TournamentDTO"/>
     /// </summary>
-    Task<TournamentDTO?> UpdateAsync(int id, TournamentDTO wrapper);
+    Task<TournamentCompactDTO?> UpdateAsync(int id, TournamentCompactDTO wrapper);
 
     /// <summary>
     /// Deletes a tournament
@@ -83,8 +83,9 @@ public interface ITournamentsService
     /// <see cref="GameScore"/>s
     /// </summary>
     /// <param name="id">Tournament id</param>
+    /// <param name="verifierUserId">User id of the verifier</param>
     /// <returns>The updated <see cref="TournamentDTO"/></returns>
-    Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id);
+    Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId);
 
     /// <summary>
     /// Adds a collection of osu! beatmap ids to the tournament's PooledBeatmaps collection

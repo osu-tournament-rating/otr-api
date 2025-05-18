@@ -1,0 +1,62 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+  log_level: info
+
+compactor:
+  working_directory: /loki/compactor
+
+distributor:
+  ring:
+    kvstore:
+      store: inmemory
+
+ingester:
+  wal:
+    enabled: true
+    dir: /loki/wal
+  lifecycler:
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+  chunk_idle_period: 3m
+  chunk_retain_period: 1m
+
+storage_config:
+  aws:
+    s3: http://:@minio:9000/loki
+    bucketnames: loki
+    endpoint: minio:9000/loki
+    region: east-us
+    access_key_id: test
+    secret_access_key: test
+    insecure: true
+    http_config:
+      idle_conn_timeout: 90s
+      response_header_timeout: 0s
+      insecure_skip_verify: true
+    s3forcepathstyle: true
+
+  tsdb_shipper:
+    active_index_directory: /loki/index
+    cache_location: /loki/index_cache
+
+schema_config:
+  configs:
+    - from: '2025-04-16'
+      store: tsdb
+      object_store: s3
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+# Grafana Labs Reporting
+analytics:
+  reporting_enabled: false
+
+limits_config:
+  allow_structured_metadata: true

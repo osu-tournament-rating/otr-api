@@ -1,12 +1,12 @@
+using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
-using Database.Enums;
-using Database.Enums.Verification;
 
 namespace DataWorkerService.AutomationChecks.Games;
 
 /// <summary>
-/// Checks for <see cref="Game"/>s played with a <see cref="Database.Enums.ScoringType"/>
-/// that is not <see cref="Database.Enums.ScoringType.ScoreV2"/>
+/// Checks for <see cref="Game"/>s played with a <see cref="ScoringType"/>
+/// that is not <see cref="ScoringType.ScoreV2"/>
 /// </summary>
 public class GameScoringTypeCheck(ILogger<GameScoringTypeCheck> logger) : AutomationCheckBase<Game>(logger)
 {
