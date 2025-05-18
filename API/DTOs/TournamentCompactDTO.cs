@@ -68,7 +68,7 @@ public class TournamentCompactDTO
     /// Expected in-match team size
     /// </summary>
     /// <example>For a 2v2 team size 4 tournament, this value should be 2</example>
-    [Range(LobbySizeConstants.MinValue, LobbySizeConstants.MaxValue)]
+    [Range(1, 8)]
     public int LobbySize { get; init; }
 
     /// <summary>
