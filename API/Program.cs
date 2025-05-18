@@ -778,6 +778,7 @@ builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IPlatformStatsService, PlatformStatsService>();
 builder.Services.AddScoped<ITournamentPlatformStatsService, TournamentPlatformStatsService>();
 builder.Services.AddScoped<IRatingPlatformStatsService, RatingPlatformStatsService>();
+builder.Services.AddScoped<IUserPlatformStatsService, UserPlatformStatsService>();
 
 #endregion
 

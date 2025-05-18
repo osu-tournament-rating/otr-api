@@ -14,4 +14,9 @@ public class PlatformStatsDTO // TODO: use IDictionary instead of Dictionary
     /// Platform-wide rating stats
     /// </summary>
     public RatingPlatformStatsDTO RatingsStats { get; init; } = null!;
+
+    /// <summary>
+    /// Platform-wide user stats
+    /// </summary>
+    public UserPlatformStatsDTO UsersStats { get; init; } = null!;
 }
