@@ -314,7 +314,8 @@ builder.Services.AddSwaggerGen(options =>
             Version = "v1",
             Title = "osu! Tournament Rating API",
             Description =
-                "The official resource for reading and writing data within the osu! Tournament Rating platform."
+                "The official resource for reading and writing data within the osu! Tournament Rating platform.",
+            TermsOfService = new Uri("https://docs.otr.stagec.xyz/About/Terms-of-Use"),
         }
     );
 
