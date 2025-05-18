@@ -29,7 +29,8 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
             _context.GameScores
                 .ApplyCommonFilters(ruleset, dateMin, dateMax)
                 .WherePlayerId(playerId)
-                .ToCountStatisticsDictionaryAsync(gs => gs.Mods);
+                .GroupBy(gs => gs.Mods)
+                .ToDictionaryAsync(grouping => grouping.Key, v => v.Count());
     }
 
     public async Task<Dictionary<Mods, int>> GetAverageModScoresAsync(

@@ -295,22 +295,35 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     }
 
     public async Task<Dictionary<VerificationStatus, int>> GetVerificationStatusStatsAsync() =>
-        await _context.Tournaments.ToCountStatisticsDictionaryAsync(x => x.VerificationStatus);
+        await _context.Tournaments
+            .GroupBy(
+                x => x.VerificationStatus,
+                (x, y) => new { Prop = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Prop, x => x.Count);
 
     public async Task<Dictionary<int, int>> GetYearStatsAsync() =>
         await _context.Tournaments
             .Where(x => x.StartTime.HasValue && x.VerificationStatus == VerificationStatus.Verified)
-            .ToCountStatisticsDictionaryAsync(x => x.StartTime!.Value.Year);
+            .GroupBy(
+                x => x.StartTime!.Value.Year,
+                (x, y) => new { Prop = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Prop, x => x.Count);
 
     public async Task<Dictionary<Ruleset, int>> GetRulesetStatsAsync() =>
         await _context.Tournaments
             .Where(x => x.VerificationStatus == VerificationStatus.Verified)
-            .ToCountStatisticsDictionaryAsync(x => x.Ruleset);
+            .GroupBy(
+                x => x.Ruleset,
+                (x, y) => new { Prop = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Prop, x => x.Count);
 
     public async Task<Dictionary<int, int>> GetLobbySizeStatsAsync() =>
         await _context.Tournaments
             .Where(x => x.VerificationStatus == VerificationStatus.Verified)
-            .ToCountStatisticsDictionaryAsync(x => x.LobbySize);
+            .GroupBy(
+                x => x.LobbySize,
+                (x, y) => new { Prop = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Prop, x => x.Count);
 
     /// <summary>
     /// Returns a queryable containing tournaments for <see cref="ruleset"/>

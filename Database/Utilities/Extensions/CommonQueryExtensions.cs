@@ -59,24 +59,4 @@ public static class CommonQueryExtensions
                                   pts.Tournament.StartTime >= dateMin &&
                                   pts.Tournament.StartTime <= dateMax);
     }
-
-    /// <summary>
-    /// Materializes a query into a dictionary where the key is a property of <typeparamref name="TEntity"/> selected by
-    /// <paramref name="propertySelector"/>, and the value is the count of corresponding <typeparamref name="TEntity"/> items
-    /// </summary>
-    /// <typeparam name="TEntity">Entity type</typeparam>
-    /// <typeparam name="TProp">Selector property type</typeparam>
-    /// <param name="query">The query</param>
-    /// <param name="propertySelector">An expression that selects the property to count by</param>
-    /// <returns>A dictionary mapping each unique <typeparamref name="TProp"/> value to
-    /// the number of <typeparamref name="TEntity"/> items with that property value</returns>
-    public static async Task<Dictionary<TProp, int>> ToCountStatisticsDictionaryAsync<TEntity, TProp>(
-        this IQueryable<TEntity> query,
-        Expression<Func<TEntity, TProp>> propertySelector)
-        where TProp : notnull =>
-        await query
-            .GroupBy(
-                propertySelector,
-                (x, y) => new { Prop = x, Count = y.Count() })
-            .ToDictionaryAsync(x => x.Prop, x => x.Count);
 }
