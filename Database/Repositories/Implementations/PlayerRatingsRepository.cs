@@ -68,35 +68,36 @@ public class PlayerRatingsRepository(OtrContext context)
             .Select(pr => pr.Ruleset)
             .ToListAsync();
 
-    public async Task<IDictionary<int, int>> GetHistogramAsync(Ruleset ruleset)
+    public async Task<Dictionary<int, int>> GetHistogramAsync(Ruleset ruleset)
     {
-        // Determine the maximum rating as a double
-        var maxRating = await _context.PlayerRatings.Where(x => x.Ruleset == ruleset).MaxAsync(x => x.Rating);
+        const int bucketSize = 25;
+        const int minRating = 100;
 
-        // Round up maxRating to the nearest multiple of 25
-        var maxBucket = (int)(Math.Ceiling(maxRating / 25) * 25);
 
-        // Initialize all buckets from 100 to maxBucket with 0
-        var histogram = Enumerable.Range(4, maxBucket / 25 - 3).ToDictionary(bucket => bucket * 25, _ => 0);
+        Dictionary<int, int> histogram = await _context.PlayerRatings
+            .Where(x => x.Ruleset == ruleset && x.Rating >= minRating)
+            .ToCountStatisticsDictionaryAsync(x => (int)(x.Rating / bucketSize) * bucketSize); // floor to the closest bucket
 
-        // Adjust the GroupBy to correctly bucket the rating of 100
-        Dictionary<int, int> dbHistogram = await _context
-            .PlayerRatings.AsNoTracking()
-            .Where(x => x.Ruleset == ruleset && x.Rating >= 100)
-            .GroupBy(x => (int)(x.Rating / 25) * 25)
-            .Select(g => new { Bucket = g.Key == 0 ? 100 : g.Key, Count = g.Count() })
-            .ToDictionaryAsync(g => g.Bucket, g => g.Count);
-
-        // Update the histogram with actual counts
-        foreach (KeyValuePair<int, int> item in dbHistogram)
+        var maxBucket = histogram.Keys.Max();
+        for (var bucket = minRating; bucket <= maxBucket; bucket += bucketSize)
         {
-            if (histogram.ContainsKey(item.Key))
-            {
-                histogram[item.Key] = item.Value;
-            }
+            histogram.TryAdd(bucket, 0);
         }
 
         return histogram;
+    }
+
+    public async Task<Dictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync()
+    {
+        var result = new Dictionary<Ruleset, Dictionary<int, int>>();
+        Ruleset[] rulesets = Enum.GetValues<Ruleset>();
+
+        foreach (Ruleset ruleset in rulesets)
+        {
+            result[ruleset] = await GetHistogramAsync(ruleset);
+        }
+
+        return result;
     }
 
     private IQueryable<PlayerRating> LeaderboardQuery(

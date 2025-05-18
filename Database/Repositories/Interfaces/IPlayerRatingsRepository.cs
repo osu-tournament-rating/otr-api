@@ -94,8 +94,19 @@ public interface IPlayerRatingsRepository : IRepository<PlayerRating>
     /// </summary>
     /// <param name="ruleset">Ruleset</param>
     /// <returns>
-    ///  A dictionary with the keys equal to the 'bucket' of rating displayed (i.e. 100, 125, 150, etc. rating)
-    ///  in the histogram, and the values being how many players have ratings within the buckets.
+    /// A dictionary with the keys equal to the 'bucket' of rating displayed (i.e. 100, 125, 150, etc. rating)
+    /// in the histogram, and the values being how many players have ratings within the buckets.
     /// </returns>
-    Task<IDictionary<int, int>> GetHistogramAsync(Ruleset ruleset);
+    Task<Dictionary<int, int>> GetHistogramAsync(Ruleset ruleset);
+
+
+    /// <summary>
+    /// Histogram of all ratings for every <see cref="Ruleset"/>
+    /// </summary>
+    /// <returns>
+    /// A dictionary for each <see cref="Common.Enums.Ruleset"/> having another dictionary with
+    /// the keys equal to the 'bucket' of rating displayed (i.e. 100, 125, 150, etc. rating)
+    /// in the histogram, and the values being how many players have ratings within the buckets.
+    /// </returns>
+    Task<Dictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync();
 }
