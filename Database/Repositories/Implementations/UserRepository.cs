@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Repositories.Interfaces;
+using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
@@ -58,4 +59,28 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
         _context.Users
             .Include(x => x.Settings)
             .Include(x => x.Player);
+
+    public async Task<Dictionary<DateTime, int>> GetAccumulatedDailyCountsAsync()
+    {
+        Dictionary<DateTime, int> countByDay = await _context.Users.ToCountStatisticsDictionaryAsync(x => x.Created.Date);
+
+        DateTime minDate = countByDay.Keys.Min();
+        DateTime maxDate = countByDay.Keys.Max();
+        var daySpan = TimeSpan.FromDays(1);
+        var curCount = 0;
+        for (DateTime day = minDate; day <= maxDate; day += daySpan)
+        {
+            if (countByDay.TryGetValue(day, out var count))
+            {
+                curCount += count;
+                countByDay[day] = curCount;
+            }
+            else
+            {
+                countByDay[day] = curCount;
+            }
+        }
+
+        return countByDay;
+    }
 }

@@ -36,4 +36,10 @@ public interface IUserRepository : IRepository<User>
     /// </summary>
     /// <param name="id">Id of the user</param>
     Task<IEnumerable<Match>> GetSubmissionsAsync(int id);
+
+    /// <summary>
+    /// Gets a map of dates to the total number of <see cref="Database.Entities.User"/>s
+    /// being registered at that point of time
+    /// </summary>
+    Task<Dictionary<DateTime, int>> GetAccumulatedDailyCountsAsync();
 }
