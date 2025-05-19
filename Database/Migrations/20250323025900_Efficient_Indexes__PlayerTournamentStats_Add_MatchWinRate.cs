@@ -7,8 +7,6 @@ namespace Database.Migrations
     /// <inheritdoc />
     public partial class Efficient_Indexes__PlayerTournamentStats_Add_MatchWinRate : Migration
     {
-        private static readonly string[] columns = new[] { "ruleset", "rating" };
-
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -27,7 +25,7 @@ namespace Database.Migrations
             migrationBuilder.CreateIndex(
                 name: "ix_player_ratings_ruleset_rating",
                 table: "player_ratings",
-                columns: columns,
+                columns: new[] { "ruleset", "rating" },
                 descending: new[] { false, true });
 
             migrationBuilder.CreateIndex(

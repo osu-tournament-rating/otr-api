@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Database.Entities;
 
@@ -17,6 +18,12 @@ public class User : UpdateableEntityBase
     /// Timestamp of the user's last login to the o!TR website
     /// </summary>
     public DateTime? LastLogin { get; set; }
+
+    /// <summary>
+    /// Timestamp of the most recent update to the <see cref="User"/>'s <see cref="User.Friends"/> list
+    /// </summary>
+    [Column("last_friends_list_update")]
+    public DateTime? LastFriendsListUpdate { get; set; }
 
     /// <summary>
     /// A collection of string literals denoting special permissions granted to the user
@@ -77,4 +84,15 @@ public class User : UpdateableEntityBase
     /// A collection of <see cref="MatchAdminNote"/>s created by the user
     /// </summary>
     public ICollection<MatchAdminNote> MatchAdminNotes { get; set; } = [];
+
+    /// <summary>
+    /// Players this user is following on osu!
+    /// </summary>
+    /// <remarks>
+    /// We do not link to other <see cref="User"/>s because it is unlikely
+    /// that all osu! users followed by this <see cref="User"/> will also
+    /// be registered in our system. However, it is guaranteed that all osu! users followed
+    /// will be <see cref="Player"/>s in our system (as they can be created easily).
+    /// </remarks>
+    public ICollection<Player> Friends { get; set; } = [];
 }

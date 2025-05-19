@@ -252,4 +252,26 @@ public class UsersController(
             ? Ok()
             : BadRequest();
     }
+
+    /// <summary>
+    /// Get a user's friends
+    /// </summary>
+    /// <param name="id">User id</param>
+    /// <response code="404">A user matching the given id does not exist</response>
+    /// <response code="200">The operation was successful</response>
+    [HttpGet("{id:int}/friends")]
+    [Authorize(Policy = AuthorizationPolicies.AccessUserResources)]
+    [ProducesResponseType<IEnumerable<PlayerCompactDTO>>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<IEnumerable<PlayerCompactDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ListFriendsAsync(int id)
+    {
+        if (!await userService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        IEnumerable<PlayerCompactDTO> result = await userService.GetFriendsAsync(id);
+
+        return Ok(result);
+    }
 }

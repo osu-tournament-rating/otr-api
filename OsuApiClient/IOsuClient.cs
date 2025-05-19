@@ -217,6 +217,13 @@ public interface IOsuClient : IDisposable
     );
 
     /// <summary>
+    /// Gets the current user's friends list
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A collection of followed <see cref="User"/>s</returns>
+    Task<IEnumerable<User>?> GetUserFriendsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Clears the current access credentials for the client
     /// </summary>
     void ClearCredentials();

@@ -112,4 +112,9 @@ public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
     /// A collection of <see cref="Beatmap"/> created by the <see cref="Player"/>
     /// </summary>
     public ICollection<Beatmap> CreatedBeatmaps { get; set; } = [];
+
+    /// <summary>
+    /// The inverse navigation of the <see cref="User.Friends"/> relationship
+    /// </summary>
+    public ICollection<User> Followers { get; set; } = [];
 }
