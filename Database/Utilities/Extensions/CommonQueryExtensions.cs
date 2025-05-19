@@ -1,8 +1,6 @@
-using System.Linq.Expressions;
 using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace Database.Utilities.Extensions;
 

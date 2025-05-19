@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using API.Utilities.DataAnnotations;
-using Common.Constants;
 using Common.Enums;
 using Common.Enums.Verification;
 

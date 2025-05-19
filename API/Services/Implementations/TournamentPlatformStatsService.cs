@@ -1,9 +1,7 @@
 ﻿using API.DTOs;
 using API.Services.Interfaces;
-using Common.Constants;
 using Common.Enums;
 using Common.Enums.Verification;
-using Common.Utilities;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
