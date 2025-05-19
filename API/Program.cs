@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using API.Authorization;
 using API.Authorization.Handlers;
@@ -48,13 +49,16 @@ using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
 using Serilog;
 using Serilog.AspNetCore;
+using Serilog.Enrichers.Span;
 using Serilog.Events;
+using Serilog.Sinks.Grafana.Loki;
 using StackExchange.Redis;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
 using IMatchRosterRepository = Database.Repositories.Interfaces.IMatchRosterRepository;
 
+#pragma warning disable SYSLIB1045
 #region WebApplicationBuilder Configuration
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -111,6 +115,14 @@ builder.Services
 
 #region OpenTelemetry Tracing/Metrics Configuration
 
+const string serviceName = "otr-api";
+
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+});
+
 builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
 {
     options.EnrichWithException = (activity, exception) =>
@@ -125,11 +137,28 @@ builder.Services.Configure<AspNetCoreTraceInstrumentationOptions>(options =>
 builder
     .Services.AddOpenTelemetry()
     .ConfigureResource(resource =>
-        resource.AddService(serviceName: builder.Environment.ApplicationName)
+        resource.AddService(serviceName: serviceName)
     )
     .WithTracing(tracing =>
         tracing
-            .AddAspNetCoreInstrumentation()
+            .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName: serviceName))
+            .AddAspNetCoreInstrumentation(options =>
+            {
+                options.RecordException = true;
+                options.Filter = httpContext =>
+                {
+                    try
+                    {
+                        // Tracing does not need to be flooded with these requests from prometheus
+                        return httpContext.Request.Path.Value != "/metrics";
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                };
+            })
+            .AddHttpClientInstrumentation()
             .AddNpgsql()
             .AddOtlpExporter(options =>
             {
@@ -144,9 +173,14 @@ builder
     )
     .WithMetrics(b =>
         b.AddAspNetCoreInstrumentation()
+            .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
-            .AddRuntimeInstrumentation()
+            .AddMeter("Microsoft.AspNetCore.Hosting")
+            .AddMeter("Microsoft.AspNetCore.Routing")
+            .AddMeter("Microsoft.AspNetCore.Diagnostics")
+            .AddMeter("Microsoft.EntityFrameworkCore")
             .AddProcessInstrumentation()
+            .AddRuntimeInstrumentation()
             .AddPrometheusExporter(o => o.DisableTotalNameSuffixForCounters = true)
     );
 
@@ -280,7 +314,8 @@ builder.Services.AddSwaggerGen(options =>
             Version = "v1",
             Title = "osu! Tournament Rating API",
             Description =
-                "The official resource for reading and writing data within the osu! Tournament Rating platform."
+                "The official resource for reading and writing data within the osu! Tournament Rating platform.",
+            TermsOfService = new Uri("https://docs.otr.stagec.xyz/About/Terms-of-Use"),
         }
     );
 
@@ -405,9 +440,15 @@ builder.Services.AddSerilog(configuration =>
             "Microsoft.EntityFrameworkCore.Database.Command",
             LogEventLevel.Warning
         )
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
         .Enrich.FromLogContext()
+        .Enrich.WithSpan()
+        .WriteTo.GrafanaLoki(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).LokiConnection, new List<LokiLabel>
+        {
+            new() { Key = "app", Value = serviceName }
+        }, ["app"])
         .WriteTo.Console(
-            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [trace_id: {TraceId} span_id: {SpanId}] {NewLine} {Message:lj}{NewLine}{Exception}"
         )
         .WriteTo.File(
             Path.Join("logs", "log.log"),
@@ -565,10 +606,21 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 #region Database Context
 
 builder.Services.AddScoped<AuditBlamingInterceptor>();
-builder.Services.AddDbContext<OtrContext>((services, options) =>
+builder.Services.AddDbContext<OtrContext>((services, sqlOptions) =>
 {
-    options
-        .UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection)
+    sqlOptions
+        .UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection,
+            dataSourceOptions => dataSourceOptions.ConfigureDataSource(
+                dataSourceBuilder =>
+                    dataSourceBuilder.ConfigureTracing(tracingOptions =>
+                    // This only returns the actual command, unfortunately there's no other way to do this afaik
+                    tracingOptions.ConfigureCommandSpanNameProvider(cmd => Regex.Split(cmd.CommandText[..15], "[a-z]+")[0])
+                            // Filter out commands that shouldn't be related to API operations
+                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("COMMIT", StringComparison.OrdinalIgnoreCase))
+                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("DROP", StringComparison.OrdinalIgnoreCase))
+                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("CREATE", StringComparison.OrdinalIgnoreCase))
+                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("ALTER", StringComparison.OrdinalIgnoreCase)))))
+        .LogTo(Log.Logger.Information, LogLevel.Information)
         .AddInterceptors(services.GetRequiredService<AuditBlamingInterceptor>())
         .UseSnakeCaseNamingConvention();
 });

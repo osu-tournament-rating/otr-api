@@ -87,6 +87,9 @@ public class MatchesService(
     public async Task<bool> ExistsAsync(int id) =>
         await matchesRepository.ExistsAsync(id);
 
+    public async Task<MatchDTO?> MergeAsync(int parentId, IEnumerable<int> matchIds) =>
+        mapper.Map<MatchDTO?>(await matchesRepository.MergeAsync(parentId, matchIds));
+
     public async Task DeleteAsync(int id) =>
         await matchesRepository.DeleteAsync(id);
 
@@ -96,7 +99,8 @@ public class MatchesService(
             .SelectMany(g => g.Scores.Select(s => s.PlayerId))
             .Distinct();
 
-        ICollection<PlayerCompactDTO>? players = mapper.Map<ICollection<PlayerCompactDTO>>(await playersRepository.GetAsync(playerIds));
+        ICollection<PlayerCompactDTO>? players =
+            mapper.Map<ICollection<PlayerCompactDTO>>(await playersRepository.GetAsync(playerIds));
 
         return players;
     }

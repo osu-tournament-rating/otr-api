@@ -14,4 +14,7 @@ public class ConnectionStringsConfiguration
 
     [Required(ErrorMessage = "RedisConnection is required!")]
     public string RedisConnection { get; init; } = string.Empty;
+
+    [Required(ErrorMessage = "LokiConnection is required!")]
+    public string LokiConnection { get; init; } = string.Empty;
 }
