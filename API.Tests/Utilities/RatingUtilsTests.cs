@@ -1,5 +1,5 @@
 using API.Utilities;
-using Common.Rating;
+using Common.Constants;
 
 namespace APITests.Utilities;
 
