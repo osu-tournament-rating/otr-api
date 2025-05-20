@@ -30,15 +30,9 @@ public sealed class OsuClient(
     ) : IOsuClient
 {
     private readonly IRequestHandler _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-    private OsuCredentials? _credentials;
-
     private bool _disposed;
 
-    /// <summary>
-    /// Gets the configuration for the client
-    /// </summary>
-    public IOsuClientConfiguration Configuration { get; } =
-        configuration ?? throw new ArgumentNullException(nameof(configuration));
+    public OsuCredentials? Credentials { private get; set; }
 
     public void Dispose()
     {
@@ -47,35 +41,32 @@ public sealed class OsuClient(
         _disposed = true;
     }
 
-    public OsuCredentials SetCredentials(OsuCredentials credentials) =>
-        _credentials = credentials;
-
     public async Task<OsuCredentials?> UpdateCredentialsAsync(CancellationToken cancellationToken = default)
     {
         CheckDisposed();
 
-        if (_credentials is { HasExpired: false })
+        if (Credentials is { HasExpired: false })
         {
-            return _credentials;
+            return Credentials;
         }
 
         var body = new Dictionary<string, string>
         {
-            ["client_id"] = Configuration.ClientId.ToString(),
-            ["client_secret"] = Configuration.ClientSecret
+            ["client_id"] = configuration.ClientId.ToString(),
+            ["client_secret"] = configuration.ClientSecret
         };
 
         // Requesting credentials for the first time
-        if (_credentials is null)
+        if (Credentials is null)
         {
-            body.Add("grant_type", "client_credentials");
+            body.Add("grant_type", "clientCredentials");
             body.Add("scope", "public");
         }
         // Refreshing access token
-        else if (_credentials.RefreshToken is not null)
+        else if (Credentials.RefreshToken is not null)
         {
             body.Add("grant_type", "refresh_token");
-            body.Add("refresh_token", _credentials.RefreshToken);
+            body.Add("refresh_token", Credentials.RefreshToken);
         }
 
         Uri.TryCreate(Endpoints.Osu.Credentials, UriKind.Relative, out Uri? uri);
@@ -83,7 +74,7 @@ public sealed class OsuClient(
             .FetchAsync<AccessCredentialsModel, AccessCredentialsJsonModel>(
                 new ApiRequest
                 {
-                    Credentials = _credentials,
+                    Credentials = Credentials,
                     Method = HttpMethod.Post,
                     Route = uri!,
                     RequestBody = body
@@ -93,19 +84,19 @@ public sealed class OsuClient(
 
         if (response is not null)
         {
-            OsuCredentials newCredentials = SetCredentials(new OsuCredentials
+            Credentials = new OsuCredentials
             {
                 AccessToken = response.AccessToken,
                 RefreshToken = response.RefreshToken,
                 ExpiresInSeconds = response.ExpiresIn
-            });
+            };
 
             logger.LogDebug(
                 "Obtained new access credentials [Access Expires In: {Expiry}]",
-                newCredentials.ExpiresIn.ToString("g")
+                Credentials.ExpiresIn.ToString("g")
             );
 
-            return newCredentials;
+            return Credentials;
         }
 
         logger.LogWarning("Failed to fetch access credentials");
@@ -122,11 +113,11 @@ public sealed class OsuClient(
 
         var body = new Dictionary<string, string>
         {
-            ["client_id"] = Configuration.ClientId.ToString(),
-            ["client_secret"] = Configuration.ClientSecret,
+            ["client_id"] = configuration.ClientId.ToString(),
+            ["client_secret"] = configuration.ClientSecret,
             ["grant_type"] = "authorization_code",
             ["code"] = authorizationCode,
-            ["redirect_uri"] = Configuration.RedirectUrl
+            ["redirect_uri"] = configuration.RedirectUrl
         };
 
         if (!string.IsNullOrEmpty(authorizationCodeVerifier))
@@ -138,7 +129,7 @@ public sealed class OsuClient(
             .FetchAsync<AccessCredentialsModel, AccessCredentialsJsonModel>(
                 new ApiRequest
                 {
-                    Credentials = _credentials,
+                    Credentials = Credentials,
                     Method = HttpMethod.Post,
                     Route = new Uri(Endpoints.Osu.Credentials, UriKind.Relative),
                     RequestBody = body
@@ -146,19 +137,19 @@ public sealed class OsuClient(
 
         if (response is not null)
         {
-            OsuCredentials newCredentials = SetCredentials(new OsuCredentials
+            Credentials = new OsuCredentials
             {
                 AccessToken = response.AccessToken,
                 RefreshToken = response.RefreshToken,
                 ExpiresInSeconds = response.ExpiresIn
-            });
+            };
 
             logger.LogDebug(
                 "Obtained new access credentials [Access Expires In: {Expiry}]",
-                newCredentials.ExpiresIn.ToString("g")
+                Credentials.ExpiresIn.ToString("g")
             );
 
-            return newCredentials;
+            return Credentials;
         }
 
         logger.LogWarning("Failed to fetch access credentials");
@@ -172,8 +163,7 @@ public sealed class OsuClient(
     {
         CheckDisposed();
 
-        SetCredentials(new OsuCredentials { AccessToken = "", RefreshToken = refreshToken, ExpiresInSeconds = 0 });
-
+        Credentials = new OsuCredentials { AccessToken = string.Empty, RefreshToken = refreshToken, ExpiresInSeconds = 0 };
         return await UpdateCredentialsAsync(cancellationToken);
     }
 
@@ -185,7 +175,7 @@ public sealed class OsuClient(
         CheckDisposed();
         await UpdateCredentialsAsync(cancellationToken);
 
-        if (_credentials is { RefreshToken: null })
+        if (Credentials is { RefreshToken: null })
         {
             return null;
         }
@@ -200,7 +190,7 @@ public sealed class OsuClient(
         return await _handler.FetchAsync<UserExtended, UserExtendedJsonModel>(
             new ApiRequest
             {
-                Credentials = _credentials,
+                Credentials = Credentials,
                 Method = HttpMethod.Get,
                 Route = uri!
             },
@@ -264,7 +254,7 @@ public sealed class OsuClient(
         return await _handler.FetchAsync<MultiplayerMatch, MultiplayerMatchJsonModel>(
             new ApiRequest
             {
-                Credentials = _credentials,
+                Credentials = Credentials,
                 Method = HttpMethod.Get,
                 Route = uri!,
                 QueryParameters = queryParams
@@ -352,7 +342,7 @@ public sealed class OsuClient(
         return await _handler.FetchAsync<BeatmapExtended, BeatmapExtendedJsonModel>(
             new ApiRequest
             {
-                Credentials = _credentials,
+                Credentials = Credentials,
                 Method = HttpMethod.Get,
                 Route = uri!
             },
@@ -369,7 +359,7 @@ public sealed class OsuClient(
         return (await _handler.FetchAsync<BeatmapCollection, BeatmapCollectionJsonModel>(
             new ApiRequest
             {
-                Credentials = _credentials,
+                Credentials = Credentials,
                 Method = HttpMethod.Get,
                 Route = new Uri(Endpoints.Osu.Beatmaps, UriKind.Relative),
                 QueryParameters = beatmapIds
@@ -393,7 +383,7 @@ public sealed class OsuClient(
         return await _handler.FetchAsync<BeatmapAttributes, BeatmapAttributesJsonModel>(
             new ApiRequest
             {
-                Credentials = _credentials,
+                Credentials = Credentials,
                 Method = HttpMethod.Get,
                 Route = new Uri(string.Format(Endpoints.Osu.BeatmapAttributes, beatmapId), UriKind.Relative),
                 QueryParameters = new Dictionary<string, string> { ["mods"] = mods.ToString() }
@@ -413,7 +403,7 @@ public sealed class OsuClient(
         return await _handler.FetchAsync<BeatmapsetExtended, BeatmapsetExtendedJsonModel>(
             new ApiRequest
             {
-                Credentials = _credentials,
+                Credentials = Credentials,
                 Method = HttpMethod.Get,
                 Route = new Uri(string.Format(Endpoints.Osu.Beatmapsets, beatmapsetId), UriKind.Relative)
             },
@@ -465,7 +455,7 @@ public sealed class OsuClient(
     {
         CheckDisposed();
 
-        _credentials = null;
+        Credentials = null;
         logger.LogDebug("Cleared current credentials");
     }
 
@@ -496,7 +486,7 @@ public sealed class OsuClient(
         return await _handler.FetchAsync<UserExtended, UserExtendedJsonModel>(
             new ApiRequest
             {
-                Credentials = _credentials,
+                Credentials = Credentials,
                 Method = HttpMethod.Get,
                 Route = uri!,
                 QueryParameters = queryParams

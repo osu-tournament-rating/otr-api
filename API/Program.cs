@@ -549,30 +549,27 @@ builder.Services
             // Event fired when the client successfully gets osu! access credentials for a user
             OnCreatingTicket = async context =>
             {
-                IPlayersRepository playersRepository =
-                    context.HttpContext.RequestServices.GetRequiredService<IPlayersRepository>();
-                IUserRepository usersRepository =
-                    context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
                 IOsuClient osuClient = context.HttpContext.RequestServices.GetRequiredService<IOsuClient>();
+                IUsersService usersService = context.HttpContext.RequestServices.GetRequiredService<IUsersService>();
 
-                osuClient.SetCredentials(new OsuCredentials
+                osuClient.Credentials = new OsuCredentials
                 {
                     AccessToken = context.AccessToken ?? string.Empty,
                     RefreshToken = context.RefreshToken,
                     ExpiresInSeconds = (long?)context.ExpiresIn?.TotalSeconds ?? DateTime.Now.Second,
-                });
+                };
 
                 // Get user data from osu! API
                 UserExtended? osuUser = await osuClient.GetCurrentUserAsync(
                     cancellationToken: context.HttpContext.RequestAborted
                 );
 
-                // Get or create necessary entities
-                Player player = await playersRepository.GetOrCreateAsync(osuUser!.Id);
+                if (osuUser is null)
+                {
+                    return;
+                }
 
-                User user = await usersRepository.GetByPlayerIdOrCreateAsync(player.Id);
-                user.LastLogin = DateTime.UtcNow;
-                await usersRepository.UpdateAsync(user);
+                User user = await usersService.LoginAsync(osuUser.Id);
 
                 // Build user identity
                 var claims = new List<Claim>
@@ -698,7 +695,7 @@ builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IFilteringService, FilteringService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
-builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 

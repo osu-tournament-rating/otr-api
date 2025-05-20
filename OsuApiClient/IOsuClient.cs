@@ -13,11 +13,9 @@ namespace OsuApiClient;
 public interface IOsuClient : IDisposable
 {
     /// <summary>
-    /// Sets the current credentials used by the client
+    /// osu! client credentials
     /// </summary>
-    /// <param name="credentials">osu! access credentials</param>
-    /// <returns>The current <see cref="OsuCredentials"/></returns>
-    OsuCredentials SetCredentials(OsuCredentials credentials);
+    OsuCredentials Credentials { set; }
 
     /// <summary>
     /// Updates the current access credentials
