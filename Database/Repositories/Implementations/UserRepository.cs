@@ -62,7 +62,11 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
 
     public async Task<Dictionary<DateTime, int>> GetAccumulatedDailyCountsAsync()
     {
-        Dictionary<DateTime, int> countByDay = await _context.Users.ToCountStatisticsDictionaryAsync(x => x.Created.Date);
+        Dictionary<DateTime, int> countByDay = await _context.Users
+            .GroupBy(
+                x => x.Created.Date,
+                (x, y) => new { Date = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Date, x => x.Count);
 
         DateTime minDate = countByDay.Keys.Min();
         DateTime maxDate = countByDay.Keys.Max();
