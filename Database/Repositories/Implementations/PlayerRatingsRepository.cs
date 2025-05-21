@@ -68,25 +68,6 @@ public class PlayerRatingsRepository(OtrContext context)
             .Select(pr => pr.Ruleset)
             .ToListAsync();
 
-    public async Task<Dictionary<int, int>> GetHistogramAsync(Ruleset ruleset)
-    {
-        const int bucketSize = 25;
-        const int minRating = 100;
-
-
-        Dictionary<int, int> histogram = await _context.PlayerRatings
-            .Where(x => x.Ruleset == ruleset && x.Rating >= minRating)
-            .ToCountStatisticsDictionaryAsync(x => (int)(x.Rating / bucketSize) * bucketSize); // floor to the closest bucket
-
-        var maxBucket = histogram.Keys.Max();
-        for (var bucket = minRating; bucket <= maxBucket; bucket += bucketSize)
-        {
-            histogram.TryAdd(bucket, 0);
-        }
-
-        return histogram;
-    }
-
     public async Task<Dictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync()
     {
         var result = new Dictionary<Ruleset, Dictionary<int, int>>();
@@ -98,6 +79,27 @@ public class PlayerRatingsRepository(OtrContext context)
         }
 
         return result;
+    }
+
+    private async Task<Dictionary<int, int>> GetHistogramAsync(Ruleset ruleset)
+    {
+        const int bucketSize = 25;
+        const int minRating = 100;
+
+        Dictionary<int, int> histogram = await _context.PlayerRatings
+            .Where(x => x.Ruleset == ruleset && x.Rating >= minRating)
+            .GroupBy(
+                x => (int)(x.Rating / bucketSize) * bucketSize, // floor to the closest bucket
+                (x, y) => new { Bucket = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Bucket, x => x.Count);
+
+        var maxBucket = histogram.Keys.Max();
+        for (var bucket = minRating; bucket <= maxBucket; bucket += bucketSize)
+        {
+            histogram.TryAdd(bucket, 0);
+        }
+
+        return histogram;
     }
 
     private IQueryable<PlayerRating> LeaderboardQuery(
