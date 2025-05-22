@@ -120,7 +120,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           source: "*.env,./cfg/*.yml,script.sql"
-          target: "~/otr-api-dataworker/"
+          target: "~/otr-api/"
 
       - name: Apply migrations and deploy
         uses: appleboy/ssh-action@master
@@ -129,9 +129,11 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd ~/otr-api-dataworker
+            mkdir -p ~/otr-api || true
+            cd ~/otr-api
             mv ./cfg/* .
             rm -r ./cfg
             cat script.sql | docker exec -i db psql -U postgres -d postgres
             docker compose -f docker-compose-staging.yml pull
             docker compose -f docker-compose-staging.yml up -d --build
+            rm script.sql
