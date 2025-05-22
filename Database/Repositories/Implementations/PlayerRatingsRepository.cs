@@ -70,36 +70,46 @@ public class PlayerRatingsRepository(OtrContext context)
 
     public async Task<Dictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync()
     {
+        const int bucketSize = 25;
+        const int minRating = 100;
+
+        var histograms = await _context.PlayerRatings
+            .Where(x => x.Rating >= minRating)
+            .GroupBy(x => new
+            {
+                x.Ruleset,
+                Bucket = (int)(x.Rating / bucketSize) * bucketSize
+            })
+            .Select(g => new
+            {
+                g.Key.Ruleset,
+                g.Key.Bucket,
+                Count = g.Count()
+            })
+            .ToListAsync();
+
         var result = new Dictionary<Ruleset, Dictionary<int, int>>();
         Ruleset[] rulesets = Enum.GetValues<Ruleset>();
 
         foreach (Ruleset ruleset in rulesets)
         {
-            result[ruleset] = await GetHistogramAsync(ruleset);
+            var rulesetHistogram = new Dictionary<int, int>();
+            var rulesetBuckets = histograms.Where(h => h.Ruleset == ruleset).ToArray();
+
+            if (rulesetBuckets.Length != 0)
+            {
+                var maxBucket = rulesetBuckets.Max(h => h.Bucket);
+
+                for (var bucket = minRating; bucket <= maxBucket; bucket += bucketSize)
+                {
+                    rulesetHistogram[bucket] = rulesetBuckets.FirstOrDefault(h => h.Bucket == bucket)?.Count ?? 0;
+                }
+            }
+
+            result[ruleset] = rulesetHistogram;
         }
 
         return result;
-    }
-
-    private async Task<Dictionary<int, int>> GetHistogramAsync(Ruleset ruleset)
-    {
-        const int bucketSize = 25;
-        const int minRating = 100;
-
-        Dictionary<int, int> histogram = await _context.PlayerRatings
-            .Where(x => x.Ruleset == ruleset && x.Rating >= minRating)
-            .GroupBy(
-                x => (int)(x.Rating / bucketSize) * bucketSize, // floor to the closest bucket
-                (x, y) => new { Bucket = x, Count = y.Count() })
-            .ToDictionaryAsync(x => x.Bucket, x => x.Count);
-
-        var maxBucket = histogram.Keys.Max();
-        for (var bucket = minRating; bucket <= maxBucket; bucket += bucketSize)
-        {
-            histogram.TryAdd(bucket, 0);
-        }
-
-        return histogram;
     }
 
     private IQueryable<PlayerRating> LeaderboardQuery(
