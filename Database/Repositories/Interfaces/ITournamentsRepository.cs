@@ -189,4 +189,27 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <param name="id">Tournament id</param>
     /// <param name="beatmapIds">Collection of beatmap ids to remove from the tournament's collection of pooled beatmaps</param>
     Task DeletePooledBeatmapsAsync(int id, ICollection<int> beatmapIds);
+
+    /// <summary>
+    /// Gets a map of <see cref="Common.Enums.Verification.VerificationStatus"/>es to the number of <see cref="Database.Entities.Tournament"/>s with the status
+    /// </summary>
+    Task<Dictionary<VerificationStatus, int>> GetVerificationStatusStatsAsync();
+
+    /// <summary>
+    /// Gets a map of years to the number of <see cref="Database.Entities.Tournament"/>s in that year
+    /// </summary>
+    /// <remarks>Only verified tournaments are counted</remarks>
+    Task<Dictionary<int, int>> GetYearStatsAsync();
+
+    /// <summary>
+    /// Gets a map of <see cref="Common.Enums.Ruleset"/>s to the number of <see cref="Database.Entities.Tournament"/>s in that ruleset
+    /// </summary>
+    /// <remarks>Only verified tournaments are counted</remarks>
+    Task<Dictionary<Ruleset, int>> GetRulesetStatsAsync();
+
+    /// <summary>
+    /// Gets a map of lobby sizes to the number of <see cref="Database.Entities.Tournament"/>s with that lobby size
+    /// </summary>
+    /// <remarks>Only verified tournaments are counted</remarks>
+    Task<Dictionary<int, int>> GetLobbySizeStatsAsync();
 }

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using API.DTOs;
 using API.Services.Interfaces;
 using Common.Enums;
@@ -10,115 +11,112 @@ public class FilteringService(
     IPlayerStatsService
         playerStatsService) : IFilteringService
 {
-    public async Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO filteringRequest)
+    public async Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO request)
     {
-        var idList = filteringRequest.OsuPlayerIds.ToList();
+        var osuIdHashSet = request.OsuPlayerIds.ToImmutableHashSet();
+        IEnumerable<PlayerCompactDTO> players = (await playerService.GetAsync(osuIdHashSet)).ToList();
 
-        if (idList.Count == 0)
-        {
-            throw new Exception("Filtering id list cannot be empty");
-        }
-
-        var passed = 0;
-        var failed = 0;
-
-        IEnumerable<PlayerCompactDTO> playerInfoCollection = await playerService.GetAsync(idList);
-        var resultCollection = new List<PlayerFilteringResultDTO>();
-
-        foreach (PlayerCompactDTO playerInfo in playerInfoCollection)
-        {
-            (FilteringResult result, FilteringFailReason? failReason) = await FilterAsync(filteringRequest, playerInfo);
-
-            switch (result)
+        // Store missing players first
+        var results = osuIdHashSet
+            .Except(players.Select(p => p.OsuId))
+            .Select(osuId => new PlayerFilteringResultDTO
             {
-                case FilteringResult.Pass:
-                    passed++;
-                    break;
-                case FilteringResult.Fail:
-                    failed++;
-                    break;
-                default:
-                    throw new Exception("This FilteringResult is not handled!");
-            }
+                OsuId = osuId,
+                IsSuccess = false,
+                FailureReason = FilteringFailReason.NoData
+            }).ToList();
 
-            resultCollection.Add(new PlayerFilteringResultDTO
+        // ReSharper disable once SimplifyLinqExpressionUseAll
+        // Iterate all players which are not already stored as missing
+        foreach (PlayerCompactDTO playerInfo in players.Where(p => !results.Any(r => r.OsuId == p.OsuId)))
+        {
+            FilteringFailReason failReason = await FilterPlayerAsync(request, playerInfo);
+
+            results.Add(new PlayerFilteringResultDTO
             {
                 PlayerId = playerInfo.Id,
                 Username = playerInfo.Username,
                 OsuId = playerInfo.OsuId,
-                FilteringResult = result,
-                FilteringFailReason = failReason
+                IsSuccess = failReason == FilteringFailReason.None,
+                FailureReason = failReason
             });
         }
 
         return new FilteringResultDTO
         {
-            PlayersPassed = passed,
-            PlayersFailed = failed,
-            FilteringResults = resultCollection
+            PlayersPassed = results.Count(r => r.IsSuccess),
+            PlayersFailed = results.Count(r => !r.IsSuccess),
+            FilteringResults = results.ToList()
         };
     }
 
-    private async Task<(FilteringResult result, FilteringFailReason? failReason)> FilterAsync(
-        FilteringRequestDTO filteringRequest,
-        PlayerCompactDTO? playerInfo)
+    private async Task<FilteringFailReason> FilterPlayerAsync(
+        FilteringRequestDTO request,
+        PlayerCompactDTO playerInfo)
     {
-        FilteringResult result = FilteringResult.Fail;
-        FilteringFailReason? failReason = FilteringFailReason.None;
+        PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(
+            playerInfo.Id,
+            request.Ruleset,
+            includeAdjustments: false);
 
-        if (playerInfo == null)
+        if (ratingStats is null)
         {
-            failReason |= FilteringFailReason.NoData;
-
-            return (result, failReason);
+            return FilteringFailReason.NoData;
         }
 
-        PlayerRatingStatsDTO? ratingStats =
-            await playerRatingsService.GetAsync(playerInfo.Id, filteringRequest.Ruleset, includeAdjustments: false);
+        // Separate database call as adjustments are not included from the initial call
+        // In the future, the processor could store this field in the database
+        var peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, request.Ruleset);
+        FilteringFailReason failReason = EnforceFilteringConditions(request, ratingStats, peakRating);
 
-        if (ratingStats == null)
-        {
-            failReason |= FilteringFailReason.NoData;
+        return failReason;
+    }
 
-            return (result, failReason);
-        }
+    /// <summary>
+    /// Checks all fields of the filter against a player
+    /// and applies the appropriate fail reason if needed
+    /// </summary>
+    /// <param name="request">Filter request</param>
+    /// <param name="ratingStats">Rating stats of the player we are checking</param>
+    /// <param name="peakRating">The player's all-time peak rating</param>
+    /// <returns></returns>
+    private static FilteringFailReason EnforceFilteringConditions(
+        FilteringRequestDTO request,
+        PlayerRatingStatsDTO ratingStats,
+        double peakRating)
+    {
+        FilteringFailReason failReason = FilteringFailReason.None;
 
-        if (ratingStats.Rating < filteringRequest.MinRating)
+        if (ratingStats.Rating < request.MinRating)
         {
             failReason |= FilteringFailReason.MinRating;
         }
 
-        if (ratingStats.Rating > filteringRequest.MaxRating)
+        if (ratingStats.Rating > request.MaxRating)
         {
             failReason |= FilteringFailReason.MaxRating;
         }
 
-        if (!filteringRequest.AllowProvisional && ratingStats.IsProvisional)
+        if (!request.AllowProvisional && ratingStats.IsProvisional)
         {
             failReason |= FilteringFailReason.IsProvisional;
         }
 
-        if (ratingStats.MatchesPlayed < filteringRequest.MatchesPlayed)
-        {
-            failReason |= FilteringFailReason.NotEnoughMatches;
-        }
-
-        if (ratingStats.TournamentsPlayed < filteringRequest.TournamentsPlayed)
+        if (ratingStats.TournamentsPlayed < request.TournamentsPlayed)
         {
             failReason |= FilteringFailReason.NotEnoughTournaments;
         }
 
-        var peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, filteringRequest.Ruleset);
-        if (peakRating > filteringRequest.PeakRating)
+        if (peakRating > request.PeakRating)
         {
             failReason |= FilteringFailReason.PeakRatingTooHigh;
         }
 
-        if (failReason == FilteringFailReason.None)
+        if (ratingStats.MatchesPlayed < request.MatchesPlayed)
         {
-            result = FilteringResult.Pass;
+            failReason |= FilteringFailReason.NotEnoughMatches;
         }
 
-        return (result, failReason);
+        return failReason;
     }
 }

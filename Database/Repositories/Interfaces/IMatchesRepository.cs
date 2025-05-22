@@ -43,6 +43,23 @@ public interface IMatchesRepository : IRepository<Match>
     Task<IEnumerable<Match>> SearchAsync(string name);
 
     /// <summary>
+    /// Links the games of each provided match to the parent match, then deletes the provided matches
+    /// </summary>
+    /// <remarks>
+    /// Specifically, for each game of each match provided in <see cref="matchIds"/>,
+    /// the Match property is reassigned to the match whose ID equals <see cref="parentId"/>.
+    /// After the linking happens, each match provided in <see cref="matchIds"/> is deleted.
+    /// </remarks>
+    /// <param name="matchIds">
+    /// Ids of the matches to merge into the parent match
+    /// </param>
+    /// <returns>
+    /// The updated parent match with child navigations, or null if the parent could not be found.
+    /// If this method returns null, no data is modified.
+    /// </returns>
+    Task<Match?> MergeAsync(int parentId, IEnumerable<int> matchIds);
+
+    /// <summary>
     /// Updates the verification status of a match for the given id
     /// </summary>
     /// <param name="id">Id of the match</param>

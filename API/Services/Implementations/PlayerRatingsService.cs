@@ -1,6 +1,5 @@
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
 using AutoMapper;
 using Common.Enums;
 using Database.Entities.Processor;

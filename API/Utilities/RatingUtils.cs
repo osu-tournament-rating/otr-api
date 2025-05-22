@@ -1,4 +1,4 @@
-using Common.Rating;
+using Common.Constants;
 
 namespace API.Utilities;
 
