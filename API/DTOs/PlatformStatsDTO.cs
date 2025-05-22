@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents platform-wide statistics
 /// </summary>
-public class PlatformStatsDTO // TODO: use IDictionary instead of Dictionary
+public class PlatformStatsDTO
 {
     /// <summary>
     /// Platform-wide tournament stats
