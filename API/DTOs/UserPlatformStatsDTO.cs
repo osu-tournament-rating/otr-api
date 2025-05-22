@@ -9,5 +9,5 @@ public class UserPlatformStatsDTO
     /// Map of dates to the total number of registered <see cref="Database.Entities.User"/>s at that time
     /// </summary>
     /// <remarks>One entry per day beginning from the date of the first registered user</remarks>
-    public Dictionary<DateTime, int> AccumulatedCountByDate { get; init; } = new();
+    public IDictionary<DateTime, int> AccumulatedCountByDate { get; init; } = new Dictionary<DateTime, int>();
 }
