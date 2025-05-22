@@ -4,12 +4,14 @@ using API.Services.Interfaces;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
+[AllowAnonymous]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class AuthController(IOAuthClientService oAuthClientService) : ControllerBase
 {
