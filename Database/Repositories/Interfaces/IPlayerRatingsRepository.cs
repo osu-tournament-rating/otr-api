@@ -98,5 +98,5 @@ public interface IPlayerRatingsRepository : IRepository<PlayerRating>
     /// increasing in steps of 25 (e.g., 100, 125, 150, etc.). The values represent how many
     /// players have ratings which fall into each bucket.
     /// </returns>
-    Task<Dictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync();
+    Task<IDictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync();
 }

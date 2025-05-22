@@ -68,7 +68,7 @@ public class PlayerRatingsRepository(OtrContext context)
             .Select(pr => pr.Ruleset)
             .ToListAsync();
 
-    public async Task<Dictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync()
+    public async Task<IDictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync()
     {
         const int bucketSize = 25;
         const int minRating = 100;
