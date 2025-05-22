@@ -14,10 +14,12 @@ public class OsuConfiguration : IOsuClientConfiguration
     [Required(ErrorMessage = "ClientSecret is required!")]
     public string ClientSecret { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "RedirectUrl is required!")]
+    // This value is not used in the API
     public string RedirectUrl { get; set; } = string.Empty;
 
-    public int? OsuRateLimit { get; set; }
+    public int OsuRateLimit { get; set; } = 60;
 
-    public int? OsuTrackRateLimit { get; set; }
+    public int OsuTrackRateLimit { get; set; } = 30;
+
+    public bool EnableDistributedLocking { get; set; } = true;
 }

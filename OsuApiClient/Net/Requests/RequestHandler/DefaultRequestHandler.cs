@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using AutoMapper;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OsuApiClient.Configurations.Interfaces;
@@ -25,7 +26,7 @@ namespace OsuApiClient.Net.Requests.RequestHandler;
 /// </remarks>
 internal sealed class DefaultRequestHandler(
     ILogger<DefaultRequestHandler> logger,
-    RedLockFactory redLockFactory,
+    IServiceProvider serviceProvider,
     IOsuClientConfiguration configuration
 ) : IRequestHandler
 {
@@ -118,18 +119,24 @@ internal sealed class DefaultRequestHandler(
         var wait = TimeSpan.FromSeconds(10);
         var retry = TimeSpan.FromSeconds(1);
 
-        await using IRedLock? redLock = await redLockFactory.CreateLockAsync(resource, expiry, wait, retry);
         try
         {
-            // Short-circuit the lock if we're making an osu!track request.
-            // This should help with the fact that the DataWorkerService is competing
-            // with the API /oauth/authorize endpoint
-            if (request.Platform == FetchPlatform.OsuTrack || redLock.IsAcquired)
+            if (configuration.EnableDistributedLocking)
             {
-                HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
-                HttpResponseMessage response = await _httpClient.SendAsync(requestMessage, cancellationToken);
+                RedLockFactory redLockFactory = serviceProvider.GetRequiredService<RedLockFactory>();
+                await using IRedLock? redLock = await redLockFactory.CreateLockAsync(resource, expiry, wait, retry);
 
-                return await OnResponseReceivedAsync(request.Platform, response, cancellationToken);
+                // Short-circuit the lock if we're making an osu!track request.
+                // This should help with the fact that the DataWorkerService is competing
+                // with the API calling out to osu! OAuth for logins
+                if (request.Platform == FetchPlatform.OsuTrack || redLock.IsAcquired)
+                {
+                    return await SendApiRequestAsync(request, cancellationToken);
+                }
+            }
+            else
+            {
+                return await SendApiRequestAsync(request, cancellationToken);
             }
         }
         catch (HttpRequestException ex)
@@ -142,6 +149,14 @@ internal sealed class DefaultRequestHandler(
         }
 
         return null;
+    }
+
+    private async Task<string?> SendApiRequestAsync(IApiRequest request, CancellationToken cancellationToken)
+    {
+        HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
+        HttpResponseMessage response = await _httpClient.SendAsync(requestMessage, cancellationToken);
+
+        return await OnResponseReceivedAsync(request.Platform, response, cancellationToken);
     }
 
     /// <summary>

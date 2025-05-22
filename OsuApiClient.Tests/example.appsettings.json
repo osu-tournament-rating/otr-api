@@ -7,8 +7,6 @@
     "OsuClient": {
         "ClientId": 0,
         "ClientSecret": "",
-        "RedirectUrl": "",
-        "RefreshToken": "",
-        "AuthCode": ""
+        "RedirectUrl": ""
     }
 }

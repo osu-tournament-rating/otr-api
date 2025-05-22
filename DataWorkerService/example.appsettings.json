@@ -12,7 +12,6 @@
   "Osu": {
     "ClientId": "",
     "ClientSecret": "",
-    "RedirectUrl": "",
     "OsuRateLimit": 60,
     "OsuTrackRateLimit": 60
   },

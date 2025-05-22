@@ -702,12 +702,18 @@ builder.Services.AddSingleton<ICacheHandler>(
 );
 
 // Redis lock factory (distributed resource access control)
-var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+var useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistributedLocking ?? true;
+
+if (useRedLock)
 {
-    new(ConnectionMultiplexer.Connect(builder.Configuration
-        .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
-});
-builder.Services.AddSingleton(redLockFactory);
+    var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+    {
+        new(ConnectionMultiplexer.Connect(builder.Configuration
+            .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
+    });
+    builder.Services.AddSingleton(redLockFactory);
+}
+
 
 builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthClient>>();
 
