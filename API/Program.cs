@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
@@ -26,7 +27,9 @@ using Database;
 using Database.Entities;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -44,7 +47,10 @@ using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using OsuApiClient;
+using OsuApiClient.Domain.Osu.Users;
 using OsuApiClient.Extensions;
+using OsuApiClient.Net.Authorization;
 using RedLockNet.SERedis;
 using RedLockNet.SERedis.Configuration;
 using Serilog;
@@ -57,6 +63,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
 using IMatchRosterRepository = Database.Repositories.Interfaces.IMatchRosterRepository;
+using User = Database.Entities.User;
 
 #pragma warning disable SYSLIB1045
 #region WebApplicationBuilder Configuration
@@ -110,6 +117,8 @@ builder.Services
         o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     })
     .AddNewtonsoftJson(o => { o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver(); });
+
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 #endregion
 
@@ -340,45 +349,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     // Add documentation about authentication schemes
-    var oauthScopes = OtrClaims.Roles.ValidRoles
+    var authRoles = OtrClaims.Roles.ValidRoles
         .Select(r => new KeyValuePair<string, string>(r, OtrClaims.GetDescription(r)))
         .ToDictionary();
-
-    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme,
-        new OpenApiSecurityScheme
-        {
-            In = ParameterLocation.Header,
-            Name = "JWT Authentication",
-            Type = SecuritySchemeType.Http,
-            Description =
-                "JWT Authorization using the Bearer scheme. Paste **ONLY** your JWT in the text box below",
-            Scheme = JwtBearerDefaults.AuthenticationScheme,
-            BearerFormat = "JWT"
-        });
-
-    options.AddSecurityDefinition(SecurityRequirements.OAuthSecurityRequirementId,
-        new OpenApiSecurityScheme
-        {
-            Name = "OAuth2 Authentication",
-            In = ParameterLocation.Header,
-            Type = SecuritySchemeType.OAuth2,
-            Description = "OAuth2 Authentication",
-            Flows = new OpenApiOAuthFlows
-            {
-                AuthorizationCode = new OpenApiOAuthFlow
-                {
-                    AuthorizationUrl = new Uri("api/v1.0/OAuth/authorize", UriKind.Relative),
-                    RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
-                    Scopes = oauthScopes
-                },
-                ClientCredentials = new OpenApiOAuthFlow
-                {
-                    TokenUrl = new Uri("api/v1.0/OAuth/token", UriKind.Relative),
-                    RefreshUrl = new Uri("api/v1.0/OAuth/refresh", UriKind.Relative),
-                    Scopes = oauthScopes
-                }
-            }
-        });
 
     // Register custom enum schemas describing authorization roles and policies
     options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(OtrClaims.Roles),
@@ -386,16 +359,15 @@ builder.Services.AddSwaggerGen(options =>
         {
             Type = "string",
             Description = "The possible roles assignable to a user or client",
-            Enum = [.. oauthScopes.Keys.Select(role => new OpenApiString(role))],
+            Enum = [.. authRoles.Keys.Select(role => new OpenApiString(role))],
             Extensions = new Dictionary<string, IOpenApiExtension>
             {
                 [ExtensionKeys.EnumNames] =
-                    oauthScopes.Keys.Select(k => char.ToUpper(k[0]) + k[1..]).ToOpenApiArray(),
-                [ExtensionKeys.EnumDescriptions] = oauthScopes.Values.ToOpenApiArray()
+                    authRoles.Keys.Select(k => char.ToUpper(k[0]) + k[1..]).ToOpenApiArray(),
+                [ExtensionKeys.EnumDescriptions] = authRoles.Values.ToOpenApiArray()
             }
         });
 
-    // Register custom enum schemas describing authorization roles and policies
     options.DocumentFilter<RegisterCustomSchemaDocumentFilter>(nameof(AuthorizationPolicies), new OpenApiSchema
     {
         Type = "string",
@@ -411,6 +383,18 @@ builder.Services.AddSwaggerGen(options =>
                 .ToOpenApiArray()
         }
     });
+
+    options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme,
+        new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Name = "JWT Authentication",
+            Type = SecuritySchemeType.Http,
+            Description =
+                "JWT Authorization using the Bearer scheme. Paste **ONLY** your JWT in the text box below",
+            Scheme = JwtBearerDefaults.AuthenticationScheme,
+            BearerFormat = "JWT"
+        });
 
     // Add the ability to authenticate with swagger ui
     options.AddSecurityRequirement(SecurityRequirements.BearerSecurityRequirement);
@@ -513,17 +497,19 @@ builder.Services.Configure<RequestLoggingOptions>(o =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(corsPolicyBuilder =>
+    options.AddDefaultPolicy(policy =>
     {
-        corsPolicyBuilder
-            .WithOrigins("https://staging.otr.stagec.xyz", "https://otr.stagec.xyz")
+        AuthConfiguration authConfiguration = builder.Configuration.BindAndValidate<AuthConfiguration>(
+            AuthConfiguration.Position
+        );
+
+        policy
+            .WithOrigins(authConfiguration.AllowedHosts)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
     });
 });
-
-builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 #endregion
 
@@ -536,7 +522,14 @@ JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 JwtSecurityTokenHandler.DefaultOutboundClaimTypeMap.Clear();
 
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication("CompositeAuthentication")
+    .AddPolicyScheme("CompositeAuthentication", "CompositeAuthentication", options =>
+    {
+        // Use cookie-based authentication if possible and fallback to JWT Bearer
+        options.ForwardDefaultSelector = context => context.Request.Cookies.ContainsKey("otr-session")
+            ? CookieAuthenticationDefaults.AuthenticationScheme
+            : JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(options =>
     {
         JwtConfiguration jwtConfiguration = builder.Configuration.BindAndValidate<JwtConfiguration>(
@@ -544,24 +537,96 @@ builder.Services
         );
 
         options.MapInboundClaims = false;
-
         options.TokenValidationParameters = DefaultTokenValidationParameters.Get(
             jwtConfiguration.Issuer,
             jwtConfiguration.Key,
             jwtConfiguration.Audience
         );
+    })
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "otr-session";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
 
-        options.Events = new JwtBearerEvents
+        options.ExpireTimeSpan = TimeSpan.FromDays(14);
+        options.SlidingExpiration = true;
+
+        // By default, cookie-based authentication will try to redirect to a "login" endpoint
+        options.Events = new CookieAuthenticationEvents
         {
-            // Reject authentication challenges not using an access token (or that don't contain a token type)
-            OnTokenValidated = context =>
+            OnRedirectToLogin = context =>
             {
-                if (context.Principal?.GetTokenType() is not OtrClaims.TokenTypes.AccessToken)
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            },
+            OnRedirectToAccessDenied = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return Task.CompletedTask;
+            }
+        };
+    })
+    .AddOAuth("osu", options =>
+    {
+        // Set cookie scheme to persist user identity
+        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        // This url needs to be added to the osu! OAuth client callback url
+        options.CallbackPath = new PathString("/api/v1/auth/callback");
+
+        // Configure osu! OAuth
+        // https://osu.ppy.sh/docs/#authorization-code-grant
+        OsuConfiguration osuConfig = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position);
+        options.ClientId = osuConfig.ClientId.ToString();
+        options.ClientSecret = osuConfig.ClientSecret;
+        options.Scope.Add("public");
+        options.Scope.Add("friends.read");
+        options.AuthorizationEndpoint = "https://osu.ppy.sh/oauth/authorize";
+        options.TokenEndpoint = "https://osu.ppy.sh/oauth/token";
+        options.SaveTokens = true;
+
+        options.Events = new OAuthEvents
+        {
+            // Event fired when the client successfully gets osu! access credentials for a user
+            OnCreatingTicket = async context =>
+            {
+                IOsuClient osuClient = context.HttpContext.RequestServices.GetRequiredService<IOsuClient>();
+                IUsersService usersService = context.HttpContext.RequestServices.GetRequiredService<IUsersService>();
+
+                osuClient.Credentials = new OsuCredentials
                 {
-                    context.Fail("Invalid token type. Only access tokens are accepted.");
+                    AccessToken = context.AccessToken ?? string.Empty,
+                    RefreshToken = context.RefreshToken,
+                    ExpiresInSeconds = (long?)context.ExpiresIn?.TotalSeconds ?? DateTime.Now.Second,
+                };
+
+                // Get user data from osu! API
+                UserExtended? osuUser = await osuClient.GetCurrentUserAsync(
+                    cancellationToken: context.HttpContext.RequestAborted
+                );
+
+                if (osuUser is null)
+                {
+                    return;
                 }
 
-                return Task.CompletedTask;
+                User user = await usersService.LoginAsync(osuUser.Id);
+
+                // Build user identity
+                var claims = new List<Claim>
+                {
+                    new(OtrClaims.Role, OtrClaims.Roles.User),
+                    new(OtrClaims.Subject, user.Id.ToString())
+                };
+                claims.AddRange(user.Scopes.Select(r => new Claim(OtrClaims.Role, r)));
+
+                context.Principal = new ClaimsPrincipal(new ClaimsIdentity(
+                    claims: claims,
+                    authenticationType: context.Scheme.Name,
+                    nameType: OtrClaims.Subject,
+                    roleType: OtrClaims.Role
+                ));
             }
         };
     });
@@ -648,12 +713,6 @@ builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthCli
 
 #endregion
 
-#region Handlers
-
-builder.Services.AddScoped<IOAuthHandler, OAuthHandler>();
-
-#endregion
-
 #region Repositories
 
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
@@ -681,7 +740,6 @@ builder.Services.AddScoped<IAdminNoteService, AdminNoteService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();
-builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IMatchesService, MatchesService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<IPlayerRatingsService, PlayerRatingsService>();
@@ -690,7 +748,7 @@ builder.Services.AddScoped<IPlayerStatsService, PlayerStatsService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IFilteringService, FilteringService>();
 builder.Services.AddScoped<ITournamentsService, TournamentsService>();
-builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IUrlHelperService, UrlHelperService>();
 builder.Services.AddScoped<IUserSettingsService, UserSettingsService>();
 builder.Services.AddScoped<IPlatformStatsService, PlatformStatsService>();

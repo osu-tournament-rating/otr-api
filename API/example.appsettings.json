@@ -23,6 +23,7 @@
     "Issuer": ""
   },
   "Auth": {
+    "AllowedHosts": [ "http://localhost:3000" ],
     "EnforceWhitelist": false
   },
   "RateLimit": {

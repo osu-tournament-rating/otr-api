@@ -37,12 +37,6 @@ public static class ClaimsPrincipalExtensions
         IsInRole(claimsPrincipal, OtrClaims.Roles.Whitelist);
 
     /// <summary>
-    /// Gets the <see cref="OtrClaims.TokenType"/> of the principle
-    /// </summary>
-    public static string? GetTokenType(this ClaimsPrincipal claimsPrincipal) =>
-        claimsPrincipal.FindFirst(OtrClaims.TokenType)?.Value;
-
-    /// <summary>
     /// Gets the custom rate limit of the principle if available
     /// </summary>
     public static int? GetRateLimitOverride(this ClaimsPrincipal claimsPrincipal)

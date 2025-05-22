@@ -13,17 +13,17 @@ public class OsuCredentials
     /// <summary>
     /// Access token
     /// </summary>
-    public string AccessToken { get; internal set; } = null!;
+    public string AccessToken { get; init; } = null!;
 
     /// <summary>
     /// Refresh token
     /// </summary>
-    public string? RefreshToken { get; internal set; }
+    public string? RefreshToken { get; init; }
 
     /// <summary>
     /// Represents the lifetime of the access token in seconds
     /// </summary>
-    public long ExpiresInSeconds { get; internal set; }
+    public long ExpiresInSeconds { get; init; }
 
     /// <summary>
     /// Timespan that represents the time the access token will expire

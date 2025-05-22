@@ -1,8 +1,9 @@
 using API.DTOs;
+using Database.Entities;
 
 namespace API.Services.Interfaces;
 
-public interface IUserService
+public interface IUsersService
 {
     /// <summary>
     /// Denotes whether a user for the given id exists
@@ -32,6 +33,14 @@ public interface IUserService
     /// </summary>
     /// <returns>A list of match submissions, or null if not found</returns>
     Task<IEnumerable<MatchSubmissionStatusDTO>?> GetSubmissionsAsync(int id);
+
+    /// <summary>
+    /// If they do not exist, creates a <see cref="Database.Entities.User"/> and all child entities.
+    /// Updates the last login date to the current time.
+    /// </summary>
+    /// <param name="osuId">osu! id</param>
+    /// <returns>The associated <see cref="Database.Entities.User"/></returns>
+    Task<User> LoginAsync(long osuId);
 
     /// <summary>
     /// Rejects all match submissions of a user for the given id
