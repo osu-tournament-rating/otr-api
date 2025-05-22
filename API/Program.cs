@@ -431,9 +431,10 @@ builder.Services.AddSerilog(configuration =>
         {
             new() { Key = "app", Value = serviceName }
         }, ["app"])
-        .WriteTo.Console(
-            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [trace_id: {TraceId} span_id: {SpanId}] {NewLine} {Message:lj}{NewLine}{Exception}"
-        )
+        .WriteTo.Logger(lc => lc
+            .Filter
+            .ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
+            .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [trace_id: {TraceId} span_id: {SpanId}] {Message:lj}{NewLine}"))
         .WriteTo.File(
             Path.Join("logs", "log.log"),
             rollingInterval: RollingInterval.Day,
@@ -702,12 +703,18 @@ builder.Services.AddSingleton<ICacheHandler>(
 );
 
 // Redis lock factory (distributed resource access control)
-var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+var useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistributedLocking ?? true;
+
+if (useRedLock)
 {
-    new(ConnectionMultiplexer.Connect(builder.Configuration
-        .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
-});
-builder.Services.AddSingleton(redLockFactory);
+    var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+    {
+        new(ConnectionMultiplexer.Connect(builder.Configuration
+            .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
+    });
+    builder.Services.AddSingleton(redLockFactory);
+}
+
 
 builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthClient>>();
 

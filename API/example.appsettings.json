@@ -13,9 +13,8 @@
   "Osu": {
     "ClientId": "",
     "ClientSecret": "",
-    "RedirectUrl": "",
-    "OsuRateLimit": null,
-    "OsuTrackRateLimit": null
+    "OsuRateLimit": 60,
+    "OsuTrackRateLimit": 30
   },
   "Jwt": {
     "Key": "",
