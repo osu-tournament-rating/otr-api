@@ -10,9 +10,9 @@ public class PlatformStatsService(
 {
     public async Task<PlatformStatsDTO> GetAsync() => new()
     {
-        TournamentsStats = await tournamentPlatformStatsService.GetAsync(),
-        RatingsStats = await ratingPlatformStatsService.GetAsync(),
-        UsersStats = await userPlatformStatsService.GetAsync(),
+        TournamentStats = await tournamentPlatformStatsService.GetAsync(),
+        RatingStats = await ratingPlatformStatsService.GetAsync(),
+        UserStats = await userPlatformStatsService.GetAsync(),
     };
 }
 
