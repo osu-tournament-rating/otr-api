@@ -70,6 +70,7 @@ public class UserRepository(OtrContext context, IUserSettingsRepository userSett
 
         DateTime minDate = countByDay.Keys.Min();
         DateTime maxDate = countByDay.Keys.Max();
+
         var daySpan = TimeSpan.FromDays(1);
         var curCount = 0;
         for (DateTime day = minDate; day <= maxDate; day += daySpan)

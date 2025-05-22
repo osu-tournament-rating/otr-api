@@ -39,7 +39,8 @@ public interface IUserRepository : IRepository<User>
 
     /// <summary>
     /// Gets a map of dates to the total number of <see cref="Database.Entities.User"/>s
-    /// being registered at that point of time
-    /// </summary>
+    /// registered at that point of time
+    /// </summary>'
+    /// <remarks>One entry per day beginning from the date of the first registered user</remarks>
     Task<Dictionary<DateTime, int>> GetAccumulatedDailyCountsAsync();
 }
