@@ -431,9 +431,10 @@ builder.Services.AddSerilog(configuration =>
         {
             new() { Key = "app", Value = serviceName }
         }, ["app"])
-        .WriteTo.Console(
-            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [trace_id: {TraceId} span_id: {SpanId}] {NewLine} {Message:lj}{NewLine}{Exception}"
-        )
+        .WriteTo.Logger(lc => lc
+            .Filter
+            .ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
+            .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [trace_id: {TraceId} span_id: {SpanId}] {Message:lj}{NewLine}"))
         .WriteTo.File(
             Path.Join("logs", "log.log"),
             rollingInterval: RollingInterval.Day,
