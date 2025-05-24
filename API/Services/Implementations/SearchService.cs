@@ -86,6 +86,7 @@ public class SearchService(
                     Id = player.Id,
                     OsuId = player.OsuId,
                     Rating = stats?.Rating,
+                    Ruleset = stats?.Ruleset,
                     GlobalRank = stats?.GlobalRank,
                     Username = player.Username,
                     Thumbnail = $"a.ppy.sh/{player.OsuId}"
