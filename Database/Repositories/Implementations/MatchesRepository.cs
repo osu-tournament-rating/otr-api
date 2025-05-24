@@ -108,6 +108,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         name = name.Replace("_", @"\_");
         return await _context.Matches
+            .Include(x => x.Tournament)
             .AsNoTracking()
             .WhereVerified()
             .WhereProcessingCompleted()

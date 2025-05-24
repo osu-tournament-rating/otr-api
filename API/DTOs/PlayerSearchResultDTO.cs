@@ -1,3 +1,4 @@
+using Common.Enums;
 using JetBrains.Annotations;
 
 namespace API.DTOs;
@@ -22,6 +23,11 @@ public class PlayerSearchResultDTO
     /// Rating of the player for the given ruleset
     /// </summary>
     public double? Rating { get; set; }
+
+    /// <summary>
+    /// Ruleset of the player's rating
+    /// </summary>
+    public Ruleset? Ruleset { get; set; }
 
     /// <summary>
     /// Current global rank of the player for the given ruleset
