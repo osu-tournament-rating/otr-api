@@ -8,21 +8,20 @@
   "ConnectionStrings": {
     "DefaultConnection": "",
     "CollectorConnection": "",
-    "RedisConnection": ""
+    "RedisConnection": "",
+    "LokiConnection": ""
   },
   "Osu": {
     "ClientId": "",
-    "ClientSecret": "",
-    "OsuRateLimit": 60,
-    "OsuTrackRateLimit": 30
+    "ClientSecret": ""
   },
   "Jwt": {
-    "Key": "",
     "Audience": "",
-    "Issuer": ""
+    "Issuer": "",
+    "Key": ""
   },
   "Auth": {
-    "AllowedHosts": [ "http://localhost:3000" ],
+    "AllowedHosts": ["http://localhost:3000"],
     "EnforceWhitelist": false
   },
   "RateLimit": {
