@@ -135,5 +135,5 @@ jobs:
             rm -r ./cfg
             cat script.sql | docker exec -i db psql -U postgres -d postgres
             docker compose -f docker-compose-staging.yml pull
-            docker compose -f docker-compose-staging.yml up -d --build
+            docker compose -f docker-compose-staging.yml up -d
             rm script.sql

@@ -31,6 +31,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -632,6 +633,21 @@ builder.Services
             }
         };
     });
+
+#endregion
+
+#region Data Protection Configuration
+
+// Use redis to persist keys across application restarts
+// This is used for persisting cookies across application restarts
+ConnectionStringsConfiguration connectionStrings = builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+    ConnectionStringsConfiguration.Position
+);
+
+builder.Services.AddDataProtection()
+    .PersistKeysToStackExchangeRedis(ConnectionMultiplexer.Connect(connectionStrings.RedisConnection), "otr-api:data-protection-keys")
+    .SetApplicationName("otr-api")
+    .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
 
 #endregion
 
