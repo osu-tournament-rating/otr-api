@@ -198,18 +198,18 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// <summary>
     /// Gets a map of years to the number of <see cref="Database.Entities.Tournament"/>s in that year
     /// </summary>
-    /// <remarks>Only verified tournaments are counted</remarks>
-    Task<Dictionary<int, int>> GetYearStatsAsync();
+    /// <param name="verified">Filters results for only verified tournaments</param>
+    Task<Dictionary<int, int>> GetYearStatsAsync(bool verified = true);
 
     /// <summary>
     /// Gets a map of <see cref="Common.Enums.Ruleset"/>s to the number of <see cref="Database.Entities.Tournament"/>s in that ruleset
     /// </summary>
-    /// <remarks>Only verified tournaments are counted</remarks>
-    Task<Dictionary<Ruleset, int>> GetRulesetStatsAsync();
+    /// <param name="verified">Filters results for only verified tournaments</param>
+    Task<Dictionary<Ruleset, int>> GetRulesetStatsAsync(bool verified = true);
 
     /// <summary>
     /// Gets a map of lobby sizes to the number of <see cref="Database.Entities.Tournament"/>s with that lobby size
     /// </summary>
-    /// <remarks>Only verified tournaments are counted</remarks>
-    Task<Dictionary<int, int>> GetLobbySizeStatsAsync();
+    /// <param name="verified">Filters results for only verified tournaments</param>
+    Task<Dictionary<int, int>> GetLobbySizeStatsAsync(bool verified = true);
 }
