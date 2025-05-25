@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Common.Enums;
 using Common.Enums.Verification;
 
@@ -26,7 +27,7 @@ public class TournamentSearchResultDTO
     /// <summary>
     /// Rejection reason of the tournament
     /// </summary>
-    public string? RejectionReason { get; set; }
+    public TournamentRejectionReason RejectionReason { get; set; }
 
     /// <summary>
     /// Abbreviation of the tournament
