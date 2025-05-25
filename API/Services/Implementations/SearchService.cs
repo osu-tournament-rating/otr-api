@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Handlers.Interfaces;
 using API.Services.Interfaces;
 using API.Utilities;
+using AutoMapper;
 using Database.Entities;
 using Database.Entities.Processor;
 using Database.Repositories.Interfaces;
@@ -12,7 +13,8 @@ public class SearchService(
     ITournamentsRepository tournamentsRepository,
     IMatchesService matchesService,
     IPlayersRepository playerRepository,
-    ICacheHandler cacheHandler
+    ICacheHandler cacheHandler,
+    IMapper mapper
 ) : ISearchService
 {
     public async Task<SearchResponseCollectionDTO> SearchByNameAsync(string searchKey) =>
@@ -25,24 +27,25 @@ public class SearchService(
 
     private async Task<IEnumerable<TournamentSearchResultDTO>> SearchTournamentsByNameAsync(string tournamentName)
     {
-        IList<TournamentSearchResultDTO>? result =
-            await cacheHandler.Cache.GetObjectAsync<IList<TournamentSearchResultDTO>>(
+        IList<TournamentSearchResultDTO>? result;
+
+        try
+        {
+            result = await cacheHandler.Cache.GetObjectAsync<IList<TournamentSearchResultDTO>>(
                 CacheUtils.TournamentSearchKey(tournamentName));
 
-        if (result is not null)
+            if (result is not null)
+            {
+                return result;
+            }
+        }
+        catch (Exception)
         {
-            return result;
+            // Item failed to resolve from cache, continue with search
         }
 
         IList<Tournament> searchResult = await tournamentsRepository.SearchAsync(tournamentName);
-
-        result = [.. searchResult.Select(t => new TournamentSearchResultDTO
-        {
-            Id = t.Id,
-            Ruleset = t.Ruleset,
-            LobbySize = t.LobbySize,
-            Name = t.Name
-        })];
+        result = [.. searchResult.Select(t => mapper.Map<TournamentSearchResultDTO>(t))];
 
         await cacheHandler.SetTournamentSearchResultAsync(result, tournamentName);
         return result;
