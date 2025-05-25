@@ -216,7 +216,7 @@ public partial class TournamentsController(ITournamentsService tournamentsServic
     /// <response code="200">Returns a collection of pooled beatmaps</response>
     [HttpGet("{id:int}/beatmaps")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType<IEnumerable<BeatmapDTO>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetBeatmapsAsync(int id)
     {
