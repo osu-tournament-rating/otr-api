@@ -85,8 +85,8 @@ public class MapperProfile : Profile
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
-        CreateMap<Tournament, TournamentSearchResultDTO>()
-            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Ruleset));
+
+        CreateMap<Tournament, TournamentSearchResultDTO>();
 
         CreateMap<User, UserCompactDTO>();
         CreateMap<User, UserDTO>();
