@@ -14,6 +14,10 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Whether to eagerly load navigational properties.
     /// If true, all returned entities will not be tracked by the context
     /// </param>
+    /// <remarks>
+    /// <see cref="Entities.PlayerTournamentStats"/> will be included for this tournament,
+    /// the <see cref="Entities.PlayerMatchStats"/> will be included for matches played in this tournament.
+    /// </remarks>
     Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
 
     /// <summary>

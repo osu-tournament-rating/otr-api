@@ -59,7 +59,7 @@ public sealed class OsuClient(
         // Requesting credentials for the first time
         if (Credentials is null)
         {
-            body.Add("grant_type", "clientCredentials");
+            body.Add("grant_type", "client_credentials");
             body.Add("scope", "public");
         }
         // Refreshing access token

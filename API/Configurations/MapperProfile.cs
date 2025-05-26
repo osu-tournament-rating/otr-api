@@ -71,7 +71,10 @@ public class MapperProfile : Profile
         CreateMap<Player, PlayerCompactDTO>()
             .ForMember(x => x.UserId, opt => opt.MapFrom(y => y.User!.Id));
         CreateMap<PlayerOsuRulesetData, PlayerOsuRulesetDataDTO>();
-        CreateMap<PlayerTournamentStats, PlayerTournamentStatsDTO>();
+
+        CreateMap<PlayerTournamentStats, PlayerTournamentStatsBaseDTO>();
+        CreateMap<PlayerTournamentStats, PlayerTournamentStatsDTO>()
+            .IncludeBase<PlayerTournamentStats, PlayerTournamentStatsBaseDTO>();
 
         CreateMap<Tournament, TournamentCompactDTO>();
         CreateMap<TournamentCompactDTO, Tournament>(MemberList.Source)
@@ -82,8 +85,8 @@ public class MapperProfile : Profile
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
-        CreateMap<Tournament, TournamentSearchResultDTO>()
-            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Ruleset));
+
+        CreateMap<Tournament, TournamentSearchResultDTO>();
 
         CreateMap<User, UserCompactDTO>();
         CreateMap<User, UserDTO>();

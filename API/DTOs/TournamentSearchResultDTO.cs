@@ -1,4 +1,6 @@
+using System.ComponentModel.DataAnnotations;
 using Common.Enums;
+using Common.Enums.Verification;
 
 namespace API.DTOs;
 
@@ -16,6 +18,21 @@ public class TournamentSearchResultDTO
     /// Ruleset of the tournament
     /// </summary>
     public Ruleset Ruleset { get; set; }
+
+    /// <summary>
+    /// Verification status of the tournament
+    /// </summary>
+    public VerificationStatus VerificationStatus { get; set; }
+
+    /// <summary>
+    /// Rejection reason of the tournament
+    /// </summary>
+    public TournamentRejectionReason RejectionReason { get; set; }
+
+    /// <summary>
+    /// Abbreviation of the tournament
+    /// </summary>
+    public string? Abbreviation { get; set; }
 
     /// <summary>
     /// Expected in-match team size
