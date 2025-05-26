@@ -14,6 +14,10 @@ ingester:
   lifecycler:
     ring:
       replication_factor: 2
+  flush_all_on_shutdown: true
+  max_block_duration: 30m
+  complete_block_timeout: 15m
+  flush_check_period: 10s
 
 query_frontend:
   search:
@@ -35,12 +39,18 @@ metrics_generator:
     remote_write:
       - url: http://prometheus:9090/api/v1/write
         send_exemplars: true
+  traces_storage:
+    path: /tmp/tempo/wal
   processor:
     service_graphs:
       enable_virtual_node_label: true
     span_metrics:
     local_blocks:
-      filter_server_spans: false
+      flush_check_period: 10s
+      max_block_duration: 1m
+      complete_block_timeout: 30m
+      flush_to_storage: true
+      filter_server_spans: true
 
 storage:
   trace:
