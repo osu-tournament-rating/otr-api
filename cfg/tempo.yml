@@ -22,10 +22,10 @@ ingester:
 query_frontend:
   search:
     duration_slo: 5s
-    throughput_bytes_slo: 1.073741824e+09
+    throughput_bytes_slo: 0
     metadata_slo:
       duration_slo: 5s
-      throughput_bytes_slo: 1.073741824e+09
+      throughput_bytes_slo: 0
   trace_by_id:
     duration_slo: 5s
 
