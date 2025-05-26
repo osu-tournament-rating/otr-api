@@ -175,7 +175,16 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     }
 
     public async Task<ICollection<Beatmap>> GetPooledBeatmapsAsync(int id) =>
-        (await _context.Tournaments.Include(t => t.PooledBeatmaps)
+        (await _context.Tournaments
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(t => t.PooledBeatmaps)
+            .ThenInclude(pb => pb.Beatmapset)
+            .ThenInclude(bs => bs!.Creator)
+            .Include(t => t.PooledBeatmaps)
+            .ThenInclude(pb => pb.Creators)
+            .Include(t => t.PooledBeatmaps)
+            .ThenInclude(pb => pb.Attributes)
             .FirstOrDefaultAsync(t => t.Id == id))?.PooledBeatmaps ?? [];
 
     public async Task<Dictionary<int, int>> GetLobbySizeStatsAsync(
