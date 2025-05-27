@@ -40,8 +40,6 @@ services:
     image: prom/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--enable-feature=remote-write-receiver"
-      - "--enable-feature=exemplar-storage"
     ports:
       - "9090:9090"
     volumes:
