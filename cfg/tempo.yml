@@ -29,29 +29,6 @@ query_frontend:
   trace_by_id:
     duration_slo: 5s
 
-metrics_generator:
-  registry:
-    external_labels:
-      source: tempo
-      cluster: docker-compose
-  storage:
-    path: /tmp/tempo/generator/wal
-    remote_write:
-      - url: http://prometheus:9090/api/v1/write
-        send_exemplars: true
-  traces_storage:
-    path: /tmp/tempo/wal
-  processor:
-    service_graphs:
-      enable_virtual_node_label: true
-    span_metrics:
-    local_blocks:
-      flush_check_period: 10s
-      max_block_duration: 1m
-      complete_block_timeout: 30m
-      flush_to_storage: true
-      filter_server_spans: true
-
 storage:
   trace:
     backend: s3
@@ -64,8 +41,3 @@ storage:
       secret_key: test
       insecure: true
       region: east-us
-
-overrides:
-  defaults:
-    metrics_generator:
-      processors: [service-graphs, span-metrics, local-blocks]
