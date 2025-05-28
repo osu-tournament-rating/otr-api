@@ -11,7 +11,7 @@ WORKDIR /src
 
 COPY ["otrAPI.sln", "./"]
 SHELL ["/bin/bash", "-O", "globstar", "-c"]
-RUN cp --parents **/*.csproj .
+RUN cp --parents */*.csproj .
 
 RUN dotnet restore "otrAPI.sln"
 
