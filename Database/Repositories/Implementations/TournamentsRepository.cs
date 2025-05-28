@@ -139,7 +139,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     public async Task<Tournament?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId)
     {
         Tournament? tournament = await TournamentsBaseQuery()
-            .Where(t => t.ProcessingStatus == TournamentProcessingStatus.NeedsVerification)
             .FirstOrDefaultAsync(t => t.Id == id);
 
         if (tournament is null)
@@ -148,22 +147,48 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         }
 
         #region Confirm "pre" verification statuses
+        // If any entity's parent is rejected, cascade the rejection to all children
 
         tournament.ConfirmPreVerificationStatus();
         tournament.VerifiedByUserId = verifierUserId;
 
         foreach (Match match in tournament.Matches)
         {
-            match.ConfirmPreVerificationStatus();
+            if (tournament.VerificationStatus == VerificationStatus.Rejected)
+            {
+                match.RejectionReason = MatchRejectionReason.RejectedTournament;
+                match.VerificationStatus = tournament.VerificationStatus;
+            }
+            else
+            {
+                match.ConfirmPreVerificationStatus();
+            }
+
             match.VerifiedByUserId = verifierUserId;
 
             foreach (Game game in match.Games)
             {
-                game.ConfirmPreVerificationStatus();
+                if (match.VerificationStatus == VerificationStatus.Rejected)
+                {
+                    game.RejectionReason = GameRejectionReason.RejectedMatch;
+                    game.VerificationStatus = match.VerificationStatus;
+                }
+                else
+                {
+                    game.ConfirmPreVerificationStatus();
+                }
 
                 foreach (GameScore score in game.Scores)
                 {
-                    score.ConfirmPreVerificationStatus();
+                    if (game.VerificationStatus == VerificationStatus.Rejected)
+                    {
+                        score.RejectionReason = ScoreRejectionReason.RejectedGame;
+                        score.VerificationStatus = game.VerificationStatus;
+                    }
+                    else
+                    {
+                        score.ConfirmPreVerificationStatus();
+                    }
                 }
             }
         }
