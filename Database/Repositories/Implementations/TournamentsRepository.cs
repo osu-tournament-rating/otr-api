@@ -18,13 +18,21 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
 
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
         eagerLoad
-            ? await TournamentsBaseQuery().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id)
+            ? await TournamentsBaseQuery()
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(t => t.PlayerTournamentStats)
+            .ThenInclude(pts => pts.Player)
+            .ThenInclude(p => p.MatchStats.Where(m => m.Match.Tournament.Id == id))
+            .FirstOrDefaultAsync(x => x.Id == id)
             : await base.GetAsync(id);
 
     public async Task<Tournament?> GetVerifiedAsync(int id) =>
         await _context.Tournaments
             .AsNoTracking()
             .AsSplitQuery()
+            .Include(t => t.PlayerTournamentStats)
+            .ThenInclude(pts => pts.Player)
             .Include(t => t.Matches.Where(m =>
                 m.VerificationStatus == VerificationStatus.Verified &&
                 m.ProcessingStatus == MatchProcessingStatus.Done))
@@ -167,7 +175,16 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     }
 
     public async Task<ICollection<Beatmap>> GetPooledBeatmapsAsync(int id) =>
-        (await _context.Tournaments.Include(t => t.PooledBeatmaps)
+        (await _context.Tournaments
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(t => t.PooledBeatmaps)
+            .ThenInclude(pb => pb.Beatmapset)
+            .ThenInclude(bs => bs!.Creator)
+            .Include(t => t.PooledBeatmaps)
+            .ThenInclude(pb => pb.Creators)
+            .Include(t => t.PooledBeatmaps)
+            .ThenInclude(pb => pb.Attributes)
             .FirstOrDefaultAsync(t => t.Id == id))?.PooledBeatmaps ?? [];
 
     public async Task<Dictionary<int, int>> GetLobbySizeStatsAsync(

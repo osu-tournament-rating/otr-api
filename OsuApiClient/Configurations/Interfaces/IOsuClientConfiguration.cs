@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace OsuApiClient.Configurations.Interfaces;
 
 /// <summary>
 /// Interfaces configuration values for the osu! API client
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public interface IOsuClientConfiguration
 {
     /// <summary>
@@ -23,10 +26,15 @@ public interface IOsuClientConfiguration
     /// <summary>
     /// Gets or sets the client rate limit for <see cref="Enums.FetchPlatform.Osu"/>
     /// </summary>
-    int? OsuRateLimit { get; set; }
+    int OsuRateLimit { get; set; }
 
     /// <summary>
     /// Gets or sets the client rate limit for <see cref="Enums.FetchPlatform.OsuTrack"/>
     /// </summary>
-    int? OsuTrackRateLimit { get; set; }
+    int OsuTrackRateLimit { get; set; }
+
+    /// <summary>
+    /// Whether to enable distributed locking with redis
+    /// </summary>
+    bool EnableDistributedLocking { get; set; }
 }

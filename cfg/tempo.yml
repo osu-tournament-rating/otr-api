@@ -14,33 +14,20 @@ ingester:
   lifecycler:
     ring:
       replication_factor: 2
+  flush_all_on_shutdown: true
+  max_block_duration: 30m
+  complete_block_timeout: 15m
+  flush_check_period: 10s
 
 query_frontend:
   search:
     duration_slo: 5s
-    throughput_bytes_slo: 1.073741824e+09
+    throughput_bytes_slo: 0
     metadata_slo:
       duration_slo: 5s
-      throughput_bytes_slo: 1.073741824e+09
+      throughput_bytes_slo: 0
   trace_by_id:
     duration_slo: 5s
-
-metrics_generator:
-  registry:
-    external_labels:
-      source: tempo
-      cluster: docker-compose
-  storage:
-    path: /tmp/tempo/generator/wal
-    remote_write:
-      - url: http://prometheus:9090/api/v1/write
-        send_exemplars: true
-  processor:
-    service_graphs:
-      enable_virtual_node_label: true
-    span_metrics:
-    local_blocks:
-      filter_server_spans: false
 
 storage:
   trace:
@@ -54,8 +41,3 @@ storage:
       secret_key: test
       insecure: true
       region: east-us
-
-overrides:
-  defaults:
-    metrics_generator:
-      processors: [service-graphs, span-metrics, local-blocks]

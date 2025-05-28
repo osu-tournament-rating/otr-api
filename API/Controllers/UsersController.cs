@@ -16,7 +16,7 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 [SuppressMessage("ReSharper", "RouteTemplates.ActionRoutePrefixCanBeExtractedToControllerRoute")]
 public class UsersController(
-    IUserService userService,
+    IUsersService usersService,
     IOAuthClientService clientService,
     IUserSettingsService userSettingsService
 ) : Controller
@@ -33,7 +33,7 @@ public class UsersController(
     [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(int id)
     {
-        UserDTO? result = await userService.GetAsync(id);
+        UserDTO? result = await usersService.GetAsync(id);
 
         return result == null
             ? NotFound()
@@ -64,12 +64,12 @@ public class UsersController(
             }
         }
 
-        if (!await userService.ExistsAsync(id))
+        if (!await usersService.ExistsAsync(id))
         {
             return NotFound();
         }
 
-        UserDTO? result = await userService.UpdateScopesAsync(id, scopes);
+        UserDTO? result = await usersService.UpdateScopesAsync(id, scopes);
 
         return result == null
             ? BadRequest()
@@ -88,12 +88,12 @@ public class UsersController(
     [ProducesResponseType<IEnumerable<MatchSubmissionStatusDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSubmissionsAsync(int id)
     {
-        if (!await userService.ExistsAsync(id))
+        if (!await usersService.ExistsAsync(id))
         {
             return NotFound();
         }
 
-        return Ok(await userService.GetSubmissionsAsync(id) ?? []);
+        return Ok(await usersService.GetSubmissionsAsync(id) ?? []);
     }
 
     /// <summary>
@@ -109,12 +109,12 @@ public class UsersController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RejectSubmissionsAsync(int id)
     {
-        if (!await userService.ExistsAsync(id))
+        if (!await usersService.ExistsAsync(id))
         {
             return NotFound();
         }
 
-        return await userService.RejectSubmissionsAsync(id, User.GetSubjectId())
+        return await usersService.RejectSubmissionsAsync(id, User.GetSubjectId())
             ? Ok()
             : BadRequest();
     }
@@ -131,12 +131,12 @@ public class UsersController(
     [ProducesResponseType<IEnumerable<OAuthClientDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetClientsAsync(int id)
     {
-        if (!await userService.ExistsAsync(id))
+        if (!await usersService.ExistsAsync(id))
         {
             return NotFound();
         }
 
-        return Ok(await userService.GetClientsAsync(id) ?? []);
+        return Ok(await usersService.GetClientsAsync(id) ?? []);
     }
 
     /// <summary>
@@ -215,7 +215,7 @@ public class UsersController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateRulesetAsync(int id, [FromBody][Required] Ruleset ruleset)
     {
-        if (!await userService.ExistsAsync(id))
+        if (!await usersService.ExistsAsync(id))
         {
             return NotFound();
         }
@@ -243,7 +243,7 @@ public class UsersController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> SyncRulesetAsync(int id)
     {
-        if (!await userService.ExistsAsync(id))
+        if (!await usersService.ExistsAsync(id))
         {
             return NotFound();
         }

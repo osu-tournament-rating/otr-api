@@ -40,6 +40,11 @@ public interface IMatchesRepository : IRepository<Match>
     /// <param name="verified">Whether the match (and all child navigations) are verified</param>
     Task<Match?> GetFullAsync(int id, bool verified);
 
+    /// <summary>
+    /// Searches for matches by name
+    /// </summary>
+    /// <param name="name">Name to search for</param>
+    /// <returns>A list of matches that match the name</returns>
     Task<IEnumerable<Match>> SearchAsync(string name);
 
     /// <summary>

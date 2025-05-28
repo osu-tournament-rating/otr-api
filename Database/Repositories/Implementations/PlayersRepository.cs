@@ -34,9 +34,11 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
 
     public async Task<IEnumerable<Player>> SearchAsync(string username) =>
         await _context.Players
+            .AsNoTracking()
             .WhereUsername(username, true)
             .Include(p => p.Ratings)
-            .AsNoTracking()
+            .Include(p => p.User)
+            .ThenInclude(u => u!.Settings)
             .Take(30)
             .ToListAsync();
 

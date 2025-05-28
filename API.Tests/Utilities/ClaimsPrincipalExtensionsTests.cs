@@ -61,15 +61,6 @@ public class ClaimsPrincipalExtensionsTests
     }
 
     [Fact]
-    public void ClaimsPrincipal_GetTokenType()
-    {
-        var claims = new ClaimsPrincipal();
-        claims.AddIdentity(new ClaimsIdentity([new Claim(OtrClaims.TokenType, OtrClaims.TokenTypes.AccessToken)]));
-
-        Assert.True(claims.GetTokenType() is OtrClaims.TokenTypes.AccessToken);
-    }
-
-    [Fact]
     public void ClaimsPrincipal_GetRateLimitOverride()
     {
         const int expected = 100;

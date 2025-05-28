@@ -18,5 +18,10 @@ public class MatchSearchResultDTO
     /// <summary>
     /// Name of the match
     /// </summary>
-    public string? Name { get; set; }
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Name of the tournament
+    /// </summary>
+    public string TournamentName { get; set; } = string.Empty;
 }
