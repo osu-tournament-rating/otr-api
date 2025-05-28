@@ -78,7 +78,7 @@ public class PlayerRatingsRepository(OtrContext context)
             .GroupBy(x => new
             {
                 x.Ruleset,
-                Bucket = (int)(x.Rating / bucketSize) * bucketSize
+                Bucket = Math.Floor(x.Rating / bucketSize) * bucketSize
             })
             .Select(g => new
             {
