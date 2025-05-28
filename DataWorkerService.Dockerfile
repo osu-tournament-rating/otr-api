@@ -9,10 +9,7 @@ WORKDIR /src
 
 # Copy project files and dependencies
 COPY ["otrAPI.sln", "./"]
-COPY ["Common/Common.csproj", "DataWorkerService/"]
-COPY ["DataWorkerService/DataWorkerService.csproj", "DataWorkerService/"]
-COPY ["Database/Database.csproj", "Database/"]
-COPY ["OsuApiClient/OsuApiClient.csproj", "OsuApiClient/"]
+RUN cp --parents **/*.csproj .
 
 RUN dotnet restore "otrAPI.sln"
 

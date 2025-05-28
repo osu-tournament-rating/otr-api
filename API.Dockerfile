@@ -10,10 +10,7 @@ ENV HUSKY=0
 WORKDIR /src
 
 COPY ["otrAPI.sln", "./"]
-COPY ["Common/Common.csproj", "Common/"]
-COPY ["Database/Database.csproj", "Database/"]
-COPY ["OsuApiClient/OsuApiClient.csproj", "OsuApiClient/"]
-COPY ["API/API.csproj", "API/"]
+RUN cp --parents **/*.csproj .
 
 RUN dotnet restore "otrAPI.sln"
 
