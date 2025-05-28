@@ -9,6 +9,7 @@ WORKDIR /src
 
 # Copy project files and dependencies
 COPY ["otrAPI.sln", "./"]
+SHELL ["/bin/bash", "-O", "globstar", "-c"]
 RUN cp --parents **/*.csproj .
 
 RUN dotnet restore "otrAPI.sln"
