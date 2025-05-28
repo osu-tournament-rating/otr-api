@@ -157,7 +157,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         {
             if (tournament.VerificationStatus == VerificationStatus.Rejected)
             {
-                match.RejectionReason = MatchRejectionReason.RejectedTournament;
+                match.RejectionReason |= MatchRejectionReason.RejectedTournament;
                 match.VerificationStatus = tournament.VerificationStatus;
             }
             else
@@ -171,7 +171,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             {
                 if (match.VerificationStatus == VerificationStatus.Rejected)
                 {
-                    game.RejectionReason = GameRejectionReason.RejectedMatch;
+                    game.RejectionReason |= GameRejectionReason.RejectedMatch;
                     game.VerificationStatus = match.VerificationStatus;
                 }
                 else
@@ -183,7 +183,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
                 {
                     if (game.VerificationStatus == VerificationStatus.Rejected)
                     {
-                        score.RejectionReason = ScoreRejectionReason.RejectedGame;
+                        score.RejectionReason |= ScoreRejectionReason.RejectedGame;
                         score.VerificationStatus = game.VerificationStatus;
                     }
                     else
