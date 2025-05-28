@@ -5,12 +5,14 @@ namespace API.Services.Implementations;
 
 public class PlatformStatsService(
     ITournamentPlatformStatsService tournamentPlatformStatsService,
-    IRatingPlatformStatsService ratingPlatformStatsService) : IPlatformStatsService
+    IRatingPlatformStatsService ratingPlatformStatsService,
+    IUserPlatformStatsService userPlatformStatsService) : IPlatformStatsService
 {
     public async Task<PlatformStatsDTO> GetAsync() => new()
     {
-        TournamentsStats = await tournamentPlatformStatsService.GetAsync(),
-        RatingsStats = await ratingPlatformStatsService.GetAsync(),
+        TournamentStats = await tournamentPlatformStatsService.GetAsync(),
+        RatingStats = await ratingPlatformStatsService.GetAsync(),
+        UserStats = await userPlatformStatsService.GetAsync(),
     };
 }
 
