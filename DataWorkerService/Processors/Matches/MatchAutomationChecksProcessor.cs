@@ -1,6 +1,7 @@
 using Common.Enums.Verification;
 using Database.Entities;
 using DataWorkerService.AutomationChecks;
+using DataWorkerService.AutomationChecks.Matches;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 
 namespace DataWorkerService.Processors.Matches;
@@ -27,6 +28,15 @@ public class MatchAutomationChecksProcessor(
             return;
         }
 
+        // Run MatchHeadToHeadCheck first, before processing games
+        // This allows it to convert HeadToHead games to TeamVS before GameTeamTypeCheck rejects them
+        var headToHeadCheck = matchAutomationChecks
+            .OfType<MatchHeadToHeadCheck>()
+            .FirstOrDefault();
+
+        headToHeadCheck?.Check(entity);
+
+        // Process games after potential HeadToHead conversion
         IProcessor<Game> gameAutomationChecksProcessor = gameProcessorResolver.GetAutomationChecksProcessor();
 
         foreach (Game game in entity.Games)
@@ -34,7 +44,12 @@ public class MatchAutomationChecksProcessor(
             await gameAutomationChecksProcessor.ProcessAsync(game, cancellationToken);
         }
 
-        foreach (IAutomationCheck<Match> automationCheck in matchAutomationChecks.OrderBy(ac => ac.Order))
+        // Run remaining match automation checks (excluding MatchHeadToHeadCheck which already ran)
+        var remainingChecks = matchAutomationChecks
+            .Where(ac => ac is not MatchHeadToHeadCheck)
+            .OrderBy(ac => ac.Order);
+
+        foreach (IAutomationCheck<Match> automationCheck in remainingChecks)
         {
             automationCheck.Check(entity);
         }
