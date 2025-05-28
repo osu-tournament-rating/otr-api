@@ -9,8 +9,17 @@ WORKDIR /src
 
 # Copy project files and dependencies
 COPY ["otrAPI.sln", "./"]
-SHELL ["/bin/bash", "-O", "globstar", "-c"]
-RUN cp --parents */*.csproj .
+
+COPY ["API/API.csproj", "./API/"]
+COPY ["API.Tests/API.Tests.csproj", "./API.Tests/"]
+COPY ["API.Utils.Jwt/API.Utils.Jwt.csproj", "./API.Utils.Jwt/"]
+COPY ["Common/Common.csproj", "./Common/"]
+COPY ["Database/Database.csproj", "./Database/"]
+COPY ["DataWorkerService/DataWorkerService.csproj", "./DataWorkerService/"]
+COPY ["DataWorkerService.Tests/DataWorkerService.Tests.csproj", "./DataWorkerService.Tests/"]
+COPY ["OsuApiClient/OsuApiClient.csproj", "./OsuApiClient/"]
+COPY ["OsuApiClient.Tests/OsuApiClient.Tests.csproj", "./OsuApiClient.Tests/"]
+COPY ["TestingUtils/TestingUtils.csproj", "./TestingUtils/"]
 
 RUN dotnet restore "otrAPI.sln"
 
