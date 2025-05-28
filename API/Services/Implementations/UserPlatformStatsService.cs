@@ -8,6 +8,6 @@ public class UserPlatformStatsService(IUserRepository userRepository) : IUserPla
 {
     public async Task<UserPlatformStatsDTO> GetAsync() => new()
     {
-        AccumulatedCountByDate = await userRepository.GetAccumulatedDailyCountsAsync()
+        SumByDate = await userRepository.GetAccumulatedDailyCountsAsync()
     };
 }
