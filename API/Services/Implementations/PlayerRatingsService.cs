@@ -45,7 +45,4 @@ public class PlayerRatingsService(
             Adjustments = mapper.Map<ICollection<RatingAdjustmentDTO>>(currentStats.Adjustments.OrderBy(a => a.Timestamp))
         };
     }
-
-    public async Task<IDictionary<int, int>> GetHistogramAsync(Ruleset ruleset) =>
-        await playerRatingsRepository.GetHistogramAsync(ruleset);
 }
