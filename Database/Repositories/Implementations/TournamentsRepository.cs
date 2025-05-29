@@ -148,22 +148,48 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         }
 
         #region Confirm "pre" verification statuses
+        // If any entity's parent is rejected, cascade the rejection to all children
 
         tournament.ConfirmPreVerificationStatus();
         tournament.VerifiedByUserId = verifierUserId;
 
         foreach (Match match in tournament.Matches)
         {
-            match.ConfirmPreVerificationStatus();
+            if (tournament.VerificationStatus == VerificationStatus.Rejected)
+            {
+                match.RejectionReason |= MatchRejectionReason.RejectedTournament;
+                match.VerificationStatus = tournament.VerificationStatus;
+            }
+            else
+            {
+                match.ConfirmPreVerificationStatus();
+            }
+
             match.VerifiedByUserId = verifierUserId;
 
             foreach (Game game in match.Games)
             {
-                game.ConfirmPreVerificationStatus();
+                if (match.VerificationStatus == VerificationStatus.Rejected)
+                {
+                    game.RejectionReason |= GameRejectionReason.RejectedMatch;
+                    game.VerificationStatus = match.VerificationStatus;
+                }
+                else
+                {
+                    game.ConfirmPreVerificationStatus();
+                }
 
                 foreach (GameScore score in game.Scores)
                 {
-                    score.ConfirmPreVerificationStatus();
+                    if (game.VerificationStatus == VerificationStatus.Rejected)
+                    {
+                        score.RejectionReason |= ScoreRejectionReason.RejectedGame;
+                        score.VerificationStatus = game.VerificationStatus;
+                    }
+                    else
+                    {
+                        score.ConfirmPreVerificationStatus();
+                    }
                 }
             }
         }
@@ -318,25 +344,26 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
                 (x, y) => new { Prop = x, Count = y.Count() })
             .ToDictionaryAsync(x => x.Prop, x => x.Count);
 
-    public async Task<Dictionary<int, int>> GetYearStatsAsync() =>
+    public async Task<Dictionary<int, int>> GetYearStatsAsync(bool verified = true) =>
         await _context.Tournaments
-            .Where(x => x.StartTime.HasValue && x.VerificationStatus == VerificationStatus.Verified)
+            .Where(x =>
+                x.StartTime.HasValue && (!verified || x.VerificationStatus == VerificationStatus.Verified))
             .GroupBy(
                 x => x.StartTime!.Value.Year,
                 (x, y) => new { Prop = x, Count = y.Count() })
             .ToDictionaryAsync(x => x.Prop, x => x.Count);
 
-    public async Task<Dictionary<Ruleset, int>> GetRulesetStatsAsync() =>
+    public async Task<Dictionary<Ruleset, int>> GetRulesetStatsAsync(bool verified = true) =>
         await _context.Tournaments
-            .Where(x => x.VerificationStatus == VerificationStatus.Verified)
+            .Where(x => !verified || x.VerificationStatus == VerificationStatus.Verified)
             .GroupBy(
                 x => x.Ruleset,
                 (x, y) => new { Prop = x, Count = y.Count() })
             .ToDictionaryAsync(x => x.Prop, x => x.Count);
 
-    public async Task<Dictionary<int, int>> GetLobbySizeStatsAsync() =>
+    public async Task<Dictionary<int, int>> GetLobbySizeStatsAsync(bool verified = true) =>
         await _context.Tournaments
-            .Where(x => x.VerificationStatus == VerificationStatus.Verified)
+            .Where(x => !verified || x.VerificationStatus == VerificationStatus.Verified)
             .GroupBy(
                 x => x.LobbySize,
                 (x, y) => new { Prop = x, Count = y.Count() })

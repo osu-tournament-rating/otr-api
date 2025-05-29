@@ -68,35 +68,48 @@ public class PlayerRatingsRepository(OtrContext context)
             .Select(pr => pr.Ruleset)
             .ToListAsync();
 
-    public async Task<IDictionary<int, int>> GetHistogramAsync(Ruleset ruleset)
+    public async Task<IDictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync()
     {
-        // Determine the maximum rating as a double
-        var maxRating = await _context.PlayerRatings.Where(x => x.Ruleset == ruleset).MaxAsync(x => x.Rating);
+        const int bucketSize = 25;
+        const int minRating = 100;
 
-        // Round up maxRating to the nearest multiple of 25
-        var maxBucket = (int)(Math.Ceiling(maxRating / 25) * 25);
-
-        // Initialize all buckets from 100 to maxBucket with 0
-        var histogram = Enumerable.Range(4, maxBucket / 25 - 3).ToDictionary(bucket => bucket * 25, _ => 0);
-
-        // Adjust the GroupBy to correctly bucket the rating of 100
-        Dictionary<int, int> dbHistogram = await _context
-            .PlayerRatings.AsNoTracking()
-            .Where(x => x.Ruleset == ruleset && x.Rating >= 100)
-            .GroupBy(x => (int)(x.Rating / 25) * 25)
-            .Select(g => new { Bucket = g.Key == 0 ? 100 : g.Key, Count = g.Count() })
-            .ToDictionaryAsync(g => g.Bucket, g => g.Count);
-
-        // Update the histogram with actual counts
-        foreach (KeyValuePair<int, int> item in dbHistogram)
-        {
-            if (histogram.ContainsKey(item.Key))
+        var histograms = await _context.PlayerRatings
+            .Where(x => x.Rating >= minRating)
+            .GroupBy(x => new
             {
-                histogram[item.Key] = item.Value;
+                x.Ruleset,
+                Bucket = Math.Floor(x.Rating / bucketSize) * bucketSize
+            })
+            .Select(g => new
+            {
+                g.Key.Ruleset,
+                g.Key.Bucket,
+                Count = g.Count()
+            })
+            .ToListAsync();
+
+        var result = new Dictionary<Ruleset, Dictionary<int, int>>();
+        Ruleset[] rulesets = Enum.GetValues<Ruleset>();
+
+        foreach (Ruleset ruleset in rulesets)
+        {
+            var rulesetHistogram = new Dictionary<int, int>();
+            var rulesetBuckets = histograms.Where(h => h.Ruleset == ruleset).ToArray();
+
+            if (rulesetBuckets.Length != 0)
+            {
+                var maxBucket = rulesetBuckets.Max(h => h.Bucket);
+
+                for (var bucket = minRating; bucket <= maxBucket; bucket += bucketSize)
+                {
+                    rulesetHistogram[bucket] = rulesetBuckets.FirstOrDefault(h => h.Bucket == bucket)?.Count ?? 0;
+                }
             }
+
+            result[ruleset] = rulesetHistogram;
         }
 
-        return histogram;
+        return result;
     }
 
     private IQueryable<PlayerRating> LeaderboardQuery(

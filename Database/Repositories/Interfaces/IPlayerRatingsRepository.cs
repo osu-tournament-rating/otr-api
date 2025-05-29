@@ -90,12 +90,13 @@ public interface IPlayerRatingsRepository : IRepository<PlayerRating>
     Task<IList<Ruleset>> GetActiveRulesetsAsync(int playerId);
 
     /// <summary>
-    /// Histogram of all ratings for a given <see cref="Ruleset"/>
+    /// Gets a histogram of player ratings for each <see cref="Ruleset"/>.
     /// </summary>
-    /// <param name="ruleset">Ruleset</param>
     /// <returns>
-    ///  A dictionary with the keys equal to the 'bucket' of rating displayed (i.e. 100, 125, 150, etc. rating)
-    ///  in the histogram, and the values being how many players have ratings within the buckets.
+    /// A dictionary where each <see cref="Common.Enums.Ruleset"/> maps to another dictionary.
+    /// The inner dictionary's keys represent rating buckets beginning from 100 and
+    /// increasing in steps of 25 (e.g., 100, 125, 150, etc.). The values represent how many
+    /// players have ratings which fall into each bucket.
     /// </returns>
-    Task<IDictionary<int, int>> GetHistogramAsync(Ruleset ruleset);
+    Task<IDictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync();
 }
