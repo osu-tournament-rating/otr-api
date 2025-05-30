@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
-using Common.Utilities;
+using Common.Utilities.Extensions;
 using Database.Entities.Interfaces;
 using Database.Utilities;
 
@@ -173,5 +173,11 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
         ProcessingStatus = ScoreProcessingStatus.NeedsAutomationChecks;
     }
 
-    public void ConfirmPreVerificationStatus() => VerificationStatus = EnumUtils.ConfirmPreStatus(VerificationStatus);
+    /// <summary>
+    /// Confirms pre-verification status for this score, converting PreRejected to Rejected and PreVerified to Verified
+    /// </summary>
+    public void ConfirmPreVerification()
+    {
+        VerificationStatus = VerificationStatus.ConfirmPreStatus();
+    }
 }

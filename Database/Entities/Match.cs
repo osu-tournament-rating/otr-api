@@ -2,10 +2,11 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums.Verification;
-using Common.Utilities;
+using Common.Utilities.Extensions;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Utilities;
+using LinqKit;
 
 namespace Database.Entities;
 
@@ -133,5 +134,47 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
         ProcessingStatus = MatchProcessingStatus.NeedsAutomationChecks;
     }
 
-    public void ConfirmPreVerificationStatus() => VerificationStatus = EnumUtils.ConfirmPreStatus(VerificationStatus);
+    /// <summary>
+    /// Confirms pre-verification statuses for this match and optionally all its child entities,
+    /// applying cascading rejection logic and clearing warning flags for verified entities
+    /// </summary>
+    /// <param name="verifierUserId">The ID of the user performing the verification</param>
+    /// <param name="includeChildren">Whether to also confirm pre-verification statuses for child entities</param>
+    public void ConfirmPreVerification(int verifierUserId, bool includeChildren = true)
+    {
+        VerificationStatus = VerificationStatus.ConfirmPreStatus();
+        VerifiedByUserId = verifierUserId;
+
+        if (VerificationStatus == VerificationStatus.Verified)
+        {
+            WarningFlags = MatchWarningFlags.None;
+        }
+
+        if (includeChildren)
+        {
+            if (VerificationStatus == VerificationStatus.Rejected)
+            {
+                RejectAllChildren();
+            }
+            else
+            {
+                Games.ForEach(game => game.ConfirmPreVerification(includeChildren));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Rejects all child entities in this match
+    /// </summary>
+    public void RejectAllChildren()
+    {
+        foreach (Game game in Games)
+        {
+            game.VerificationStatus = VerificationStatus.Rejected;
+            game.RejectionReason |= GameRejectionReason.RejectedMatch;
+            game.ProcessingStatus = GameProcessingStatus.Done;
+
+            game.RejectAllChildren();
+        }
+    }
 }

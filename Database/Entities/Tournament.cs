@@ -3,9 +3,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
-using Common.Utilities;
+using Common.Utilities.Extensions;
 using Database.Entities.Interfaces;
 using Database.Utilities;
+using LinqKit;
 
 namespace Database.Entities;
 
@@ -138,5 +139,42 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
         ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
     }
 
-    public void ConfirmPreVerificationStatus() => VerificationStatus = EnumUtils.ConfirmPreStatus(VerificationStatus);
+    /// <summary>
+    /// Confirms pre-verification statuses for this tournament and optionally all its child entities,
+    /// applying cascading rejection logic and clearing warning flags for verified entities
+    /// </summary>
+    /// <param name="verifierUserId">The ID of the user performing the verification</param>
+    /// <param name="includeChildren">Whether to also confirm pre-verification statuses for child entities</param>
+    public void ConfirmPreVerification(int verifierUserId, bool includeChildren = true)
+    {
+        VerificationStatus = VerificationStatus.ConfirmPreStatus();
+        VerifiedByUserId = verifierUserId;
+
+        if (includeChildren)
+        {
+            if (VerificationStatus == VerificationStatus.Rejected)
+            {
+                RejectAllChildren();
+            }
+            else
+            {
+                Matches.ForEach(match => match.ConfirmPreVerification(verifierUserId, includeChildren));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Rejects all child entities in this tournament
+    /// </summary>
+    public void RejectAllChildren()
+    {
+        foreach (Match match in Matches)
+        {
+            match.VerificationStatus = VerificationStatus.Rejected;
+            match.RejectionReason |= MatchRejectionReason.RejectedTournament;
+            match.ProcessingStatus = MatchProcessingStatus.Done;
+
+            match.RejectAllChildren();
+        }
+    }
 }

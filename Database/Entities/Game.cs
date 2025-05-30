@@ -2,9 +2,10 @@
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
-using Common.Utilities;
+using Common.Utilities.Extensions;
 using Database.Entities.Interfaces;
 using Database.Utilities;
+using LinqKit;
 
 namespace Database.Entities;
 
@@ -54,6 +55,9 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// </summary>
     public DateTime EndTime { get; set; }
 
+    /// <summary>
+    /// Verification status
+    /// </summary>
     public VerificationStatus VerificationStatus { get; set; }
 
     /// <summary>
@@ -104,10 +108,19 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// </summary>
     public ICollection<GameScore> Scores { get; set; } = [];
 
+    /// <summary>
+    /// A collection of <see cref="GameAdminNote"/>s for the <see cref="Game"/>
+    /// </summary>
     public ICollection<GameAdminNote> AdminNotes { get; set; } = [];
 
+    /// <summary>
+    /// A collection of <see cref="GameAudit"/>s for the <see cref="Game"/>
+    /// </summary>
     public ICollection<GameAudit> Audits { get; set; } = [];
 
+    /// <summary>
+    /// The ID of the user who is blamed for the action
+    /// </summary>
     [NotMapped] public int? ActionBlamedOnUserId { get; set; }
 
     /// <summary>
@@ -122,6 +135,13 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
             // Any scores include HT or DT, but are not only HT or DT
             && Scores.Any(s => s.Mods.HasFlag(Mods) && s.Mods != Mods));
 
+    /// <summary>
+    /// Resets the automation statuses for the <see cref="Game"/>
+    /// </summary>
+    /// <param name="force">Whether to extend this reset to verified and rejected data</param>
+    /// <remarks>
+    /// Child entities are not affected
+    /// </remarks>
     public void ResetAutomationStatuses(bool force)
     {
         bool gameUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
@@ -138,5 +158,43 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
         ProcessingStatus = GameProcessingStatus.NeedsAutomationChecks;
     }
 
-    public void ConfirmPreVerificationStatus() => VerificationStatus = EnumUtils.ConfirmPreStatus(VerificationStatus);
+    /// <summary>
+    /// Confirms pre-verification statuses for this game and optionally all its child entities,
+    /// applying cascading rejection logic and clearing warning flags for verified entities
+    /// </summary>
+    /// <param name="includeChildren">Whether to also confirm pre-verification statuses for child entities</param>
+    public void ConfirmPreVerification(bool includeChildren = true)
+    {
+        VerificationStatus = VerificationStatus.ConfirmPreStatus();
+
+        if (VerificationStatus == VerificationStatus.Verified)
+        {
+            WarningFlags = GameWarningFlags.None;
+        }
+
+        if (includeChildren)
+        {
+            if (VerificationStatus == VerificationStatus.Rejected)
+            {
+                RejectAllChildren();
+            }
+            else
+            {
+                Scores.ForEach(score => score.ConfirmPreVerification());
+            }
+        }
+    }
+
+    /// <summary>
+    /// Rejects all child entities in this game
+    /// </summary>
+    public void RejectAllChildren()
+    {
+        foreach (GameScore score in Scores)
+        {
+            score.VerificationStatus = VerificationStatus.Rejected;
+            score.RejectionReason |= ScoreRejectionReason.RejectedGame;
+            score.ProcessingStatus = ScoreProcessingStatus.Done;
+        }
+    }
 }
