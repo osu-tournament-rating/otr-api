@@ -73,7 +73,7 @@ public class MatchesService(
 
     public async Task<MatchDTO?> UpdateAsync(int id, MatchDTO match)
     {
-        Match? existing = await matchesRepository.GetFullAsync(id, false);
+        Match? existing = await matchesRepository.GetAsync(id);
         if (existing is null)
         {
             return null;
@@ -88,6 +88,9 @@ public class MatchesService(
         if (originalVerificationStatus != VerificationStatus.Rejected &&
             existing.VerificationStatus == VerificationStatus.Rejected)
         {
+            // Load Games with their Scores for cascading logic only when needed
+            await matchesRepository.LoadGamesWithScoresAsync(existing);
+
             // Apply cascading rejection to all child games and their scores
             foreach (Game game in existing.Games)
             {
