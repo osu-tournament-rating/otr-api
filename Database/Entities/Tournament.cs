@@ -125,7 +125,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
 
     public void ResetAutomationStatuses(bool force)
     {
-        var update = force || (VerificationStatus != VerificationStatus.Rejected &&
+        bool update = force || (VerificationStatus != VerificationStatus.Rejected &&
                                VerificationStatus != VerificationStatus.Verified);
 
         if (!update)

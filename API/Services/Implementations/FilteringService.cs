@@ -66,7 +66,7 @@ public class FilteringService(
 
         // Separate database call as adjustments are not included from the initial call
         // In the future, the processor could store this field in the database
-        var peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, request.Ruleset);
+        double peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, request.Ruleset);
         FilteringFailReason failReason = EnforceFilteringConditions(request, ratingStats, peakRating);
 
         return failReason;

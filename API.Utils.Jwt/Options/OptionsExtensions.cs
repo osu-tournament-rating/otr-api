@@ -37,7 +37,7 @@ public static class OptionsExtensions
         }
 
         // Validate roles
-        foreach (var role in o.Roles)
+        foreach (string role in o.Roles)
         {
             if (!OtrClaims.Roles.IsValidRole(role))
             {
@@ -173,7 +173,7 @@ public static class OptionsExtensions
     private static void ValidateDataAnnotations<T>(this T config)
     {
         var validationResults = new List<ValidationResult>();
-        var isValid = Validator.TryValidateObject(
+        bool isValid = Validator.TryValidateObject(
             config!,
             new ValidationContext(config!, serviceProvider: null, items: null),
             validationResults,
@@ -185,7 +185,7 @@ public static class OptionsExtensions
             return;
         }
 
-        var errorMessages = validationResults.Select(result => result.ErrorMessage).ToArray();
+        string?[] errorMessages = validationResults.Select(result => result.ErrorMessage).ToArray();
         throw new InvalidOperationException(
             $"Configuration validation failed for {nameof(T)}: {string.Join(", ", errorMessages)}"
         );

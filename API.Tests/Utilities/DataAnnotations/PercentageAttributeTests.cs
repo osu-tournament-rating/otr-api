@@ -20,7 +20,7 @@ public class PercentageAttributeTests
         var attribute = new PercentageAttribute();
 
         // Act
-        var isValid = attribute.IsValid(percentage);
+        bool isValid = attribute.IsValid(percentage);
 
         // Assert
         Assert.Equal(expected, isValid);

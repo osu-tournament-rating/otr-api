@@ -180,7 +180,7 @@ public sealed class OsuClient(
             return null;
         }
 
-        var endpoint = Endpoints.Osu.Me;
+        string endpoint = Endpoints.Osu.Me;
         if (ruleset.HasValue)
         {
             endpoint += $"/{ruleset}";
@@ -249,7 +249,7 @@ public sealed class OsuClient(
             queryParams.Add("limit", eventsLimit.Value.ToString());
         }
 
-        var endpoint = Endpoints.Osu.Matches + $"/{matchId}";
+        string endpoint = Endpoints.Osu.Matches + $"/{matchId}";
         Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);
         return await _handler.FetchAsync<MultiplayerMatch, MultiplayerMatchJsonModel>(
             new ApiRequest
@@ -297,7 +297,7 @@ public sealed class OsuClient(
         // Get batches of 100 events until we have them all
         while (initialMatch.Events.Max(ev => ev.Id) != initialMatch.LatestEventId)
         {
-            var eventsAfterId = initialMatch.Events.Max(ev => ev.Id);
+            long eventsAfterId = initialMatch.Events.Max(ev => ev.Id);
             logger.LogDebug(
                 "Attempting to fetch a batch of match events [Match Id: {MatchId} | Most Recent Event: {RecentEvId}]",
                 matchId,
@@ -337,7 +337,7 @@ public sealed class OsuClient(
         CheckDisposed();
         await UpdateCredentialsAsync(cancellationToken);
 
-        var endpoint = Endpoints.Osu.Beatmaps + $"/{beatmapId}";
+        string endpoint = Endpoints.Osu.Beatmaps + $"/{beatmapId}";
         Uri.TryCreate(endpoint, UriKind.Relative, out Uri? uri);
         return await _handler.FetchAsync<BeatmapExtended, BeatmapExtendedJsonModel>(
             new ApiRequest
@@ -476,7 +476,7 @@ public sealed class OsuClient(
     {
         var queryParams = new Dictionary<string, string> { ["key"] = key };
 
-        var endpoint = Endpoints.Osu.Users + $"/{identifier}";
+        string endpoint = Endpoints.Osu.Users + $"/{identifier}";
         if (ruleset.HasValue)
         {
             endpoint += $"/{ruleset.GetDescription()}";

@@ -59,7 +59,7 @@ public static class Program
         Log.Information("Writing a JWT with options:\n{Opts}", o.ToString());
 
         var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.WriteToken(tokenHandler.CreateToken(new SecurityTokenDescriptor
+        string token = tokenHandler.WriteToken(tokenHandler.CreateToken(new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
             IssuedAt = DateTime.UtcNow,

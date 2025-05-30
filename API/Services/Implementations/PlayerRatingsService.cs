@@ -24,9 +24,9 @@ public class PlayerRatingsService(
             return null;
         }
 
-        var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset, dateMin, dateMax);
-        var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset, dateMin, dateMax);
-        var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset, dateMin, dateMax);
+        int matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset, dateMin, dateMax);
+        double winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset, dateMin, dateMax);
+        int tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset, dateMin, dateMax);
         var tierProgress = new TierProgressDTO(currentStats.Rating);
 
         return new PlayerRatingStatsDTO

@@ -56,7 +56,7 @@ public class UsersController(
     public async Task<IActionResult> UpdateScopesAsync(int id, [FromBody][Required] List<string> scopes)
     {
         scopes = [.. scopes.Select(s => s.ToLower())];
-        foreach (var scope in scopes)
+        foreach (string scope in scopes)
         {
             if (!OtrClaims.Roles.IsUserAssignableRole(scope))
             {

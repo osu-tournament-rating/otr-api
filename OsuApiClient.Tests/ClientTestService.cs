@@ -25,12 +25,12 @@ public class ClientTestService(
     {
         logger.LogInformation("Running {Count} test(s)", _clientTests.Count());
 
-        var passedCount = 0;
+        int passedCount = 0;
         foreach (IOsuClientTest test in _clientTests)
         {
             try
             {
-                var passed = await test.RunAsync(stoppingToken);
+                bool passed = await test.RunAsync(stoppingToken);
 
                 if (passed)
                 {

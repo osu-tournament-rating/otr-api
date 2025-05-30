@@ -15,7 +15,7 @@ public class TournamentPlatformStatsService(ITournamentsRepository tournamentsRe
         Dictionary<Ruleset, int> countsByRulesets = await tournamentsRepository.GetRulesetStatsAsync();
         Dictionary<int, int> countsByLobbySizes = await tournamentsRepository.GetLobbySizeStatsAsync();
 
-        var totalCount = countsByStatuses.Sum(x => x.Value);
+        int totalCount = countsByStatuses.Sum(x => x.Value);
 
         return new TournamentPlatformStatsDTO
         {

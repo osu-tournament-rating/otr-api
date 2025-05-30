@@ -258,8 +258,8 @@ public static class RatingUtils
     /// </remarks>
     public static double? GetNextTierFillPercentage(double rating)
     {
-        var minRating = GetPreviousTierRating(rating);
-        var maxRating = GetNextTierRating(rating);
+        double minRating = GetPreviousTierRating(rating);
+        double? maxRating = GetNextTierRating(rating);
 
         if (maxRating is null)
         {
@@ -277,8 +277,8 @@ public static class RatingUtils
     /// </remarks>
     public static double? GetNextMajorTierFillPercentage(double rating)
     {
-        var minRating = GetMajorTierRating(rating);
-        var maxRating = GetNextMajorTierRating(rating);
+        double minRating = GetMajorTierRating(rating);
+        double? maxRating = GetNextMajorTierRating(rating);
         if (maxRating is null)
         {
             return null;
@@ -310,7 +310,7 @@ public static class RatingUtils
     {
         // First get the current sub-tier (1, 2, or 3) for the given rating
         // This will be null for Elite Grandmaster
-        var currentSubTier = GetSubTier(rating);
+        int? currentSubTier = GetSubTier(rating);
 
         switch (currentSubTier)
         {
@@ -328,7 +328,7 @@ public static class RatingUtils
             default:
                 {
                     // Check if there's a next major tier available
-                    var nextMajorTier = GetNextMajorTier(rating);
+                    string? nextMajorTier = GetNextMajorTier(rating);
 
                     // Elite Grandmaster is the highest tier, so there's no next tier after it.
                     // Therefore, there is no sub tier and we return null.

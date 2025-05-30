@@ -19,7 +19,7 @@ public abstract class AutomationCheckBase<TEntity>(
 
     public virtual bool Check(TEntity entity)
     {
-        var passed = OnChecking(entity);
+        bool passed = OnChecking(entity);
 
         if (passed)
         {

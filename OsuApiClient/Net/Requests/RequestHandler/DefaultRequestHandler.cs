@@ -77,7 +77,7 @@ internal sealed class DefaultRequestHandler(
         CancellationToken cancellationToken = default
     ) where TJsonModel : class, IJsonModel
     {
-        var responseContent = await SendRequestAsync(request, cancellationToken);
+        string? responseContent = await SendRequestAsync(request, cancellationToken);
         return responseContent is not null
             ? DeserializeResponseContent<TJsonModel>(responseContent)
             : null;
@@ -94,7 +94,7 @@ internal sealed class DefaultRequestHandler(
         CancellationToken cancellationToken = default
     ) where TModel : class, IModel where TJsonModel : class, IJsonModel
     {
-        var responseContent = await SendRequestAsync(request, cancellationToken);
+        string? responseContent = await SendRequestAsync(request, cancellationToken);
         return responseContent is not null
             ? _mapper.Map<IEnumerable<TModel>>(DeserializeResponseContent<IEnumerable<TJsonModel>>(responseContent))
             : null;
@@ -299,8 +299,8 @@ internal sealed class DefaultRequestHandler(
         UpdateRateLimit(platform);
 
         // Parse response body
-        var responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
-        var responseContent = Encoding.UTF8.GetString(responseBytes);
+        byte[] responseBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
+        string responseContent = Encoding.UTF8.GetString(responseBytes);
 
         logger.LogTrace(
             "Received response from {Platform} API: {Content}",
