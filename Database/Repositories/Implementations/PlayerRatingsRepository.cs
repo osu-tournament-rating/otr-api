@@ -156,6 +156,10 @@ public class PlayerRatingsRepository(OtrContext context)
         {
             baseQuery = baseQuery.Where(x => x.Player.Country == mappedCountry);
         }
+        else
+        {
+            baseQuery = baseQuery.Where(x => x.Player.Country == country);
+        }
 
         return baseQuery;
     }

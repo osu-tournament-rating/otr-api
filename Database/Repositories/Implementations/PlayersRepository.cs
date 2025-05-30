@@ -122,7 +122,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
             .Include(p => p.User)
             .ThenInclude(u => u!.Settings)
             .Where(p => DateTime.UtcNow - p.OsuLastFetch > outdatedAfter)
-            .OrderBy(p => p.Id)
+            .OrderBy(p => p.OsuLastFetch)
             .Take(limit)
             .ToListAsync();
 
@@ -140,7 +140,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
             .Include(p => p.MatchStats)
             .ThenInclude(pms => pms.Match)
             .Where(p => DateTime.UtcNow - p.OsuTrackLastFetch > outdatedAfter)
-            .OrderBy(p => p.Id)
+            .OrderBy(p => p.OsuTrackLastFetch)
             .Take(limit)
             .ToListAsync();
 }
