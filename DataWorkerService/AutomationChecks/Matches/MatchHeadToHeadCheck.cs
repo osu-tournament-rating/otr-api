@@ -34,7 +34,9 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
         }
 
         var headToHeadGames = entity.Games
-            .Where(g => g.TeamType is TeamType.HeadToHead && g.Scores.Count is 1 or MaxScoresPerGame)
+            .Where(g => g.TeamType is TeamType.HeadToHead &&
+                       g.VerificationStatus != VerificationStatus.Rejected &&
+                       g.Scores.Count(s => s.VerificationStatus != VerificationStatus.Rejected) is 1 or MaxScoresPerGame)
             .ToList();
 
         if (headToHeadGames.Count == 0)
@@ -47,6 +49,7 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
 
         var uniquePlayerIds = entity.Games
             .SelectMany(g => g.Scores)
+            .Where(s => s.VerificationStatus != VerificationStatus.Rejected)
             .Select(s => s.Player.Id)
             .Distinct()
             .ToList();
@@ -109,9 +112,10 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
 
     private bool ValidateGamePlayers(Match entity, List<int> uniquePlayerIds)
     {
-        foreach (Game game in entity.Games)
+        foreach (Game game in entity.Games.Where(g => g.VerificationStatus != VerificationStatus.Rejected))
         {
             var gamePlayerIds = game.Scores
+                .Where(s => s.VerificationStatus != VerificationStatus.Rejected)
                 .Select(s => s.Player.Id)
                 .Distinct()
                 .ToList();
@@ -142,6 +146,7 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
         var halfwayGame = allGames[halfwayGameIndex];
 
         var halfwayGamePlayerIds = halfwayGame.Scores
+            .Where(s => s.VerificationStatus != VerificationStatus.Rejected)
             .Select(s => s.Player.Id)
             .OrderBy(id => id)
             .ToList();
@@ -158,7 +163,9 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
     {
         foreach (Game game in headToHeadGames)
         {
-            var scores = game.Scores.ToList();
+            var scores = game.Scores
+                .Where(s => s.VerificationStatus != VerificationStatus.Rejected)
+                .ToList();
 
             switch (scores.Count)
             {

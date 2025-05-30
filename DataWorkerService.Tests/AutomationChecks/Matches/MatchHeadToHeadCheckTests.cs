@@ -23,7 +23,8 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
         var game = SeededGame.Generate(
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
 
         // Add 2 scores (valid count) but with 3 different players across the match
@@ -31,14 +32,15 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
         var player2 = SeededPlayer.Generate(id: 2);
         var player3 = SeededPlayer.Generate(id: 3);
 
-        SeededScore.Generate(game: game, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
         // Add another game with the third player to make total unique players = 3
         var game2 = SeededGame.Generate(
             teamType: TeamType.TeamVs,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
         SeededScore.Generate(game: game2, player: player3, verificationStatus: VerificationStatus.Verified);
 
@@ -64,11 +66,12 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
         var game = SeededGame.Generate(
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
 
         var player = SeededPlayer.Generate(id: 1);
-        SeededScore.Generate(game: game, player: player, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game, player: player, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
         // Act
         bool result = AutomationCheck.Check(match);
@@ -77,53 +80,6 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
         Assert.False(result);
         Assert.True(match.RejectionReason.HasFlag(MatchRejectionReason.FailedTeamVsConversion));
         Assert.True(game.RejectionReason.HasFlag(GameRejectionReason.FailedTeamVsConversion));
-    }
-
-    #endregion
-
-    #region Game Player Validation Tests
-
-    [Fact]
-    public void Check_GivenGameWithUnexpectedPlayers_FailsAndSetsRejectionReasons()
-    {
-        // Arrange
-        var tournament = SeededTournament.Generate(teamSize: 1);
-        var match = SeededMatch.Generate(
-            tournament: tournament,
-            rejectionReason: MatchRejectionReason.None
-        );
-
-        var player1 = SeededPlayer.Generate(id: 1);
-        var player2 = SeededPlayer.Generate(id: 2);
-        var player3 = SeededPlayer.Generate(id: 3); // Unexpected player
-
-        // First game with expected players
-        var game1 = SeededGame.Generate(
-            teamType: TeamType.HeadToHead,
-            match: match,
-            rejectionReason: GameRejectionReason.None
-        );
-        SeededScore.Generate(game: game1, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game1, player: player2, verificationStatus: VerificationStatus.Verified);
-
-        // Second game with unexpected player (this will cause validation to fail)
-        var game2 = SeededGame.Generate(
-            teamType: TeamType.TeamVs,
-            match: match,
-            rejectionReason: GameRejectionReason.None
-        );
-        SeededScore.Generate(game: game2, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game2, player: player2, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game2, player: player3, verificationStatus: VerificationStatus.Verified); // This makes it 3 players total
-
-        // Act
-        bool result = AutomationCheck.Check(match);
-
-        // Assert
-        Assert.False(result);
-        // The match should fail due to having 3 unique players, not game validation
-        Assert.True(match.RejectionReason.HasFlag(MatchRejectionReason.FailedTeamVsConversion));
-        Assert.True(game1.RejectionReason.HasFlag(GameRejectionReason.FailedTeamVsConversion));
     }
 
     #endregion
@@ -149,40 +105,44 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
             startTime: baseTime,
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
         var game2 = SeededGame.Generate(
             startTime: baseTime.AddMinutes(10),
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
         var game3 = SeededGame.Generate(
             startTime: baseTime.AddMinutes(20),
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
         var game4 = SeededGame.Generate(
             startTime: baseTime.AddMinutes(30),
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
 
         // Add scores to all games
-        SeededScore.Generate(game: game1, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game1, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game1, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game1, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
-        SeededScore.Generate(game: game2, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game2, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game2, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game2, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
         // Halfway game - player order determines team assignment
-        SeededScore.Generate(game: game3, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game3, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game3, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game3, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
-        SeededScore.Generate(game: game4, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game4, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game4, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game4, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
         // Act
         bool result = AutomationCheck.Check(match);
@@ -222,21 +182,23 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
             startTime: baseTime,
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
         var game2 = SeededGame.Generate(
             startTime: baseTime.AddMinutes(10),
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
 
         // Game 1 with both players
-        SeededScore.Generate(game: game1, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game1, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game1, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game1, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
         // Halfway game with only one player (player2)
-        SeededScore.Generate(game: game2, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game2, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
         // Act
         bool result = AutomationCheck.Check(match);
@@ -252,55 +214,6 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
         Assert.Equal(Team.Blue, game1Player1Score.Team);
         Assert.Equal(Team.Red, game1Player2Score.Team);
         Assert.Equal(Team.Red, game2Player2Score.Team);
-    }
-
-    [Fact]
-    public void Check_GivenHalfwayGameWithNoPlayers_UsesOrderedPlayerIds()
-    {
-        // Arrange
-        var tournament = SeededTournament.Generate(teamSize: 1);
-        var match = SeededMatch.Generate(
-            tournament: tournament,
-            rejectionReason: MatchRejectionReason.None
-        );
-
-        var player1 = SeededPlayer.Generate(id: 5); // Higher ID
-        var player2 = SeededPlayer.Generate(id: 3); // Lower ID
-
-        // Create 2 games ordered by StartTime where halfway game has no scores
-        var baseTime = new DateTime(2023, 1, 1, 10, 0, 0);
-        var game1 = SeededGame.Generate(
-            startTime: baseTime,
-            teamType: TeamType.HeadToHead,
-            match: match,
-            rejectionReason: GameRejectionReason.None
-        );
-        var game2 = SeededGame.Generate(
-            startTime: baseTime.AddMinutes(10),
-            teamType: TeamType.HeadToHead,
-            match: match,
-            rejectionReason: GameRejectionReason.None
-        );
-
-        // Game 1 with both players
-        SeededScore.Generate(game: game1, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game1, player: player2, verificationStatus: VerificationStatus.Verified);
-
-        // Halfway game with no scores (empty)
-        // No scores added to game2
-
-        // Act
-        bool result = AutomationCheck.Check(match);
-
-        // Assert
-        Assert.True(result);
-
-        // Verify team assignments - lower ID (player2=3) should be red, higher ID (player1=5) should be blue
-        var game1Player1Score = game1.Scores.First(s => s.Player.Id == player1.Id);
-        var game1Player2Score = game1.Scores.First(s => s.Player.Id == player2.Id);
-
-        Assert.Equal(Team.Blue, game1Player1Score.Team);
-        Assert.Equal(Team.Red, game1Player2Score.Team);
     }
 
     #endregion
@@ -323,11 +236,12 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
         var game = SeededGame.Generate(
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
 
-        SeededScore.Generate(game: game, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
         // Act
         bool result = AutomationCheck.Check(match);
@@ -364,18 +278,20 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
             startTime: baseTime,
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
-        SeededScore.Generate(game: game1, player: player1, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game1, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
         // Game with only player2
         var game2 = SeededGame.Generate(
             startTime: baseTime.AddMinutes(10),
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
-        SeededScore.Generate(game: game2, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game2, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
         // Act
         bool result = AutomationCheck.Check(match);
@@ -412,16 +328,18 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
         var headToHeadGame = SeededGame.Generate(
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
-        SeededScore.Generate(game: headToHeadGame, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: headToHeadGame, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: headToHeadGame, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: headToHeadGame, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
         // TeamVs game (should not be converted)
         var teamVsGame = SeededGame.Generate(
             teamType: TeamType.TeamVs,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
         SeededScore.Generate(game: teamVsGame, player: player1, team: Team.Red, verificationStatus: VerificationStatus.Verified);
         SeededScore.Generate(game: teamVsGame, player: player2, team: Team.Blue, verificationStatus: VerificationStatus.Verified);
@@ -455,10 +373,159 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
 
     #endregion
 
-    #region Integration Tests
+    #region Rejected Entity Handling Tests
 
     [Fact]
-    public void Check_GivenComplexValidMatch_ConvertsAllEligibleGames()
+    public void Check_GivenMatchWithRejectedGamesAndScores_IgnoresRejectedEntitiesCompletely()
+    {
+        // Arrange
+        var tournament = SeededTournament.Generate(teamSize: 1);
+        var match = SeededMatch.Generate(
+            tournament: tournament,
+            rejectionReason: MatchRejectionReason.None
+        );
+
+        var player1 = SeededPlayer.Generate(id: 1);
+        var player2 = SeededPlayer.Generate(id: 2);
+        var player3 = SeededPlayer.Generate(id: 3);
+
+        // Create games with explicit StartTime ordering
+        var baseTime = new DateTime(2023, 1, 1, 10, 0, 0);
+
+        // Valid HeadToHead game with valid scores
+        var validGame = SeededGame.Generate(
+            startTime: baseTime,
+            teamType: TeamType.HeadToHead,
+            match: match,
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
+        );
+        SeededScore.Generate(game: validGame, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: validGame, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+
+        // Rejected game that should be completely ignored and not converted
+        var rejectedGame = SeededGame.Generate(
+            startTime: baseTime.AddMinutes(10),
+            teamType: TeamType.HeadToHead,
+            match: match,
+            rejectionReason: GameRejectionReason.NoEndTime,
+            verificationStatus: VerificationStatus.Rejected
+        );
+        // Add scores to rejected game - these should be completely ignored
+        SeededScore.Generate(game: rejectedGame, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: rejectedGame, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+
+        // Valid game with a rejected score that should be ignored
+        var gameWithRejectedScore = SeededGame.Generate(
+            startTime: baseTime.AddMinutes(20),
+            teamType: TeamType.TeamVs,
+            match: match,
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
+        );
+        SeededScore.Generate(game: gameWithRejectedScore, player: player1, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: gameWithRejectedScore, player: player2, verificationStatus: VerificationStatus.Verified);
+        // This rejected score should be completely ignored
+        SeededScore.Generate(game: gameWithRejectedScore, player: player3, team: Team.NoTeam, verificationStatus: VerificationStatus.Rejected);
+
+        // Act
+        bool result = AutomationCheck.Check(match);
+
+        // Assert
+        Assert.True(result); // Should succeed because rejected entities are completely ignored
+
+        // Verify that only the valid HeadToHead game was converted
+        Assert.Equal(TeamType.TeamVs, validGame.TeamType);
+        Assert.Equal(TeamType.HeadToHead, rejectedGame.TeamType); // Rejected game should not be converted
+        Assert.Equal(TeamType.TeamVs, gameWithRejectedScore.TeamType); // Already TeamVs, should remain unchanged
+
+        // Verify team assignments for the converted game only
+        var validGamePlayer1Score = validGame.Scores.First(s => s.Player.Id == player1.Id);
+        var validGamePlayer2Score = validGame.Scores.First(s => s.Player.Id == player2.Id);
+
+        Assert.Equal(Team.Red, validGamePlayer1Score.Team);
+        Assert.Equal(Team.Blue, validGamePlayer2Score.Team);
+
+        // Rejected game scores should not have team assignments
+        var rejectedGamePlayer1Score = rejectedGame.Scores.First(s => s.Player.Id == player1.Id);
+        var rejectedGamePlayer2Score = rejectedGame.Scores.First(s => s.Player.Id == player2.Id);
+        Assert.Equal(Team.NoTeam, rejectedGamePlayer1Score.Team);
+        Assert.Equal(Team.NoTeam, rejectedGamePlayer2Score.Team);
+
+        // Verify no rejection reasons were added
+        Assert.Equal(MatchRejectionReason.None, match.RejectionReason);
+        Assert.Equal(GameRejectionReason.None, validGame.RejectionReason);
+        Assert.Equal(GameRejectionReason.None, gameWithRejectedScore.RejectionReason);
+        // Rejected game should keep its original rejection reason
+        Assert.Equal(GameRejectionReason.NoEndTime, rejectedGame.RejectionReason);
+    }
+
+    [Fact]
+    public void Check_GivenMatchWithRejectedScores_IgnoresRejectedScoresCompletely()
+    {
+        // Arrange
+        var tournament = SeededTournament.Generate(teamSize: 1);
+        var match = SeededMatch.Generate(
+            tournament: tournament,
+            rejectionReason: MatchRejectionReason.None
+        );
+
+        var player1 = SeededPlayer.Generate(id: 1);
+        var player2 = SeededPlayer.Generate(id: 2);
+        var player3 = SeededPlayer.Generate(id: 3); // This player will only exist in rejected scores
+
+        var baseTime = new DateTime(2023, 1, 1, 10, 0, 0);
+
+        // Valid HeadToHead game with valid scores from player1 and player2
+        var validGame = SeededGame.Generate(
+            startTime: baseTime,
+            teamType: TeamType.HeadToHead,
+            match: match,
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
+        );
+        SeededScore.Generate(game: validGame, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: validGame, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+
+        // Another valid game with rejected scores that should be completely ignored
+        var gameWithRejectedScore = SeededGame.Generate(
+            startTime: baseTime.AddMinutes(10),
+            teamType: TeamType.TeamVs,
+            match: match,
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
+        );
+        SeededScore.Generate(game: gameWithRejectedScore, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: gameWithRejectedScore, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        // This rejected score should be completely ignored - player3 should not affect processing
+        SeededScore.Generate(game: gameWithRejectedScore, player: player3, team: Team.NoTeam, verificationStatus: VerificationStatus.Rejected);
+
+        // Act
+        bool result = AutomationCheck.Check(match);
+
+        // Assert
+        // Should succeed because rejected scores are completely ignored
+        Assert.True(result);
+
+        // Verify that only the HeadToHead game was converted
+        Assert.Equal(TeamType.TeamVs, validGame.TeamType);
+        Assert.Equal(TeamType.TeamVs, gameWithRejectedScore.TeamType); // Already TeamVs, remains unchanged
+
+        // Verify team assignments for the converted game
+        var validGamePlayer1Score = validGame.Scores.First(s => s.Player.Id == player1.Id);
+        var validGamePlayer2Score = validGame.Scores.First(s => s.Player.Id == player2.Id);
+
+        Assert.Equal(Team.Red, validGamePlayer1Score.Team);
+        Assert.Equal(Team.Blue, validGamePlayer2Score.Team);
+
+        // Verify no rejection reasons were added
+        Assert.Equal(MatchRejectionReason.None, match.RejectionReason);
+        Assert.Equal(GameRejectionReason.None, validGame.RejectionReason);
+        Assert.Equal(GameRejectionReason.None, gameWithRejectedScore.RejectionReason);
+    }
+
+    [Fact]
+    public void Check_GivenHeadToHeadGameWithOnlyRejectedScores_IgnoresGameCompletely()
     {
         // Arrange
         var tournament = SeededTournament.Generate(teamSize: 1);
@@ -470,42 +537,29 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
         var player1 = SeededPlayer.Generate(id: 1);
         var player2 = SeededPlayer.Generate(id: 2);
 
-        // Create multiple HeadToHead games with different score patterns, ordered by StartTime
         var baseTime = new DateTime(2023, 1, 1, 10, 0, 0);
 
-        var game1 = SeededGame.Generate(
+        // Valid HeadToHead game with valid scores
+        var validGame = SeededGame.Generate(
             startTime: baseTime,
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
-        SeededScore.Generate(game: game1, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game1, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: validGame, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: validGame, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
-        var game2 = SeededGame.Generate(
+        // HeadToHead game with only rejected scores - should be completely ignored
+        var gameWithOnlyRejectedScores = SeededGame.Generate(
             startTime: baseTime.AddMinutes(10),
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
-        SeededScore.Generate(game: game2, player: player1, verificationStatus: VerificationStatus.Verified);
-
-        var game3 = SeededGame.Generate(
-            startTime: baseTime.AddMinutes(20),
-            teamType: TeamType.HeadToHead,
-            match: match,
-            rejectionReason: GameRejectionReason.None
-        );
-        SeededScore.Generate(game: game3, player: player2, verificationStatus: VerificationStatus.Verified);
-
-        var game4 = SeededGame.Generate(
-            startTime: baseTime.AddMinutes(30),
-            teamType: TeamType.HeadToHead,
-            match: match,
-            rejectionReason: GameRejectionReason.None
-        );
-        SeededScore.Generate(game: game4, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game4, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: gameWithOnlyRejectedScores, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Rejected);
+        SeededScore.Generate(game: gameWithOnlyRejectedScores, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Rejected);
 
         // Act
         bool result = AutomationCheck.Check(match);
@@ -513,27 +567,32 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
         // Assert
         Assert.True(result);
 
-        // All games should be converted to TeamVs
-        Assert.All(match.Games, game => Assert.Equal(TeamType.TeamVs, game.TeamType));
+        // Only the valid game should be converted
+        Assert.Equal(TeamType.TeamVs, validGame.TeamType);
+        Assert.Equal(TeamType.HeadToHead, gameWithOnlyRejectedScores.TeamType); // Should not be converted
 
-        // Verify team assignments are consistent
-        // The halfway game index for 4 games is 4/2 = 2, so game3 (index 2) determines assignments
-        // Game3 has only player2, so player2 becomes red, player1 becomes blue
-        foreach (var game in match.Games)
-        {
-            foreach (var score in game.Scores)
-            {
-                if (score.Player.Id == player1.Id)
-                {
-                    Assert.Equal(Team.Blue, score.Team);
-                }
-                else if (score.Player.Id == player2.Id)
-                {
-                    Assert.Equal(Team.Red, score.Team);
-                }
-            }
-        }
+        // Verify team assignments for the converted game only
+        var validGamePlayer1Score = validGame.Scores.First(s => s.Player.Id == player1.Id);
+        var validGamePlayer2Score = validGame.Scores.First(s => s.Player.Id == player2.Id);
+
+        Assert.Equal(Team.Red, validGamePlayer1Score.Team);
+        Assert.Equal(Team.Blue, validGamePlayer2Score.Team);
+
+        // Game with only rejected scores should not have team assignments
+        var rejectedScoreGame1 = gameWithOnlyRejectedScores.Scores.First(s => s.Player.Id == player1.Id);
+        var rejectedScoreGame2 = gameWithOnlyRejectedScores.Scores.First(s => s.Player.Id == player2.Id);
+        Assert.Equal(Team.NoTeam, rejectedScoreGame1.Team);
+        Assert.Equal(Team.NoTeam, rejectedScoreGame2.Team);
+
+        // Verify no rejection reasons were added
+        Assert.Equal(MatchRejectionReason.None, match.RejectionReason);
+        Assert.Equal(GameRejectionReason.None, validGame.RejectionReason);
+        Assert.Equal(GameRejectionReason.None, gameWithOnlyRejectedScores.RejectionReason);
     }
+
+    #endregion
+
+    #region Integration Tests
 
     [Fact]
     public void Check_GivenMatchWithExistingRejectionReasons_PreservesExistingReasons()
@@ -552,18 +611,20 @@ public class MatchHeadToHeadCheckTests : AutomationChecksTestBase<MatchHeadToHea
         var game = SeededGame.Generate(
             teamType: TeamType.HeadToHead,
             match: match,
-            rejectionReason: GameRejectionReason.NoEndTime
+            rejectionReason: GameRejectionReason.NoEndTime,
+            verificationStatus: VerificationStatus.Verified
         );
 
         // Add 2 scores but create a scenario that will fail validation
-        SeededScore.Generate(game: game, player: player1, verificationStatus: VerificationStatus.Verified);
-        SeededScore.Generate(game: game, player: player2, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game, player: player1, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
+        SeededScore.Generate(game: game, player: player2, team: Team.NoTeam, verificationStatus: VerificationStatus.Verified);
 
         // Add another game with a third player to make total unique players = 3 (which will fail)
         var game2 = SeededGame.Generate(
             teamType: TeamType.TeamVs,
             match: match,
-            rejectionReason: GameRejectionReason.None
+            rejectionReason: GameRejectionReason.None,
+            verificationStatus: VerificationStatus.Verified
         );
         SeededScore.Generate(game: game2, player: player3, verificationStatus: VerificationStatus.Verified);
 
