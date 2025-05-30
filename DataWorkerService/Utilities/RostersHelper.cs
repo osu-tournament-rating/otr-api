@@ -66,7 +66,7 @@ public static class RostersHelper
             else
             {
                 // Generate rosters from verified scores without modifying the game entity
-                var verifiedScores = game.Scores
+                IEnumerable<GameScore> verifiedScores = game.Scores
                     .Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done });
                 gameRosters = GenerateRosters(verifiedScores);
             }

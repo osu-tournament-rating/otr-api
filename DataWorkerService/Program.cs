@@ -46,7 +46,7 @@ builder.Services
 
 builder.Services.AddSerilog(configuration =>
 {
-    var connString = builder
+    string connString = builder
         .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
             ConnectionStringsConfiguration.Position
         )
@@ -101,7 +101,7 @@ builder.Services.AddDbContext<OtrContext>(o =>
 });
 
 // Redis lock factory (distributed resource access control)
-var useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistributedLocking ?? true;
+bool useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistributedLocking ?? true;
 
 if (useRedLock)
 {

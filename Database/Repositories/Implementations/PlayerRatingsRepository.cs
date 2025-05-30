@@ -98,9 +98,9 @@ public class PlayerRatingsRepository(OtrContext context)
 
             if (rulesetBuckets.Length != 0)
             {
-                var maxBucket = rulesetBuckets.Max(h => h.Bucket);
+                double maxBucket = rulesetBuckets.Max(h => h.Bucket);
 
-                for (var bucket = minRating; bucket <= maxBucket; bucket += bucketSize)
+                for (int bucket = minRating; bucket <= maxBucket; bucket += bucketSize)
                 {
                     rulesetHistogram[bucket] = rulesetBuckets.FirstOrDefault(h => h.Bucket == bucket)?.Count ?? 0;
                 }
@@ -150,7 +150,7 @@ public class PlayerRatingsRepository(OtrContext context)
         if (
             LeaderboardUtils.DependentTerritoriesMapping.TryGetValue(
                 country,
-                out var mappedCountry
+                out string? mappedCountry
             )
         )
         {
@@ -255,10 +255,10 @@ public class PlayerRatingsRepository(OtrContext context)
     )
     {
         // Check if all flags are true or all are false
-        var allTrue = bronze && silver && gold && platinum && emerald && diamond && master && grandmaster &&
-                      eliteGrandmaster;
-        var allFalse = !bronze && !silver && !gold && !platinum && !emerald && !diamond && !master && !grandmaster &&
-                       !eliteGrandmaster;
+        bool allTrue = bronze && silver && gold && platinum && emerald && diamond && master && grandmaster &&
+                       eliteGrandmaster;
+        bool allFalse = !bronze && !silver && !gold && !platinum && !emerald && !diamond && !master && !grandmaster &&
+                        !eliteGrandmaster;
 
         // If all flags are true or all are false, return the original query
         if (allTrue || allFalse)

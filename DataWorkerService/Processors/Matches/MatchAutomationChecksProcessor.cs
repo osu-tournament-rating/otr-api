@@ -30,7 +30,7 @@ public class MatchAutomationChecksProcessor(
 
         // Run MatchHeadToHeadCheck first, before processing games
         // This allows it to convert HeadToHead games to TeamVS before GameTeamTypeCheck rejects them
-        var headToHeadCheck = matchAutomationChecks
+        MatchHeadToHeadCheck? headToHeadCheck = matchAutomationChecks
             .OfType<MatchHeadToHeadCheck>()
             .FirstOrDefault();
 
@@ -45,7 +45,7 @@ public class MatchAutomationChecksProcessor(
         }
 
         // Run remaining match automation checks (excluding MatchHeadToHeadCheck which already ran)
-        var remainingChecks = matchAutomationChecks
+        IOrderedEnumerable<IAutomationCheck<Match>> remainingChecks = matchAutomationChecks
             .Where(ac => ac is not MatchHeadToHeadCheck)
             .OrderBy(ac => ac.Order);
 

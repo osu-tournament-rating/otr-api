@@ -75,7 +75,7 @@ public class GameStatsProcessorTests
         GameScore[] scores = [];
 
         // Act & Assert
-        var exception = Record.Exception(() => GameStatsProcessor.AssignScorePlacements(scores));
+        Exception? exception = Record.Exception(() => GameStatsProcessor.AssignScorePlacements(scores));
         Assert.Null(exception);
     }
 
@@ -87,7 +87,7 @@ public class GameStatsProcessorTests
         game.ProcessingStatus = GameProcessingStatus.NeedsStatCalculation;
         game.Scores = CreateTestScores(game);
 
-        var processor = CreateProcessor();
+        GameStatsProcessor processor = CreateProcessor();
 
         // Act
         await processor.ProcessAsync(game, default);
@@ -107,7 +107,7 @@ public class GameStatsProcessorTests
         game.ProcessingStatus = GameProcessingStatus.Done;
         game.Scores = CreateTestScores(game);
 
-        var processor = CreateProcessor();
+        GameStatsProcessor processor = CreateProcessor();
 
         // Act
         await processor.ProcessAsync(game, default);
@@ -128,7 +128,7 @@ public class GameStatsProcessorTests
         scores[0].VerificationStatus = VerificationStatus.Verified; // Only one verified score
         game.Scores = scores;
 
-        var processor = CreateProcessor();
+        GameStatsProcessor processor = CreateProcessor();
 
         // Act
         await processor.ProcessAsync(game, default);
@@ -146,7 +146,7 @@ public class GameStatsProcessorTests
         game.ProcessingStatus = GameProcessingStatus.NeedsStatCalculation;
         game.Scores = CreateTestScores(game, processingStatus: ScoreProcessingStatus.NeedsAutomationChecks);
 
-        var processor = CreateProcessor();
+        GameStatsProcessor processor = CreateProcessor();
 
         // Act
         await processor.ProcessAsync(game, default);
@@ -164,7 +164,7 @@ public class GameStatsProcessorTests
         game.ProcessingStatus = GameProcessingStatus.NeedsStatCalculation;
         game.Scores = [];
 
-        var processor = CreateProcessor();
+        GameStatsProcessor processor = CreateProcessor();
 
         // Act
         await processor.ProcessAsync(game, default);

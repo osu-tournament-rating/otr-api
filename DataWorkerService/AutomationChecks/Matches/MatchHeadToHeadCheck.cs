@@ -64,7 +64,7 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
             return false;
         }
 
-        var (redPlayerId, bluePlayerId) = DetermineTeamAssignments(entity, uniquePlayerIds);
+        (int redPlayerId, int bluePlayerId) = DetermineTeamAssignments(entity, uniquePlayerIds);
         ConvertGamesToTeamVs(headToHeadGames, redPlayerId, bluePlayerId);
 
         logger.LogInformation("Successfully converted HeadToHead games to TeamVs [Id: {Id}]", entity.Id);
@@ -143,7 +143,7 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
     {
         var allGames = entity.Games.OrderBy(g => g.StartTime).ToList();
         int halfwayGameIndex = allGames.Count / 2;
-        var halfwayGame = allGames[halfwayGameIndex];
+        Game halfwayGame = allGames[halfwayGameIndex];
 
         var halfwayGamePlayerIds = halfwayGame.Scores
             .Where(s => s.VerificationStatus != VerificationStatus.Rejected)
@@ -170,8 +170,8 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
             switch (scores.Count)
             {
                 case ExpectedPlayerCount:
-                    var redScore = scores.First(s => s.Player.Id == redPlayerId);
-                    var blueScore = scores.First(s => s.Player.Id == bluePlayerId);
+                    GameScore redScore = scores.First(s => s.Player.Id == redPlayerId);
+                    GameScore blueScore = scores.First(s => s.Player.Id == bluePlayerId);
                     redScore.Team = Team.Red;
                     blueScore.Team = Team.Blue;
                     break;

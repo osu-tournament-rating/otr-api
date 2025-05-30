@@ -53,7 +53,7 @@ public class PlayersService(
             player.OsuLastFetch
         );
 
-        var once = false;
+        bool once = false;
         foreach (Ruleset ruleset in Enum.GetValues<Ruleset>().Where(r => r.IsFetchable()))
         {
             UserExtended? result = await osuClient.GetUserAsync(player.OsuId, ruleset);

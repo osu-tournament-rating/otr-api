@@ -137,7 +137,7 @@ public class OsuApiDataParserService(
 
     public async Task ProcessBeatmapsAsync(IEnumerable<long> beatmapOsuIds)
     {
-        foreach (var beatmapOsuId in beatmapOsuIds)
+        foreach (long beatmapOsuId in beatmapOsuIds)
         {
             // Test cache
             if (_beatmapCache.ContainsKey(beatmapOsuId))
