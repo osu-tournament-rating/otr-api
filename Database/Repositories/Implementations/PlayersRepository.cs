@@ -12,10 +12,11 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
     public override async Task<ICollection<Player>> GetAsync(IEnumerable<int> ids) =>
         await _context.Players
             .Include(p => p.User)
+            .AsNoTracking()
             .Where(p => ids.Contains(p.Id)).ToListAsync();
 
     public async Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds) =>
-        await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
+        await _context.Players.AsNoTracking().Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
     public async Task<IEnumerable<Player>> GetAsync(bool eagerLoad)
     {

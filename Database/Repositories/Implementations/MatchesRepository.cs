@@ -89,7 +89,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
     }
 
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
-        await _context.Matches.Where(x => matchIds.Contains(x.OsuId)).ToListAsync();
+        await _context.Matches.AsNoTracking().Where(x => matchIds.Contains(x.OsuId)).ToListAsync();
 
     public async Task<Match?> GetFullAsync(int id, bool verified)
     {
@@ -163,6 +163,20 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         return match;
     }
 
+    public async Task LoadGamesWithScoresAsync(Match match)
+    {
+        await _context.Entry(match)
+            .Collection(m => m.Games)
+            .LoadAsync();
+
+        foreach (Game game in match.Games)
+        {
+            await _context.Entry(game)
+                .Collection(g => g.Scores)
+                .LoadAsync();
+        }
+    }
+
     public async Task<IEnumerable<Match>> GetPlayerMatchesAsync(
         long osuId,
         Ruleset ruleset,
@@ -170,6 +184,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         DateTime after
     ) =>
         await _context.Matches
+            .AsNoTracking()
             .WhereVerified()
             .WhereProcessingCompleted()
             .WherePlayerParticipated(osuId)
