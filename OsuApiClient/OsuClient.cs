@@ -420,7 +420,6 @@ public sealed class OsuClient(
     )
     {
         CheckDisposed();
-        await UpdateCredentialsAsync(cancellationToken);
 
         var queryParams = new Dictionary<string, string>
         {

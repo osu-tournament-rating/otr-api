@@ -200,6 +200,28 @@ public class PlayersService(
             rulesetData.EarliestGlobalRankDate = statUpdate.Timestamp;
 
             logger.LogDebug("Updated Player osu!track API data [Id: {Id} | Ruleset: {Ruleset}]", player.Id, r);
+
+            // For ManiaOther, copy the earliest rank data to Mania4k and Mania7k variants if they exist
+            // This is necessary because osu!Track only provides historical data for ManiaOther,
+            // but players can have current ratings for the specific mania variants
+            if (r == Ruleset.ManiaOther)
+            {
+                var maniaVariants = new[] { Ruleset.Mania4k, Ruleset.Mania7k };
+
+                foreach (Ruleset variant in maniaVariants)
+                {
+                    PlayerOsuRulesetData? variantData = player.RulesetData.FirstOrDefault(x => x.Ruleset == variant);
+
+                    if (variantData is not null && variantData.EarliestGlobalRank is null)
+                    {
+                        variantData.EarliestGlobalRank = statUpdate.Rank;
+                        variantData.EarliestGlobalRankDate = statUpdate.Timestamp;
+
+                        logger.LogDebug("Copied earliest rank data from ManiaOther to {Variant} [Id: {Id} | Rank: {Rank}]",
+                            variant, player.Id, statUpdate.Rank);
+                    }
+                }
+            }
         }
 
         player.OsuTrackLastFetch = DateTime.UtcNow;
