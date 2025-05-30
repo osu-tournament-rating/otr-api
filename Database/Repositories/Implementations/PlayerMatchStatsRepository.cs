@@ -119,8 +119,8 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         DateTime? dateMax = null
     )
     {
-        var matchesPlayed = await CountMatchesPlayedAsync(playerId, ruleset, dateMin, dateMax);
-        var matchesWon = await CountMatchesWonAsync(playerId, ruleset, dateMin, dateMax);
+        int matchesPlayed = await CountMatchesPlayedAsync(playerId, ruleset, dateMin, dateMax);
+        int matchesWon = await CountMatchesWonAsync(playerId, ruleset, dateMin, dateMax);
 
         if (matchesPlayed == 0)
         {

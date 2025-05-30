@@ -51,7 +51,7 @@ public class MeController(IUsersService usersService) : Controller
         [FromQuery] DateTime? dateMax = null
     )
     {
-        var playerId = await usersService.GetPlayerIdAsync(User.GetSubjectId());
+        int? playerId = await usersService.GetPlayerIdAsync(User.GetSubjectId());
         if (!playerId.HasValue)
         {
             return NotFound();

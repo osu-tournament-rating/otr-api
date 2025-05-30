@@ -330,15 +330,15 @@ builder.Services.AddSwaggerGen(options =>
     );
 
     // Generate custom descriptors for endpoints using their literal method names
-    var unknownMethodCount = 0;
+    int unknownMethodCount = 0;
     options.CustomOperationIds(description =>
     {
-        var controller = description.ActionDescriptor.RouteValues["controller"] ?? "undocumented";
+        string controller = description.ActionDescriptor.RouteValues["controller"] ?? "undocumented";
         string method;
 
         if (description.TryGetMethodInfo(out MethodInfo info))
         {
-            var methodName = info.Name.Replace("Async", string.Empty, StringComparison.OrdinalIgnoreCase);
+            string methodName = info.Name.Replace("Async", string.Empty, StringComparison.OrdinalIgnoreCase);
             method = char.ToLower(methodName[0]) + methodName[1..];
         }
         else
@@ -407,7 +407,7 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddSerilog(configuration =>
 {
-    var connString = builder
+    string connString = builder
         .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
             ConnectionStringsConfiguration.Position
         )
@@ -478,9 +478,9 @@ builder.Services.Configure<RequestLoggingOptions>(o =>
         diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
 
         string ident;
-        if (httpContext.User.TryGetSubjectId(out var id))
+        if (httpContext.User.TryGetSubjectId(out int? id))
         {
-            var subjectType = httpContext.User.GetSubjectType();
+            string subjectType = httpContext.User.GetSubjectType();
             subjectType = char.ToUpper(subjectType[0]) + subjectType[1..];
             ident = $"{subjectType} {id}";
         }
@@ -720,7 +720,7 @@ builder.Services.AddSingleton<ICacheHandler>(
 );
 
 // Redis lock factory (distributed resource access control)
-var useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistributedLocking ?? true;
+bool useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistributedLocking ?? true;
 
 if (useRedLock)
 {
@@ -865,7 +865,7 @@ if (args.Contains("--swagger-to-file"))
     swagger.SerializeAsV3(new OpenApiJsonWriter(stringWriter));
 
     // Write to base path
-    var path = $"{AppDomain.CurrentDomain.BaseDirectory}swagger.json";
+    string path = $"{AppDomain.CurrentDomain.BaseDirectory}swagger.json";
     File.WriteAllText(path, stringWriter.ToString());
 
     app.Logger.LogInformation("Swagger spec saved to: {Path}", path);

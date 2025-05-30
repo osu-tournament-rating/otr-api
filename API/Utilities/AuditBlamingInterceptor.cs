@@ -26,7 +26,7 @@ public class AuditBlamingInterceptor(IHttpContextAccessor httpContextAccessor) :
             return;
         }
 
-        if (!_httpContext.User.TryGetSubjectId(out var subjectId))
+        if (!_httpContext.User.TryGetSubjectId(out int? subjectId))
         {
             return;
         }

@@ -124,7 +124,7 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
 
     public void ResetAutomationStatuses(bool force)
     {
-        var gameUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
+        bool gameUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
                                    VerificationStatus != VerificationStatus.Verified);
 
         if (!gameUpdate)

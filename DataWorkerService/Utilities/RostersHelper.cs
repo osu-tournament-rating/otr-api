@@ -43,26 +43,43 @@ public static class RostersHelper
     /// Generates a <see cref="MatchRoster"/> for a given list of <see cref="Game"/>s
     /// </summary>
     /// <param name="games">List of <see cref="Game"/>s</param>
-    /// <exception cref="ArgumentException">
-    /// If any given <see cref="Game"/>s contains a null <see cref="Game.Rosters"/>
-    /// </exception>
     public static ICollection<MatchRoster> GenerateRosters(IEnumerable<Game> games)
     {
         var eGames = games.ToList();
 
-        if (eGames.Any(g => g.Rosters.Count == 0))
+        if (eGames.Count == 0)
         {
-            throw new ArgumentException(
-                $"The property {nameof(Game.Rosters)} must not be empty for any {nameof(Game)} in this collection",
-                nameof(games)
-            );
+            return [];
         }
 
         Dictionary<Team, int> pointsEarned = [];
+        var allGameRosters = new List<GameRoster>();
 
-        foreach (Game? game in eGames)
+        foreach (Game game in eGames)
         {
-            // Group the game by Team, then sum the value of all GameScores.
+            // Use existing rosters if available, otherwise generate from scores
+            ICollection<GameRoster> gameRosters;
+            if (game.Rosters.Count > 0)
+            {
+                gameRosters = game.Rosters;
+            }
+            else
+            {
+                // Generate rosters from verified scores without modifying the game entity
+                IEnumerable<GameScore> verifiedScores = game.Scores
+                    .Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done });
+                gameRosters = GenerateRosters(verifiedScores);
+            }
+
+            // Skip games with no rosters
+            if (gameRosters.Count == 0)
+            {
+                continue;
+            }
+
+            allGameRosters.AddRange(gameRosters);
+
+            // Determine the winning team for this game using verified scores
             var teamScores = game.Scores
                 .Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done })
                 .GroupBy(s => s.Team)
@@ -73,12 +90,11 @@ public static class RostersHelper
                 })
                 .ToList();
 
-            // Determine the winning team for this game.
             Team? winningTeam = teamScores
                 .OrderByDescending(ts => ts.TotalScore)
                 .FirstOrDefault()?.Team;
 
-            // If a winning team is found, increment their points.
+            // If a winning team is found, increment their points
             if (winningTeam != null)
             {
                 pointsEarned.TryAdd(winningTeam.Value, 0);
@@ -86,17 +102,16 @@ public static class RostersHelper
             }
         }
 
-        List<MatchRoster> rosters = [.. eGames
-            .SelectMany(g => g.Rosters)
-            .GroupBy(
-                gr => gr.Team,
-                (team, rosters) => new MatchRoster
-                {
-                    Team = team,
-                    Roster = [.. rosters.SelectMany(r => r.Roster).Distinct()],
-                    Score = pointsEarned.GetValueOrDefault(team, 0)
-                })];
+        // Build match rosters from all game rosters
+        List<MatchRoster> matchRosters = [.. allGameRosters
+            .GroupBy(gr => gr.Team)
+            .Select(group => new MatchRoster
+            {
+                Team = group.Key,
+                Roster = [.. group.SelectMany(r => r.Roster).Distinct()],
+                Score = pointsEarned.GetValueOrDefault(group.Key, 0)
+            })];
 
-        return rosters;
+        return matchRosters;
     }
 }

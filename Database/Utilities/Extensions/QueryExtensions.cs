@@ -57,7 +57,7 @@ public static class QueryExtensions
     {
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         username = username.Replace("_", @"\_");
-        var pattern = partialMatch
+        string pattern = partialMatch
             ? $"%{username}%"
             : username;
 

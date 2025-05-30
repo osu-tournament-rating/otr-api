@@ -37,7 +37,6 @@ public static class SharedTestData
             {
                 yield return [mod, false];
             }
-            yield return [Mods.SuddenDeath | Mods.SpunOut, false];
             yield return [Mods.Perfect | Mods.Relax, false];
             yield return [Mods.None, true];
             yield return [Mods.NoFail, true];

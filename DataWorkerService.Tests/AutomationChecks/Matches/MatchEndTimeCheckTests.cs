@@ -19,7 +19,7 @@ public class MatchEndTimeCheckTests : AutomationChecksTestBase<MatchEndTimeCheck
         Match match = SeededMatch.Generate(endTime: endTime, rejectionReason: MatchRejectionReason.None);
 
         // Act
-        var actualPass = AutomationCheck.Check(match);
+        bool actualPass = AutomationCheck.Check(match);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);
@@ -34,7 +34,7 @@ public class MatchEndTimeCheckTests : AutomationChecksTestBase<MatchEndTimeCheck
         match.EndTime = null;
 
         // Act
-        var actualPass = AutomationCheck.Check(match);
+        bool actualPass = AutomationCheck.Check(match);
 
         // Assert
         Assert.False(actualPass);

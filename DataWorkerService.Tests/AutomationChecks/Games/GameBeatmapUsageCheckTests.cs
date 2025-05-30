@@ -19,7 +19,7 @@ public class GameBeatmapUsageCheckTests : AutomationChecksTestBase<GameBeatmapUs
         game.Beatmap = new Beatmap { OsuId = beatmapOsuId };
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.False(actualPass);
@@ -38,7 +38,7 @@ public class GameBeatmapUsageCheckTests : AutomationChecksTestBase<GameBeatmapUs
         game.Beatmap = new Beatmap { Id = beatmapOsuId, OsuId = beatmapOsuId };
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.True(actualPass);
@@ -64,8 +64,8 @@ public class GameBeatmapUsageCheckTests : AutomationChecksTestBase<GameBeatmapUs
         Game relevantGame = tournament.Matches.SelectMany(m => m.Games).First(g => g.Beatmap!.OsuId == beatmapOsuId);
 
         // Act
-        var actualPass = AutomationCheck.Check(relevantGame);
-        var unique = tournament.Matches
+        bool actualPass = AutomationCheck.Check(relevantGame);
+        bool unique = tournament.Matches
             .SelectMany(m => m.Games)
             .Select(g => g.Beatmap)
             .Select(b => b!.OsuId)
@@ -87,7 +87,7 @@ public class GameBeatmapUsageCheckTests : AutomationChecksTestBase<GameBeatmapUs
     {
         Tournament tournament = SeededTournament.Generate(rejectionReason: TournamentRejectionReason.None);
 
-        for (var i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
         {
             Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None, tournament: tournament);
 

@@ -23,7 +23,7 @@ public class GameScoringTypeCheckTests : AutomationChecksTestBase<GameScoringTyp
             : GameRejectionReason.InvalidScoringType;
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);

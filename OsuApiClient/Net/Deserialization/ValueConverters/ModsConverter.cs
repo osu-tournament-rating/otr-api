@@ -15,7 +15,7 @@ public class ModsConverter : IValueConverter<IEnumerable<string>, Mods>
     {
         Mods outMods = Mods.None;
 
-        foreach (var stringMod in value)
+        foreach (string stringMod in value)
         {
             switch (stringMod)
             {

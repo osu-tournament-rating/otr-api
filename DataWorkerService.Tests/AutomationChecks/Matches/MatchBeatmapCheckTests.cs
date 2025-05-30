@@ -14,7 +14,7 @@ public class MatchBeatmapCheckTests : AutomationChecksTestBase<MatchBeatmapCheck
         const MatchWarningFlags expectedWarningFlags = MatchWarningFlags.UnexpectedBeatmapsFound;
         Match match = SeededMatch.Generate(warningFlags: MatchWarningFlags.None);
 
-        for (var i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
         {
             DateTime time = SeededDate.Placeholder.AddSeconds(i);
             Game game = i > 1
@@ -26,7 +26,7 @@ public class MatchBeatmapCheckTests : AutomationChecksTestBase<MatchBeatmapCheck
         }
 
         // Act
-        var actualPass = AutomationCheck.Check(match);
+        bool actualPass = AutomationCheck.Check(match);
 
         // Assert
         Assert.False(actualPass);
@@ -40,7 +40,7 @@ public class MatchBeatmapCheckTests : AutomationChecksTestBase<MatchBeatmapCheck
         const MatchWarningFlags expectedWarningFlags = MatchWarningFlags.None;
         Match match = SeededMatch.Generate(warningFlags: MatchWarningFlags.None);
 
-        for (var i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
         {
             DateTime time = SeededDate.Placeholder.AddSeconds(i);
             Game game = i < 2
@@ -52,7 +52,7 @@ public class MatchBeatmapCheckTests : AutomationChecksTestBase<MatchBeatmapCheck
         }
 
         // Act
-        var actualPass = AutomationCheck.Check(match);
+        bool actualPass = AutomationCheck.Check(match);
 
         // Assert
         Assert.True(actualPass);
@@ -66,7 +66,7 @@ public class MatchBeatmapCheckTests : AutomationChecksTestBase<MatchBeatmapCheck
         const MatchWarningFlags expectedWarningFlags = MatchWarningFlags.None;
         Match match = SeededMatch.Generate(warningFlags: MatchWarningFlags.None);
 
-        for (var i = 0; i < 5; i++)
+        for (int i = 0; i < 5; i++)
         {
             DateTime time = SeededDate.Placeholder.AddSeconds(i);
             Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None, startTime: time);
@@ -76,7 +76,7 @@ public class MatchBeatmapCheckTests : AutomationChecksTestBase<MatchBeatmapCheck
         }
 
         // Act
-        var actualPass = AutomationCheck.Check(match);
+        bool actualPass = AutomationCheck.Check(match);
 
         // Assert
         Assert.True(actualPass);

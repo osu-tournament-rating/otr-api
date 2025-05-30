@@ -27,9 +27,9 @@ public static class ScoreGradeUtils
         IScoreStatistics statistics
     )
     {
-        var totalHits = statistics.Count50 + statistics.Count100 + statistics.Count300 + statistics.CountMiss;
-        var percentage300 = (double)statistics.Count300 / totalHits * 100;
-        var percentage50 = (double)statistics.Count50 / totalHits * 100;
+        int totalHits = statistics.Count50 + statistics.Count100 + statistics.Count300 + statistics.CountMiss;
+        double percentage300 = (double)statistics.Count300 / totalHits * 100;
+        double percentage50 = (double)statistics.Count50 / totalHits * 100;
 
         return (accuracy, percentage300, percentage50, statistics.CountMiss) switch
         {
@@ -69,8 +69,8 @@ public static class ScoreGradeUtils
         IScoreStatistics statistics
     )
     {
-        var totalHits = statistics.Count50 + statistics.Count100 + statistics.Count300 + statistics.CountMiss;
-        var percentage300 = (double)statistics.Count300 / totalHits * 100;
+        int totalHits = statistics.Count50 + statistics.Count100 + statistics.Count300 + statistics.CountMiss;
+        double percentage300 = (double)statistics.Count300 / totalHits * 100;
 
         return (accuracy, percentage300, statistics.CountMiss) switch
         {

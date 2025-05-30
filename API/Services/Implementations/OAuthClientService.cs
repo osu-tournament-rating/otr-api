@@ -36,7 +36,7 @@ public class OAuthClientService(
 
     public async Task<OAuthClientCreatedDTO> CreateAsync(int userId, params string[] scopes)
     {
-        var secret = oAuthClientRepository.GenerateClientSecret();
+        string secret = oAuthClientRepository.GenerateClientSecret();
         var client = new OAuthClient
         {
             Scopes = scopes,
@@ -66,8 +66,8 @@ public class OAuthClientService(
             return null;
         }
 
-        var newSecret = oAuthClientRepository.GenerateClientSecret();
-        var hashedSecret = passwordHasher.HashPassword(client, newSecret);
+        string newSecret = oAuthClientRepository.GenerateClientSecret();
+        string hashedSecret = passwordHasher.HashPassword(client, newSecret);
 
         client.Secret = hashedSecret;
         await oAuthClientRepository.UpdateAsync(client);

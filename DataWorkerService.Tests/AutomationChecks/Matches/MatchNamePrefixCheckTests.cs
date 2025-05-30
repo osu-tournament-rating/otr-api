@@ -25,7 +25,7 @@ public class MatchNamePrefixCheckTests : AutomationChecksTestBase<MatchNamePrefi
         match.Tournament.Abbreviation = tournamentAbbreviation;
 
         // Act
-        var actualPass = AutomationCheck.Check(match);
+        bool actualPass = AutomationCheck.Check(match);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);

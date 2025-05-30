@@ -160,7 +160,7 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
 
     public void ResetAutomationStatuses(bool force)
     {
-        var scoreUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
+        bool scoreUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
                                     VerificationStatus != VerificationStatus.Verified);
 
         if (!scoreUpdate)

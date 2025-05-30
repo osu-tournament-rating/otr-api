@@ -35,8 +35,8 @@ public static class MatchCostCalculator
         {
             var scores = game.Scores.WhereValid().ToList();
 
-            var gameScoresAvg = scores.Average(s => s.Score);
-            var gameScoresStdev = scores.Select(s => (double)s.Score).StandardDeviation();
+            double gameScoresAvg = scores.Average(s => s.Score);
+            double gameScoresStdev = scores.Select(s => (double)s.Score).StandardDeviation();
 
             // Calculate z-scores
             foreach (GameScore score in scores)
@@ -46,7 +46,7 @@ public static class MatchCostCalculator
         }
 
         var normal = new Normal(0, 1);
-        var gamesCount = games.Count();
+        int gamesCount = games.Count();
 
         // Calculate match costs
         return zScores.Select(pair =>

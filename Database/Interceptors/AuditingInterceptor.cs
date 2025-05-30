@@ -132,7 +132,7 @@ public class AuditingInterceptor : ISaveChangesInterceptor
         }
 
         // Populate the audit's properties and attach it to the context for creation
-        var success = newAudit.GenerateAudit(entry);
+        bool success = newAudit.GenerateAudit(entry);
         if (success)
         {
             context.Attach(newAudit);

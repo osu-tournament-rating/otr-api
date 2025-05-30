@@ -36,7 +36,7 @@ public class RatingUtilsTests
         // Arrange
 
         // Act
-        var actualTier = RatingUtils.GetMajorTier(rating);
+        string actualTier = RatingUtils.GetMajorTier(rating);
 
         // Assert
         Assert.Equal(expectedTier, actualTier);
@@ -72,7 +72,7 @@ public class RatingUtilsTests
         // Arrange
 
         // Act
-        var actualSubTier = RatingUtils.GetSubTier(rating);
+        int? actualSubTier = RatingUtils.GetSubTier(rating);
 
         // Assert
         Assert.Equal(expectedSubTier, actualSubTier);
@@ -85,7 +85,7 @@ public class RatingUtilsTests
         const double aboveEliteGrandmaster = RatingConstants.RatingEliteGrandmaster + 1;
 
         // Act
-        var subTier = RatingUtils.GetSubTier(aboveEliteGrandmaster);
+        int? subTier = RatingUtils.GetSubTier(aboveEliteGrandmaster);
 
         // Arrange
         Assert.Null(subTier);
@@ -119,7 +119,7 @@ public class RatingUtilsTests
     public void GetNextSubTier_ReturnsCorrectNextSubTier(double rating, int? expectedSubTier)
     {
         // Act
-        var actualNextSubTier = RatingUtils.GetNextSubTier(rating);
+        int? actualNextSubTier = RatingUtils.GetNextSubTier(rating);
 
         // Assert
         Assert.Equal(expectedSubTier, actualNextSubTier);
@@ -132,7 +132,7 @@ public class RatingUtilsTests
         const double aboveEliteGrandmaster = RatingConstants.RatingEliteGrandmaster + 1;
 
         // Act
-        var nextTier = RatingUtils.GetNextMajorTier(aboveEliteGrandmaster);
+        string? nextTier = RatingUtils.GetNextMajorTier(aboveEliteGrandmaster);
 
         // Assert
         Assert.Null(nextTier);
@@ -166,10 +166,10 @@ public class RatingUtilsTests
     public void GetNextTierRating_ReturnsCorrectRating(double rating)
     {
         // Arrange
-        var belowRating = rating - 1;
+        double belowRating = rating - 1;
 
         // Act
-        var nextTierRating = RatingUtils.GetNextTierRating(belowRating);
+        double? nextTierRating = RatingUtils.GetNextTierRating(belowRating);
 
         // Assert
         Assert.Equal(rating, nextTierRating);
@@ -182,7 +182,7 @@ public class RatingUtilsTests
         const double aboveEliteGrandmaster = RatingConstants.RatingEliteGrandmaster + 1;
 
         // Act
-        var nextTierRating = RatingUtils.GetNextTierRating(aboveEliteGrandmaster);
+        double? nextTierRating = RatingUtils.GetNextTierRating(aboveEliteGrandmaster);
 
         // Assert
         Assert.Null(nextTierRating);
@@ -216,11 +216,11 @@ public class RatingUtilsTests
     public void GetNextTierRatingDelta_ReturnsCorrectDelta(double rating, double offset)
     {
         // Arrange
-        var ratingNextTier = RatingUtils.GetNextTierRating(rating);
-        var expectedDelta = ratingNextTier - rating - offset;
+        double? ratingNextTier = RatingUtils.GetNextTierRating(rating);
+        double? expectedDelta = ratingNextTier - rating - offset;
 
         // Act
-        var actualDelta = RatingUtils.GetNextTierRatingDelta(rating + offset);
+        double actualDelta = RatingUtils.GetNextTierRatingDelta(rating + offset);
 
         // Assert
         Assert.Equal(expectedDelta, actualDelta);
@@ -234,7 +234,7 @@ public class RatingUtilsTests
         const int expectedDelta = 0;
 
         // Act
-        var nextTierRatingDelta = RatingUtils.GetNextTierRatingDelta(ratingAboveEliteGrandmaster);
+        double nextTierRatingDelta = RatingUtils.GetNextTierRatingDelta(ratingAboveEliteGrandmaster);
 
         // Assert
         Assert.Equal(expectedDelta, nextTierRatingDelta);
@@ -269,10 +269,10 @@ public class RatingUtilsTests
     public void GetPreviousTierRating_ReturnsCorrectRating(double rating)
     {
         // Arrange
-        var aboveRating = rating + 1;
+        double aboveRating = rating + 1;
 
         // Act
-        var prevTierRating = RatingUtils.GetPreviousTierRating(aboveRating);
+        double prevTierRating = RatingUtils.GetPreviousTierRating(aboveRating);
 
         // Assert
         Assert.Equal(rating, prevTierRating);
@@ -290,11 +290,11 @@ public class RatingUtilsTests
     public void GetNextMajorTier_ReturnsCorrectTier(double rating)
     {
         // Arrange
-        var belowRating = rating - 1;
-        var expectedMajorTier = RatingUtils.GetMajorTier(rating);
+        double belowRating = rating - 1;
+        string expectedMajorTier = RatingUtils.GetMajorTier(rating);
 
         // Act
-        var nextMajorTier = RatingUtils.GetNextMajorTier(belowRating);
+        string? nextMajorTier = RatingUtils.GetNextMajorTier(belowRating);
 
         // Assert
         Assert.Equal(expectedMajorTier, nextMajorTier);
@@ -307,7 +307,7 @@ public class RatingUtilsTests
         const double ratingAboveEliteGrandmaster = RatingConstants.RatingEliteGrandmaster + 1;
 
         // Act
-        var nextMajorTier = RatingUtils.GetNextMajorTier(ratingAboveEliteGrandmaster);
+        string? nextMajorTier = RatingUtils.GetNextMajorTier(ratingAboveEliteGrandmaster);
 
         // Assert
         Assert.Null(nextMajorTier);
@@ -325,10 +325,10 @@ public class RatingUtilsTests
     public void GetNextMajorTierRating_ReturnsCorrectRating(double rating)
     {
         // Arrange
-        var belowRating = rating - 1;
+        double belowRating = rating - 1;
 
         // Act
-        var nextMajorTierRating = RatingUtils.GetNextMajorTierRating(belowRating);
+        double? nextMajorTierRating = RatingUtils.GetNextMajorTierRating(belowRating);
 
         // Assert
         Assert.Equal(rating, nextMajorTierRating);
@@ -341,7 +341,7 @@ public class RatingUtilsTests
         const double aboveEliteGrandmaster = RatingConstants.RatingEliteGrandmaster + 1;
 
         // Act
-        var nextMajorTier = RatingUtils.GetNextMajorTierRating(aboveEliteGrandmaster);
+        double? nextMajorTier = RatingUtils.GetNextMajorTierRating(aboveEliteGrandmaster);
 
         // Assert
         Assert.Null(nextMajorTier);
@@ -375,11 +375,11 @@ public class RatingUtilsTests
     public void GetNextMajorTierRatingDelta_ReturnsCorrectDelta(double rating, double offset)
     {
         // Arrange
-        var ratingNextMajorTier = RatingUtils.GetNextMajorTierRating(rating);
-        var expectedDelta = ratingNextMajorTier - rating - offset;
+        double? ratingNextMajorTier = RatingUtils.GetNextMajorTierRating(rating);
+        double? expectedDelta = ratingNextMajorTier - rating - offset;
 
         // Act
-        var actualDelta = RatingUtils.GetNextMajorTierRatingDelta(rating + offset);
+        double actualDelta = RatingUtils.GetNextMajorTierRatingDelta(rating + offset);
 
         // Assert
         Assert.Equal(expectedDelta, actualDelta);
@@ -393,7 +393,7 @@ public class RatingUtilsTests
         const int expectedDelta = 0;
 
         // Act
-        var nextTierRatingDelta = RatingUtils.GetNextTierRatingDelta(ratingAboveEliteGrandmaster);
+        double nextTierRatingDelta = RatingUtils.GetNextTierRatingDelta(ratingAboveEliteGrandmaster);
 
         // Assert
         Assert.Equal(expectedDelta, nextTierRatingDelta);
@@ -412,10 +412,10 @@ public class RatingUtilsTests
     public void GetMajorTierRating_ReturnsCorrectRating(double rating)
     {
         // Arrange
-        var aboveRating = rating + 1;
+        double aboveRating = rating + 1;
 
         // Act
-        var majorTierRating = RatingUtils.GetMajorTierRating(aboveRating);
+        double majorTierRating = RatingUtils.GetMajorTierRating(aboveRating);
 
         // Assert
         Assert.Equal(rating, majorTierRating);
@@ -449,11 +449,11 @@ public class RatingUtilsTests
     public void GetNextTierFillPercentage_ReturnsCorrectPercentage(double rating, double offset)
     {
         // Arrange
-        var nextTierRating = RatingUtils.GetNextTierRating(rating);
-        var expectedPercentage = offset / (nextTierRating - rating);
+        double? nextTierRating = RatingUtils.GetNextTierRating(rating);
+        double? expectedPercentage = offset / (nextTierRating - rating);
 
         // Act
-        var actualPercentage = RatingUtils.GetNextTierFillPercentage(rating + offset);
+        double? actualPercentage = RatingUtils.GetNextTierFillPercentage(rating + offset);
 
         // Assert
         Assert.Equal(expectedPercentage, actualPercentage);
@@ -466,7 +466,7 @@ public class RatingUtilsTests
         const double aboveEliteGrandmaster = RatingConstants.RatingEliteGrandmaster + 1;
 
         // Act
-        var percentage = RatingUtils.GetNextTierFillPercentage(aboveEliteGrandmaster);
+        double? percentage = RatingUtils.GetNextTierFillPercentage(aboveEliteGrandmaster);
 
         // Assert
         Assert.Null(percentage);
@@ -484,11 +484,11 @@ public class RatingUtilsTests
     public void GetNextMajorTierFillPercentage_ReturnsCorrectPercentage(double rating, double offset)
     {
         // Arrange
-        var nextMajorTierRating = RatingUtils.GetNextMajorTierRating(rating);
-        var expectedPercentage = offset / (nextMajorTierRating - rating);
+        double? nextMajorTierRating = RatingUtils.GetNextMajorTierRating(rating);
+        double? expectedPercentage = offset / (nextMajorTierRating - rating);
 
         // Act
-        var actualPercentage = RatingUtils.GetNextMajorTierFillPercentage(rating + offset);
+        double? actualPercentage = RatingUtils.GetNextMajorTierFillPercentage(rating + offset);
 
         // Assert
         Assert.Equal(expectedPercentage, actualPercentage);
@@ -501,7 +501,7 @@ public class RatingUtilsTests
         const double aboveEliteGrandmaster = RatingConstants.RatingEliteGrandmaster + 1;
 
         // Act
-        var aboveEliteGrandmasterPercentage = RatingUtils.GetNextMajorTierFillPercentage(aboveEliteGrandmaster);
+        double? aboveEliteGrandmasterPercentage = RatingUtils.GetNextMajorTierFillPercentage(aboveEliteGrandmaster);
 
         // Assert
         Assert.Null(aboveEliteGrandmasterPercentage);
@@ -523,7 +523,7 @@ public class RatingUtilsTests
         // Arrange
 
         // Act
-        var isProvisional = RatingUtils.IsProvisional(volatility, matchesPlayed, tournamentsPlayed);
+        bool isProvisional = RatingUtils.IsProvisional(volatility, matchesPlayed, tournamentsPlayed);
 
         // Assert
         Assert.True(isProvisional);
@@ -542,7 +542,7 @@ public class RatingUtilsTests
         // Arrange
 
         // Act
-        var isProvisional = RatingUtils.IsProvisional(volatility, matchesPlayed, tournamentsPlayed);
+        bool isProvisional = RatingUtils.IsProvisional(volatility, matchesPlayed, tournamentsPlayed);
 
         // Assert
         Assert.False(isProvisional);

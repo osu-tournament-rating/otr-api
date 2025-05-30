@@ -175,7 +175,7 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
             return Forbid();
         }
 
-        var success = await DynamicAdminNoteService.DeleteAsync(noteId);
+        bool success = await DynamicAdminNoteService.DeleteAsync(noteId);
 
         return success ? NoContent() : BadRequest();
     }

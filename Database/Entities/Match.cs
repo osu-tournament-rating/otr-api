@@ -119,7 +119,7 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
 
     public void ResetAutomationStatuses(bool force)
     {
-        var matchUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
+        bool matchUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
                                     VerificationStatus != VerificationStatus.Verified);
 
         if (!matchUpdate)

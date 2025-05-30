@@ -50,7 +50,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
             query = query.Include(p => p.User).ThenInclude(u => u!.Settings);
         }
 
-        if (!int.TryParse(key, out var value))
+        if (!int.TryParse(key, out int value))
         {
             return await query.WhereUsername(key, false).FirstOrDefaultAsync();
         }
@@ -64,7 +64,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
         }
 
         // Check for the osu id
-        if (long.TryParse(key, out var longValue))
+        if (long.TryParse(key, out long longValue))
         {
             return await query.FirstOrDefaultAsync(p => p.OsuId == longValue);
         }

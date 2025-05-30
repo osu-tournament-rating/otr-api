@@ -16,7 +16,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.False(actualPass);
@@ -30,18 +30,18 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         // Arrange
         Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);
 
-        foreach (var _ in Enumerable.Range(0, 2))
+        foreach (int _ in Enumerable.Range(0, 2))
         {
             SeededScore.Generate(verificationStatus: VerificationStatus.Rejected, game: game);
         }
 
-        foreach (var _ in Enumerable.Range(0, 2))
+        foreach (int _ in Enumerable.Range(0, 2))
         {
             SeededScore.Generate(verificationStatus: VerificationStatus.PreRejected, game: game);
         }
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.False(actualPass);
@@ -57,12 +57,12 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         // Arrange
         Game game = SeededGame.Generate(rejectionReason: GameRejectionReason.None);
 
-        foreach (var _ in Enumerable.Range(1, 3))
+        foreach (int _ in Enumerable.Range(1, 3))
         {
             SeededScore.Generate(verificationStatus: VerificationStatus.PreVerified, game: game);
         }
 
-        foreach (var _ in Enumerable.Range(1, 3))
+        foreach (int _ in Enumerable.Range(1, 3))
         {
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, game: game);
         }
@@ -87,7 +87,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         game.Match.Tournament.LobbySize = 4;
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.False(actualPass);
@@ -109,7 +109,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         game.Match.Tournament.LobbySize = 2;
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.False(actualPass);
@@ -129,7 +129,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         game.Match.Tournament.LobbySize = 1;
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.False(actualPass);
@@ -160,7 +160,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
 
         if (verifiedScores >= 1)
         {
-            foreach (var _ in Enumerable.Range(1, verifiedScores))
+            foreach (int _ in Enumerable.Range(1, verifiedScores))
             {
                 SeededScore.Generate(verificationStatus: VerificationStatus.Verified, game: game);
             }
@@ -168,13 +168,13 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
 
         if (rejectedScores >= 1)
         {
-            foreach (var _ in Enumerable.Range(1, rejectedScores))
+            foreach (int _ in Enumerable.Range(1, rejectedScores))
             {
                 SeededScore.Generate(verificationStatus: VerificationStatus.Rejected, game: game);
             }
         }
 
-        foreach ((GameScore score, var i) in game.Scores.Select((score, i) => (score, i)))
+        foreach ((GameScore score, int i) in game.Scores.Select((score, i) => (score, i)))
         {
             score.Team = i % 2 == 0
                 ? Team.Red
@@ -184,7 +184,7 @@ public class GameScoreCountCheckTests : AutomationChecksTestBase<GameScoreCountC
         game.Match.Tournament.LobbySize = tournamentTeamSize;
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);

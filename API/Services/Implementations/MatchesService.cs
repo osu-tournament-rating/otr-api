@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
 using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 
@@ -72,13 +73,34 @@ public class MatchesService(
 
     public async Task<MatchDTO?> UpdateAsync(int id, MatchDTO match)
     {
-        Match? existing = await matchesRepository.GetAsync(id);
+        Match? existing = await matchesRepository.GetFullAsync(id, false);
         if (existing is null)
         {
             return null;
         }
 
+        // Store original verification status to detect changes
+        VerificationStatus originalVerificationStatus = existing.VerificationStatus;
+
         mapper.Map(match, existing);
+
+        // Check if verification status changed to Rejected and apply cascading logic
+        if (originalVerificationStatus != VerificationStatus.Rejected &&
+            existing.VerificationStatus == VerificationStatus.Rejected)
+        {
+            // Apply cascading rejection to all child games and their scores
+            foreach (Game game in existing.Games)
+            {
+                game.VerificationStatus = VerificationStatus.Rejected;
+                game.RejectionReason |= GameRejectionReason.RejectedMatch;
+
+                foreach (GameScore score in game.Scores)
+                {
+                    score.VerificationStatus = VerificationStatus.Rejected;
+                    score.RejectionReason |= ScoreRejectionReason.RejectedGame;
+                }
+            }
+        }
 
         await matchesRepository.UpdateAsync(existing);
         return mapper.Map<MatchDTO>(existing);

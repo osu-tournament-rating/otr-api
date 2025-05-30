@@ -12,7 +12,7 @@ public static class EnumExtensions
     public static string GetDescription(this Enum value)
     {
         Type type = value.GetType();
-        var name = type.GetEnumName(value);
+        string? name = type.GetEnumName(value);
 
         if (string.IsNullOrEmpty(name))
         {
