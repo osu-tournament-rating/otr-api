@@ -12,10 +12,11 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
     public override async Task<ICollection<Player>> GetAsync(IEnumerable<int> ids) =>
         await _context.Players
             .Include(p => p.User)
+            .AsNoTracking()
             .Where(p => ids.Contains(p.Id)).ToListAsync();
 
     public async Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds) =>
-        await _context.Players.Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
+        await _context.Players.AsNoTracking().Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
 
     public async Task<IEnumerable<Player>> GetAsync(bool eagerLoad)
     {
@@ -121,7 +122,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
             .Include(p => p.User)
             .ThenInclude(u => u!.Settings)
             .Where(p => DateTime.UtcNow - p.OsuLastFetch > outdatedAfter)
-            .OrderBy(p => p.Id)
+            .OrderBy(p => p.OsuLastFetch)
             .Take(limit)
             .ToListAsync();
 
@@ -139,7 +140,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
             .Include(p => p.MatchStats)
             .ThenInclude(pms => pms.Match)
             .Where(p => DateTime.UtcNow - p.OsuTrackLastFetch > outdatedAfter)
-            .OrderBy(p => p.Id)
+            .OrderBy(p => p.OsuTrackLastFetch)
             .Take(limit)
             .ToListAsync();
 }

@@ -77,5 +77,11 @@ public interface IMatchesRepository : IRepository<Match>
         int? verifierId = null
     );
 
+    /// <summary>
+    /// Loads Games with their Scores for an existing tracked Match entity
+    /// </summary>
+    /// <param name="match">The tracked Match entity to load Games for</param>
+    Task LoadGamesWithScoresAsync(Match match);
+
     Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, Ruleset ruleset, DateTime before, DateTime after);
 }
