@@ -19,6 +19,8 @@ namespace Database.Entities;
 public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<MatchAdminNote>,
     IAuditableEntity<MatchAudit>
 {
+    private string _name = string.Empty;
+
     /// <summary>
     /// osu! id
     /// </summary>
@@ -30,7 +32,11 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// </summary>
     /// <example>5WC2024: (France) vs (Germany)</example>
     [MaxLength(512)]
-    public string Name { get; set; } = string.Empty;
+    public string Name
+    {
+        get => string.IsNullOrEmpty(_name) ? $"Match {Id}" : _name;
+        set => _name = value;
+    }
 
     /// <summary>
     /// Timestamp for the beginning of the match
