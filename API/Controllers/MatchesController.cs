@@ -124,4 +124,26 @@ public class MatchesController(IMatchesService matchesService) : Controller
         await matchesService.DeleteAsync(id);
         return NoContent();
     }
+
+    /// <summary>
+    /// Delete all scores belonging to a player for a given match
+    /// </summary>
+    /// <param name="id">Match id</param>
+    /// <param name="playerId">Player id</param>
+    /// <response code="404">A match matching the given id does not exist</response>
+    /// <response code="200">Returns the number of scores deleted</response>
+    [HttpDelete("{id:int}/player/{playerId:int}")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<int>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> DeletePlayerScoresAsync(int id, int playerId)
+    {
+        if (!await matchesService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        int deletedCount = await matchesService.DeletePlayerScoresAsync(id, playerId);
+        return Ok(deletedCount);
+    }
 }

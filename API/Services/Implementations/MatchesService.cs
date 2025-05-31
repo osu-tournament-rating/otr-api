@@ -11,6 +11,7 @@ namespace API.Services.Implementations;
 public class MatchesService(
     IMatchesRepository matchesRepository,
     IPlayersRepository playersRepository,
+    IGameScoresRepository gameScoresRepository,
     IMapper mapper
 ) : IMatchesService
 {
@@ -99,6 +100,16 @@ public class MatchesService(
 
     public async Task DeleteAsync(int id) =>
         await matchesRepository.DeleteAsync(id);
+
+    public async Task<int> DeletePlayerScoresAsync(int matchId, int playerId)
+    {
+        if (!await matchesRepository.ExistsAsync(matchId))
+        {
+            return 0;
+        }
+
+        return await gameScoresRepository.DeleteByMatchAndPlayerAsync(matchId, playerId);
+    }
 
     private async Task<ICollection<PlayerCompactDTO>> GetPlayerCompactsAsync(MatchDTO match)
     {
