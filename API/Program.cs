@@ -430,11 +430,7 @@ builder.Services.AddSerilog(configuration =>
         )
         .DefaultConnection;
 
-#if DEBUG
-    configuration.MinimumLevel.Debug();
-#else
-    configuration.MinimumLevel.Information();
-#endif
+    configuration.MinimumLevel.Verbose();
 
     configuration
         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -444,13 +440,12 @@ builder.Services.AddSerilog(configuration =>
         )
         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
         .MinimumLevel.Override("API", LogEventLevel.Debug)
-        .MinimumLevel.Override("OsuApiClient", LogEventLevel.Information)
+        .MinimumLevel.Override("OsuApiClient", LogEventLevel.Debug)
         .MinimumLevel.Override("System", LogEventLevel.Warning)
         .Enrich.FromLogContext()
         .Enrich.WithSpan()
         .WriteTo.Logger(lc => lc
-            .MinimumLevel.Debug()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Verbose()
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
             .Filter.ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
@@ -460,17 +455,11 @@ builder.Services.AddSerilog(configuration =>
                     new() { Key = "app", Value = serviceName },
                     new() { Key = "environment", Value = builder.Environment.EnvironmentName }
                 },
-                ["app", "environment"],
-                restrictedToMinimumLevel: LogEventLevel.Debug))
+                ["app", "environment"]))
         .WriteTo.Logger(lc => lc
             .Filter
             .ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
             .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [trace_id: {TraceId} span_id: {SpanId}] {Message:lj}{NewLine}"))
-        .WriteTo.File(
-            Path.Join("logs", "log.log"),
-            rollingInterval: RollingInterval.Day,
-            restrictedToMinimumLevel: LogEventLevel.Information
-        )
         .WriteTo.PostgreSQL(
             connString,
             "Logs",
