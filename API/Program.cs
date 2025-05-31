@@ -209,9 +209,8 @@ builder.Services.AddRateLimiter(options =>
     options.OnRejected = async (context, token) =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-        const string readMore =
-            // TODO: Link to the API Terms of Service Document
-            "Currently, detailed information about API rate limits is unavailable.";
+        const string readMore = "https://docs.otr.stagec.xyz/About/Terms-of-Use";
+
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
         {
             await context.HttpContext.Response.WriteAsync(
