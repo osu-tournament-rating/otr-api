@@ -216,4 +216,10 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// </summary>
     /// <param name="verified">Filters results for only verified tournaments</param>
     Task<Dictionary<int, int>> GetLobbySizeStatsAsync(bool verified = true);
+
+    /// <summary>
+    /// Loads the matches, games, and scores for a tournament to enable cascading operations
+    /// </summary>
+    /// <param name="tournament">The tournament to load children for</param>
+    Task LoadMatchesWithGamesAndScoresAsync(Tournament tournament);
 }

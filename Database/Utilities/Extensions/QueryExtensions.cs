@@ -14,6 +14,7 @@ public static class QueryExtensions
 
     public static IQueryable<Beatmap> IncludeChildren(this IQueryable<Beatmap> query) =>
         query
+            .AsSplitQuery()
             .Include(b => b.Beatmapset)
             .Include(b => b.Creators)
             .Include(b => b.Attributes);
@@ -254,6 +255,8 @@ public static class QueryExtensions
     /// <param name="verified">Whether all navigations must be verified</param>
     public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query, bool verified)
     {
+        query = query.AsSplitQuery();
+
         if (verified)
         {
             query = query.Include(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified &&
@@ -392,6 +395,8 @@ public static class QueryExtensions
     /// <param name="verified">Whether all navigations must be verified</param>
     public static IQueryable<Game> IncludeChildren(this IQueryable<Game> query, bool verified)
     {
+        query = query.AsSplitQuery();
+
         if (verified)
         {
             query = query.Include(g => g.Scores.Where(s => s.VerificationStatus == VerificationStatus.Verified &&

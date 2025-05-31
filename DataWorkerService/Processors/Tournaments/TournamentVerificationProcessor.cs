@@ -57,26 +57,11 @@ public class TournamentVerificationProcessor(
                 break;
             case VerificationStatus.Rejected:
                 entity.ProcessingStatus = TournamentProcessingStatus.Done;
-                RejectAllChildren(entity);
+                entity.RejectAllChildren();
                 break;
             case VerificationStatus.Verified:
                 entity.ProcessingStatus = TournamentProcessingStatus.NeedsStatCalculation;
                 break;
-        }
-    }
-
-    /// <summary>
-    /// Rejects all child entities in a <see cref="Tournament"/>
-    /// </summary>
-    public static void RejectAllChildren(Tournament tournament)
-    {
-        foreach (Match match in tournament.Matches)
-        {
-            match.VerificationStatus = VerificationStatus.Rejected;
-            match.RejectionReason |= MatchRejectionReason.RejectedTournament;
-            match.ProcessingStatus = MatchProcessingStatus.Done;
-
-            MatchVerificationProcessor.RejectAllChildren(match);
         }
     }
 }

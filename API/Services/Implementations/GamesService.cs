@@ -24,27 +24,18 @@ public class GamesService(IGamesRepository gamesRepository, IPlayersRepository p
 
     public async Task<GameDTO?> UpdateAsync(int id, GameDTO game)
     {
-        Game? existing = await gamesRepository.GetAsync(id, false);
+        Game? existing = await gamesRepository.GetAsync(id);
         if (existing is null)
         {
             return null;
         }
 
-        // Store original verification status to detect changes
-        VerificationStatus originalVerificationStatus = existing.VerificationStatus;
-
         mapper.Map(game, existing);
 
-        // Check if verification status changed to Rejected and apply cascading logic
-        if (originalVerificationStatus != VerificationStatus.Rejected &&
-            existing.VerificationStatus == VerificationStatus.Rejected)
+        if (game.VerificationStatus == VerificationStatus.Rejected)
         {
-            // Apply cascading rejection to all child scores
-            foreach (GameScore score in existing.Scores)
-            {
-                score.VerificationStatus = VerificationStatus.Rejected;
-                score.RejectionReason |= ScoreRejectionReason.RejectedGame;
-            }
+            await gamesRepository.LoadScoresAsync(existing);
+            existing.RejectAllChildren();
         }
 
         await gamesRepository.UpdateAsync(existing);
