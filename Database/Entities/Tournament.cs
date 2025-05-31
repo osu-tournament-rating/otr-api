@@ -18,11 +18,17 @@ namespace Database.Entities;
 public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>,
     IAuditableEntity<TournamentAudit>
 {
+    private string _name = string.Empty;
+
     /// <summary>
     /// Name
     /// </summary>
     [MaxLength(512)]
-    public string Name { get; set; } = null!;
+    public string Name
+    {
+        get => string.IsNullOrEmpty(_name) ? $"Tournament {Id}" : _name;
+        set => _name = value;
+    }
 
     /// <summary>
     /// Abbreviation
