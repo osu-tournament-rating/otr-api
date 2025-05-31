@@ -16,4 +16,9 @@ public class AuthConfiguration
     /// If the global whitelist should be enforced
     /// </summary>
     public bool EnforceWhitelist { get; init; }
+
+    /// <summary>
+    /// If Data Protection keys should be persisted to Redis
+    /// </summary>
+    public bool PersistDataProtectionKeys { get; init; } = true;
 }

@@ -644,10 +644,56 @@ ConnectionStringsConfiguration connectionStrings = builder.Configuration.BindAnd
     ConnectionStringsConfiguration.Position
 );
 
-builder.Services.AddDataProtection()
-    .PersistKeysToStackExchangeRedis(ConnectionMultiplexer.Connect(connectionStrings.RedisConnection), "otr-api:data-protection-keys")
-    .SetApplicationName("otr-api")
-    .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
+AuthConfiguration authConfiguration = builder.Configuration.BindAndValidate<AuthConfiguration>(
+    AuthConfiguration.Position
+);
+
+// Create a shared Redis connection multiplexer for Data Protection
+ConnectionMultiplexer? redisConnection = null;
+if (authConfiguration.PersistDataProtectionKeys)
+{
+    try
+    {
+        var configurationOptions = ConfigurationOptions.Parse(connectionStrings.RedisConnection);
+        configurationOptions.AbortOnConnectFail = false;
+        configurationOptions.ConnectRetry = 3;
+        configurationOptions.ConnectTimeout = 5000;
+        configurationOptions.SyncTimeout = 5000;
+
+        redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
+
+        // Test the connection
+        var database = redisConnection.GetDatabase();
+        database.Ping();
+
+        builder.Services.AddDataProtection()
+            .PersistKeysToStackExchangeRedis(redisConnection, "otr-api:data-protection-keys")
+            .SetApplicationName("otr-api")
+            .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
+
+        builder.Services.AddSingleton(redisConnection);
+
+        Log.Information("Data Protection keys will be persisted to Redis at {RedisConnection}", connectionStrings.RedisConnection);
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Failed to connect to Redis for Data Protection. Keys will be stored in-memory and cookies will be invalidated on restart");
+
+        // Fallback to in-memory key storage with a warning
+        builder.Services.AddDataProtection()
+            .SetApplicationName("otr-api")
+            .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
+    }
+}
+else
+{
+    Log.Information("Data Protection key persistence to Redis is disabled. Keys will be stored in-memory and cookies will be invalidated on restart");
+
+    // Use in-memory key storage when Redis persistence is disabled
+    builder.Services.AddDataProtection()
+        .SetApplicationName("otr-api")
+        .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
+}
 
 #endregion
 
@@ -708,28 +754,65 @@ builder.Services.AddDbContext<OtrContext>((services, sqlOptions) =>
         .UseSnakeCaseNamingConvention();
 });
 
-// The Redis cache is registered as a singleton because it is meant to be re-used across instances
-builder.Services.AddSingleton<ICacheHandler>(
-    new CacheHandler(
+builder.Services.AddSingleton<ICacheHandler>(serviceProvider =>
+{
+    var sharedRedisConnection = serviceProvider.GetService<IConnectionMultiplexer>();
+    if (sharedRedisConnection != null)
+    {
+        return new CacheHandler(sharedRedisConnection);
+    }
+
+    Log.Warning("Failed to create Redis cache handler with shared connection, falling back to new connection");
+
+    // Fallback to creating a new connection if the shared one is not available
+    return new CacheHandler(
         builder
             .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
                 ConnectionStringsConfiguration.Position
             )
             .RedisConnection
-    )
-);
+    );
+});
 
 // Redis lock factory (distributed resource access control)
 bool useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistributedLocking ?? true;
 
 if (useRedLock)
 {
-    var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+    builder.Services.AddSingleton<RedLockFactory>(serviceProvider =>
     {
-        new(ConnectionMultiplexer.Connect(builder.Configuration
-            .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
+        var sharedRedisConnection = serviceProvider.GetService<IConnectionMultiplexer>();
+        if (sharedRedisConnection != null)
+        {
+            return RedLockFactory.Create(new List<RedLockMultiplexer>
+            {
+                new(sharedRedisConnection)
+            });
+        }
+
+        // Fallback to creating a new connection if the shared one is not available
+        try
+        {
+            var configurationOptions = ConfigurationOptions.Parse(
+                builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+                    ConnectionStringsConfiguration.Position).RedisConnection);
+            configurationOptions.AbortOnConnectFail = false;
+            configurationOptions.ConnectRetry = 3;
+            configurationOptions.ConnectTimeout = 5000;
+            configurationOptions.SyncTimeout = 5000;
+
+            var redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
+            return RedLockFactory.Create(new List<RedLockMultiplexer>
+            {
+                new(redisConnection)
+            });
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to create RedLock factory with Redis connection");
+            throw;
+        }
     });
-    builder.Services.AddSingleton(redLockFactory);
 }
 
 
