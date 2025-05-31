@@ -27,17 +27,21 @@ using Database;
 using Database.Entities;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
@@ -70,6 +74,18 @@ using User = Database.Entities.User;
 #region WebApplicationBuilder Configuration
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+// Configure static logger early for startup logging
+Log.Logger = new LoggerConfiguration()
+#if DEBUG
+    .MinimumLevel.Debug()
+#else
+    .MinimumLevel.Information()
+#endif
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}")
+    .CreateLogger();
 
 #endregion
 
@@ -425,12 +441,25 @@ builder.Services.AddSerilog(configuration =>
             LogEventLevel.Warning
         )
         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
+        .MinimumLevel.Override("API", LogEventLevel.Debug)
+        .MinimumLevel.Override("OsuApiClient", LogEventLevel.Information)
+        .MinimumLevel.Override("System", LogEventLevel.Warning)
         .Enrich.FromLogContext()
         .Enrich.WithSpan()
-        .WriteTo.GrafanaLoki(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).LokiConnection, new List<LokiLabel>
-        {
-            new() { Key = "app", Value = serviceName }
-        }, ["app"])
+        .WriteTo.Logger(lc => lc
+            .MinimumLevel.Debug()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
+            .Filter.ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
+            .WriteTo.GrafanaLoki(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).LokiConnection,
+                new List<LokiLabel>
+                {
+                    new() { Key = "app", Value = serviceName },
+                    new() { Key = "environment", Value = builder.Environment.EnvironmentName }
+                },
+                ["app", "environment"],
+                restrictedToMinimumLevel: LogEventLevel.Debug))
         .WriteTo.Logger(lc => lc
             .Filter
             .ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
@@ -527,9 +556,18 @@ builder.Services
     .AddPolicyScheme("CompositeAuthentication", "CompositeAuthentication", options =>
     {
         // Use cookie-based authentication if possible and fallback to JWT Bearer
-        options.ForwardDefaultSelector = context => context.Request.Cookies.ContainsKey("otr-session")
-            ? CookieAuthenticationDefaults.AuthenticationScheme
-            : JwtBearerDefaults.AuthenticationScheme;
+        options.ForwardDefaultSelector = context =>
+        {
+            bool hasCookie = context.Request.Cookies.ContainsKey("otr-session");
+            string selectedScheme = hasCookie
+                ? CookieAuthenticationDefaults.AuthenticationScheme
+                : JwtBearerDefaults.AuthenticationScheme;
+
+            Log.Debug("Authentication scheme selection - HasCookie: {HasCookie}, SelectedScheme: {SelectedScheme}, Path: {Path}",
+                hasCookie, selectedScheme, context.Request.Path);
+
+            return selectedScheme;
+        };
     })
     .AddJwtBearer(options =>
     {
@@ -551,20 +589,65 @@ builder.Services
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.IsEssential = true;
-
-        options.ExpireTimeSpan = TimeSpan.FromDays(14);
+        options.Cookie.Domain = builder.Configuration.Get<AuthConfiguration>()?.AllowedHosts.FirstOrDefault();
+        options.Cookie.MaxAge = builder.Configuration.Get<AuthConfiguration>()?.CookieExpiration ?? TimeSpan.FromDays(30);
+        options.ExpireTimeSpan = builder.Configuration.Get<AuthConfiguration>()?.CookieExpiration ?? TimeSpan.FromDays(30);
         options.SlidingExpiration = true;
+
+        Log.Information("Cookie authentication configured - Domain: {Domain}, Expiration: {Expiration}, SecurePolicy: {SecurePolicy}",
+            options.Cookie.Domain, options.ExpireTimeSpan, options.Cookie.SecurePolicy);
 
         // By default, cookie-based authentication will try to redirect to a "login" endpoint
         options.Events = new CookieAuthenticationEvents
         {
+            OnValidatePrincipal = async context =>
+            {
+                string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
+                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                authLogger.Debug("Validating cookie for user: {UserId}, IsAuthenticated: {IsAuthenticated}",
+                    userId ?? "Unknown", context.Principal?.Identity?.IsAuthenticated);
+
+                if (context.Principal?.Identity?.IsAuthenticated != true)
+                {
+                    authLogger.Warning("Cookie validation failed - user not authenticated. UserId: {UserId}", userId ?? "Unknown");
+                    context.RejectPrincipal();
+                    await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                }
+                else
+                {
+                    authLogger.Debug("Cookie validation successful for user: {UserId}", userId);
+                }
+            },
+            OnSigningIn = context =>
+            {
+                string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
+                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                authLogger.Information("User signing in with cookie authentication. UserId: {UserId}", userId ?? "Unknown");
+                return Task.CompletedTask;
+            },
+            OnSignedIn = context =>
+            {
+                string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
+                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                authLogger.Information("User successfully signed in with cookie. UserId: {UserId}", userId ?? "Unknown");
+                return Task.CompletedTask;
+            },
+            OnSigningOut = context =>
+            {
+                string? userId = context.HttpContext.User?.FindFirst(OtrClaims.Subject)?.Value;
+                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                authLogger.Information("User signing out. UserId: {UserId}", userId ?? "Unknown");
+                return Task.CompletedTask;
+            },
             OnRedirectToLogin = context =>
             {
+                Log.Debug("Cookie authentication redirecting to login - returning 401 instead");
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return Task.CompletedTask;
             },
             OnRedirectToAccessDenied = context =>
             {
+                Log.Debug("Cookie authentication access denied - returning 403");
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return Task.CompletedTask;
             }
@@ -647,10 +730,15 @@ AuthConfiguration authConfiguration = builder.Configuration.BindAndValidate<Auth
     AuthConfiguration.Position
 );
 
+Log.Information("Starting Data Protection configuration. PersistDataProtectionKeys: {PersistKeys}", authConfiguration.PersistDataProtectionKeys);
+
 // Create a shared Redis connection multiplexer for Data Protection
 ConnectionMultiplexer? redisConnection = null;
 if (authConfiguration.PersistDataProtectionKeys)
 {
+    var redisLogger = Log.ForContext("SourceContext", "DataProtection.Redis");
+    redisLogger.Information("Attempting to connect to Redis at: {RedisConnection}", connectionStrings.RedisConnection);
+
     try
     {
         var configurationOptions = ConfigurationOptions.Parse(connectionStrings.RedisConnection);
@@ -659,29 +747,52 @@ if (authConfiguration.PersistDataProtectionKeys)
         configurationOptions.ConnectTimeout = 5000;
         configurationOptions.SyncTimeout = 5000;
 
+        redisLogger.Debug("Redis connection options: ConnectRetry={ConnectRetry}, ConnectTimeout={ConnectTimeout}, SyncTimeout={SyncTimeout}",
+            configurationOptions.ConnectRetry, configurationOptions.ConnectTimeout, configurationOptions.SyncTimeout);
+
         redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
 
         // Test the connection
         var database = redisConnection.GetDatabase();
         database.Ping();
 
+        redisLogger.Information("Successfully connected to Redis for Data Protection");
+
         builder.Services.AddDataProtection()
             .PersistKeysToStackExchangeRedis(redisConnection, "otr-api:data-protection-keys")
             .SetApplicationName("otr-api")
             .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
 
-        builder.Services.AddSingleton(redisConnection);
+        // Add connection event handlers for monitoring
+        redisConnection.ConnectionFailed += (sender, args) =>
+        {
+            redisLogger.Error("Redis connection failed: {EndPoint} - {FailureType}", args.EndPoint, args.FailureType);
+        };
 
-        Log.Information("Data Protection keys will be persisted to Redis at {RedisConnection}", connectionStrings.RedisConnection);
+        redisConnection.ConnectionRestored += (sender, args) =>
+        {
+            redisLogger.Information("Redis connection restored: {EndPoint}", args.EndPoint);
+        };
+
+        redisConnection.ErrorMessage += (sender, args) =>
+        {
+            redisLogger.Error("Redis error: {Message}", args.Message);
+        };
+
+        builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);
+
+        redisLogger.Information("Data Protection keys will be persisted to Redis at {RedisConnection}", connectionStrings.RedisConnection);
     }
     catch (Exception ex)
     {
-        Log.Warning(ex, "Failed to connect to Redis for Data Protection. Keys will be stored in-memory and cookies will be invalidated on restart");
+        redisLogger.Error(ex, "Failed to connect to Redis for Data Protection. This WILL cause cookie invalidation on restart!");
 
         // Fallback to in-memory key storage with a warning
         builder.Services.AddDataProtection()
             .SetApplicationName("otr-api")
             .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
+
+        redisLogger.Warning("Using in-memory Data Protection keys - cookies will be invalidated on application restart");
     }
 }
 else
@@ -870,6 +981,66 @@ builder.Services.AddOsuApiClient(builder.Configuration.BindAndValidate<OsuConfig
 
 #endregion
 
+#region Health Checks
+
+builder.Services.AddHealthChecks()
+    .AddCheck("redis", _ =>
+    {
+        try
+        {
+            var serviceProvider = builder.Services.BuildServiceProvider();
+            var redis = serviceProvider.GetService<IConnectionMultiplexer>();
+            if (redis == null)
+            {
+                Log.Warning("Redis health check: No Redis connection available");
+                return HealthCheckResult.Degraded("No Redis connection configured");
+            }
+
+            var database = redis.GetDatabase();
+            var pong = database.Ping();
+
+            Log.Debug("Redis health check: Ping successful - {PingTime}ms", pong.TotalMilliseconds);
+            return HealthCheckResult.Healthy($"Redis connection healthy - {pong.TotalMilliseconds}ms");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Redis health check failed");
+            return HealthCheckResult.Unhealthy("Redis connection failed", ex);
+        }
+    })
+    .AddCheck("data-protection", _ =>
+    {
+        try
+        {
+            var serviceProvider = builder.Services.BuildServiceProvider();
+            var dataProtectionProvider = serviceProvider.GetService<IDataProtectionProvider>();
+            if (dataProtectionProvider == null)
+            {
+                return HealthCheckResult.Unhealthy("Data Protection Provider not available");
+            }
+
+            var protector = dataProtectionProvider.CreateProtector("health-check-test");
+            string testData = "test";
+            string protectedData = protector.Protect(testData);
+            string unprotectedData = protector.Unprotect(protectedData);
+
+            bool isHealthy = testData == unprotectedData;
+
+            Log.Debug("Data Protection health check: {Status}", isHealthy ? "Healthy" : "Failed");
+
+            return isHealthy
+                ? HealthCheckResult.Healthy("Data Protection keys accessible")
+                : HealthCheckResult.Unhealthy("Data Protection key validation failed");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Data Protection health check failed");
+            return HealthCheckResult.Unhealthy("Data Protection health check failed", ex);
+        }
+    });
+
+#endregion
+
 #region WebApplication Configuration
 
 WebApplication app = builder.Build();
@@ -925,6 +1096,27 @@ else
 {
     app.MapControllers();
 }
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var response = new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(x => new
+            {
+                name = x.Key,
+                status = x.Value.Status.ToString(),
+                description = x.Value.Description,
+                duration = x.Value.Duration.TotalMilliseconds
+            }),
+            totalDuration = report.TotalDuration.TotalMilliseconds
+        };
+        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+    }
+});
 
 #endregion
 

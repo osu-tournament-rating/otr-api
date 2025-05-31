@@ -1,8 +1,5 @@
-using JetBrains.Annotations;
-
 namespace API.Configurations;
 
-[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class AuthConfiguration
 {
     public const string Position = "Auth";
@@ -21,4 +18,9 @@ public class AuthConfiguration
     /// If Data Protection keys should be persisted to Redis
     /// </summary>
     public bool PersistDataProtectionKeys { get; init; } = true;
+
+    /// <summary>
+    /// The expiration time for cookies
+    /// </summary>
+    public TimeSpan CookieExpiration { get; init; } = TimeSpan.FromDays(30);
 }
