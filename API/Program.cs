@@ -1002,7 +1002,13 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 // Configure forwarded headers for proper HTTPS detection behind proxies
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedPrefix
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedPrefix,
+    // By clearing KnownProxies and KnownNetworks, we are telling the middleware to trust
+    // the X-Forwarded-* headers from any immediate upstream proxy. This is necessary
+    // when the app is containerized and the reverse proxy (Caddy) is on the host,
+    // as the container won't see the request as coming from a loopback address.
+    KnownProxies = { },
+    KnownNetworks = { }
 });
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
