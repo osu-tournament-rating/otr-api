@@ -79,30 +79,12 @@ public class MatchesService(
             return null;
         }
 
-        // Store original verification status to detect changes
-        VerificationStatus originalVerificationStatus = existing.VerificationStatus;
-
         mapper.Map(match, existing);
 
-        // Check if verification status changed to Rejected and apply cascading logic
-        if (originalVerificationStatus != VerificationStatus.Rejected &&
-            existing.VerificationStatus == VerificationStatus.Rejected)
+        if (match.VerificationStatus == VerificationStatus.Rejected)
         {
-            // Load Games with their Scores for cascading logic only when needed
             await matchesRepository.LoadGamesWithScoresAsync(existing);
-
-            // Apply cascading rejection to all child games and their scores
-            foreach (Game game in existing.Games)
-            {
-                game.VerificationStatus = VerificationStatus.Rejected;
-                game.RejectionReason |= GameRejectionReason.RejectedMatch;
-
-                foreach (GameScore score in game.Scores)
-                {
-                    score.VerificationStatus = VerificationStatus.Rejected;
-                    score.RejectionReason |= ScoreRejectionReason.RejectedGame;
-                }
-            }
+            existing.RejectAllChildren();
         }
 
         await matchesRepository.UpdateAsync(existing);

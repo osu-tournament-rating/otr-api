@@ -18,4 +18,11 @@ public class GamesRepository(OtrContext context) : RepositoryBase<Game>(context)
             .AsNoTracking()
             .IncludeChildren(verified)
             .FirstOrDefaultAsync(g => g.Id == id);
+
+    public async Task LoadScoresAsync(Game game)
+    {
+        await _context.Entry(game)
+            .Collection(g => g.Scores)
+            .LoadAsync();
+    }
 }

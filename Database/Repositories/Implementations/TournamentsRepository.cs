@@ -364,9 +364,29 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
                 ));
     }
 
-    private IQueryable<Tournament> TournamentsBaseQuery()
+    public async Task LoadMatchesWithGamesAndScoresAsync(Tournament tournament)
     {
-        return _context.Tournaments
+        await _context.Entry(tournament)
+            .Collection(t => t.Matches)
+            .LoadAsync();
+
+        foreach (Match match in tournament.Matches)
+        {
+            await _context.Entry(match)
+                .Collection(m => m.Games)
+                .LoadAsync();
+
+            foreach (Game game in match.Games)
+            {
+                await _context.Entry(game)
+                    .Collection(g => g.Scores)
+                    .LoadAsync();
+            }
+        }
+    }
+
+    private IQueryable<Tournament> TournamentsBaseQuery() =>
+        _context.Tournaments
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Scores)
@@ -385,5 +405,4 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .Include(t => t.SubmittedByUser!.Player)
             .Include(t => t.VerifiedByUser!.Player)
             .AsSplitQuery();
-    }
 }
