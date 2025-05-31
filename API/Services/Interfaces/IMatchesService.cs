@@ -63,4 +63,12 @@ public interface IMatchesService
     /// </summary>
     /// <param name="id">Match id</param>
     Task DeleteAsync(int id);
+
+    /// <summary>
+    /// Deletes all scores belonging to a player for a given match
+    /// </summary>
+    /// <param name="matchId">Match id</param>
+    /// <param name="playerId">Player id</param>
+    /// <returns>The number of scores deleted</returns>
+    Task<int> DeletePlayerScoresAsync(int matchId, int playerId);
 }

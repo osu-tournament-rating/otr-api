@@ -61,4 +61,11 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
             .WherePlayerId(playerId)
             .CountAsync();
     }
+
+    public async Task<int> DeleteByMatchAndPlayerAsync(int matchId, int playerId)
+    {
+        return await _context.GameScores
+            .Where(gs => gs.Game.MatchId == matchId && gs.PlayerId == playerId)
+            .ExecuteDeleteAsync();
+    }
 }
