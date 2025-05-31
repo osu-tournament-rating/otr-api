@@ -10,6 +10,7 @@ using API.Authorization.Requirements;
 using API.Configurations;
 using API.Handlers.Implementations;
 using API.Handlers.Interfaces;
+using API.HealthChecks;
 using API.Middlewares;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
@@ -27,17 +28,22 @@ using Database;
 using Database.Entities;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
@@ -70,6 +76,18 @@ using User = Database.Entities.User;
 #region WebApplicationBuilder Configuration
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+// Configure static logger early for startup logging
+Log.Logger = new LoggerConfiguration()
+#if DEBUG
+    .MinimumLevel.Debug()
+#else
+    .MinimumLevel.Information()
+#endif
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] {Message:lj}{NewLine}")
+    .CreateLogger();
 
 #endregion
 
@@ -209,9 +227,8 @@ builder.Services.AddRateLimiter(options =>
     options.OnRejected = async (context, token) =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-        const string readMore =
-            // TODO: Link to the API Terms of Service Document
-            "Currently, detailed information about API rate limits is unavailable.";
+        const string readMore = "https://docs.otr.stagec.xyz/About/Terms-of-Use";
+
         if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out TimeSpan retryAfter))
         {
             await context.HttpContext.Response.WriteAsync(
@@ -413,11 +430,7 @@ builder.Services.AddSerilog(configuration =>
         )
         .DefaultConnection;
 
-#if DEBUG
-    configuration.MinimumLevel.Debug();
-#else
-    configuration.MinimumLevel.Information();
-#endif
+    configuration.MinimumLevel.Verbose();
 
     configuration
         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
@@ -426,21 +439,27 @@ builder.Services.AddSerilog(configuration =>
             LogEventLevel.Warning
         )
         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
+        .MinimumLevel.Override("API", LogEventLevel.Debug)
+        .MinimumLevel.Override("OsuApiClient", LogEventLevel.Debug)
+        .MinimumLevel.Override("System", LogEventLevel.Warning)
         .Enrich.FromLogContext()
         .Enrich.WithSpan()
-        .WriteTo.GrafanaLoki(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).LokiConnection, new List<LokiLabel>
-        {
-            new() { Key = "app", Value = serviceName }
-        }, ["app"])
+        .WriteTo.Logger(lc => lc
+            .MinimumLevel.Verbose()
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
+            .Filter.ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
+            .WriteTo.GrafanaLoki(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).LokiConnection,
+                new List<LokiLabel>
+                {
+                    new() { Key = "app", Value = serviceName },
+                    new() { Key = "environment", Value = builder.Environment.EnvironmentName }
+                },
+                ["app", "environment"]))
         .WriteTo.Logger(lc => lc
             .Filter
             .ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
             .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [trace_id: {TraceId} span_id: {SpanId}] {Message:lj}{NewLine}"))
-        .WriteTo.File(
-            Path.Join("logs", "log.log"),
-            rollingInterval: RollingInterval.Day,
-            restrictedToMinimumLevel: LogEventLevel.Information
-        )
         .WriteTo.PostgreSQL(
             connString,
             "Logs",
@@ -528,9 +547,18 @@ builder.Services
     .AddPolicyScheme("CompositeAuthentication", "CompositeAuthentication", options =>
     {
         // Use cookie-based authentication if possible and fallback to JWT Bearer
-        options.ForwardDefaultSelector = context => context.Request.Cookies.ContainsKey("otr-session")
-            ? CookieAuthenticationDefaults.AuthenticationScheme
-            : JwtBearerDefaults.AuthenticationScheme;
+        options.ForwardDefaultSelector = context =>
+        {
+            bool hasCookie = context.Request.Cookies.ContainsKey("otr-session");
+            string selectedScheme = hasCookie
+                ? CookieAuthenticationDefaults.AuthenticationScheme
+                : JwtBearerDefaults.AuthenticationScheme;
+
+            Log.Debug("Authentication scheme selection - HasCookie: {HasCookie}, SelectedScheme: {SelectedScheme}, Path: {Path}",
+                hasCookie, selectedScheme, context.Request.Path);
+
+            return selectedScheme;
+        };
     })
     .AddJwtBearer(options =>
     {
@@ -552,20 +580,65 @@ builder.Services
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.IsEssential = true;
-
-        options.ExpireTimeSpan = TimeSpan.FromDays(14);
+        options.Cookie.Domain = builder.Configuration.Get<AuthConfiguration>()?.AllowedHosts.FirstOrDefault();
+        options.Cookie.MaxAge = builder.Configuration.Get<AuthConfiguration>()?.CookieExpiration ?? TimeSpan.FromDays(30);
+        options.ExpireTimeSpan = builder.Configuration.Get<AuthConfiguration>()?.CookieExpiration ?? TimeSpan.FromDays(30);
         options.SlidingExpiration = true;
+
+        Log.Information("Cookie authentication configured - Domain: {Domain}, Expiration: {Expiration}, SecurePolicy: {SecurePolicy}",
+            options.Cookie.Domain, options.ExpireTimeSpan, options.Cookie.SecurePolicy);
 
         // By default, cookie-based authentication will try to redirect to a "login" endpoint
         options.Events = new CookieAuthenticationEvents
         {
+            OnValidatePrincipal = async context =>
+            {
+                string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
+                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                authLogger.Debug("Validating cookie for user: {UserId}, IsAuthenticated: {IsAuthenticated}",
+                    userId ?? "Unknown", context.Principal?.Identity?.IsAuthenticated);
+
+                if (context.Principal?.Identity?.IsAuthenticated != true)
+                {
+                    authLogger.Warning("Cookie validation failed - user not authenticated. UserId: {UserId}", userId ?? "Unknown");
+                    context.RejectPrincipal();
+                    await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                }
+                else
+                {
+                    authLogger.Debug("Cookie validation successful for user: {UserId}", userId);
+                }
+            },
+            OnSigningIn = context =>
+            {
+                string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
+                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                authLogger.Information("User signing in with cookie authentication. UserId: {UserId}", userId ?? "Unknown");
+                return Task.CompletedTask;
+            },
+            OnSignedIn = context =>
+            {
+                string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
+                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                authLogger.Information("User successfully signed in with cookie. UserId: {UserId}", userId ?? "Unknown");
+                return Task.CompletedTask;
+            },
+            OnSigningOut = context =>
+            {
+                string? userId = context.HttpContext.User?.FindFirst(OtrClaims.Subject)?.Value;
+                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                authLogger.Information("User signing out. UserId: {UserId}", userId ?? "Unknown");
+                return Task.CompletedTask;
+            },
             OnRedirectToLogin = context =>
             {
+                Log.Debug("Cookie authentication redirecting to login - returning 401 instead");
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return Task.CompletedTask;
             },
             OnRedirectToAccessDenied = context =>
             {
+                Log.Debug("Cookie authentication access denied - returning 403");
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return Task.CompletedTask;
             }
@@ -648,10 +721,15 @@ AuthConfiguration authConfiguration = builder.Configuration.BindAndValidate<Auth
     AuthConfiguration.Position
 );
 
+Log.Information("Starting Data Protection configuration. PersistDataProtectionKeys: {PersistKeys}", authConfiguration.PersistDataProtectionKeys);
+
 // Create a shared Redis connection multiplexer for Data Protection
 ConnectionMultiplexer? redisConnection = null;
 if (authConfiguration.PersistDataProtectionKeys)
 {
+    var redisLogger = Log.ForContext("SourceContext", "DataProtection.Redis");
+    redisLogger.Information("Attempting to connect to Redis at: {RedisConnection}", connectionStrings.RedisConnection);
+
     try
     {
         var configurationOptions = ConfigurationOptions.Parse(connectionStrings.RedisConnection);
@@ -660,29 +738,52 @@ if (authConfiguration.PersistDataProtectionKeys)
         configurationOptions.ConnectTimeout = 5000;
         configurationOptions.SyncTimeout = 5000;
 
+        redisLogger.Debug("Redis connection options: ConnectRetry={ConnectRetry}, ConnectTimeout={ConnectTimeout}, SyncTimeout={SyncTimeout}",
+            configurationOptions.ConnectRetry, configurationOptions.ConnectTimeout, configurationOptions.SyncTimeout);
+
         redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
 
         // Test the connection
         var database = redisConnection.GetDatabase();
         database.Ping();
 
+        redisLogger.Information("Successfully connected to Redis for Data Protection");
+
         builder.Services.AddDataProtection()
             .PersistKeysToStackExchangeRedis(redisConnection, "otr-api:data-protection-keys")
             .SetApplicationName("otr-api")
             .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
 
-        builder.Services.AddSingleton(redisConnection);
+        // Add connection event handlers for monitoring
+        redisConnection.ConnectionFailed += (sender, args) =>
+        {
+            redisLogger.Error("Redis connection failed: {EndPoint} - {FailureType}", args.EndPoint, args.FailureType);
+        };
 
-        Log.Information("Data Protection keys will be persisted to Redis at {RedisConnection}", connectionStrings.RedisConnection);
+        redisConnection.ConnectionRestored += (sender, args) =>
+        {
+            redisLogger.Information("Redis connection restored: {EndPoint}", args.EndPoint);
+        };
+
+        redisConnection.ErrorMessage += (sender, args) =>
+        {
+            redisLogger.Error("Redis error: {Message}", args.Message);
+        };
+
+        builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);
+
+        redisLogger.Information("Data Protection keys will be persisted to Redis at {RedisConnection}", connectionStrings.RedisConnection);
     }
     catch (Exception ex)
     {
-        Log.Warning(ex, "Failed to connect to Redis for Data Protection. Keys will be stored in-memory and cookies will be invalidated on restart");
+        redisLogger.Error(ex, "Failed to connect to Redis for Data Protection. This WILL cause cookie invalidation on restart!");
 
         // Fallback to in-memory key storage with a warning
         builder.Services.AddDataProtection()
             .SetApplicationName("otr-api")
             .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
+
+        redisLogger.Warning("Using in-memory Data Protection keys - cookies will be invalidated on application restart");
     }
 }
 else
@@ -779,7 +880,7 @@ bool useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistribut
 
 if (useRedLock)
 {
-    builder.Services.AddSingleton<RedLockFactory>(serviceProvider =>
+    builder.Services.AddSingleton(serviceProvider =>
     {
         var sharedRedisConnection = serviceProvider.GetService<IConnectionMultiplexer>();
         if (sharedRedisConnection != null)
@@ -871,12 +972,30 @@ builder.Services.AddOsuApiClient(builder.Configuration.BindAndValidate<OsuConfig
 
 #endregion
 
+#region Health Checks
+
+builder.Services.AddHealthChecks()
+    .AddCheck<RedisHealthCheck>("redis")
+    .AddCheck<DataProtectionHealthCheck>("data-protection")
+    .AddCheck<DatabaseHealthCheck>("database");
+
+#endregion
+
 #region WebApplication Configuration
 
 WebApplication app = builder.Build();
 
 // Set switch for Npgsql
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+// Configure forwarded headers for proper HTTPS detection behind proxies
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    RequireHeaderSymmetry = false,
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto,
+    KnownProxies = { },
+    KnownNetworks = { }
+});
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();
 
@@ -926,6 +1045,27 @@ else
 {
     app.MapControllers();
 }
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var response = new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(x => new
+            {
+                name = x.Key,
+                status = x.Value.Status.ToString(),
+                description = x.Value.Description,
+                duration = x.Value.Duration.TotalMilliseconds
+            }),
+            totalDuration = report.TotalDuration.TotalMilliseconds
+        };
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+    }
+});
 
 #endregion
 
