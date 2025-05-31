@@ -10,6 +10,7 @@ using API.Authorization.Requirements;
 using API.Configurations;
 using API.Handlers.Implementations;
 using API.Handlers.Interfaces;
+using API.HealthChecks;
 using API.Middlewares;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
@@ -889,7 +890,7 @@ bool useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistribut
 
 if (useRedLock)
 {
-    builder.Services.AddSingleton<RedLockFactory>(serviceProvider =>
+    builder.Services.AddSingleton(serviceProvider =>
     {
         var sharedRedisConnection = serviceProvider.GetService<IConnectionMultiplexer>();
         if (sharedRedisConnection != null)
@@ -984,60 +985,9 @@ builder.Services.AddOsuApiClient(builder.Configuration.BindAndValidate<OsuConfig
 #region Health Checks
 
 builder.Services.AddHealthChecks()
-    .AddCheck("redis", _ =>
-    {
-        try
-        {
-            var serviceProvider = builder.Services.BuildServiceProvider();
-            var redis = serviceProvider.GetService<IConnectionMultiplexer>();
-            if (redis == null)
-            {
-                Log.Warning("Redis health check: No Redis connection available");
-                return HealthCheckResult.Degraded("No Redis connection configured");
-            }
-
-            var database = redis.GetDatabase();
-            var pong = database.Ping();
-
-            Log.Debug("Redis health check: Ping successful - {PingTime}ms", pong.TotalMilliseconds);
-            return HealthCheckResult.Healthy($"Redis connection healthy - {pong.TotalMilliseconds}ms");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Redis health check failed");
-            return HealthCheckResult.Unhealthy("Redis connection failed", ex);
-        }
-    })
-    .AddCheck("data-protection", _ =>
-    {
-        try
-        {
-            var serviceProvider = builder.Services.BuildServiceProvider();
-            var dataProtectionProvider = serviceProvider.GetService<IDataProtectionProvider>();
-            if (dataProtectionProvider == null)
-            {
-                return HealthCheckResult.Unhealthy("Data Protection Provider not available");
-            }
-
-            var protector = dataProtectionProvider.CreateProtector("health-check-test");
-            string testData = "test";
-            string protectedData = protector.Protect(testData);
-            string unprotectedData = protector.Unprotect(protectedData);
-
-            bool isHealthy = testData == unprotectedData;
-
-            Log.Debug("Data Protection health check: {Status}", isHealthy ? "Healthy" : "Failed");
-
-            return isHealthy
-                ? HealthCheckResult.Healthy("Data Protection keys accessible")
-                : HealthCheckResult.Unhealthy("Data Protection key validation failed");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Data Protection health check failed");
-            return HealthCheckResult.Unhealthy("Data Protection health check failed", ex);
-        }
-    });
+    .AddCheck<RedisHealthCheck>("redis")
+    .AddCheck<DataProtectionHealthCheck>("data-protection")
+    .AddCheck<DatabaseHealthCheck>("database");
 
 #endregion
 
@@ -1114,7 +1064,7 @@ app.MapHealthChecks("/health", new HealthCheckOptions
             }),
             totalDuration = report.TotalDuration.TotalMilliseconds
         };
-        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response));
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
 });
 
