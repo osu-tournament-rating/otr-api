@@ -12,8 +12,7 @@ namespace API.Middlewares;
 public class RateLimitHeadersMiddleware(
     RequestDelegate next,
     IOptions<RateLimiterOptions> rateLimiterOptions,
-    IOptions<RateLimitConfiguration> rateLimiterConfiguration,
-    ILogger<RateLimitHeadersMiddleware> logger
+    IOptions<RateLimitConfiguration> rateLimiterConfiguration
 )
 {
     private readonly RateLimitConfiguration _rateLimitConfiguration = rateLimiterConfiguration.Value;
