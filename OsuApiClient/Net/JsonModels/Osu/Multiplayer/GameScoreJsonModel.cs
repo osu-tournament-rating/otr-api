@@ -40,7 +40,7 @@ public class GameScoreJsonModel : JsonModelBase
     public bool Passed { get; set; }
 
     [JsonProperty("perfect")]
-    public int Perfect { get; set; }
+    public bool Perfect { get; set; }
 
     [JsonProperty("pp")]
     public double? Pp { get; set; }

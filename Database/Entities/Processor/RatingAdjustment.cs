@@ -30,7 +30,7 @@ public class RatingAdjustment : EntityBase
     public RatingAdjustmentType AdjustmentType { get; init; }
 
     /// <summary>
-    ///     The <see cref="Ruleset" />
+    /// The <see cref="Ruleset" />
     /// </summary>
     public Ruleset Ruleset { get; set; }
 
