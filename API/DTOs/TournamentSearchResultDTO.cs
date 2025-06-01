@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Common.Enums;
 using Common.Enums.Verification;
 

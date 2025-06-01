@@ -1,4 +1,5 @@
 using Database.Entities.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -8,9 +9,9 @@ namespace Database.Interceptors;
 /// <summary>
 /// An implementation of <see cref="ISaveChangesInterceptor"/> that audits changes to database entities
 /// </summary>
-public class AuditingInterceptor : ISaveChangesInterceptor
+public class AuditingInterceptor(IHttpContextAccessor? httpContextAccessor) : ISaveChangesInterceptor
 {
-    private readonly List<EntityEntry> _newEntries = [];
+    private readonly IHttpContextAccessor? _httpContextAccessor = httpContextAccessor;
 
     public ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
@@ -39,89 +40,33 @@ public class AuditingInterceptor : ISaveChangesInterceptor
         return result;
     }
 
-    public async ValueTask<int> SavedChangesAsync(
-        SaveChangesCompletedEventData eventData,
-        int result,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (eventData.Context is null || _newEntries.Count <= 0)
-        {
-            return result;
-        }
-
-        foreach (EntityEntry entry in _newEntries)
-        {
-            CreateAudit(entry, eventData.Context);
-        }
-        _newEntries.Clear();
-
-        await eventData.Context.SaveChangesAsync(cancellationToken);
-
-        return result;
-    }
-
-    public int SavedChanges(SaveChangesCompletedEventData eventData, int result)
-    {
-        if (eventData.Context is null || _newEntries.Count <= 0)
-        {
-            return result;
-        }
-
-        foreach (EntityEntry entry in _newEntries)
-        {
-            CreateAudit(entry, eventData.Context);
-        }
-        _newEntries.Clear();
-
-        eventData.Context.SaveChanges();
-
-        return result;
-    }
-
     protected virtual void OnSavingChanges(DbContext context)
     {
         // Cache the current change list to avoid detecting changes multiple times
         var trackedEntries = context.ChangeTracker.Entries().ToList();
 
-        // Get all entities in the change tracker that implement IAuditableEntity<>
-        IEnumerable<EntityEntry> auditableEntries = [.. trackedEntries
-            .Where(entry =>
-                entry.Entity.GetType().GetInterfaces().Any(i =>
-                    i.IsGenericType
-                    && i.GetGenericTypeDefinition() == typeof(IAuditableEntity<>)
-                )
-                && entry.State is EntityState.Modified or EntityState.Added or EntityState.Deleted
-            )];
+        // Get all entities that have a corresponding audit entity (by convention: [EntityName]Audit)
+        // and are in a state that should be audited.
+        IEnumerable<EntityEntry> auditableEntries = trackedEntries.Where(entry =>
+            entry.State is EntityState.Modified or EntityState.Deleted &&
+            GetAuditType(entry.Entity.GetType()) != null
+        );
 
         // Create audits
         foreach (EntityEntry entry in auditableEntries)
         {
-            // Newly created entities should be processed after changes are saved
-            // so that primary keys are created before the audit is created
-            if (entry.State is EntityState.Added)
-            {
-                _newEntries.Add(entry);
-                continue;
-            }
-
-            CreateAudit(entry, context);
+            CreateAudit(entry, context, _httpContextAccessor);
         }
     }
 
-    private static void CreateAudit(EntityEntry entry, DbContext context)
+    private static void CreateAudit(EntityEntry entry, DbContext context, IHttpContextAccessor? httpContextAccessor)
     {
-        // Determine type of the audit entity
-        Type? auditType = entry.Entity
-            .GetType()
-            .GetInterfaces()
-            .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IAuditableEntity<>))
-            ?.GetGenericArguments()
-            .FirstOrDefault();
+        Type entityType = entry.Entity.GetType();
+        Type? auditType = GetAuditType(entityType);
 
-        // Being careful with type safety since we do some casting
-        if (auditType is null || !typeof(IAuditEntity).IsAssignableFrom(auditType))
+        if (auditType is null)
         {
+            // This should not happen if auditableEntries is filtered correctly
             return;
         }
 
@@ -132,10 +77,16 @@ public class AuditingInterceptor : ISaveChangesInterceptor
         }
 
         // Populate the audit's properties and attach it to the context for creation
-        bool success = newAudit.GenerateAudit(entry);
+        bool success = newAudit.GenerateAudit(entry, httpContextAccessor);
         if (success)
         {
             context.Attach(newAudit);
         }
+    }
+
+    private static Type? GetAuditType(Type entityType)
+    {
+        string auditEntityTypeName = $"{entityType.FullName}Audit";
+        return entityType.Assembly.GetType(auditEntityTypeName);
     }
 }

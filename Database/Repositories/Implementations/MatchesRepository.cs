@@ -10,6 +10,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
+/// <summary>
+/// Repository for managing <see cref="Match"/> entities
+/// </summary>
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
@@ -139,8 +142,9 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         // Save before deleting child matches
         await _context.SaveChangesAsync();
 
-        // Delete child matches (this operation saves immediately)
-        await _context.Matches.Where(m => childMatches.Select(cm => cm.Id).Contains(m.Id)).ExecuteDeleteAsync();
+        // Delete child matches using tracked deletion to trigger auditing
+        _context.Matches.RemoveRange(childMatches);
+        await _context.SaveChangesAsync();
 
         return (await GetFullAsync(parentId, false))!;
     }

@@ -1,6 +1,5 @@
 using Common.Enums.Verification;
 using Database.Entities;
-using DataWorkerService.Processors.Matches;
 using DataWorkerService.Processors.Resolvers.Interfaces;
 
 namespace DataWorkerService.Processors.Tournaments;

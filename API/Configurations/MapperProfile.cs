@@ -1,12 +1,17 @@
 using API.DTOs;
+using API.DTOs.Audit;
 using API.Utilities;
 using API.Utilities.Extensions;
 using AutoMapper;
+using Common.Enums;
 using Database.Entities;
 using Database.Entities.Processor;
 
 namespace API.Configurations;
 
+/// <summary>
+/// AutoMapper profile for mapping between entities and DTOs
+/// </summary>
 public class MapperProfile : Profile
 {
     public MapperProfile()
@@ -82,6 +87,7 @@ public class MapperProfile : Profile
             .ForMember(x => x.VerifiedByUser, opt => opt.Ignore());
 
         CreateMap<Tournament, TournamentDTO>();
+
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
@@ -93,5 +99,34 @@ public class MapperProfile : Profile
         CreateMap<UserSettings, UserSettingsDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(us => us.DefaultRuleset))
             .ForMember(x => x.RulesetIsControlled, opt => opt.MapFrom(us => us.DefaultRulesetIsControlled));
+
+        // Audit Logs
+        CreateMap<GameAudit, AuditDTO>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Created))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.ActionUserId))
+            .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.ReferenceIdLock))
+            .ForMember(dest => dest.Changes, opt => opt.MapFrom(src => src.Changes))
+            .ForMember(dest => dest.EntityType, opt => opt.MapFrom(_ => AuditEntityType.Game));
+
+        CreateMap<GameScoreAudit, AuditDTO>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Created))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.ActionUserId))
+            .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.ReferenceIdLock))
+            .ForMember(dest => dest.Changes, opt => opt.MapFrom(src => src.Changes))
+            .ForMember(dest => dest.EntityType, opt => opt.MapFrom(_ => AuditEntityType.GameScore));
+
+        CreateMap<MatchAudit, AuditDTO>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Created))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.ActionUserId))
+            .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.ReferenceIdLock))
+            .ForMember(dest => dest.Changes, opt => opt.MapFrom(src => src.Changes))
+            .ForMember(dest => dest.EntityType, opt => opt.MapFrom(_ => AuditEntityType.Match));
+
+        CreateMap<TournamentAudit, AuditDTO>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Created))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.ActionUserId))
+            .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.ReferenceIdLock))
+            .ForMember(dest => dest.Changes, opt => opt.MapFrom(src => src.Changes))
+            .ForMember(dest => dest.EntityType, opt => opt.MapFrom(_ => AuditEntityType.Tournament));
     }
 }

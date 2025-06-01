@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
@@ -15,8 +14,8 @@ namespace Database.Entities;
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>,
-    IAuditableEntity<TournamentAudit>
+[SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
+public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>
 {
     private string _name = string.Empty;
 
@@ -113,22 +112,19 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     public ICollection<PlayerTournamentStats> PlayerTournamentStats { get; set; } = [];
 
     /// <summary>
-    /// A collection of <see cref="TournamentAudit"/>s which are used to track the changes
-    /// to this entity over time
-    /// </summary>
-    public ICollection<TournamentAudit> Audits { get; set; } = [];
-
-    /// <summary>
     /// A collection of <see cref="TournamentAdminNote"/>s for the tournament
     /// </summary>
     public ICollection<TournamentAdminNote> AdminNotes { get; set; } = [];
 
     /// <summary>
+    /// Collection of <see cref="TournamentAudit"/> records for the <see cref="Tournament"/>
+    /// </summary>
+    public ICollection<TournamentAudit> Audits { get; set; } = new List<TournamentAudit>();
+
+    /// <summary>
     /// A collection of <see cref="Beatmap"/>s pooled in the tournament
     /// </summary>
     public ICollection<Beatmap> PooledBeatmaps { get; set; } = [];
-
-    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
 
     public void ResetAutomationStatuses(bool force)
     {

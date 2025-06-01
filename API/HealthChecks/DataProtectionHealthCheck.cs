@@ -3,6 +3,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace API.HealthChecks;
 
+/// <summary>
+/// Health check for data protection services
+/// </summary>
 public class DataProtectionHealthCheck(IDataProtectionProvider dataProtectionProvider) : IHealthCheck
 {
     public Task<HealthCheckResult> CheckHealthAsync(

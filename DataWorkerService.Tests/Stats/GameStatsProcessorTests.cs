@@ -2,7 +2,6 @@ using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
 using DataWorkerService.Processors.Games;
-using DataWorkerService.Utilities;
 using Microsoft.Extensions.Logging;
 using Serilog.Extensions.Logging;
 using TestingUtils.SeededData;

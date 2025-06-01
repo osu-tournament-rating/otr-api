@@ -5,6 +5,9 @@ using Common.Enums;
 
 namespace API.Services.Implementations;
 
+/// <summary>
+/// Service for filtering players based on specified criteria
+/// </summary>
 public class FilteringService(
     IPlayerService playerService,
     IPlayerRatingsService playerRatingsService,

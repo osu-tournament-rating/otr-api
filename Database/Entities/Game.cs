@@ -14,8 +14,7 @@ namespace Database.Entities;
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>,
-    IAuditableEntity<GameAudit>
+public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>
 {
     /// <summary>
     /// osu! id
@@ -114,14 +113,9 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     public ICollection<GameAdminNote> AdminNotes { get; set; } = [];
 
     /// <summary>
-    /// A collection of <see cref="GameAudit"/>s for the <see cref="Game"/>
+    /// Collection of <see cref="GameAudit"/> records for the <see cref="Game"/>
     /// </summary>
-    public ICollection<GameAudit> Audits { get; set; } = [];
-
-    /// <summary>
-    /// The ID of the user who is blamed for the action
-    /// </summary>
-    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+    public ICollection<GameAudit> Audits { get; set; } = new List<GameAudit>();
 
     /// <summary>
     /// Denotes if the mod setting was "free mod"
@@ -197,4 +191,6 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
             score.ProcessingStatus = ScoreProcessingStatus.Done;
         }
     }
+
+    public Ruleset PlayMode { get; set; }
 }

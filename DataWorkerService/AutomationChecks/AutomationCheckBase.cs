@@ -48,7 +48,7 @@ public abstract class AutomationCheckBase<TEntity>(
     /// <param name="entity">Entity that was checked</param>
     protected virtual void OnFail(TEntity entity)
     {
-        logger.Log(LogLevelOnFail, "Automation check passed [Id: {Id}]", entity.Id);
+        logger.Log(LogLevelOnFail, "Automation check failed [Id: {Id}]", entity.Id);
     }
 
     /// <summary>
