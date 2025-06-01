@@ -6,14 +6,15 @@ using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Newtonsoft.Json;
 
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
 namespace Database;
 
+/// <summary>
+/// Entity Framework database context for the OTR application
+/// </summary>
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(options)
 {

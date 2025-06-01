@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
+/// <summary>
+/// Repository for managing <see cref="Player"/> entities
+/// </summary>
 public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(context), IPlayersRepository
 {
     private readonly OtrContext _context = context;

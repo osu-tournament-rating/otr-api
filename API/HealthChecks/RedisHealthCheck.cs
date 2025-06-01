@@ -3,6 +3,9 @@ using StackExchange.Redis;
 
 namespace API.HealthChecks;
 
+/// <summary>
+/// Health check for Redis connectivity
+/// </summary>
 public class RedisHealthCheck(IConnectionMultiplexer redis) : IHealthCheck
 {
     public async Task<HealthCheckResult> CheckHealthAsync(

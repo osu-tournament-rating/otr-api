@@ -7,12 +7,13 @@ using Microsoft.Extensions.Options;
 namespace API.Middlewares;
 
 /// <summary>
-/// Middleware that adds rate limit information to the headers of outbound responses
+/// Middleware for adding rate limiting headers to HTTP responses
 /// </summary>
 public class RateLimitHeadersMiddleware(
     RequestDelegate next,
     IOptions<RateLimiterOptions> rateLimiterOptions,
-    IOptions<RateLimitConfiguration> rateLimiterConfiguration
+    IOptions<RateLimitConfiguration> rateLimiterConfiguration,
+    ILogger<RateLimitHeadersMiddleware> logger
 )
 {
     private readonly RateLimitConfiguration _rateLimitConfiguration = rateLimiterConfiguration.Value;

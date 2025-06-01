@@ -8,6 +8,9 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
+/// <summary>
+/// Service for retrieving player statistics and performance data
+/// </summary>
 public class PlayerStatsService(
     ILogger<PlayerStatsService> logger,
     IMapper mapper,

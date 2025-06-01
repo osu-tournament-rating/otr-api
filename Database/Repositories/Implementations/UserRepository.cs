@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Database.Entities;
 using Database.Repositories.Interfaces;
-using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;

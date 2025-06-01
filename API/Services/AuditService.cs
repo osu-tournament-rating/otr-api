@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Services.Implementations;
 
+/// <summary>
+/// Implementation of <see cref="IAuditService"/> for retrieving audit records
+/// </summary>
 public class AuditService(OtrContext context, IMapper mapper) : IAuditService
 {
     public async Task<IEnumerable<AuditDTO>> GetAuditsAsync(AuditEntityType entityType, int entityId)

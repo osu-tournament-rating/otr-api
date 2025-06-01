@@ -1,7 +1,7 @@
 namespace Database.Utilities;
 
 /// <summary>
-/// The property will be excluded from audits created of the declaring type
+/// Attribute to mark properties that should be ignored during audit operations
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
 public class AuditIgnoreAttribute : Attribute;

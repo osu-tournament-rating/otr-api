@@ -9,6 +9,9 @@ using Database.Entities.Processor;
 
 namespace API.Configurations;
 
+/// <summary>
+/// AutoMapper profile for mapping between entities and DTOs
+/// </summary>
 public class MapperProfile : Profile
 {
     public MapperProfile()

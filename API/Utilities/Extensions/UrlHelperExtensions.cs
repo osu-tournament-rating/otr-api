@@ -2,6 +2,9 @@ using System.Reflection;
 
 namespace API.Utilities.Extensions;
 
+/// <summary>
+/// Extension methods for URL helper operations
+/// </summary>
 public static class UrlHelperExtensions
 {
     public static IDictionary<string, string> ToDictionary(this object src) =>
