@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace API.Services.Implementations;
 
 /// <summary>
-/// Implementation of <see cref="IAuditService"/> for retrieving audit records
+/// Retrieves audit logs for entities
 /// </summary>
 public class AuditService(OtrContext context, IMapper mapper) : IAuditService
 {

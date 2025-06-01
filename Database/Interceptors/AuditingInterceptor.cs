@@ -87,10 +87,6 @@ public class AuditingInterceptor(IHttpContextAccessor? httpContextAccessor) : IS
     private static Type? GetAuditType(Type entityType)
     {
         string auditEntityTypeName = $"{entityType.FullName}Audit";
-        // Assuming Audit entities are in the same assembly as the entity itself, or a referenced one that's loaded.
-        // For simplicity, this example checks only the entity's assembly.
-        // A more robust solution might check AppDomain.CurrentDomain.GetAssemblies()
-        // or have a pre-registered map of entity types to audit types.
         return entityType.Assembly.GetType(auditEntityTypeName);
     }
 }
