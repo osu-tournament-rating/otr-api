@@ -20,8 +20,6 @@ indent_size = 2
 generated_code = true
 
 # C# files
-[*.cs]
-dotnet_diagnostic.IDE0130.severity = none
 
 # New line preferences
 csharp_new_line_before_open_brace = all
@@ -66,9 +64,7 @@ dotnet_naming_symbols.constant_fields.required_modifiers = const
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
 # static fields should have s_ prefix
-dotnet_naming_rule.static_fields_should_have_prefix.severity = suggestion
-dotnet_naming_rule.static_fields_should_have_prefix.symbols  = static_fields
-dotnet_naming_rule.static_fields_should_have_prefix.style = static_prefix_style
+dotnet_naming_rule.static_fields_should_have_prefix.severity = none
 dotnet_naming_symbols.static_fields.applicable_kinds   = field
 dotnet_naming_symbols.static_fields.required_modifiers = static
 dotnet_naming_symbols.static_fields.applicable_accessibilities = private, internal, private_protected
@@ -167,6 +163,8 @@ dotnet_diagnostic.CS1573.severity = none
 dotnet_diagnostic.CS1574.severity = none
 dotnet_diagnostic.CS1587.severity = none
 dotnet_diagnostic.CS1591.severity = none
+
+dotnet_diagnostic.IDE0130.severity = none
 
 # C++ Files
 [*.{cpp,h,in}]
