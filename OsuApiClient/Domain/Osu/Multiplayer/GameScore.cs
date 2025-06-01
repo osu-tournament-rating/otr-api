@@ -49,7 +49,7 @@ public class GameScore : IModel
     /// <summary>
     /// Denotes if the score was perfect
     /// </summary>
-    public int Perfect { get; init; }
+    public bool Perfect { get; init; }
 
     /// <summary>
     /// The amount of pp gained by the player for the score

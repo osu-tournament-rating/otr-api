@@ -92,7 +92,7 @@ public class OsuApiDataParserService(
                     CountGeki = mpScore.Statistics.CountGeki,
                     CountKatu = mpScore.Statistics.CountKatu,
                     Pass = mpScore.Passed,
-                    Perfect = mpScore.Perfect != 0,
+                    Perfect = mpScore.Perfect,
                     Grade = mpScore.Grade,
                     Mods = mpScore.Mods,
                     Ruleset = mpScore.Ruleset,
