@@ -47,18 +47,8 @@ public class AuditDTO
     public int EntityId { get; set; }
 
     /// <summary>
-    /// JSON representation of the entity's state before the change
+    /// JSON object containing all field changes made to the entity.
+    /// Format: { "FieldName": { "NewValue": value, "OriginalValue": value }, ... }
     /// </summary>
-    /// <remarks>
-    /// Will be null for create operations. Contains the previous values for update and delete operations.
-    /// </remarks>
-    public string? OldValue { get; set; }
-
-    /// <summary>
-    /// JSON representation of the entity's state after the change
-    /// </summary>
-    /// <remarks>
-    /// Will be null for delete operations. Contains the new values for create and update operations.
-    /// </remarks>
-    public string? NewValue { get; set; }
+    public string Changes { get; set; } = string.Empty;
 }

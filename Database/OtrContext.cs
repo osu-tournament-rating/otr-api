@@ -215,8 +215,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(ga => ga.ActionType);
 
-            entity.Property(ga => ga.Before).HasColumnType("jsonb");
-            entity.Property(ga => ga.After).HasColumnType("jsonb");
+            entity.Property(ga => ga.Changes).HasColumnType("jsonb");
 
             // Relation: Game
             entity
@@ -297,8 +296,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(gsa => gsa.ActionType);
 
-            entity.Property(gsa => gsa.Before).HasColumnType("jsonb");
-            entity.Property(gsa => gsa.After).HasColumnType("jsonb");
+            entity.Property(gsa => gsa.Changes).HasColumnType("jsonb");
 
             // Relation: GameScore
             entity
@@ -437,8 +435,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(ma => ma.ActionType);
 
-            entity.Property(ma => ma.Before).HasColumnType("jsonb");
-            entity.Property(ma => ma.After).HasColumnType("jsonb");
+            entity.Property(ma => ma.Changes).HasColumnType("jsonb");
 
             // Relation: Match
             entity
@@ -830,8 +827,7 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(ta => ta.ActionType);
 
-            entity.Property(ta => ta.Before).HasColumnType("jsonb");
-            entity.Property(ta => ta.After).HasColumnType("jsonb");
+            entity.Property(ta => ta.Changes).HasColumnType("jsonb");
 
             // Relation: Tournament
             entity

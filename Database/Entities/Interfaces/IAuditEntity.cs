@@ -39,16 +39,10 @@ public interface IAuditEntity : IEntity
     public AuditActionType ActionType { get; }
 
     /// <summary>
-    /// Represents the state of the entity before the change.
-    /// Stored as a JSON string.
+    /// JSON object containing all field changes made to the entity.
+    /// Format: { "FieldName": { "NewValue": value, "OriginalValue": value }, ... }
     /// </summary>
-    public string? Before { get; }
-
-    /// <summary>
-    /// Represents the state of the entity after the change.
-    /// Stored as a JSON string.
-    /// </summary>
-    public string? After { get; }
+    public string? Changes { get; }
 
     /// <summary>
     /// Populates the audit with values from the given <see cref="EntityEntry"/>

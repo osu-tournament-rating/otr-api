@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Common.Enums;
 using Database.Entities.Interfaces;
+using Database.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -20,6 +21,12 @@ public abstract class AuditEntityBase<TEntity, TAudit> : IAuditEntity
     where TAudit : IAuditEntity
     where TEntity : IEntity
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false
+    };
+
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; }
@@ -34,8 +41,7 @@ public abstract class AuditEntityBase<TEntity, TAudit> : IAuditEntity
 
     public AuditActionType ActionType { get; private set; }
 
-    public string? Before { get; private set; }
-    public string? After { get; private set; }
+    public string? Changes { get; private set; }
 
     public virtual bool GenerateAudit(EntityEntry origEntityEntry, IHttpContextAccessor? httpContextAccessor)
     {
@@ -47,7 +53,6 @@ public abstract class AuditEntityBase<TEntity, TAudit> : IAuditEntity
         // Determine action type
         AuditActionType? auditAction = origEntityEntry.State switch
         {
-            EntityState.Added => AuditActionType.Created,
             EntityState.Modified => AuditActionType.Updated,
             EntityState.Deleted => AuditActionType.Deleted,
             _ => null
@@ -72,63 +77,60 @@ public abstract class AuditEntityBase<TEntity, TAudit> : IAuditEntity
                 ActionUserId = userId;
             }
         }
-        // Else: ActionUserId remains null, indicating a system action or anonymous user.
 
-        JsonSerializerOptions serializerOptions = new()
+        if (ActionType == AuditActionType.Deleted)
         {
-            ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve
-        };
+            // For deleted entities, set Changes to null
+            Changes = null;
+            return true;
+        }
 
-        if (ActionType == AuditActionType.Created)
+        if (ActionType == AuditActionType.Updated)
         {
-            After = JsonSerializer.Serialize(origEntityEntry.CurrentValues.ToObject(), serializerOptions);
-        }
-        else if (ActionType == AuditActionType.Deleted)
-        {
-            Before = JsonSerializer.Serialize(origEntityEntry.OriginalValues.ToObject(), serializerOptions);
-        }
-        else if (ActionType == AuditActionType.Updated)
-        {
-            // Only audit if properties have actually changed.
-            // This check is important because EF Core might mark an entity as Modified
-            // even if no property values have changed (e.g. if a related entity was modified).
-            bool changed = origEntityEntry.Properties.Any(p => p.IsModified && !Equals(p.CurrentValue, p.OriginalValue));
-            if (!changed)
+            var changes = new Dictionary<string, object>();
+
+            // For updated entities, only capture changed properties
+            var changedProperties = origEntityEntry.Properties
+                .Where(p => p.IsModified && !Equals(p.CurrentValue, p.OriginalValue) && !ShouldIgnoreProperty(p))
+                .ToList();
+
+            if (changedProperties.Count == 0)
             {
-                // Also check collection modifications
-                foreach (var collectionEntry in origEntityEntry.Collections)
+                // Check for collection and reference changes
+                bool hasCollectionChanges = origEntityEntry.Collections.Any(c => c.IsModified);
+                bool hasReferenceChanges = origEntityEntry.References.Any(r => r.IsModified);
+
+                if (!hasCollectionChanges && !hasReferenceChanges)
                 {
-                    if (collectionEntry.IsModified)
-                    {
-                        changed = true;
-                        break;
-                    }
+                    return false; // No actual changes to log
                 }
             }
 
-            if (!changed)
+            foreach (var property in changedProperties)
             {
-                // And reference modifications
-                foreach (var referenceEntry in origEntityEntry.References)
+                changes[property.Metadata.Name] = new
                 {
-                    if (referenceEntry.IsModified)
-                    {
-                        changed = true;
-                        break;
-                    }
-                }
+                    NewValue = property.CurrentValue,
+                    property.OriginalValue
+                };
             }
 
-
-            if (!changed)
+            if (changes.Count == 0)
             {
-                return false; // No actual changes to log
+                return false; // No changes to audit
             }
 
-            Before = JsonSerializer.Serialize(origEntityEntry.OriginalValues.ToObject(), serializerOptions);
-            After = JsonSerializer.Serialize(origEntityEntry.CurrentValues.ToObject(), serializerOptions);
+            Changes = JsonSerializer.Serialize(changes, SerializerOptions);
+            return true;
         }
 
-        return true;
+        return false;
+    }
+
+    private static bool ShouldIgnoreProperty(PropertyEntry property)
+    {
+        // Check if the property has the AuditIgnore attribute
+        var propertyInfo = property.Metadata.PropertyInfo;
+        return propertyInfo?.GetCustomAttributes(typeof(AuditIgnoreAttribute), true).Length != 0 == true;
     }
 }

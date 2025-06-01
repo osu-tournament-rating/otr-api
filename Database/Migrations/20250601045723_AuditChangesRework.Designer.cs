@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    [Migration("20250601022845_AuditRework")]
-    partial class AuditRework
+    [Migration("20250601045723_AuditChangesRework")]
+    partial class AuditChangesRework
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -277,6 +277,10 @@ namespace Database.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("osu_id");
 
+                    b.Property<int>("PlayMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("play_mode");
+
                     b.Property<int>("ProcessingStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -403,13 +407,9 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("action_user_id");
 
-                    b.Property<string>("After")
+                    b.Property<string>("Changes")
                         .HasColumnType("jsonb")
-                        .HasColumnName("after");
-
-                    b.Property<string>("Before")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("before");
+                        .HasColumnName("changes");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -428,8 +428,20 @@ namespace Database.Migrations
                     b.HasKey("Id")
                         .HasName("pk_game_audits");
 
+                    b.HasIndex("ActionUserId")
+                        .HasDatabaseName("ix_game_audits_action_user_id");
+
+                    b.HasIndex("Created")
+                        .HasDatabaseName("ix_game_audits_created");
+
                     b.HasIndex("ReferenceId")
                         .HasDatabaseName("ix_game_audits_reference_id");
+
+                    b.HasIndex("ReferenceIdLock")
+                        .HasDatabaseName("ix_game_audits_reference_id_lock");
+
+                    b.HasIndex("ActionUserId", "Created")
+                        .HasDatabaseName("ix_game_audits_action_user_id_created");
 
                     b.ToTable("game_audits", (string)null);
                 });
@@ -664,13 +676,9 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("action_user_id");
 
-                    b.Property<string>("After")
+                    b.Property<string>("Changes")
                         .HasColumnType("jsonb")
-                        .HasColumnName("after");
-
-                    b.Property<string>("Before")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("before");
+                        .HasColumnName("changes");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -689,8 +697,20 @@ namespace Database.Migrations
                     b.HasKey("Id")
                         .HasName("pk_game_score_audits");
 
+                    b.HasIndex("ActionUserId")
+                        .HasDatabaseName("ix_game_score_audits_action_user_id");
+
+                    b.HasIndex("Created")
+                        .HasDatabaseName("ix_game_score_audits_created");
+
                     b.HasIndex("ReferenceId")
                         .HasDatabaseName("ix_game_score_audits_reference_id");
+
+                    b.HasIndex("ReferenceIdLock")
+                        .HasDatabaseName("ix_game_score_audits_reference_id_lock");
+
+                    b.HasIndex("ActionUserId", "Created")
+                        .HasDatabaseName("ix_game_score_audits_action_user_id_created");
 
                     b.ToTable("game_score_audits", (string)null);
                 });
@@ -856,13 +876,9 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("action_user_id");
 
-                    b.Property<string>("After")
+                    b.Property<string>("Changes")
                         .HasColumnType("jsonb")
-                        .HasColumnName("after");
-
-                    b.Property<string>("Before")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("before");
+                        .HasColumnName("changes");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -881,8 +897,20 @@ namespace Database.Migrations
                     b.HasKey("Id")
                         .HasName("pk_match_audits");
 
+                    b.HasIndex("ActionUserId")
+                        .HasDatabaseName("ix_match_audits_action_user_id");
+
+                    b.HasIndex("Created")
+                        .HasDatabaseName("ix_match_audits_created");
+
                     b.HasIndex("ReferenceId")
                         .HasDatabaseName("ix_match_audits_reference_id");
+
+                    b.HasIndex("ReferenceIdLock")
+                        .HasDatabaseName("ix_match_audits_reference_id_lock");
+
+                    b.HasIndex("ActionUserId", "Created")
+                        .HasDatabaseName("ix_match_audits_action_user_id_created");
 
                     b.ToTable("match_audits", (string)null);
                 });
@@ -1742,13 +1770,9 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("action_user_id");
 
-                    b.Property<string>("After")
+                    b.Property<string>("Changes")
                         .HasColumnType("jsonb")
-                        .HasColumnName("after");
-
-                    b.Property<string>("Before")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("before");
+                        .HasColumnName("changes");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -1767,8 +1791,20 @@ namespace Database.Migrations
                     b.HasKey("Id")
                         .HasName("pk_tournament_audits");
 
+                    b.HasIndex("ActionUserId")
+                        .HasDatabaseName("ix_tournament_audits_action_user_id");
+
+                    b.HasIndex("Created")
+                        .HasDatabaseName("ix_tournament_audits_created");
+
                     b.HasIndex("ReferenceId")
                         .HasDatabaseName("ix_tournament_audits_reference_id");
+
+                    b.HasIndex("ReferenceIdLock")
+                        .HasDatabaseName("ix_tournament_audits_reference_id_lock");
+
+                    b.HasIndex("ActionUserId", "Created")
+                        .HasDatabaseName("ix_tournament_audits_action_user_id_created");
 
                     b.ToTable("tournament_audits", (string)null);
                 });
@@ -1980,7 +2016,7 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Entities.GameAudit", b =>
                 {
                     b.HasOne("Database.Entities.Game", null)
-                        .WithMany()
+                        .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_game_audits_games_reference_id");
@@ -2043,7 +2079,7 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Entities.GameScoreAudit", b =>
                 {
                     b.HasOne("Database.Entities.GameScore", null)
-                        .WithMany()
+                        .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_game_score_audits_game_scores_reference_id");
@@ -2101,7 +2137,7 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Entities.MatchAudit", b =>
                 {
                     b.HasOne("Database.Entities.Match", null)
-                        .WithMany()
+                        .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_match_audits_matches_reference_id");
@@ -2314,7 +2350,7 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Entities.TournamentAudit", b =>
                 {
                     b.HasOne("Database.Entities.Tournament", null)
-                        .WithMany()
+                        .WithMany("Audits")
                         .HasForeignKey("ReferenceId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_tournament_audits_tournaments_reference_id");
@@ -2392,6 +2428,8 @@ namespace Database.Migrations
                 {
                     b.Navigation("AdminNotes");
 
+                    b.Navigation("Audits");
+
                     b.Navigation("Rosters");
 
                     b.Navigation("Scores");
@@ -2400,11 +2438,15 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Entities.GameScore", b =>
                 {
                     b.Navigation("AdminNotes");
+
+                    b.Navigation("Audits");
                 });
 
             modelBuilder.Entity("Database.Entities.Match", b =>
                 {
                     b.Navigation("AdminNotes");
+
+                    b.Navigation("Audits");
 
                     b.Navigation("Games");
 
@@ -2451,6 +2493,8 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Entities.Tournament", b =>
                 {
                     b.Navigation("AdminNotes");
+
+                    b.Navigation("Audits");
 
                     b.Navigation("Matches");
 

@@ -404,13 +404,9 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("action_user_id");
 
-                    b.Property<string>("After")
+                    b.Property<string>("Changes")
                         .HasColumnType("jsonb")
-                        .HasColumnName("after");
-
-                    b.Property<string>("Before")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("before");
+                        .HasColumnName("changes");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -677,13 +673,9 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("action_user_id");
 
-                    b.Property<string>("After")
+                    b.Property<string>("Changes")
                         .HasColumnType("jsonb")
-                        .HasColumnName("after");
-
-                    b.Property<string>("Before")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("before");
+                        .HasColumnName("changes");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -881,13 +873,9 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("action_user_id");
 
-                    b.Property<string>("After")
+                    b.Property<string>("Changes")
                         .HasColumnType("jsonb")
-                        .HasColumnName("after");
-
-                    b.Property<string>("Before")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("before");
+                        .HasColumnName("changes");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -1779,13 +1767,9 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("action_user_id");
 
-                    b.Property<string>("After")
+                    b.Property<string>("Changes")
                         .HasColumnType("jsonb")
-                        .HasColumnName("after");
-
-                    b.Property<string>("Before")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("before");
+                        .HasColumnName("changes");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()

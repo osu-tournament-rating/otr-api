@@ -11,7 +11,6 @@ namespace Database.Interceptors;
 /// </summary>
 public class AuditingInterceptor(IHttpContextAccessor? httpContextAccessor) : ISaveChangesInterceptor
 {
-    private readonly List<EntityEntry> _newEntries = [];
     private readonly IHttpContextAccessor? _httpContextAccessor = httpContextAccessor;
 
     public ValueTask<InterceptionResult<int>> SavingChangesAsync(
@@ -41,46 +40,6 @@ public class AuditingInterceptor(IHttpContextAccessor? httpContextAccessor) : IS
         return result;
     }
 
-    public async ValueTask<int> SavedChangesAsync(
-        SaveChangesCompletedEventData eventData,
-        int result,
-        CancellationToken cancellationToken = default
-    )
-    {
-        if (eventData.Context is null || _newEntries.Count <= 0)
-        {
-            return result;
-        }
-
-        foreach (EntityEntry entry in _newEntries)
-        {
-            CreateAudit(entry, eventData.Context, _httpContextAccessor);
-        }
-        _newEntries.Clear();
-
-        await eventData.Context.SaveChangesAsync(cancellationToken);
-
-        return result;
-    }
-
-    public int SavedChanges(SaveChangesCompletedEventData eventData, int result)
-    {
-        if (eventData.Context is null || _newEntries.Count <= 0)
-        {
-            return result;
-        }
-
-        foreach (EntityEntry entry in _newEntries)
-        {
-            CreateAudit(entry, eventData.Context, _httpContextAccessor);
-        }
-        _newEntries.Clear();
-
-        eventData.Context.SaveChanges();
-
-        return result;
-    }
-
     protected virtual void OnSavingChanges(DbContext context)
     {
         // Cache the current change list to avoid detecting changes multiple times
@@ -89,21 +48,13 @@ public class AuditingInterceptor(IHttpContextAccessor? httpContextAccessor) : IS
         // Get all entities that have a corresponding audit entity (by convention: [EntityName]Audit)
         // and are in a state that should be audited.
         IEnumerable<EntityEntry> auditableEntries = trackedEntries.Where(entry =>
-            entry.State is EntityState.Modified or EntityState.Added or EntityState.Deleted &&
+            entry.State is EntityState.Modified or EntityState.Deleted &&
             GetAuditType(entry.Entity.GetType()) != null
         );
 
         // Create audits
         foreach (EntityEntry entry in auditableEntries)
         {
-            // Newly created entities should be processed after changes are saved
-            // so that primary keys are created before the audit is created
-            if (entry.State is EntityState.Added)
-            {
-                _newEntries.Add(entry);
-                continue;
-            }
-
             CreateAudit(entry, context, _httpContextAccessor);
         }
     }
