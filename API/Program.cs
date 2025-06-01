@@ -18,7 +18,6 @@ using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.SwaggerGen;
 using API.SwaggerGen.Filters;
-using API.Utilities;
 using API.Utilities.AdminNotes;
 using API.Utilities.Extensions;
 using Asp.Versioning;
@@ -26,6 +25,7 @@ using AutoMapper;
 using Dapper;
 using Database;
 using Database.Entities;
+using Database.Interceptors;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -835,7 +835,7 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 #region Database Context
 
-builder.Services.AddScoped<AuditBlamingInterceptor>();
+builder.Services.AddScoped<AuditingInterceptor>();
 builder.Services.AddDbContext<OtrContext>((services, sqlOptions) =>
 {
     sqlOptions
@@ -851,7 +851,7 @@ builder.Services.AddDbContext<OtrContext>((services, sqlOptions) =>
                             .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("CREATE", StringComparison.OrdinalIgnoreCase))
                             .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("ALTER", StringComparison.OrdinalIgnoreCase)))))
         .LogTo(Log.Logger.Information, LogLevel.Information)
-        .AddInterceptors(services.GetRequiredService<AuditBlamingInterceptor>())
+        .AddInterceptors(services.GetRequiredService<AuditingInterceptor>())
         .UseSnakeCaseNamingConvention();
 });
 
@@ -945,6 +945,7 @@ builder.Services.AddScoped<IUserSettingsRepository, UserSettingsRepository>();
 #region Services
 
 builder.Services.AddScoped<IAdminNoteService, AdminNoteService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IBeatmapService, BeatmapService>();
 builder.Services.AddScoped<IGamesService, GamesService>();
 builder.Services.AddScoped<IGameScoresService, GameScoresService>();

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums;
 using Common.Enums.Verification;
 using Common.Utilities.Extensions;
 using Database.Entities.Interfaces;
@@ -16,8 +16,7 @@ namespace Database.Entities;
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<MatchAdminNote>,
-    IAuditableEntity<MatchAudit>
+public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<MatchAdminNote>
 {
     private string _name = string.Empty;
 
@@ -118,11 +117,15 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// </summary>
     public ICollection<RatingAdjustment> PlayerRatingAdjustments { get; set; } = [];
 
-    public ICollection<MatchAudit> Audits { get; set; } = [];
-
+    /// <summary>
+    /// A collection of <see cref="MatchAdminNote"/>s for the <see cref="Match"/>
+    /// </summary>
     public ICollection<MatchAdminNote> AdminNotes { get; set; } = [];
 
-    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+    /// <summary>
+    /// Collection of <see cref="MatchAudit"/> records for the <see cref="Match"/>
+    /// </summary>
+    public ICollection<MatchAudit> Audits { get; set; } = new List<MatchAudit>();
 
     public void ResetAutomationStatuses(bool force)
     {

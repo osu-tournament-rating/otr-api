@@ -96,7 +96,7 @@ builder.Services.AddDbContext<OtrContext>(o =>
             )
             .DefaultConnection
     )
-    .AddInterceptors(new AuditingInterceptor())
+    .AddInterceptors(new AuditingInterceptor(null))
     .UseSnakeCaseNamingConvention();
 });
 

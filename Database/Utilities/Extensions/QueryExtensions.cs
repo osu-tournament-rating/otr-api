@@ -412,8 +412,7 @@ public static class QueryExtensions
             .ThenInclude(gs => gs.AdminNotes)
             .ThenInclude(an => an.AdminUser.Player)
             .Include(g => g.AdminNotes)
-            .ThenInclude(an => an.AdminUser.Player)
-            .Include(g => g.Audits);
+            .ThenInclude(an => an.AdminUser.Player);
     }
 
     /// <summary>

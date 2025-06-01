@@ -64,8 +64,20 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
 
     public async Task<int> DeleteByMatchAndPlayerAsync(int matchId, int playerId)
     {
-        return await _context.GameScores
+        // Load the entities that will be deleted to ensure auditing is triggered
+        var scoresToDelete = await _context.GameScores
             .Where(gs => gs.Game.MatchId == matchId && gs.PlayerId == playerId)
-            .ExecuteDeleteAsync();
+            .ToListAsync();
+
+        if (scoresToDelete.Count == 0)
+        {
+            return 0;
+        }
+
+        // Remove entities through change tracking to trigger auditing
+        _context.GameScores.RemoveRange(scoresToDelete);
+        await _context.SaveChangesAsync();
+
+        return scoresToDelete.Count;
     }
 }

@@ -13,8 +13,7 @@ namespace Database.Entities;
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameScoreAdminNote>,
-    IAuditableEntity<GameScoreAudit>, IScoreStatistics
+public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameScoreAdminNote>, IScoreStatistics
 {
     /// <summary>
     /// Total score
@@ -108,11 +107,15 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     /// </summary>
     public Player Player { get; set; } = null!;
 
+    /// <summary>
+    /// A collection of <see cref="GameScoreAdminNote"/>s for the <see cref="GameScore"/>
+    /// </summary>
     public ICollection<GameScoreAdminNote> AdminNotes { get; set; } = [];
 
-    public ICollection<GameScoreAudit> Audits { get; set; } = [];
-
-    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+    /// <summary>
+    /// Collection of <see cref="GameScoreAudit"/> records for the <see cref="GameScore"/>
+    /// </summary>
+    public ICollection<GameScoreAudit> Audits { get; set; } = new List<GameScoreAudit>();
 
     /// <summary>
     /// Accuracy
