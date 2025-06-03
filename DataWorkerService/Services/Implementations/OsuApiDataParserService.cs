@@ -213,7 +213,7 @@ public class OsuApiDataParserService(
             _beatmapSetCache.TryAdd(beatmapSet.OsuId, beatmapSet);
             if (beatmapSet.Creator is not null)
             {
-                _playerCache.Add(beatmapSet.Creator.OsuId, beatmapSet.Creator);
+                _playerCache.TryAdd(beatmapSet.Creator.OsuId, beatmapSet.Creator);
             }
 
             beatmapSet.Beatmaps.ToList().ForEach(b =>
