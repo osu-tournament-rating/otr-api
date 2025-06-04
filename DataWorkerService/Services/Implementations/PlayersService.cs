@@ -123,8 +123,11 @@ public class PlayersService(
             }
 
             rulesetData.Pp = result.Statistics.Pp;
-            // Safe when IsRanked is true
-            rulesetData.GlobalRank = result.Statistics.GlobalRank!.Value;
+
+            if (result.Statistics.GlobalRank is not null)
+            {
+                rulesetData.GlobalRank = result.Statistics.GlobalRank.Value;
+            }
 
             // Update any ruleset variant data
             foreach (UserStatisticsVariant variant in result.Statistics.Variants.Where(v => v.IsRanked))
@@ -144,7 +147,7 @@ public class PlayersService(
             }
         }
 
-        if (!defaultRulesetIsControlled && player.User is not null)
+        if (!defaultRulesetIsControlled && player.User?.Settings is not null && lowestRank != int.MaxValue)
         {
             player.User.Settings.DefaultRuleset = defaultRuleset;
         }
