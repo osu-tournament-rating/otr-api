@@ -84,6 +84,10 @@ public class SearchService(
             {
                 PlayerRating? stats = player.Ratings
                     .FirstOrDefault(r => r.Ruleset == (player.User?.Settings.DefaultRuleset ?? player.DefaultRuleset));
+
+                // If a player has no rating for their default ruleset, use the highest rated ruleset available
+                stats ??= player.Ratings.OrderByDescending(r => r.Rating).FirstOrDefault();
+
                 return new PlayerSearchResultDTO
                 {
                     Id = player.Id,
