@@ -19,7 +19,7 @@ public class RefreshTokenAuthorizationTest(
     public async Task<bool> RunAsync(CancellationToken cancellationToken)
     {
         client.ClearCredentials();
-        var refreshToken = configuration.GetSection("OsuClient").GetValue<string>("RefreshToken");
+        string? refreshToken = configuration.GetSection("OsuClient").GetValue<string>("RefreshToken");
 
         if (string.IsNullOrEmpty(refreshToken))
         {

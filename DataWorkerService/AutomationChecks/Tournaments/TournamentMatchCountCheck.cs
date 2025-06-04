@@ -13,7 +13,7 @@ public class TournamentMatchCountCheck(
 {
     protected override bool OnChecking(Tournament entity)
     {
-        var validMatchesCount = entity.Matches.Count(m =>
+        int validMatchesCount = entity.Matches.Count(m =>
             m.VerificationStatus.IsPreVerifiedOrVerified());
 
         // Tournament has no valid matches
@@ -23,7 +23,7 @@ public class TournamentMatchCountCheck(
             return false;
         }
 
-        var matchesWithGamesCount = entity.Matches.Count(m => m.RejectionReason != MatchRejectionReason.NoGames);
+        int matchesWithGamesCount = entity.Matches.Count(m => m.RejectionReason != MatchRejectionReason.NoGames);
 
         // Number of valid matches is above the threshold
         if (validMatchesCount / (double)matchesWithGamesCount >= Constants.TournamentVerifiedMatchesPercentageThreshold)

@@ -21,7 +21,7 @@ public class GameRulesetCheckTests : AutomationChecksTestBase<GameRulesetCheck>
             : GameRejectionReason.RulesetMismatch;
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);

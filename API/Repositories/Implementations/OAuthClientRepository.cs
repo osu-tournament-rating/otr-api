@@ -16,7 +16,7 @@ public class OAuthClientRepository(OtrContext context, IPasswordHasher<OAuthClie
 
     public override async Task<OAuthClient> CreateAsync(OAuthClient entity)
     {
-        var hashedSecret = passwordHasher.HashPassword(entity, entity.Secret);
+        string hashedSecret = passwordHasher.HashPassword(entity, entity.Secret);
         entity.Secret = hashedSecret;
 
         return await base.CreateAsync(entity);

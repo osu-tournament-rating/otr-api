@@ -15,7 +15,7 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
         Match match = SeededMatch.Generate(rejectionReason: MatchRejectionReason.None);
 
         // Act
-        var actualPass = AutomationCheck.Check(match);
+        bool actualPass = AutomationCheck.Check(match);
 
         // Assert
         Assert.False(actualPass);
@@ -35,7 +35,7 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
         SeededGame.Generate(verificationStatus: VerificationStatus.PreRejected, match: match);
 
         // Act
-        var actualPass = AutomationCheck.Check(match);
+        bool actualPass = AutomationCheck.Check(match);
 
         // Assert
         Assert.False(actualPass);
@@ -85,7 +85,7 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
 
         if (verifiedGames >= 1)
         {
-            foreach (var _ in Enumerable.Range(1, verifiedGames))
+            foreach (int _ in Enumerable.Range(1, verifiedGames))
             {
                 SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
             }
@@ -93,14 +93,14 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
 
         if (rejectedGames >= 1)
         {
-            foreach (var _ in Enumerable.Range(1, rejectedGames))
+            foreach (int _ in Enumerable.Range(1, rejectedGames))
             {
                 SeededGame.Generate(verificationStatus: VerificationStatus.Rejected, match: match);
             }
         }
 
         // Act
-        var actualPass = AutomationCheck.Check(match);
+        bool actualPass = AutomationCheck.Check(match);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);
@@ -113,13 +113,13 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
         // Arrange
         Match match = SeededMatch.Generate(warningFlags: MatchWarningFlags.None);
 
-        foreach (var _ in Enumerable.Range(1, 4))
+        foreach (int _ in Enumerable.Range(1, 4))
         {
             SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
         }
 
         // Act
-        var passed = AutomationCheck.Check(match);
+        bool passed = AutomationCheck.Check(match);
 
         // Assert
         Assert.Equal(MatchWarningFlags.LowGameCount, match.WarningFlags);
@@ -136,7 +136,7 @@ public class MatchGameCountCheckTests : AutomationChecksTestBase<MatchGameCountC
         // Arrange
         Match match = SeededMatch.Generate(warningFlags: MatchWarningFlags.None);
 
-        foreach (var _ in Enumerable.Range(1, gameCount))
+        foreach (int _ in Enumerable.Range(1, gameCount))
         {
             SeededGame.Generate(verificationStatus: VerificationStatus.Verified, match: match);
         }

@@ -133,7 +133,7 @@ public class MatchStatsProcessor(
 
         // Precompute max match score from match rosters
         ICollection<MatchRoster> matchRosters = eGames.First().Match.Rosters;
-        var maxMatchScore = matchRosters.Max(r => r.Score);
+        int maxMatchScore = matchRosters.Max(r => r.Score);
 
         // Filter scores and group by player
         var playerScoreGroups = eGames
@@ -147,13 +147,13 @@ public class MatchStatsProcessor(
         return playerScoreGroups
         .Select(group =>
         {
-            (var playerId, List<GameScore> scores) = group;
+            (int playerId, List<GameScore> scores) = group;
 
             // Determine games the player participated in
             var playerGames = scores.Select(s => s.Game).Distinct().ToList();
 
-            var gamesWon = 0;
-            var gamesLost = 0;
+            int gamesWon = 0;
+            int gamesLost = 0;
 
             foreach (Game game in playerGames)
             {
@@ -173,7 +173,7 @@ public class MatchStatsProcessor(
 
             // Determine match outcome for the player's team
             MatchRoster? playerMatchRoster = matchRosters.FirstOrDefault(r => r.Roster.Contains(playerId));
-            var won = playerMatchRoster != null && playerMatchRoster.Score == maxMatchScore;
+            bool won = playerMatchRoster != null && playerMatchRoster.Score == maxMatchScore;
 
             // Determine teammate and opponent IDs based on match rosters
             List<int> teammateIds = playerMatchRoster?.Roster.Where(id => id != playerId).ToList() ?? [];

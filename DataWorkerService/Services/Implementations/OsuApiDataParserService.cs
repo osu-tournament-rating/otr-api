@@ -92,7 +92,7 @@ public class OsuApiDataParserService(
                     CountGeki = mpScore.Statistics.CountGeki,
                     CountKatu = mpScore.Statistics.CountKatu,
                     Pass = mpScore.Passed,
-                    Perfect = mpScore.Perfect != 0,
+                    Perfect = mpScore.Perfect,
                     Grade = mpScore.Grade,
                     Mods = mpScore.Mods,
                     Ruleset = mpScore.Ruleset,
@@ -137,7 +137,7 @@ public class OsuApiDataParserService(
 
     public async Task ProcessBeatmapsAsync(IEnumerable<long> beatmapOsuIds)
     {
-        foreach (var beatmapOsuId in beatmapOsuIds)
+        foreach (long beatmapOsuId in beatmapOsuIds)
         {
             // Test cache
             if (_beatmapCache.ContainsKey(beatmapOsuId))
@@ -213,7 +213,7 @@ public class OsuApiDataParserService(
             _beatmapSetCache.TryAdd(beatmapSet.OsuId, beatmapSet);
             if (beatmapSet.Creator is not null)
             {
-                _playerCache.Add(beatmapSet.Creator.OsuId, beatmapSet.Creator);
+                _playerCache.TryAdd(beatmapSet.Creator.OsuId, beatmapSet.Creator);
             }
 
             beatmapSet.Beatmaps.ToList().ForEach(b =>

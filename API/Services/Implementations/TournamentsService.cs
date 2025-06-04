@@ -140,6 +140,12 @@ public class TournamentsService(
 
         mapper.Map(wrapper, existing);
 
+        if (wrapper.VerificationStatus == VerificationStatus.Rejected)
+        {
+            await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(existing);
+            existing.RejectAllChildren();
+        }
+
         await tournamentsRepository.UpdateAsync(existing);
         return mapper.Map<TournamentCompactDTO>(existing);
     }

@@ -20,7 +20,7 @@ public class GameScoreCountCheck(ILogger<GameScoreCountCheck> logger) : Automati
         }
 
         GameScore[] validScores = [.. entity.Scores.Where(gs => gs.VerificationStatus.IsPreVerifiedOrVerified())];
-        var validScoresCount = validScores.Length;
+        int validScoresCount = validScores.Length;
 
         // Game has no valid scores
         if (validScoresCount == 0)

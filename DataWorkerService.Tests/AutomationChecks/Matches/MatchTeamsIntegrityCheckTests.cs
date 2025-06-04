@@ -130,16 +130,17 @@ public class MatchTeamsIntegrityCheckTests : AutomationChecksTestBase<MatchTeams
 
         Dictionary<Team, Player[]> players = GeneratePlayers(teamLobbySize);
 
-        GameScore[] _ = scoreAttributes
+        GameScore[] scores = scoreAttributes
             .Select(scoreAttribute => SeededScore.Generate(
                 verificationStatus: scoreAttribute.VerificationStatus,
+                processingStatus: ScoreProcessingStatus.Done,
                 team: scoreAttribute.ScoreTeam,
                 player: players[scoreAttribute.PlayerTeam][scoreAttribute.PlayerIndex],
                 game: games[scoreAttribute.GameIndex]))
             .ToArray();
 
         // Act
-        var actualPass = AutomationCheck.Check(match);
+        bool actualPass = AutomationCheck.Check(match);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);

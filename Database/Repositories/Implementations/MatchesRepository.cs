@@ -5,10 +5,14 @@ using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
+using LinqKit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
+/// <summary>
+/// Repository for managing <see cref="Match"/> entities
+/// </summary>
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
@@ -88,7 +92,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
     }
 
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
-        await _context.Matches.Where(x => matchIds.Contains(x.OsuId)).ToListAsync();
+        await _context.Matches.AsNoTracking().Where(x => matchIds.Contains(x.OsuId)).ToListAsync();
 
     public async Task<Match?> GetFullAsync(int id, bool verified)
     {
@@ -107,12 +111,42 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         //_ is a wildcard character in psql so it needs to have an escape character added in front of it.
         name = name.Replace("_", @"\_");
         return await _context.Matches
+            .Include(x => x.Tournament)
             .AsNoTracking()
             .WhereVerified()
             .WhereProcessingCompleted()
             .Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\"))
             .Take(30)
             .ToListAsync();
+    }
+
+    public async Task<Match?> MergeAsync(int parentId, IEnumerable<int> matchIds)
+    {
+        Match? parentMatch = await GetAsync(parentId);
+
+        if (parentMatch is null)
+        {
+            return null;
+        }
+
+        ICollection<Match> childMatches = await _context.Matches
+            .Include(m => m.Games)
+            .Where(m => matchIds.Contains(m.Id))
+            .ToListAsync();
+
+        childMatches.ForEach(child => child.Games.ForEach(childGame =>
+        {
+            childGame.Match = parentMatch;
+        }));
+
+        // Save before deleting child matches
+        await _context.SaveChangesAsync();
+
+        // Delete child matches using tracked deletion to trigger auditing
+        _context.Matches.RemoveRange(childMatches);
+        await _context.SaveChangesAsync();
+
+        return (await GetFullAsync(parentId, false))!;
     }
 
     public async Task<Match?> UpdateVerificationStatusAsync(
@@ -133,6 +167,20 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         return match;
     }
 
+    public async Task LoadGamesWithScoresAsync(Match match)
+    {
+        await _context.Entry(match)
+            .Collection(m => m.Games)
+            .LoadAsync();
+
+        foreach (Game game in match.Games)
+        {
+            await _context.Entry(game)
+                .Collection(g => g.Scores)
+                .LoadAsync();
+        }
+    }
+
     public async Task<IEnumerable<Match>> GetPlayerMatchesAsync(
         long osuId,
         Ruleset ruleset,
@@ -140,6 +188,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         DateTime after
     ) =>
         await _context.Matches
+            .AsNoTracking()
             .WhereVerified()
             .WhereProcessingCompleted()
             .WherePlayerParticipated(osuId)

@@ -15,4 +15,9 @@ public class TournamentDTO : TournamentCompactDTO
     /// All admin notes associated with the tournament
     /// </summary>
     public ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
+
+    /// <summary>
+    /// All player tournament stats associated with the tournament
+    /// </summary>
+    public ICollection<PlayerTournamentStatsBaseDTO> PlayerTournamentStats { get; init; } = [];
 }

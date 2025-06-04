@@ -19,7 +19,7 @@ public class GameEndTimeCheckTests : AutomationChecksTestBase<GameEndTimeCheck>
         Game game = SeededGame.Generate(endTime: endTime, rejectionReason: GameRejectionReason.None);
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);
@@ -34,7 +34,7 @@ public class GameEndTimeCheckTests : AutomationChecksTestBase<GameEndTimeCheck>
         game.EndTime = default;
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.False(actualPass);

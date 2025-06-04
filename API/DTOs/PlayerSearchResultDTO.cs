@@ -1,10 +1,12 @@
-using API.Utilities;
+using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a search result for a player for a given ruleset
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlayerSearchResultDTO
 {
     /// <summary>
@@ -23,6 +25,11 @@ public class PlayerSearchResultDTO
     public double? Rating { get; set; }
 
     /// <summary>
+    /// Ruleset of the player's rating
+    /// </summary>
+    public Ruleset? Ruleset { get; set; }
+
+    /// <summary>
     /// Current global rank of the player for the given ruleset
     /// </summary>
     public int? GlobalRank { get; set; }
@@ -30,7 +37,7 @@ public class PlayerSearchResultDTO
     /// <summary>
     /// Current rating tier of the player for the given ruleset
     /// </summary>
-    public string? RatingTier => Rating.HasValue ? RatingUtils.GetMajorTier(Rating.Value) : null;
+    public TierProgressDTO? TierProgress => Rating.HasValue ? new TierProgressDTO(Rating.Value) : null;
 
     /// <summary>
     /// osu! username of the player
@@ -45,5 +52,5 @@ public class PlayerSearchResultDTO
     /// <summary>
     /// Denotes the player is a friend of the requesting user
     /// </summary>
-    public bool IsFriend;
+    public bool IsFriend { get; set; }
 }

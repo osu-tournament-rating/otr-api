@@ -20,7 +20,7 @@ public class GameModCheckTests : AutomationChecksTestBase<GameModCheck>
             : GameRejectionReason.InvalidMods;
 
         // Act
-        var actualPass = AutomationCheck.Check(game);
+        bool actualPass = AutomationCheck.Check(game);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);

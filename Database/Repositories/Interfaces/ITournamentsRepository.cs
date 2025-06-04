@@ -14,6 +14,10 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Whether to eagerly load navigational properties.
     /// If true, all returned entities will not be tracked by the context
     /// </param>
+    /// <remarks>
+    /// <see cref="Entities.PlayerTournamentStats"/> will be included for this tournament,
+    /// the <see cref="Entities.PlayerMatchStats"/> will be included for matches played in this tournament.
+    /// </remarks>
     Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
 
     /// <summary>
@@ -194,4 +198,28 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// Gets a map of <see cref="Common.Enums.Verification.VerificationStatus"/>es to the number of <see cref="Database.Entities.Tournament"/>s with the status
     /// </summary>
     Task<Dictionary<VerificationStatus, int>> GetVerificationStatusStatsAsync();
+
+    /// <summary>
+    /// Gets a map of years to the number of <see cref="Database.Entities.Tournament"/>s in that year
+    /// </summary>
+    /// <param name="verified">Filters results for only verified tournaments</param>
+    Task<Dictionary<int, int>> GetYearStatsAsync(bool verified = true);
+
+    /// <summary>
+    /// Gets a map of <see cref="Common.Enums.Ruleset"/>s to the number of <see cref="Database.Entities.Tournament"/>s in that ruleset
+    /// </summary>
+    /// <param name="verified">Filters results for only verified tournaments</param>
+    Task<Dictionary<Ruleset, int>> GetRulesetStatsAsync(bool verified = true);
+
+    /// <summary>
+    /// Gets a map of lobby sizes to the number of <see cref="Database.Entities.Tournament"/>s with that lobby size
+    /// </summary>
+    /// <param name="verified">Filters results for only verified tournaments</param>
+    Task<Dictionary<int, int>> GetLobbySizeStatsAsync(bool verified = true);
+
+    /// <summary>
+    /// Loads the matches, games, and scores for a tournament to enable cascading operations
+    /// </summary>
+    /// <param name="tournament">The tournament to load children for</param>
+    Task LoadMatchesWithGamesAndScoresAsync(Tournament tournament);
 }

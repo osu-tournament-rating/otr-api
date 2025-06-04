@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities.Extensions;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,20 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class ClientsController(IOAuthClientService clientService) : Controller
 {
+    /// <summary>
+    /// Create a new OAuth client
+    /// </summary>
+    /// <remarks>
+    /// Client secret is only returned from creation.
+    /// The user will have to reset the secret if they lose access.
+    /// </remarks>
+    /// <response code="200">Returns created client credentials</response>
+    [HttpPost]
+    [Authorize(Roles = OtrClaims.Roles.User)]
+    [ProducesResponseType<OAuthClientCreatedDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> CreateAsync() =>
+        Ok(await clientService.CreateAsync(User.GetSubjectId()));
+
     /// <summary>
     /// Set the rate limit for a client
     /// </summary>

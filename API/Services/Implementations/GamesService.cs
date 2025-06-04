@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
+using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 
@@ -30,6 +31,12 @@ public class GamesService(IGamesRepository gamesRepository, IPlayersRepository p
         }
 
         mapper.Map(game, existing);
+
+        if (game.VerificationStatus == VerificationStatus.Rejected)
+        {
+            await gamesRepository.LoadScoresAsync(existing);
+            existing.RejectAllChildren();
+        }
 
         await gamesRepository.UpdateAsync(existing);
         return mapper.Map<GameDTO>(existing);

@@ -24,7 +24,7 @@ public class EnumMetadataSchemaFilter : ISchemaFilter
     /// </summary>
     private bool CanRetrieveDocumentation(Type type)
     {
-        var asmName = type.Assembly.GetName().Name;
+        string? asmName = type.Assembly.GetName().Name;
 
         if (string.IsNullOrEmpty(asmName))
         {
@@ -38,7 +38,7 @@ public class EnumMetadataSchemaFilter : ISchemaFilter
         }
 
         // Try to load xml
-        var xmlPath = AppDomain.CurrentDomain.BaseDirectory + asmName + ".xml";
+        string xmlPath = AppDomain.CurrentDomain.BaseDirectory + asmName + ".xml";
         if (!File.Exists(xmlPath))
         {
             return false;
@@ -89,7 +89,7 @@ public class EnumMetadataSchemaFilter : ISchemaFilter
             .ToList();
 
         var descriptionsExtensionValue = new OpenApiArray();
-        foreach (var nodePath in enumNodePaths)
+        foreach (string? nodePath in enumNodePaths)
         {
             // Try to get the xml node from any of the given navigators
             XPathNavigator? memberNode = _xmlNavigators
@@ -97,7 +97,7 @@ public class EnumMetadataSchemaFilter : ISchemaFilter
                 .OfType<XPathNavigator>()
                 .FirstOrDefault();
 
-            var output = "";
+            string output = "";
 
             if (memberNode is null)
             {

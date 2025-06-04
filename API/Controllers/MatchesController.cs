@@ -46,6 +46,27 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     /// <summary>
+    /// Links games from provided matches into a single match id before deleting
+    /// the provided matches
+    /// </summary>
+    /// <param name="id">Id of the match to link games to</param>
+    /// <param name="matchIds">Match ids to unlink games from before deletion</param>
+    /// <response code="404">A match matching the given id does not exist</response>
+    /// <response code="200">State of the match after merging</response>
+    [HttpPost("{id:int}:merge")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> MergeAsync(int id, [FromBody] IEnumerable<int> matchIds)
+    {
+        MatchDTO? mergedMatch = await matchesService.MergeAsync(id, matchIds);
+
+        return mergedMatch is null
+            ? NotFound()
+            : Ok(mergedMatch);
+    }
+
+    /// <summary>
     /// Amend match data
     /// </summary>
     /// <param name="id">Match id</param>
@@ -102,5 +123,27 @@ public class MatchesController(IMatchesService matchesService) : Controller
 
         await matchesService.DeleteAsync(id);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Delete all scores belonging to a player for a given match
+    /// </summary>
+    /// <param name="id">Match id</param>
+    /// <param name="playerId">Player id</param>
+    /// <response code="404">A match matching the given id does not exist</response>
+    /// <response code="200">Returns the number of scores deleted</response>
+    [HttpDelete("{id:int}/player/{playerId:int}")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<int>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> DeletePlayerScoresAsync(int id, int playerId)
+    {
+        if (!await matchesService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        int deletedCount = await matchesService.DeletePlayerScoresAsync(id, playerId);
+        return Ok(deletedCount);
     }
 }

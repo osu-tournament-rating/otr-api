@@ -4,6 +4,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace Database;
 
+/// <summary>
+/// Factory for creating <see cref="OtrContext"/> instances at design time
+/// </summary>
 public class OtrDbContextFactory : IDesignTimeDbContextFactory<OtrContext>
 {
     public OtrContext CreateDbContext(string[] args)

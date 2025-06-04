@@ -25,7 +25,7 @@ public class ScoreMinimumCheckTests : AutomationChecksTestBase<ScoreMinimumCheck
             : ScoreRejectionReason.ScoreBelowMinimum;
 
         // Act
-        var actualPass = AutomationCheck.Check(gameScore);
+        bool actualPass = AutomationCheck.Check(gameScore);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);

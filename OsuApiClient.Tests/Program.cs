@@ -29,7 +29,7 @@ builder.ConfigureServices((ctx, services) =>
 {
     // Configure client
     var clientConfiguration = new OsuClientConfiguration();
-    ctx.Configuration.GetSection("OsuClient").Bind(clientConfiguration);
+    ctx.Configuration.GetSection(OsuClientConfiguration.Position).Bind(clientConfiguration);
 
     services.AddOsuApiClient(new OsuClientOptions
     {

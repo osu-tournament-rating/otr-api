@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Database.Repositories.Implementations;
 
+/// <summary>
+/// Base implementation of <see cref="IRepository{T}"/> providing common CRUD operations
+/// </summary>
 public class RepositoryBase<T> : IRepository<T> where T : class, IEntity
 {
     private readonly OtrContext _context;

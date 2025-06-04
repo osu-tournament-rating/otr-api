@@ -12,7 +12,7 @@ public static class Constants
     /// Mods that are ineligible for ratings
     /// </summary>
     public static readonly IEnumerable<Mods> InvalidMods =
-        [Mods.SuddenDeath, Mods.Perfect, Mods.Relax, Mods.Autoplay, Mods.SpunOut, Mods.Relax2];
+        [Mods.SuddenDeath, Mods.Perfect, Mods.Relax, Mods.Autoplay, Mods.Relax2];
 
     /// <summary>
     /// Lowest (non-inclusive) <see cref="Database.Entities.GameScore.Score"/> for a

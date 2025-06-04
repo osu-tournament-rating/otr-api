@@ -20,7 +20,7 @@ public class ScoreModCheckTests : AutomationChecksTestBase<ScoreModCheck>
             : ScoreRejectionReason.InvalidMods;
 
         // Act
-        var actualPass = AutomationCheck.Check(score);
+        bool actualPass = AutomationCheck.Check(score);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);

@@ -40,7 +40,29 @@ public interface IMatchesRepository : IRepository<Match>
     /// <param name="verified">Whether the match (and all child navigations) are verified</param>
     Task<Match?> GetFullAsync(int id, bool verified);
 
+    /// <summary>
+    /// Searches for matches by name
+    /// </summary>
+    /// <param name="name">Name to search for</param>
+    /// <returns>A list of matches that match the name</returns>
     Task<IEnumerable<Match>> SearchAsync(string name);
+
+    /// <summary>
+    /// Links the games of each provided match to the parent match, then deletes the provided matches
+    /// </summary>
+    /// <remarks>
+    /// Specifically, for each game of each match provided in <see cref="matchIds"/>,
+    /// the Match property is reassigned to the match whose ID equals <see cref="parentId"/>.
+    /// After the linking happens, each match provided in <see cref="matchIds"/> is deleted.
+    /// </remarks>
+    /// <param name="matchIds">
+    /// Ids of the matches to merge into the parent match
+    /// </param>
+    /// <returns>
+    /// The updated parent match with child navigations, or null if the parent could not be found.
+    /// If this method returns null, no data is modified.
+    /// </returns>
+    Task<Match?> MergeAsync(int parentId, IEnumerable<int> matchIds);
 
     /// <summary>
     /// Updates the verification status of a match for the given id
@@ -54,6 +76,12 @@ public interface IMatchesRepository : IRepository<Match>
         VerificationStatus verificationStatus,
         int? verifierId = null
     );
+
+    /// <summary>
+    /// Loads Games with their Scores for an existing tracked Match entity
+    /// </summary>
+    /// <param name="match">The tracked Match entity to load Games for</param>
+    Task LoadGamesWithScoresAsync(Match match);
 
     Task<IEnumerable<Match>> GetPlayerMatchesAsync(long osuId, Ruleset ruleset, DateTime before, DateTime after);
 }

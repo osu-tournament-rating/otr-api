@@ -32,7 +32,7 @@ public class SecurityMetadataOperationFilter : IOperationFilter
         operation.AddAuthExtension(true);
         operation.Security.Add(SecurityRequirements.BearerSecurityRequirement);
 
-        var desc = "\n\nRequires Authorization:";
+        string desc = "\n\nRequires Authorization:";
 
         if (authAttributes.Any(attr => attr.Policy != null))
         {

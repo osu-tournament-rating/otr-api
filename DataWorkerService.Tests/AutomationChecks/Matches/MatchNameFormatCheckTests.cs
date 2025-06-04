@@ -29,7 +29,7 @@ public class MatchNameFormatCheckTests : AutomationChecksTestBase<MatchNameForma
         Match match = SeededMatch.Generate(name: matchName, warningFlags: MatchWarningFlags.None);
 
         // Act
-        var actualPass = AutomationCheck.Check(match);
+        bool actualPass = AutomationCheck.Check(match);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);

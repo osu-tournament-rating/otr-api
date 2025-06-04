@@ -19,7 +19,7 @@ public class CodeAuthorizationTest(
     public async Task<bool> RunAsync(CancellationToken cancellationToken)
     {
         client.ClearCredentials();
-        var authCode = configuration.GetSection("OsuClient").GetValue<string>("AuthCode");
+        string? authCode = configuration.GetSection("OsuClient").GetValue<string>("AuthCode");
 
         if (string.IsNullOrEmpty(authCode))
         {

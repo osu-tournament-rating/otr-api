@@ -37,17 +37,11 @@ public static class ClaimsPrincipalExtensions
         IsInRole(claimsPrincipal, OtrClaims.Roles.Whitelist);
 
     /// <summary>
-    /// Gets the <see cref="OtrClaims.TokenType"/> of the principle
-    /// </summary>
-    public static string? GetTokenType(this ClaimsPrincipal claimsPrincipal) =>
-        claimsPrincipal.FindFirst(OtrClaims.TokenType)?.Value;
-
-    /// <summary>
     /// Gets the custom rate limit of the principle if available
     /// </summary>
     public static int? GetRateLimitOverride(this ClaimsPrincipal claimsPrincipal)
     {
-        if (!int.TryParse(claimsPrincipal.FindFirst(OtrClaims.RateLimitOverrides)?.Value, out var limit))
+        if (!int.TryParse(claimsPrincipal.FindFirst(OtrClaims.RateLimitOverrides)?.Value, out int limit))
         {
             return null;
         }
@@ -73,8 +67,8 @@ public static class ClaimsPrincipalExtensions
     /// <exception cref="ArgumentException">If the principal does not contain a 'sub' claim</exception>
     public static int GetSubjectId(this ClaimsPrincipal claimsPrincipal)
     {
-        var sub = claimsPrincipal.Identity?.Name ?? claimsPrincipal.FindFirst(OtrClaims.Subject)?.Value;
-        if (!int.TryParse(sub, out var idInt))
+        string? sub = claimsPrincipal.Identity?.Name ?? claimsPrincipal.FindFirst(OtrClaims.Subject)?.Value;
+        if (!int.TryParse(sub, out int idInt))
         {
             throw new ArgumentException(
                 $"The claims principle did not contain a valid '{OtrClaims.Subject}' claim"

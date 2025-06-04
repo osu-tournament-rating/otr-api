@@ -1,4 +1,5 @@
 ﻿using Common.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Database.Entities.Interfaces;
@@ -38,16 +39,17 @@ public interface IAuditEntity : IEntity
     public AuditActionType ActionType { get; }
 
     /// <summary>
-    /// A dictionary containing information about property changes.
-    /// The key is the name of the property, and the value is a <see cref="AuditChangelogEntry"/>
+    /// JSON object containing all field changes made to the entity.
+    /// Format: { "FieldName": { "NewValue": value, "OriginalValue": value }, ... }
     /// </summary>
-    public IDictionary<string, AuditChangelogEntry> Changes { get; }
+    public string? Changes { get; }
 
     /// <summary>
     /// Populates the audit with values from the given <see cref="EntityEntry"/>
     /// </summary>
     /// <param name="origEntityEntry">The <see cref="EntityEntry"/> for the entity being audited</param>
+    /// <param name="httpContextAccessor">Accessor for the current HttpContext to determine the user</param>
     /// <remarks>Allows the implementation of custom logic for the way the audit is generated</remarks>
     /// <returns>A boolean that indicates whether the audit should be saved or not</returns>
-    public bool GenerateAudit(EntityEntry origEntityEntry);
+    public bool GenerateAudit(EntityEntry origEntityEntry, IHttpContextAccessor? httpContextAccessor);
 }

@@ -13,14 +13,14 @@ public class BitLengthAttribute : ValidationAttribute
 
     public override bool IsValid(object? value)
     {
-        var strValue = value as string;
+        string? strValue = value as string;
         if (string.IsNullOrEmpty(strValue))
         {
             return true;
         }
 
         // Multiply n bytes by 8 to get n bits
-        var bits = Encoding.UTF8.GetBytes(strValue).Length * 8;
+        int bits = Encoding.UTF8.GetBytes(strValue).Length * 8;
         return bits >= Minimum && bits <= Maximum;
     }
 }

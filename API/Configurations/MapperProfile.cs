@@ -1,12 +1,17 @@
 using API.DTOs;
+using API.DTOs.Audit;
 using API.Utilities;
 using API.Utilities.Extensions;
 using AutoMapper;
+using Common.Enums;
 using Database.Entities;
 using Database.Entities.Processor;
 
 namespace API.Configurations;
 
+/// <summary>
+/// AutoMapper profile for mapping between entities and DTOs
+/// </summary>
 public class MapperProfile : Profile
 {
     public MapperProfile()
@@ -57,7 +62,8 @@ public class MapperProfile : Profile
         CreateMap<Match, MatchCreatedResultDTO>()
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
-        CreateMap<Match, MatchSearchResultDTO>();
+        CreateMap<Match, MatchSearchResultDTO>()
+            .ForMember(x => x.TournamentName, opt => opt.MapFrom(y => y.Tournament.Name));
 
         CreateMap<OAuthClient, OAuthClientDTO>()
             .ForMember(x => x.ClientId, opt => opt.MapFrom(y => y.Id));
@@ -70,7 +76,10 @@ public class MapperProfile : Profile
         CreateMap<Player, PlayerCompactDTO>()
             .ForMember(x => x.UserId, opt => opt.MapFrom(y => y.User!.Id));
         CreateMap<PlayerOsuRulesetData, PlayerOsuRulesetDataDTO>();
-        CreateMap<PlayerTournamentStats, PlayerTournamentStatsDTO>();
+
+        CreateMap<PlayerTournamentStats, PlayerTournamentStatsBaseDTO>();
+        CreateMap<PlayerTournamentStats, PlayerTournamentStatsDTO>()
+            .IncludeBase<PlayerTournamentStats, PlayerTournamentStatsBaseDTO>();
 
         CreateMap<Tournament, TournamentCompactDTO>();
         CreateMap<TournamentCompactDTO, Tournament>(MemberList.Source)
@@ -78,16 +87,46 @@ public class MapperProfile : Profile
             .ForMember(x => x.VerifiedByUser, opt => opt.Ignore());
 
         CreateMap<Tournament, TournamentDTO>();
+
         CreateMap<Tournament, TournamentCreatedResultDTO>()
             .MapAsCreatedResult()
             .AfterMap<GenerateLocationUriAction>();
-        CreateMap<Tournament, TournamentSearchResultDTO>()
-            .ForMember(x => x.Ruleset, opt => opt.MapFrom(y => y.Ruleset));
+
+        CreateMap<Tournament, TournamentSearchResultDTO>();
 
         CreateMap<User, UserCompactDTO>();
         CreateMap<User, UserDTO>();
         CreateMap<UserSettings, UserSettingsDTO>()
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(us => us.DefaultRuleset))
             .ForMember(x => x.RulesetIsControlled, opt => opt.MapFrom(us => us.DefaultRulesetIsControlled));
+
+        // Audit Logs
+        CreateMap<GameAudit, AuditDTO>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Created))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.ActionUserId))
+            .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.ReferenceIdLock))
+            .ForMember(dest => dest.Changes, opt => opt.MapFrom(src => src.Changes))
+            .ForMember(dest => dest.EntityType, opt => opt.MapFrom(_ => AuditEntityType.Game));
+
+        CreateMap<GameScoreAudit, AuditDTO>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Created))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.ActionUserId))
+            .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.ReferenceIdLock))
+            .ForMember(dest => dest.Changes, opt => opt.MapFrom(src => src.Changes))
+            .ForMember(dest => dest.EntityType, opt => opt.MapFrom(_ => AuditEntityType.GameScore));
+
+        CreateMap<MatchAudit, AuditDTO>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Created))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.ActionUserId))
+            .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.ReferenceIdLock))
+            .ForMember(dest => dest.Changes, opt => opt.MapFrom(src => src.Changes))
+            .ForMember(dest => dest.EntityType, opt => opt.MapFrom(_ => AuditEntityType.Match));
+
+        CreateMap<TournamentAudit, AuditDTO>()
+            .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Created))
+            .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.ActionUserId))
+            .ForMember(dest => dest.EntityId, opt => opt.MapFrom(src => src.ReferenceIdLock))
+            .ForMember(dest => dest.Changes, opt => opt.MapFrom(src => src.Changes))
+            .ForMember(dest => dest.EntityType, opt => opt.MapFrom(_ => AuditEntityType.Tournament));
     }
 }

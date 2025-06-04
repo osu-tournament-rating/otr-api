@@ -27,7 +27,7 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
 
         if (verifiedMatchCount >= 1)
         {
-            foreach (var _ in Enumerable.Range(1, verifiedMatchCount))
+            foreach (int _ in Enumerable.Range(1, verifiedMatchCount))
             {
                 SeededMatch.Generate(
                     verificationStatus: VerificationStatus.Verified,
@@ -40,7 +40,7 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
 
         if (totalMatchCount - verifiedMatchCount >= 1)
         {
-            foreach (var _ in Enumerable.Range(1, totalMatchCount - verifiedMatchCount))
+            foreach (int _ in Enumerable.Range(1, totalMatchCount - verifiedMatchCount))
             {
                 SeededMatch.Generate(
                     verificationStatus: VerificationStatus.Rejected,
@@ -50,7 +50,7 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
         }
 
         // Act
-        var actualPass = AutomationCheck.Check(tournament);
+        bool actualPass = AutomationCheck.Check(tournament);
 
         // Assert
         Assert.Equal(expectedPass, actualPass);
@@ -63,7 +63,7 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
         Tournament tournament = SeededTournament.Generate(rejectionReason: TournamentRejectionReason.None);
 
         // Act
-        var actualPass = AutomationCheck.Check(tournament);
+        bool actualPass = AutomationCheck.Check(tournament);
 
         // Assert
         Assert.False(actualPass);
@@ -80,7 +80,7 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
         SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, tournament: tournament);
 
         // Act
-        var actualPass = AutomationCheck.Check(tournament);
+        bool actualPass = AutomationCheck.Check(tournament);
 
         // Assert
         Assert.False(actualPass);
@@ -97,7 +97,7 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
         SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, rejectionReason: MatchRejectionReason.NoGames, tournament: tournament);
 
         // Act
-        var actualPass = AutomationCheck.Check(tournament);
+        bool actualPass = AutomationCheck.Check(tournament);
 
         // Assert
         Assert.True(actualPass);
@@ -114,7 +114,7 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
         SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, rejectionReason: MatchRejectionReason.NoValidGames, tournament: tournament);
 
         // Act
-        var actualPass = AutomationCheck.Check(tournament);
+        bool actualPass = AutomationCheck.Check(tournament);
 
         // Assert
         Assert.False(actualPass);
@@ -131,7 +131,7 @@ public class TournamentMatchCountCheckTests : AutomationChecksTestBase<Tournamen
         SeededMatch.Generate(verificationStatus: VerificationStatus.Rejected, rejectionReason: MatchRejectionReason.NoGames, tournament: tournament);
 
         // Act
-        var actualPass = AutomationCheck.Check(tournament);
+        bool actualPass = AutomationCheck.Check(tournament);
 
         // Assert
         Assert.False(actualPass);

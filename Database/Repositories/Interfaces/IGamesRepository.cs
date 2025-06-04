@@ -11,4 +11,10 @@ public interface IGamesRepository : IRepository<Game>
     /// <param name="id">Game id</param>
     /// <param name="verified">Whether the game and all child navigations must be verified</param>
     public Task<Game?> GetAsync(int id, bool verified);
+
+    /// <summary>
+    /// Loads the scores for a game to enable cascading operations
+    /// </summary>
+    /// <param name="game">The game to load scores for</param>
+    Task LoadScoresAsync(Game game);
 }

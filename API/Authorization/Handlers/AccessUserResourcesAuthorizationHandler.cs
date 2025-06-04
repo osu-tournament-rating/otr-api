@@ -25,7 +25,7 @@ public class AccessUserResourcesAuthorizationHandler(
         }
 
         // Reject if the request does not pass "id" in route
-        if (int.TryParse(_httpContext.Request.RouteValues["id"]?.ToString(), out var routeId))
+        if (int.TryParse(_httpContext.Request.RouteValues["id"]?.ToString(), out int routeId))
         {
             // Allow requests that are privileged or have matching user id and target route id
             if (context.User.IsAdmin() || context.User.GetSubjectId() == routeId)

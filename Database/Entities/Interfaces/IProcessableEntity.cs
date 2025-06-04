@@ -27,10 +27,4 @@ public interface IProcessableEntity : IUpdateableEntity
     /// </example>
     /// <param name="force">Whether to overwrite data which has a VerificationStatus of Verified or Rejected</param>
     public void ResetAutomationStatuses(bool force);
-
-    /// <summary>
-    /// Mark the entity's VerificationStatus
-    /// as "Verified" if "PreVerified" and "Rejected" if "PreRejected"
-    /// </summary>
-    public void ConfirmPreVerificationStatus();
 }

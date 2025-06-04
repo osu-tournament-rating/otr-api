@@ -113,27 +113,6 @@ public static class OtrClaims
     }
 
     /// <summary>
-    /// Claim that describes the functional type of the JWT
-    /// </summary>
-    public const string TokenType = "token-typ";
-
-    /// <summary>
-    /// Valid values for the <see cref="OtrClaims.TokenType"/> claim
-    /// </summary>
-    public static class TokenTypes
-    {
-        /// <summary>
-        /// Denotes the JWT as being an access token
-        /// </summary>
-        public const string AccessToken = "access";
-
-        /// <summary>
-        /// Denotes the JWT as being a refresh token
-        /// </summary>
-        public const string RefreshToken = "refresh";
-    }
-
-    /// <summary>
     /// Claim that describes the subject of the JWT
     /// </summary>
     /// <remarks>
@@ -164,9 +143,6 @@ public static class OtrClaims
             Roles.Verifier => "Role granted to users with permission to verify submission data.",
             Roles.Submitter => "Role granted to users with permission to submit tournament data.",
             Roles.Whitelist => "Role granted to users and clients to allow access during times of restricted use.",
-            TokenType => "Claim that describes the functional type of the JWT.",
-            TokenTypes.AccessToken => "Denotes the JWT as being an access token.",
-            TokenTypes.RefreshToken => "Denotes the JWT as being a refresh token.",
             Subject => "Claim that describes the subject of the JWT.",
             Instance => "Claim encoded into all JWTs to induce randomness in the payload.",
             RateLimitOverrides => "Claim that describes an override to the default rate limit.",

@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
-using Common.Utilities;
+using Common.Utilities.Extensions;
 using Database.Entities.Interfaces;
 using Database.Utilities;
+using LinqKit;
 
 namespace Database.Entities;
 
@@ -14,14 +14,20 @@ namespace Database.Entities;
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>,
-    IAuditableEntity<TournamentAudit>
+[SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
+public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>
 {
+    private string _name = string.Empty;
+
     /// <summary>
     /// Name
     /// </summary>
     [MaxLength(512)]
-    public string Name { get; set; } = null!;
+    public string Name
+    {
+        get => string.IsNullOrEmpty(_name) ? $"Tournament {Id}" : _name;
+        set => _name = value;
+    }
 
     /// <summary>
     /// Abbreviation
@@ -106,26 +112,23 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     public ICollection<PlayerTournamentStats> PlayerTournamentStats { get; set; } = [];
 
     /// <summary>
-    /// A collection of <see cref="TournamentAudit"/>s which are used to track the changes
-    /// to this entity over time
-    /// </summary>
-    public ICollection<TournamentAudit> Audits { get; set; } = [];
-
-    /// <summary>
     /// A collection of <see cref="TournamentAdminNote"/>s for the tournament
     /// </summary>
     public ICollection<TournamentAdminNote> AdminNotes { get; set; } = [];
+
+    /// <summary>
+    /// Collection of <see cref="TournamentAudit"/> records for the <see cref="Tournament"/>
+    /// </summary>
+    public ICollection<TournamentAudit> Audits { get; set; } = new List<TournamentAudit>();
 
     /// <summary>
     /// A collection of <see cref="Beatmap"/>s pooled in the tournament
     /// </summary>
     public ICollection<Beatmap> PooledBeatmaps { get; set; } = [];
 
-    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
-
     public void ResetAutomationStatuses(bool force)
     {
-        var update = force || (VerificationStatus != VerificationStatus.Rejected &&
+        bool update = force || (VerificationStatus != VerificationStatus.Rejected &&
                                VerificationStatus != VerificationStatus.Verified);
 
         if (!update)
@@ -138,5 +141,42 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
         ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
     }
 
-    public void ConfirmPreVerificationStatus() => VerificationStatus = EnumUtils.ConfirmPreStatus(VerificationStatus);
+    /// <summary>
+    /// Confirms pre-verification statuses for this tournament and optionally all its child entities,
+    /// applying cascading rejection logic and clearing warning flags for verified entities
+    /// </summary>
+    /// <param name="verifierUserId">The ID of the user performing the verification</param>
+    /// <param name="includeChildren">Whether to also confirm pre-verification statuses for child entities</param>
+    public void ConfirmPreVerification(int verifierUserId, bool includeChildren = true)
+    {
+        VerificationStatus = VerificationStatus.ConfirmPreStatus();
+        VerifiedByUserId = verifierUserId;
+
+        if (includeChildren)
+        {
+            if (VerificationStatus == VerificationStatus.Rejected)
+            {
+                RejectAllChildren();
+            }
+            else
+            {
+                Matches.ForEach(match => match.ConfirmPreVerification(verifierUserId, includeChildren));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Rejects all child entities in this tournament
+    /// </summary>
+    public void RejectAllChildren()
+    {
+        foreach (Match match in Matches)
+        {
+            match.VerificationStatus = VerificationStatus.Rejected;
+            match.RejectionReason |= MatchRejectionReason.RejectedTournament;
+            match.ProcessingStatus = MatchProcessingStatus.Done;
+
+            match.RejectAllChildren();
+        }
+    }
 }

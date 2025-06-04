@@ -8,22 +8,22 @@
   "ConnectionStrings": {
     "DefaultConnection": "",
     "CollectorConnection": "",
-    "RedisConnection": ""
+    "RedisConnection": "",
+    "LokiConnection": ""
   },
   "Osu": {
     "ClientId": "",
-    "ClientSecret": "",
-    "RedirectUrl": "",
-    "OsuRateLimit": null,
-    "OsuTrackRateLimit": null
+    "ClientSecret": ""
   },
   "Jwt": {
-    "Key": "",
     "Audience": "",
-    "Issuer": ""
+    "Issuer": "",
+    "Key": ""
   },
   "Auth": {
-    "EnforceWhitelist": false
+    "AllowedHosts": ["http://localhost:3000"],
+    "EnforceWhitelist": false,
+    "PersistDataProtectionKeys": true
   },
   "RateLimit": {
     "PermitLimit": 30,

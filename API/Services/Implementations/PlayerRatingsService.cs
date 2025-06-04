@@ -1,6 +1,5 @@
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
 using AutoMapper;
 using Common.Enums;
 using Database.Entities.Processor;
@@ -25,9 +24,9 @@ public class PlayerRatingsService(
             return null;
         }
 
-        var matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset, dateMin, dateMax);
-        var winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset, dateMin, dateMax);
-        var tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset, dateMin, dateMax);
+        int matchesPlayed = await matchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset, dateMin, dateMax);
+        double winRate = await matchStatsRepository.GlobalWinrateAsync(playerId, ruleset, dateMin, dateMax);
+        int tournamentsPlayed = await tournamentsService.CountPlayedAsync(playerId, ruleset, dateMin, dateMax);
         var tierProgress = new TierProgressDTO(currentStats.Rating);
 
         return new PlayerRatingStatsDTO
@@ -46,7 +45,4 @@ public class PlayerRatingsService(
             Adjustments = mapper.Map<ICollection<RatingAdjustmentDTO>>(currentStats.Adjustments.OrderBy(a => a.Timestamp))
         };
     }
-
-    public async Task<IDictionary<int, int>> GetHistogramAsync(Ruleset ruleset) =>
-        await playerRatingsRepository.GetHistogramAsync(ruleset);
 }

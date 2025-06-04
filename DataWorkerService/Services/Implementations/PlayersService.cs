@@ -53,7 +53,11 @@ public class PlayersService(
             player.OsuLastFetch
         );
 
-        var once = false;
+        bool defaultRulesetIsControlled = player.User?.Settings is { DefaultRulesetIsControlled: true };
+        int lowestRank = int.MaxValue;
+        Ruleset defaultRuleset = Ruleset.Osu;
+
+        bool once = false;
         foreach (Ruleset ruleset in Enum.GetValues<Ruleset>().Where(r => r.IsFetchable()))
         {
             UserExtended? result = await osuClient.GetUserAsync(player.OsuId, ruleset);
@@ -69,17 +73,31 @@ public class PlayersService(
                 break;
             }
 
+            // Handle mania4k / 7k variants. Set the default ruleset to whatever the lowest numeric rank is.
+            if (ruleset == Ruleset.ManiaOther)
+            {
+                var bestVariant = result.Statistics?.Variants.Where(v => v.IsRanked).MinBy(v => v.GlobalRank);
+
+                if (bestVariant is not null && bestVariant.GlobalRank is not null)
+                {
+                    if (bestVariant.GlobalRank.Value < lowestRank)
+                    {
+                        lowestRank = bestVariant.GlobalRank.Value;
+                        defaultRuleset = bestVariant.Ruleset;
+                    }
+                }
+            }
+            else if (result.Statistics?.IsRanked == true && result.Statistics.GlobalRank is not null && result.Statistics.GlobalRank.Value < lowestRank)
+            {
+                lowestRank = result.Statistics.GlobalRank.Value;
+                defaultRuleset = ruleset;
+            }
+
             // Player data that only requires updating once, doesn't change across responses
             if (!once)
             {
                 player.Username = result.Username;
                 player.Country = result.CountryCode;
-                player.DefaultRuleset = result.Ruleset;
-
-                if (player.User?.Settings is { DefaultRulesetIsControlled: false })
-                {
-                    player.User.Settings.DefaultRuleset = result.Ruleset;
-                }
 
                 once = true;
             }
@@ -105,8 +123,11 @@ public class PlayersService(
             }
 
             rulesetData.Pp = result.Statistics.Pp;
-            // Safe when IsRanked is true
-            rulesetData.GlobalRank = result.Statistics.GlobalRank!.Value;
+
+            if (result.Statistics.GlobalRank is not null)
+            {
+                rulesetData.GlobalRank = result.Statistics.GlobalRank.Value;
+            }
 
             // Update any ruleset variant data
             foreach (UserStatisticsVariant variant in result.Statistics.Variants.Where(v => v.IsRanked))
@@ -124,6 +145,11 @@ public class PlayersService(
                 // Safe when IsRanked is true
                 variantData.GlobalRank = variant.GlobalRank!.Value;
             }
+        }
+
+        if (!defaultRulesetIsControlled && player.User?.Settings is not null && lowestRank != int.MaxValue)
+        {
+            player.User.Settings.DefaultRuleset = defaultRuleset;
         }
 
         player.OsuLastFetch = DateTime.UtcNow;
@@ -200,6 +226,28 @@ public class PlayersService(
             rulesetData.EarliestGlobalRankDate = statUpdate.Timestamp;
 
             logger.LogDebug("Updated Player osu!track API data [Id: {Id} | Ruleset: {Ruleset}]", player.Id, r);
+
+            // For ManiaOther, copy the earliest rank data to Mania4k and Mania7k variants if they exist
+            // This is necessary because osu!Track only provides historical data for ManiaOther,
+            // but players can have current ratings for the specific mania variants
+            if (r == Ruleset.ManiaOther)
+            {
+                var maniaVariants = new[] { Ruleset.Mania4k, Ruleset.Mania7k };
+
+                foreach (Ruleset variant in maniaVariants)
+                {
+                    PlayerOsuRulesetData? variantData = player.RulesetData.FirstOrDefault(x => x.Ruleset == variant);
+
+                    if (variantData is not null && variantData.EarliestGlobalRank is null)
+                    {
+                        variantData.EarliestGlobalRank = statUpdate.Rank;
+                        variantData.EarliestGlobalRankDate = statUpdate.Timestamp;
+
+                        logger.LogDebug("Copied earliest rank data from ManiaOther to {Variant} [Id: {Id} | Rank: {Rank}]",
+                            variant, player.Id, statUpdate.Rank);
+                    }
+                }
+            }
         }
 
         player.OsuTrackLastFetch = DateTime.UtcNow;

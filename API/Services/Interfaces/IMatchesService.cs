@@ -47,8 +47,28 @@ public interface IMatchesService
     Task<bool> ExistsAsync(int id);
 
     /// <summary>
+    /// Links the games of each provided match to the parent match, then deletes the provided matches
+    /// </summary>
+    /// <param name="matchIds">
+    /// Ids of the matches to merge into the parent match
+    /// </param>
+    /// <returns>
+    /// The updated parent match with child navigations, or null if the parent could not be found.
+    /// If this method returns null, no data is modified.
+    /// </returns>
+    Task<MatchDTO?> MergeAsync(int parentId, IEnumerable<int> matchIds);
+
+    /// <summary>
     /// Deletes a match
     /// </summary>
     /// <param name="id">Match id</param>
     Task DeleteAsync(int id);
+
+    /// <summary>
+    /// Deletes all scores belonging to a player for a given match
+    /// </summary>
+    /// <param name="matchId">Match id</param>
+    /// <param name="playerId">Player id</param>
+    /// <returns>The number of scores deleted</returns>
+    Task<int> DeletePlayerScoresAsync(int matchId, int playerId);
 }

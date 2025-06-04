@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    [Migration("20250323025900_Efficient_Indexes__PlayerTournamentStats_Add_MatchWinRate")]
-    partial class Efficient_Indexes__PlayerTournamentStats_Add_MatchWinRate
+    [Migration("20250601045723_AuditChangesRework")]
+    partial class AuditChangesRework
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -277,6 +277,10 @@ namespace Database.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("osu_id");
 
+                    b.Property<int>("PlayMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("play_mode");
+
                     b.Property<int>("ProcessingStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -404,7 +408,6 @@ namespace Database.Migrations
                         .HasColumnName("action_user_id");
 
                     b.Property<string>("Changes")
-                        .IsRequired()
                         .HasColumnType("jsonb")
                         .HasColumnName("changes");
 
@@ -425,8 +428,20 @@ namespace Database.Migrations
                     b.HasKey("Id")
                         .HasName("pk_game_audits");
 
+                    b.HasIndex("ActionUserId")
+                        .HasDatabaseName("ix_game_audits_action_user_id");
+
+                    b.HasIndex("Created")
+                        .HasDatabaseName("ix_game_audits_created");
+
                     b.HasIndex("ReferenceId")
                         .HasDatabaseName("ix_game_audits_reference_id");
+
+                    b.HasIndex("ReferenceIdLock")
+                        .HasDatabaseName("ix_game_audits_reference_id_lock");
+
+                    b.HasIndex("ActionUserId", "Created")
+                        .HasDatabaseName("ix_game_audits_action_user_id_created");
 
                     b.ToTable("game_audits", (string)null);
                 });
@@ -662,7 +677,6 @@ namespace Database.Migrations
                         .HasColumnName("action_user_id");
 
                     b.Property<string>("Changes")
-                        .IsRequired()
                         .HasColumnType("jsonb")
                         .HasColumnName("changes");
 
@@ -683,8 +697,20 @@ namespace Database.Migrations
                     b.HasKey("Id")
                         .HasName("pk_game_score_audits");
 
+                    b.HasIndex("ActionUserId")
+                        .HasDatabaseName("ix_game_score_audits_action_user_id");
+
+                    b.HasIndex("Created")
+                        .HasDatabaseName("ix_game_score_audits_created");
+
                     b.HasIndex("ReferenceId")
                         .HasDatabaseName("ix_game_score_audits_reference_id");
+
+                    b.HasIndex("ReferenceIdLock")
+                        .HasDatabaseName("ix_game_score_audits_reference_id_lock");
+
+                    b.HasIndex("ActionUserId", "Created")
+                        .HasDatabaseName("ix_game_score_audits_action_user_id_created");
 
                     b.ToTable("game_score_audits", (string)null);
                 });
@@ -851,7 +877,6 @@ namespace Database.Migrations
                         .HasColumnName("action_user_id");
 
                     b.Property<string>("Changes")
-                        .IsRequired()
                         .HasColumnType("jsonb")
                         .HasColumnName("changes");
 
@@ -872,8 +897,20 @@ namespace Database.Migrations
                     b.HasKey("Id")
                         .HasName("pk_match_audits");
 
+                    b.HasIndex("ActionUserId")
+                        .HasDatabaseName("ix_match_audits_action_user_id");
+
+                    b.HasIndex("Created")
+                        .HasDatabaseName("ix_match_audits_created");
+
                     b.HasIndex("ReferenceId")
                         .HasDatabaseName("ix_match_audits_reference_id");
+
+                    b.HasIndex("ReferenceIdLock")
+                        .HasDatabaseName("ix_match_audits_reference_id_lock");
+
+                    b.HasIndex("ActionUserId", "Created")
+                        .HasDatabaseName("ix_match_audits_action_user_id_created");
 
                     b.ToTable("match_audits", (string)null);
                 });
@@ -1734,7 +1771,6 @@ namespace Database.Migrations
                         .HasColumnName("action_user_id");
 
                     b.Property<string>("Changes")
-                        .IsRequired()
                         .HasColumnType("jsonb")
                         .HasColumnName("changes");
 
@@ -1755,8 +1791,20 @@ namespace Database.Migrations
                     b.HasKey("Id")
                         .HasName("pk_tournament_audits");
 
+                    b.HasIndex("ActionUserId")
+                        .HasDatabaseName("ix_tournament_audits_action_user_id");
+
+                    b.HasIndex("Created")
+                        .HasDatabaseName("ix_tournament_audits_created");
+
                     b.HasIndex("ReferenceId")
                         .HasDatabaseName("ix_tournament_audits_reference_id");
+
+                    b.HasIndex("ReferenceIdLock")
+                        .HasDatabaseName("ix_tournament_audits_reference_id_lock");
+
+                    b.HasIndex("ActionUserId", "Created")
+                        .HasDatabaseName("ix_tournament_audits_action_user_id_created");
 
                     b.ToTable("tournament_audits", (string)null);
                 });

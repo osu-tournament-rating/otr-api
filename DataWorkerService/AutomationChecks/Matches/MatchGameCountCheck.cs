@@ -20,7 +20,7 @@ public class MatchGameCountCheck(ILogger<MatchGameCountCheck> logger) : Automati
             return false;
         }
 
-        var validGamesCount = entity.Games
+        int validGamesCount = entity.Games
             .Count(g => g.VerificationStatus.IsPreVerifiedOrVerified());
 
         switch (validGamesCount)
