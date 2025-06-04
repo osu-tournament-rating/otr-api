@@ -53,6 +53,10 @@ public class PlayersService(
             player.OsuLastFetch
         );
 
+        bool defaultRulesetIsControlled = player.User?.Settings is { DefaultRulesetIsControlled: true };
+        int lowestRank = int.MaxValue;
+        Ruleset defaultRuleset = Ruleset.Osu;
+
         bool once = false;
         foreach (Ruleset ruleset in Enum.GetValues<Ruleset>().Where(r => r.IsFetchable()))
         {
@@ -69,17 +73,31 @@ public class PlayersService(
                 break;
             }
 
+            // Handle mania4k / 7k variants. Set the default ruleset to whatever the lowest numeric rank is.
+            if (ruleset == Ruleset.ManiaOther)
+            {
+                var bestVariant = result.Statistics?.Variants.Where(v => v.IsRanked).MinBy(v => v.GlobalRank);
+
+                if (bestVariant is not null && bestVariant.GlobalRank is not null)
+                {
+                    if (bestVariant.GlobalRank.Value < lowestRank)
+                    {
+                        lowestRank = bestVariant.GlobalRank.Value;
+                        defaultRuleset = bestVariant.Ruleset;
+                    }
+                }
+            }
+            else if (result.Statistics?.IsRanked == true && result.Statistics.GlobalRank is not null && result.Statistics.GlobalRank.Value < lowestRank)
+            {
+                lowestRank = result.Statistics.GlobalRank.Value;
+                defaultRuleset = ruleset;
+            }
+
             // Player data that only requires updating once, doesn't change across responses
             if (!once)
             {
                 player.Username = result.Username;
                 player.Country = result.CountryCode;
-                player.DefaultRuleset = result.Ruleset;
-
-                if (player.User?.Settings is { DefaultRulesetIsControlled: false })
-                {
-                    player.User.Settings.DefaultRuleset = result.Ruleset;
-                }
 
                 once = true;
             }
@@ -124,6 +142,11 @@ public class PlayersService(
                 // Safe when IsRanked is true
                 variantData.GlobalRank = variant.GlobalRank!.Value;
             }
+        }
+
+        if (!defaultRulesetIsControlled && player.User is not null)
+        {
+            player.User.Settings.DefaultRuleset = defaultRuleset;
         }
 
         player.OsuLastFetch = DateTime.UtcNow;
