@@ -27,6 +27,17 @@ public class MatchStatsProcessor(
             return;
         }
 
+        if (entity.VerificationStatus is not VerificationStatus.Verified)
+        {
+            logger.LogError(
+                "Stat generation was triggered for an unverified match, skipping stat generation. [Id: {Id} | Verification Status: {Status}]",
+                entity.Id,
+                entity.VerificationStatus
+            );
+
+            return;
+        }
+
         if (!entity.Games.All(g => g.ProcessingStatus is GameProcessingStatus.Done))
         {
             IProcessor<Game> gameStatsProcessor = gameProcessorResolver.GetStatsProcessor();
