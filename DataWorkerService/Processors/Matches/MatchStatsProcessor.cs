@@ -60,6 +60,15 @@ public class MatchStatsProcessor(
 
         List<Game> verifiedGames = [.. entity.Games.Where(g => g is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: GameProcessingStatus.Done })];
 
+        if (verifiedGames.Count == 0)
+        {
+            logger.LogDebug(
+                "No verified and processed games found for match, skipping stat generation. [Id: {Id}]",
+                entity.Id
+            );
+            return;
+        }
+
         // Sanity check
         foreach (Game game in verifiedGames)
         {
