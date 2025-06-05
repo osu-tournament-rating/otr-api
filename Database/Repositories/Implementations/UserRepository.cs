@@ -92,7 +92,7 @@ public class UserRepository(
 
         // Overwrite friends list and update
         user.Friends = players;
-        user.LastFriendsListUpdate = DateTime.UtcNow;
+        // user.LastFriendsListUpdate = DateTime.UtcNow;
         await UpdateAsync(user);
 
         logger.LogDebug("Synced {Count} friends for user {User}", user.Friends.Count, user.Id);

@@ -8,6 +8,7 @@ using Asp.Versioning;
 using Common.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OsuApiClient;
 
 namespace API.Controllers;
 
@@ -18,7 +19,8 @@ namespace API.Controllers;
 public class UsersController(
     IUsersService usersService,
     IOAuthClientService clientService,
-    IUserSettingsService userSettingsService
+    IUserSettingsService userSettingsService,
+    IOsuClient client
 ) : Controller
 {
     /// <summary>
@@ -274,4 +276,7 @@ public class UsersController(
 
         return Ok(result);
     }
+
+    [HttpGet("friends")]
+    public async Task<IActionResult> FriendsAsync() => Ok(await client.GetUserFriendsAsync());
 }

@@ -19,11 +19,11 @@ public class User : UpdateableEntityBase
     /// </summary>
     public DateTime? LastLogin { get; set; }
 
-    /// <summary>
-    /// Timestamp of the most recent update to the <see cref="User"/>'s <see cref="User.Friends"/> list
-    /// </summary>
-    [Column("last_friends_list_update")]
-    public DateTime? LastFriendsListUpdate { get; set; }
+    // /// <summary>
+    // /// Timestamp of the most recent update to the <see cref="User"/>'s <see cref="User.Friends"/> list
+    // /// </summary>
+    // [Column("last_friends_list_update")]
+    // public DateTime? LastFriendsListUpdate { get; set; }
 
     /// <summary>
     /// A collection of string literals denoting special permissions granted to the user

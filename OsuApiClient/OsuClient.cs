@@ -453,6 +453,7 @@ public sealed class OsuClient(
     public async Task<IEnumerable<User>?> GetUserFriendsAsync(CancellationToken cancellationToken = default)
     {
         CheckDisposed();
+        await UpdateCredentialsAsync(cancellationToken);
 
         if (Uri.TryCreate(Endpoints.Osu.Friends, UriKind.Relative, out Uri? uri))
         {
