@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
-using Common.Utilities;
+using Common.Utilities.Extensions;
 using Database.Entities.Interfaces;
 using Database.Utilities;
 
@@ -13,8 +13,7 @@ namespace Database.Entities;
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameScoreAdminNote>,
-    IAuditableEntity<GameScoreAudit>, IScoreStatistics
+public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameScoreAdminNote>, IScoreStatistics
 {
     /// <summary>
     /// Total score
@@ -108,11 +107,15 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     /// </summary>
     public Player Player { get; set; } = null!;
 
+    /// <summary>
+    /// A collection of <see cref="GameScoreAdminNote"/>s for the <see cref="GameScore"/>
+    /// </summary>
     public ICollection<GameScoreAdminNote> AdminNotes { get; set; } = [];
 
-    public ICollection<GameScoreAudit> Audits { get; set; } = [];
-
-    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+    /// <summary>
+    /// Collection of <see cref="GameScoreAudit"/> records for the <see cref="GameScore"/>
+    /// </summary>
+    public ICollection<GameScoreAudit> Audits { get; set; } = new List<GameScoreAudit>();
 
     /// <summary>
     /// Accuracy
@@ -160,7 +163,7 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
 
     public void ResetAutomationStatuses(bool force)
     {
-        var scoreUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
+        bool scoreUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
                                     VerificationStatus != VerificationStatus.Verified);
 
         if (!scoreUpdate)
@@ -173,5 +176,11 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
         ProcessingStatus = ScoreProcessingStatus.NeedsAutomationChecks;
     }
 
-    public void ConfirmPreVerificationStatus() => VerificationStatus = EnumUtils.ConfirmPreStatus(VerificationStatus);
+    /// <summary>
+    /// Confirms pre-verification status for this score, converting PreRejected to Rejected and PreVerified to Verified
+    /// </summary>
+    public void ConfirmPreVerification()
+    {
+        VerificationStatus = VerificationStatus.ConfirmPreStatus();
+    }
 }

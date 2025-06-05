@@ -10,7 +10,7 @@ public class ValidateAdminNoteControllerRouteAttribute : ActionFilterAttribute
 {
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-        if (context.RouteData.Values.TryGetValue("entity", out var value)
+        if (context.RouteData.Values.TryGetValue("entity", out object? value)
             && value is string
             && !AdminNotesHelper.GetAdminNoteableEntityRoutes().Contains(value)
            )

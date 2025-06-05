@@ -1,10 +1,12 @@
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Describes a single change to a PlayerRating
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class RatingAdjustmentDTO
 {
     /// <summary>

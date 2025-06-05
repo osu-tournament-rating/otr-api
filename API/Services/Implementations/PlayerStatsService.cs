@@ -1,6 +1,5 @@
 using API.DTOs;
 using API.Services.Interfaces;
-using API.Utilities;
 using AutoMapper;
 using Common.Enums;
 using Database.Entities;
@@ -9,6 +8,9 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
+/// <summary>
+/// Service for retrieving player statistics and performance data
+/// </summary>
 public class PlayerStatsService(
     ILogger<PlayerStatsService> logger,
     IMapper mapper,
@@ -36,7 +38,7 @@ public class PlayerStatsService(
             request.Diamond, request.Master, request.Grandmaster, request.EliteGrandmaster
         );
 
-        var pageCount = await playerRatingsRepository.PageCountAsync(request.PageSize, request.Ruleset, request.Country,
+        int pageCount = await playerRatingsRepository.PageCountAsync(request.PageSize, request.Ruleset, request.Country,
             request.MinOsuRank, request.MaxOsuRank, request.MinRating, request.MaxRating,
             request.MinMatches, request.MaxMatches, request.MinWinRate, request.MaxWinRate,
             request.Bronze, request.Silver, request.Gold, request.Platinum, request.Emerald,
@@ -186,7 +188,7 @@ public class PlayerStatsService(
 
         foreach (PlayerMatchStats stat in stats)
         {
-            foreach (var id in playerIdsSelector(stat))
+            foreach (int id in playerIdsSelector(stat))
             {
                 frequencyDict.TryAdd(id, 0);
                 frequencyDict[id]++;
@@ -225,8 +227,8 @@ public class PlayerStatsService(
             return null;
         }
 
-        var matchesPlayed = await playerMatchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset, dateMin, dateMax);
-        var winRate = await playerMatchStatsRepository.GlobalWinrateAsync(playerId, ruleset, dateMin, dateMax);
+        int matchesPlayed = await playerMatchStatsRepository.CountMatchesPlayedAsync(playerId, ruleset, dateMin, dateMax);
+        double winRate = await playerMatchStatsRepository.GlobalWinrateAsync(playerId, ruleset, dateMin, dateMax);
 
         ratingStats.MatchesPlayed = matchesPlayed;
         ratingStats.WinRate = winRate;
@@ -320,9 +322,9 @@ public class PlayerStatsService(
          * rating gained value by the initial rating. Essentially we are displaying`
          * the net gain in rating without considering the initial rating.
          */
-        var initialRatingValue = adjustments
-            .FirstOrDefault(ra => ra.AdjustmentType == RatingAdjustmentType.Initial)?.RatingAfter
-            ?? 0;
+        double initialRatingValue = adjustments
+                                        .FirstOrDefault(ra => ra.AdjustmentType == RatingAdjustmentType.Initial)?.RatingAfter
+                                    ?? 0;
 
         return new AggregatePlayerMatchStatsDTO
         {
@@ -347,8 +349,8 @@ public class PlayerStatsService(
 
     private static int GetHighestWinStreak(IEnumerable<PlayerMatchStats> stats)
     {
-        var highest = 0;
-        var current = 0;
+        int highest = 0;
+        int current = 0;
 
         foreach (PlayerMatchStats item in stats)
         {

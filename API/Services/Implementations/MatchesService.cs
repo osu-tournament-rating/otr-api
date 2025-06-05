@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
 using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 
@@ -10,6 +11,7 @@ namespace API.Services.Implementations;
 public class MatchesService(
     IMatchesRepository matchesRepository,
     IPlayersRepository playersRepository,
+    IGameScoresRepository gameScoresRepository,
     IMapper mapper
 ) : IMatchesService
 {
@@ -80,6 +82,12 @@ public class MatchesService(
 
         mapper.Map(match, existing);
 
+        if (match.VerificationStatus == VerificationStatus.Rejected)
+        {
+            await matchesRepository.LoadGamesWithScoresAsync(existing);
+            existing.RejectAllChildren();
+        }
+
         await matchesRepository.UpdateAsync(existing);
         return mapper.Map<MatchDTO>(existing);
     }
@@ -92,6 +100,16 @@ public class MatchesService(
 
     public async Task DeleteAsync(int id) =>
         await matchesRepository.DeleteAsync(id);
+
+    public async Task<int> DeletePlayerScoresAsync(int matchId, int playerId)
+    {
+        if (!await matchesRepository.ExistsAsync(matchId))
+        {
+            return 0;
+        }
+
+        return await gameScoresRepository.DeleteByMatchAndPlayerAsync(matchId, playerId);
+    }
 
     private async Task<ICollection<PlayerCompactDTO>> GetPlayerCompactsAsync(MatchDTO match)
     {

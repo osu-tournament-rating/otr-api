@@ -36,20 +36,8 @@ public static class OptionsExtensions
             return;
         }
 
-        // Validate token type
-        if (o.TokenType is not OtrClaims.TokenTypes.AccessToken
-            && o.TokenType is not OtrClaims.TokenTypes.RefreshToken)
-        {
-            LogConfigureError(
-                o.GetArgLongName(nameof(o.TokenType)),
-                o.TokenType,
-                $"Must be one of: '{OtrClaims.TokenTypes.AccessToken}' or '{OtrClaims.TokenTypes.RefreshToken}'"
-            );
-            return;
-        }
-
         // Validate roles
-        foreach (var role in o.Roles)
+        foreach (string role in o.Roles)
         {
             if (!OtrClaims.Roles.IsValidRole(role))
             {
@@ -92,23 +80,6 @@ public static class OptionsExtensions
         if (o.PermitLimit is <= 0)
         {
             LogConfigureError(o.GetArgLongName(nameof(o.PermitLimit)), o.PermitLimit);
-            return;
-        }
-
-        // Validate expiry
-        o.ExpiresIn ??= o.TokenType switch
-        {
-            OtrClaims.TokenTypes.RefreshToken => 1_209_600,
-            _ => 3600
-        };
-        if (o.ExpiresIn <= 0)
-        {
-            LogConfigureError(o.GetArgLongName(nameof(o.ExpiresIn)), o.ExpiresIn);
-            return;
-        }
-
-        if (!o.ValidateJwtConfig())
-        {
             return;
         }
 
@@ -202,7 +173,7 @@ public static class OptionsExtensions
     private static void ValidateDataAnnotations<T>(this T config)
     {
         var validationResults = new List<ValidationResult>();
-        var isValid = Validator.TryValidateObject(
+        bool isValid = Validator.TryValidateObject(
             config!,
             new ValidationContext(config!, serviceProvider: null, items: null),
             validationResults,
@@ -214,7 +185,7 @@ public static class OptionsExtensions
             return;
         }
 
-        var errorMessages = validationResults.Select(result => result.ErrorMessage).ToArray();
+        string?[] errorMessages = validationResults.Select(result => result.ErrorMessage).ToArray();
         throw new InvalidOperationException(
             $"Configuration validation failed for {nameof(T)}: {string.Join(", ", errorMessages)}"
         );

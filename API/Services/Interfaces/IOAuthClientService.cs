@@ -47,4 +47,12 @@ public interface IOAuthClientService
     /// or null if a client does not exist
     /// </returns>
     Task<OAuthClientCreatedDTO?> ResetSecretAsync(int id);
+
+    /// <summary>
+    /// Generates access credentials for a client
+    /// </summary>
+    /// <param name="clientId">Client id</param>
+    /// <param name="clientSecret">Client secret</param>
+    /// <returns>Access credentials, or null if authentication failed</returns>
+    Task<AccessCredentialsDTO?> AuthenticateAsync(int clientId, string clientSecret);
 }

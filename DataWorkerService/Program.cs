@@ -46,7 +46,7 @@ builder.Services
 
 builder.Services.AddSerilog(configuration =>
 {
-    var connString = builder
+    string connString = builder
         .Configuration.BindAndValidate<ConnectionStringsConfiguration>(
             ConnectionStringsConfiguration.Position
         )
@@ -96,17 +96,22 @@ builder.Services.AddDbContext<OtrContext>(o =>
             )
             .DefaultConnection
     )
-    .AddInterceptors(new AuditingInterceptor())
+    .AddInterceptors(new AuditingInterceptor(null))
     .UseSnakeCaseNamingConvention();
 });
 
 // Redis lock factory (distributed resource access control)
-var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+bool useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistributedLocking ?? true;
+
+if (useRedLock)
 {
-    new(ConnectionMultiplexer.Connect(builder.Configuration
-        .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
-});
-builder.Services.AddSingleton(redLockFactory);
+    var redLockFactory = RedLockFactory.Create(new List<RedLockMultiplexer>
+    {
+        new(ConnectionMultiplexer.Connect(builder.Configuration
+            .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).RedisConnection))
+    });
+    builder.Services.AddSingleton(redLockFactory);
+}
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 

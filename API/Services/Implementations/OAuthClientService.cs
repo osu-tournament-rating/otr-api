@@ -1,18 +1,33 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using API.Authorization;
+using API.Configurations;
 using API.DTOs;
 using API.Repositories.Interfaces;
 using API.Services.Interfaces;
 using AutoMapper;
 using Database.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Services.Implementations;
 
 public class OAuthClientService(
+    ILogger<OAuthClientService> logger,
     IOAuthClientRepository oAuthClientRepository,
     IPasswordHasher<OAuthClient> passwordHasher,
+    IOptions<JwtConfiguration> jwtConfiguration,
     IMapper mapper
     ) : IOAuthClientService
 {
+
+    private readonly JwtConfiguration _jwtConfiguration = jwtConfiguration.Value;
+
+    // Default: 1 hour
+    private const int AccessDurationSeconds = 3600;
+
     public async Task<bool> ExistsAsync(int id, int userId) =>
         await oAuthClientRepository.ExistsAsync(id, userId);
 
@@ -21,7 +36,7 @@ public class OAuthClientService(
 
     public async Task<OAuthClientCreatedDTO> CreateAsync(int userId, params string[] scopes)
     {
-        var secret = oAuthClientRepository.GenerateClientSecret();
+        string secret = oAuthClientRepository.GenerateClientSecret();
         var client = new OAuthClient
         {
             Scopes = scopes,
@@ -51,8 +66,8 @@ public class OAuthClientService(
             return null;
         }
 
-        var newSecret = oAuthClientRepository.GenerateClientSecret();
-        var hashedSecret = passwordHasher.HashPassword(client, newSecret);
+        string newSecret = oAuthClientRepository.GenerateClientSecret();
+        string hashedSecret = passwordHasher.HashPassword(client, newSecret);
 
         client.Secret = hashedSecret;
         await oAuthClientRepository.UpdateAsync(client);
@@ -61,5 +76,63 @@ public class OAuthClientService(
         dto.ClientSecret = newSecret;
 
         return dto;
+    }
+
+    public async Task<AccessCredentialsDTO?> AuthenticateAsync(int clientId, string clientSecret)
+    {
+        OAuthClient? client = await oAuthClientRepository.GetAsync(clientId);
+        if (client is null)
+        {
+            return null;
+        }
+
+        // Validate secret
+        PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(client, client.Secret, clientSecret);
+        if (result != PasswordVerificationResult.Success)
+        {
+            return null;
+        }
+
+        logger.LogDebug("Authenticated client with id {Id}", clientId);
+
+        return new AccessCredentialsDTO
+        {
+            AccessToken = CreateAccessToken(client),
+            ExpiresIn = AccessDurationSeconds
+        };
+    }
+
+    /// <summary>
+    /// Creates a JWT access token for the given client
+    /// </summary>
+    /// <param name="client">Client</param>
+    private string CreateAccessToken(OAuthClient client)
+    {
+        List<Claim> claims =
+        [
+            new(OtrClaims.Role, OtrClaims.Roles.Client),
+            new(OtrClaims.Subject, client.Id.ToString()),
+            new(OtrClaims.Instance, Guid.NewGuid().ToString()),
+            ..client.Scopes.Select(s => new Claim(OtrClaims.Role, s))
+        ];
+
+        if (client.RateLimitOverride.HasValue)
+        {
+            claims.Add(new Claim(OtrClaims.RateLimitOverrides, client.RateLimitOverride.Value.ToString()));
+        }
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        return tokenHandler.WriteToken(tokenHandler.CreateToken(new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            IssuedAt = DateTime.UtcNow,
+            Expires = DateTime.UtcNow.AddSeconds(AccessDurationSeconds),
+            Audience = _jwtConfiguration.Audience,
+            Issuer = _jwtConfiguration.Issuer,
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.Key)),
+                SecurityAlgorithms.HmacSha256
+            ),
+        }));
     }
 }

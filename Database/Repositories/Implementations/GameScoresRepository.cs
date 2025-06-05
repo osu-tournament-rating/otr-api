@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
+/// <summary>
+/// Repository for managing <see cref="GameScore"/> entities
+/// </summary>
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
@@ -60,5 +63,24 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
             .WhereMods(mods)
             .WherePlayerId(playerId)
             .CountAsync();
+    }
+
+    public async Task<int> DeleteByMatchAndPlayerAsync(int matchId, int playerId)
+    {
+        // Load the entities that will be deleted to ensure auditing is triggered
+        var scoresToDelete = await _context.GameScores
+            .Where(gs => gs.Game.MatchId == matchId && gs.PlayerId == playerId)
+            .ToListAsync();
+
+        if (scoresToDelete.Count == 0)
+        {
+            return 0;
+        }
+
+        // Remove entities through change tracking to trigger auditing
+        _context.GameScores.RemoveRange(scoresToDelete);
+        await _context.SaveChangesAsync();
+
+        return scoresToDelete.Count;
     }
 }

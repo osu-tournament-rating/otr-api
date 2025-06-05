@@ -2,12 +2,16 @@ using API.DTOs;
 using API.Handlers.Interfaces;
 using API.Utilities;
 using CachingFramework.Redis;
+using StackExchange.Redis;
 
 namespace API.Handlers.Implementations;
 
-public class CacheHandler(string configuration) : RedisContext(configuration), ICacheHandler
+public class CacheHandler : RedisContext, ICacheHandler
 {
     private const int SearchResultLifetimeMinutes = 30;
+
+    public CacheHandler(string configuration) : base(configuration) { }
+    public CacheHandler(IConnectionMultiplexer multiplexer) : base(multiplexer) { }
 
     public async Task SetTournamentSearchResultAsync(IEnumerable<TournamentSearchResultDTO> result, string query) =>
         await Cache.SetObjectAsync(

@@ -1,9 +1,9 @@
 using Common.Enums.Verification;
-using Common.Utilities;
+using Common.Utilities.Extensions;
 
 namespace APITests.Utilities;
 
-public class EnumUtilsTests
+public class VerificationStatusExtensionsTests
 {
     [Theory]
     [InlineData(VerificationStatus.PreRejected, VerificationStatus.Rejected)]
@@ -11,10 +11,10 @@ public class EnumUtilsTests
     [InlineData(VerificationStatus.Rejected, VerificationStatus.Rejected)]
     [InlineData(VerificationStatus.Verified, VerificationStatus.Verified)]
     [InlineData(VerificationStatus.None, VerificationStatus.None)]
-    public void EnumUtils_ConfirmPreStatus_BehavesCorrectly(VerificationStatus current, VerificationStatus expected)
+    public void VerificationStatus_ConfirmPreStatus_BehavesCorrectly(VerificationStatus current, VerificationStatus expected)
     {
         // Act
-        VerificationStatus actual = EnumUtils.ConfirmPreStatus(current);
+        VerificationStatus actual = current.ConfirmPreStatus();
 
         // Assert
         Assert.Equal(expected, actual);

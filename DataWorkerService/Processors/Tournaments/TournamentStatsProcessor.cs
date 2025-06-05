@@ -56,10 +56,30 @@ public class TournamentStatsProcessor(
         {
             if (match.PlayerMatchStats.Count != 0
                 && match.PlayerRatingAdjustments.Count != 0
-                && match.PlayerMatchStats.Count == match.PlayerRatingAdjustments.Count
-                && match.Rosters.Count > 0
-               )
+                && match.Rosters.Count > 0)
             {
+                // Check if the mismatch is due to restricted players
+                var playersWithStats = match.PlayerMatchStats.Select(pms => pms.PlayerId).ToHashSet();
+                var playersWithAdjustments = match.PlayerRatingAdjustments.Select(ra => ra.PlayerId).ToHashSet();
+                var missingAdjustments = playersWithStats.Except(playersWithAdjustments).ToList();
+
+                if (missingAdjustments.Count == 0)
+                {
+                    // Perfect match - all players have both stats and adjustments
+                    continue;
+                }
+
+                // Log the mismatch for investigation but allow processing to continue
+                // This handles cases where players became restricted after match completion
+                logger.LogInformation(
+                    "Match has players with stats but no rating adjustments, likely due to player restrictions " +
+                    "[Match Id: {Id} | Players missing adjustments: {MissingPlayers} | Stats: {StatsCount} | Adjustments: {AdjustmentsCount}]",
+                    match.Id,
+                    string.Join(", ", missingAdjustments),
+                    match.PlayerMatchStats.Count,
+                    match.PlayerRatingAdjustments.Count
+                );
+
                 continue;
             }
 
@@ -94,6 +114,18 @@ public class TournamentStatsProcessor(
             IEnumerable<RatingAdjustment> matchAdjustments = [.. verifiedMatches
                 .SelectMany(m => m.PlayerRatingAdjustments)
                 .Where(ra => ra.Player.Id == player.Id)];
+
+            // Skip players who don't have any rating adjustments
+            if (!matchAdjustments.Any())
+            {
+                logger.LogDebug(
+                    "Skipping tournament stats for player with no rating adjustments, likely restricted " +
+                    "[Player Id: {PlayerId} | Tournament Id: {TournamentId}]",
+                    player.Id,
+                    entity.Id
+                );
+                continue;
+            }
 
             if (playerTournamentStatsDict.TryGetValue(player.Id, out PlayerTournamentStats? existingStats))
             {

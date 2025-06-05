@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums.Verification;
-using Common.Utilities;
+using Common.Utilities.Extensions;
 using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Utilities;
+using LinqKit;
 
 namespace Database.Entities;
 
@@ -15,9 +15,10 @@ namespace Database.Entities;
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
 [SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<MatchAdminNote>,
-    IAuditableEntity<MatchAudit>
+public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<MatchAdminNote>
 {
+    private string _name = string.Empty;
+
     /// <summary>
     /// osu! id
     /// </summary>
@@ -29,7 +30,11 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// </summary>
     /// <example>5WC2024: (France) vs (Germany)</example>
     [MaxLength(512)]
-    public string Name { get; set; } = string.Empty;
+    public string Name
+    {
+        get => string.IsNullOrEmpty(_name) ? $"Match {Id}" : _name;
+        set => _name = value;
+    }
 
     /// <summary>
     /// Timestamp for the beginning of the match
@@ -111,15 +116,19 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// </summary>
     public ICollection<RatingAdjustment> PlayerRatingAdjustments { get; set; } = [];
 
-    public ICollection<MatchAudit> Audits { get; set; } = [];
-
+    /// <summary>
+    /// A collection of <see cref="MatchAdminNote"/>s for the <see cref="Match"/>
+    /// </summary>
     public ICollection<MatchAdminNote> AdminNotes { get; set; } = [];
 
-    [NotMapped] public int? ActionBlamedOnUserId { get; set; }
+    /// <summary>
+    /// Collection of <see cref="MatchAudit"/> records for the <see cref="Match"/>
+    /// </summary>
+    public ICollection<MatchAudit> Audits { get; set; } = new List<MatchAudit>();
 
     public void ResetAutomationStatuses(bool force)
     {
-        var matchUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
+        bool matchUpdate = force || (VerificationStatus != VerificationStatus.Rejected &&
                                     VerificationStatus != VerificationStatus.Verified);
 
         if (!matchUpdate)
@@ -133,5 +142,47 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
         ProcessingStatus = MatchProcessingStatus.NeedsAutomationChecks;
     }
 
-    public void ConfirmPreVerificationStatus() => VerificationStatus = EnumUtils.ConfirmPreStatus(VerificationStatus);
+    /// <summary>
+    /// Confirms pre-verification statuses for this match and optionally all its child entities,
+    /// applying cascading rejection logic and clearing warning flags for verified entities
+    /// </summary>
+    /// <param name="verifierUserId">The ID of the user performing the verification</param>
+    /// <param name="includeChildren">Whether to also confirm pre-verification statuses for child entities</param>
+    public void ConfirmPreVerification(int verifierUserId, bool includeChildren = true)
+    {
+        VerificationStatus = VerificationStatus.ConfirmPreStatus();
+        VerifiedByUserId = verifierUserId;
+
+        if (VerificationStatus == VerificationStatus.Verified)
+        {
+            WarningFlags = MatchWarningFlags.None;
+        }
+
+        if (includeChildren)
+        {
+            if (VerificationStatus == VerificationStatus.Rejected)
+            {
+                RejectAllChildren();
+            }
+            else
+            {
+                Games.ForEach(game => game.ConfirmPreVerification(includeChildren));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Rejects all child entities in this match
+    /// </summary>
+    public void RejectAllChildren()
+    {
+        foreach (Game game in Games)
+        {
+            game.VerificationStatus = VerificationStatus.Rejected;
+            game.RejectionReason |= GameRejectionReason.RejectedMatch;
+            game.ProcessingStatus = GameProcessingStatus.Done;
+
+            game.RejectAllChildren();
+        }
+    }
 }

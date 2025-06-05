@@ -7,30 +7,41 @@ using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class UserService(IUserRepository userRepository,
-    IMatchesRepository matchesRepository, IMapper mapper) : IUserService
+public class UsersService(IUserRepository usersRepository, IPlayersRepository playersRepository,
+    IMatchesRepository matchesRepository, IMapper mapper) : IUsersService
 {
     public async Task<bool> ExistsAsync(int id) =>
-        await userRepository.ExistsAsync(id);
+        await usersRepository.ExistsAsync(id);
 
     public async Task<UserDTO?> GetAsync(int id) =>
-        mapper.Map<UserDTO?>(await userRepository.GetAsync(id));
+        mapper.Map<UserDTO?>(await usersRepository.GetAsync(id));
 
     public async Task<int?> GetPlayerIdAsync(int id) =>
-        await userRepository.GetPlayerIdAsync(id);
+        await usersRepository.GetPlayerIdAsync(id);
 
     public async Task<IEnumerable<OAuthClientDTO>?> GetClientsAsync(int id) =>
-        mapper.Map<IEnumerable<OAuthClientDTO>?>(await userRepository.GetClientsAsync(id));
+        mapper.Map<IEnumerable<OAuthClientDTO>?>(await usersRepository.GetClientsAsync(id));
 
     public async Task<IEnumerable<MatchSubmissionStatusDTO>?> GetSubmissionsAsync(int id) =>
-        mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>(await userRepository.GetSubmissionsAsync(id));
+        mapper.Map<IEnumerable<MatchSubmissionStatusDTO>?>(await usersRepository.GetSubmissionsAsync(id));
+
+    public async Task<User> LoginAsync(long osuId)
+    {
+        Player player = await playersRepository.GetOrCreateAsync(osuId);
+        User user = await usersRepository.GetOrCreateByPlayerIdAsync(player.Id);
+
+        user.LastLogin = DateTime.UtcNow;
+        await usersRepository.UpdateAsync(user);
+
+        return user;
+    }
 
     public async Task<IEnumerable<PlayerCompactDTO>> GetFriendsAsync(int id) =>
-        mapper.Map<IEnumerable<PlayerCompactDTO>>(await userRepository.GetFriendsAsync(id));
+        mapper.Map<IEnumerable<PlayerCompactDTO>>(await usersRepository.GetFriendsAsync(id));
 
     public async Task<bool> RejectSubmissionsAsync(int id, int? rejecterUserId)
     {
-        IEnumerable<Match>? submissions = (await userRepository.GetAsync(id))?.SubmittedMatches.ToList();
+        IEnumerable<Match>? submissions = (await usersRepository.GetAsync(id))?.SubmittedMatches.ToList();
         if (submissions is null)
         {
             // Return in the affirmative if the user has no submissions
@@ -48,14 +59,14 @@ public class UserService(IUserRepository userRepository,
 
     public async Task<UserDTO?> UpdateScopesAsync(int id, IEnumerable<string> scopes)
     {
-        User? user = await userRepository.GetAsync(id);
+        User? user = await usersRepository.GetAsync(id);
         if (user is null)
         {
             return null;
         }
 
         user.Scopes = [.. scopes];
-        await userRepository.UpdateAsync(user);
+        await usersRepository.UpdateAsync(user);
 
         return mapper.Map<UserDTO>(user);
     }

@@ -24,7 +24,7 @@ public class PositiveAttributeTests
         var attribute = new PositiveAttribute();
 
         // Act
-        var isValid = attribute.IsValid(value);
+        bool isValid = attribute.IsValid(value);
 
         // Assert
         Assert.Equal(expected, isValid);
@@ -39,7 +39,7 @@ public class PositiveAttributeTests
         var attribute = new PositiveAttribute(allowZero: true);
 
         // Act
-        var isValid = attribute.IsValid(value);
+        bool isValid = attribute.IsValid(value);
 
         // Assert
         Assert.Equal(expected, isValid);

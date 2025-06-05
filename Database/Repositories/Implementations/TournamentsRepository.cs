@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
+/// <summary>
+/// Repository for managing <see cref="Tournament"/> entities
+/// </summary>
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository)
@@ -18,13 +21,21 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
 
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
         eagerLoad
-            ? await TournamentsBaseQuery().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id)
+            ? await TournamentsBaseQuery()
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(t => t.PlayerTournamentStats)
+            .ThenInclude(pts => pts.Player)
+            .ThenInclude(p => p.MatchStats.Where(m => m.Match.Tournament.Id == id))
+            .FirstOrDefaultAsync(x => x.Id == id)
             : await base.GetAsync(id);
 
     public async Task<Tournament?> GetVerifiedAsync(int id) =>
         await _context.Tournaments
             .AsNoTracking()
             .AsSplitQuery()
+            .Include(t => t.PlayerTournamentStats)
+            .ThenInclude(pts => pts.Player)
             .Include(t => t.Matches.Where(m =>
                 m.VerificationStatus == VerificationStatus.Verified &&
                 m.ProcessingStatus == MatchProcessingStatus.Done))
@@ -139,35 +150,23 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             return null;
         }
 
-        #region Confirm "pre" verification statuses
-
-        tournament.ConfirmPreVerificationStatus();
-        tournament.VerifiedByUserId = verifierUserId;
-
-        foreach (Match match in tournament.Matches)
-        {
-            match.ConfirmPreVerificationStatus();
-            match.VerifiedByUserId = verifierUserId;
-
-            foreach (Game game in match.Games)
-            {
-                game.ConfirmPreVerificationStatus();
-
-                foreach (GameScore score in game.Scores)
-                {
-                    score.ConfirmPreVerificationStatus();
-                }
-            }
-        }
-
-        #endregion
+        tournament.ConfirmPreVerification(verifierUserId);
 
         await UpdateAsync(tournament);
         return tournament;
     }
 
     public async Task<ICollection<Beatmap>> GetPooledBeatmapsAsync(int id) =>
-        (await _context.Tournaments.Include(t => t.PooledBeatmaps)
+        (await _context.Tournaments
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Include(t => t.PooledBeatmaps)
+            .ThenInclude(pb => pb.Beatmapset)
+            .ThenInclude(bs => bs!.Creator)
+            .Include(t => t.PooledBeatmaps)
+            .ThenInclude(pb => pb.Creators)
+            .Include(t => t.PooledBeatmaps)
+            .ThenInclude(pb => pb.Attributes)
             .FirstOrDefaultAsync(t => t.Id == id))?.PooledBeatmaps ?? [];
 
     public async Task<Dictionary<int, int>> GetLobbySizeStatsAsync(
@@ -298,12 +297,33 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         await _context.Tournaments
             .GroupBy(
                 x => x.VerificationStatus,
-                (x, y) => new
-                {
-                    Status = x,
-                    Count = y.Count()
-                })
-            .ToDictionaryAsync(x => x.Status, x => x.Count);
+                (x, y) => new { Prop = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Prop, x => x.Count);
+
+    public async Task<Dictionary<int, int>> GetYearStatsAsync(bool verified = true) =>
+        await _context.Tournaments
+            .Where(x =>
+                x.StartTime.HasValue && (!verified || x.VerificationStatus == VerificationStatus.Verified))
+            .GroupBy(
+                x => x.StartTime!.Value.Year,
+                (x, y) => new { Prop = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Prop, x => x.Count);
+
+    public async Task<Dictionary<Ruleset, int>> GetRulesetStatsAsync(bool verified = true) =>
+        await _context.Tournaments
+            .Where(x => !verified || x.VerificationStatus == VerificationStatus.Verified)
+            .GroupBy(
+                x => x.Ruleset,
+                (x, y) => new { Prop = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Prop, x => x.Count);
+
+    public async Task<Dictionary<int, int>> GetLobbySizeStatsAsync(bool verified = true) =>
+        await _context.Tournaments
+            .Where(x => !verified || x.VerificationStatus == VerificationStatus.Verified)
+            .GroupBy(
+                x => x.LobbySize,
+                (x, y) => new { Prop = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Prop, x => x.Count);
 
     /// <summary>
     /// Returns a queryable containing tournaments for <see cref="ruleset"/>
@@ -347,9 +367,29 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
                 ));
     }
 
-    private IQueryable<Tournament> TournamentsBaseQuery()
+    public async Task LoadMatchesWithGamesAndScoresAsync(Tournament tournament)
     {
-        return _context.Tournaments
+        await _context.Entry(tournament)
+            .Collection(t => t.Matches)
+            .LoadAsync();
+
+        foreach (Match match in tournament.Matches)
+        {
+            await _context.Entry(match)
+                .Collection(m => m.Games)
+                .LoadAsync();
+
+            foreach (Game game in match.Games)
+            {
+                await _context.Entry(game)
+                    .Collection(g => g.Scores)
+                    .LoadAsync();
+            }
+        }
+    }
+
+    private IQueryable<Tournament> TournamentsBaseQuery() =>
+        _context.Tournaments
             .Include(e => e.Matches)
             .ThenInclude(m => m.Games)
             .ThenInclude(g => g.Scores)
@@ -368,5 +408,4 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .Include(t => t.SubmittedByUser!.Player)
             .Include(t => t.VerifiedByUser!.Player)
             .AsSplitQuery();
-    }
 }

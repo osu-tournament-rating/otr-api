@@ -104,4 +104,33 @@ public class UserRepository(
         _context.Users
             .Include(x => x.Settings)
             .Include(x => x.Player);
+
+    public async Task<Dictionary<DateTime, int>> GetAccumulatedDailyCountsAsync()
+    {
+        Dictionary<DateTime, int> countByDay = await _context.Users
+            .GroupBy(
+                x => x.Created.Date,
+                (x, y) => new { Date = x, Count = y.Count() })
+            .ToDictionaryAsync(x => x.Date, x => x.Count);
+
+        DateTime minDate = countByDay.Keys.Min();
+        DateTime maxDate = countByDay.Keys.Max();
+
+        var daySpan = TimeSpan.FromDays(1);
+        int curCount = 0;
+        for (DateTime day = minDate; day <= maxDate; day += daySpan)
+        {
+            if (countByDay.TryGetValue(day, out int count))
+            {
+                curCount += count;
+                countByDay[day] = curCount;
+            }
+            else
+            {
+                countByDay[day] = curCount;
+            }
+        }
+
+        return countByDay;
+    }
 }

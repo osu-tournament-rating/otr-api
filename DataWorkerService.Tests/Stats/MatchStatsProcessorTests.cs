@@ -3,7 +3,6 @@ using Common.Enums.Verification;
 using Database.Entities;
 using DataWorkerService.Processors;
 using DataWorkerService.Processors.Games;
-using DataWorkerService.Processors.Matches;
 using DataWorkerService.Tests.Mocks;
 using DataWorkerService.Utilities;
 using TestingUtils.SeededData;

@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -9,6 +8,8 @@ namespace Database.Migrations
     /// <inheritdoc />
     public partial class Initial : Migration
     {
+        private static readonly string[] columns = new[] { "beatmap_id", "mods" };
+
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -144,7 +145,7 @@ namespace Database.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     last_login = table.Column<DateTime>(type: "timestamp with time zone", nullable: true, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    scopes = table.Column<string[]>(type: "text[]", nullable: false, defaultValue: new string[0]),
+                    scopes = table.Column<string[]>(type: "text[]", nullable: false, defaultValue: Array.Empty<string>()),
                     player_id = table.Column<int>(type: "integer", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     updated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
@@ -923,7 +924,7 @@ namespace Database.Migrations
             migrationBuilder.CreateIndex(
                 name: "ix_beatmap_attributes_beatmap_id_mods",
                 table: "beatmap_attributes",
-                columns: new[] { "beatmap_id", "mods" },
+                columns: columns,
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -1112,13 +1113,13 @@ namespace Database.Migrations
                 name: "ix_player_highest_ranks_country_rank",
                 table: "player_highest_ranks",
                 column: "country_rank",
-                descending: new bool[0]);
+                descending: Array.Empty<bool>());
 
             migrationBuilder.CreateIndex(
                 name: "ix_player_highest_ranks_global_rank",
                 table: "player_highest_ranks",
                 column: "global_rank",
-                descending: new bool[0]);
+                descending: Array.Empty<bool>());
 
             migrationBuilder.CreateIndex(
                 name: "ix_player_highest_ranks_player_id_ruleset",
@@ -1168,7 +1169,7 @@ namespace Database.Migrations
                 name: "ix_player_ratings_rating",
                 table: "player_ratings",
                 column: "rating",
-                descending: new bool[0]);
+                descending: Array.Empty<bool>());
 
             migrationBuilder.CreateIndex(
                 name: "ix_player_ratings_ruleset",

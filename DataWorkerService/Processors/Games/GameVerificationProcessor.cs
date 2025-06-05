@@ -57,24 +57,11 @@ public class GameVerificationProcessor(
                 break;
             case VerificationStatus.Rejected:
                 entity.ProcessingStatus = GameProcessingStatus.Done;
-                RejectAllChildren(entity);
+                entity.RejectAllChildren();
                 break;
             case VerificationStatus.Verified:
                 entity.ProcessingStatus = GameProcessingStatus.NeedsStatCalculation;
                 break;
-        }
-    }
-
-    /// <summary>
-    /// Rejects all child entities in a <see cref="Game"/>
-    /// </summary>
-    public static void RejectAllChildren(Game game)
-    {
-        foreach (GameScore score in game.Scores)
-        {
-            score.VerificationStatus = VerificationStatus.Rejected;
-            score.RejectionReason |= ScoreRejectionReason.RejectedGame;
-            score.ProcessingStatus = ScoreProcessingStatus.Done;
         }
     }
 }

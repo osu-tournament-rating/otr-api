@@ -13,7 +13,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class MeController(IUserService userService) : Controller
+public class MeController(IUsersService usersService) : Controller
 {
     /// <summary>
     /// Get the currently logged in user
@@ -51,7 +51,7 @@ public class MeController(IUserService userService) : Controller
         [FromQuery] DateTime? dateMax = null
     )
     {
-        var playerId = await userService.GetPlayerIdAsync(User.GetSubjectId());
+        int? playerId = await usersService.GetPlayerIdAsync(User.GetSubjectId());
         if (!playerId.HasValue)
         {
             return NotFound();

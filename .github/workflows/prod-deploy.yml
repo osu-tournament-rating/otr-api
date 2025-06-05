@@ -1,7 +1,7 @@
 name: Production Deploy
 
 on:
-  workflow_dispatch:     
+  workflow_dispatch:
   push:
     tags:
       - "v*"
@@ -31,18 +31,18 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-      
+
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: stagecodes
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
+
       - name: Build and Push Docker Image
         run: |
           docker build -t stagecodes/otr-api-prod -f API.Dockerfile .
           docker push stagecodes/otr-api-prod
-      
+
       - name: Build and push DataWorkerService
         run: |
           docker build -t stagecodes/otr-data-worker-service-prod -f DataWorkerService.Dockerfile .
@@ -56,10 +56,45 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - name: Set loki.yml s3
+        uses: fjogeleit/yaml-update-action@main
         with:
-          dotnet-version: "9.0.x"
+          valueFile: "./cfg/loki.yml"
+          propertyPath: "storage_config.aws.s3"
+          value: ${{ secrets.LOKI_S3 }}
+          commitChange: false
+
+      - name: Set loki.yml access_key
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: "./cfg/loki.yml"
+          propertyPath: "storage_config.aws.access_key_id"
+          value: ${{ secrets.S3_ACCESS_KEY }}
+          commitChange: false
+
+      - name: Set loki.yml secret_key
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: "./cfg/loki.yml"
+          propertyPath: "storage_config.aws.secret_access_key"
+          value: ${{ secrets.S3_SECRET_KEY }}
+          commitChange: false
+
+      - name: Set tempo.yml access_key
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: "./cfg/tempo.yml"
+          propertyPath: "storage.trace.s3.access_key"
+          value: ${{ secrets.S3_ACCESS_KEY }}
+          commitChange: false
+
+      - name: Set tempo.yml secret_key
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: "./cfg/tempo.yml"
+          propertyPath: "storage.trace.s3.secret_key"
+          value: ${{ secrets.S3_SECRET_KEY }}
+          commitChange: false
 
       - name: Create .env files
         run: |
@@ -69,20 +104,25 @@ jobs:
           echo "${{ secrets.POSTGRES_EXPORTER_ENV }}" > postgres_exporter.env
           echo "${{ secrets.MINIO_ENV }}" > minio.env
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
       - name: Generate migrations script
         run: |
           dotnet tool install --global dotnet-ef
-          dotnet ef migrations script --idempotent --context OtrContext --project Database -o script.sql
-      
+          dotnet ef migrations script --idempotent --context OtrContext --project Database --startup-project API -o script.sql
+
       - name: Copy files to server
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "api.env,dataworkerservice.env,db.env,postgres_exporter.env,minio.env,./cfg/docker-compose-prod.yml,./cfg/otel-collector-config.yml,./cfg/prometheus.yml,script.sql"
-          target: "~/otr-api-dataworker/"
-      
+          source: "*.env,./cfg/*.yml,script.sql"
+          target: "~/otr-api/"
+
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:
@@ -90,9 +130,11 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd ~/otr-api-dataworker
+            mkdir -p ~/otr-api || true
+            cd ~/otr-api
             mv ./cfg/* .
             rm -r ./cfg
             cat script.sql | docker exec -i db psql -U postgres -d postgres
             docker compose -f docker-compose-prod.yml pull
-            docker compose -f docker-compose-prod.yml up -d --build
+            docker compose -f docker-compose-prod.yml up -d
+            rm script.sql
