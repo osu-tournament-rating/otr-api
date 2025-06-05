@@ -62,8 +62,9 @@ public class MatchStatsProcessor(
 
         if (verifiedGames.Count == 0)
         {
-            logger.LogDebug(
-                "No verified and processed games found for match, skipping stat generation. [Id: {Id}]",
+            logger.LogError(
+                "No verified and processed games found for match, skipping stat generation. " +
+                "Verification and processing statuses may be out of sync. [Id: {Id}]",
                 entity.Id
             );
             return;
