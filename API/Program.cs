@@ -130,11 +130,6 @@ builder.Services
             new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
         o.Filters.Add(new AuthorizeFilter(AuthorizationPolicies.Whitelist));
     })
-    .AddJsonOptions(o =>
-    {
-        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-    })
     .AddNewtonsoftJson(o =>
     {
         o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
