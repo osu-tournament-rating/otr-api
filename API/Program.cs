@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
-using System.Text.Json;
+
 using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using API.Authorization;
@@ -18,6 +18,7 @@ using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.SwaggerGen;
 using API.SwaggerGen.Filters;
+using API.Utilities;
 using API.Utilities.AdminNotes;
 using API.Utilities.Extensions;
 using Asp.Versioning;
@@ -46,6 +47,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Writers;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Npgsql;
 using OpenTelemetry.Instrumentation.AspNetCore;
@@ -128,12 +130,11 @@ builder.Services
             new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
         o.Filters.Add(new AuthorizeFilter(AuthorizationPolicies.Whitelist));
     })
-    .AddJsonOptions(o =>
+    .AddNewtonsoftJson(o =>
     {
-        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
-    })
-    .AddNewtonsoftJson(o => { o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver(); });
+        o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+        o.SerializerSettings.Converters.Add(new NewtonsoftEnumDictionaryKeyConverter());
+    });
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
@@ -1062,7 +1063,7 @@ app.MapHealthChecks("/health", new HealthCheckOptions
             }),
             totalDuration = report.TotalDuration.TotalMilliseconds
         };
-        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
     }
 });
 
