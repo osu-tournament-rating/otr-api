@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
-
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using API.Authorization;
@@ -129,6 +129,11 @@ builder.Services
         o.ModelMetadataDetailsProviders.Add(
             new NewtonsoftJsonValidationMetadataProvider(new CamelCaseNamingStrategy()));
         o.Filters.Add(new AuthorizeFilter(AuthorizationPolicies.Whitelist));
+    })
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        o.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
     })
     .AddNewtonsoftJson(o =>
     {
