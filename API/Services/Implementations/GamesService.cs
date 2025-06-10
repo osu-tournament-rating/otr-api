@@ -30,12 +30,33 @@ public class GamesService(IGamesRepository gamesRepository, IPlayersRepository p
             return null;
         }
 
+        // Store the original ruleset to detect changes
+        var originalRuleset = existing.Ruleset;
+
         mapper.Map(game, existing);
 
-        if (game.VerificationStatus == VerificationStatus.Rejected)
+        // Check if we need to load scores for any operations
+        bool rulesetChanged = originalRuleset != existing.Ruleset;
+        bool needsRejection = game.VerificationStatus == VerificationStatus.Rejected;
+
+        if (rulesetChanged || needsRejection)
         {
             await gamesRepository.LoadScoresAsync(existing);
-            existing.RejectAllChildren();
+
+            // Update ruleset for all child scores if changed
+            if (rulesetChanged)
+            {
+                foreach (GameScore score in existing.Scores)
+                {
+                    score.Ruleset = existing.Ruleset;
+                }
+            }
+
+            // Reject all children if verification status is rejected
+            if (needsRejection)
+            {
+                existing.RejectAllChildren();
+            }
         }
 
         await gamesRepository.UpdateAsync(existing);
