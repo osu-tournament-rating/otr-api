@@ -32,4 +32,14 @@ public interface IGamesService
     /// </summary>
     /// <param name="id">Game id</param>
     Task DeleteAsync(int id);
+
+    /// <summary>
+    /// Merges scores from source games into a target game.
+    /// The source games must be from the same match and have the same beatmap as the target game.
+    /// After merging, the source games are deleted.
+    /// </summary>
+    /// <param name="targetGameId">The ID of the game to merge scores into</param>
+    /// <param name="sourceGameIds">The IDs of the games whose scores will be merged</param>
+    /// <returns>The merged game if successful, null if failed</returns>
+    Task<GameDTO?> MergeScoresAsync(int targetGameId, IEnumerable<int> sourceGameIds);
 }

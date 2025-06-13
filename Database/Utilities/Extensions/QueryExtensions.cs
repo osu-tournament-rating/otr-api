@@ -404,7 +404,12 @@ public static class QueryExtensions
         }
 
         return query
+            .Include(g => g.Match)
             .Include(g => g.Beatmap)
+            .ThenInclude(b => b!.Beatmapset)
+            .ThenInclude(bs => bs!.Creator)
+            .Include(g => g.Beatmap)
+            .ThenInclude(b => b!.Creators)
             .Include(g => g.Rosters)
             .Include(g => g.Scores)
             .ThenInclude(s => s.Player)
