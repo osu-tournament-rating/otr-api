@@ -73,14 +73,14 @@ public class GamesService(IGamesRepository gamesRepository, IPlayersRepository p
     {
         Game? result = await gamesRepository.MergeScoresAsync(targetGameId, sourceGameIds);
 
-        if (result is not null)
+        if (result is null)
         {
-            GameDTO gameDto = mapper.Map<GameDTO>(result);
-            gameDto.Players = await GetPlayerCompactsAsync(gameDto);
-            return gameDto;
+            return null;
         }
 
-        return null;
+        GameDTO gameDto = mapper.Map<GameDTO>(result);
+        gameDto.Players = await GetPlayerCompactsAsync(gameDto);
+        return gameDto;
     }
 
     private async Task<ICollection<PlayerCompactDTO>> GetPlayerCompactsAsync(GameDTO game)

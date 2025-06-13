@@ -3,7 +3,6 @@ using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities.Extensions;
 using Asp.Versioning;
-using Common.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -98,7 +97,7 @@ public class GamesController(IGamesService gamesService) : Controller
     }
 
     /// <summary>
-    /// Merge scores from source games into a target game. The source games must be from the same match 
+    /// Merge scores from source games into a target game. The source games must be from the same match
     /// and have the same beatmap as the target game. After successful merging, the source games are deleted.
     /// </summary>
     /// <param name="id">Id of the game to merge scores into</param>
