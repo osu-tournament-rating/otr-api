@@ -33,6 +33,8 @@ public class GamesRepository(OtrContext context, ILogger<GamesRepository> logger
     public async Task<Game?> MergeScoresAsync(int targetGameId, IEnumerable<int> sourceGameIds)
     {
         var gameIds = sourceGameIds.ToList();
+
+        await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
             Game? targetGame = await _context.Games
@@ -117,6 +119,8 @@ public class GamesRepository(OtrContext context, ILogger<GamesRepository> logger
             _context.Games.RemoveRange(sourceGames);
             await _context.SaveChangesAsync();
 
+            await transaction.CommitAsync();
+
             logger.LogDebug("Game merge successful: Merged {SourceGameCount} games into target game {TargetGameId}. Source game IDs: {SourceGameIds}",
                 sourceGames.Count, targetGameId, string.Join(", ", sourceGames.Select(g => g.Id)));
 
@@ -124,6 +128,9 @@ public class GamesRepository(OtrContext context, ILogger<GamesRepository> logger
         }
         catch (DbUpdateException ex)
         {
+            // Rollback the transaction on failure
+            await transaction.RollbackAsync();
+
             // Catch database exceptions (e.g., constraint violations)
             logger.LogDebug(ex, "Game merge failed: Database exception occurred while merging games. Target: {TargetGameId}, Sources: {SourceGameIds}",
                 targetGameId, string.Join(", ", gameIds));

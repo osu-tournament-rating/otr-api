@@ -388,7 +388,7 @@ public static class QueryExtensions
 
     /// <summary>
     /// Includes navigation properties for a <see cref="Game"/>
-    /// <br/>Includes: <see cref="Game.Beatmap"/>, <see cref="Game.Rosters"/>,
+    /// <br/>Includes: <see cref="Game.Match"/>, <see cref="Game.Beatmap"/>, <see cref="Game.Rosters"/>,
     /// <see cref="Game.Scores"/>, <see cref="Game.AdminNotes"/>,
     /// <see cref="Game.Audits"/>
     /// </summary>
