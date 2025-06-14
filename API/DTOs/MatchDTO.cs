@@ -1,11 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a played match
 /// </summary>
-[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class MatchDTO : MatchCompactDTO
 {
     /// <summary>
@@ -17,6 +18,11 @@ public class MatchDTO : MatchCompactDTO
     /// The participating <see cref="Player"/>s
     /// </summary>
     public ICollection<PlayerCompactDTO> Players { get; set; } = [];
+
+    /// <summary>
+    /// Match stats for each participant
+    /// </summary>
+    public ICollection<PlayerMatchStatsDTO> PlayerMatchStats { get; set; } = [];
 
     /// <summary>
     /// List of games played during the match
