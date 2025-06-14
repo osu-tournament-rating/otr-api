@@ -35,6 +35,11 @@ public class MatchDTO : MatchCompactDTO
     public MatchWinRecordDTO? MatchWinRecord { get; set; }
 
     /// <summary>
+    /// Roster information for teams in this match
+    /// </summary>
+    public ICollection<MatchRosterDTO> Rosters { get; set; } = [];
+
+    /// <summary>
     /// List of games played during the match
     /// </summary>
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]

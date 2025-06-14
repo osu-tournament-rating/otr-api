@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
-using JetBrains.Annotations;
 
 namespace API.DTOs;
 
@@ -93,15 +92,6 @@ public class GameDTO
     /// Win record
     /// </summary>
     public IEnumerable<GameRosterDTO> Rosters { get; init; } = [];
-
-    /// <summary>
-    /// All participating players
-    /// </summary>
-    /// <remarks>
-    /// Will only be populated if the game is the highest order of entity requested
-    /// </remarks>
-    [UsedImplicitly]
-    public ICollection<PlayerCompactDTO> Players { get; set; } = [];
 
     /// <summary>
     /// All associated admin notes

@@ -16,28 +16,33 @@ public class MatchWinRecordDTO
     /// The id of the match
     /// </summary>
     public int MatchId { get; set; }
+
     /// <summary>
-    /// The ids of each player on the losing team
+    /// Indicates whether the match ended in a tie
     /// </summary>
-    public int[] LoserRoster { get; set; } = [];
+    public bool IsTied { get; set; }
     /// <summary>
-    /// The ids of each player on the winning team
+    /// The ids of each player on the losing team. Null if tied.
     /// </summary>
-    public int[] WinnerRoster { get; set; } = [];
+    public int[]? LoserRoster { get; set; } = [];
+    /// <summary>
+    /// The ids of each player on the winning team. Null if tied.
+    /// </summary>
+    public int[]? WinnerRoster { get; set; } = [];
     /// <summary>
     /// The number of points the losing team earned
     /// </summary>
     public int LoserPoints { get; set; }
     /// <summary>
     /// The number of points the winning team earned
-    /// <summary>
+    /// </summary>
     public int WinnerPoints { get; set; }
     /// <summary>
-    /// The winning team (see <see cref="Team"/>). Null if HeadToHead.
+    /// The winning team (see <see cref="Team"/>). Null if HeadToHead or tied.
     /// </summary>
     public int? WinnerTeam { get; set; }
     /// <summary>
-    /// The losing team (see <see cref="Team"/>). Null if HeadToHead.
+    /// The losing team (see <see cref="Team"/>). Null if HeadToHead or tied.
     /// </summary>
     public int? LoserTeam { get; set; }
 }

@@ -27,8 +27,7 @@ public class MapperProfile : Profile
 
         CreateMap<Game, GameCompactDTO>();
 
-        CreateMap<Game, GameDTO>()
-            .ForMember(x => x.Players, opt => opt.Ignore());
+        CreateMap<Game, GameDTO>();
 
         CreateMap<GameDTO, Game>(MemberList.Source)
             .ForMember(x => x.Beatmap, opt => opt.Ignore())
@@ -38,8 +37,7 @@ public class MapperProfile : Profile
             .ForMember(x => x.IsFreeMod, opt => opt.UseDestinationValue())
             .ForSourceMember(x => x.Rosters, opt => opt.DoNotValidate())
             .ForSourceMember(x => x.AdminNotes, opt => opt.DoNotValidate())
-            .ForSourceMember(x => x.IsFreeMod, opt => opt.DoNotValidate())
-            .ForSourceMember(x => x.Players, opt => opt.DoNotValidate());
+            .ForSourceMember(x => x.IsFreeMod, opt => opt.DoNotValidate());
 
         CreateMap<GameRoster, GameRosterDTO>();
 
@@ -67,11 +65,14 @@ public class MapperProfile : Profile
 
         CreateMap<MatchWinRecord, MatchWinRecordDTO>();
 
+        CreateMap<MatchRoster, MatchRosterDTO>();
+
         CreateMap<Match, MatchDTO>()
             .IncludeBase<Match, MatchCompactDTO>()
             .ForMember(x => x.Players, opt => opt.Ignore())
             .ForMember(x => x.RatingAdjustments, opt => opt.MapFrom(src => src.PlayerRatingAdjustments))
-            .ForMember(x => x.MatchWinRecord, opt => opt.MapFrom(src => src.WinRecord));
+            .ForMember(x => x.MatchWinRecord, opt => opt.MapFrom(src => src.WinRecord))
+            .ForMember(x => x.Rosters, opt => opt.MapFrom(src => src.Rosters));
 
         CreateMap<Match, MatchSubmissionStatusDTO>();
         CreateMap<Match, MatchCreatedResultDTO>()
