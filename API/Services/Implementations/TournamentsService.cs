@@ -119,8 +119,6 @@ public class TournamentsService(
         ));
     }
 
-    public async Task<TournamentDTO?> GetVerifiedAsync(int id) =>
-        mapper.Map<TournamentDTO?>(await tournamentsRepository.GetVerifiedAsync(id));
 
     public async Task<int> CountPlayedAsync(
         int playerId,

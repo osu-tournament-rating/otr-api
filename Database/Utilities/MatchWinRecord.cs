@@ -1,0 +1,80 @@
+using Common.Enums;
+using Database.Entities;
+using JetBrains.Annotations;
+
+namespace Database.Utilities;
+
+/// <summary>
+/// A record of who won and lost a match
+/// </summary>
+/// <remarks>
+/// Generated from MatchRoster data
+/// </remarks>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
+public class MatchWinRecord
+{
+    /// <summary>
+    /// Creates a MatchWinRecord from a collection of MatchRosters
+    /// </summary>
+    /// <param name="matchId">The ID of the match</param>
+    /// <param name="rosters">The collection of rosters for the match</param>
+    public MatchWinRecord(int matchId, ICollection<MatchRoster> rosters)
+    {
+        if (rosters.Count < 2)
+        {
+            throw new ArgumentException("At least 2 rosters are required to create a MatchWinRecord", nameof(rosters));
+        }
+
+        var sortedRosters = rosters.OrderByDescending(r => r.Score).ToList();
+        MatchRoster winner = sortedRosters[0];
+        MatchRoster loser = sortedRosters[1];
+
+        if (winner.Score == loser.Score)
+        {
+            throw new ArgumentException("Cannot create a MatchWinRecord when scores are tied", nameof(rosters));
+        }
+
+        MatchId = matchId;
+        WinnerRoster = winner.Roster;
+        LoserRoster = loser.Roster;
+        WinnerPoints = winner.Score;
+        LoserPoints = loser.Score;
+        WinnerTeam = (int?)winner.Team;
+        LoserTeam = (int?)loser.Team;
+    }
+
+    /// <summary>
+    /// The id of the match
+    /// </summary>
+    public int MatchId { get; }
+
+    /// <summary>
+    /// The ids of each player on the losing team
+    /// </summary>
+    public int[] LoserRoster { get; }
+
+    /// <summary>
+    /// The ids of each player on the winning team
+    /// </summary>
+    public int[] WinnerRoster { get; }
+
+    /// <summary>
+    /// The number of points the losing team earned
+    /// </summary>
+    public int LoserPoints { get; }
+
+    /// <summary>
+    /// The number of points the winning team earned
+    /// </summary>
+    public int WinnerPoints { get; }
+
+    /// <summary>
+    /// The winning team (see <see cref="Team"/>). Null if HeadToHead.
+    /// </summary>
+    public int? WinnerTeam { get; }
+
+    /// <summary>
+    /// The losing team (see <see cref="Team"/>). Null if HeadToHead.
+    /// </summary>
+    public int? LoserTeam { get; }
+}

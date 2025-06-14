@@ -25,14 +25,24 @@ public class MatchDTO : MatchCompactDTO
     public ICollection<PlayerMatchStatsDTO> PlayerMatchStats { get; set; } = [];
 
     /// <summary>
+    /// Rating adjustments for each participant
+    /// </summary>
+    public ICollection<RatingAdjustmentDTO> RatingAdjustments { get; set; } = [];
+
+    /// <summary>
+    /// Match win record information
+    /// </summary>
+    public MatchWinRecordDTO? MatchWinRecord { get; set; }
+
+    /// <summary>
     /// List of games played during the match
     /// </summary>
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public ICollection<GameDTO> Games { get; set; } = [];
+    public new ICollection<GameDTO> Games { get; set; } = [];
 
     /// <summary>
     /// All associated admin notes
     /// </summary>
     [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
+    public new ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
 }

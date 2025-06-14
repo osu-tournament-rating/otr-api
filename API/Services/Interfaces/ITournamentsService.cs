@@ -50,17 +50,6 @@ public interface ITournamentsService
     Task<ICollection<TournamentDTO>> GetAsync(TournamentRequestQueryDTO requestQuery);
 
     /// <summary>
-    /// Gets a verified tournament that matches the provided id. All child navigations are
-    /// verified.
-    /// </summary>
-    /// <param name="id">The id of the verified tournament</param>
-    /// <returns>
-    /// Null if the tournament is not found.
-    /// Returns a tournament with verified child navigations if found.
-    /// </returns>
-    Task<TournamentDTO?> GetVerifiedAsync(int id);
-
-    /// <summary>
     /// Gets the number of tournaments played by the given player
     /// </summary>
     Task<int> CountPlayedAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);

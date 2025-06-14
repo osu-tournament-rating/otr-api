@@ -116,23 +116,15 @@ public partial class TournamentsController(ITournamentsService tournamentsServic
     /// Get a tournament
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <param name="verified">
-    /// If true, specifically includes verified match data. If false,
-    /// includes all data, regardless of verification status.
-    /// Also includes all child navigations if false.
-    /// Default true (strictly verified data with limited navigation properties)
-    /// </param>
     /// <response code="404">A tournament matching the given id does not exist</response>
     /// <response code="200">Returns a tournament</response>
     [HttpGet("{id:int}")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAsync(int id, [FromQuery] bool verified = true)
+    public async Task<IActionResult> GetAsync(int id)
     {
-        TournamentDTO? result = verified
-            ? await tournamentsService.GetVerifiedAsync(id)
-            : await tournamentsService.GetAsync(id);
+        TournamentDTO? result = await tournamentsService.GetAsync(id);
 
         if (result is null)
         {
