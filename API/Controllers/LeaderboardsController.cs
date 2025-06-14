@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -15,6 +16,7 @@ public class LeaderboardsController(IPlayerStatsService playerStatsService) : Co
     /// </summary>
     /// <response code="200">Returns the leaderboard</response>
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType<LeaderboardDTO>(StatusCodes.Status200OK)]
     public async Task<ActionResult<LeaderboardDTO>> GetAsync(
        [FromQuery] LeaderboardRequestQueryDTO requestQuery
