@@ -69,6 +69,20 @@ public class GamesService(IGamesRepository gamesRepository, IPlayersRepository p
     public async Task DeleteAsync(int id) =>
         await gamesRepository.DeleteAsync(id);
 
+    public async Task<GameDTO?> MergeScoresAsync(int targetGameId, IEnumerable<int> sourceGameIds)
+    {
+        Game? result = await gamesRepository.MergeScoresAsync(targetGameId, sourceGameIds);
+
+        if (result is null)
+        {
+            return null;
+        }
+
+        GameDTO gameDto = mapper.Map<GameDTO>(result);
+        gameDto.Players = await GetPlayerCompactsAsync(gameDto);
+        return gameDto;
+    }
+
     private async Task<ICollection<PlayerCompactDTO>> GetPlayerCompactsAsync(GameDTO game)
     {
         IEnumerable<int> playerIds = game.Scores.Select(s => s.PlayerId).Distinct();

@@ -95,4 +95,28 @@ public class GamesController(IGamesService gamesService) : Controller
         await gamesService.DeleteAsync(id);
         return NoContent();
     }
+
+    /// <summary>
+    /// Merge scores from source games into a target game. The source games must be from the same match
+    /// and have the same beatmap as the target game. After successful merging, the source games are deleted.
+    /// </summary>
+    /// <param name="id">Id of the game to merge scores into</param>
+    /// <param name="sourceGameIds">Game ids whose scores will be merged into the target game</param>
+    /// <response code="400">Merge failed</response>
+    /// <response code="200">State of the game after merging</response>
+    [HttpPost("{id:int}:merge")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<GameDTO>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> MergeScoresAsync(int id, [FromBody] IEnumerable<int> sourceGameIds)
+    {
+        GameDTO? result = await gamesService.MergeScoresAsync(id, sourceGameIds);
+
+        if (result is not null)
+        {
+            return Ok(result);
+        }
+
+        return BadRequest();
+    }
 }

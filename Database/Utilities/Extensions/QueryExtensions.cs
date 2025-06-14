@@ -388,7 +388,7 @@ public static class QueryExtensions
 
     /// <summary>
     /// Includes navigation properties for a <see cref="Game"/>
-    /// <br/>Includes: <see cref="Game.Beatmap"/>, <see cref="Game.Rosters"/>,
+    /// <br/>Includes: <see cref="Game.Match"/>, <see cref="Game.Beatmap"/>, <see cref="Game.Rosters"/>,
     /// <see cref="Game.Scores"/>, <see cref="Game.AdminNotes"/>,
     /// <see cref="Game.Audits"/>
     /// </summary>
@@ -404,7 +404,12 @@ public static class QueryExtensions
         }
 
         return query
+            .Include(g => g.Match)
             .Include(g => g.Beatmap)
+            .ThenInclude(b => b!.Beatmapset)
+            .ThenInclude(bs => bs!.Creator)
+            .Include(g => g.Beatmap)
+            .ThenInclude(b => b!.Creators)
             .Include(g => g.Rosters)
             .Include(g => g.Scores)
             .ThenInclude(s => s.Player)
