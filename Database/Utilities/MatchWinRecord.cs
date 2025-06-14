@@ -26,21 +26,33 @@ public class MatchWinRecord
         }
 
         var sortedRosters = rosters.OrderByDescending(r => r.Score).ToList();
-        MatchRoster winner = sortedRosters[0];
-        MatchRoster loser = sortedRosters[1];
-
-        if (winner.Score == loser.Score)
-        {
-            throw new ArgumentException("Cannot create a MatchWinRecord when scores are tied", nameof(rosters));
-        }
+        MatchRoster first = sortedRosters[0];
+        MatchRoster second = sortedRosters[1];
 
         MatchId = matchId;
-        WinnerRoster = winner.Roster;
-        LoserRoster = loser.Roster;
-        WinnerPoints = winner.Score;
-        LoserPoints = loser.Score;
-        WinnerTeam = (int?)winner.Team;
-        LoserTeam = (int?)loser.Team;
+
+        if (first.Score == second.Score)
+        {
+            // Handle tie - set winner/loser properties to null
+            IsTied = true;
+            WinnerRoster = null;
+            LoserRoster = null;
+            WinnerPoints = first.Score; // Both teams have same score
+            LoserPoints = second.Score;
+            WinnerTeam = null;
+            LoserTeam = null;
+        }
+        else
+        {
+            // Normal win/loss scenario
+            IsTied = false;
+            WinnerRoster = first.Roster;
+            LoserRoster = second.Roster;
+            WinnerPoints = first.Score;
+            LoserPoints = second.Score;
+            WinnerTeam = (int?)first.Team;
+            LoserTeam = (int?)second.Team;
+        }
     }
 
     /// <summary>
@@ -49,14 +61,19 @@ public class MatchWinRecord
     public int MatchId { get; }
 
     /// <summary>
-    /// The ids of each player on the losing team
+    /// Indicates whether the match ended in a tie
     /// </summary>
-    public int[] LoserRoster { get; }
+    public bool IsTied { get; }
 
     /// <summary>
-    /// The ids of each player on the winning team
+    /// The ids of each player on the losing team. Null if tied.
     /// </summary>
-    public int[] WinnerRoster { get; }
+    public int[]? LoserRoster { get; }
+
+    /// <summary>
+    /// The ids of each player on the winning team. Null if tied.
+    /// </summary>
+    public int[]? WinnerRoster { get; }
 
     /// <summary>
     /// The number of points the losing team earned
@@ -69,12 +86,12 @@ public class MatchWinRecord
     public int WinnerPoints { get; }
 
     /// <summary>
-    /// The winning team (see <see cref="Team"/>). Null if HeadToHead.
+    /// The winning team (see <see cref="Team"/>). Null if HeadToHead or tied.
     /// </summary>
     public int? WinnerTeam { get; }
 
     /// <summary>
-    /// The losing team (see <see cref="Team"/>). Null if HeadToHead.
+    /// The losing team (see <see cref="Team"/>). Null if HeadToHead or tied.
     /// </summary>
     public int? LoserTeam { get; }
 }

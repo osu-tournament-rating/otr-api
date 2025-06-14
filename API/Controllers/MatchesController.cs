@@ -29,16 +29,15 @@ public class MatchesController(IMatchesService matchesService) : Controller
     /// Get a match
     /// </summary>
     /// <param name="id">Match id</param>
-    /// <param name="verified">Whether all games and subsequent child navigations must be verified</param>
     /// <response code="404">A match matching the given id does not exist</response>
     /// <response code="200">Returns a match</response>
     [HttpGet("{id:int}")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAsync(int id, [FromQuery] bool verified = true)
+    public async Task<IActionResult> GetAsync(int id)
     {
-        MatchDTO? match = await matchesService.GetAsync(id, verified);
+        MatchDTO? match = await matchesService.GetAsync(id);
 
         return match is null
             ? NotFound()
@@ -81,7 +80,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateAsync(int id, [FromBody] JsonPatchDocument<MatchDTO> patch)
     {
-        MatchDTO? match = await matchesService.GetAsync(id, false);
+        MatchDTO? match = await matchesService.GetAsync(id);
         if (match is null)
         {
             return NotFound();
@@ -115,7 +114,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> DeleteAsync(int id)
     {
-        MatchDTO? result = await matchesService.GetAsync(id, false);
+        MatchDTO? result = await matchesService.GetAsync(id);
         if (result is null)
         {
             return NotFound();

@@ -1,25 +1,20 @@
 using API.DTOs;
 using API.Services.Interfaces;
 using AutoMapper;
+using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
-public class GamesService(IGamesRepository gamesRepository, IPlayersRepository playersRepository, IMapper mapper) : IGamesService
+public class GamesService(IGamesRepository gamesRepository, IMapper mapper) : IGamesService
 {
     public async Task<GameDTO?> GetAsync(int id, bool verified)
     {
         GameDTO? game = mapper.Map<GameDTO?>(await gamesRepository.GetAsync(id, verified));
 
-        if (game is null)
-        {
-            return null;
-        }
-
-        game.Players = await GetPlayerCompactsAsync(game);
-        return game;
+        return game ?? null;
     }
 
     public async Task<GameDTO?> UpdateAsync(int id, GameDTO game)
@@ -31,7 +26,7 @@ public class GamesService(IGamesRepository gamesRepository, IPlayersRepository p
         }
 
         // Store the original ruleset to detect changes
-        var originalRuleset = existing.Ruleset;
+        Ruleset originalRuleset = existing.Ruleset;
 
         mapper.Map(game, existing);
 
@@ -73,19 +68,7 @@ public class GamesService(IGamesRepository gamesRepository, IPlayersRepository p
     {
         Game? result = await gamesRepository.MergeScoresAsync(targetGameId, sourceGameIds);
 
-        if (result is null)
-        {
-            return null;
-        }
-
-        GameDTO gameDto = mapper.Map<GameDTO>(result);
-        gameDto.Players = await GetPlayerCompactsAsync(gameDto);
-        return gameDto;
+        return result is null ? null : mapper.Map<GameDTO>(result);
     }
 
-    private async Task<ICollection<PlayerCompactDTO>> GetPlayerCompactsAsync(GameDTO game)
-    {
-        IEnumerable<int> playerIds = game.Scores.Select(s => s.PlayerId).Distinct();
-        return mapper.Map<ICollection<PlayerCompactDTO>>(await playersRepository.GetAsync(playerIds));
-    }
 }

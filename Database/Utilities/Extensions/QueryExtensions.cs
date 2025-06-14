@@ -252,20 +252,10 @@ public static class QueryExtensions
     /// <see cref="Match.PlayerRatingAdjustments"/>, <see cref="Match.Games"/>
     /// (<see cref="Game.Scores"/>, <see cref="Game.Beatmap"/>, <see cref="Game.Rosters"/>)
     /// </summary>
-    /// <param name="verified">Whether all navigations must be verified</param>
-    public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query, bool verified)
+    public static IQueryable<Match> IncludeChildren(this IQueryable<Match> query)
     {
-        query = query.AsSplitQuery();
-
-        if (verified)
-        {
-            query = query.Include(m => m.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified &&
-                                                          g.ProcessingStatus == GameProcessingStatus.Done))
-                .ThenInclude(g => g.Scores.Where(s => s.VerificationStatus == VerificationStatus.Verified &&
-                                                      s.ProcessingStatus == ScoreProcessingStatus.Done));
-        }
-
         return query
+            .AsSplitQuery()
             .Include(m => m.Rosters)
             .Include(m => m.PlayerMatchStats)
             .Include(m => m.PlayerRatingAdjustments)

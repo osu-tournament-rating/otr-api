@@ -131,7 +131,8 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// Win record for the match based on the Rosters
     /// </summary>
     /// <remarks>
-    /// This is not stored in the database but computed from the Rosters collection
+    /// This is not stored in the database but computed from the Rosters collection.
+    /// Returns null only if there are fewer than 2 rosters.
     /// </remarks>
     [NotMapped]
     public MatchWinRecord? WinRecord
@@ -144,7 +145,7 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
             }
             catch (ArgumentException)
             {
-                // No valid win record can be created (not enough rosters or tied scores)
+                // No valid win record can be created (not enough rosters)
                 return null;
             }
         }
