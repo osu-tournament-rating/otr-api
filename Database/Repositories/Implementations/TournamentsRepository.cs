@@ -30,31 +30,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .FirstOrDefaultAsync(x => x.Id == id)
             : await base.GetAsync(id);
 
-    public async Task<Tournament?> GetVerifiedAsync(int id) =>
-        await _context.Tournaments
-            .AsNoTracking()
-            .AsSplitQuery()
-            .Include(t => t.PlayerTournamentStats)
-            .ThenInclude(pts => pts.Player)
-            .Include(t => t.Matches.Where(m =>
-                m.VerificationStatus == VerificationStatus.Verified &&
-                m.ProcessingStatus == MatchProcessingStatus.Done))
-            .ThenInclude(m => m.Games.Where(g =>
-                g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
-            .ThenInclude(g => g.Beatmap)
-            .Include(t => t.Matches.Where(m =>
-                m.VerificationStatus == VerificationStatus.Verified &&
-                m.ProcessingStatus == MatchProcessingStatus.Done))
-            .ThenInclude(m => m.Games.Where(g =>
-                g.VerificationStatus == VerificationStatus.Verified && g.ProcessingStatus == GameProcessingStatus.Done))
-            .ThenInclude(g => g.Scores.Where(gs =>
-                gs.VerificationStatus == VerificationStatus.Verified &&
-                gs.ProcessingStatus == ScoreProcessingStatus.Done))
-            .ThenInclude(gs => gs.Player)
-            .Include(t => t.SubmittedByUser!.Player)
-            .Include(t => t.VerifiedByUser!.Player)
-            .IncludeAdminNotes<Tournament, TournamentAdminNote>()
-            .FirstOrDefaultAsync(t => t.Id == id);
 
     public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
         await _context.Tournaments
@@ -339,7 +314,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     /// <param name="dateMax">Date upper bound</param>
     /// <remarks>Since filter uses Any, invalid matches can still exist in the resulting query</remarks>
     /// <returns></returns>
-    protected IQueryable<Tournament> QueryForParticipation(
+    private IQueryable<Tournament> QueryForParticipation(
         int playerId,
         Ruleset ruleset,
         DateTime? dateMin,

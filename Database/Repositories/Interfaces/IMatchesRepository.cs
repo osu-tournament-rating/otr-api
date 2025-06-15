@@ -37,8 +37,7 @@ public interface IMatchesRepository : IRepository<Match>
     /// </summary>
     /// <remarks>The match and included navigations will not be tracked in the context</remarks>
     /// <param name="id">Match id</param>
-    /// <param name="verified">Whether the match (and all child navigations) are verified</param>
-    Task<Match?> GetFullAsync(int id, bool verified);
+    Task<Match?> GetFullAsync(int id);
 
     /// <summary>
     /// Searches for matches by name

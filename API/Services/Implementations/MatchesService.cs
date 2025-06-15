@@ -36,9 +36,9 @@ public class MatchesService(
         return mapper.Map<IEnumerable<MatchDTO>>(result);
     }
 
-    public async Task<MatchDTO?> GetAsync(int id, bool verified)
+    public async Task<MatchDTO?> GetAsync(int id)
     {
-        MatchDTO? match = mapper.Map<MatchDTO?>(await matchesRepository.GetFullAsync(id, verified));
+        MatchDTO? match = mapper.Map<MatchDTO?>(await matchesRepository.GetFullAsync(id));
 
         if (match is null)
         {
@@ -59,7 +59,7 @@ public class MatchesService(
     )
     {
         var matches = (await matchesRepository.GetPlayerMatchesAsync(osuPlayerId, ruleset, start, end)).ToList();
-        IEnumerable<MatchDTO>? matchDtos = mapper.Map<IEnumerable<MatchDTO>>(matches);
+        IEnumerable<MatchDTO> matchDtos = mapper.Map<IEnumerable<MatchDTO>>(matches).ToList();
 
         foreach (MatchDTO dto in matchDtos)
         {
