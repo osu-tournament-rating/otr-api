@@ -94,12 +94,12 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
     public async Task<IEnumerable<Match>> GetAsync(IEnumerable<long> matchIds) =>
         await _context.Matches.AsNoTracking().Where(x => matchIds.Contains(x.OsuId)).ToListAsync();
 
-    public async Task<Match?> GetFullAsync(int id, bool verified)
+    public async Task<Match?> GetFullAsync(int id)
     {
         IQueryable<Match> query = _context.Matches
             .AsSplitQuery()
             .AsNoTracking()
-            .IncludeChildren(verified)
+            .IncludeChildren()
             .IncludeTournament()
             .IncludeAdminNotes<Match, MatchAdminNote>();
 
@@ -147,7 +147,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         _context.Matches.RemoveRange(childMatches);
         await _context.SaveChangesAsync();
 
-        return (await GetFullAsync(parentId, false))!;
+        return (await GetFullAsync(parentId))!;
     }
 
     public async Task<Match?> UpdateVerificationStatusAsync(

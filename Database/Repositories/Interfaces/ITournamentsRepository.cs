@@ -21,17 +21,6 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
 
     /// <summary>
-    /// Gets a <see cref="Tournament" /> by id with verified child navigations
-    /// </summary>
-    /// <param name="id">The id of the tournament</param>
-    /// <returns>
-    /// Null if the tournament is not found.
-    /// Returns a tournament with verified child navigations if found.
-    /// </returns>
-    /// <remarks>All returned entities will not be tracked by the context</remarks>
-    Task<Tournament?> GetVerifiedAsync(int id);
-
-    /// <summary>
     /// Gets tournaments with a <see cref="TournamentProcessingStatus"/>
     /// that is not <see cref="TournamentProcessingStatus.Done"/>
     /// </summary>
