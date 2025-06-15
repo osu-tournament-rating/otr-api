@@ -71,4 +71,36 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
             ? NotFound()
             : Ok(result);
     }
+
+    /// <summary>
+    /// Get all tournaments a player has participated in
+    /// </summary>
+    /// <remarks>
+    /// Gets tournaments for a player by versatile search.
+    /// If no ruleset is provided, returns tournaments from all rulesets.
+    /// If no date range is provided, gets all tournaments without date filtering.
+    /// </remarks>
+    /// <param name="key">Search key (id, osu! id, or osu! username)</param>
+    /// <param name="ruleset">Ruleset to filter for</param>
+    /// <param name="dateMin">Filter from earliest date</param>
+    /// <param name="dateMax">Filter to latest date</param>
+    /// <response code="404">A player matching the given key does not exist</response>
+    /// <response code="200">Returns a collection of tournaments</response>
+    [HttpGet("{key}/tournaments")]
+    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<IEnumerable<TournamentCompactDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTournamentsAsync(
+        string key,
+        [FromQuery] Ruleset? ruleset = null,
+        [FromQuery] DateTime? dateMin = null,
+        [FromQuery] DateTime? dateMax = null
+    )
+    {
+        IEnumerable<TournamentCompactDTO>? result = await playerService.GetTournamentsAsync(key, ruleset, dateMin, dateMax);
+
+        return result is not null
+            ? Ok(result)
+            : NotFound();
+    }
 }

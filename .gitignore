@@ -24,3 +24,4 @@ postgres_exporter.env
 .vscode/
 
 .aider*
+CLAUDE.md

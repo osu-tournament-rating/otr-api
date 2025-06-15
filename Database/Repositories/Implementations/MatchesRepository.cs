@@ -116,6 +116,7 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
             .WhereVerified()
             .WhereProcessingCompleted()
             .Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\"))
+            .OrderByDescending(m => m.StartTime)
             .Take(30)
             .ToListAsync();
     }

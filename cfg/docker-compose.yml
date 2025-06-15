@@ -1,6 +1,6 @@
 services:
   api:
-    image: "stagecodes/otr-api-prod:latest"
+    image: "stagecodes/otr-api:${TAG:-latest}"
     container_name: api
     ports:
       - "3700:8080"
@@ -10,8 +10,12 @@ services:
       - db
       - redis
     restart: always
+    profiles:
+      - staging
+      - production
+
   dataworkerservice:
-    image: "stagecodes/otr-data-worker-service-prod:latest"
+    image: "stagecodes/otr-data-worker-service:${TAG:-latest}"
     container_name: dataworkerservice
     env_file:
       - dataworkerservice.env
@@ -24,6 +28,9 @@ services:
       options:
         max-size: "50m"
         max-file: "3"
+    profiles:
+      - production
+
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -35,6 +42,10 @@ services:
     volumes:
       - "grafana_storage:/var/lib/grafana"
     restart: always
+    profiles:
+      - staging
+      - production
+
   prometheus:
     container_name: prometheus
     image: prom/prometheus
@@ -45,6 +56,10 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     restart: always
+    profiles:
+      - staging
+      - production
+
   db:
     container_name: db
     image: postgres:17
@@ -55,6 +70,10 @@ services:
     ports:
       - "5432:5432"
     restart: always
+    profiles:
+      - staging
+      - production
+
   redis:
     container_name: redis
     image: redis:latest
@@ -63,6 +82,10 @@ services:
     restart: always
     volumes:
       - redis:/data
+    profiles:
+      - staging
+      - production
+
   postgres-exporter:
     image: prometheuscommunity/postgres-exporter
     container_name: postgres-exporter
@@ -74,6 +97,10 @@ services:
       - db
       - prometheus
     restart: always
+    profiles:
+      - staging
+      - production
+
   collector:
     image: otel/opentelemetry-collector-contrib:latest
     container_name: collector
@@ -83,6 +110,10 @@ services:
     depends_on:
       - tempo
     restart: always
+    profiles:
+      - staging
+      - production
+
   tempo:
     image: grafana/tempo
     container_name: tempo
@@ -94,6 +125,10 @@ services:
       - "3200:3200"
       - "4317:4317"
     restart: always
+    profiles:
+      - staging
+      - production
+
   loki:
     image: grafana/loki
     container_name: loki
@@ -104,6 +139,10 @@ services:
       - loki_storage:/loki
       - ./loki.yml:/etc/loki/loki.yml:ro
     restart: always
+    profiles:
+      - staging
+      - production
+
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -122,6 +161,10 @@ services:
       retries: 3
       start_period: 30s
     restart: always
+    profiles:
+      - staging
+      - production
+
 volumes:
   db_data:
   grafana_storage:

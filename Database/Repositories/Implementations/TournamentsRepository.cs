@@ -204,6 +204,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         await _context.Tournaments
             .AsNoTracking()
             .WhereSearchQuery(name)
+            .OrderByDescending(t => t.StartTime)
             .Take(30)
             .ToListAsync();
 

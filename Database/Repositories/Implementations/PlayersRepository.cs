@@ -43,6 +43,7 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
             .Include(p => p.Ratings)
             .Include(p => p.User)
             .ThenInclude(u => u!.Settings)
+            .OrderBy(p => p.Username)
             .Take(30)
             .ToListAsync();
 

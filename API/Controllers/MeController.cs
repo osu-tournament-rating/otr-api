@@ -67,6 +67,45 @@ public class MeController(IUsersService usersService) : Controller
     }
 
     /// <summary>
+    /// Get all tournaments the currently logged in user has participated in
+    /// </summary>
+    /// <remarks>
+    /// If no ruleset is provided, returns tournaments from all rulesets.
+    /// If no date range is provided, gets all tournaments without date filtering.
+    /// </remarks>
+    /// <param name="ruleset">Ruleset to filter for</param>
+    /// <param name="dateMin">Filter from earliest date</param>
+    /// <param name="dateMax">Filter to latest date</param>
+    /// <response code="302">Redirects to `GET` `/players/{key}/tournaments`</response>
+    /// <response code="404">The user does not have an associated player</response>
+    /// <response code="200">Returns a collection of tournaments</response>
+    [HttpGet("tournaments")]
+    [Authorize(Roles = OtrClaims.Roles.User)]
+    [ProducesResponseType(StatusCodes.Status302Found)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<IEnumerable<TournamentCompactDTO>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetTournamentsAsync(
+        [FromQuery] Ruleset? ruleset = null,
+        [FromQuery] DateTime? dateMin = null,
+        [FromQuery] DateTime? dateMax = null
+    )
+    {
+        int? playerId = await usersService.GetPlayerIdAsync(User.GetSubjectId());
+        if (!playerId.HasValue)
+        {
+            return NotFound();
+        }
+
+        return RedirectToAction("GetTournaments", "Players", new
+        {
+            key = playerId.Value,
+            ruleset,
+            dateMin,
+            dateMax
+        });
+    }
+
+    /// <summary>
     /// Update the ruleset for the currently logged in user
     /// </summary>
     /// <response code="308">Redirects to `PATCH` `/users/{id}/settings/ruleset`</response>

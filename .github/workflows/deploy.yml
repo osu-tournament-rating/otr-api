@@ -1,15 +1,16 @@
-name: Production Deploy
+name: API Deploy
 
 on:
-  workflow_dispatch:
-  push:
-    tags:
-      - "v*"
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+        description: "Environment to deploy to"
 
 jobs:
   build_test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -28,6 +29,8 @@ jobs:
   publish:
     needs: build_test
     runs-on: ubuntu-latest
+    outputs:
+      TAG: ${{ steps.set-tag.outputs.PRIMARY_TAG }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -35,23 +38,58 @@ jobs:
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
-          username: stagecodes
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push Docker Image
+      - name: Set Docker Tags
+        id: set-tag
         run: |
-          docker build -t stagecodes/otr-api-prod -f API.Dockerfile .
-          docker push stagecodes/otr-api-prod
+          api_image_prefix="${{ secrets.DOCKERHUB_USERNAME }}/otr-api"
+          worker_image_prefix="${{ secrets.DOCKERHUB_USERNAME }}/otr-data-worker-service"
 
-      - name: Build and push DataWorkerService
-        run: |
-          docker build -t stagecodes/otr-data-worker-service-prod -f DataWorkerService.Dockerfile .
-          docker push stagecodes/otr-data-worker-service-prod
+          if [[ "${{ inputs.target }}" == "Staging" ]]; then
+            echo "PRIMARY_TAG=staging" >> $GITHUB_OUTPUT
+            echo "API_TAGS=${api_image_prefix}:staging" >> $GITHUB_OUTPUT
+            echo "WORKER_TAGS=${worker_image_prefix}:staging" >> $GITHUB_OUTPUT
+          elif [[ "${{ inputs.target }}" == "Production" && "${{ github.ref_type }}" == "tag" ]]; then
+            echo "PRIMARY_TAG=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            {
+              echo 'API_TAGS<<EOF'
+              echo "${api_image_prefix}:${{ github.ref_name }}"
+              echo "${api_image_prefix}:latest"
+              echo 'EOF'
+            } >> "$GITHUB_OUTPUT"
+            {
+              echo 'WORKER_TAGS<<EOF'
+              echo "${worker_image_prefix}:${{ github.ref_name }}"
+              echo "${worker_image_prefix}:latest"
+              echo 'EOF'
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "Invalid target: ${{ inputs.target }}"
+            exit 1
+          fi
+
+      - name: Build and Push API Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: API.Dockerfile
+          push: true
+          tags: ${{ steps.set-tag.outputs.API_TAGS }}
+
+      - name: Build and Push DataWorkerService Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: DataWorkerService.Dockerfile
+          push: true
+          tags: ${{ steps.set-tag.outputs.WORKER_TAGS }}
 
   deploy:
-    environment: Production
     needs: publish
     runs-on: ubuntu-latest
+    environment: ${{ inputs.target }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -135,6 +173,7 @@ jobs:
             mv ./cfg/* .
             rm -r ./cfg
             cat script.sql | docker exec -i db psql -U postgres -d postgres
-            docker compose -f docker-compose-prod.yml pull
-            docker compose -f docker-compose-prod.yml up -d
+            export TAG=${{ needs.publish.outputs.TAG }}
+            docker compose --profile ${{ inputs.target == 'Production' && 'production' || 'staging' }} pull
+            docker compose --profile ${{ inputs.target == 'Production' && 'production' || 'staging' }} up -d
             rm script.sql
