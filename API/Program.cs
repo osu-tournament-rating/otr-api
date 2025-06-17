@@ -331,6 +331,7 @@ builder.Services.AddSwaggerGen(options =>
 
     options.SchemaFilter<EnumMetadataSchemaFilter>();
     options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
+    options.SchemaFilter<MatchDtoSchemaFilter>();
 
     // Populate the document's info
     options.SwaggerDoc(

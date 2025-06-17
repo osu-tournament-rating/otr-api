@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using JetBrains.Annotations;
 
 namespace API.DTOs;
@@ -42,12 +41,5 @@ public class MatchDTO : MatchCompactDTO
     /// <summary>
     /// List of games played during the match
     /// </summary>
-    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
     public new ICollection<GameDTO> Games { get; set; } = [];
-
-    /// <summary>
-    /// All associated admin notes
-    /// </summary>
-    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public new ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
 }
