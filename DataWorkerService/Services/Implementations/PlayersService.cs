@@ -76,7 +76,7 @@ public class PlayersService(
             // Handle mania4k / 7k variants. Set the default ruleset to whatever the lowest numeric rank is.
             if (ruleset == Ruleset.ManiaOther)
             {
-                var bestVariant = result.Statistics?.Variants.Where(v => v.IsRanked).MinBy(v => v.GlobalRank);
+                UserStatisticsVariant? bestVariant = result.Statistics?.Variants.Where(v => v.IsRanked).MinBy(v => v.GlobalRank);
 
                 if (bestVariant is not null && bestVariant.GlobalRank is not null)
                 {
@@ -232,7 +232,7 @@ public class PlayersService(
             // but players can have current ratings for the specific mania variants
             if (r == Ruleset.ManiaOther)
             {
-                var maniaVariants = new[] { Ruleset.Mania4k, Ruleset.Mania7k };
+                Ruleset[] maniaVariants = new[] { Ruleset.Mania4k, Ruleset.Mania7k };
 
                 foreach (Ruleset variant in maniaVariants)
                 {

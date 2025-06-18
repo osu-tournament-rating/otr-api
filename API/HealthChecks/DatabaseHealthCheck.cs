@@ -16,13 +16,7 @@ public class DatabaseHealthCheck(OtrContext context) : IHealthCheck
     {
         try
         {
-            if (context == null)
-            {
-                return HealthCheckResult.Unhealthy("Database context not available (not resolved from DI).");
-            }
-
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
             bool canConnect = await context.Database.CanConnectAsync(cancellationToken);
 
             if (!canConnect)
@@ -33,7 +27,6 @@ public class DatabaseHealthCheck(OtrContext context) : IHealthCheck
             await context.Database.ExecuteSqlRawAsync("SELECT 1", cancellationToken);
 
             stopwatch.Stop();
-
             return HealthCheckResult.Healthy($"Database connection healthy - {stopwatch.ElapsedMilliseconds}ms");
         }
         catch (Exception ex)

@@ -111,12 +111,12 @@ public class TournamentStatsProcessor(
                 .SelectMany(m => m.PlayerMatchStats)
                 .Where(pms => pms.Player.Id == player.Id)];
 
-            IEnumerable<RatingAdjustment> matchAdjustments = [.. verifiedMatches
+            RatingAdjustment[] matchAdjustments = [.. verifiedMatches
                 .SelectMany(m => m.PlayerRatingAdjustments)
                 .Where(ra => ra.Player.Id == player.Id)];
 
             // Skip players who don't have any rating adjustments
-            if (!matchAdjustments.Any())
+            if (matchAdjustments.Length == 0)
             {
                 logger.LogDebug(
                     "Skipping tournament stats for player with no rating adjustments, likely restricted " +
@@ -144,7 +144,7 @@ public class TournamentStatsProcessor(
         entity.ProcessingStatus = TournamentProcessingStatus.Done;
     }
 
-    private static void UpdatePlayerTournamentStats(PlayerTournamentStats existingStats, IEnumerable<RatingAdjustment> matchAdjustments,
+    private static void UpdatePlayerTournamentStats(PlayerTournamentStats existingStats, RatingAdjustment[] matchAdjustments,
         List<PlayerMatchStats> matchStats)
     {
         existingStats.AverageRatingDelta = matchAdjustments.Average(ra => ra.RatingDelta);

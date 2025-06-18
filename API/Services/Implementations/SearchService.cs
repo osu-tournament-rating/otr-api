@@ -53,16 +53,16 @@ public class SearchService(
 
     private async Task<IEnumerable<MatchSearchResultDTO>> SearchMatchesByNameAsync(string matchName)
     {
-        IEnumerable<MatchSearchResultDTO>? result =
-            await cacheHandler.Cache.GetObjectAsync<IEnumerable<MatchSearchResultDTO>>(
-                CacheUtils.MatchSearchKey(matchName));
+        var result =
+            (await cacheHandler.Cache.GetObjectAsync<IEnumerable<MatchSearchResultDTO>>(
+                CacheUtils.MatchSearchKey(matchName))).ToList();
 
-        if (result is not null)
+        if (result.Count > 0)
         {
             return result;
         }
 
-        result = [.. (await matchesService.SearchAsync(matchName))];
+        result = [.. await matchesService.SearchAsync(matchName)];
         await cacheHandler.SetMatchSearchResultAsync(result, matchName);
 
         return result;

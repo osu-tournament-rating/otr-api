@@ -130,7 +130,8 @@ public class MatchTeamsIntegrityCheckTests : AutomationChecksTestBase<MatchTeams
 
         Dictionary<Team, Player[]> players = GeneratePlayers(teamLobbySize);
 
-        GameScore[] scores = scoreAttributes
+        // Generate scores - SeededScore.Generate automatically adds them to the respective games
+        _ = scoreAttributes
             .Select(scoreAttribute => SeededScore.Generate(
                 verificationStatus: scoreAttribute.VerificationStatus,
                 processingStatus: ScoreProcessingStatus.Done,
@@ -151,10 +152,10 @@ public class MatchTeamsIntegrityCheckTests : AutomationChecksTestBase<MatchTeams
         new()
         {
             [Team.Red] = Enumerable.Range(0, teamLobbySize)
-                .Select(i => SeededPlayer.Generate())
+                .Select(_ => SeededPlayer.Generate())
                 .ToArray(),
             [Team.Blue] = Enumerable.Range(0, teamLobbySize)
-                .Select(i => SeededPlayer.Generate())
+                .Select(_ => SeededPlayer.Generate())
                 .ToArray()
         };
 

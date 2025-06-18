@@ -14,12 +14,7 @@ public class RedisHealthCheck(IConnectionMultiplexer redis) : IHealthCheck
     {
         try
         {
-            if (redis == null)
-            {
-                return HealthCheckResult.Degraded("No Redis connection configured or resolved.");
-            }
-
-            var database = redis.GetDatabase();
+            IDatabase database = redis.GetDatabase();
             TimeSpan pong = await database.PingAsync();
 
             return HealthCheckResult.Healthy($"Redis connection healthy - {pong.TotalMilliseconds}ms");

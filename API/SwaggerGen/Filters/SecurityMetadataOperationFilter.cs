@@ -22,8 +22,8 @@ public class SecurityMetadataOperationFilter : IOperationFilter
             return;
         }
 
-        IEnumerable<AuthorizeAttribute> authAttributes = [.. context.GetControllerAndActionAttributes<AuthorizeAttribute>()];
-        if (!authAttributes.Any())
+        List<AuthorizeAttribute> authAttributes = [.. context.GetControllerAndActionAttributes<AuthorizeAttribute>()];
+        if (authAttributes.Count == 0)
         {
             operation.AddAuthExtension(false);
             return;

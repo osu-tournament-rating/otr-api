@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using API.Authorization;
@@ -14,6 +13,7 @@ using API.HealthChecks;
 using API.Middlewares;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
+using API.Services;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.SwaggerGen;
@@ -626,7 +626,7 @@ builder.Services
             },
             OnSigningOut = context =>
             {
-                string? userId = context.HttpContext.User?.FindFirst(OtrClaims.Subject)?.Value;
+                string? userId = context.HttpContext.User.FindFirst(OtrClaims.Subject)?.Value;
                 ILogger authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
                 authLogger.Information("User signing out. UserId: {UserId}", userId ?? "Unknown");
                 return Task.CompletedTask;
@@ -725,7 +725,6 @@ AuthConfiguration authConfiguration = builder.Configuration.BindAndValidate<Auth
 Log.Information("Starting Data Protection configuration. PersistDataProtectionKeys: {PersistKeys}", authConfiguration.PersistDataProtectionKeys);
 
 // Create a shared Redis connection multiplexer for Data Protection
-ConnectionMultiplexer? redisConnection = null;
 if (authConfiguration.PersistDataProtectionKeys)
 {
     ILogger redisLogger = Log.ForContext("SourceContext", "DataProtection.Redis");
@@ -742,7 +741,7 @@ if (authConfiguration.PersistDataProtectionKeys)
         redisLogger.Debug("Redis connection options: ConnectRetry={ConnectRetry}, ConnectTimeout={ConnectTimeout}, SyncTimeout={SyncTimeout}",
             configurationOptions.ConnectRetry, configurationOptions.ConnectTimeout, configurationOptions.SyncTimeout);
 
-        redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
+        var redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
 
         // Test the connection
         IDatabase database = redisConnection.GetDatabase();
@@ -994,9 +993,7 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     RequireHeaderSymmetry = false,
-    ForwardedHeaders = ForwardedHeaders.XForwardedProto,
-    KnownProxies = { },
-    KnownNetworks = { }
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto
 });
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();

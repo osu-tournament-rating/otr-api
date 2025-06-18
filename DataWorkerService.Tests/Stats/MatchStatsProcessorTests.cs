@@ -70,10 +70,10 @@ public class MatchStatsProcessorTests
 
         // Act
         IProcessor<Match> processor = MockResolvers.MatchProcessorResolver.GetStatsProcessor();
-        await processor.ProcessAsync(match, default);
+        await processor.ProcessAsync(match, CancellationToken.None);
 
         // Assert
         Assert.Equal(MatchProcessingStatus.NeedsRatingProcessorData, match.ProcessingStatus);
-        Assert.All(match.Games, g => { Assert.Equal(GameProcessingStatus.Done, g.ProcessingStatus); });
+        Assert.All(match.Games, game => Assert.Equal(GameProcessingStatus.Done, game.ProcessingStatus));
     }
 }

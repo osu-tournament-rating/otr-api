@@ -102,7 +102,7 @@ public class PlayerRatingsRepository(OtrContext context)
 
                 for (int bucket = minRating; bucket <= maxBucket; bucket += bucketSize)
                 {
-                    rulesetHistogram[bucket] = rulesetBuckets.FirstOrDefault(h => h.Bucket == bucket)?.Count ?? 0;
+                    rulesetHistogram[bucket] = rulesetBuckets.FirstOrDefault(h => (int)h.Bucket == bucket)?.Count ?? 0;
                 }
             }
 
