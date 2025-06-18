@@ -32,7 +32,7 @@ public class AuditService(OtrContext context, IMapper mapper) : IAuditService
                 audits.AddRange(await context.TournamentAudits.Where(a => a.ReferenceIdLock == entityId).ToListAsync());
                 break;
             default:
-                return new List<AuditDTO>();
+                throw new ArgumentException("Enum not supported");
         }
         return mapper.Map<IEnumerable<AuditDTO>>(audits);
     }
