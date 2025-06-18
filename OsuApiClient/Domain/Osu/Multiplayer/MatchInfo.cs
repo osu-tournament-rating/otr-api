@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
+using JetBrains.Annotations;
 using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 
 namespace OsuApiClient.Domain.Osu.Multiplayer;
@@ -8,7 +8,7 @@ namespace OsuApiClient.Domain.Osu.Multiplayer;
 /// Represents multiplayer lobby information
 /// </summary>
 [AutoMap(typeof(MatchInfoJsonModel))]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class MatchInfo : IModel
 {
     /// <summary>

@@ -11,7 +11,7 @@ public class PlayerOsuRulesetData : UpdateableEntityBase
     /// <summary>
     /// The <see cref="Common.Enums.Ruleset"/> the <see cref="PlayerOsuRulesetData"/> is for
     /// </summary>
-    public Ruleset Ruleset { get; set; }
+    public Ruleset Ruleset { get; init; }
 
     /// <summary>
     /// Performance points
@@ -36,10 +36,10 @@ public class PlayerOsuRulesetData : UpdateableEntityBase
     /// <summary>
     /// Id of the <see cref="Entities.Player"/> that owns the osu ruleset data
     /// </summary>
-    public int PlayerId { get; set; }
+    public int PlayerId { get; init; }
 
     /// <summary>
     /// The <see cref="Entities.Player"/> that owns the osu ruleset data
     /// </summary>
-    public Player Player { get; set; } = null!;
+    public Player Player { get; init; } = null!;
 }

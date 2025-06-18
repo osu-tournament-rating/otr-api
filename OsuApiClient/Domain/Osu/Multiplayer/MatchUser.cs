@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
+using JetBrains.Annotations;
 using OsuApiClient.Domain.Osu.Users;
 using OsuApiClient.Domain.Osu.Users.Attributes;
 using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
@@ -10,7 +10,7 @@ namespace OsuApiClient.Domain.Osu.Multiplayer;
 /// Represents a user that was present in a <see cref="MultiplayerMatch"/>
 /// </summary>
 [AutoMap(typeof(MatchUserJsonModel))]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class MatchUser : User
 {
     /// <summary>

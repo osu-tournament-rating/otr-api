@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
 using Common.Enums;
+using JetBrains.Annotations;
 using OsuApiClient.Domain.Osu.Beatmaps;
 using OsuApiClient.Net.Deserialization.ValueConverters;
 using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
@@ -12,7 +12,7 @@ namespace OsuApiClient.Domain.Osu.Multiplayer;
 /// Represents a game played in a <see cref="MultiplayerMatch"/>
 /// </summary>
 [AutoMap(typeof(MultiplayerGameJsonModel))]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class MultiplayerGame : IModel
 {
     /// <summary>

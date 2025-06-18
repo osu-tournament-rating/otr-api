@@ -11,7 +11,7 @@ public static class SecurityRequirements
     /// <summary>
     /// Id of the <see cref="OpenApiSecurityRequirement"/> for OAuth
     /// </summary>
-    public const string OAuthSecurityRequirementId = "OAuth2";
+    private const string OAuthSecurityRequirementId = "OAuth2";
 
     /// <summary>
     /// Creates a default <see cref="OpenApiSecurityRequirement"/> with a reference to the "BearerAuth"

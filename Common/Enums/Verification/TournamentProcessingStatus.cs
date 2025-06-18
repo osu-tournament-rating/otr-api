@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Common.Enums.Verification;
 
 /// <summary>
@@ -16,7 +18,7 @@ public enum TournamentProcessingStatus
     NeedsApproval = 0,
 
     /// <summary>
-    /// The <see cref="Database.Entities.Tournament"/> has <see cref="Database.Entities.Match"/>es with a
+    /// The <see cref="Database.Entities.Tournament"/> has <see cref="Match"/>es with a
     /// <see cref="MatchProcessingStatus"/> of <see cref="MatchProcessingStatus.NeedsData"/>
     /// </summary>
     NeedsMatchData = 1,

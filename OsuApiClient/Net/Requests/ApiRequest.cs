@@ -8,15 +8,15 @@ namespace OsuApiClient.Net.Requests;
 /// </summary>
 internal sealed class ApiRequest : IApiRequest
 {
-    public FetchPlatform Platform { get; set; } = FetchPlatform.Osu;
+    public FetchPlatform Platform { get; init; } = FetchPlatform.Osu;
 
-    public OsuCredentials? Credentials { get; set; }
+    public OsuCredentials? Credentials { get; init; }
 
-    public HttpMethod Method { get; set; } = null!;
+    public HttpMethod Method { get; init; } = null!;
 
-    public Uri Route { get; set; } = null!;
+    public Uri Route { get; init; } = null!;
 
-    public IDictionary<string, string>? QueryParameters { get; set; } = new Dictionary<string, string>();
+    public IDictionary<string, string>? QueryParameters { get; init; } = new Dictionary<string, string>();
 
-    public IDictionary<string, string>? RequestBody { get; set; } = new Dictionary<string, string>();
+    public IDictionary<string, string>? RequestBody { get; init; } = new Dictionary<string, string>();
 }

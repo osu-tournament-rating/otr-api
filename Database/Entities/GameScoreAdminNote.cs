@@ -2,5 +2,5 @@ namespace Database.Entities;
 
 public class GameScoreAdminNote : AdminNoteEntityBase
 {
-    public GameScore Score { get; set; } = null!;
+    public GameScore Score { get; init; } = null!;
 }

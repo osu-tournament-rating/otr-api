@@ -59,7 +59,7 @@ public class OsuApiDataParserService(
                 TeamType = mpGame.TeamType,
                 Mods = mpGame.Mods,
                 StartTime = mpGame.StartTime,
-                Beatmap = beatmap,
+                Beatmap = beatmap
             };
 
             // Create scores
@@ -255,7 +255,7 @@ public class OsuApiDataParserService(
             Title = apiBeatmapset.Title,
             RankedStatus = apiBeatmapset.RankedStatus,
             RankedDate = apiBeatmapset.RankedDate,
-            SubmittedDate = apiBeatmapset.SubmittedDate,
+            SubmittedDate = apiBeatmapset.SubmittedDate
         };
 
         // Assign set creator if possible
@@ -331,7 +331,7 @@ public class OsuApiDataParserService(
                 {
                     OsuId = apiUser.Id,
                     Username = apiUser.Username,
-                    Country = apiUser.CountryCode,
+                    Country = apiUser.CountryCode
                 };
                 context.Players.Add(player);
             }

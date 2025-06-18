@@ -1,10 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using CommandLine;
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 
 namespace API.Utils.Jwt.Options;
 
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public abstract class JwtUtilsOptionsBase
 {
     /// <summary>

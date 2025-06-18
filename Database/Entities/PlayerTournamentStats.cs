@@ -74,20 +74,20 @@ public class PlayerTournamentStats : EntityBase
     /// <summary>
     /// Id of the <see cref="Player"/> the <see cref="PlayerTournamentStats"/> was generated for
     /// </summary>
-    public int PlayerId { get; set; }
+    public int PlayerId { get; init; }
 
     /// <summary>
     /// The <see cref="Entities.Player"/> the <see cref="PlayerTournamentStats"/> was generated for
     /// </summary>
-    public Player Player { get; set; } = null!;
+    public Player Player { get; init; } = null!;
 
     /// <summary>
     /// Id of the <see cref="Tournament"/> the <see cref="PlayerTournamentStats"/> was generated for
     /// </summary>
-    public int TournamentId { get; set; }
+    public int TournamentId { get; init; }
 
     /// <summary>
     /// The <see cref="Entities.Tournament"/> the <see cref="PlayerTournamentStats"/> was generated for
     /// </summary>
-    public Tournament Tournament { get; set; } = null!;
+    public Tournament Tournament { get; init; } = null!;
 }

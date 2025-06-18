@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
+using JetBrains.Annotations;
 using OsuApiClient.Net.JsonModels;
 
 namespace OsuApiClient.Domain.Osu;
@@ -9,8 +9,7 @@ namespace OsuApiClient.Domain.Osu;
 /// </summary>
 /// <remarks>See <a href="https://osu.ppy.sh/docs/index.html#client-credentials-grant">Client Credentials Grant</a></remarks>
 [AutoMap(typeof(AccessCredentialsJsonModel))]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class AccessCredentialsModel : IModel
 {
     /// <summary>

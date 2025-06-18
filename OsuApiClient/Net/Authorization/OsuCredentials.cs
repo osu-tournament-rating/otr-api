@@ -8,7 +8,7 @@ public class OsuCredentials
     /// <summary>
     /// Timestamp the credentials were created
     /// </summary>
-    public readonly DateTimeOffset Created = DateTimeOffset.Now;
+    private readonly DateTimeOffset _created = DateTimeOffset.Now;
 
     /// <summary>
     /// Access token
@@ -28,7 +28,7 @@ public class OsuCredentials
     /// <summary>
     /// Timespan that represents the time the access token will expire
     /// </summary>
-    public TimeSpan ExpiresIn => TimeSpan.FromSeconds(ExpiresInSeconds) - (DateTimeOffset.Now - Created);
+    public TimeSpan ExpiresIn => TimeSpan.FromSeconds(ExpiresInSeconds) - (DateTimeOffset.Now - _created);
 
     /// <summary>
     /// Denotes if the access token has expired

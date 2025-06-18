@@ -95,11 +95,13 @@ public static class RostersHelper
                 .FirstOrDefault()?.Team;
 
             // If a winning team is found, increment their points
-            if (winningTeam != null)
+            if (winningTeam == null)
             {
-                pointsEarned.TryAdd(winningTeam.Value, 0);
-                pointsEarned[winningTeam.Value]++;
+                continue;
             }
+
+            pointsEarned.TryAdd(winningTeam.Value, 0);
+            pointsEarned[winningTeam.Value]++;
         }
 
         // Build match rosters from all game rosters

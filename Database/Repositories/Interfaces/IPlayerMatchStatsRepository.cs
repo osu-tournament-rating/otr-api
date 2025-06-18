@@ -1,5 +1,6 @@
 using Common.Enums;
 using Database.Entities;
+using JetBrains.Annotations;
 
 namespace Database.Repositories.Interfaces;
 
@@ -28,13 +29,16 @@ public interface IPlayerMatchStatsRepository
     /// <param name="dateMin"></param>
     /// <param name="dateMax"></param>
     /// <returns></returns>
+    [UsedImplicitly]
     Task<IEnumerable<int>> GetTeammateIdsAsync(int playerId,
         Ruleset ruleset,
         DateTime? dateMin,
         DateTime? dateMax);
 
+    [UsedImplicitly]
     Task<IEnumerable<int>> GetOpponentIdsAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax);
 
+    [UsedImplicitly]
     Task<IEnumerable<PlayerMatchStats>> TeammateStatsAsync(
         int playerId,
         int teammateId,
@@ -70,6 +74,7 @@ public interface IPlayerMatchStatsRepository
         DateTime? dateMax = null
     );
 
+    [UsedImplicitly]
     Task<Dictionary<int, double>> GetMatchCostsAsync(int playerId,
         Ruleset ruleset, DateTime? dateMin = null,
         DateTime? dateMax = null);

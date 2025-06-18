@@ -11,7 +11,7 @@ public class AuditDTO
     /// <summary>
     /// Primary key of the audit record
     /// </summary>
-    public int Id { get; set; }
+    public int Id { get; init; }
 
     /// <summary>
     /// Id of the user who performed the action, if available
@@ -19,24 +19,24 @@ public class AuditDTO
     /// <remarks>
     /// Will be null for system-generated actions or actions performed by anonymous users
     /// </remarks>
-    public int? UserId { get; set; }
+    public int? UserId { get; init; }
 
     /// <summary>
     /// The type of action that was performed on the entity
     /// </summary>
     [EnumDataType(typeof(AuditActionType))]
-    public AuditActionType ActionType { get; set; }
+    public AuditActionType ActionType { get; init; }
 
     /// <summary>
     /// The type of entity that was modified
     /// </summary>
     [EnumDataType(typeof(AuditEntityType))]
-    public AuditEntityType EntityType { get; set; }
+    public AuditEntityType EntityType { get; init; }
 
     /// <summary>
     /// Timestamp when the action was performed
     /// </summary>
-    public DateTime Timestamp { get; set; }
+    public DateTime Timestamp { get; init; }
 
     /// <summary>
     /// Id of the entity that was modified
@@ -44,11 +44,11 @@ public class AuditDTO
     /// <remarks>
     /// This is a locked copy of the entity's primary key that persists even if the original entity is deleted
     /// </remarks>
-    public int EntityId { get; set; }
+    public int EntityId { get; init; }
 
     /// <summary>
     /// JSON object containing all field changes made to the entity.
     /// Format: { "FieldName": { "NewValue": value, "OriginalValue": value }, ... }
     /// </summary>
-    public string Changes { get; set; } = string.Empty;
+    public string Changes { get; init; } = string.Empty;
 }

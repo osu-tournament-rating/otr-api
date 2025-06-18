@@ -18,7 +18,7 @@ public static class MockResolvers
 
     private static Logger<T> Logger<T>() where T : class => new(s_loggerFactory);
 
-    public static ScoreProcessorResolver ScoreProcessorResolver => new([
+    private static ScoreProcessorResolver ScoreProcessorResolver => new([
         new ScoreVerificationProcessor(Logger<ScoreVerificationProcessor>()),
         new ScoreAutomationChecksProcessor(
             Logger<ScoreAutomationChecksProcessor>(),
@@ -30,7 +30,7 @@ public static class MockResolvers
         )
     ]);
 
-    public static GameProcessorResolver GameProcessorResolver => new([
+    private static GameProcessorResolver GameProcessorResolver => new([
         new GameStatsProcessor(Logger<GameStatsProcessor>()),
         new GameVerificationProcessor(Logger<GameVerificationProcessor>(), ScoreProcessorResolver),
         new GameAutomationChecksProcessor(
@@ -59,7 +59,7 @@ public static class MockResolvers
                 new MatchHeadToHeadCheck(Logger<MatchHeadToHeadCheck>()),
                 new MatchNamePrefixCheck(Logger<MatchNamePrefixCheck>()),
                 new MatchNameFormatCheck(Logger<MatchNameFormatCheck>()),
-                new MatchTeamsIntegrityCheck(Logger<MatchTeamsIntegrityCheck>()),
+                new MatchTeamsIntegrityCheck(Logger<MatchTeamsIntegrityCheck>())
             ],
             GameProcessorResolver
         )

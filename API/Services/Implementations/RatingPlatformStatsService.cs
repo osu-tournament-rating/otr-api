@@ -8,6 +8,6 @@ public class RatingPlatformStatsService(IPlayerRatingsRepository playerRatingsRe
 {
     public async Task<RatingPlatformStatsDTO> GetAsync() => new()
     {
-        RatingsByRuleset = await playerRatingsRepository.GetHistogramAsync(),
+        RatingsByRuleset = await playerRatingsRepository.GetHistogramAsync()
     };
 }

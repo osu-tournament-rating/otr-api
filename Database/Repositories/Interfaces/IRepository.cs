@@ -1,4 +1,7 @@
-﻿using Database.Entities.Interfaces;
+﻿using Database.Entities;
+using Database.Entities.Interfaces;
+using JetBrains.Annotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Database.Repositories.Interfaces;
@@ -15,13 +18,15 @@ public interface IRepository<T> where T : class, IEntity
     /// <summary>
     /// Begins tracking an entity in the <see cref="EntityState.Added"/> state
     /// </summary>
-    /// <remarks>Changes will be applied on the next call to <see cref="DbContext.SaveChangesAsync"/></remarks>
+    /// <remarks>Changes will be applied on the next call to <see cref="DbContext.SaveChangesAsync(CancellationToken)"/></remarks>
+    [UsedImplicitly]
     void Add(T entity);
 
     /// <summary>
     /// Begins tracking a collection of entity in the <see cref="EntityState.Added"/> state
     /// </summary>
-    /// <remarks>Changes will be applied on the next call to <see cref="DbContext.SaveChangesAsync"/></remarks>
+    /// <remarks>Changes will be applied on the next call to <see cref="DbContext.SaveChangesAsync(CancellationToken)"/></remarks>
+    [UsedImplicitly]
     void AddRange(IEnumerable<T> entities);
 
     /// <summary>
@@ -62,6 +67,7 @@ public interface IRepository<T> where T : class, IEntity
     /// <param name="entity">The entity to mark as updated</param>
     /// <typeparam name="TUpdateable">An <see cref="IUpdateableEntity"/></typeparam>
     /// <returns>The entity with the <see cref="IUpdateableEntity.Updated"/> property set to the current UTC time</returns>
+    [UsedImplicitly]
     TUpdateable MarkUpdated<TUpdateable>(TUpdateable entity) where TUpdateable : IUpdateableEntity;
 
     /// <summary>

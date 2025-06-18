@@ -10,7 +10,7 @@ namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]/{key}")]
 public class PlayersController(IPlayerService playerService, IPlayerStatsService playerStatsService) : Controller
 {
     /// <summary>
@@ -20,7 +20,7 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
     /// <param name="key">Search key (id, osu! id, or osu! username)</param>
     /// <response code="404">A player matching the given key does not exist</response>
     /// <response code="200">Returns a player</response>
-    [HttpGet("{key}")]
+    [HttpGet]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<PlayerCompactDTO>(StatusCodes.Status200OK)]
@@ -49,7 +49,7 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
     /// <param name="dateMax">Filter to latest date</param>
     /// <response code="404">A player matching the given search key does not exist</response>
     /// <response code="200">Returns a player's stats</response>
-    [HttpGet("{key}/stats")]
+    [HttpGet("stats")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<PlayerDashboardStatsDTO>(StatusCodes.Status200OK)]
@@ -86,7 +86,7 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
     /// <param name="dateMax">Filter to latest date</param>
     /// <response code="404">A player matching the given key does not exist</response>
     /// <response code="200">Returns a collection of tournaments</response>
-    [HttpGet("{key}/tournaments")]
+    [HttpGet("tournaments")]
     [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<IEnumerable<TournamentCompactDTO>>(StatusCodes.Status200OK)]

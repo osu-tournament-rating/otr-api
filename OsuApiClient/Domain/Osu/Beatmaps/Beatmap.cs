@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
+using JetBrains.Annotations;
 using OsuApiClient.Domain.Osu.Multiplayer;
 
 namespace OsuApiClient.Domain.Osu.Beatmaps;
@@ -7,7 +7,7 @@ namespace OsuApiClient.Domain.Osu.Beatmaps;
 /// <summary>
 /// Represents a beatmap played in a <see cref="MultiplayerGame"/>
 /// </summary>
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class Beatmap : IModel
 {
     /// <summary>

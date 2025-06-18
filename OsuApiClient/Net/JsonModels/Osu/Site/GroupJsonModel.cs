@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
+using OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 
 namespace OsuApiClient.Net.JsonModels.Osu.Site;
 

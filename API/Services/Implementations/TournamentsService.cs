@@ -54,7 +54,6 @@ public class TournamentsService(
                 .. submittedBeatmapIds
                             .Except(existingBeatmaps.Select(b => b.OsuId))
                             .Select(beatmapId => new Beatmap { OsuId = beatmapId })
-,
             ]
         };
 

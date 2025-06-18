@@ -1,6 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using Common.Enums;
+using JetBrains.Annotations;
 using OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 
 namespace OsuApiClient.Domain.Osu.Users.Attributes;
@@ -9,8 +9,7 @@ namespace OsuApiClient.Domain.Osu.Users.Attributes;
 /// Represents an aggregate of statistics for a <see cref="User"/> in a <see cref="Ruleset"/>
 /// </summary>
 [AutoMap(typeof(UserStatisticsJsonModel))]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class UserStatistics : IModel
 {
     /// <summary>

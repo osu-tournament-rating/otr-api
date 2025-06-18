@@ -13,7 +13,7 @@ public class Beatmap : UpdateableEntityBase
     /// <summary>
     /// osu! beatmap ID
     /// </summary>
-    public long OsuId { get; set; }
+    public long OsuId { get; init; }
 
     /// <summary>
     /// Denotes if the <see cref="Beatmap"/> has populated data
@@ -103,7 +103,7 @@ public class Beatmap : UpdateableEntityBase
     /// <summary>
     /// Id of the associated beatmapset
     /// </summary>
-    public int? BeatmapsetId { get; set; }
+    public int? BeatmapsetId { get; init; }
 
     /// <summary>
     /// The associated beatmapset, if available
@@ -113,20 +113,20 @@ public class Beatmap : UpdateableEntityBase
     /// <summary>
     /// Collection of players who created this beatmap
     /// </summary>
-    public ICollection<Player> Creators { get; set; } = [];
+    public ICollection<Player> Creators { get; init; } = [];
 
     /// <summary>
     /// Collection of games played on this beatmap
     /// </summary>
-    public ICollection<Game> Games { get; set; } = [];
+    public ICollection<Game> Games { get; init; } = [];
 
     /// <summary>
     /// Collection of tournaments this beatmap is pooled in
     /// </summary>
-    public ICollection<Tournament> TournamentsPooledIn { get; set; } = [];
+    public ICollection<Tournament> TournamentsPooledIn { get; init; } = [];
 
     /// <summary>
     /// Collection of attributes for this beatmap
     /// </summary>
-    public ICollection<BeatmapAttributes> Attributes { get; set; } = [];
+    public ICollection<BeatmapAttributes> Attributes { get; init; } = [];
 }

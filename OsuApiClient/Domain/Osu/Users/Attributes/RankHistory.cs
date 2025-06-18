@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
 using Common.Enums;
+using JetBrains.Annotations;
 using OsuApiClient.Net.Deserialization.ValueConverters;
 using OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 
@@ -11,7 +11,7 @@ namespace OsuApiClient.Domain.Osu.Users.Attributes;
 /// Represents the history of a user's rank for a ruleset
 /// </summary>
 [AutoMap(typeof(RankHistoryJsonModel))]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class RankHistory : IModel
 {
     /// <summary>

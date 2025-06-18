@@ -343,7 +343,7 @@ builder.Services.AddSwaggerGen(options =>
             Title = "osu! Tournament Rating API",
             Description =
                 "The official resource for reading and writing data within the osu! Tournament Rating platform.",
-            TermsOfService = new Uri("https://docs.otr.stagec.xyz/About/Terms-of-Use"),
+            TermsOfService = new Uri("https://docs.otr.stagec.xyz/About/Terms-of-Use")
         }
     );
 
@@ -675,7 +675,7 @@ builder.Services
                 {
                     AccessToken = context.AccessToken ?? string.Empty,
                     RefreshToken = context.RefreshToken,
-                    ExpiresInSeconds = (long?)context.ExpiresIn?.TotalSeconds ?? DateTime.Now.Second,
+                    ExpiresInSeconds = (long?)context.ExpiresIn?.TotalSeconds ?? DateTime.Now.Second
                 };
 
                 // Get user data from osu! API

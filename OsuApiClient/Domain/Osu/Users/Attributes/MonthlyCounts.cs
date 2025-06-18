@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
+using JetBrains.Annotations;
 using OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 
 namespace OsuApiClient.Domain.Osu.Users.Attributes;
@@ -8,8 +8,7 @@ namespace OsuApiClient.Domain.Osu.Users.Attributes;
 /// Represents a statistic meant to be indexed by month
 /// </summary>
 [AutoMap(typeof(MonthlyCountsJsonModel))]
-[SuppressMessage("ReSharper", "CommentTypo")]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class MonthlyCounts : IModel
 {
     /// <summary>

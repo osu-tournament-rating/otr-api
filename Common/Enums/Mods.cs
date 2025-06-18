@@ -11,52 +11,52 @@ public struct ModScoreMultipliers
     /// Score multiplier for <see cref="Mods.None"/>
     /// </summary>
     /// <remarks>Also applied for <see cref="Mods.NoFail"/></remarks>
-    public const double NoMod = 1;
+    private const double NoMod = 1;
 
     /// <summary>
     /// Score multiplier for <see cref="Mods.Easy"/>
     /// </summary>
-    public const double Easy = 0.5;
+    private const double Easy = 0.5;
 
     /// <summary>
     /// Score multiplier for <see cref="Mods.Hidden"/>
     /// </summary>
-    public const double Hidden = 1.06;
+    private const double Hidden = 1.06;
 
     /// <summary>
     /// Score multiplier for <see cref="Mods.HardRock"/>
     /// </summary>
-    public const double HardRock = 1.1;
+    private const double HardRock = 1.1;
 
     /// <summary>
     /// Score multiplier for <see cref="Mods.HalfTime"/>
     /// </summary>
-    public const double HalfTime = 0.3;
+    private const double HalfTime = 0.3;
 
     /// <summary>
     /// Score multiplier for <see cref="Mods.DoubleTime"/>
     /// </summary>
-    public const double DoubleTime = 1.12;
+    private const double DoubleTime = 1.12;
 
     /// <summary>
     /// Score multiplier for <see cref="Mods.Flashlight"/>
     /// </summary>
-    public const double Flashlight = 1.12;
+    private const double Flashlight = 1.12;
 
     /// <summary>
     /// Score multiplier for the combination of <see cref="Mods.Hidden"/> and <see cref="Mods.DoubleTime"/>
     /// </summary>
-    public const double HiddenDoubleTime = 1.1872;
+    private const double HiddenDoubleTime = 1.1872;
 
     /// <summary>
     /// Score multiplier for the combination of <see cref="Mods.Hidden"/> and <see cref="Mods.HardRock"/>
     /// </summary>
-    public const double HiddenHardRock = 1.166;
+    private const double HiddenHardRock = 1.166;
 
     /// <summary>
     /// Score multiplier for the combination of <see cref="Mods.Hidden"/> and <see cref="Mods.Easy"/>
     /// </summary>
-    public const double HiddenEasy = 0.53;
+    private const double HiddenEasy = 0.53;
 
     /// <summary>
     /// Gets the score multiplier for a <see cref="Mods"/>

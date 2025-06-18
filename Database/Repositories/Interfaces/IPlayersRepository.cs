@@ -1,4 +1,5 @@
 using Database.Entities;
+using JetBrains.Annotations;
 
 namespace Database.Repositories.Interfaces;
 
@@ -33,6 +34,7 @@ public interface IPlayersRepository : IRepository<Player>
     /// </summary>
     /// <param name="eagerLoad">Whether to also load related fields (i.e. player matches)</param>
     /// <returns></returns>
+    [UsedImplicitly]
     Task<IEnumerable<Player>> GetAsync(bool eagerLoad = false);
 
     /// <summary>
@@ -42,6 +44,7 @@ public interface IPlayersRepository : IRepository<Player>
     /// <returns>
     /// A collection of <see cref="Player"/>s, one per provided id, if it exists
     /// </returns>
+    [UsedImplicitly]
     new Task<ICollection<Player>> GetAsync(IEnumerable<int> ids);
 
     /// <summary>
@@ -49,6 +52,7 @@ public interface IPlayersRepository : IRepository<Player>
     /// </summary>
     /// <param name="osuIds">The osu! player ids</param>
     /// <returns>One <see cref="Player"/> per osu! id match, null if no match found</returns>
+    [UsedImplicitly]
     Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds);
 
     /// <summary>
@@ -56,6 +60,7 @@ public interface IPlayersRepository : IRepository<Player>
     /// </summary>
     /// <param name="osuId"></param>
     /// <returns></returns>
+    [UsedImplicitly]
     Task<int?> GetIdAsync(long osuId);
 
     /// <summary>
@@ -64,6 +69,7 @@ public interface IPlayersRepository : IRepository<Player>
     /// </summary>
     /// <param name="username"></param>
     /// <returns></returns>
+    [UsedImplicitly]
     Task<int?> GetIdAsync(string username);
 
     /// <summary>
@@ -90,6 +96,7 @@ public interface IPlayersRepository : IRepository<Player>
     /// Returns the player id for the given user id
     /// </summary>
     /// <param name="userId"></param>
+    [UsedImplicitly]
     Task<int> GetIdAsync(int userId);
 
     /// <summary>

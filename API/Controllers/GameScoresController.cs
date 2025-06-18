@@ -11,7 +11,7 @@ namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/v{version:apiVersion}/[controller]/{id:int}")]
 public class GameScoresController(IGameScoresService gameScoresService) : Controller
 {
     /// <summary>
@@ -19,7 +19,7 @@ public class GameScoresController(IGameScoresService gameScoresService) : Contro
     /// </summary>
     /// <response code="404">A score matching the given id does not exist</response>
     /// <response code="200">Returns the score</response>
-    [HttpGet("{id:int}")]
+    [HttpGet]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<GameScoreDTO>(StatusCodes.Status200OK)]
@@ -42,7 +42,7 @@ public class GameScoresController(IGameScoresService gameScoresService) : Contro
     /// <response code="404">A score matching the given id does not exist</response>
     /// <response code="400">The JsonPatch data is malformed</response>
     /// <response code="200">Returns the updated score</response>
-    [HttpPatch("{id:int}")]
+    [HttpPatch]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -80,7 +80,7 @@ public class GameScoresController(IGameScoresService gameScoresService) : Contro
     /// <param name="id">Score id</param>
     /// <response code="404">A score matching the given id does not exist</response>
     /// <response code="204">The score was deleted successfully</response>
-    [HttpDelete("{id:int}")]
+    [HttpDelete]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

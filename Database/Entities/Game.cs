@@ -166,16 +166,18 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
             WarningFlags = GameWarningFlags.None;
         }
 
-        if (includeChildren)
+        if (!includeChildren)
         {
-            if (VerificationStatus == VerificationStatus.Rejected)
-            {
-                RejectAllChildren();
-            }
-            else
-            {
-                Scores.ForEach(score => score.ConfirmPreVerification());
-            }
+            return;
+        }
+
+        if (VerificationStatus == VerificationStatus.Rejected)
+        {
+            RejectAllChildren();
+        }
+        else
+        {
+            Scores.ForEach(score => score.ConfirmPreVerification());
         }
     }
 

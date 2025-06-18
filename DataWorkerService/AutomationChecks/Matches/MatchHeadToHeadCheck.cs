@@ -79,13 +79,13 @@ public class MatchHeadToHeadCheck(ILogger<MatchHeadToHeadCheck> logger) : Automa
             return false;
         }
 
-        if (entity.Tournament.LobbySize != 1)
+        if (entity.Tournament.LobbySize == 1)
         {
-            logger.LogDebug("Match's tournament team size is not 1 [Team size: {TeamSize}]", entity.Tournament.LobbySize);
-            return false;
+            return true;
         }
 
-        return true;
+        logger.LogDebug("Match's tournament team size is not 1 [Team size: {TeamSize}]", entity.Tournament.LobbySize);
+        return false;
     }
 
     private bool ValidatePlayerCount(Match entity, List<int> uniquePlayerIds, List<Game> headToHeadGames)

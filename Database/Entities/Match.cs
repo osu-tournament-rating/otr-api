@@ -183,16 +183,18 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
             WarningFlags = MatchWarningFlags.None;
         }
 
-        if (includeChildren)
+        if (!includeChildren)
         {
-            if (VerificationStatus == VerificationStatus.Rejected)
-            {
-                RejectAllChildren();
-            }
-            else
-            {
-                Games.ForEach(game => game.ConfirmPreVerification(includeChildren));
-            }
+            return;
+        }
+
+        if (VerificationStatus == VerificationStatus.Rejected)
+        {
+            RejectAllChildren();
+        }
+        else
+        {
+            Games.ForEach(game => game.ConfirmPreVerification(includeChildren));
         }
     }
 

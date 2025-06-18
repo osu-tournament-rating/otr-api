@@ -1,12 +1,12 @@
-using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace OsuApiClient.Domain.OsuTrack;
 
 /// <summary>
 /// Represents a snapshot of <see cref="Domain.Osu.Users.Attributes.UserStatistics"/>
 /// </summary>
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class UserStatUpdate : IModel
 {
     /// <summary>

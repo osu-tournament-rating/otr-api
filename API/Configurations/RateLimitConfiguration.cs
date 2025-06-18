@@ -5,6 +5,7 @@ namespace API.Configurations;
 /// <summary>
 /// Configures the default rate limit for all authorized users and clients
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class RateLimitConfiguration
 {
     public const string Position = "RateLimit";

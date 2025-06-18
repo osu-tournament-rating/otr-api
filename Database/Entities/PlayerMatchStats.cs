@@ -66,20 +66,20 @@ public class PlayerMatchStats : EntityBase
     /// <summary>
     /// Id of the <see cref="Entities.Player"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public int PlayerId { get; set; }
+    public int PlayerId { get; init; }
 
     /// <summary>
     /// The <see cref="Entities.Player"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public Player Player { get; set; } = null!;
+    public Player Player { get; init; } = null!;
 
     /// <summary>
     /// Id of the <see cref="Entities.Match"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public int MatchId { get; set; }
+    public int MatchId { get; init; }
 
     /// <summary>
     /// The <see cref="Entities.Match"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public Match Match { get; set; } = null!;
+    public Match Match { get; init; } = null!;
 }

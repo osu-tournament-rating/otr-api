@@ -48,7 +48,7 @@ public class IntegratedAutomationChecksTests
         }
 
         // Act
-        await processor.ProcessAsync(match, new CancellationToken());
+        await processor.ProcessAsync(match, CancellationToken.None);
 
         // Assert
         Assert.Equal(VerificationStatus.PreVerified, match.VerificationStatus);

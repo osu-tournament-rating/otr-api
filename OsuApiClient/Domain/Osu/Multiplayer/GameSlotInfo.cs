@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
 using Common.Enums;
+using JetBrains.Annotations;
 using OsuApiClient.Net.Deserialization.ValueConverters;
 using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 
@@ -11,7 +11,7 @@ namespace OsuApiClient.Domain.Osu.Multiplayer;
 /// Represents info about what lobby slot a player was in for a <see cref="GameScore"/>
 /// </summary>
 [AutoMap(typeof(GameSlotInfoJsonModel))]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class GameSlotInfo : IModel
 {
     /// <summary>

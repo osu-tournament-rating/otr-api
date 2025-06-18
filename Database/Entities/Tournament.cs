@@ -152,16 +152,18 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
         VerificationStatus = VerificationStatus.ConfirmPreStatus();
         VerifiedByUserId = verifierUserId;
 
-        if (includeChildren)
+        if (!includeChildren)
         {
-            if (VerificationStatus == VerificationStatus.Rejected)
-            {
-                RejectAllChildren();
-            }
-            else
-            {
-                Matches.ForEach(match => match.ConfirmPreVerification(verifierUserId, includeChildren));
-            }
+            return;
+        }
+
+        if (VerificationStatus == VerificationStatus.Rejected)
+        {
+            RejectAllChildren();
+        }
+        else
+        {
+            Matches.ForEach(match => match.ConfirmPreVerification(verifierUserId, includeChildren));
         }
     }
 

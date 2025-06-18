@@ -147,7 +147,7 @@ public static class QueryExtensions
     /// </summary>
     /// <param name="date">Date comparison</param>
     /// <remarks>Does nothing if <paramref name="date"/> is null</remarks>
-    public static IQueryable<Tournament> AfterDate(this IQueryable<Tournament> query, DateTime? date = null) =>
+    private static IQueryable<Tournament> AfterDate(this IQueryable<Tournament> query, DateTime? date = null) =>
         date.HasValue ? query.Where(t => t.EndTime >= date.Value) : query;
 
     /// <summary>
@@ -156,7 +156,7 @@ public static class QueryExtensions
     /// </summary>
     /// <param name="date">Date comparison</param>
     /// <remarks>Does nothing if <paramref name="date"/> is null</remarks>
-    public static IQueryable<Tournament> BeforeDate(this IQueryable<Tournament> query, DateTime? date = null) =>
+    private static IQueryable<Tournament> BeforeDate(this IQueryable<Tournament> query, DateTime? date = null) =>
         date.HasValue ? query.Where(t => t.StartTime <= date) : query;
 
     /// <summary>
@@ -429,7 +429,7 @@ public static class QueryExtensions
     /// the given date
     /// </summary>
     /// <param name="date">Date comparison</param>
-    public static IQueryable<Game> AfterDate(this IQueryable<Game> query, DateTime date) =>
+    private static IQueryable<Game> AfterDate(this IQueryable<Game> query, DateTime date) =>
         query.AsQueryable().Where(x => x.StartTime > date);
 
     /// <summary>
@@ -437,7 +437,7 @@ public static class QueryExtensions
     /// the given date
     /// </summary>
     /// <param name="date">Date comparison</param>
-    public static IQueryable<Game> BeforeDate(this IQueryable<Game> query, DateTime date) =>
+    private static IQueryable<Game> BeforeDate(this IQueryable<Game> query, DateTime date) =>
         query.AsQueryable().Where(x => x.StartTime < date);
 
     /// <summary>
@@ -473,14 +473,14 @@ public static class QueryExtensions
     /// Filters a <see cref="GameScore"/> query for those set after a given date
     /// </summary>
     /// <param name="date">Date comparison</param>
-    public static IQueryable<GameScore> AfterDate(this IQueryable<GameScore> query, DateTime date) =>
+    private static IQueryable<GameScore> AfterDate(this IQueryable<GameScore> query, DateTime date) =>
         query.AsQueryable().Where(x => x.Game.EndTime > date);
 
     /// <summary>
     /// Filters a <see cref="GameScore"/> query for those set before a given date
     /// </summary>
     /// <param name="date">Date comparison</param>
-    public static IQueryable<GameScore> BeforeDate(this IQueryable<GameScore> query, DateTime date) =>
+    private static IQueryable<GameScore> BeforeDate(this IQueryable<GameScore> query, DateTime date) =>
         query.AsQueryable().Where(x => x.Game.EndTime < date);
 
     /// <summary>

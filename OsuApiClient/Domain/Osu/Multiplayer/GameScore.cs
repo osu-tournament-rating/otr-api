@@ -1,19 +1,19 @@
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace OsuApiClient.Domain.Osu.Multiplayer;
 
 /// <summary>
 /// Represents a score set by a player in a <see cref="MultiplayerGame"/>
 /// </summary>
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class GameScore : IModel
 {
     /// <summary>
     /// Score id
     /// </summary>
     /// <remarks>Unpopulated most of the time because sv2 scores are not submitted to Bancho</remarks>
-    [SuppressMessage("ReSharper", "CommentTypo")]
     public long? Id { get; init; }
 
     /// <summary>

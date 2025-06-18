@@ -1,5 +1,6 @@
 using Common.Enums;
 using Database.Entities.Processor;
+using JetBrains.Annotations;
 
 namespace Database.Repositories.Interfaces;
 
@@ -22,6 +23,7 @@ public interface IRatingAdjustmentsRepository : IRepository<RatingAdjustment>
         DateTime? dateMax = null
     );
 
+    [UsedImplicitly]
     Task<IEnumerable<RatingAdjustment>> TeammateRatingStatsAsync(
         int playerId,
         int teammateId,
@@ -30,6 +32,7 @@ public interface IRatingAdjustmentsRepository : IRepository<RatingAdjustment>
         DateTime dateMax
     );
 
+    [UsedImplicitly]
     Task<IEnumerable<RatingAdjustment>> OpponentRatingStatsAsync(
         int playerId,
         int opponentId,

@@ -1,3 +1,4 @@
+using Database.Entities;
 using JetBrains.Annotations;
 
 namespace API.DTOs;

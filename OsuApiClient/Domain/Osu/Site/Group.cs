@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 
 namespace OsuApiClient.Domain.Osu.Site;
 
@@ -6,7 +7,7 @@ namespace OsuApiClient.Domain.Osu.Site;
 /// Represents a group on the osu! website
 /// </summary>
 /// <example>Global Moderation Team (GMT), Beatmap Nominator (BN)</example>
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class Group : IModel
 {
     /// <summary>
