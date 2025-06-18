@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a note for an entity created by an admin
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class AdminNoteDTO
 {
     /// <summary>

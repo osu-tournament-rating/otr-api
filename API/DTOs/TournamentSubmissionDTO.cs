@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
@@ -9,6 +10,7 @@ namespace API.DTOs;
 /// An incoming tournament submission
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class TournamentSubmissionDTO
 {
     /// <summary>

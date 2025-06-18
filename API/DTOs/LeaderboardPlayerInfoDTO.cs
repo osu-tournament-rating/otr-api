@@ -1,10 +1,12 @@
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 ///  Individual line items in the leaderboard
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class LeaderboardPlayerInfoDTO
 {
     public int PlayerId { get; set; }

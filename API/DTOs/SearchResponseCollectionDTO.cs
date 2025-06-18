@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a collection of search results
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class SearchResponseCollectionDTO
 {
     /// <summary>

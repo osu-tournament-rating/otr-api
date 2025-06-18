@@ -1,12 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 using Common.Enums;
 using Common.Enums.Verification;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents essential game information without nested data
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class GameCompactDTO
 {
     /// <summary>

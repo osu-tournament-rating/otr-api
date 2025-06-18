@@ -4,12 +4,14 @@ using API.DTOs.Interfaces;
 using Common.Enums;
 using Common.Enums.Queries;
 using Common.Enums.Verification;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Filtering parameters for matches requests
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class MatchRequestQueryDTO : IPaginated
 {
     [Required]

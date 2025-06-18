@@ -3,12 +3,14 @@ using System.Diagnostics.CodeAnalysis;
 using API.Utilities.DataAnnotations;
 using Common.Enums;
 using Common.Enums.Verification;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a single score set in a game
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class GameScoreDTO
 {
     /// <summary>

@@ -1,11 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a compact version of a beatmapset
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class BeatmapsetCompactDTO
 {
     /// <summary>

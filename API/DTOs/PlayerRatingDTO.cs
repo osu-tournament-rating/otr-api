@@ -1,10 +1,12 @@
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Describes tournament rating based information for a player in a ruleset that are current and not time specific
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlayerRatingDTO
 {
     /// <summary>

@@ -1,11 +1,13 @@
 ﻿using Common.Enums;
 using Common.Enums.Verification;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents platform-wide <see cref="Database.Entities.Tournament"/> stats
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class TournamentPlatformStatsDTO
 {
     /// <summary>

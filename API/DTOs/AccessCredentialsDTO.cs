@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents access credentials and their expiry
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class AccessCredentialsDTO
 {
     /// <summary>

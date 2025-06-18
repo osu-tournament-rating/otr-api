@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a beatmap
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class BeatmapDTO
 {
     /// <summary>

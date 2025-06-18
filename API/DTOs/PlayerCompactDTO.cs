@@ -1,10 +1,12 @@
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents player information
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlayerCompactDTO
 {
     /// <summary>

@@ -1,10 +1,12 @@
 ﻿using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents platform-wide <see cref="Database.Entities.Processor.PlayerRating"/> stats
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class RatingPlatformStatsDTO
 {
     /// <summary>

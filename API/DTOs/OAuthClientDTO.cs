@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents an OAuth client
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class OAuthClientDTO
 {
     /// <summary>

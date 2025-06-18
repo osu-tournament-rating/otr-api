@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a search result for a match
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class MatchSearchResultDTO
 {
     /// <summary>

@@ -1,5 +1,8 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlayerScoreStatsDTO
 {
     public int AverageScoreEZ { get; set; }

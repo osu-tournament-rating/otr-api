@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
@@ -7,6 +8,7 @@ namespace API.DTOs;
 /// Represents a collection of statistics for a player in a ruleset
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlayerDashboardStatsDTO
 {
     /// <summary>

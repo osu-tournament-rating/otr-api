@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a tournament including optional data
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class TournamentDTO : TournamentCompactDTO
 {
     /// <summary>

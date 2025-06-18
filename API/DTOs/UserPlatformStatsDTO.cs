@@ -1,8 +1,11 @@
-﻿namespace API.DTOs;
+﻿using JetBrains.Annotations;
+
+namespace API.DTOs;
 
 /// <summary>
 /// Represents platform-wide <see cref="Database.Entities.User"/> stats
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class UserPlatformStatsDTO
 {
     /// <summary>

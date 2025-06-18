@@ -1,10 +1,12 @@
 using Common.Enums.Verification;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents the status of a submitted match
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class MatchSubmissionStatusDTO
 {
     /// <summary>

@@ -1,9 +1,12 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a paged list of results
 /// </summary>
 /// <typeparam name="T">Type of DTO that is being returned</typeparam>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PagedResultDTO<T> where T : class
 {
     /// <summary>
