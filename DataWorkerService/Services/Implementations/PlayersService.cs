@@ -78,7 +78,7 @@ public class PlayersService(
             {
                 UserStatisticsVariant? bestVariant = result.Statistics?.Variants.Where(v => v.IsRanked).MinBy(v => v.GlobalRank);
 
-                if (bestVariant is not null && bestVariant.GlobalRank is not null)
+                if (bestVariant?.GlobalRank != null)
                 {
                     if (bestVariant.GlobalRank.Value < lowestRank)
                     {
@@ -230,22 +230,28 @@ public class PlayersService(
             // For ManiaOther, copy the earliest rank data to Mania4k and Mania7k variants if they exist
             // This is necessary because osu!Track only provides historical data for ManiaOther,
             // but players can have current ratings for the specific mania variants
-            if (r == Ruleset.ManiaOther)
+            if (r != Ruleset.ManiaOther)
             {
-                Ruleset[] maniaVariants = new[] { Ruleset.Mania4k, Ruleset.Mania7k };
+                continue;
+            }
+
+            {
+                Ruleset[] maniaVariants = { Ruleset.Mania4k, Ruleset.Mania7k };
 
                 foreach (Ruleset variant in maniaVariants)
                 {
                     PlayerOsuRulesetData? variantData = player.RulesetData.FirstOrDefault(x => x.Ruleset == variant);
 
-                    if (variantData is not null && variantData.EarliestGlobalRank is null)
+                    if (variantData is null || variantData.EarliestGlobalRank is not null)
                     {
-                        variantData.EarliestGlobalRank = statUpdate.Rank;
-                        variantData.EarliestGlobalRankDate = statUpdate.Timestamp;
-
-                        logger.LogDebug("Copied earliest rank data from ManiaOther to {Variant} [Id: {Id} | Rank: {Rank}]",
-                            variant, player.Id, statUpdate.Rank);
+                        continue;
                     }
+
+                    variantData.EarliestGlobalRank = statUpdate.Rank;
+                    variantData.EarliestGlobalRankDate = statUpdate.Timestamp;
+
+                    logger.LogDebug("Copied earliest rank data from ManiaOther to {Variant} [Id: {Id} | Rank: {Rank}]",
+                        variant, player.Id, statUpdate.Rank);
                 }
             }
         }

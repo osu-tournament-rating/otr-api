@@ -1,10 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using CommandLine;
+using JetBrains.Annotations;
 
 namespace API.Utils.Jwt.Options;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Verb("read", HelpText = "Read an encoded JWT")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class ReadOptions : JwtUtilsOptionsBase
 {
     [Option(
