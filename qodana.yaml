@@ -4,5 +4,21 @@ profile:
   name: qodana.recommended
 include:
   - name: CheckDependencyLicenses
+exclude:
+  - name: Migrations
+    paths:
+      - Database/Migrations
 dotnet:
   solution: otrAPI.sln
+ide: QDNET
+failureConditions:
+  severityThresholds:
+    any: 10 # Total number of problems in all severities
+    critical: 1 # Severities
+    high: 1
+    moderate: 2
+    low: 3
+    info: 5
+  # testCoverageThresholds:
+  #   fresh: 6 # Fresh code coverage
+  #   total: 7 # Total percentage
