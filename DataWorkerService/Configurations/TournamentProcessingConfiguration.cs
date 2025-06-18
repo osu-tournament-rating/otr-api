@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 namespace DataWorkerService.Configurations;
 
 /// <summary>
