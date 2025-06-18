@@ -19,7 +19,7 @@ public class BitLengthAttributeTests
     [InlineData(null, 0, 8, true)] // null considered valid
     public void Length_IsValid(string? input, int min, int max, bool expected)
     {
-        bool isValid = new BitLengthAttribute() { Minimum = min, Maximum = max }.IsValid(input);
+        bool isValid = new BitLengthAttribute { Minimum = min, Maximum = max }.IsValid(input);
 
         Assert.Equal(expected, isValid);
     }

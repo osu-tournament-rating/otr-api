@@ -1,6 +1,5 @@
 using API.DTOs;
 using CachingFramework.Redis.Contracts;
-using JetBrains.Annotations;
 
 namespace API.Handlers.Interfaces;
 
@@ -29,13 +28,11 @@ public interface ICacheHandler : IContext
     /// <summary>
     /// Invalidates all cached objects with lifetimes that depend on match CRUD actions
     /// </summary>
-    [UsedImplicitly]
     Task OnMatchUpdateAsync();
 
     /// <summary>
     /// Invalidates all cached objects with lifetimes that depend on player CRUD actions
     /// </summary>
-    [UsedImplicitly]
     Task OnPlayerUpdateAsync();
 
     /// <summary>

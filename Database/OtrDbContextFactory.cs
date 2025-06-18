@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -7,6 +8,7 @@ namespace Database;
 /// <summary>
 /// Factory for creating <see cref="OtrContext"/> instances at design time
 /// </summary>
+[UsedImplicitly(Reason = "Used for creating the migrations script in github actions")]
 public class OtrDbContextFactory : IDesignTimeDbContextFactory<OtrContext>
 {
     public OtrContext CreateDbContext(string[] args)

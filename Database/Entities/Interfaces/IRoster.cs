@@ -1,10 +1,12 @@
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace Database.Entities.Interfaces;
 
 /// <summary>
 /// Interfaces a record of roster information for a <see cref="Match"/> or <see cref="Game"/>
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public interface IRoster
 {
     /// <summary>

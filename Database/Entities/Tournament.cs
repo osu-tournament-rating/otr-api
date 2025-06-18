@@ -12,9 +12,6 @@ namespace Database.Entities;
 /// <summary>
 /// An osu! tournament
 /// </summary>
-[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-[SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
 public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>
 {
     private string _name = string.Empty;

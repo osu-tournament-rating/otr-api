@@ -1,11 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Database.Entities;
 
 /// <summary>
 /// Describes the performance of a <see cref="Entities.Player"/> over all <see cref="Game"/>s in a <see cref="Entities.Match"/>
 /// </summary>
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class PlayerMatchStats : EntityBase
 {
     /// <summary>

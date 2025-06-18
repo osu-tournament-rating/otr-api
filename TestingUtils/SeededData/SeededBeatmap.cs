@@ -64,7 +64,7 @@ public static class SeededBeatmap
             Hp = hp ?? _sRand.NextDouble(10),
             Od = od ?? _sRand.NextDouble(11),
             Ruleset = ruleset ?? _sRand.NextEnum<Ruleset>(),
-            MaxCombo = maxCombo ?? _sRand.NextInclusive(MaxComboMin, MaxComboMax),
+            MaxCombo = maxCombo ?? _sRand.NextInclusive(MaxComboMin, MaxComboMax)
         };
 
         beatmapset ??= new Beatmapset

@@ -1,9 +1,12 @@
+using JetBrains.Annotations;
+
 namespace Common.Enums.Verification;
 
 /// <summary>
 /// The reason why a <see cref="Database.Entities.Tournament"/> is rejected
 /// </summary>
 [Flags]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public enum TournamentRejectionReason
 {
     /// <summary>

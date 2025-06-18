@@ -1,4 +1,5 @@
 ﻿using Common.Enums;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
@@ -7,6 +8,7 @@ namespace Database.Entities.Interfaces;
 /// <summary>
 /// Interfaces an entity serving as an audit for an <see cref="IAuditableEntity{TAudit}"/>
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public interface IAuditEntity : IEntity
 {
     /// <summary>

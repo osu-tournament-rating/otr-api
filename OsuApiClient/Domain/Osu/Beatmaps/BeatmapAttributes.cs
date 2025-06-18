@@ -1,4 +1,5 @@
 using AutoMapper;
+using JetBrains.Annotations;
 using OsuApiClient.Net.JsonModels.Osu.Beatmaps;
 
 namespace OsuApiClient.Domain.Osu.Beatmaps;
@@ -7,6 +8,7 @@ namespace OsuApiClient.Domain.Osu.Beatmaps;
 /// Represents beatmap difficulty attributes
 /// </summary>
 [AutoMap(typeof(BeatmapAttributesJsonModel))]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class BeatmapAttributes : IModel
 {
     /// <summary>

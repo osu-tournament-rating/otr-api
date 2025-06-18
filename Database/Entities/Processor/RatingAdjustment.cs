@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 
 namespace Database.Entities.Processor;
@@ -21,7 +20,6 @@ namespace Database.Entities.Processor;
 /// Players without these entries (typically due to osu! API failures when fetching player information,
 /// which commonly occurs when players are restricted on osu!) will not receive rating adjustments.
 /// </remarks>
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class RatingAdjustment : EntityBase
 {
     /// <summary>
@@ -32,7 +30,7 @@ public class RatingAdjustment : EntityBase
     /// <summary>
     /// The <see cref="Ruleset" />
     /// </summary>
-    public Ruleset Ruleset { get; set; }
+    public Ruleset Ruleset { get; init; }
 
     /// <summary>
     /// Timestamp for when the adjustment was applied

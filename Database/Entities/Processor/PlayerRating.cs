@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Common.Enums;
+﻿using Common.Enums;
 
 namespace Database.Entities.Processor;
 
@@ -16,7 +15,6 @@ namespace Database.Entities.Processor;
 /// o!TR Rating Calculation Documentation
 /// </a>
 /// </remarks>
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class PlayerRating : EntityBase
 {
     /// <summary>

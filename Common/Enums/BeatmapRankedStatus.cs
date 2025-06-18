@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 namespace Common.Enums;
 
 /// <summary>
@@ -7,6 +9,7 @@ namespace Common.Enums;
 /// ppy 2024 https://osu.ppy.sh/docs/index.html#beatmapset-rank-status
 /// Last accessed June 2024
 /// </copyright>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public enum BeatmapRankedStatus
 {
     Graveyard = -2,

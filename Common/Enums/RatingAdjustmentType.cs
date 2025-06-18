@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace Common.Enums;
 
 /// <summary>
 /// Represents the different types of events that result in the generation of a <see cref="Database.Entities.Processor.RatingAdjustment"/>
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public enum RatingAdjustmentType
 {
     /// <summary>

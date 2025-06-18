@@ -63,17 +63,17 @@ public class CacheHandler : RedisContext, ICacheHandler
     /// Invalidates all tournament search results
     /// </summary>
     private async Task InvalidateTournamentSearchResultsAsync() =>
-        await Cache.InvalidateKeysByTagAsync([CacheUtils.TournamentSearchTag]);
+        await Cache.InvalidateKeysByTagAsync(CacheUtils.TournamentSearchTag);
 
     /// <summary>
     /// Invalidates all match search results
     /// </summary>
     private async Task InvalidateMatchSearchResultsAsync() =>
-        await Cache.InvalidateKeysByTagAsync([CacheUtils.MatchSearchTag]);
+        await Cache.InvalidateKeysByTagAsync(CacheUtils.MatchSearchTag);
 
     /// <summary>
     /// Invalidates all player search results
     /// </summary>
     private async Task InvalidatePlayerSearchResultsAsync() =>
-        await Cache.InvalidateKeysByTagAsync([CacheUtils.PlayerSearchTag]);
+        await Cache.InvalidateKeysByTagAsync(CacheUtils.PlayerSearchTag);
 }

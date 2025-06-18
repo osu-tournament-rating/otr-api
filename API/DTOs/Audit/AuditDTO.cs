@@ -1,11 +1,13 @@
 using System.ComponentModel.DataAnnotations;
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs.Audit;
 
 /// <summary>
 /// Represents an audit record tracking changes made to entities in the system
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class AuditDTO
 {
     /// <summary>

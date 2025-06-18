@@ -13,7 +13,6 @@ namespace Database.Entities;
 /// A game played in a <see cref="Match"/>
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>
 {
     /// <summary>
