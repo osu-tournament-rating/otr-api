@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums.Verification;
 using Common.Utilities.Extensions;
@@ -125,6 +126,30 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// Collection of <see cref="MatchAudit"/> records for the <see cref="Match"/>
     /// </summary>
     public ICollection<MatchAudit> Audits { get; set; } = new List<MatchAudit>();
+
+    /// <summary>
+    /// Win record for the match based on the Rosters
+    /// </summary>
+    /// <remarks>
+    /// This is not stored in the database but computed from the Rosters collection.
+    /// Returns null only if there are fewer than 2 rosters.
+    /// </remarks>
+    [NotMapped]
+    public MatchWinRecord? WinRecord
+    {
+        get
+        {
+            try
+            {
+                return new MatchWinRecord(Id, Rosters);
+            }
+            catch (ArgumentException)
+            {
+                // No valid win record can be created (not enough rosters)
+                return null;
+            }
+        }
+    }
 
     public void ResetAutomationStatuses(bool force)
     {

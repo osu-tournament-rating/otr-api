@@ -9,7 +9,7 @@ public class TournamentDTO : TournamentCompactDTO
     /// All associated match data
     /// </summary>
     /// <remarks>Will be empty for bulk requests such as List</remarks>
-    public ICollection<MatchDTO> Matches { get; init; } = [];
+    public ICollection<MatchCompactDTO> Matches { get; init; } = [];
 
     /// <summary>
     /// All admin notes associated with the tournament
@@ -20,4 +20,9 @@ public class TournamentDTO : TournamentCompactDTO
     /// All player tournament stats associated with the tournament
     /// </summary>
     public ICollection<PlayerTournamentStatsBaseDTO> PlayerTournamentStats { get; init; } = [];
+
+    /// <summary>
+    /// All beatmaps pooled for this tournament
+    /// </summary>
+    public ICollection<BeatmapDTO> PooledBeatmaps { get; init; } = [];
 }

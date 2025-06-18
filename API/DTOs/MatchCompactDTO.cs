@@ -1,13 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using Common.Enums;
 using Common.Enums.Verification;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class MatchCompactDTO
 {
     /// <summary>
-    /// Id
+    /// Primary key
     /// </summary>
     public int Id { get; set; }
 
@@ -65,4 +67,14 @@ public class MatchCompactDTO
     /// Timestamp of the last time the match was processed
     /// </summary>
     public DateTime LastProcessingDate { get; set; }
+
+    /// <summary>
+    /// Games played in this match
+    /// </summary>
+    public ICollection<GameCompactDTO> Games { get; set; } = [];
+
+    /// <summary>
+    /// All associated admin notes
+    /// </summary>
+    public ICollection<AdminNoteDTO> AdminNotes { get; set; } = [];
 }

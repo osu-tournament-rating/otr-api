@@ -69,6 +69,7 @@ using StackExchange.Redis;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
+using ILogger = Serilog.ILogger;
 using IMatchRosterRepository = Database.Repositories.Interfaces.IMatchRosterRepository;
 using User = Database.Entities.User;
 
@@ -331,6 +332,7 @@ builder.Services.AddSwaggerGen(options =>
 
     options.SchemaFilter<EnumMetadataSchemaFilter>();
     options.SchemaFilter<RequireNonNullablePropertiesSchemaFilter>();
+    options.SchemaFilter<MatchDtoSchemaFilter>();
 
     // Populate the document's info
     options.SwaggerDoc(
@@ -593,7 +595,7 @@ builder.Services
             OnValidatePrincipal = async context =>
             {
                 string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
-                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                ILogger authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
                 authLogger.Debug("Validating cookie for user: {UserId}, IsAuthenticated: {IsAuthenticated}",
                     userId ?? "Unknown", context.Principal?.Identity?.IsAuthenticated);
 
@@ -611,21 +613,21 @@ builder.Services
             OnSigningIn = context =>
             {
                 string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
-                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                ILogger authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
                 authLogger.Information("User signing in with cookie authentication. UserId: {UserId}", userId ?? "Unknown");
                 return Task.CompletedTask;
             },
             OnSignedIn = context =>
             {
                 string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
-                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                ILogger authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
                 authLogger.Information("User successfully signed in with cookie. UserId: {UserId}", userId ?? "Unknown");
                 return Task.CompletedTask;
             },
             OnSigningOut = context =>
             {
                 string? userId = context.HttpContext.User?.FindFirst(OtrClaims.Subject)?.Value;
-                var authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
+                ILogger authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
                 authLogger.Information("User signing out. UserId: {UserId}", userId ?? "Unknown");
                 return Task.CompletedTask;
             },
@@ -726,7 +728,7 @@ Log.Information("Starting Data Protection configuration. PersistDataProtectionKe
 ConnectionMultiplexer? redisConnection = null;
 if (authConfiguration.PersistDataProtectionKeys)
 {
-    var redisLogger = Log.ForContext("SourceContext", "DataProtection.Redis");
+    ILogger redisLogger = Log.ForContext("SourceContext", "DataProtection.Redis");
     redisLogger.Information("Attempting to connect to Redis at: {RedisConnection}", connectionStrings.RedisConnection);
 
     try
@@ -743,7 +745,7 @@ if (authConfiguration.PersistDataProtectionKeys)
         redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
 
         // Test the connection
-        var database = redisConnection.GetDatabase();
+        IDatabase database = redisConnection.GetDatabase();
         database.Ping();
 
         redisLogger.Information("Successfully connected to Redis for Data Protection");
@@ -754,17 +756,17 @@ if (authConfiguration.PersistDataProtectionKeys)
             .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
 
         // Add connection event handlers for monitoring
-        redisConnection.ConnectionFailed += (sender, args) =>
+        redisConnection.ConnectionFailed += (_, args) =>
         {
             redisLogger.Error("Redis connection failed: {EndPoint} - {FailureType}", args.EndPoint, args.FailureType);
         };
 
-        redisConnection.ConnectionRestored += (sender, args) =>
+        redisConnection.ConnectionRestored += (_, args) =>
         {
             redisLogger.Information("Redis connection restored: {EndPoint}", args.EndPoint);
         };
 
-        redisConnection.ErrorMessage += (sender, args) =>
+        redisConnection.ErrorMessage += (_, args) =>
         {
             redisLogger.Error("Redis error: {Message}", args.Message);
         };
@@ -856,7 +858,7 @@ builder.Services.AddDbContext<OtrContext>((services, sqlOptions) =>
 
 builder.Services.AddSingleton<ICacheHandler>(serviceProvider =>
 {
-    var sharedRedisConnection = serviceProvider.GetService<IConnectionMultiplexer>();
+    IConnectionMultiplexer? sharedRedisConnection = serviceProvider.GetService<IConnectionMultiplexer>();
     if (sharedRedisConnection != null)
     {
         return new CacheHandler(sharedRedisConnection);
@@ -881,7 +883,7 @@ if (useRedLock)
 {
     builder.Services.AddSingleton(serviceProvider =>
     {
-        var sharedRedisConnection = serviceProvider.GetService<IConnectionMultiplexer>();
+        IConnectionMultiplexer? sharedRedisConnection = serviceProvider.GetService<IConnectionMultiplexer>();
         if (sharedRedisConnection != null)
         {
             return RedLockFactory.Create(new List<RedLockMultiplexer>

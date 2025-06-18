@@ -1,14 +1,13 @@
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
 
 namespace API.DTOs;
 
 /// <summary>
-/// Represents a single game (osu! beatmap) played in a match
+/// Represents essential game information without nested data
 /// </summary>
-public class GameDTO
+public class GameCompactDTO
 {
     /// <summary>
     /// Primary key
@@ -25,29 +24,6 @@ public class GameDTO
     /// </summary>
     [EnumDataType(typeof(Ruleset))]
     public Ruleset Ruleset { get; init; }
-
-    /// <summary>
-    /// The scoring type used
-    /// </summary>
-    [EnumDataType(typeof(ScoringType))]
-    public ScoringType ScoringType { get; init; }
-
-    /// <summary>
-    /// The team type used
-    /// </summary>
-    [EnumDataType(typeof(TeamType))]
-    public TeamType TeamType { get; init; }
-
-    /// <summary>
-    /// The mods enabled
-    /// </summary>
-    [EnumDataType(typeof(Mods))]
-    public Mods Mods { get; init; }
-
-    /// <summary>
-    /// Denotes if the mod setting is "free mod"
-    /// </summary>
-    public bool IsFreeMod { get; init; }
 
     /// <summary>
     /// The verification status
@@ -82,26 +58,4 @@ public class GameDTO
     /// Timestamp of the end of the game
     /// </summary>
     public DateTime? EndTime { get; init; }
-
-    /// <summary>
-    /// The beatmap played
-    /// </summary>
-    public BeatmapDTO Beatmap { get; init; } = null!;
-
-    /// <summary>
-    /// Win record
-    /// </summary>
-    public IEnumerable<GameRosterDTO> Rosters { get; init; } = [];
-
-    /// <summary>
-    /// All associated admin notes
-    /// </summary>
-    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public ICollection<AdminNoteDTO> AdminNotes { get; init; } = [];
-
-    /// <summary>
-    /// All match scores
-    /// </summary>
-    [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
-    public ICollection<GameScoreDTO> Scores { get; init; } = [];
 }
