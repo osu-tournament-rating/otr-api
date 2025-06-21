@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using AutoMapper;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -23,6 +24,7 @@ namespace OsuApiClient.Net.Requests.RequestHandler;
 /// Any program which uses the OsuClient MUST have a Redis and RedLock configuration.
 /// This class contains resources which are managed by a distributed locker (RedLock).
 /// </remarks>
+[UsedImplicitly]
 internal sealed class DefaultRequestHandler(
     ILogger<DefaultRequestHandler> logger,
     IServiceProvider serviceProvider,
@@ -64,12 +66,6 @@ internal sealed class DefaultRequestHandler(
         _disposed = true;
         _httpClient.Dispose();
     }
-
-    public async Task FetchAsync(
-        IApiRequest request,
-        CancellationToken cancellationToken = default
-    ) =>
-        await SendRequestAsync(request, cancellationToken);
 
     private async Task<TJsonModel?> FetchAsync<TJsonModel>(
         IApiRequest request,
