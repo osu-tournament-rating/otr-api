@@ -10,7 +10,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 /// ppy 2024
 /// Last accessed May 2024
 /// </copyright>
-public class CountryJsonModel : JsonModelBase
+public class CountryJsonModel
 {
     [JsonProperty("code")]
     public string? Code { get; set; }

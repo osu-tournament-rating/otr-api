@@ -9,7 +9,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users;
 /// ppy 2024 https://osu.ppy.sh/docs/index.html#user
 /// Last accessed May 2024
 /// </copyright>
-public class UserJsonModel : JsonModelBase
+public class UserJsonModel
 {
     [JsonProperty("avatar_url")]
     public string AvatarUrl { get; set; } = string.Empty;

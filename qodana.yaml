@@ -15,9 +15,7 @@ dotnet:
 ide: QDNET
 failureConditions:
   severityThresholds:
-    any: 10 # Total number of problems in all severities
     critical: 1 # Severities
     high: 1
-    moderate: 2
-    low: 3
-    info: 5
+    moderate: 1
+    low: 1

@@ -31,11 +31,6 @@ public interface ITournamentsService
     Task<bool> ExistsAsync(string name, Ruleset ruleset);
 
     /// <summary>
-    /// Gets all tournaments
-    /// </summary>
-    Task<IEnumerable<TournamentDTO>> ListAsync();
-
-    /// <summary>
     /// Gets a tournament by id
     /// </summary>
     /// <param name="id">The tournament id</param>

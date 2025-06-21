@@ -1,4 +1,5 @@
 using AutoMapper;
+using JetBrains.Annotations;
 using OsuApiClient.Domain.Osu.Beatmaps;
 using OsuApiClient.Domain.Osu.Multiplayer;
 using OsuApiClient.Domain.Osu.Site;
@@ -16,6 +17,7 @@ using OsuApiClient.Net.JsonModels.OsuTrack;
 
 namespace OsuApiClient.Configurations;
 
+[UsedImplicitly]
 public class MapperProfile : Profile
 {
     public MapperProfile()

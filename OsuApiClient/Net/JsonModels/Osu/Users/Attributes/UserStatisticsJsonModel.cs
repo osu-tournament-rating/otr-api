@@ -12,7 +12,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 /// Last accessed June 2024
 /// </copyright>
 [SuppressMessage("ReSharper", "CommentTypo")]
-public class UserStatisticsJsonModel : JsonModelBase
+public class UserStatisticsJsonModel
 {
     [JsonProperty("count_300")]
     public int Count300 { get; set; }

@@ -26,28 +26,33 @@ public class MatchVerificationProcessor(
             return;
         }
 
-        if (entity.Games.Count > 0 && !entity.Games.All(g => g.ProcessingStatus > GameProcessingStatus.NeedsVerification))
+        switch (entity.Games.Count)
         {
-            IProcessor<Game> gameVerificationProcessor = gameProcessorResolver.GetVerificationProcessor();
-            foreach (Game game in entity.Games)
-            {
-                await gameVerificationProcessor.ProcessAsync(game, cancellationToken);
-            }
+            case > 0 when !entity.Games.All(g => g.ProcessingStatus > GameProcessingStatus.NeedsVerification):
+                {
+                    IProcessor<Game> gameVerificationProcessor = gameProcessorResolver.GetVerificationProcessor();
+                    foreach (Game game in entity.Games)
+                    {
+                        await gameVerificationProcessor.ProcessAsync(game, cancellationToken);
+                    }
 
-            if (!entity.Games.All(g => g.ProcessingStatus > GameProcessingStatus.NeedsVerification))
-            {
-                logger.LogDebug(
-                    "Match's games are still awaiting verification [Id: {Id} | Processing Status: {Status}]",
-                    entity.Id,
-                    entity.ProcessingStatus
-                );
+                    if (!entity.Games.All(g => g.ProcessingStatus > GameProcessingStatus.NeedsVerification))
+                    {
+                        logger.LogDebug(
+                            "Match's games are still awaiting verification [Id: {Id} | Processing Status: {Status}]",
+                            entity.Id,
+                            entity.ProcessingStatus
+                        );
 
-                return;
-            }
-        }
-        else if (entity.Games.Count == 0)
-        {
-            entity.VerificationStatus = VerificationStatus.Rejected;
+                        return;
+                    }
+
+                    break;
+                }
+
+            case 0:
+                entity.VerificationStatus = VerificationStatus.Rejected;
+                break;
         }
 
         switch (entity.VerificationStatus)

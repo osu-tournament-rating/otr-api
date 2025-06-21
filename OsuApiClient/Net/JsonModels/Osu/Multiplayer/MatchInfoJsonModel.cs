@@ -10,7 +10,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 /// ppy 2024
 /// Last accessed May 2024
 /// </copyright>
-public class MatchInfoJsonModel : JsonModelBase
+public class MatchInfoJsonModel
 {
     [JsonProperty("id")]
     public long Id { get; set; }

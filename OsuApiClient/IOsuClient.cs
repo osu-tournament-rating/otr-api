@@ -110,27 +110,6 @@ public interface IOsuClient : IDisposable
     );
 
     /// <summary>
-    /// Gets a multiplayer match, limit 100 events
-    /// </summary>
-    /// <remarks>
-    /// By default, the endpoint returns a match with only the last 100 events that occurred.
-    /// For example, if you wanted the first 100 events, you would pass 0 for <paramref name="eventsAfterId"/>
-    /// </remarks>
-    /// <param name="matchId">Id of the multiplayer lobby</param>
-    /// <param name="eventsBeforeId">Include only events before this id</param>
-    /// <param name="eventsAfterId">Include only events after this id</param>
-    /// <param name="eventsLimit">Max number of events to include. Clamped at a maximum of 100</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>A <see cref="MultiplayerMatch"/>, or null if the request was unsuccessful</returns>
-    Task<MultiplayerMatch?> GetPartialMatchAsync(
-        long matchId,
-        long? eventsBeforeId = null,
-        long? eventsAfterId = null,
-        int? eventsLimit = null,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
     /// Gets a complete multiplayer match
     /// </summary>
     /// <remarks>

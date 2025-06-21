@@ -16,7 +16,7 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(context), IMatchesRepository
+public class MatchesRepository(OtrContext context) : Repository<Match>(context), IMatchesRepository
 {
     private readonly OtrContext _context = context;
 
@@ -148,24 +148,6 @@ public class MatchesRepository(OtrContext context) : RepositoryBase<Match>(conte
         await _context.SaveChangesAsync();
 
         return (await GetFullAsync(parentId))!;
-    }
-
-    public async Task<Match?> UpdateVerificationStatusAsync(
-        int id,
-        VerificationStatus status,
-        int? verifierId = null
-    )
-    {
-        Match? match = await GetAsync(id);
-        if (match is null)
-        {
-            return null;
-        }
-
-        match.VerificationStatus = status;
-        await UpdateAsync(match);
-
-        return match;
     }
 
     public async Task LoadGamesWithScoresAsync(Match match)

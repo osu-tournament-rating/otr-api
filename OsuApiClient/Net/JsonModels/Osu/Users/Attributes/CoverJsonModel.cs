@@ -10,7 +10,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 /// ppy 2024
 /// Last accessed May 2024
 /// </copyright>
-public class CoverJsonModel : JsonModelBase
+public class CoverJsonModel
 {
     [JsonProperty("id")]
     public int? Id { get; set; }

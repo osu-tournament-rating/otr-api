@@ -9,7 +9,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Beatmaps;
 /// ppy 2024 https://osu.ppy.sh/docs/index.html#beatmapset
 /// Last accessed June 2024
 /// </copyright>
-public class BeatmapsetJsonModel : JsonModelBase
+public class BeatmapsetJsonModel
 {
     [JsonProperty("artist")]
     public string Artist { get; set; } = string.Empty;

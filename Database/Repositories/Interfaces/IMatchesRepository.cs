@@ -64,19 +64,6 @@ public interface IMatchesRepository : IRepository<Match>
     Task<Match?> MergeAsync(int parentId, IEnumerable<int> matchIds);
 
     /// <summary>
-    /// Updates the verification status of a match for the given id
-    /// </summary>
-    /// <param name="id">Id of the match</param>
-    /// <param name="verificationStatus">New verification status to assign</param>
-    /// <param name="verifierId">Optional user id to attribute the update to</param>
-    /// <returns>An updated match, or null if not found</returns>
-    Task<Match?> UpdateVerificationStatusAsync(
-        int id,
-        VerificationStatus verificationStatus,
-        int? verifierId = null
-    );
-
-    /// <summary>
     /// Loads Games with their Scores for an existing tracked Match entity
     /// </summary>
     /// <param name="match">The tracked Match entity to load Games for</param>

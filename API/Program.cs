@@ -70,7 +70,6 @@ using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
 using ILogger = Serilog.ILogger;
-using IMatchRosterRepository = Database.Repositories.Interfaces.IMatchRosterRepository;
 using User = Database.Entities.User;
 
 #pragma warning disable SYSLIB1045
@@ -927,10 +926,8 @@ builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
-builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
 builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
-builder.Services.AddScoped<IMatchRosterRepository, MatchRosterRepository>();
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
 builder.Services.AddScoped<IPlayerRatingsRepository, PlayerRatingsRepository>();

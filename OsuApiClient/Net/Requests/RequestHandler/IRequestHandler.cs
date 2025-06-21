@@ -1,5 +1,4 @@
 using OsuApiClient.Domain;
-using OsuApiClient.Net.JsonModels;
 
 namespace OsuApiClient.Net.Requests.RequestHandler;
 
@@ -8,29 +7,6 @@ namespace OsuApiClient.Net.Requests.RequestHandler;
 /// </summary>
 public interface IRequestHandler : IDisposable
 {
-    /// <summary>
-    /// Fetches an API
-    /// </summary>
-    /// <remarks>Does not return a response</remarks>
-    /// <param name="request">API request details</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    Task FetchAsync(
-        IApiRequest request,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
-    /// Fetches an API and deserializes the response into a JSON model
-    /// </summary>
-    /// <param name="request">API request details</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <typeparam name="TJsonModel">Type of JSON model to output</typeparam>
-    /// <returns>The response deserialized into the given JSON model, or null if fetching was not successful</returns>
-    Task<TJsonModel?> FetchAsync<TJsonModel>(
-        IApiRequest request,
-        CancellationToken cancellationToken = default
-    ) where TJsonModel : class, IJsonModel;
-
     /// <summary>
     /// Fetches an API and deserializes the response into a model
     /// </summary>
@@ -42,7 +18,7 @@ public interface IRequestHandler : IDisposable
     Task<TModel?> FetchAsync<TModel, TJsonModel>(
         IApiRequest request,
         CancellationToken cancellationToken = default
-    ) where TModel : class, IModel where TJsonModel : class, IJsonModel;
+    ) where TModel : class, IModel where TJsonModel : class;
 
     /// <summary>
     /// Fetches an API and deserializes the response into a list of a model
@@ -55,5 +31,5 @@ public interface IRequestHandler : IDisposable
     Task<IEnumerable<TModel>?> FetchEnumerableAsync<TModel, TJsonModel>(
         IApiRequest request,
         CancellationToken cancellationToken = default
-    ) where TModel : class, IModel where TJsonModel : class, IJsonModel;
+    ) where TModel : class, IModel where TJsonModel : class;
 }

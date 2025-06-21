@@ -12,7 +12,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Site;
 /// Last accessed May 2024
 /// </copyright>
 [SuppressMessage("ReSharper", "StringLiteralTypo")]
-public class GroupJsonModel : JsonModelBase
+public class GroupJsonModel
 {
     [JsonProperty("colour")]
     public string? Color { get; set; }

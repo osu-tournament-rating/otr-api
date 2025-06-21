@@ -10,7 +10,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 /// ppy 2024
 /// Last accessed May 2024
 /// </copyright>
-public class MultiplayerMatchJsonModel : JsonModelBase
+public class MultiplayerMatchJsonModel
 {
     [JsonProperty("match")]
     public MatchInfoJsonModel Match { get; set; } = null!;

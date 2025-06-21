@@ -10,7 +10,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 /// ppy 2024
 /// Last accessed May 2024
 /// </copyright>
-public class UserAchievementJsonModel : JsonModelBase
+public class UserAchievementJsonModel
 {
     [JsonProperty("achieved_at")]
     public DateTimeOffset AchievedAt { get; set; }

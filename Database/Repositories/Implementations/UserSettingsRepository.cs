@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-public class UserSettingsRepository(OtrContext context, IPlayersRepository playerRepository) : RepositoryBase<UserSettings>(context), IUserSettingsRepository
+public class UserSettingsRepository(OtrContext context, IPlayersRepository playerRepository) : Repository<UserSettings>(context), IUserSettingsRepository
 {
     private readonly OtrContext _context = context;
 

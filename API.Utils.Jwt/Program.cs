@@ -121,8 +121,7 @@ public static class Program
         }
         catch (Exception ex)
         {
-            Log.Error("Token could not be validated!");
-            Log.Error(ex.Message);
+            Log.Error("Token could not be validated! {Exception}", ex.Message);
         }
 
         if (principal?.Identity is { IsAuthenticated: true })

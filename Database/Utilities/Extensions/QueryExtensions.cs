@@ -29,23 +29,9 @@ public static class QueryExtensions
     /// <param name="ruleset">Ruleset</param>
     public static IQueryable<PlayerRating> WhereRuleset(this IQueryable<PlayerRating> query, Ruleset ruleset) =>
         query.AsQueryable().Where(x => x.Ruleset == ruleset);
-
-    /// <summary>
-    /// Orders a <see cref="PlayerRating"/> query by <see cref="PlayerRating.Rating"/> in descending order
-    /// </summary>
-    public static IQueryable<PlayerRating> OrderByRatingDescending(this IQueryable<PlayerRating> query) =>
-        query.AsQueryable().OrderByDescending(x => x.Rating);
-
     #endregion
 
     #region Players
-
-    /// <summary>
-    /// Filters a <see cref="Player"/> query by the given osu! id
-    /// </summary>
-    /// <param name="osuId">osu! id</param>
-    public static IQueryable<Player> WhereOsuId(this IQueryable<Player> query, long osuId) =>
-        query.AsQueryable().Where(x => x.OsuId == osuId);
 
     /// <summary>
     /// Filters a <see cref="Player"/> query by the given the given username
@@ -409,98 +395,9 @@ public static class QueryExtensions
             .Include(g => g.AdminNotes)
             .ThenInclude(an => an.AdminUser.Player);
     }
-
-    /// <summary>
-    /// Filters a <see cref="Game"/> query for those with a <see cref="VerificationStatus"/>
-    /// of <see cref="VerificationStatus.Verified"/>
-    /// </summary>
-    public static IQueryable<Game> WhereVerified(this IQueryable<Game> query) =>
-        query.AsQueryable().Where(x => x.VerificationStatus == VerificationStatus.Verified);
-
-    /// <summary>
-    /// Filters a <see cref="Game"/> query for those with a <see cref="GameProcessingStatus"/>
-    /// of <see cref="GameProcessingStatus.Done"/>
-    /// </summary>
-    public static IQueryable<Game> WhereProcessingCompleted(this IQueryable<Game> query) =>
-        query.AsQueryable().Where(x => x.ProcessingStatus == GameProcessingStatus.Done);
-
-    /// <summary>
-    /// Filters a <see cref="Game"/> query for those with a <see cref="Game.StartTime"/> that is greater than
-    /// the given date
-    /// </summary>
-    /// <param name="date">Date comparison</param>
-    private static IQueryable<Game> AfterDate(this IQueryable<Game> query, DateTime date) =>
-        query.AsQueryable().Where(x => x.StartTime > date);
-
-    /// <summary>
-    /// Filters a <see cref="Game"/> query for those with a <see cref="Match.StartTime"/> that is less than
-    /// the given date
-    /// </summary>
-    /// <param name="date">Date comparison</param>
-    private static IQueryable<Game> BeforeDate(this IQueryable<Game> query, DateTime date) =>
-        query.AsQueryable().Where(x => x.StartTime < date);
-
-    /// <summary>
-    /// Filters a <see cref="Game"/> query for those played between a given date range
-    /// </summary>
-    /// <param name="dateMin">Date range lower bound</param>
-    /// <param name="dateMax">Date range upper bound</param>
-    public static IQueryable<Game> WhereDateRange(
-        this IQueryable<Game> query,
-        DateTime dateMin,
-        DateTime dateMax
-    ) => query.AsQueryable().AfterDate(dateMin).BeforeDate(dateMax);
-
     #endregion
 
     #region Scores
-
-    /// <summary>
-    /// Filters a <see cref="GameScore"/> query for those with a <see cref="VerificationStatus"/>
-    /// of <see cref="VerificationStatus.Verified"/>
-    /// </summary>
-    public static IQueryable<GameScore> WhereVerified(this IQueryable<GameScore> query) =>
-        query.Where(x => x.VerificationStatus == VerificationStatus.Verified);
-
-    /// <summary>
-    /// Filters a <see cref="GameScore"/> query for those with a <see cref="ScoreProcessingStatus"/>
-    /// of <see cref="ScoreProcessingStatus.Done"/>
-    /// </summary>
-    public static IQueryable<GameScore> WhereProcessingCompleted(this IQueryable<GameScore> query) =>
-        query.AsQueryable().Where(x => x.ProcessingStatus == ScoreProcessingStatus.Done);
-
-    /// <summary>
-    /// Filters a <see cref="GameScore"/> query for those set after a given date
-    /// </summary>
-    /// <param name="date">Date comparison</param>
-    private static IQueryable<GameScore> AfterDate(this IQueryable<GameScore> query, DateTime date) =>
-        query.AsQueryable().Where(x => x.Game.EndTime > date);
-
-    /// <summary>
-    /// Filters a <see cref="GameScore"/> query for those set before a given date
-    /// </summary>
-    /// <param name="date">Date comparison</param>
-    private static IQueryable<GameScore> BeforeDate(this IQueryable<GameScore> query, DateTime date) =>
-        query.AsQueryable().Where(x => x.Game.EndTime < date);
-
-    /// <summary>
-    /// Filters a <see cref="GameScore"/> query for those set between a given date range
-    /// </summary>
-    /// <param name="dateMin">Date range lower bound</param>
-    /// <param name="dateMax">Date range upper bound</param>
-    public static IQueryable<GameScore> WhereDateRange(
-        this IQueryable<GameScore> query,
-        DateTime dateMin,
-        DateTime dateMax
-    ) => query.AsQueryable().AfterDate(dateMin).BeforeDate(dateMax);
-
-    /// <summary>
-    /// Filters a <see cref="GameScore"/> query for those set in a given <see cref="Ruleset"/>
-    /// </summary>
-    /// <param name="ruleset">Ruleset</param>
-    public static IQueryable<GameScore> WhereRuleset(this IQueryable<GameScore> query, Ruleset ruleset) =>
-        query.AsQueryable().Where(x => x.Ruleset == ruleset);
-
     /// <summary>
     /// Filters a <see cref="GameScore"/> query for those set with the given <see cref="Mods"/> enabled
     /// </summary>
@@ -516,34 +413,6 @@ public static class QueryExtensions
                 || x.Game.Mods == (enabledMods | Mods.NoFail)
                 || x.Mods == enabledMods
                 || x.Mods == (enabledMods | Mods.NoFail)
-            );
-
-    /// <summary>
-    /// Filters a <see cref="GameScore"/> query for those where the <see cref="Player"/> who set the score is
-    /// not on the same team as the <see cref="Player"/> with the given osu! id
-    /// </summary>
-    /// <param name="osuId">osu! id</param>
-    public static IQueryable<GameScore> WhereOpponentOf(this IQueryable<GameScore> query, long osuId) =>
-        query
-            .AsQueryable()
-            .Where(x =>
-                x.Game.Scores.Any(y => y.Player.OsuId == osuId)
-                && x.Player.OsuId != osuId
-                && x.Team != x.Game.Scores.First(y => y.Player.OsuId == osuId).Team
-            );
-
-    /// <summary>
-    /// Filters a <see cref="GameScore"/> query for those where the <see cref="Player"/> who set the score is
-    /// on the same team as the <see cref="Player"/> with the given osu! id
-    /// </summary>
-    /// <param name="osuId">osu! id</param>
-    public static IQueryable<GameScore> WhereTeammateOf(this IQueryable<GameScore> query, long osuId) =>
-        query
-            .AsQueryable()
-            .Where(x =>
-                x.Game.Scores.Any(y => y.Player.OsuId == osuId)
-                && x.Player.OsuId != osuId
-                && x.Team == x.Game.Scores.First(y => y.Player.OsuId == osuId).Team
             );
 
     public static IQueryable<GameScore> WherePlayerId(this IQueryable<GameScore> query, int playerId) =>

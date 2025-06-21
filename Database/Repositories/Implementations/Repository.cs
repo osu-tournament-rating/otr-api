@@ -8,13 +8,13 @@ namespace Database.Repositories.Implementations;
 /// <summary>
 /// Base implementation of <see cref="IRepository{T}"/> providing common CRUD operations
 /// </summary>
-public class RepositoryBase<T> : IRepository<T> where T : class, IEntity
+public class Repository<T> : IRepository<T> where T : class, IEntity
 {
     private readonly OtrContext _context;
 
     public LocalView<T> LocalView => _context.Set<T>().Local;
 
-    protected RepositoryBase(OtrContext context)
+    protected Repository(OtrContext context)
     {
         _context = context;
     }
@@ -28,15 +28,6 @@ public class RepositoryBase<T> : IRepository<T> where T : class, IEntity
     public virtual async Task<T> CreateAsync(T entity)
     {
         T created = (await _context.Set<T>().AddAsync(entity)).Entity;
-        await _context.SaveChangesAsync();
-
-        return created;
-    }
-
-    public virtual async Task<IEnumerable<T>> CreateAsync(IEnumerable<T> entities)
-    {
-        IEnumerable<Task<T>> entityTasks = [.. entities.Select(async e => (await _context.Set<T>().AddAsync(e)).Entity)];
-        T[] created = await Task.WhenAll(entityTasks);
         await _context.SaveChangesAsync();
 
         return created;
@@ -103,12 +94,6 @@ public class RepositoryBase<T> : IRepository<T> where T : class, IEntity
     }
 
     public virtual async Task<bool> ExistsAsync(int id) => await _context.Set<T>().FindAsync(id) != null;
-
-    public virtual async Task<int> BulkInsertAsync(IEnumerable<T> entities)
-    {
-        await _context.Set<T>().AddRangeAsync(entities);
-        return await _context.SaveChangesAsync();
-    }
 
     public virtual async Task<IEnumerable<T>> GetAllAsync() => await _context.Set<T>().AsNoTracking().ToListAsync();
 }

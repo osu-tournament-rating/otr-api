@@ -10,7 +10,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 /// ppy 2024
 /// Last accessed May 2024
 /// </copyright>
-public class RankHistoryJsonModel : JsonModelBase
+public class RankHistoryJsonModel
 {
     [JsonProperty("mode")]
     public string Mode { get; set; } = null!;

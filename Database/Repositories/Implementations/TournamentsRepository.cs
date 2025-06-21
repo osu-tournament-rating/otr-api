@@ -15,7 +15,7 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatmapsRepository)
-    : RepositoryBase<Tournament>(context), ITournamentsRepository
+    : Repository<Tournament>(context), ITournamentsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -198,7 +198,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         ICollection<Beatmap> beatmaps = await beatmapsRepository.GetOrCreateAsync(osuBeatmapIds, save: false);
 
         var unmappedBeatmaps = beatmaps.ExceptBy(existingIds, b => b.Id).ToList();
-        unmappedBeatmaps.ForEach(b => tournament.PooledBeatmaps.Add(b));
+        unmappedBeatmaps.ForEach(tournament.PooledBeatmaps.Add);
 
         await UpdateAsync(tournament);
 

@@ -10,11 +10,6 @@ namespace DataWorkerService.Processors.Resolvers.Interfaces;
 public interface IProcessorResolver<TEntity> where TEntity : class, IProcessableEntity
 {
     /// <summary>
-    /// Gets all processors implementing <see cref="IProcessor{TEntity}"/>
-    /// </summary>
-    IEnumerable<IProcessor<TEntity>> GetAll();
-
-    /// <summary>
     /// Gets the <see cref="IProcessor{TEntity}"/> implementation of the <typeparamref name="TEntity"/> Automation Checks Processor
     /// </summary>
     IProcessor<TEntity> GetAutomationChecksProcessor();

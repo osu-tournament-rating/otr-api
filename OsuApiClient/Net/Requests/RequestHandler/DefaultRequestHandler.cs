@@ -11,7 +11,6 @@ using OsuApiClient.Enums;
 using OsuApiClient.Extensions;
 using OsuApiClient.Net.Authorization;
 using OsuApiClient.Net.Constants;
-using OsuApiClient.Net.JsonModels;
 using RedLockNet;
 using RedLockNet.SERedis;
 
@@ -72,10 +71,10 @@ internal sealed class DefaultRequestHandler(
     ) =>
         await SendRequestAsync(request, cancellationToken);
 
-    public async Task<TJsonModel?> FetchAsync<TJsonModel>(
+    private async Task<TJsonModel?> FetchAsync<TJsonModel>(
         IApiRequest request,
         CancellationToken cancellationToken = default
-    ) where TJsonModel : class, IJsonModel
+    ) where TJsonModel : class
     {
         string? responseContent = await SendRequestAsync(request, cancellationToken);
         return responseContent is not null
@@ -86,13 +85,13 @@ internal sealed class DefaultRequestHandler(
     public async Task<TModel?> FetchAsync<TModel, TJsonModel>(
         IApiRequest request,
         CancellationToken cancellationToken = default
-    ) where TModel : class, IModel where TJsonModel : class, IJsonModel
+    ) where TModel : class, IModel where TJsonModel : class
         => _mapper.Map<TModel?>(await FetchAsync<TJsonModel>(request, cancellationToken));
 
     public async Task<IEnumerable<TModel>?> FetchEnumerableAsync<TModel, TJsonModel>(
         IApiRequest request,
         CancellationToken cancellationToken = default
-    ) where TModel : class, IModel where TJsonModel : class, IJsonModel
+    ) where TModel : class, IModel where TJsonModel : class
     {
         string? responseContent = await SendRequestAsync(request, cancellationToken);
         return responseContent is not null

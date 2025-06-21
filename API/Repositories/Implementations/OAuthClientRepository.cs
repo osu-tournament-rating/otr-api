@@ -10,7 +10,7 @@ namespace API.Repositories.Implementations;
 
 [SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class OAuthClientRepository(OtrContext context, IPasswordHasher<OAuthClient> passwordHasher) : RepositoryBase<OAuthClient>(context), IOAuthClientRepository
+public class OAuthClientRepository(OtrContext context, IPasswordHasher<OAuthClient> passwordHasher) : Repository<OAuthClient>(context), IOAuthClientRepository
 {
     private readonly OtrContext _context = context;
 

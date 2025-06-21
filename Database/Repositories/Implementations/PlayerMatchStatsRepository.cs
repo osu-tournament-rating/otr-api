@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Database.Entities;
 using Database.Repositories.Interfaces;
@@ -7,8 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance", "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
-[SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsRepository
 {
     public async Task<IEnumerable<PlayerMatchStats>> GetForPlayerAsync(
@@ -26,60 +23,6 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<int>> GetTeammateIdsAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax)
-    {
-        return await context
-            .PlayerMatchStats
-            .Where(pms => pms.PlayerId == playerId)
-            .ApplyCommonFilters(ruleset, dateMin, dateMax)
-            .SelectMany(pms => pms.TeammateIds)
-            .ToListAsync();
-    }
-
-    public async Task<IEnumerable<int>> GetOpponentIdsAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax)
-    {
-        return await context
-            .PlayerMatchStats
-            .Where(pms => pms.PlayerId == playerId)
-            .ApplyCommonFilters(ruleset, dateMin, dateMax)
-            .SelectMany(pms => pms.OpponentIds)
-            .ToListAsync();
-    }
-
-    public async Task<IEnumerable<PlayerMatchStats>> TeammateStatsAsync(
-        int playerId,
-        int teammateId,
-        Ruleset ruleset,
-        DateTime? dateMin,
-        DateTime? dateMax
-    ) =>
-        await context
-            .PlayerMatchStats
-            .ApplyCommonFilters(ruleset, dateMin, dateMax)
-            .Where(stats =>
-                stats.PlayerId == playerId
-                && stats.TeammateIds.Contains(teammateId)
-            )
-            .OrderBy(x => x.Match.StartTime)
-            .ToListAsync();
-
-    public async Task<IEnumerable<PlayerMatchStats>> OpponentStatsAsync(
-        int playerId,
-        int opponentId,
-        Ruleset ruleset,
-        DateTime? dateMin,
-        DateTime? dateMax
-    ) =>
-        await context
-            .PlayerMatchStats
-            .ApplyCommonFilters(ruleset, dateMin, dateMax)
-            .Where(stats =>
-                stats.PlayerId == playerId
-                && stats.OpponentIds.Contains(opponentId)
-            )
-            .OrderBy(x => x.Match.StartTime)
-            .ToListAsync();
-
     public async Task<int> CountMatchesPlayedAsync(
         int playerId,
         Ruleset ruleset,
@@ -96,7 +39,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .CountAsync();
     }
 
-    public async Task<int> CountMatchesWonAsync(
+    private async Task<int> CountMatchesWonAsync(
         int playerId,
         Ruleset ruleset,
         DateTime? dateMin = null,
@@ -129,11 +72,4 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
 
         return matchesWon / (double)matchesPlayed;
     }
-
-    public async Task<Dictionary<int, double>> GetMatchCostsAsync(int playerId, Ruleset ruleset,
-        DateTime? dateMin = null, DateTime? dateMax = null) =>
-        await context.PlayerMatchStats
-            .ApplyCommonFilters(ruleset, dateMin, dateMax)
-            .Where(pms => pms.PlayerId == playerId)
-            .ToDictionaryAsync(k => k.MatchId, v => v.MatchCost);
 }

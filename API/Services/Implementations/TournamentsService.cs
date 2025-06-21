@@ -86,14 +86,6 @@ public class TournamentsService(
     public async Task<bool> ExistsAsync(string name, Ruleset ruleset)
         => await tournamentsRepository.ExistsAsync(name, ruleset);
 
-    public async Task<IEnumerable<TournamentDTO>> ListAsync()
-    {
-        IEnumerable<Tournament> items = await tournamentsRepository.GetAllAsync();
-        items = items.OrderBy(x => x.Name);
-
-        return mapper.Map<IEnumerable<TournamentDTO>>(items);
-    }
-
     public async Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true) =>
         mapper.Map<TournamentDTO?>(await tournamentsRepository.GetAsync(id, eagerLoad));
 

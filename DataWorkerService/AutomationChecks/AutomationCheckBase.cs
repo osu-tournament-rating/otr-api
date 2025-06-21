@@ -13,9 +13,9 @@ public abstract class AutomationCheckBase<TEntity>(
 {
     public virtual int Order => 0;
 
-    protected virtual LogLevel LogLevelOnPass => LogLevel.Trace;
+    protected LogLevel LogLevelOnPass => LogLevel.Trace;
 
-    protected virtual LogLevel LogLevelOnFail => LogLevel.Trace;
+    protected LogLevel LogLevelOnFail => LogLevel.Trace;
 
     public virtual bool Check(TEntity entity)
     {

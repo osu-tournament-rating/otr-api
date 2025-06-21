@@ -1,12 +1,10 @@
 using DataWorkerService.AutomationChecks.Games;
 using DataWorkerService.AutomationChecks.Matches;
 using DataWorkerService.AutomationChecks.Scores;
-using DataWorkerService.AutomationChecks.Tournaments;
 using DataWorkerService.Processors.Games;
 using DataWorkerService.Processors.Matches;
 using DataWorkerService.Processors.Resolvers.Implementations;
 using DataWorkerService.Processors.Scores;
-using DataWorkerService.Processors.Tournaments;
 using Microsoft.Extensions.Logging;
 using Serilog.Extensions.Logging;
 
@@ -62,18 +60,6 @@ public static class MockResolvers
                 new MatchTeamsIntegrityCheck(Logger<MatchTeamsIntegrityCheck>())
             ],
             GameProcessorResolver
-        )
-    ]);
-
-    public static TournamentProcessorResolver TournamentProcessorResolver => new([
-        new TournamentStatsProcessor(Logger<TournamentStatsProcessor>(), MatchProcessorResolver),
-        new TournamentVerificationProcessor(Logger<TournamentVerificationProcessor>(), MatchProcessorResolver),
-        new TournamentAutomationChecksProcessor(
-            Logger<TournamentAutomationChecksProcessor>(),
-            [
-                new TournamentMatchCountCheck(Logger<TournamentMatchCountCheck>())
-            ],
-            MatchProcessorResolver
         )
     ]);
 }

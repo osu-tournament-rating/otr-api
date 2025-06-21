@@ -1,9 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
 using OsuApiClient.Enums;
 
 namespace OsuApiClient.Net.Constants;
 
-[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public static class Endpoints
 {
     public static class Osu
@@ -16,7 +14,6 @@ public static class Endpoints
         public const string Token = "/token";
 
         public const string Credentials = OAuth + Token;
-        public const string AuthorizationCode = OAuth + Authorize;
 
         public const string Matches = Api + "/matches";
 

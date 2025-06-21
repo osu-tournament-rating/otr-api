@@ -45,7 +45,7 @@ public class SearchService(
         }
 
         IList<Tournament> searchResult = await tournamentsRepository.SearchAsync(tournamentName);
-        result = [.. searchResult.Select(t => mapper.Map<TournamentSearchResultDTO>(t))];
+        result = [.. searchResult.Select(mapper.Map<TournamentSearchResultDTO>)];
 
         await cacheHandler.SetTournamentSearchResultAsync(result, tournamentName);
         return result;

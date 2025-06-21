@@ -121,8 +121,7 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 builder.Services.AddOsuApiClient(new OsuClientOptions
 {
-    Configuration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position),
-    UseScopedServices = false
+    Configuration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position)
 });
 
 #endregion

@@ -93,7 +93,7 @@ public class PlatformStatsIntegrationTests
             Converters = { new NewtonsoftEnumDictionaryKeyConverter() }
         };
 
-        string json = """
+        const string json = """
         {
             "tournamentStats": {
                 "totalCount": 100,

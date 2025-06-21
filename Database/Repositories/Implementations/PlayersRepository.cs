@@ -8,7 +8,7 @@ namespace Database.Repositories.Implementations;
 /// <summary>
 /// Repository for managing <see cref="Player"/> entities
 /// </summary>
-public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(context), IPlayersRepository
+public class PlayersRepository(OtrContext context) : Repository<Player>(context), IPlayersRepository
 {
     private readonly OtrContext _context = context;
 
@@ -20,21 +20,6 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
 
     public async Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds) =>
         await _context.Players.AsNoTracking().Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
-
-    public async Task<IEnumerable<Player>> GetAsync(bool eagerLoad)
-    {
-        if (eagerLoad)
-        {
-            return await _context
-                .Players
-                .Include(x => x.Scores)
-                .Include(x => x.Ratings)
-                .AsNoTracking()
-                .ToListAsync();
-        }
-
-        return await _context.Players.AsNoTracking().ToListAsync();
-    }
 
     public async Task<IEnumerable<Player>> SearchAsync(string username) =>
         await _context.Players
@@ -80,37 +65,6 @@ public class PlayersRepository(OtrContext context) : RepositoryBase<Player>(cont
     public async Task<Player> GetOrCreateAsync(long osuId) =>
         await _context.Players.FirstOrDefaultAsync(x => x.OsuId == osuId)
         ?? await CreateAsync(new Player { OsuId = osuId });
-
-    public async Task<int?> GetIdAsync(long osuId) =>
-        await _context.Players.Where(p => p.OsuId == osuId).Select(p => p.Id).FirstOrDefaultAsync();
-
-    public async Task<long> GetOsuIdAsync(int id) =>
-        await _context.Players.Where(p => p.Id == id).Select(p => p.OsuId).FirstOrDefaultAsync();
-
-    public async Task<string?> GetUsernameAsync(long osuId) =>
-        await _context.Players.WhereOsuId(osuId).Select(p => p.Username).FirstOrDefaultAsync();
-
-    public async Task<string> GetUsernameAsync(int id) =>
-        await _context.Players
-            .AsNoTracking()
-            .Where(p => p.Id == id)
-            .Select(p => p.Username).FirstOrDefaultAsync() ?? string.Empty;
-
-    public async Task<int> GetIdAsync(int userId) =>
-        await _context
-            .Players.AsNoTracking()
-            .Where(x => x.User != null && x.User.Id == userId)
-            .Select(x => x.Id)
-            .FirstOrDefaultAsync();
-
-    public async Task<string?> GetCountryAsync(int playerId) =>
-        await _context.Players.Where(p => p.Id == playerId).Select(p => p.Country).FirstOrDefaultAsync();
-
-    public async Task<int?> GetIdAsync(string username) =>
-        await _context.Players
-            .WhereUsername(username, false)
-            .Select(p => p.Id)
-            .FirstOrDefaultAsync();
 
     public async Task SetOutdatedOsuAsync(TimeSpan outdatedAfter)
     {

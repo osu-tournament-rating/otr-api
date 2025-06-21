@@ -13,7 +13,7 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore>(context), IGameScoresRepository
+public class GameScoresRepository(OtrContext context) : Repository<GameScore>(context), IGameScoresRepository
 {
     private readonly OtrContext _context = context;
 
@@ -48,21 +48,6 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
                 .WherePlayerId(playerId)
                 .GroupBy(gs => gs.Mods)
                 .ToDictionaryAsync(grouping => grouping.Key, v => (int)v.Average(gs => gs.Score));
-    }
-
-    public async Task<int> CountModScoresAsync(
-        int playerId,
-        Mods mods,
-        Ruleset ruleset,
-        DateTime? dateMin,
-        DateTime? dateMax)
-    {
-        return await _context
-            .GameScores
-            .ApplyCommonFilters(ruleset, dateMin, dateMax)
-            .WhereMods(mods)
-            .WherePlayerId(playerId)
-            .CountAsync();
     }
 
     public async Task<int> DeleteByMatchAndPlayerAsync(int matchId, int playerId)

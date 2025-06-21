@@ -11,7 +11,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 /// Last accessed May 2024
 /// </copyright>
 [SuppressMessage("ReSharper", "CommentTypo")]
-public class HighestRankJsonModel : JsonModelBase
+public class HighestRankJsonModel
 {
     [JsonProperty("rank")]
     public int Rank { get; set; }

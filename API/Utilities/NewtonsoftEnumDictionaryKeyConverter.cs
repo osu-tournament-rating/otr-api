@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Reflection;
 using Newtonsoft.Json;
 
@@ -97,7 +98,7 @@ public class NewtonsoftEnumDictionaryKeyConverter : JsonConverter
         // Get the dictionary entries
         PropertyInfo keysProperty = dictionaryType.GetProperty("Keys")!;
         PropertyInfo indexer = dictionaryType.GetProperty("Item")!;
-        System.Collections.IEnumerable keys = (System.Collections.IEnumerable)keysProperty.GetValue(value)!;
+        var keys = (IEnumerable)keysProperty.GetValue(value)!;
 
         foreach (object? key in keys)
         {

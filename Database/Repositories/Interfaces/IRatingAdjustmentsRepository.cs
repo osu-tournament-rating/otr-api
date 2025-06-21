@@ -21,20 +21,4 @@ public interface IRatingAdjustmentsRepository : IRepository<RatingAdjustment>
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
-
-    Task<IEnumerable<RatingAdjustment>> TeammateRatingStatsAsync(
-        int playerId,
-        int teammateId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
-    );
-
-    Task<IEnumerable<RatingAdjustment>> OpponentRatingStatsAsync(
-        int playerId,
-        int opponentId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
-    );
 }

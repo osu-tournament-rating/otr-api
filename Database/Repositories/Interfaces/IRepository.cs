@@ -1,5 +1,4 @@
-﻿using Database.Entities;
-using Database.Entities.Interfaces;
+﻿using Database.Entities.Interfaces;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -36,23 +35,10 @@ public interface IRepository<T> where T : class, IEntity
     Task<T> CreateAsync(T entity);
 
     /// <summary>
-    /// Bulk inserts a collection of entities into the database
-    /// </summary>
-    /// <returns>The added entities</returns>
-    Task<IEnumerable<T>> CreateAsync(IEnumerable<T> entities);
-
-    /// <summary>
     /// Gets an entity from the database by its primary key
     /// </summary>
     /// <returns>The entity, or null if not found.</returns>
     Task<T?> GetAsync(int id);
-
-    /// <summary>
-    /// Fetch multiple entities by primary key
-    /// </summary>
-    /// <param name="ids">A collection of <see cref="Player"/> ids</param>
-    /// <returns>A collection of <typeparamref name="T"/>, one per id, if it exists</returns>
-    Task<ICollection<T>> GetAsync(IEnumerable<int> ids);
 
     /// <summary>
     /// Updates an entity
@@ -85,13 +71,6 @@ public interface IRepository<T> where T : class, IEntity
     /// Returns true if an entity with the given ID exists in the database.
     /// </summary>
     Task<bool> ExistsAsync(int id);
-
-    /// <summary>
-    /// Bulk inserts a collection of entities into the database.
-    /// </summary>
-    /// <returns>Number of rows affected</returns>
-    /// <remarks>If resulting entities are required, use <see cref="CreateAsync(IEnumerable{T})"/></remarks>
-    Task<int> BulkInsertAsync(IEnumerable<T> entities);
 
     /// <summary>
     /// Returns all entities

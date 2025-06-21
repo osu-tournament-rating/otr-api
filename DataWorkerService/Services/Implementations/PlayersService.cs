@@ -44,7 +44,7 @@ public class PlayersService(
         );
     }
 
-    public async Task UpdateFromOsuApiAsync(Player player)
+    private async Task UpdateFromOsuApiAsync(Player player)
     {
         logger.LogDebug(
             "Preparing to update Player osu! API data [Id: {Id} | osu! Id: {OsuId} | Last Update: {LastUpdate:u}]",
@@ -180,7 +180,7 @@ public class PlayersService(
         );
     }
 
-    public async Task UpdateFromOsuTrackApiAsync(Player player)
+    private async Task UpdateFromOsuTrackApiAsync(Player player)
     {
         logger.LogDebug(
             "Preparing to update osu!track data for player [Id: {Id} | osu! Id: {OsuId} | Last Update: {LastUpdate:u}]",
@@ -236,7 +236,7 @@ public class PlayersService(
             }
 
             {
-                Ruleset[] maniaVariants = { Ruleset.Mania4k, Ruleset.Mania7k };
+                Ruleset[] maniaVariants = [Ruleset.Mania4k, Ruleset.Mania7k];
 
                 foreach (Ruleset variant in maniaVariants)
                 {

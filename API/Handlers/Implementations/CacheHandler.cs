@@ -8,7 +8,7 @@ namespace API.Handlers.Implementations;
 
 public class CacheHandler : RedisContext, ICacheHandler
 {
-    private const int SearchResultLifetimeMinutes = 30;
+    private const int SearchResultLifetimeMinutes = 15;
 
     public CacheHandler(string configuration) : base(configuration) { }
     public CacheHandler(IConnectionMultiplexer multiplexer) : base(multiplexer) { }
@@ -36,44 +36,4 @@ public class CacheHandler : RedisContext, ICacheHandler
             [CacheUtils.PlayerSearchTag],
             TimeSpan.FromMinutes(SearchResultLifetimeMinutes)
         );
-
-    public async Task OnTournamentUpdateAsync()
-    {
-        // Since search uses partial matching on names, all search results need to be invalidated when
-        // a new tournament is created, updated, or deleted to ensure search results stay current
-        await InvalidateTournamentSearchResultsAsync();
-    }
-
-    public async Task OnMatchUpdateAsync()
-    {
-        await InvalidateMatchSearchResultsAsync();
-    }
-
-    public async Task OnPlayerUpdateAsync()
-    {
-        await InvalidatePlayerSearchResultsAsync();
-    }
-
-    public async Task OnPlayerRatingsUpdateAsync()
-    {
-        await InvalidatePlayerSearchResultsAsync();
-    }
-
-    /// <summary>
-    /// Invalidates all tournament search results
-    /// </summary>
-    private async Task InvalidateTournamentSearchResultsAsync() =>
-        await Cache.InvalidateKeysByTagAsync(CacheUtils.TournamentSearchTag);
-
-    /// <summary>
-    /// Invalidates all match search results
-    /// </summary>
-    private async Task InvalidateMatchSearchResultsAsync() =>
-        await Cache.InvalidateKeysByTagAsync(CacheUtils.MatchSearchTag);
-
-    /// <summary>
-    /// Invalidates all player search results
-    /// </summary>
-    private async Task InvalidatePlayerSearchResultsAsync() =>
-        await Cache.InvalidateKeysByTagAsync(CacheUtils.PlayerSearchTag);
 }

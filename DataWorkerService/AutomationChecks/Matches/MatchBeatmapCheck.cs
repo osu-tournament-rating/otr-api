@@ -1,5 +1,6 @@
 using Common.Enums.Verification;
 using Database.Entities;
+using JetBrains.Annotations;
 
 namespace DataWorkerService.AutomationChecks.Matches;
 
@@ -8,6 +9,7 @@ namespace DataWorkerService.AutomationChecks.Matches;
 /// which have a <see cref="GameRejectionReason"/> of BeatmapNotPooled, apply the
 /// UnexpectedBeatmapsFound WarningFlag to the <see cref="Match"/>
 /// </summary>
+[UsedImplicitly]
 public class MatchBeatmapCheck(ILogger<MatchBeatmapCheck> logger) : AutomationCheckBase<Match>(logger)
 {
     protected override bool OnChecking(Match entity)

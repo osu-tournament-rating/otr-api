@@ -11,7 +11,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 /// Last accessed May 2024
 /// </copyright>
 [SuppressMessage("ReSharper", "CommentTypo")]
-public class UserAccountHistoryJsonModel : JsonModelBase
+public class UserAccountHistoryJsonModel
 {
     [JsonProperty("description")]
     public string? Description { get; set; }

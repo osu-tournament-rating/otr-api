@@ -11,7 +11,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 /// ppy 2024
 /// Last accessed June 2024
 /// </copyright>
-public class GameScoreStatisticsJsonModel : JsonModelBase, IScoreStatistics
+public class GameScoreStatisticsJsonModel : IScoreStatistics
 {
     [JsonProperty("count_300")]
     public int Count300 { get; set; }

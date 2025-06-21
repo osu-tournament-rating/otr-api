@@ -9,7 +9,7 @@ namespace Database.Repositories.Implementations;
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class UserRepository(OtrContext context, IUserSettingsRepository userSettingsRepository)
-    : RepositoryBase<User>(context), IUserRepository
+    : Repository<User>(context), IUserRepository
 {
     private readonly OtrContext _context = context;
 

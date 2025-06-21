@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Database.Repositories.Implementations;
 
 public class PlayerRatingsRepository(OtrContext context)
-    : RepositoryBase<PlayerRating>(context), IPlayerRatingsRepository
+    : Repository<PlayerRating>(context), IPlayerRatingsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -60,13 +60,6 @@ public class PlayerRatingsRepository(OtrContext context)
         await LeaderboardQuery(ruleset, country, minRank, maxRank, minRating, maxRating, minMatches, maxMatches,
             minWinRate, maxWinRate, bronze, silver, gold, platinum, emerald, diamond, master, grandmaster,
             eliteGrandmaster).CountAsync() / pageSize + 1;
-
-    public async Task<IList<Ruleset>> GetActiveRulesetsAsync(int playerId) =>
-        await _context.PlayerRatings
-            .Include(pr => pr.Player)
-            .Where(pr => pr.PlayerId == playerId)
-            .Select(pr => pr.Ruleset)
-            .ToListAsync();
 
     public async Task<IDictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync()
     {
@@ -147,19 +140,12 @@ public class PlayerRatingsRepository(OtrContext context)
         }
 
         // Addresses players in dependent territories having a *very* small country leaderboard.
-        if (
-            LeaderboardUtils.DependentTerritoriesMapping.TryGetValue(
+        baseQuery = LeaderboardUtils.DependentTerritoriesMapping.TryGetValue(
                 country,
                 out string? mappedCountry
             )
-        )
-        {
-            baseQuery = baseQuery.Where(x => x.Player.Country == mappedCountry);
-        }
-        else
-        {
-            baseQuery = baseQuery.Where(x => x.Player.Country == country);
-        }
+            ? baseQuery.Where(x => x.Player.Country == mappedCountry)
+            : baseQuery.Where(x => x.Player.Country == country);
 
         return baseQuery;
     }
