@@ -398,23 +398,6 @@ public static class QueryExtensions
     #endregion
 
     #region Scores
-    /// <summary>
-    /// Filters a <see cref="GameScore"/> query for those set with the given <see cref="Mods"/> enabled
-    /// </summary>
-    /// <param name="enabledMods">Mods</param>
-    public static IQueryable<GameScore> WhereMods(
-        this IQueryable<GameScore> query,
-        Mods enabledMods
-    ) =>
-        query
-            .AsQueryable()
-            .Where(x =>
-                x.Game.Mods == enabledMods
-                || x.Game.Mods == (enabledMods | Mods.NoFail)
-                || x.Mods == enabledMods
-                || x.Mods == (enabledMods | Mods.NoFail)
-            );
-
     public static IQueryable<GameScore> WherePlayerId(this IQueryable<GameScore> query, int playerId) =>
         query.AsQueryable().Where(x => x.PlayerId == playerId);
 

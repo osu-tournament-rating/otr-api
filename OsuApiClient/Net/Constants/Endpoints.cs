@@ -7,11 +7,10 @@ public static class Endpoints
     public static class Osu
     {
         public const string BaseUrl = "https://osu.ppy.sh";
-        public const string Api = "/api/v2";
+        private const string Api = "/api/v2";
 
-        public const string OAuth = "/oauth";
-        public const string Authorize = "/authorize";
-        public const string Token = "/token";
+        private const string OAuth = "/oauth";
+        private const string Token = "/token";
 
         public const string Credentials = OAuth + Token;
 

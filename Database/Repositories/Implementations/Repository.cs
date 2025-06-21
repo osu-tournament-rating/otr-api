@@ -35,12 +35,6 @@ public class Repository<T> : IRepository<T> where T : class, IEntity
 
     public virtual async Task<T?> GetAsync(int id) => await _context.Set<T>().FindAsync(id);
 
-    public virtual async Task<ICollection<T>> GetAsync(IEnumerable<int> ids) =>
-        await _context.Set<T>()
-            .Where(x => ids.Contains(x.Id))
-            .ToListAsync();
-
-
     public virtual async Task<int> UpdateAsync(T entity)
     {
         if (entity is IUpdateableEntity updateableEntity)

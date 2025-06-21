@@ -13,7 +13,7 @@ namespace Database.Entities;
 /// </summary>
 public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>
 {
-    private string _name = string.Empty;
+    private readonly string _name = string.Empty;
 
     /// <summary>
     /// Name

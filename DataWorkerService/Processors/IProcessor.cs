@@ -9,15 +9,6 @@ namespace DataWorkerService.Processors;
 public interface IProcessor<TEntity> where TEntity : class, IProcessableEntity
 {
     /// <summary>
-    /// The order in which the <see cref="IProcessor{TEntity}"/> will be run
-    /// </summary>
-    /// <remarks>
-    /// Higher values indicate the <see cref="IProcessor{TEntity}"/> will be run after other
-    /// <see cref="IProcessor{TEntity}"/>s with a lesser <see cref="Order"/>
-    /// </remarks>
-    int Order => 0;
-
-    /// <summary>
     /// Processes the given entity
     /// </summary>
     /// <param name="entity">Entity to be processed</param>

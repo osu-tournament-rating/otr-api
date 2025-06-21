@@ -12,7 +12,7 @@ public class PlayersRepository(OtrContext context) : Repository<Player>(context)
 {
     private readonly OtrContext _context = context;
 
-    public override async Task<ICollection<Player>> GetAsync(IEnumerable<int> ids) =>
+    public async Task<ICollection<Player>> GetAsync(IEnumerable<int> ids) =>
         await _context.Players
             .Include(p => p.User)
             .AsNoTracking()
