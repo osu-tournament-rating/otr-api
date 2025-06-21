@@ -53,13 +53,21 @@ public class SearchService(
 
     private async Task<IEnumerable<MatchSearchResultDTO>> SearchMatchesByNameAsync(string matchName)
     {
-        var result =
-            (await cacheHandler.Cache.GetObjectAsync<IEnumerable<MatchSearchResultDTO>>(
-                CacheUtils.MatchSearchKey(matchName))).ToList();
+        IList<MatchSearchResultDTO>? result;
 
-        if (result.Count > 0)
+        try
         {
-            return result;
+            result = await cacheHandler.Cache.GetObjectAsync<IList<MatchSearchResultDTO>>(
+                CacheUtils.MatchSearchKey(matchName));
+
+            if (result is not null)
+            {
+                return result;
+            }
+        }
+        catch (Exception)
+        {
+            // Item failed to resolve from cache, continue with search
         }
 
         result = [.. await matchesService.SearchAsync(matchName)];
