@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-public class UserSettingsRepository(OtrContext context, IPlayersRepository playerRepository) : RepositoryBase<UserSettings>(context), IUserSettingsRepository
+public class UserSettingsRepository(OtrContext context, IPlayersRepository playerRepository) : Repository<UserSettings>(context), IUserSettingsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -16,6 +16,6 @@ public class UserSettingsRepository(OtrContext context, IPlayersRepository playe
     {
         Player? player = await playerRepository.GetAsync(id: playerId);
 
-        return new UserSettings() { DefaultRuleset = player?.DefaultRuleset ?? Ruleset.Osu };
+        return new UserSettings { DefaultRuleset = player?.DefaultRuleset ?? Ruleset.Osu };
     }
 }

@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using Common.Enums;
+using OsuApiClient.Enums;
 
 namespace OsuApiClient.Net.Deserialization.ValueConverters;
 
@@ -12,7 +13,7 @@ public class ScoringTypeConverter : IValueConverter<string, ScoringType>
     public ScoringType Convert(string sourceMember, ResolutionContext context) => Convert(sourceMember);
 
     [SuppressMessage("ReSharper", "StringLiteralTypo")]
-    public static ScoringType Convert(string value)
+    private static ScoringType Convert(string value)
     {
         if (Enum.TryParse(value, true, out ScoringType result))
         {

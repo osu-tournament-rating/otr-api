@@ -1,8 +1,21 @@
-version: "1.0"
-linter: jetbrains/qodana-cdnet:latest
+version: '1.0'
 profile:
   name: qodana.recommended
 include:
   - name: CheckDependencyLicenses
+exclude:
+  - name: Migrations
+    paths:
+      - Database/Migrations
+  - name: All
+    paths:
+      - Database/Migrations
 dotnet:
   solution: otrAPI.sln
+ide: QDNET
+failureConditions:
+  severityThresholds:
+    critical: 1 # Severities
+    high: 1
+    moderate: 1
+    low: 1

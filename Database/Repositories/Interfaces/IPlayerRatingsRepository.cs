@@ -83,13 +83,6 @@ public interface IPlayerRatingsRepository : IRepository<PlayerRating>
         bool emerald = false, bool diamond = false, bool master = false, bool grandmaster = false, bool eliteGrandmaster = false);
 
     /// <summary>
-    /// Get a list of rulesets for which the player has a rating
-    /// </summary>
-    /// <param name="playerId">Player id</param>
-    /// <returns>All rulesets which the player has a rating for</returns>
-    Task<IList<Ruleset>> GetActiveRulesetsAsync(int playerId);
-
-    /// <summary>
     /// Gets a histogram of player ratings for each <see cref="Ruleset"/>.
     /// </summary>
     /// <returns>

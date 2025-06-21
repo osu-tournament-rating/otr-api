@@ -11,7 +11,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 /// ppy 2024
 /// Last accessed June 2024
 /// </copyright>
-public class MultiplayerGameJsonModel : JsonModelBase
+public class MultiplayerGameJsonModel
 {
     [JsonProperty("id")]
     public long Id { get; set; }

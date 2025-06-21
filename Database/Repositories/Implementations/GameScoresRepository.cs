@@ -13,7 +13,7 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore>(context), IGameScoresRepository
+public class GameScoresRepository(OtrContext context) : Repository<GameScore>(context), IGameScoresRepository
 {
     private readonly OtrContext _context = context;
 
@@ -50,25 +50,10 @@ public class GameScoresRepository(OtrContext context) : RepositoryBase<GameScore
                 .ToDictionaryAsync(grouping => grouping.Key, v => (int)v.Average(gs => gs.Score));
     }
 
-    public async Task<int> CountModScoresAsync(
-        int playerId,
-        Mods mods,
-        Ruleset ruleset,
-        DateTime? dateMin,
-        DateTime? dateMax)
-    {
-        return await _context
-            .GameScores
-            .ApplyCommonFilters(ruleset, dateMin, dateMax)
-            .WhereMods(mods)
-            .WherePlayerId(playerId)
-            .CountAsync();
-    }
-
     public async Task<int> DeleteByMatchAndPlayerAsync(int matchId, int playerId)
     {
         // Load the entities that will be deleted to ensure auditing is triggered
-        var scoresToDelete = await _context.GameScores
+        List<GameScore> scoresToDelete = await _context.GameScores
             .Where(gs => gs.Game.MatchId == matchId && gs.PlayerId == playerId)
             .ToListAsync();
 

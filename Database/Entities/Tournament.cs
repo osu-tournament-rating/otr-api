@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
 using Common.Utilities.Extensions;
@@ -12,12 +11,9 @@ namespace Database.Entities;
 /// <summary>
 /// An osu! tournament
 /// </summary>
-[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
-[SuppressMessage("ReSharper", "ClassWithVirtualMembersNeverInherited.Global")]
 public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>
 {
-    private string _name = string.Empty;
+    private readonly string _name = string.Empty;
 
     /// <summary>
     /// Name
@@ -26,7 +22,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     public string Name
     {
         get => string.IsNullOrEmpty(_name) ? $"Tournament {Id}" : _name;
-        set => _name = value;
+        init => _name = value;
     }
 
     /// <summary>
@@ -39,12 +35,12 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// Link to the osu! forum post
     /// </summary>
     [MaxLength(255)]
-    public string ForumUrl { get; set; } = null!;
+    public string ForumUrl { get; init; } = null!;
 
     /// <summary>
     /// Lower bound of the rank range
     /// </summary>
-    public int RankRangeLowerBound { get; set; }
+    public int RankRangeLowerBound { get; init; }
 
     /// <summary>
     /// The <see cref="Ruleset"/> the tournament was played in
@@ -74,12 +70,12 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// Id of the <see cref="User"/> that submitted the tournament
     /// </summary>
-    public int? SubmittedByUserId { get; set; }
+    public int? SubmittedByUserId { get; init; }
 
     /// <summary>
     /// The <see cref="User"/> that submitted the tournament
     /// </summary>
-    public User? SubmittedByUser { get; set; }
+    public User? SubmittedByUser { get; init; }
 
     /// <summary>
     /// Id of the <see cref="User"/> that verified the tournament
@@ -89,7 +85,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// The <see cref="User"/> that verified the tournament
     /// </summary>
-    public User? VerifiedByUser { get; set; }
+    public User? VerifiedByUser { get; init; }
 
     /// <summary>
     /// The start date of the first <see cref="Match"/> played in the tournament
@@ -104,12 +100,12 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// A collection of <see cref="Match"/>es played in the tournament
     /// </summary>
-    public ICollection<Match> Matches { get; set; } = [];
+    public ICollection<Match> Matches { get; init; } = [];
 
     /// <summary>
     /// A collection of <see cref="Entities.PlayerTournamentStats"/>, one for each <see cref="Player"/> that participated
     /// </summary>
-    public ICollection<PlayerTournamentStats> PlayerTournamentStats { get; set; } = [];
+    public ICollection<PlayerTournamentStats> PlayerTournamentStats { get; init; } = [];
 
     /// <summary>
     /// A collection of <see cref="TournamentAdminNote"/>s for the tournament
@@ -119,7 +115,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// Collection of <see cref="TournamentAudit"/> records for the <see cref="Tournament"/>
     /// </summary>
-    public ICollection<TournamentAudit> Audits { get; set; } = new List<TournamentAudit>();
+    public ICollection<TournamentAudit> Audits { get; init; } = new List<TournamentAudit>();
 
     /// <summary>
     /// A collection of <see cref="Beatmap"/>s pooled in the tournament
@@ -152,16 +148,18 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
         VerificationStatus = VerificationStatus.ConfirmPreStatus();
         VerifiedByUserId = verifierUserId;
 
-        if (includeChildren)
+        if (!includeChildren)
         {
-            if (VerificationStatus == VerificationStatus.Rejected)
-            {
-                RejectAllChildren();
-            }
-            else
-            {
-                Matches.ForEach(match => match.ConfirmPreVerification(verifierUserId, includeChildren));
-            }
+            return;
+        }
+
+        if (VerificationStatus == VerificationStatus.Rejected)
+        {
+            RejectAllChildren();
+        }
+        else
+        {
+            Matches.ForEach(match => match.ConfirmPreVerification(verifierUserId, includeChildren));
         }
     }
 

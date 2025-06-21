@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// DTO for comparing two players' stats, assuming they have faced off against each other
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlayerOpponentComparisonDTO
 {
     /// <summary>

@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs.Interfaces;
 
 /// <summary>
 /// Default pagination request parameters
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public interface IPaginated
 {
     /// <summary>

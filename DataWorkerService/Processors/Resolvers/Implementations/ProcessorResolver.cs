@@ -9,16 +9,14 @@ public abstract class ProcessorResolver<TEntity> : IProcessorResolver<TEntity> w
 
     protected ProcessorResolver(IEnumerable<IProcessor<TEntity>> processors)
     {
-        processors = [.. processors];
-        if (!processors.Any())
+        IProcessor<TEntity>[] processorsArray = processors.ToArray();
+        if (processorsArray.Length == 0)
         {
             throw new InvalidOperationException($"No processors were registered [Entity: {nameof(TEntity)}]");
         }
 
-        Processors = processors;
+        Processors = processorsArray;
     }
-
-    public IEnumerable<IProcessor<TEntity>> GetAll() => Processors.OrderBy(p => p.Order);
 
     public abstract IProcessor<TEntity> GetAutomationChecksProcessor();
 

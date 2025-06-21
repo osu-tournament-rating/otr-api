@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
+using JetBrains.Annotations;
 using OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 
 namespace OsuApiClient.Domain.Osu.Users.Attributes;
@@ -8,7 +8,7 @@ namespace OsuApiClient.Domain.Osu.Users.Attributes;
 /// Represents a user's cover image
 /// </summary>
 [AutoMap(typeof(CoverJsonModel))]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class Cover : IModel
 {
     /// <summary>

@@ -132,7 +132,7 @@ public class OAuthClientService(
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.Key)),
                 SecurityAlgorithms.HmacSha256
-            ),
+            )
         }));
     }
 }

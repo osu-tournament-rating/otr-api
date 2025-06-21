@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Database.Entities.Processor;
 using Database.Repositories.Interfaces;
@@ -6,11 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-[SuppressMessage("Performance",
-    "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
-[SuppressMessage("ReSharper", "SpecifyStringComparison")]
 public class RatingAdjustmentsRepository(OtrContext context)
-    : RepositoryBase<RatingAdjustment>(context), IRatingAdjustmentsRepository
+    : Repository<RatingAdjustment>(context), IRatingAdjustmentsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -34,46 +30,4 @@ public class RatingAdjustmentsRepository(OtrContext context)
             .Include(ra => ra.Match!.Tournament)
             .ToListAsync();
     }
-
-    public async Task<IEnumerable<RatingAdjustment>> TeammateRatingStatsAsync(
-        int playerId,
-        int teammateId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
-    ) =>
-        await _context.RatingAdjustments
-            .Where(mrs => mrs.PlayerId == playerId)
-            .Where(mrs =>
-                _context.PlayerMatchStats.Any(pms =>
-                    pms.PlayerId == mrs.PlayerId
-                    && pms.TeammateIds.Contains(teammateId)
-                    && pms.Match.Tournament.Ruleset == ruleset
-                    && pms.Match.StartTime >= dateMin
-                    && pms.Match.StartTime <= dateMax
-                )
-            )
-            .Distinct()
-            .ToListAsync();
-
-    public async Task<IEnumerable<RatingAdjustment>> OpponentRatingStatsAsync(
-        int playerId,
-        int opponentId,
-        Ruleset ruleset,
-        DateTime dateMin,
-        DateTime dateMax
-    ) =>
-        await _context.RatingAdjustments
-            .Where(ra => ra.PlayerId == playerId)
-            .Where(ra =>
-                _context.PlayerMatchStats.Any(pms =>
-                    pms.PlayerId == ra.PlayerId
-                    && pms.OpponentIds.Contains(opponentId)
-                    && pms.Match.Tournament.Ruleset == ruleset
-                    && pms.Match.StartTime >= dateMin
-                    && pms.Match.StartTime <= dateMax
-                )
-            )
-            .Distinct()
-            .ToListAsync();
 }

@@ -9,16 +9,16 @@ public class TournamentProcessorResolver(
     IEnumerable<IProcessor<Tournament>> processors
 ) : ProcessorResolver<Tournament>(processors), ITournamentProcessorResolver
 {
-    public IProcessor<Tournament> GetDataProcessor() =>
-        Processors.FirstOrDefault(p => p is TournamentDataProcessor)
-        ?? throw new InvalidOperationException($"Processor was not registered: {nameof(TournamentDataProcessor)}");
-
     public override IProcessor<Tournament> GetAutomationChecksProcessor() =>
         Processors.FirstOrDefault(p => p is TournamentAutomationChecksProcessor)
         ?? throw new InvalidOperationException(
             $"Processor was not registered: {nameof(TournamentAutomationChecksProcessor)}");
 
-    public IProcessor<Tournament> GetStatsProcessor() =>
+    private IProcessor<Tournament> GetDataProcessor() =>
+        Processors.FirstOrDefault(p => p is TournamentDataProcessor)
+        ?? throw new InvalidOperationException($"Processor was not registered: {nameof(TournamentDataProcessor)}");
+
+    private IProcessor<Tournament> GetStatsProcessor() =>
         Processors.FirstOrDefault(p => p is TournamentStatsProcessor)
         ?? throw new InvalidOperationException($"Processor was not registered: {nameof(TournamentStatsProcessor)}");
 

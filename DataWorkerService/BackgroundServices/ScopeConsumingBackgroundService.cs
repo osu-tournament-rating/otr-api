@@ -14,11 +14,11 @@ public abstract class ScopeConsumingBackgroundService(
 {
     private readonly Stopwatch _stopwatch = new();
 
-    protected int ExecutionCount;
+    private int _executionCount;
 
     public override async Task StopAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("Background service stopping [Runs: {RunsCount}]", ExecutionCount);
+        logger.LogInformation("Background service stopping [Runs: {RunsCount}]", _executionCount);
 
         await base.StopAsync(stoppingToken);
     }
@@ -34,8 +34,8 @@ public abstract class ScopeConsumingBackgroundService(
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            ExecutionCount++;
-            logger.LogTrace("Background service beginning work [Run: {CurRun}]", ExecutionCount);
+            _executionCount++;
+            logger.LogTrace("Background service beginning work [Run: {CurRun}]", _executionCount);
 
             _stopwatch.Start();
 
@@ -47,7 +47,7 @@ public abstract class ScopeConsumingBackgroundService(
             _stopwatch.Stop();
             logger.LogTrace(
                 @"Background service completed work [Run: {CurRun} | Elapsed: {Elapsed:mm\:ss\:fff}]",
-                ExecutionCount,
+                _executionCount,
                 _stopwatch.Elapsed
             );
             _stopwatch.Reset();

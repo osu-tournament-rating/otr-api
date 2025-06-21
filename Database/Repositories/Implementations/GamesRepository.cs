@@ -3,6 +3,7 @@ using Database.Entities;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace Database.Repositories.Implementations;
@@ -13,7 +14,7 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class GamesRepository(OtrContext context, ILogger<GamesRepository> logger) : RepositoryBase<Game>(context), IGamesRepository
+public class GamesRepository(OtrContext context, ILogger<GamesRepository> logger) : Repository<Game>(context), IGamesRepository
 {
     private readonly OtrContext _context = context;
 
@@ -34,7 +35,7 @@ public class GamesRepository(OtrContext context, ILogger<GamesRepository> logger
     {
         var gameIds = sourceGameIds.ToList();
 
-        await using var transaction = await _context.Database.BeginTransactionAsync();
+        await using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
         try
         {
             Game? targetGame = await _context.Games

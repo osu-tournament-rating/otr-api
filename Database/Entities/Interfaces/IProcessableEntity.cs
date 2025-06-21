@@ -1,10 +1,12 @@
 using Common.Enums.Verification;
+using JetBrains.Annotations;
 
 namespace Database.Entities.Interfaces;
 
 /// <summary>
 /// Interfaces an entity that is processed by the Data Worker Service
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public interface IProcessableEntity : IUpdateableEntity
 {
     /// <summary>

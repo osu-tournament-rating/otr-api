@@ -9,7 +9,7 @@ namespace Database.Repositories.Implementations;
 [SuppressMessage("Performance",
     "CA1862:Use the \'StringComparison\' method overloads to perform case-insensitive string comparisons")]
 [SuppressMessage("ReSharper", "SpecifyStringComparison")]
-public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(context), IBeatmapsRepository
+public class BeatmapsRepository(OtrContext context) : Repository<Beatmap>(context), IBeatmapsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -21,10 +21,13 @@ public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(co
 
     public async Task<IEnumerable<Beatmap>> GetAsync(IEnumerable<long> osuIds)
     {
+        var osuIdsList = osuIds.ToList();
+
         // Load local instances
-        IEnumerable<Beatmap> result = [.. LocalView.Where(b => osuIds.Contains(b.OsuId))];
+        var result = LocalView.Where(b => osuIdsList.Contains(b.OsuId)).ToList();
+
         // Query db for non-local instances
-        IEnumerable<long> remainingIds = osuIds.Except(result.Select(p => p.OsuId));
+        var remainingIds = osuIdsList.Except(result.Select(p => p.OsuId)).ToList();
         return (await _context.Beatmaps
             .IncludeChildren()
             .Where(b => remainingIds.Contains(b.OsuId)).ToListAsync()).Concat(result);
@@ -32,19 +35,19 @@ public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(co
 
     public async Task<ICollection<Beatmap>> GetOrCreateAsync(IEnumerable<long> osuIds, bool save)
     {
-        osuIds = [.. osuIds];
+        var osuIdsList = osuIds.ToList();
 
         // Identify existing beatmaps
-        var existing = (await GetAsync(osuIds)).ToList();
+        var existing = (await GetAsync(osuIdsList)).ToList();
 
         // Identify missing beatmaps
-        var missingIds = osuIds.Except(existing.Select(b => b.OsuId)).ToList();
+        var missingIds = osuIdsList.Except(existing.Select(b => b.OsuId)).ToList();
 
         // Create missing beatmaps
         var missing = missingIds.Select(id => new Beatmap { OsuId = id }).ToList();
         if (!save)
         {
-            return [.. existing, .. missing];
+            return existing.Concat(missing).ToList();
         }
 
         // Save the missing beatmaps
@@ -52,6 +55,6 @@ public class BeatmapsRepository(OtrContext context) : RepositoryBase<Beatmap>(co
         await _context.SaveChangesAsync();
 
         // Return all beatmaps
-        return [.. existing, .. missing];
+        return existing.Concat(missing).ToList();
     }
 }

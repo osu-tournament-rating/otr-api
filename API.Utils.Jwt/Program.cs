@@ -6,7 +6,6 @@ using API.Utils.Jwt.Options;
 using CommandLine;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
 using Serilog;
 
 namespace API.Utils.Jwt;
@@ -74,7 +73,7 @@ public static class Program
 
         Log.Information("Token Created");
         Log.Information("----------------------------------------");
-        Log.Information(token);
+        Log.Information("{Token}", token);
         Log.Information("----------------------------------------");
     }
 
@@ -96,10 +95,10 @@ public static class Program
 
         Log.Information("");
         Log.Information("Header:");
-        Log.Information("\n" + JsonConvert.SerializeObject(token.Header, Formatting.Indented));
+        Log.Information("{@Header}", token.Header);
         Log.Information("");
         Log.Information("Payload:");
-        Log.Information("\n" + JsonConvert.SerializeObject(token.Payload, Formatting.Indented));
+        Log.Information("{@Payload}", token.Payload);
         Log.Information("");
         Log.Information("Sig: '{Sig}'", token.RawSignature);
 
@@ -122,8 +121,7 @@ public static class Program
         }
         catch (Exception ex)
         {
-            Log.Error("Token could not be validated!");
-            Log.Error(ex.Message);
+            Log.Error("Token could not be validated! {Exception}", ex.Message);
         }
 
         if (principal?.Identity is { IsAuthenticated: true })

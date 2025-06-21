@@ -23,7 +23,7 @@ public class TournamentPlatformStatsService(ITournamentsRepository tournamentsRe
             CountByVerificationStatus = countsByStatuses,
             VerifiedByYear = countsByYears,
             VerifiedByRuleset = countsByRulesets,
-            VerifiedByLobbySize = countsByLobbySizes,
+            VerifiedByLobbySize = countsByLobbySizes
         };
     }
 }

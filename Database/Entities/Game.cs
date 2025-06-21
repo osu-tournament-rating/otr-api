@@ -13,7 +13,6 @@ namespace Database.Entities;
 /// A game played in a <see cref="Match"/>
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>
 {
     /// <summary>
@@ -166,16 +165,18 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
             WarningFlags = GameWarningFlags.None;
         }
 
-        if (includeChildren)
+        if (!includeChildren)
         {
-            if (VerificationStatus == VerificationStatus.Rejected)
-            {
-                RejectAllChildren();
-            }
-            else
-            {
-                Scores.ForEach(score => score.ConfirmPreVerification());
-            }
+            return;
+        }
+
+        if (VerificationStatus == VerificationStatus.Rejected)
+        {
+            RejectAllChildren();
+        }
+        else
+        {
+            Scores.ForEach(score => score.ConfirmPreVerification());
         }
     }
 

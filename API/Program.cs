@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.RateLimiting;
 using API.Authorization;
@@ -14,6 +13,7 @@ using API.HealthChecks;
 using API.Middlewares;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
+using API.Services;
 using API.Services.Implementations;
 using API.Services.Interfaces;
 using API.SwaggerGen;
@@ -70,7 +70,6 @@ using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Unchase.Swashbuckle.AspNetCore.Extensions.Extensions;
 using ILogger = Serilog.ILogger;
-using IMatchRosterRepository = Database.Repositories.Interfaces.IMatchRosterRepository;
 using User = Database.Entities.User;
 
 #pragma warning disable SYSLIB1045
@@ -343,7 +342,7 @@ builder.Services.AddSwaggerGen(options =>
             Title = "osu! Tournament Rating API",
             Description =
                 "The official resource for reading and writing data within the osu! Tournament Rating platform.",
-            TermsOfService = new Uri("https://docs.otr.stagec.xyz/About/Terms-of-Use"),
+            TermsOfService = new Uri("https://docs.otr.stagec.xyz/About/Terms-of-Use")
         }
     );
 
@@ -626,7 +625,7 @@ builder.Services
             },
             OnSigningOut = context =>
             {
-                string? userId = context.HttpContext.User?.FindFirst(OtrClaims.Subject)?.Value;
+                string? userId = context.HttpContext.User.FindFirst(OtrClaims.Subject)?.Value;
                 ILogger authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
                 authLogger.Information("User signing out. UserId: {UserId}", userId ?? "Unknown");
                 return Task.CompletedTask;
@@ -675,7 +674,7 @@ builder.Services
                 {
                     AccessToken = context.AccessToken ?? string.Empty,
                     RefreshToken = context.RefreshToken,
-                    ExpiresInSeconds = (long?)context.ExpiresIn?.TotalSeconds ?? DateTime.Now.Second,
+                    ExpiresInSeconds = (long?)context.ExpiresIn?.TotalSeconds ?? DateTime.Now.Second
                 };
 
                 // Get user data from osu! API
@@ -725,7 +724,6 @@ AuthConfiguration authConfiguration = builder.Configuration.BindAndValidate<Auth
 Log.Information("Starting Data Protection configuration. PersistDataProtectionKeys: {PersistKeys}", authConfiguration.PersistDataProtectionKeys);
 
 // Create a shared Redis connection multiplexer for Data Protection
-ConnectionMultiplexer? redisConnection = null;
 if (authConfiguration.PersistDataProtectionKeys)
 {
     ILogger redisLogger = Log.ForContext("SourceContext", "DataProtection.Redis");
@@ -742,7 +740,7 @@ if (authConfiguration.PersistDataProtectionKeys)
         redisLogger.Debug("Redis connection options: ConnectRetry={ConnectRetry}, ConnectTimeout={ConnectTimeout}, SyncTimeout={SyncTimeout}",
             configurationOptions.ConnectRetry, configurationOptions.ConnectTimeout, configurationOptions.SyncTimeout);
 
-        redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
+        var redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
 
         // Test the connection
         IDatabase database = redisConnection.GetDatabase();
@@ -928,10 +926,8 @@ builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
-builder.Services.AddScoped<IGameWinRecordsRepository, GameWinRecordsRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();
 builder.Services.AddScoped<IRatingAdjustmentsRepository, RatingAdjustmentsRepository>();
-builder.Services.AddScoped<IMatchRosterRepository, MatchRosterRepository>();
 builder.Services.AddScoped<IOAuthClientRepository, OAuthClientRepository>();
 builder.Services.AddScoped<IPlayerMatchStatsRepository, PlayerMatchStatsRepository>();
 builder.Services.AddScoped<IPlayerRatingsRepository, PlayerRatingsRepository>();
@@ -994,9 +990,7 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     RequireHeaderSymmetry = false,
-    ForwardedHeaders = ForwardedHeaders.XForwardedProto,
-    KnownProxies = { },
-    KnownNetworks = { }
+    ForwardedHeaders = ForwardedHeaders.XForwardedProto
 });
 
 app.UseOpenTelemetryPrometheusScrapingEndpoint();

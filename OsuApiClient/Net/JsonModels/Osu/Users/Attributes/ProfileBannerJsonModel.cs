@@ -9,7 +9,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 /// ppy 2024 https://osu.ppy.sh/docs/index.html#user-profilebanner
 /// Last accessed May 2024
 /// </copyright>
-public class ProfileBannerJsonModel : JsonModelBase
+public class ProfileBannerJsonModel
 {
     [JsonProperty("id")]
     public int Id { get; set; }

@@ -1,7 +1,6 @@
-name: Qodana PR Scan
-
-# Trigger on PRs and pushes to master
+name: Qodana
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
@@ -14,20 +13,16 @@ jobs:
       contents: write
       pull-requests: write
       checks: write
-
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }} # Check out PR head or the push commit
-          fetch-depth: 0 # Full history for analysis
-
-      - name: 'Qodana Scan'
-        uses: JetBrains/qodana-action@v2024.2
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0 # a full history is required for pull request analysis
+      - name: "Qodana Scan"
+        uses: JetBrains/qodana-action@v2025.1
         with:
-          args: --linter,jetbrains/qodana-dotnet:2024.2
-          use-caches: true
+          args: --ide,QDNET,--baseline,qodana.sarif.json
+          pr-mode: false
           post-pr-comment: false
-          pr-mode: ${{ github.event_name == 'pull_request' }}
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
-          QODANA_ENDPOINT: 'https://qodana.cloud'

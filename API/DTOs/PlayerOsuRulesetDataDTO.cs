@@ -1,11 +1,13 @@
 using Common.Enums;
 using Database.Entities;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Data for a <see cref="Player"/> in a <see cref="Ruleset"/> obtained from the osu! API and/or osu!Track API
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlayerOsuRulesetDataDTO
 {
     /// <summary>

@@ -12,7 +12,6 @@ namespace Database.Entities;
 /// A score set by a <see cref="Entities.Player"/> in a <see cref="Entities.Game"/>
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameScoreAdminNote>, IScoreStatistics
 {
     /// <summary>

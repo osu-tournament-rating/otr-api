@@ -2,12 +2,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a single game (osu! beatmap) played in a match
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class GameDTO
 {
     /// <summary>

@@ -123,7 +123,7 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status201Created)]
+    [ProducesResponseType<AdminNoteDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateNoteAsync(
         int noteId,
         [FromBody][Required] string note

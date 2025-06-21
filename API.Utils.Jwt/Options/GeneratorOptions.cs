@@ -1,13 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using API.Authorization;
 using CommandLine;
+using JetBrains.Annotations;
 
 namespace API.Utils.Jwt.Options;
 
-[SuppressMessage("ReSharper", "StringLiteralTypo")]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 [Verb("generate", isDefault: true, HelpText = "Generate a new JWT")]
 public class GeneratorOptions : JwtUtilsOptionsBase
 {

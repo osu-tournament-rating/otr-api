@@ -1,10 +1,12 @@
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents counts of participation in games of differing mod combinations
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlayerModStatsDTO
 {
     /// <summary>

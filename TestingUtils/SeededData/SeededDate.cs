@@ -19,12 +19,6 @@ public static class SeededDate
         Placeholder.AddSeconds(s_rand.NextInclusive((int)(DateTime.Now - Placeholder).TotalSeconds));
 
     /// <summary>
-    /// Generates a <see cref="DateTime"/> with a random date between the <see cref="Placeholder"/> and a given date
-    /// </summary>
-    public static DateTime GenerateBefore(DateTime beforeDate) =>
-        beforeDate.AddSeconds(s_rand.NextInclusive((int)(beforeDate - Placeholder).TotalSeconds));
-
-    /// <summary>
     /// Generates a <see cref="DateTime"/> with a random between a given date and <see cref="DateTime.Now"/>
     /// </summary>
     public static DateTime GenerateAfter(DateTime afterDate) =>

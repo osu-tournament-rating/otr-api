@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Common.Enums;
+﻿using Common.Enums;
 
 namespace Database.Entities.Processor;
 
@@ -16,7 +15,6 @@ namespace Database.Entities.Processor;
 /// o!TR Rating Calculation Documentation
 /// </a>
 /// </remarks>
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class PlayerRating : EntityBase
 {
     /// <summary>
@@ -27,7 +25,7 @@ public class PlayerRating : EntityBase
     /// <summary>
     /// osu! Tournament Rating... The number we're all here for!
     /// </summary>
-    public double Rating { get; set; }
+    public double Rating { get; init; }
 
     /// <summary>
     /// Measure of how "strong" a single change in <see cref="Rating"/> can be
@@ -63,5 +61,5 @@ public class PlayerRating : EntityBase
     /// A collection of <see cref="RatingAdjustment"/>s that represent
     /// the individual changes to the <see cref="PlayerRating"/> over time
     /// </summary>
-    public ICollection<RatingAdjustment> Adjustments { get; set; } = [];
+    public ICollection<RatingAdjustment> Adjustments { get; init; } = [];
 }

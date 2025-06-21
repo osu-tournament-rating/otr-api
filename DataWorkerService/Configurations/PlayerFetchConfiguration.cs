@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using OsuApiClient.Enums;
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
@@ -27,6 +28,7 @@ public class PlayerFetchConfiguration
 /// <param name="platform">
 /// The <see cref="FetchPlatform"/> being configured by the <see cref="PlayerFetchPlatformConfiguration"/>
 /// </param>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlayerFetchPlatformConfiguration(FetchPlatform platform)
 {
     /// <summary>

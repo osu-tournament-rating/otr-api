@@ -33,8 +33,7 @@ builder.ConfigureServices((ctx, services) =>
 
     services.AddOsuApiClient(new OsuClientOptions
     {
-        Configuration = clientConfiguration,
-        UseScopedServices = true
+        Configuration = clientConfiguration
     });
 
     // Tests

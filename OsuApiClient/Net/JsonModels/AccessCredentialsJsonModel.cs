@@ -9,7 +9,7 @@ namespace OsuApiClient.Net.JsonModels;
 /// ppy 2024 https://osu.ppy.sh/docs/index.html#authentication
 /// Last accessed May 2024
 /// </copyright>
-public class AccessCredentialsJsonModel : JsonModelBase
+public class AccessCredentialsJsonModel
 {
     [JsonProperty("token_type")]
     public string TokenType { get; set; } = null!;

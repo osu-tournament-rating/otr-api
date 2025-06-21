@@ -89,7 +89,7 @@ public class GameStatsProcessorTests
         GameStatsProcessor processor = CreateProcessor();
 
         // Act
-        await processor.ProcessAsync(game, default);
+        await processor.ProcessAsync(game, CancellationToken.None);
 
         // Assert
         Assert.Equal(GameProcessingStatus.Done, game.ProcessingStatus);
@@ -109,7 +109,7 @@ public class GameStatsProcessorTests
         GameStatsProcessor processor = CreateProcessor();
 
         // Act
-        await processor.ProcessAsync(game, default);
+        await processor.ProcessAsync(game, CancellationToken.None);
 
         // Assert
         Assert.Equal(GameProcessingStatus.Done, game.ProcessingStatus);
@@ -130,7 +130,7 @@ public class GameStatsProcessorTests
         GameStatsProcessor processor = CreateProcessor();
 
         // Act
-        await processor.ProcessAsync(game, default);
+        await processor.ProcessAsync(game, CancellationToken.None);
 
         // Assert
         Assert.Equal(GameProcessingStatus.Done, game.ProcessingStatus);
@@ -148,7 +148,7 @@ public class GameStatsProcessorTests
         GameStatsProcessor processor = CreateProcessor();
 
         // Act
-        await processor.ProcessAsync(game, default);
+        await processor.ProcessAsync(game, CancellationToken.None);
 
         // Assert
         Assert.Equal(GameProcessingStatus.Done, game.ProcessingStatus);
@@ -166,7 +166,7 @@ public class GameStatsProcessorTests
         GameStatsProcessor processor = CreateProcessor();
 
         // Act
-        await processor.ProcessAsync(game, default);
+        await processor.ProcessAsync(game, CancellationToken.None);
 
         // Assert
         Assert.Equal(GameProcessingStatus.Done, game.ProcessingStatus);

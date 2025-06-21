@@ -1,10 +1,12 @@
 using System.Text.Json.Serialization;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a newly created resource
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public abstract class CreatedResultBaseDTO
 {
     /// <summary>

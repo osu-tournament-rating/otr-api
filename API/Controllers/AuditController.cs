@@ -24,7 +24,7 @@ public class AuditController(IAuditService auditService) : Controller
     [ProducesResponseType<IEnumerable<AuditDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetEntityAuditsAsync(AuditEntityType entityType, int entityId)
     {
-        var audits = await auditService.GetAuditsAsync(entityType, entityId);
+        IEnumerable<AuditDTO> audits = await auditService.GetAuditsAsync(entityType, entityId);
         return Ok(audits);
     }
 
@@ -38,7 +38,7 @@ public class AuditController(IAuditService auditService) : Controller
     [ProducesResponseType<IEnumerable<AuditDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUserAuditsAsync(int userId)
     {
-        var audits = await auditService.GetAuditsAsync(userId);
+        IEnumerable<AuditDTO> audits = await auditService.GetAuditsAsync(userId);
         return Ok(audits);
     }
 }

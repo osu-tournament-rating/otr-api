@@ -1,5 +1,5 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
+using JetBrains.Annotations;
 using OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 
 namespace OsuApiClient.Domain.Osu.Users.Attributes;
@@ -8,9 +8,7 @@ namespace OsuApiClient.Domain.Osu.Users.Attributes;
 /// Represents information about a user's kudosu
 /// </summary>
 [AutoMap(typeof(KudosuJsonModel))]
-[SuppressMessage("ReSharper", "IdentifierTypo")]
-[SuppressMessage("ReSharper", "CommentTypo")]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class Kudosu : IModel
 {
     /// <summary>

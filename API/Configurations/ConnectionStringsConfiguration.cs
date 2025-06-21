@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using JetBrains.Annotations;
 
 namespace API.Configurations;
 
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class ConnectionStringsConfiguration
 {
     public const string Position = "ConnectionStrings";

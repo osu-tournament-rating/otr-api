@@ -58,9 +58,6 @@ public class GamesService(IGamesRepository gamesRepository, IMapper mapper) : IG
         return mapper.Map<GameDTO>(existing);
     }
 
-    public async Task<bool> ExistsAsync(int id) =>
-        await gamesRepository.ExistsAsync(id);
-
     public async Task DeleteAsync(int id) =>
         await gamesRepository.DeleteAsync(id);
 
@@ -70,5 +67,4 @@ public class GamesService(IGamesRepository gamesRepository, IMapper mapper) : IG
 
         return result is null ? null : mapper.Map<GameDTO>(result);
     }
-
 }

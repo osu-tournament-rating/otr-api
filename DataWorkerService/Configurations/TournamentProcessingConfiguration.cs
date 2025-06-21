@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace DataWorkerService.Configurations;
 
 /// <summary>
 /// Values that control the way <see cref="Database.Entities.Match"/> data is fetched from outside sources
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class TournamentProcessingConfiguration
 {
     public const string Position = "Tournaments";

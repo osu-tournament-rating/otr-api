@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
 /// <summary>
 /// Represents user information
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class UserCompactDTO
 {
     /// <summary>

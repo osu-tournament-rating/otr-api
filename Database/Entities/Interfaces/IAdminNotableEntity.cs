@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace Database.Entities.Interfaces;
 
 /// <summary>
 /// Interfaces an entity that stores admin notes
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public interface IAdminNotableEntity<TAdminNote> where TAdminNote : IAdminNoteEntity
 {
     /// <summary>

@@ -14,13 +14,9 @@ public class DataProtectionHealthCheck(IDataProtectionProvider dataProtectionPro
     {
         try
         {
-            if (dataProtectionProvider == null)
-            {
-                return Task.FromResult(HealthCheckResult.Unhealthy("Data Protection Provider not available (not resolved from DI)."));
-            }
+            const string testData = "test";
 
-            var protector = dataProtectionProvider.CreateProtector("health-check-test");
-            string testData = "test";
+            IDataProtector protector = dataProtectionProvider.CreateProtector("health-check-test");
             string protectedData = protector.Protect(testData);
             string unprotectedData = protector.Unprotect(protectedData);
 

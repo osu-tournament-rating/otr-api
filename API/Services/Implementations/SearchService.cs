@@ -45,7 +45,7 @@ public class SearchService(
         }
 
         IList<Tournament> searchResult = await tournamentsRepository.SearchAsync(tournamentName);
-        result = [.. searchResult.Select(t => mapper.Map<TournamentSearchResultDTO>(t))];
+        result = [.. searchResult.Select(mapper.Map<TournamentSearchResultDTO>)];
 
         await cacheHandler.SetTournamentSearchResultAsync(result, tournamentName);
         return result;
@@ -53,16 +53,24 @@ public class SearchService(
 
     private async Task<IEnumerable<MatchSearchResultDTO>> SearchMatchesByNameAsync(string matchName)
     {
-        IEnumerable<MatchSearchResultDTO>? result =
-            await cacheHandler.Cache.GetObjectAsync<IEnumerable<MatchSearchResultDTO>>(
+        IList<MatchSearchResultDTO>? result;
+
+        try
+        {
+            result = await cacheHandler.Cache.GetObjectAsync<IList<MatchSearchResultDTO>>(
                 CacheUtils.MatchSearchKey(matchName));
 
-        if (result is not null)
+            if (result is not null)
+            {
+                return result;
+            }
+        }
+        catch (Exception)
         {
-            return result;
+            // Item failed to resolve from cache, continue with search
         }
 
-        result = [.. (await matchesService.SearchAsync(matchName))];
+        result = [.. await matchesService.SearchAsync(matchName)];
         await cacheHandler.SetMatchSearchResultAsync(result, matchName);
 
         return result;

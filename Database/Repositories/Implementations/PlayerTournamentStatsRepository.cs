@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Database.Repositories.Implementations;
 
-public class PlayerTournamentStatsRepository(OtrContext context) : RepositoryBase<PlayerTournamentStats>(context), IPlayerTournamentStatsRepository
+public class PlayerTournamentStatsRepository(OtrContext context) : Repository<PlayerTournamentStats>(context), IPlayerTournamentStatsRepository
 {
     private readonly OtrContext _context = context;
 

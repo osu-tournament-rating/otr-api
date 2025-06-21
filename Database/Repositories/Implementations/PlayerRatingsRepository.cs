@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Database.Repositories.Implementations;
 
 public class PlayerRatingsRepository(OtrContext context)
-    : RepositoryBase<PlayerRating>(context), IPlayerRatingsRepository
+    : Repository<PlayerRating>(context), IPlayerRatingsRepository
 {
     private readonly OtrContext _context = context;
 
@@ -61,13 +61,6 @@ public class PlayerRatingsRepository(OtrContext context)
             minWinRate, maxWinRate, bronze, silver, gold, platinum, emerald, diamond, master, grandmaster,
             eliteGrandmaster).CountAsync() / pageSize + 1;
 
-    public async Task<IList<Ruleset>> GetActiveRulesetsAsync(int playerId) =>
-        await _context.PlayerRatings
-            .Include(pr => pr.Player)
-            .Where(pr => pr.PlayerId == playerId)
-            .Select(pr => pr.Ruleset)
-            .ToListAsync();
-
     public async Task<IDictionary<Ruleset, Dictionary<int, int>>> GetHistogramAsync()
     {
         const int bucketSize = 25;
@@ -102,7 +95,7 @@ public class PlayerRatingsRepository(OtrContext context)
 
                 for (int bucket = minRating; bucket <= maxBucket; bucket += bucketSize)
                 {
-                    rulesetHistogram[bucket] = rulesetBuckets.FirstOrDefault(h => h.Bucket == bucket)?.Count ?? 0;
+                    rulesetHistogram[bucket] = rulesetBuckets.FirstOrDefault(h => (int)h.Bucket == bucket)?.Count ?? 0;
                 }
             }
 
@@ -147,19 +140,12 @@ public class PlayerRatingsRepository(OtrContext context)
         }
 
         // Addresses players in dependent territories having a *very* small country leaderboard.
-        if (
-            LeaderboardUtils.DependentTerritoriesMapping.TryGetValue(
+        baseQuery = LeaderboardUtils.DependentTerritoriesMapping.TryGetValue(
                 country,
                 out string? mappedCountry
             )
-        )
-        {
-            baseQuery = baseQuery.Where(x => x.Player.Country == mappedCountry);
-        }
-        else
-        {
-            baseQuery = baseQuery.Where(x => x.Player.Country == country);
-        }
+            ? baseQuery.Where(x => x.Player.Country == mappedCountry)
+            : baseQuery.Where(x => x.Player.Country == country);
 
         return baseQuery;
     }

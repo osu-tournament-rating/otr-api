@@ -11,7 +11,7 @@ public class TeamTypeConverter : IValueConverter<string, TeamType>
     public TeamType Convert(string sourceMember, ResolutionContext context) =>
         Convert(sourceMember);
 
-    public static TeamType Convert(string value)
+    private static TeamType Convert(string value)
     {
         if (Enum.TryParse(value, true, out TeamType result))
         {

@@ -1,11 +1,13 @@
 using Common.Enums;
 using Common.Enums.Verification;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a search result for a tournament
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class TournamentSearchResultDTO
 {
     /// <summary>

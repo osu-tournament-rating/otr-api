@@ -12,7 +12,7 @@ public class PlatformStatsService(
     {
         TournamentStats = await tournamentPlatformStatsService.GetAsync(),
         RatingStats = await ratingPlatformStatsService.GetAsync(),
-        UserStats = await userPlatformStatsService.GetAsync(),
+        UserStats = await userPlatformStatsService.GetAsync()
     };
 }
 

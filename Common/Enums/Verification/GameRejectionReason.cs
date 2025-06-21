@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace Common.Enums.Verification;
 
 /// <summary>
@@ -63,7 +65,7 @@ public enum GameRejectionReason
     NoEndTime = 1 << 8,
 
     /// <summary>
-    /// The <see cref="Database.Entities.Match"/> the <see cref="Database.Entities.Game"/> was played in was rejected
+    /// The <see cref="Match"/> the <see cref="Database.Entities.Game"/> was played in was rejected
     /// </summary>
     RejectedMatch = 1 << 9,
 

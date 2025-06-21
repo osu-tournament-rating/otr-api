@@ -11,7 +11,7 @@ public class MultiplayerEventTypeConverter : IValueConverter<string, Multiplayer
     public MultiplayerEventType Convert(string sourceMember, ResolutionContext context) =>
         Convert(sourceMember);
 
-    public static MultiplayerEventType Convert(string value)
+    private static MultiplayerEventType Convert(string value)
     {
         if (Enum.TryParse(value, true, out MultiplayerEventType result))
         {

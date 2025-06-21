@@ -1,5 +1,9 @@
+using Database.Entities;
+using JetBrains.Annotations;
+
 namespace API.DTOs;
 
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlayerTournamentStatsBaseDTO
 {
     /// <summary>

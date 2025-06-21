@@ -8,19 +8,19 @@ namespace TestingUtils.SeededData;
 /// </summary>
 public static class SeededBeatmap
 {
-    public const int MaxComboMin = 150;
+    private const int MaxComboMin = 150;
     public const int MaxComboMax = 3000;
 
-    public const double SrMin = 2;
-    public const double SrMax = 10;
+    private const double SrMin = 2;
+    private const double SrMax = 10;
 
-    public const double BpmMin = 10;
-    public const double BpmMax = 400;
+    private const double BpmMin = 10;
+    private const double BpmMax = 400;
 
-    public const int LengthMin = 30;
-    public const int LengthMax = 600;
+    private const int LengthMin = 30;
+    private const int LengthMax = 600;
 
-    private static readonly Random s_rand = new();
+    private static readonly Random _sRand = new();
 
     /// <summary>
     /// Generates a <see cref="Beatmap"/> with seeded data
@@ -51,20 +51,20 @@ public static class SeededBeatmap
     {
         var seededBeatmap = new Beatmap
         {
-            Id = id ?? s_rand.Next(),
-            OsuId = osuId ?? s_rand.NextInt64(),
-            HasData = hasData ?? s_rand.NextBool(),
+            Id = id ?? _sRand.Next(),
+            OsuId = osuId ?? _sRand.NextInt64(),
+            HasData = hasData ?? _sRand.NextBool(),
             DiffName = diffName ?? string.Empty,
-            RankedStatus = rankedStatus ?? s_rand.NextEnum<BeatmapRankedStatus>(),
-            TotalLength = totalLength ?? s_rand.NextInt64(LengthMin, LengthMax),
-            Sr = sr ?? s_rand.NextDouble(SrMin, SrMax),
-            Bpm = bpm ?? s_rand.NextDouble(BpmMin, BpmMax),
-            Cs = cs ?? s_rand.NextDouble(10),
-            Ar = ar ?? s_rand.NextDouble(11),
-            Hp = hp ?? s_rand.NextDouble(10),
-            Od = od ?? s_rand.NextDouble(11),
-            Ruleset = ruleset ?? s_rand.NextEnum<Ruleset>(),
-            MaxCombo = maxCombo ?? s_rand.NextInclusive(MaxComboMin, MaxComboMax),
+            RankedStatus = rankedStatus ?? _sRand.NextEnum<BeatmapRankedStatus>(),
+            TotalLength = totalLength ?? _sRand.NextInt64(LengthMin, LengthMax),
+            Sr = sr ?? _sRand.NextDouble(SrMin, SrMax),
+            Bpm = bpm ?? _sRand.NextDouble(BpmMin, BpmMax),
+            Cs = cs ?? _sRand.NextDouble(10),
+            Ar = ar ?? _sRand.NextDouble(11),
+            Hp = hp ?? _sRand.NextDouble(10),
+            Od = od ?? _sRand.NextDouble(11),
+            Ruleset = ruleset ?? _sRand.NextEnum<Ruleset>(),
+            MaxCombo = maxCombo ?? _sRand.NextInclusive(MaxComboMin, MaxComboMax)
         };
 
         beatmapset ??= new Beatmapset
@@ -84,8 +84,8 @@ public static class SeededBeatmap
         };
 
         seededBeatmap.Beatmapset = beatmapset;
-        seededBeatmap.CountCircle = circleCount ?? s_rand.NextInclusive(seededBeatmap.MaxCombo.Value);
-        seededBeatmap.CountSlider = sliderCount ?? s_rand.NextInclusive(seededBeatmap.MaxCombo.Value - seededBeatmap.CountCircle);
+        seededBeatmap.CountCircle = circleCount ?? _sRand.NextInclusive(seededBeatmap.MaxCombo.Value);
+        seededBeatmap.CountSlider = sliderCount ?? _sRand.NextInclusive(seededBeatmap.MaxCombo.Value - seededBeatmap.CountCircle);
         seededBeatmap.CountSpinner = spinnerCount ?? seededBeatmap.MaxCombo.Value - seededBeatmap.CountCircle - seededBeatmap.CountSlider;
 
         return seededBeatmap;

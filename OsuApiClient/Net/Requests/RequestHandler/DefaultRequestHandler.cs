@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using AutoMapper;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -11,7 +12,6 @@ using OsuApiClient.Enums;
 using OsuApiClient.Extensions;
 using OsuApiClient.Net.Authorization;
 using OsuApiClient.Net.Constants;
-using OsuApiClient.Net.JsonModels;
 using RedLockNet;
 using RedLockNet.SERedis;
 
@@ -24,6 +24,7 @@ namespace OsuApiClient.Net.Requests.RequestHandler;
 /// Any program which uses the OsuClient MUST have a Redis and RedLock configuration.
 /// This class contains resources which are managed by a distributed locker (RedLock).
 /// </remarks>
+[UsedImplicitly]
 internal sealed class DefaultRequestHandler(
     ILogger<DefaultRequestHandler> logger,
     IServiceProvider serviceProvider,
@@ -66,16 +67,10 @@ internal sealed class DefaultRequestHandler(
         _httpClient.Dispose();
     }
 
-    public async Task FetchAsync(
+    private async Task<TJsonModel?> FetchAsync<TJsonModel>(
         IApiRequest request,
         CancellationToken cancellationToken = default
-    ) =>
-        await SendRequestAsync(request, cancellationToken);
-
-    public async Task<TJsonModel?> FetchAsync<TJsonModel>(
-        IApiRequest request,
-        CancellationToken cancellationToken = default
-    ) where TJsonModel : class, IJsonModel
+    ) where TJsonModel : class
     {
         string? responseContent = await SendRequestAsync(request, cancellationToken);
         return responseContent is not null
@@ -86,13 +81,13 @@ internal sealed class DefaultRequestHandler(
     public async Task<TModel?> FetchAsync<TModel, TJsonModel>(
         IApiRequest request,
         CancellationToken cancellationToken = default
-    ) where TModel : class, IModel where TJsonModel : class, IJsonModel
+    ) where TModel : class, IModel where TJsonModel : class
         => _mapper.Map<TModel?>(await FetchAsync<TJsonModel>(request, cancellationToken));
 
     public async Task<IEnumerable<TModel>?> FetchEnumerableAsync<TModel, TJsonModel>(
         IApiRequest request,
         CancellationToken cancellationToken = default
-    ) where TModel : class, IModel where TJsonModel : class, IJsonModel
+    ) where TModel : class, IModel where TJsonModel : class
     {
         string? responseContent = await SendRequestAsync(request, cancellationToken);
         return responseContent is not null

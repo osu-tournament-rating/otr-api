@@ -10,7 +10,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 /// ppy 2024
 /// Last accessed June 2024
 /// </copyright>
-public class GameSlotInfoJsonModel : JsonModelBase
+public class GameSlotInfoJsonModel
 {
     [JsonProperty("slot")]
     public int Slot { get; set; }

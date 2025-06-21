@@ -29,15 +29,4 @@ public static class CreatedAtRouteValuesHelper
             Controller = nameof(MatchesController),
             RouteValues = new { id }
         };
-
-    /// <summary>
-    /// Creates route values for accessing a player
-    /// </summary>
-    public static CreatedAtRouteValues GetPlayer(int id) =>
-        new()
-        {
-            Action = nameof(PlayersController.GetAsync),
-            Controller = nameof(PlayersController),
-            RouteValues = new { key = id.ToString() }
-        };
 }

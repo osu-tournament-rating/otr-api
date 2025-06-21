@@ -5,7 +5,7 @@ using Common.Enums.Verification;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace API.Tests.Integration;
+namespace APITests.Integration;
 
 public class PlatformStatsIntegrationTests
 {
@@ -93,7 +93,7 @@ public class PlatformStatsIntegrationTests
             Converters = { new NewtonsoftEnumDictionaryKeyConverter() }
         };
 
-        string json = """
+        const string json = """
         {
             "tournamentStats": {
                 "totalCount": 100,
@@ -125,7 +125,7 @@ public class PlatformStatsIntegrationTests
         """;
 
         // Act
-        var result = JsonConvert.DeserializeObject<PlatformStatsDTO>(json, settings);
+        PlatformStatsDTO? result = JsonConvert.DeserializeObject<PlatformStatsDTO>(json, settings);
 
         // Assert
         Assert.NotNull(result);

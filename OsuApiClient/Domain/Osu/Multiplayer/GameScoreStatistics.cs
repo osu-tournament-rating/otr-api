@@ -1,6 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using Database.Entities.Interfaces;
+using JetBrains.Annotations;
 using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 
 namespace OsuApiClient.Domain.Osu.Multiplayer;
@@ -9,7 +9,7 @@ namespace OsuApiClient.Domain.Osu.Multiplayer;
 /// Represents a set of accuracy values for a <see cref="GameScore"/>
 /// </summary>
 [AutoMap(typeof(GameScoreStatisticsJsonModel))]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class GameScoreStatistics : IModel, IScoreStatistics
 {
     public int Count50 { get; init; }

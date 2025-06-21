@@ -1,10 +1,12 @@
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents aggregate statistics and roster for both teams in a game
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class GameRosterDTO
 {
     /// <summary>

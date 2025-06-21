@@ -1,10 +1,12 @@
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents user controlled settings for otr-web
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class UserSettingsDTO
 {
     /// <summary>

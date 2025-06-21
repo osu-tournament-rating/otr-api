@@ -7,45 +7,45 @@ namespace Database.Entities;
 /// <summary>
 /// Represents a beatmapset in the osu! API.
 /// </summary>
-[UsedImplicitly]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class Beatmapset : UpdateableEntityBase
 {
     /// <summary>
     /// osu! beatmapset ID
     /// </summary>
-    public long OsuId { get; set; }
+    public long OsuId { get; init; }
 
     /// <summary>
     /// Id of the Player who created the set
     /// </summary>
-    public int? CreatorId { get; set; }
+    public int? CreatorId { get; init; }
 
     /// <summary>
     /// Artist
     /// </summary>
     [MaxLength(512)]
-    public string Artist { get; set; } = string.Empty;
+    public string Artist { get; init; } = string.Empty;
 
     /// <summary>
     /// Title
     /// </summary>
     [MaxLength(512)]
-    public string Title { get; set; } = string.Empty;
+    public string Title { get; init; } = string.Empty;
 
     /// <summary>
     /// Ranked status
     /// </summary>
-    public BeatmapRankedStatus RankedStatus { get; set; }
+    public BeatmapRankedStatus RankedStatus { get; init; }
 
     /// <summary>
     /// Date of ranking, if applicable
     /// </summary>
-    public DateTime? RankedDate { get; set; }
+    public DateTime? RankedDate { get; init; }
 
     /// <summary>
     /// Date of submission
     /// </summary>
-    public DateTime? SubmittedDate { get; set; }
+    public DateTime? SubmittedDate { get; init; }
 
     /// <summary>
     /// The set creator
@@ -55,5 +55,5 @@ public class Beatmapset : UpdateableEntityBase
     /// <summary>
     /// Collection of beatmaps in this beatmapset
     /// </summary>
-    public ICollection<Beatmap> Beatmaps { get; set; } = [];
+    public ICollection<Beatmap> Beatmaps { get; init; } = [];
 }

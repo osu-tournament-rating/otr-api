@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.DTOs;
@@ -5,6 +6,7 @@ namespace API.DTOs;
 /// <summary>
 /// Represents data for constructing <see cref="CreatedResult"/>
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class CreatedAtRouteValues
 {
     private readonly string? _controller;

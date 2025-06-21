@@ -1,11 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
-
 namespace Database.Entities;
 
 /// <summary>
 /// Describes the performance of a <see cref="Entities.Player"/> over all <see cref="Game"/>s in a <see cref="Entities.Match"/>
 /// </summary>
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class PlayerMatchStats : EntityBase
 {
     /// <summary>
@@ -66,20 +63,20 @@ public class PlayerMatchStats : EntityBase
     /// <summary>
     /// Id of the <see cref="Entities.Player"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public int PlayerId { get; set; }
+    public int PlayerId { get; init; }
 
     /// <summary>
     /// The <see cref="Entities.Player"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public Player Player { get; set; } = null!;
+    public Player Player { get; init; } = null!;
 
     /// <summary>
     /// Id of the <see cref="Entities.Match"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public int MatchId { get; set; }
+    public int MatchId { get; init; }
 
     /// <summary>
     /// The <see cref="Entities.Match"/> the <see cref="PlayerMatchStats"/> was generated for
     /// </summary>
-    public Match Match { get; set; } = null!;
+    public Match Match { get; init; } = null!;
 }

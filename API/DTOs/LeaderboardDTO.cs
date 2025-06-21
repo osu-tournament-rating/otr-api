@@ -1,7 +1,9 @@
 using Common.Enums;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class LeaderboardDTO
 {
     /// <summary>

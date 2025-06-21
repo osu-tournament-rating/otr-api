@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
@@ -6,6 +7,7 @@ namespace API.DTOs;
 /// Represents statistics for a player regarding tournament participation and performance
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlayerTournamentPerformanceDTO
 {
     /// <summary>

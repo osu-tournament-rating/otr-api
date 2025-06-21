@@ -56,12 +56,9 @@ public class UsersController(
     public async Task<IActionResult> UpdateScopesAsync(int id, [FromBody][Required] List<string> scopes)
     {
         scopes = [.. scopes.Select(s => s.ToLower())];
-        foreach (string scope in scopes)
+        foreach (string scope in scopes.Where(scope => !OtrClaims.Roles.IsUserAssignableRole(scope)))
         {
-            if (!OtrClaims.Roles.IsUserAssignableRole(scope))
-            {
-                return BadRequest($"Given scope \"{scope}\" is invalid");
-            }
+            return BadRequest($"Given scope \"{scope}\" is invalid");
         }
 
         if (!await usersService.ExistsAsync(id))

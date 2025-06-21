@@ -9,7 +9,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 /// ppy 2024 https://osu.ppy.sh/docs/index.html#user-userbadge
 /// Last accessed May 2024
 /// </copyright>
-public class UserBadgeJsonModel : JsonModelBase
+public class UserBadgeJsonModel
 {
     [JsonProperty("awarded_at")]
     public DateTimeOffset AwardedAt { get; set; }

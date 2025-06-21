@@ -11,7 +11,6 @@ namespace Database.Entities;
 /// </summary>
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class Player : UpdateableEntityBase, IAdminNotableEntity<PlayerAdminNote>
 {
     private string _username = string.Empty;

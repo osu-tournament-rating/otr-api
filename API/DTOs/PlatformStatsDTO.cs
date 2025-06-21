@@ -1,8 +1,11 @@
-﻿namespace API.DTOs;
+﻿using JetBrains.Annotations;
+
+namespace API.DTOs;
 
 /// <summary>
 /// Represents platform-wide statistics
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class PlatformStatsDTO
 {
     /// <summary>

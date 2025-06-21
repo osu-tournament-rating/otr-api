@@ -15,7 +15,6 @@ namespace Database.Entities;
 /// </summary>
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-[SuppressMessage("ReSharper", "EntityFramework.ModelValidation.CircularDependency")]
 public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<MatchAdminNote>
 {
     private string _name = string.Empty;
@@ -183,16 +182,18 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
             WarningFlags = MatchWarningFlags.None;
         }
 
-        if (includeChildren)
+        if (!includeChildren)
         {
-            if (VerificationStatus == VerificationStatus.Rejected)
-            {
-                RejectAllChildren();
-            }
-            else
-            {
-                Games.ForEach(game => game.ConfirmPreVerification(includeChildren));
-            }
+            return;
+        }
+
+        if (VerificationStatus == VerificationStatus.Rejected)
+        {
+            RejectAllChildren();
+        }
+        else
+        {
+            Games.ForEach(game => game.ConfirmPreVerification(includeChildren));
         }
     }
 

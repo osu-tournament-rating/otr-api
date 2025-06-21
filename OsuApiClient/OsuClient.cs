@@ -222,7 +222,7 @@ public sealed class OsuClient(
         return await GetUserAsync(username, "username", ruleset, cancellationToken);
     }
 
-    public async Task<MultiplayerMatch?> GetPartialMatchAsync(
+    private async Task<MultiplayerMatch?> GetPartialMatchAsync(
         long matchId,
         long? eventsBeforeId = null,
         long? eventsAfterId = null,

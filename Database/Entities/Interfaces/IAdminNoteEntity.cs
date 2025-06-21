@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace Database.Entities.Interfaces;
 
 /// <summary>
 /// Interfaces an entity that serves as a note about another entity created by an admin user
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public interface IAdminNoteEntity : IUpdateableEntity
 {
     /// <summary>

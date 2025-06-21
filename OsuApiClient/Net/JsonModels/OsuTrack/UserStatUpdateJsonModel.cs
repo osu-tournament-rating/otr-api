@@ -8,7 +8,7 @@ namespace OsuApiClient.Net.JsonModels.OsuTrack;
 /// <remarks>
 /// See <a href="https://github.com/Ameobea/osutrack-api?tab=readme-ov-file#returns-1">Returns</a>
 /// </remarks>
-public class UserStatUpdateJsonModel : JsonModelBase
+public class UserStatUpdateJsonModel
 {
     [JsonProperty("count300")]
     public int Count300 { get; set; }

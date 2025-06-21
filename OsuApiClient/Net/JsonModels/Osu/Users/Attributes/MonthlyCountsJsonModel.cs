@@ -12,7 +12,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Users.Attributes;
 /// Last accessed May 2024
 /// </copyright>
 [SuppressMessage("ReSharper", "CommentTypo")]
-public class MonthlyCountsJsonModel : JsonModelBase
+public class MonthlyCountsJsonModel
 {
     [JsonProperty("start_date")]
     public DateTime StartDate { get; set; }

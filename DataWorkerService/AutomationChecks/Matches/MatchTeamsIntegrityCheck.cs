@@ -27,11 +27,13 @@ public class MatchTeamsIntegrityCheck(ILogger<MatchTeamsIntegrityCheck> logger) 
         {
             for (int j = i + 1; j < playerIdsPerRoster.Length; j++)
             {
-                if (playerIdsPerRoster[i].Overlaps(playerIdsPerRoster[j]))
+                if (!playerIdsPerRoster[i].Overlaps(playerIdsPerRoster[j]))
                 {
-                    entity.WarningFlags |= MatchWarningFlags.OverlappingRosters;
-                    return true;
+                    continue;
                 }
+
+                entity.WarningFlags |= MatchWarningFlags.OverlappingRosters;
+                return true;
             }
         }
 

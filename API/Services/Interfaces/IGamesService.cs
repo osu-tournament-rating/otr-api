@@ -21,13 +21,6 @@ public interface IGamesService
     Task<GameDTO?> UpdateAsync(int id, GameDTO game);
 
     /// <summary>
-    /// Checks if the game exists
-    /// </summary>
-    /// <param name="id">The game id</param>
-    /// <returns>True if the game exists, false otherwise</returns>
-    Task<bool> ExistsAsync(int id);
-
-    /// <summary>
     /// Delete a game
     /// </summary>
     /// <param name="id">Game id</param>

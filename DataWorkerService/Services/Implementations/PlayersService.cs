@@ -44,7 +44,7 @@ public class PlayersService(
         );
     }
 
-    public async Task UpdateFromOsuApiAsync(Player player)
+    private async Task UpdateFromOsuApiAsync(Player player)
     {
         logger.LogDebug(
             "Preparing to update Player osu! API data [Id: {Id} | osu! Id: {OsuId} | Last Update: {LastUpdate:u}]",
@@ -76,9 +76,9 @@ public class PlayersService(
             // Handle mania4k / 7k variants. Set the default ruleset to whatever the lowest numeric rank is.
             if (ruleset == Ruleset.ManiaOther)
             {
-                var bestVariant = result.Statistics?.Variants.Where(v => v.IsRanked).MinBy(v => v.GlobalRank);
+                UserStatisticsVariant? bestVariant = result.Statistics?.Variants.Where(v => v.IsRanked).MinBy(v => v.GlobalRank);
 
-                if (bestVariant is not null && bestVariant.GlobalRank is not null)
+                if (bestVariant?.GlobalRank != null)
                 {
                     if (bestVariant.GlobalRank.Value < lowestRank)
                     {
@@ -180,7 +180,7 @@ public class PlayersService(
         );
     }
 
-    public async Task UpdateFromOsuTrackApiAsync(Player player)
+    private async Task UpdateFromOsuTrackApiAsync(Player player)
     {
         logger.LogDebug(
             "Preparing to update osu!track data for player [Id: {Id} | osu! Id: {OsuId} | Last Update: {LastUpdate:u}]",
@@ -230,22 +230,28 @@ public class PlayersService(
             // For ManiaOther, copy the earliest rank data to Mania4k and Mania7k variants if they exist
             // This is necessary because osu!Track only provides historical data for ManiaOther,
             // but players can have current ratings for the specific mania variants
-            if (r == Ruleset.ManiaOther)
+            if (r != Ruleset.ManiaOther)
             {
-                var maniaVariants = new[] { Ruleset.Mania4k, Ruleset.Mania7k };
+                continue;
+            }
+
+            {
+                Ruleset[] maniaVariants = [Ruleset.Mania4k, Ruleset.Mania7k];
 
                 foreach (Ruleset variant in maniaVariants)
                 {
                     PlayerOsuRulesetData? variantData = player.RulesetData.FirstOrDefault(x => x.Ruleset == variant);
 
-                    if (variantData is not null && variantData.EarliestGlobalRank is null)
+                    if (variantData is null || variantData.EarliestGlobalRank is not null)
                     {
-                        variantData.EarliestGlobalRank = statUpdate.Rank;
-                        variantData.EarliestGlobalRankDate = statUpdate.Timestamp;
-
-                        logger.LogDebug("Copied earliest rank data from ManiaOther to {Variant} [Id: {Id} | Rank: {Rank}]",
-                            variant, player.Id, statUpdate.Rank);
+                        continue;
                     }
+
+                    variantData.EarliestGlobalRank = statUpdate.Rank;
+                    variantData.EarliestGlobalRankDate = statUpdate.Timestamp;
+
+                    logger.LogDebug("Copied earliest rank data from ManiaOther to {Variant} [Id: {Id} | Rank: {Rank}]",
+                        variant, player.Id, statUpdate.Rank);
                 }
             }
         }

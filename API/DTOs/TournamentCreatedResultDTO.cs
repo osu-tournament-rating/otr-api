@@ -1,11 +1,13 @@
 using System.Text.Json.Serialization;
 using API.Utilities;
+using JetBrains.Annotations;
 
 namespace API.DTOs;
 
 /// <summary>
 /// Represents a created tournament
 /// </summary>
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class TournamentCreatedResultDTO : CreatedResultBaseDTO
 {
     [JsonIgnore]

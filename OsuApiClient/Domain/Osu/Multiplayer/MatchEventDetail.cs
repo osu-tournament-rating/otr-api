@@ -1,6 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
 using AutoMapper;
 using AutoMapper.Configuration.Annotations;
+using JetBrains.Annotations;
 using OsuApiClient.Enums;
 using OsuApiClient.Net.Deserialization.ValueConverters;
 using OsuApiClient.Net.JsonModels.Osu.Multiplayer;
@@ -11,7 +11,7 @@ namespace OsuApiClient.Domain.Osu.Multiplayer;
 /// Represents details about a <see cref="MatchEvent"/>
 /// </summary>
 [AutoMap(typeof(MatchEventDetailJsonModel))]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public class MatchEventDetail : IModel
 {
     /// <summary>

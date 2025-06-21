@@ -12,20 +12,20 @@ public class BeatmapAttributes : EntityBase
     /// <summary>
     /// Mods applied to the beatmap
     /// </summary>
-    public Mods Mods { get; set; }
+    public Mods Mods { get; init; }
 
     /// <summary>
     /// Star rating of the beatmap with the applied mods
     /// </summary>
-    public double Sr { get; set; }
+    public double Sr { get; init; }
 
     /// <summary>
     /// Id of the associated beatmap
     /// </summary>
-    public int BeatmapId { get; set; }
+    public int BeatmapId { get; init; }
 
     /// <summary>
     /// The associated beatmap
     /// </summary>
-    public Beatmap Beatmap { get; set; } = null!;
+    public Beatmap Beatmap { get; init; } = null!;
 }

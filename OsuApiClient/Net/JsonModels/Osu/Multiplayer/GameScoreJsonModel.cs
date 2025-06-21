@@ -10,7 +10,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Multiplayer;
 /// ppy 2024
 /// Last accessed June 2024
 /// </copyright>
-public class GameScoreJsonModel : JsonModelBase
+public class GameScoreJsonModel
 {
     [JsonProperty("accuracy")]
     public double Accuracy { get; set; }

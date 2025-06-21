@@ -1,6 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Security.Claims;
 using System.Text.Json;
 using Common.Enums;
 using Database.Entities.Interfaces;
@@ -10,6 +12,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Database.Entities;
+
+internal static class AuditSerializerOptions
+{
+    internal static readonly JsonSerializerOptions Options = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false
+    };
+}
 
 /// <summary>
 /// Base class for a <typeparamref name="TAudit"/> entity that serves as an audit for an auditable entity
@@ -21,11 +32,6 @@ public abstract class AuditEntityBase<TEntity, TAudit> : IAuditEntity
     where TAudit : IAuditEntity
     where TEntity : IEntity
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false
-    };
 
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -71,66 +77,69 @@ public abstract class AuditEntityBase<TEntity, TAudit> : IAuditEntity
         // Set ActionUserId from HttpContext
         if (httpContextAccessor?.HttpContext?.User.Identity?.IsAuthenticated == true)
         {
-            var userIdClaim = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "sub" || c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+            Claim? userIdClaim = httpContextAccessor.HttpContext.User.Claims
+                .FirstOrDefault(c => c.Type is "sub" or ClaimTypes.NameIdentifier);
+
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
             {
                 ActionUserId = userId;
             }
         }
 
-        if (ActionType == AuditActionType.Deleted)
+        switch (ActionType)
         {
-            // For deleted entities, set Changes to null
-            Changes = null;
-            return true;
-        }
-
-        if (ActionType == AuditActionType.Updated)
-        {
-            var changes = new Dictionary<string, object>();
-
-            // For updated entities, only capture changed properties
-            var changedProperties = origEntityEntry.Properties
-                .Where(p => p.IsModified && !Equals(p.CurrentValue, p.OriginalValue) && !ShouldIgnoreProperty(p))
-                .ToList();
-
-            if (changedProperties.Count == 0)
-            {
-                // Check for collection and reference changes
-                bool hasCollectionChanges = origEntityEntry.Collections.Any(c => c.IsModified);
-                bool hasReferenceChanges = origEntityEntry.References.Any(r => r.IsModified);
-
-                if (!hasCollectionChanges && !hasReferenceChanges)
+            case AuditActionType.Deleted:
+                // For deleted entities, set Changes to null
+                Changes = null;
+                return true;
+            case AuditActionType.Updated:
                 {
-                    return false; // No actual changes to log
+                    var changes = new Dictionary<string, object>();
+
+                    // For updated entities, only capture changed properties
+                    var changedProperties = origEntityEntry.Properties
+                        .Where(p => p.IsModified && !Equals(p.CurrentValue, p.OriginalValue) && !ShouldIgnoreProperty(p))
+                        .ToList();
+
+                    if (changedProperties.Count == 0)
+                    {
+                        // Check for collection and reference changes
+                        bool hasCollectionChanges = origEntityEntry.Collections.Any(c => c.IsModified);
+                        bool hasReferenceChanges = origEntityEntry.References.Any(r => r.IsModified);
+
+                        if (!hasCollectionChanges && !hasReferenceChanges)
+                        {
+                            return false; // No actual changes to log
+                        }
+                    }
+
+                    foreach (PropertyEntry property in changedProperties)
+                    {
+                        changes[property.Metadata.Name] = new
+                        {
+                            NewValue = property.CurrentValue,
+                            property.OriginalValue
+                        };
+                    }
+
+                    if (changes.Count == 0)
+                    {
+                        return false; // No changes to audit
+                    }
+
+                    Changes = JsonSerializer.Serialize(changes, AuditSerializerOptions.Options);
+                    return true;
                 }
-            }
-
-            foreach (var property in changedProperties)
-            {
-                changes[property.Metadata.Name] = new
-                {
-                    NewValue = property.CurrentValue,
-                    property.OriginalValue
-                };
-            }
-
-            if (changes.Count == 0)
-            {
-                return false; // No changes to audit
-            }
-
-            Changes = JsonSerializer.Serialize(changes, SerializerOptions);
-            return true;
+            case AuditActionType.Created:
+            default:
+                return false;
         }
-
-        return false;
     }
 
     private static bool ShouldIgnoreProperty(PropertyEntry property)
     {
         // Check if the property has the AuditIgnore attribute
-        var propertyInfo = property.Metadata.PropertyInfo;
-        return propertyInfo?.GetCustomAttributes(typeof(AuditIgnoreAttribute), true).Length != 0 == true;
+        PropertyInfo? propertyInfo = property.Metadata.PropertyInfo;
+        return propertyInfo?.GetCustomAttributes(typeof(AuditIgnoreAttribute), true).Length != 0;
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Reflection;
 using Newtonsoft.Json;
 
@@ -30,7 +31,7 @@ public class NewtonsoftEnumDictionaryKeyConverter : JsonConverter
         return keyType.IsEnum;
     }
 
-    public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
+    public override object ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
     {
         if (reader.TokenType != JsonToken.StartObject)
         {
@@ -57,7 +58,7 @@ public class NewtonsoftEnumDictionaryKeyConverter : JsonConverter
                 throw new JsonException("Expected PropertyName token");
             }
 
-            string? keyString = (reader.Value?.ToString()) ?? throw new JsonException("Property name cannot be null");
+            string keyString = reader.Value?.ToString() ?? throw new JsonException("Property name cannot be null");
 
             // Try to parse as integer first, then fall back to string parsing
             object key;
@@ -67,7 +68,7 @@ public class NewtonsoftEnumDictionaryKeyConverter : JsonConverter
             }
             else if (Enum.TryParse(keyType, keyString, true, out object? enumValue))
             {
-                key = enumValue!;
+                key = enumValue;
             }
             else
             {
@@ -97,7 +98,7 @@ public class NewtonsoftEnumDictionaryKeyConverter : JsonConverter
         // Get the dictionary entries
         PropertyInfo keysProperty = dictionaryType.GetProperty("Keys")!;
         PropertyInfo indexer = dictionaryType.GetProperty("Item")!;
-        System.Collections.IEnumerable keys = (System.Collections.IEnumerable)keysProperty.GetValue(value)!;
+        var keys = (IEnumerable)keysProperty.GetValue(value)!;
 
         foreach (object? key in keys)
         {

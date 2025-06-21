@@ -1,5 +1,6 @@
 using API.DTOs;
 using Common.Enums;
+using Database.Entities;
 
 namespace API.Services.Interfaces;
 
@@ -28,11 +29,6 @@ public interface ITournamentsService
     /// Denotes a tournament with matching name and ruleset exists
     /// </summary>
     Task<bool> ExistsAsync(string name, Ruleset ruleset);
-
-    /// <summary>
-    /// Gets all tournaments
-    /// </summary>
-    Task<IEnumerable<TournamentDTO>> ListAsync();
 
     /// <summary>
     /// Gets a tournament by id

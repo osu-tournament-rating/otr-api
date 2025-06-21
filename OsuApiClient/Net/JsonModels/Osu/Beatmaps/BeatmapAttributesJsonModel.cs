@@ -11,7 +11,7 @@ namespace OsuApiClient.Net.JsonModels.Osu.Beatmaps;
 /// Last accessed January 2025
 /// </copyright>
 [SuppressMessage("ReSharper", "CommentTypo")]
-public class BeatmapAttributesJsonModel : JsonModelBase
+public class BeatmapAttributesJsonModel
 {
     [JsonProperty("max_combo")]
     public int MaxCombo { get; set; }
