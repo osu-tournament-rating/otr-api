@@ -1,11 +1,14 @@
-version: "1.0"
-linter: jetbrains/qodana-cdnet:latest
+version: '1.0'
+linter: 'jetbrains/qodana-cdnet:latest'
 profile:
   name: qodana.recommended
 include:
   - name: CheckDependencyLicenses
 exclude:
   - name: Migrations
+    paths:
+      - Database/Migrations
+  - name: All
     paths:
       - Database/Migrations
 dotnet:
@@ -19,6 +22,3 @@ failureConditions:
     moderate: 2
     low: 3
     info: 5
-  # testCoverageThresholds:
-  #   fresh: 6 # Fresh code coverage
-  #   total: 7 # Total percentage
