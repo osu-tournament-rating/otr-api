@@ -53,11 +53,15 @@ public class FilteringService(
         {
             UserId = userId,
             RequestJson = JsonSerializer.Serialize(request),
-            ResponseJson = JsonSerializer.Serialize(filteringResult)
+            ResponseJson = "" // Will be updated after we get the ID
         };
 
         await filterReportsRepository.CreateAsync(filterReport);
+
+        // Set the ID and update the ResponseJson with the complete result
         filteringResult.FilterReportId = filterReport.Id;
+        filterReport.ResponseJson = JsonSerializer.Serialize(filteringResult);
+        await filterReportsRepository.UpdateAsync(filterReport);
 
         return filteringResult;
     }
