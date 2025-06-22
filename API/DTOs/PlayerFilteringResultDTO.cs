@@ -42,4 +42,29 @@ public class PlayerFilteringResultDTO
     /// If the player failed filtering, the fail reason
     /// </summary>
     public FilteringFailReason? FailureReason { get; set; }
+
+    /// <summary>
+    /// The player's current rating for the requested ruleset
+    /// </summary>
+    public double? CurrentRating { get; set; }
+
+    /// <summary>
+    /// The number of tournaments the player has participated in
+    /// </summary>
+    public int? TournamentsPlayed { get; set; }
+
+    /// <summary>
+    /// The number of matches the player has played
+    /// </summary>
+    public int? MatchesPlayed { get; set; }
+
+    /// <summary>
+    /// The player's all-time peak rating for the requested ruleset
+    /// </summary>
+    public double? PeakRating { get; set; }
+
+    /// <summary>
+    /// The player's osu! global rank for the requested ruleset
+    /// </summary>
+    public int? OsuGlobalRank { get; set; }
 }

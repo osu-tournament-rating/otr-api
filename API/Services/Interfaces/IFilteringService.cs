@@ -10,6 +10,7 @@ public interface IFilteringService
     /// <see cref="PlayerFilteringResultDTO"/> for each osu! player id provided
     /// </summary>
     /// <param name="request">A filtering request to process</param>
+    /// <param name="userId">The ID of the user making the request</param>
     /// <returns>A <see cref="FilteringResultDTO"/> with the results</returns>
-    Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO request);
+    Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO request, int userId);
 }

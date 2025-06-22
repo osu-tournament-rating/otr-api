@@ -32,11 +32,6 @@ public class FilteringRequestDTO
     public int? MaxRating { get; set; }
 
     /// <summary>
-    /// Whether to filter players that currently have a provisional rating
-    /// </summary>
-    public bool AllowProvisional { get; set; } = true;
-
-    /// <summary>
     /// If set, requires players to have participated in at least
     /// this many distinct tournaments
     /// </summary>
