@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using OsuApiClient.Configurations.Interfaces;
+using OsuApiClient.Net.Requests.RequestHandler;
 
 namespace OsuApiClient.Extensions;
 
@@ -15,6 +16,10 @@ public static class ServiceExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
+
+        services.AddSingleton(configuration);
+        services.AddScoped<IRequestHandler, DefaultRequestHandler>();
+        services.AddScoped<IOsuClient, OsuClient>();
     }
 
     /// <summary>
@@ -30,7 +35,9 @@ public static class ServiceExtensions
 
         if (options.Value.Configuration is null)
         {
-            throw new InvalidOperationException($"The client configuration cannot be null");
+            throw new InvalidOperationException("The client configuration cannot be null");
         }
+
+        services.AddOsuApiClient(options.Value.Configuration);
     }
 }
