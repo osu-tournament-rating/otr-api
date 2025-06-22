@@ -1,4 +1,5 @@
-﻿using Database.Entities.Interfaces;
+﻿using System.Linq.Expressions;
+using Database.Entities.Interfaces;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -34,6 +35,18 @@ public class Repository<T> : IRepository<T> where T : class, IEntity
     }
 
     public virtual async Task<T?> GetAsync(int id) => await _context.Set<T>().FindAsync(id);
+
+    public virtual async Task<T?> GetWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes)
+    {
+        IQueryable<T> query = _context.Set<T>().AsNoTracking();
+
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+
+        return await query.FirstOrDefaultAsync(e => e.Id == id);
+    }
 
     public virtual async Task<int> UpdateAsync(T entity)
     {

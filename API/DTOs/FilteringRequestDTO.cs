@@ -58,6 +58,20 @@ public class FilteringRequestDTO
     public int? MatchesPlayed { get; set; }
 
     /// <summary>
+    /// If set, requires players to have an osu! global rank
+    /// greater than or equal to this value
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Minimum rank must be at least 1.")]
+    public int? MinRank { get; set; }
+
+    /// <summary>
+    /// If set, requires players to have an osu! global rank
+    /// less than or equal to this value
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Maximum rank must be at least 1.")]
+    public int? MaxRank { get; set; }
+
+    /// <summary>
     /// A list of osu! player ids that will be filtered
     /// </summary>
     [MinLength(1)]

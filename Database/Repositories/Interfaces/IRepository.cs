@@ -1,4 +1,5 @@
-﻿using Database.Entities.Interfaces;
+﻿using System.Linq.Expressions;
+using Database.Entities.Interfaces;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -11,8 +12,6 @@ public interface IRepository<T> where T : class, IEntity
     /// Exposes a <see cref="LocalView{T}"/> that tracks <typeparamref name="T"/> entities in the context
     /// </summary>
     LocalView<T> LocalView { get; }
-
-    // CRUD operations
 
     /// <summary>
     /// Begins tracking an entity in the <see cref="EntityState.Added"/> state
@@ -39,6 +38,17 @@ public interface IRepository<T> where T : class, IEntity
     /// </summary>
     /// <returns>The entity, or null if not found.</returns>
     Task<T?> GetAsync(int id);
+
+    /// <summary>
+    /// Gets an entity from the database by its primary key with specified navigation properties
+    /// </summary>
+    /// <remarks>
+    /// Returned entities are not tracked
+    /// </remarks>
+    /// <param name="id">The primary key of the entity</param>
+    /// <param name="includes">Navigation properties to include</param>
+    /// <returns>The entity with included navigation properties, or null if not found</returns>
+    Task<T?> GetWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes);
 
     /// <summary>
     /// Updates an entity

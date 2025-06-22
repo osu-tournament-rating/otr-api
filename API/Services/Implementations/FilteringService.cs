@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using API.DTOs;
 using API.Services.Interfaces;
 using Common.Enums;
+using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
 
@@ -12,7 +13,8 @@ public class FilteringService(
     IPlayerService playerService,
     IPlayerRatingsService playerRatingsService,
     IPlayerStatsService
-        playerStatsService) : IFilteringService
+        playerStatsService,
+    IPlayersRepository playersRepository) : IFilteringService
 {
     public async Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO request)
     {
@@ -70,7 +72,19 @@ public class FilteringService(
         // Separate database call as adjustments are not included from the initial call
         // In the future, the processor could store this field in the database
         double peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, request.Ruleset);
-        FilteringFailReason failReason = EnforceFilteringConditions(request, ratingStats, peakRating);
+
+        // Fetch osu! global rank if rank filtering is requested
+        int? globalRank = null;
+        if (request.MinRank.HasValue || request.MaxRank.HasValue)
+        {
+            var playerWithRulesetData = await playersRepository
+                .GetWithIncludesAsync(playerInfo.Id, p => p.RulesetData);
+
+            globalRank = playerWithRulesetData?.RulesetData
+                .FirstOrDefault(rd => rd.Ruleset == request.Ruleset)?.GlobalRank;
+        }
+
+        FilteringFailReason failReason = EnforceFilteringConditions(request, ratingStats, peakRating, globalRank);
 
         return failReason;
     }
@@ -82,11 +96,13 @@ public class FilteringService(
     /// <param name="request">Filter request</param>
     /// <param name="ratingStats">Rating stats of the player we are checking</param>
     /// <param name="peakRating">The player's all-time peak rating</param>
+    /// <param name="globalRank">The player's osu! global rank for the ruleset</param>
     /// <returns></returns>
     private static FilteringFailReason EnforceFilteringConditions(
         FilteringRequestDTO request,
         PlayerRatingStatsDTO ratingStats,
-        double peakRating)
+        double peakRating,
+        int? globalRank)
     {
         FilteringFailReason failReason = FilteringFailReason.None;
 
@@ -118,6 +134,17 @@ public class FilteringService(
         if (ratingStats.MatchesPlayed < request.MatchesPlayed)
         {
             failReason |= FilteringFailReason.NotEnoughMatches;
+        }
+
+        // Check osu! global rank constraints
+        if (request.MinRank.HasValue && (globalRank == null || globalRank < request.MinRank))
+        {
+            failReason |= FilteringFailReason.MinRank;
+        }
+
+        if (request.MaxRank.HasValue && globalRank.HasValue && globalRank > request.MaxRank)
+        {
+            failReason |= FilteringFailReason.MaxRank;
         }
 
         return failReason;
