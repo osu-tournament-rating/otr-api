@@ -34,7 +34,6 @@ public class FilteringController(
         // Remove duplicate ids
         filteringRequest.OsuPlayerIds = filteringRequest.OsuPlayerIds.Distinct().ToList();
 
-        // Get the current user ID from claims
         int userId = HttpContext.User.GetSubjectId();
 
         FilteringResultDTO filteringResult = await filteringService.FilterAsync(filteringRequest, userId);
