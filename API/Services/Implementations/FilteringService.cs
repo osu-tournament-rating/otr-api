@@ -99,16 +99,12 @@ public class FilteringService(
         double peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, request.Ruleset);
         result.PeakRating = peakRating;
 
-        // Fetch osu! global rank if rank filtering is requested
-        int? globalRank = null;
-        if (request.MinRank.HasValue || request.MaxRank.HasValue)
-        {
-            var playerWithRulesetData = await playersRepository
-                .GetWithIncludesAsync(playerInfo.Id, p => p.RulesetData);
+        // Always fetch osu! global rank
+        var playerWithRulesetData = await playersRepository
+            .GetWithIncludesAsync(playerInfo.Id, p => p.RulesetData);
 
-            globalRank = playerWithRulesetData?.RulesetData
-                .FirstOrDefault(rd => rd.Ruleset == request.Ruleset)?.GlobalRank;
-        }
+        int? globalRank = playerWithRulesetData?.RulesetData
+            .FirstOrDefault(rd => rd.Ruleset == request.Ruleset)?.GlobalRank;
         result.OsuGlobalRank = globalRank;
 
         FilteringFailReason failReason = EnforceFilteringConditions(request, ratingStats, peakRating, globalRank);
