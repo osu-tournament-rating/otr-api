@@ -231,141 +231,6 @@ namespace Database.Migrations
                     b.ToTable("beatmapsets", (string)null);
                 });
 
-            modelBuilder.Entity("Database.Entities.FilterReport", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int?>("MatchesPlayed")
-                        .HasColumnType("integer")
-                        .HasColumnName("matches_played");
-
-                    b.Property<int?>("MaxOsuRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("max_osu_rank");
-
-                    b.Property<int?>("MaxRating")
-                        .HasColumnType("integer")
-                        .HasColumnName("max_rating");
-
-                    b.Property<int?>("MinOsuRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("min_osu_rank");
-
-                    b.Property<int?>("MinRating")
-                        .HasColumnType("integer")
-                        .HasColumnName("min_rating");
-
-                    b.Property<int?>("PeakRating")
-                        .HasColumnType("integer")
-                        .HasColumnName("peak_rating");
-
-                    b.Property<int>("PlayersFailed")
-                        .HasColumnType("integer")
-                        .HasColumnName("players_failed");
-
-                    b.Property<int>("PlayersPassed")
-                        .HasColumnType("integer")
-                        .HasColumnName("players_passed");
-
-                    b.Property<int>("Ruleset")
-                        .HasColumnType("integer")
-                        .HasColumnName("ruleset");
-
-                    b.Property<int?>("TournamentsPlayed")
-                        .HasColumnType("integer")
-                        .HasColumnName("tournaments_played");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_filter_reports");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_filter_reports_user_id");
-
-                    b.ToTable("filter_reports", (string)null);
-                });
-
-            modelBuilder.Entity("Database.Entities.FilterReportPlayer", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<double?>("CurrentRating")
-                        .HasColumnType("double precision")
-                        .HasColumnName("current_rating");
-
-                    b.Property<int?>("FailureReason")
-                        .HasColumnType("integer")
-                        .HasColumnName("failure_reason");
-
-                    b.Property<int>("FilterReportId")
-                        .HasColumnType("integer")
-                        .HasColumnName("filter_report_id");
-
-                    b.Property<bool>("IsSuccess")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_success");
-
-                    b.Property<int?>("MatchesPlayed")
-                        .HasColumnType("integer")
-                        .HasColumnName("matches_played");
-
-                    b.Property<int?>("OsuGlobalRank")
-                        .HasColumnType("integer")
-                        .HasColumnName("osu_global_rank");
-
-                    b.Property<double?>("PeakRating")
-                        .HasColumnType("double precision")
-                        .HasColumnName("peak_rating");
-
-                    b.Property<int>("PlayerId")
-                        .HasColumnType("integer")
-                        .HasColumnName("player_id");
-
-                    b.Property<int?>("TournamentsPlayed")
-                        .HasColumnType("integer")
-                        .HasColumnName("tournaments_played");
-
-                    b.HasKey("Id")
-                        .HasName("pk_filter_report_players");
-
-                    b.HasIndex("FilterReportId")
-                        .HasDatabaseName("ix_filter_report_players_filter_report_id");
-
-                    b.HasIndex("PlayerId")
-                        .HasDatabaseName("ix_filter_report_players_player_id");
-
-                    b.HasIndex("FilterReportId", "PlayerId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_filter_report_players_filter_report_id_player_id");
-
-                    b.ToTable("filter_report_players", (string)null);
-                });
-
             modelBuilder.Entity("Database.Entities.Game", b =>
                 {
                     b.Property<int>("Id")
@@ -2104,39 +1969,6 @@ namespace Database.Migrations
                     b.Navigation("Creator");
                 });
 
-            modelBuilder.Entity("Database.Entities.FilterReport", b =>
-                {
-                    b.HasOne("Database.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_filter_reports_users_user_id");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Database.Entities.FilterReportPlayer", b =>
-                {
-                    b.HasOne("Database.Entities.FilterReport", "FilterReport")
-                        .WithMany("FilterReportPlayers")
-                        .HasForeignKey("FilterReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_filter_report_players_filter_reports_filter_report_id");
-
-                    b.HasOne("Database.Entities.Player", "Player")
-                        .WithMany()
-                        .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_filter_report_players_players_player_id");
-
-                    b.Navigation("FilterReport");
-
-                    b.Navigation("Player");
-                });
-
             modelBuilder.Entity("Database.Entities.Game", b =>
                 {
                     b.HasOne("Database.Entities.Beatmap", "Beatmap")
@@ -2587,11 +2419,6 @@ namespace Database.Migrations
             modelBuilder.Entity("Database.Entities.Beatmapset", b =>
                 {
                     b.Navigation("Beatmaps");
-                });
-
-            modelBuilder.Entity("Database.Entities.FilterReport", b =>
-                {
-                    b.Navigation("FilterReportPlayers");
                 });
 
             modelBuilder.Entity("Database.Entities.Game", b =>
