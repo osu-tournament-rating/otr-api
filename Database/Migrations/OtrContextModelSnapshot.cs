@@ -231,44 +231,6 @@ namespace Database.Migrations
                     b.ToTable("beatmapsets", (string)null);
                 });
 
-            modelBuilder.Entity("Database.Entities.FilterReport", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityAlwaysColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("RequestJson")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("request_json");
-
-                    b.Property<string>("ResponseJson")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("response_json");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_filter_reports");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_filter_reports_user_id");
-
-                    b.ToTable("filter_reports", (string)null);
-                });
-
             modelBuilder.Entity("Database.Entities.Game", b =>
                 {
                     b.Property<int>("Id")
@@ -2005,18 +1967,6 @@ namespace Database.Migrations
                         .HasConstraintName("fk_beatmapsets_players_creator_id");
 
                     b.Navigation("Creator");
-                });
-
-            modelBuilder.Entity("Database.Entities.FilterReport", b =>
-                {
-                    b.HasOne("Database.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_filter_reports_users_user_id");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Database.Entities.Game", b =>
