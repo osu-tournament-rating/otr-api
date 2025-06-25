@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json;
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
 using API.Utilities.Extensions;
 using Asp.Versioning;
+using AutoMapper;
+using Database.Entities;
 using Database.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,8 @@ namespace API.Controllers;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class FilteringController(
     IFilteringService filteringService,
-    IFilterReportsRepository filterReportsRepository) : Controller
+    IFilterReportsRepository filterReportsRepository,
+    IMapper mapper) : Controller
 {
     /// <summary>
     /// Filter a list of users based on the criteria as described in
@@ -52,41 +54,13 @@ public class FilteringController(
     [ProducesResponseType<FilterReportDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFilterReportAsync(int id)
     {
-        var filterReport = await filterReportsRepository.GetAsync(id);
+        FilterReport? filterReport = await filterReportsRepository.GetWithPlayersAsync(id);
         if (filterReport == null)
         {
             return NotFound();
         }
 
-        FilteringRequestDTO? request = null;
-        FilteringResultDTO? response = null;
-
-        try
-        {
-            if (!string.IsNullOrEmpty(filterReport.RequestJson))
-            {
-                request = JsonSerializer.Deserialize<FilteringRequestDTO>(filterReport.RequestJson);
-            }
-
-            if (!string.IsNullOrEmpty(filterReport.ResponseJson))
-            {
-                response = JsonSerializer.Deserialize<FilteringResultDTO>(filterReport.ResponseJson);
-            }
-        }
-        catch (JsonException)
-        {
-            // If deserialization fails, we'll return the DTO with null values
-            // This provides type safety even if the JSON structure changes
-        }
-
-        var filterReportDto = new FilterReportDTO
-        {
-            Id = filterReport.Id,
-            Created = filterReport.Created,
-            UserId = filterReport.UserId,
-            Request = request,
-            Response = response
-        };
+        FilterReportDTO? filterReportDto = mapper.Map<FilterReportDTO>(filterReport);
 
         return Ok(filterReportDto);
     }

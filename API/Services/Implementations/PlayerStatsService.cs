@@ -126,8 +126,8 @@ public class PlayerStatsService(
     public async Task<double> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null,
         DateTime? dateMax = null)
     {
-        return (await ratingAdjustmentsRepository.GetForPlayerAsync(playerId, ruleset, dateMin, dateMax))
-            .Max(ra => ra.RatingAfter);
+        var ratingAdjustments = (await ratingAdjustmentsRepository.GetForPlayerAsync(playerId, ruleset, dateMin, dateMax)).ToList();
+        return ratingAdjustments.Count != 0 ? ratingAdjustments.Max(ra => ra.RatingAfter) : 0.0;
     }
 
     public async Task<Dictionary<bool, List<PlayerFrequencyDTO>>> GetFrequentMatchupsAsync(

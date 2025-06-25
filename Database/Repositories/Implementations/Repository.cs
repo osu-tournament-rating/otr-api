@@ -39,11 +39,7 @@ public class Repository<T> : IRepository<T> where T : class, IEntity
     public virtual async Task<T?> GetWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes)
     {
         IQueryable<T> query = _context.Set<T>().AsNoTracking();
-
-        foreach (var include in includes)
-        {
-            query = query.Include(include);
-        }
+        query = includes.Aggregate(query, (current, include) => current.Include(include));
 
         return await query.FirstOrDefaultAsync(e => e.Id == id);
     }

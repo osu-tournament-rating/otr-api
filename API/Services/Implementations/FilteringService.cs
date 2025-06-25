@@ -1,8 +1,8 @@
 using System.Collections.Immutable;
-using System.Text.Json;
 using API.DTOs;
 using API.Services.Interfaces;
 using Common.Enums;
+using Database;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 
@@ -16,52 +16,108 @@ public class FilteringService(
     IPlayerRatingsService playerRatingsService,
     IPlayerStatsService playerStatsService,
     IPlayersRepository playersRepository,
-    IFilterReportsRepository filterReportsRepository) : IFilteringService
+    IFilterReportsRepository filterReportsRepository,
+    OtrContext context) : IFilteringService
 {
     public async Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO request, int userId)
     {
         var osuIdHashSet = request.OsuPlayerIds.ToImmutableHashSet();
-        IEnumerable<PlayerCompactDTO> players = (await playerService.GetAsync(osuIdHashSet)).ToList();
 
-        // Store missing players first
-        var results = osuIdHashSet
-            .Except(players.Select(p => p.OsuId))
-            .Select(osuId => new PlayerFilteringResultDTO
-            {
-                OsuId = osuId,
-                IsSuccess = false,
-                FailureReason = FilteringFailReason.NoData
-            }).ToList();
+        // Ensure all players exist in database
+        Dictionary<long, Player> playersByOsuId = await EnsurePlayersExistAsync(osuIdHashSet);
 
-        // ReSharper disable once SimplifyLinqExpressionUseAll
-        // Iterate all players which are not already stored as missing
-        foreach (PlayerCompactDTO playerInfo in players.Where(p => !results.Any(r => r.OsuId == p.OsuId)))
-        {
-            var filterResult = await FilterPlayerAsync(request, playerInfo);
-            results.Add(filterResult);
-        }
+        // Get player data for filtering
+        var playerDtos = (await playerService.GetAsync(osuIdHashSet)).ToList();
+        var playerDtosByOsuId = playerDtos.ToDictionary(p => p.OsuId);
 
-        var filteringResult = new FilteringResultDTO
-        {
-            PlayersPassed = results.Count(r => r.IsSuccess),
-            PlayersFailed = results.Count(r => !r.IsSuccess),
-            FilteringResults = results.ToList()
-        };
-
-        // Store the filter report
+        // Create the filter report entity
         var filterReport = new FilterReport
         {
             UserId = userId,
-            RequestJson = JsonSerializer.Serialize(request),
-            ResponseJson = "" // Will be updated after we get the ID
+            Ruleset = request.Ruleset,
+            MinRating = request.MinRating,
+            MaxRating = request.MaxRating,
+            TournamentsPlayed = request.TournamentsPlayed,
+            PeakRating = request.PeakRating,
+            MatchesPlayed = request.MatchesPlayed,
+            MinOsuRank = request.MinOsuRank,
+            MaxOsuRank = request.MaxOsuRank,
+            PlayersPassed = 0, // Will be updated after processing
+            PlayersFailed = 0  // Will be updated after processing
         };
 
         await filterReportsRepository.CreateAsync(filterReport);
 
-        // Set the ID and update the ResponseJson with the complete result
-        filteringResult.FilterReportId = filterReport.Id;
-        filterReport.ResponseJson = JsonSerializer.Serialize(filteringResult);
+        // Process each player and create FilterReportPlayer records
+        var results = new List<PlayerFilteringResultDTO>();
+        var filterReportPlayers = new List<FilterReportPlayer>();
+
+        foreach (long osuId in osuIdHashSet)
+        {
+            Player player = playersByOsuId[osuId];
+            PlayerFilteringResultDTO filterResult;
+
+            if (!playerDtosByOsuId.TryGetValue(osuId, out PlayerCompactDTO? playerDto))
+            {
+                // Player has no data
+                filterResult = new PlayerFilteringResultDTO
+                {
+                    PlayerId = player.Id,
+                    Username = player.Username,
+                    OsuId = osuId,
+                    IsSuccess = false,
+                    FailureReason = FilteringFailReason.NoData
+                };
+
+                filterReportPlayers.Add(new FilterReportPlayer
+                {
+                    FilterReportId = filterReport.Id,
+                    PlayerId = player.Id,
+                    IsSuccess = false,
+                    FailureReason = FilteringFailReason.NoData
+                });
+            }
+            else
+            {
+                // Filter the player
+                filterResult = await FilterPlayerAsync(request, playerDto);
+
+                // Get player stats for storing in FilterReportPlayer
+                PlayerStatsData playerStats = await GetPlayerStatsAsync(playerDto.Id, request.Ruleset);
+
+                filterReportPlayers.Add(new FilterReportPlayer
+                {
+                    FilterReportId = filterReport.Id,
+                    PlayerId = player.Id,
+                    IsSuccess = filterResult.IsSuccess,
+                    FailureReason = filterResult.FailureReason,
+                    CurrentRating = playerStats.RatingStats?.Rating,
+                    TournamentsPlayed = playerStats.RatingStats?.TournamentsPlayed,
+                    MatchesPlayed = playerStats.RatingStats?.MatchesPlayed,
+                    PeakRating = playerStats.PeakRating,
+                    OsuGlobalRank = playerStats.GlobalRank
+                });
+            }
+
+            results.Add(filterResult);
+        }
+
+        // Bulk insert all FilterReportPlayer records
+        await context.FilterReportPlayers.AddRangeAsync(filterReportPlayers);
+        await context.SaveChangesAsync();
+
+        // Update the filter report with counts
+        filterReport.PlayersPassed = results.Count(r => r.IsSuccess);
+        filterReport.PlayersFailed = results.Count(r => !r.IsSuccess);
         await filterReportsRepository.UpdateAsync(filterReport);
+
+        FilteringResultDTO filteringResult = new()
+        {
+            PlayersPassed = filterReport.PlayersPassed,
+            PlayersFailed = filterReport.PlayersFailed,
+            FilteringResults = results,
+            FilterReportId = filterReport.Id
+        };
 
         return filteringResult;
     }
@@ -94,20 +150,12 @@ public class FilteringService(
         result.TournamentsPlayed = ratingStats.TournamentsPlayed;
         result.MatchesPlayed = ratingStats.MatchesPlayed;
 
-        // Separate database call as adjustments are not included from the initial call
-        // In the future, the processor could store this field in the database
-        double peakRating = await playerStatsService.GetPeakRatingAsync(playerInfo.Id, request.Ruleset);
-        result.PeakRating = peakRating;
+        // Get additional player stats
+        PlayerStatsData playerStats = await GetPlayerStatsAsync(playerInfo.Id, request.Ruleset);
+        result.PeakRating = playerStats.PeakRating;
+        result.OsuGlobalRank = playerStats.GlobalRank;
 
-        // Always fetch osu! global rank
-        var playerWithRulesetData = await playersRepository
-            .GetWithIncludesAsync(playerInfo.Id, p => p.RulesetData);
-
-        int? globalRank = playerWithRulesetData?.RulesetData
-            .FirstOrDefault(rd => rd.Ruleset == request.Ruleset)?.GlobalRank;
-        result.OsuGlobalRank = globalRank;
-
-        FilteringFailReason failReason = EnforceFilteringConditions(request, ratingStats, peakRating, globalRank);
+        FilteringFailReason failReason = EnforceFilteringConditions(request, ratingStats, playerStats.PeakRating, playerStats.GlobalRank);
         result.IsSuccess = failReason == FilteringFailReason.None;
         result.FailureReason = failReason == FilteringFailReason.None ? null : failReason;
 
@@ -158,16 +206,59 @@ public class FilteringService(
         }
 
         // Check osu! global rank constraints
-        if (request.MinRank.HasValue && (globalRank == null || globalRank < request.MinRank))
+        if (request.MinOsuRank.HasValue && (globalRank == null || globalRank < request.MinOsuRank))
         {
             failReason |= FilteringFailReason.MinRank;
         }
 
-        if (request.MaxRank.HasValue && globalRank.HasValue && globalRank > request.MaxRank)
+        if (request.MaxOsuRank.HasValue && globalRank.HasValue && globalRank > request.MaxOsuRank)
         {
             failReason |= FilteringFailReason.MaxRank;
         }
 
         return failReason;
+    }
+
+    private async Task<Dictionary<long, Player>> EnsurePlayersExistAsync(ImmutableHashSet<long> osuIds)
+    {
+        var players = new Dictionary<long, Player>(osuIds.Count);
+
+        foreach (long osuId in osuIds)
+        {
+            Player player = await playersRepository.GetOrCreateAsync(osuId);
+            players[osuId] = player;
+        }
+
+        return players;
+    }
+
+    private async Task<PlayerStatsData> GetPlayerStatsAsync(int playerId, Ruleset ruleset)
+    {
+        PlayerRatingStatsDTO? ratingStats = await playerRatingsService.GetAsync(
+            playerId,
+            ruleset,
+            includeAdjustments: false);
+
+        double peakRating = await playerStatsService.GetPeakRatingAsync(playerId, ruleset);
+
+        Player? playerWithRulesetData = await playersRepository
+            .GetWithIncludesAsync(playerId, p => p.RulesetData);
+
+        int? globalRank = playerWithRulesetData?.RulesetData
+            .FirstOrDefault(rd => rd.Ruleset == ruleset)?.GlobalRank;
+
+        return new PlayerStatsData
+        {
+            RatingStats = ratingStats,
+            PeakRating = peakRating,
+            GlobalRank = globalRank
+        };
+    }
+
+    private sealed class PlayerStatsData
+    {
+        public PlayerRatingStatsDTO? RatingStats { get; init; }
+        public double PeakRating { get; init; }
+        public int? GlobalRank { get; init; }
     }
 }
