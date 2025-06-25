@@ -49,7 +49,7 @@ public class FilteringController(
     [HttpGet("{id:int}")]
     [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<FilteringResultDTO>(StatusCodes.Status200OK)]
+    [ProducesResponseType<FilterReportDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFilterReportAsync(int id)
     {
         var filterReport = await filterReportsRepository.GetAsync(id);
@@ -58,7 +58,36 @@ public class FilteringController(
             return NotFound();
         }
 
-        var filteringResult = JsonSerializer.Deserialize<FilteringResultDTO>(filterReport.ResponseJson);
-        return Ok(filteringResult);
+        FilteringRequestDTO? request = null;
+        FilteringResultDTO? response = null;
+
+        try
+        {
+            if (!string.IsNullOrEmpty(filterReport.RequestJson))
+            {
+                request = JsonSerializer.Deserialize<FilteringRequestDTO>(filterReport.RequestJson);
+            }
+
+            if (!string.IsNullOrEmpty(filterReport.ResponseJson))
+            {
+                response = JsonSerializer.Deserialize<FilteringResultDTO>(filterReport.ResponseJson);
+            }
+        }
+        catch (JsonException)
+        {
+            // If deserialization fails, we'll return the DTO with null values
+            // This provides type safety even if the JSON structure changes
+        }
+
+        var filterReportDto = new FilterReportDTO
+        {
+            Id = filterReport.Id,
+            Created = filterReport.Created,
+            UserId = filterReport.UserId,
+            Request = request,
+            Response = response
+        };
+
+        return Ok(filterReportDto);
     }
 }
