@@ -54,11 +54,6 @@ public class FilterReportPlayer : EntityBase
     public double? PeakRating { get; set; }
 
     /// <summary>
-    /// The player's osu! global rank for the requested ruleset at the time of filtering
-    /// </summary>
-    public int? OsuGlobalRank { get; set; }
-
-    /// <summary>
     /// Navigation property to the filter report
     /// </summary>
     public FilterReport FilterReport { get; set; } = null!;

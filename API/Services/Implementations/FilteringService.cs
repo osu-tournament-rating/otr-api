@@ -40,8 +40,6 @@ public class FilteringService(
             TournamentsPlayed = request.TournamentsPlayed,
             PeakRating = request.PeakRating,
             MatchesPlayed = request.MatchesPlayed,
-            MinOsuRank = request.MinOsuRank,
-            MaxOsuRank = request.MaxOsuRank,
             PlayersPassed = 0, // Will be updated after processing
             PlayersFailed = 0  // Will be updated after processing
         };
@@ -95,7 +93,6 @@ public class FilteringService(
                     TournamentsPlayed = playerStats.RatingStats?.TournamentsPlayed,
                     MatchesPlayed = playerStats.RatingStats?.MatchesPlayed,
                     PeakRating = playerStats.PeakRating,
-                    OsuGlobalRank = playerStats.GlobalRank
                 });
             }
 
@@ -153,9 +150,8 @@ public class FilteringService(
         // Get additional player stats
         PlayerStatsData playerStats = await GetPlayerStatsAsync(playerInfo.Id, request.Ruleset);
         result.PeakRating = playerStats.PeakRating;
-        result.OsuGlobalRank = playerStats.GlobalRank;
 
-        FilteringFailReason failReason = EnforceFilteringConditions(request, ratingStats, playerStats.PeakRating, playerStats.GlobalRank);
+        FilteringFailReason failReason = EnforceFilteringConditions(request, ratingStats, playerStats.PeakRating);
         result.IsSuccess = failReason == FilteringFailReason.None;
         result.FailureReason = failReason == FilteringFailReason.None ? null : failReason;
 
@@ -169,13 +165,11 @@ public class FilteringService(
     /// <param name="request">Filter request</param>
     /// <param name="ratingStats">Rating stats of the player we are checking</param>
     /// <param name="peakRating">The player's all-time peak rating</param>
-    /// <param name="globalRank">The player's osu! global rank for the ruleset</param>
     /// <returns></returns>
     private static FilteringFailReason EnforceFilteringConditions(
         FilteringRequestDTO request,
         PlayerRatingStatsDTO ratingStats,
-        double peakRating,
-        int? globalRank)
+        double? peakRating)
     {
         FilteringFailReason failReason = FilteringFailReason.None;
 
@@ -195,7 +189,7 @@ public class FilteringService(
             failReason |= FilteringFailReason.NotEnoughTournaments;
         }
 
-        if (peakRating > request.PeakRating)
+        if (request.PeakRating.HasValue && peakRating.HasValue && peakRating > request.PeakRating)
         {
             failReason |= FilteringFailReason.PeakRatingTooHigh;
         }
@@ -203,17 +197,6 @@ public class FilteringService(
         if (ratingStats.MatchesPlayed < request.MatchesPlayed)
         {
             failReason |= FilteringFailReason.NotEnoughMatches;
-        }
-
-        // Check osu! global rank constraints
-        if (request.MinOsuRank.HasValue && (globalRank == null || globalRank < request.MinOsuRank))
-        {
-            failReason |= FilteringFailReason.MinRank;
-        }
-
-        if (request.MaxOsuRank.HasValue && globalRank.HasValue && globalRank > request.MaxOsuRank)
-        {
-            failReason |= FilteringFailReason.MaxRank;
         }
 
         return failReason;
@@ -239,26 +222,21 @@ public class FilteringService(
             ruleset,
             includeAdjustments: false);
 
-        double peakRating = await playerStatsService.GetPeakRatingAsync(playerId, ruleset);
+        double? peakRating = await playerStatsService.GetPeakRatingAsync(playerId, ruleset);
 
         Player? playerWithRulesetData = await playersRepository
             .GetWithIncludesAsync(playerId, p => p.RulesetData);
 
-        int? globalRank = playerWithRulesetData?.RulesetData
-            .FirstOrDefault(rd => rd.Ruleset == ruleset)?.GlobalRank;
-
         return new PlayerStatsData
         {
             RatingStats = ratingStats,
-            PeakRating = peakRating,
-            GlobalRank = globalRank
+            PeakRating = peakRating
         };
     }
 
     private sealed class PlayerStatsData
     {
         public PlayerRatingStatsDTO? RatingStats { get; init; }
-        public double PeakRating { get; init; }
-        public int? GlobalRank { get; init; }
+        public double? PeakRating { get; init; }
     }
 }

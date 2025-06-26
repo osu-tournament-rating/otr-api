@@ -62,9 +62,4 @@ public class PlayerFilteringResultDTO
     /// The player's all-time peak rating for the requested ruleset
     /// </summary>
     public double? PeakRating { get; set; }
-
-    /// <summary>
-    /// The player's osu! global rank for the requested ruleset
-    /// </summary>
-    public int? OsuGlobalRank { get; set; }
 }

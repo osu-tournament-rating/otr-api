@@ -48,16 +48,6 @@ public class FilterReport : EntityBase
     public int? MatchesPlayed { get; set; }
 
     /// <summary>
-    /// If set, requires players to have an osu! global rank greater than or equal to this value
-    /// </summary>
-    public int? MinOsuRank { get; set; }
-
-    /// <summary>
-    /// If set, requires players to have an osu! global rank less than or equal to this value
-    /// </summary>
-    public int? MaxOsuRank { get; set; }
-
-    /// <summary>
     /// The number of players who passed filtering
     /// </summary>
     [Required]

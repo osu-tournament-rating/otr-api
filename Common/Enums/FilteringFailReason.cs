@@ -41,15 +41,5 @@ public enum FilteringFailReason
     /// <summary>
     /// The player has not played in the minimum specified number of matches
     /// </summary>
-    NotEnoughMatches = 1 << 5,
-
-    /// <summary>
-    /// The player's osu! global rank is below the minimum threshold
-    /// </summary>
-    MinRank = 1 << 6,
-
-    /// <summary>
-    /// The player's osu! global rank is above the maximum threshold
-    /// </summary>
-    MaxRank = 1 << 7
+    NotEnoughMatches = 1 << 5
 }

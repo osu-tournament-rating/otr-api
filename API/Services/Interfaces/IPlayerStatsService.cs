@@ -45,8 +45,8 @@ public interface IPlayerStatsService
     /// <param name="ruleset">The osu! ruleset</param>
     /// <param name="dateMin">The minimum of the date range</param>
     /// <param name="dateMax">The maximum of the date range</param>
-    /// <returns></returns>
-    Task<double> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
+    /// <returns>The peak rating, or null if the player has no rating data</returns>
+    Task<double?> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
 
     /// <summary>
     /// Creates a dictionary mapping of player frequencies. The values mapping to 'true' in the result dictionary
