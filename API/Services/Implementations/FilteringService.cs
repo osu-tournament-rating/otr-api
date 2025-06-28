@@ -17,8 +17,6 @@ public class FilteringService(
     IPlayerStatsService playerStatsService,
     IPlayersRepository playersRepository,
     IFilterReportsRepository filterReportsRepository,
-    IPlayerMatchStatsRepository playerMatchStatsRepository,
-    ITournamentsService tournamentsService,
     OtrContext context) : IFilteringService
 {
     public async Task<FilteringResultDTO> FilterAsync(FilteringRequestDTO request, int userId)
@@ -54,16 +52,6 @@ public class FilteringService(
             includeAdjustments: false
         );
 
-        Dictionary<int, int> matchCountsByPlayerId = await playerMatchStatsRepository.CountMatchesPlayedAsync(
-            existingPlayerIds,
-            request.Ruleset
-        );
-
-        Dictionary<int, int> tournamentCountsByPlayerId = await tournamentsService.CountPlayedAsync(
-            existingPlayerIds,
-            request.Ruleset
-        );
-
         Dictionary<int, double?> peakRatingsByPlayerId = await playerStatsService.GetPeakRatingsAsync(
             existingPlayerIds,
             request.Ruleset
@@ -85,8 +73,6 @@ public class FilteringService(
             {
                 // Player exists - use bulk-fetched data
                 PlayerRatingStatsDTO? ratingStats = ratingStatsByPlayerId.GetValueOrDefault(player!.Id);
-                int matchCount = matchCountsByPlayerId.GetValueOrDefault(player.Id, 0);
-                int tournamentCount = tournamentCountsByPlayerId.GetValueOrDefault(player.Id, 0);
                 double? peakRating = peakRatingsByPlayerId.GetValueOrDefault(player.Id);
 
                 if (ratingStats == null)
@@ -115,16 +101,16 @@ public class FilteringService(
                         Username = playerDto.Username,
                         OsuId = playerDto.OsuId,
                         CurrentRating = ratingStats.Rating,
-                        TournamentsPlayed = tournamentCount,
-                        MatchesPlayed = matchCount,
+                        TournamentsPlayed = ratingStats.TournamentsPlayed,
+                        MatchesPlayed = ratingStats.MatchesPlayed,
                         PeakRating = peakRating
                     };
 
                     FilteringFailReason failReason = EnforceFilteringConditions(
                         request,
                         ratingStats.Rating,
-                        tournamentCount,
-                        matchCount,
+                        ratingStats.TournamentsPlayed,
+                        ratingStats.MatchesPlayed,
                         peakRating
                     );
 
@@ -137,8 +123,8 @@ public class FilteringService(
                         IsSuccess = filterResult.IsSuccess,
                         FailureReason = filterResult.FailureReason,
                         CurrentRating = ratingStats.Rating,
-                        TournamentsPlayed = tournamentCount,
-                        MatchesPlayed = matchCount,
+                        TournamentsPlayed = ratingStats.TournamentsPlayed,
+                        MatchesPlayed = ratingStats.MatchesPlayed,
                         PeakRating = peakRating
                     });
                 }
