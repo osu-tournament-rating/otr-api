@@ -31,28 +31,6 @@ public class RatingAdjustmentsRepository(OtrContext context)
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<RatingAdjustment>> GetForPlayersAsync(
-        IEnumerable<int> playerIds,
-        Ruleset ruleset,
-        DateTime? dateMin = null,
-        DateTime? dateMax = null
-    )
-    {
-        dateMin ??= DateTime.MinValue;
-        dateMax ??= DateTime.MaxValue;
-        var playerIdsList = playerIds.ToList();
-
-        return await _context.RatingAdjustments
-            .Where(ra =>
-                playerIdsList.Contains(ra.PlayerId)
-                && ra.Ruleset == ruleset
-                && ra.Timestamp >= dateMin
-                && ra.Timestamp <= dateMax
-            )
-            .Include(ra => ra.Match!.Tournament)
-            .ToListAsync();
-    }
-
     public async Task<Dictionary<int, double?>> GetPeakRatingsForPlayersAsync(
         IEnumerable<int> playerIds,
         Ruleset ruleset,
@@ -71,7 +49,7 @@ public class RatingAdjustmentsRepository(OtrContext context)
         dateMax ??= DateTime.MaxValue;
 
         // Execute optimized query that calculates max rating per player in the database
-        var peakRatings = await _context.RatingAdjustments
+        Dictionary<int, double?> peakRatings = await _context.RatingAdjustments
             .AsNoTracking()
             .Where(ra =>
                 playerIdsList.Contains(ra.PlayerId) &&

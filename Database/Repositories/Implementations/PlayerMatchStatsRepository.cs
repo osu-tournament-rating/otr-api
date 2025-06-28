@@ -91,7 +91,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        var matchCounts = await context
+        Dictionary<int, int> matchCounts = await context
             .PlayerMatchStats
             .AsNoTracking()
             .Where(pms =>
@@ -120,7 +120,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         var playerIdsList = playerIds.ToList();
 
         // Calculate winrate directly in the database query
-        var winrates = await context
+        Dictionary<int, double> winrates = await context
             .PlayerMatchStats
             .AsNoTracking()
             .ApplyCommonFilters(ruleset, dateMin, dateMax)
@@ -129,7 +129,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .Select(g => new
             {
                 PlayerId = g.Key,
-                Winrate = g.Count() > 0
+                Winrate = g.Any()
                     ? g.Count(x => x.Won) / (double)g.Count()
                     : 0.0
             })

@@ -81,7 +81,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         dateMax ??= DateTime.MaxValue;
 
         // Use a more efficient query with direct joins
-        var playerTournamentCounts = await _context.RatingAdjustments
+        Dictionary<int, int> playerTournamentCounts = await _context.RatingAdjustments
             .AsNoTracking()
             .Where(ra => playerIdsList.Contains(ra.PlayerId))
             .Where(ra => ra.Match != null && ra.Match.Tournament.Ruleset == ruleset)

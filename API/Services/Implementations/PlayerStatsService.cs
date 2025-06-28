@@ -133,10 +133,7 @@ public class PlayerStatsService(
             return new Dictionary<int, double?>();
         }
 
-        // Get peak ratings directly from the repository in a single optimized query
-        var peakRatings = await ratingAdjustmentsRepository.GetPeakRatingsForPlayersAsync(playerIdsList, ruleset, dateMin, dateMax);
-
-        // Initialize result with all requested player IDs (null for players with no adjustments)
+        Dictionary<int, double?> peakRatings = await ratingAdjustmentsRepository.GetPeakRatingsForPlayersAsync(playerIdsList, ruleset, dateMin, dateMax);
         var result = playerIdsList.ToDictionary(id => id, id => peakRatings.GetValueOrDefault(id));
 
         return result;
