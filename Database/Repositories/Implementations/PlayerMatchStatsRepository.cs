@@ -1,4 +1,5 @@
 using Common.Enums;
+using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
@@ -82,20 +83,29 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
     {
         var playerIdsList = playerIds.ToList();
 
+        if (playerIdsList.Count == 0)
+        {
+            return new Dictionary<int, int>();
+        }
+
+        dateMin ??= DateTime.MinValue;
+        dateMax ??= DateTime.MaxValue;
+
         var matchCounts = await context
             .PlayerMatchStats
-            .ApplyCommonFilters(ruleset, dateMin, dateMax)
-            .Where(x => playerIdsList.Contains(x.PlayerId))
-            .GroupBy(x => x.PlayerId)
+            .AsNoTracking()
+            .Where(pms =>
+                playerIdsList.Contains(pms.PlayerId) &&
+                pms.Match.VerificationStatus == VerificationStatus.Verified &&
+                pms.Match.Tournament.Ruleset == ruleset &&
+                pms.Match.StartTime >= dateMin &&
+                pms.Match.StartTime <= dateMax)
+            .GroupBy(pms => pms.PlayerId)
             .Select(g => new { PlayerId = g.Key, Count = g.Count() })
-            .ToListAsync();
+            .ToDictionaryAsync(x => x.PlayerId, x => x.Count);
 
-        // Create dictionary with all player IDs, defaulting to 0 for those with no matches
-        var result = playerIdsList.ToDictionary(id => id, _ => 0);
-        foreach (var item in matchCounts)
-        {
-            result[item.PlayerId] = item.Count;
-        }
+        // Initialize result with all requested player IDs (including those with 0 matches)
+        var result = playerIdsList.ToDictionary(id => id, id => matchCounts.GetValueOrDefault(id, 0));
 
         return result;
     }
@@ -109,28 +119,23 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
     {
         var playerIdsList = playerIds.ToList();
 
-        var matchStats = await context
+        // Calculate winrate directly in the database query
+        var winrates = await context
             .PlayerMatchStats
+            .AsNoTracking()
             .ApplyCommonFilters(ruleset, dateMin, dateMax)
             .Where(x => playerIdsList.Contains(x.PlayerId))
             .GroupBy(x => x.PlayerId)
             .Select(g => new
             {
                 PlayerId = g.Key,
-                MatchesPlayed = g.Count(),
-                MatchesWon = g.Count(x => x.Won)
+                Winrate = g.Count() > 0
+                    ? g.Count(x => x.Won) / (double)g.Count()
+                    : 0.0
             })
-            .ToListAsync();
+            .ToDictionaryAsync(x => x.PlayerId, x => x.Winrate);
 
-        // Create dictionary with all player IDs, defaulting to 0.0 for those with no matches
-        var result = playerIdsList.ToDictionary(id => id, _ => 0.0);
-        foreach (var item in matchStats)
-        {
-            result[item.PlayerId] = item.MatchesPlayed > 0
-                ? item.MatchesWon / (double)item.MatchesPlayed
-                : 0.0;
-        }
-
-        return result;
+        // Ensure all requested players are in the result with a winrate of 0.0 if they haven't played
+        return playerIdsList.ToDictionary(id => id, id => winrates.GetValueOrDefault(id, 0.0));
     }
 }

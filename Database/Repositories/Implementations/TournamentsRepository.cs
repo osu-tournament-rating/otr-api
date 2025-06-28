@@ -80,19 +80,15 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        // Execute a single optimized query that counts tournaments per player
-        var playerTournamentCounts = await _context.Tournaments
+        // Use a more efficient query with direct joins
+        var playerTournamentCounts = await _context.RatingAdjustments
             .AsNoTracking()
-            .Where(t => t.Ruleset == ruleset)
-            .SelectMany(t => t.Matches
-                .Where(m =>
-                    m.StartTime >= dateMin
-                    && m.StartTime <= dateMax
-                    && m.VerificationStatus == VerificationStatus.Verified)
-                .SelectMany(m => m.PlayerRatingAdjustments)
-                .Where(pra => playerIdsList.Contains(pra.PlayerId))
-                .Select(pra => new { t.Id, pra.PlayerId })
-                .Distinct())
+            .Where(ra => playerIdsList.Contains(ra.PlayerId))
+            .Where(ra => ra.Match != null && ra.Match.Tournament.Ruleset == ruleset)
+            .Where(ra => ra.Match!.StartTime >= dateMin && ra.Match.StartTime <= dateMax)
+            .Where(ra => ra.Match!.VerificationStatus == VerificationStatus.Verified)
+            .GroupBy(ra => new { ra.PlayerId, ra.Match!.TournamentId })
+            .Select(g => new { g.Key.PlayerId, g.Key.TournamentId })
             .GroupBy(x => x.PlayerId)
             .Select(g => new { PlayerId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.PlayerId, x => x.Count);

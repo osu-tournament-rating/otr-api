@@ -36,4 +36,19 @@ public interface IRatingAdjustmentsRepository : IRepository<RatingAdjustment>
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
+
+    /// <summary>
+    /// Get peak ratings for multiple players in a single optimized query
+    /// </summary>
+    /// <param name="playerIds">Player IDs to fetch peak ratings for</param>
+    /// <param name="ruleset">Ruleset filter</param>
+    /// <param name="dateMin">Minimum date filter</param>
+    /// <param name="dateMax">Maximum date filter</param>
+    /// <returns>Dictionary mapping player IDs to their peak ratings</returns>
+    Task<Dictionary<int, double?>> GetPeakRatingsForPlayersAsync(
+        IEnumerable<int> playerIds,
+        Ruleset ruleset,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    );
 }

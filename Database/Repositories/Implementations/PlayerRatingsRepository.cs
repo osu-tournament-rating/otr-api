@@ -37,6 +37,7 @@ public class PlayerRatingsRepository(OtrContext context)
         var playerIdsList = playerIds.ToList();
 
         IQueryable<PlayerRating> query = _context.PlayerRatings
+            .AsNoTracking()
             .Include(pr => pr.Player.User)
             .Where(pr => playerIdsList.Contains(pr.PlayerId) && pr.Ruleset == ruleset);
 
@@ -46,8 +47,7 @@ public class PlayerRatingsRepository(OtrContext context)
                 .ThenInclude(a => a.Match);
         }
 
-        List<PlayerRating> ratings = await query.ToListAsync();
-        return ratings.ToDictionary(pr => pr.PlayerId);
+        return await query.ToDictionaryAsync(pr => pr.PlayerId);
     }
 
     public async Task<IList<PlayerRating>> GetAsync(int page = 1, int pageSize = 25, Ruleset ruleset = Ruleset.Osu,
