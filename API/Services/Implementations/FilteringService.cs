@@ -42,15 +42,12 @@ public class FilteringService(
 
         await filterReportsRepository.CreateAsync(filterReport);
 
-        // Get all player IDs and those that exist in the database
-        var allPlayerIds = playersByOsuId.Values.Select(p => p.Id).ToList();
         var existingPlayerIds = playersByOsuId.Values.Where(p => p.Id > 0).Select(p => p.Id).ToList();
 
         // Fetch all data in bulk for existing players
         var playerDtos = (await playerService.GetAsync(osuIdHashSet)).ToList();
         var playerDtosByOsuId = playerDtos.ToDictionary(p => p.OsuId);
 
-        // Fetch all stats in bulk (only for existing players)
         Dictionary<int, PlayerRatingStatsDTO?> ratingStatsByPlayerId = await playerRatingsService.GetAsync(
             existingPlayerIds,
             request.Ruleset,
@@ -94,7 +91,7 @@ public class FilteringService(
 
                 if (ratingStats == null)
                 {
-                    // Player exists but has no rating data - treat as rating 0
+                    // Player exists but has no rating data
                     filterResult = ApplyFiltersForPlayerWithNoRating(request, playerDto);
 
                     filterReportPlayers.Add(new FilterReportPlayer
@@ -103,10 +100,10 @@ public class FilteringService(
                         PlayerId = player.Id,
                         IsSuccess = filterResult.IsSuccess,
                         FailureReason = filterResult.FailureReason,
-                        CurrentRating = 0,
-                        TournamentsPlayed = 0,
-                        MatchesPlayed = 0,
-                        PeakRating = 0,
+                        CurrentRating = null,
+                        TournamentsPlayed = null,
+                        MatchesPlayed = null,
+                        PeakRating = null
                     });
                 }
                 else
@@ -142,13 +139,13 @@ public class FilteringService(
                         CurrentRating = ratingStats.Rating,
                         TournamentsPlayed = tournamentCount,
                         MatchesPlayed = matchCount,
-                        PeakRating = peakRating,
+                        PeakRating = peakRating
                     });
                 }
             }
             else
             {
-                // Player doesn't exist in our system - treat as rating 0
+                // Player doesn't exist in our system - treat as rating null
                 filterResult = ApplyFiltersForNonExistentPlayer(request, player, osuId);
 
                 // Only create FilterReportPlayer records for players that exist in our database
@@ -160,10 +157,10 @@ public class FilteringService(
                         PlayerId = player!.Id,
                         IsSuccess = filterResult.IsSuccess,
                         FailureReason = filterResult.FailureReason,
-                        CurrentRating = 0,
-                        TournamentsPlayed = 0,
-                        MatchesPlayed = 0,
-                        PeakRating = 0,
+                        CurrentRating = null,
+                        TournamentsPlayed = null,
+                        MatchesPlayed = null,
+                        PeakRating = null
                     });
                 }
             }
@@ -205,10 +202,10 @@ public class FilteringService(
             PlayerId = player?.Id > 0 ? player.Id : 0,
             Username = player?.Username ?? $"osu! user {osuId}",
             OsuId = osuId,
-            CurrentRating = 0,
-            TournamentsPlayed = 0,
-            MatchesPlayed = 0,
-            PeakRating = 0
+            CurrentRating = null,
+            TournamentsPlayed = null,
+            MatchesPlayed = null,
+            PeakRating = null
         };
 
         FilteringFailReason failReason = EnforceFilteringConditions(request, 0, 0, 0, 0);
@@ -230,10 +227,10 @@ public class FilteringService(
             PlayerId = playerDto.Id,
             Username = playerDto.Username,
             OsuId = playerDto.OsuId,
-            CurrentRating = 0,
-            TournamentsPlayed = 0,
-            MatchesPlayed = 0,
-            PeakRating = 0
+            CurrentRating = null,
+            TournamentsPlayed = null,
+            MatchesPlayed = null,
+            PeakRating = null
         };
 
         FilteringFailReason failReason = EnforceFilteringConditions(request, 0, 0, 0, 0);

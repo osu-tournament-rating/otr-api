@@ -40,17 +40,6 @@ public interface IRepository<T> where T : class, IEntity
     Task<T?> GetAsync(int id);
 
     /// <summary>
-    /// Gets an entity from the database by its primary key with specified navigation properties
-    /// </summary>
-    /// <remarks>
-    /// Returned entities are not tracked
-    /// </remarks>
-    /// <param name="id">The primary key of the entity</param>
-    /// <param name="includes">Navigation properties to include</param>
-    /// <returns>The entity with included navigation properties, or null if not found</returns>
-    Task<T?> GetWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes);
-
-    /// <summary>
     /// Updates an entity
     /// </summary>
     /// <returns>Number of rows affected</returns>

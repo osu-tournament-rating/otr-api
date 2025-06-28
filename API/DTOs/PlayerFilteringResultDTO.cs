@@ -27,7 +27,7 @@ public class PlayerFilteringResultDTO
     /// <summary>
     /// Whether the player successfully passes all conditions of the filter
     /// </summary>
-    public bool IsSuccess => FailureReason is null || FailureReason == FilteringFailReason.None;
+    public bool IsSuccess => FailureReason is null or FilteringFailReason.None;
 
     /// <summary>
     /// If the player failed filtering, the fail reason

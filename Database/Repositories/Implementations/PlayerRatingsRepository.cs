@@ -46,7 +46,7 @@ public class PlayerRatingsRepository(OtrContext context)
                 .ThenInclude(a => a.Match);
         }
 
-        var ratings = await query.ToListAsync();
+        List<PlayerRating> ratings = await query.ToListAsync();
         return ratings.ToDictionary(pr => pr.PlayerId);
     }
 

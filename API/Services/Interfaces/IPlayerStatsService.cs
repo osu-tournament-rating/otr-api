@@ -39,16 +39,6 @@ public interface IPlayerStatsService
     );
 
     /// <summary>
-    /// Returns the peak rating of a player for a given ruleset and date range.
-    /// </summary>
-    /// <param name="playerId">The player id</param>
-    /// <param name="ruleset">The osu! ruleset</param>
-    /// <param name="dateMin">The minimum of the date range</param>
-    /// <param name="dateMax">The maximum of the date range</param>
-    /// <returns>The peak rating, or null if the player has no rating data</returns>
-    Task<double?> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
-
-    /// <summary>
     /// Returns the peak ratings for multiple players for a given ruleset and date range.
     /// </summary>
     /// <param name="playerIds">The player ids</param>

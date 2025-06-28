@@ -36,14 +36,6 @@ public class Repository<T> : IRepository<T> where T : class, IEntity
 
     public virtual async Task<T?> GetAsync(int id) => await _context.Set<T>().FindAsync(id);
 
-    public virtual async Task<T?> GetWithIncludesAsync(int id, params Expression<Func<T, object>>[] includes)
-    {
-        IQueryable<T> query = _context.Set<T>().AsNoTracking();
-        query = includes.Aggregate(query, (current, include) => current.Include(include));
-
-        return await query.FirstOrDefaultAsync(e => e.Id == id);
-    }
-
     public virtual async Task<int> UpdateAsync(T entity)
     {
         if (entity is IUpdateableEntity updateableEntity)

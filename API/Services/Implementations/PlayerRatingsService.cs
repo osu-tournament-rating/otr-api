@@ -52,19 +52,19 @@ public class PlayerRatingsService(
         var result = new Dictionary<int, PlayerRatingStatsDTO?>();
 
         // Get all ratings in bulk
-        var ratings = await playerRatingsRepository.GetAsync(playerIdsList, ruleset, dateMin, dateMax, includeAdjustments);
+        Dictionary<int, PlayerRating> ratings = await playerRatingsRepository.GetAsync(playerIdsList, ruleset, dateMin, dateMax, includeAdjustments);
 
         // Get match stats in bulk
-        var matchCounts = await matchStatsRepository.CountMatchesPlayedAsync(playerIdsList, ruleset, dateMin, dateMax);
-        var winRates = await matchStatsRepository.GlobalWinrateAsync(playerIdsList, ruleset, dateMin, dateMax);
+        Dictionary<int, int> matchCounts = await matchStatsRepository.CountMatchesPlayedAsync(playerIdsList, ruleset, dateMin, dateMax);
+        Dictionary<int, double> winRates = await matchStatsRepository.GlobalWinrateAsync(playerIdsList, ruleset, dateMin, dateMax);
 
         // Get tournament counts in bulk
-        var tournamentCounts = await tournamentsService.CountPlayedAsync(playerIdsList, ruleset, dateMin, dateMax);
+        Dictionary<int, int> tournamentCounts = await tournamentsService.CountPlayedAsync(playerIdsList, ruleset, dateMin, dateMax);
 
         // Build DTOs for each player
         foreach (int playerId in playerIdsList)
         {
-            if (!ratings.TryGetValue(playerId, out var currentStats))
+            if (!ratings.TryGetValue(playerId, out PlayerRating? currentStats))
             {
                 result[playerId] = null;
                 continue;
