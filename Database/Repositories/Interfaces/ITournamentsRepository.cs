@@ -42,6 +42,16 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<int> CountPlayedAsync(int playerId, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax);
 
     /// <summary>
+    /// Count number of tournaments played for multiple players
+    /// </summary>
+    /// <param name="playerIds">Ids of target players</param>
+    /// <param name="ruleset">Ruleset</param>
+    /// <param name="dateMin">Date lower bound</param>
+    /// <param name="dateMax">Date upper bound</param>
+    /// <returns>Dictionary mapping player IDs to their tournament count</returns>
+    Task<Dictionary<int, int>> CountPlayedAsync(IEnumerable<int> playerIds, Ruleset ruleset, DateTime? dateMin, DateTime? dateMax);
+
+    /// <summary>
     /// Gets all tournaments with pagination
     /// </summary>
     /// <param name="page">The page</param>

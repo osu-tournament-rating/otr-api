@@ -20,6 +20,20 @@ public interface IPlayerRatingsRepository : IRepository<PlayerRating>
     Task<PlayerRating?> GetAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null, bool includeAdjustments = false);
 
     /// <summary>
+    /// Get ratings for multiple players and a <see cref="Ruleset" />.
+    /// </summary>
+    /// <param name="playerIds">Player ids</param>
+    /// <param name="ruleset">Ruleset</param>
+    /// <param name="dateMin">Date lower bound</param>
+    /// <param name="dateMax">Date upper bound</param>
+    /// <param name="includeAdjustments">Whether to include rating adjustments</param>
+    /// <remarks>dateMin and dateMax are only used for filtering the rating adjustments. Other data is always current</remarks>
+    /// <returns>
+    /// A dictionary mapping player IDs to their <see cref="PlayerRating" /> for the given <see cref="Ruleset" />
+    /// </returns>
+    Task<Dictionary<int, PlayerRating>> GetAsync(IEnumerable<int> playerIds, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null, bool includeAdjustments = false);
+
+    /// <summary>
     /// Get a collection of ratings
     /// </summary>
     /// <param name="page">The one-indexed page number to retrieve.</param>

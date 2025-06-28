@@ -69,6 +69,46 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         DateTime? dateMax
     ) => await QueryForParticipation(playerId, ruleset, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
 
+    public async Task<Dictionary<int, int>> CountPlayedAsync(
+        IEnumerable<int> playerIds,
+        Ruleset ruleset,
+        DateTime? dateMin,
+        DateTime? dateMax
+    )
+    {
+        var playerIdsList = playerIds.ToList();
+        dateMin ??= DateTime.MinValue;
+        dateMax ??= DateTime.MaxValue;
+
+        // Get all tournaments with matches that any of the players participated in
+        var tournamentCounts = await _context.Tournaments
+            .Where(t => t.Ruleset == ruleset)
+            .Select(t => new
+            {
+                TournamentId = t.Id,
+                PlayerIds = t.Matches
+                    .Where(m =>
+                        m.StartTime >= dateMin
+                        && m.StartTime <= dateMax
+                        && m.VerificationStatus == VerificationStatus.Verified)
+                    .SelectMany(m => m.PlayerRatingAdjustments.Select(stat => stat.PlayerId))
+                    .Where(pid => playerIdsList.Contains(pid))
+                    .Distinct()
+                    .ToList()
+            })
+            .Where(x => x.PlayerIds.Any())
+            .ToListAsync();
+
+        // Count tournaments per player
+        var result = playerIdsList.ToDictionary(id => id, id => 0);
+        foreach (int playerId in tournamentCounts.SelectMany(tournament => tournament.PlayerIds))
+        {
+            result[playerId]++;
+        }
+
+        return result;
+    }
+
     public async Task<ICollection<Tournament>> GetAsync(
         int page,
         int pageSize,

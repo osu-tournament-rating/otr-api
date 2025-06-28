@@ -30,4 +30,26 @@ public class RatingAdjustmentsRepository(OtrContext context)
             .Include(ra => ra.Match!.Tournament)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<RatingAdjustment>> GetForPlayersAsync(
+        IEnumerable<int> playerIds,
+        Ruleset ruleset,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    )
+    {
+        dateMin ??= DateTime.MinValue;
+        dateMax ??= DateTime.MaxValue;
+        var playerIdsList = playerIds.ToList();
+
+        return await _context.RatingAdjustments
+            .Where(ra =>
+                playerIdsList.Contains(ra.PlayerId)
+                && ra.Ruleset == ruleset
+                && ra.Timestamp >= dateMin
+                && ra.Timestamp <= dateMax
+            )
+            .Include(ra => ra.Match!.Tournament)
+            .ToListAsync();
+    }
 }

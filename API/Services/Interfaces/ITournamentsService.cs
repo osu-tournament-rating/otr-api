@@ -51,6 +51,16 @@ public interface ITournamentsService
     Task<int> CountPlayedAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
 
     /// <summary>
+    /// Gets the number of tournaments played by multiple players
+    /// </summary>
+    /// <param name="playerIds">The player ids</param>
+    /// <param name="ruleset">The ruleset</param>
+    /// <param name="dateMin">Minimum date filter</param>
+    /// <param name="dateMax">Maximum date filter</param>
+    /// <returns>Dictionary mapping player IDs to their tournament count</returns>
+    Task<Dictionary<int, int>> CountPlayedAsync(IEnumerable<int> playerIds, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
+
+    /// <summary>
     /// Updates a tournament entity with values from a <see cref="TournamentDTO"/>
     /// </summary>
     Task<TournamentCompactDTO?> UpdateAsync(int id, TournamentCompactDTO wrapper);

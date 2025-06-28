@@ -49,6 +49,16 @@ public interface IPlayerStatsService
     Task<double?> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
 
     /// <summary>
+    /// Returns the peak ratings for multiple players for a given ruleset and date range.
+    /// </summary>
+    /// <param name="playerIds">The player ids</param>
+    /// <param name="ruleset">The osu! ruleset</param>
+    /// <param name="dateMin">The minimum of the date range</param>
+    /// <param name="dateMax">The maximum of the date range</param>
+    /// <returns>Dictionary mapping player IDs to their peak rating (null if no rating data)</returns>
+    Task<Dictionary<int, double?>> GetPeakRatingsAsync(IEnumerable<int> playerIds, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null);
+
+    /// <summary>
     /// Creates a dictionary mapping of player frequencies. The values mapping to 'true' in the result dictionary
     /// are the player's teammates, the values mapped to 'false' are the player's opponents.
     /// </summary>

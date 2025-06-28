@@ -21,4 +21,19 @@ public interface IRatingAdjustmentsRepository : IRepository<RatingAdjustment>
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
+
+    /// <summary>
+    /// Get rating adjustments for multiple players in a single query
+    /// </summary>
+    /// <param name="playerIds">Player IDs to fetch adjustments for</param>
+    /// <param name="ruleset">Ruleset filter</param>
+    /// <param name="dateMin">Minimum date filter</param>
+    /// <param name="dateMax">Maximum date filter</param>
+    /// <returns>Collection of rating adjustments for all specified players</returns>
+    Task<IEnumerable<RatingAdjustment>> GetForPlayersAsync(
+        IEnumerable<int> playerIds,
+        Ruleset ruleset,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    );
 }

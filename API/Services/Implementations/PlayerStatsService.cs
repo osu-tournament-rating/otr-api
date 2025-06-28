@@ -130,6 +130,23 @@ public class PlayerStatsService(
         return ratingAdjustments.Count != 0 ? ratingAdjustments.Max(ra => ra.RatingAfter) : null;
     }
 
+    public async Task<Dictionary<int, double?>> GetPeakRatingsAsync(IEnumerable<int> playerIds, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null)
+    {
+        var playerIdsList = playerIds.ToList();
+        var allAdjustments = await ratingAdjustmentsRepository.GetForPlayersAsync(playerIdsList, ruleset, dateMin, dateMax);
+
+        // Calculate peak rating for each player
+        var result = playerIdsList.ToDictionary(id => id, id => (double?)null);
+
+        foreach (var playerAdjustments in allAdjustments.GroupBy(ra => ra.PlayerId))
+        {
+            double maxRating = playerAdjustments.Max(ra => ra.RatingAfter);
+            result[playerAdjustments.Key] = maxRating;
+        }
+
+        return result;
+    }
+
     public async Task<Dictionary<bool, List<PlayerFrequencyDTO>>> GetFrequentMatchupsAsync(
         int playerId,
         Ruleset ruleset,

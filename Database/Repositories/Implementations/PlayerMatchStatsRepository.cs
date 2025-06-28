@@ -72,4 +72,65 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
 
         return matchesWon / (double)matchesPlayed;
     }
+
+    public async Task<Dictionary<int, int>> CountMatchesPlayedAsync(
+        IEnumerable<int> playerIds,
+        Ruleset ruleset,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    )
+    {
+        var playerIdsList = playerIds.ToList();
+
+        var matchCounts = await context
+            .PlayerMatchStats
+            .ApplyCommonFilters(ruleset, dateMin, dateMax)
+            .Where(x => playerIdsList.Contains(x.PlayerId))
+            .GroupBy(x => x.PlayerId)
+            .Select(g => new { PlayerId = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        // Create dictionary with all player IDs, defaulting to 0 for those with no matches
+        var result = playerIdsList.ToDictionary(id => id, id => 0);
+        foreach (var item in matchCounts)
+        {
+            result[item.PlayerId] = item.Count;
+        }
+
+        return result;
+    }
+
+    public async Task<Dictionary<int, double>> GlobalWinrateAsync(
+        IEnumerable<int> playerIds,
+        Ruleset ruleset,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    )
+    {
+        var playerIdsList = playerIds.ToList();
+
+        var matchStats = await context
+            .PlayerMatchStats
+            .ApplyCommonFilters(ruleset, dateMin, dateMax)
+            .Where(x => playerIdsList.Contains(x.PlayerId))
+            .GroupBy(x => x.PlayerId)
+            .Select(g => new
+            {
+                PlayerId = g.Key,
+                MatchesPlayed = g.Count(),
+                MatchesWon = g.Count(x => x.Won)
+            })
+            .ToListAsync();
+
+        // Create dictionary with all player IDs, defaulting to 0.0 for those with no matches
+        var result = playerIdsList.ToDictionary(id => id, id => 0.0);
+        foreach (var item in matchStats)
+        {
+            result[item.PlayerId] = item.MatchesPlayed > 0
+                ? item.MatchesWon / (double)item.MatchesPlayed
+                : 0.0;
+        }
+
+        return result;
+    }
 }
