@@ -91,7 +91,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .ToListAsync();
 
         // Create dictionary with all player IDs, defaulting to 0 for those with no matches
-        var result = playerIdsList.ToDictionary(id => id, id => 0);
+        var result = playerIdsList.ToDictionary(id => id, _ => 0);
         foreach (var item in matchCounts)
         {
             result[item.PlayerId] = item.Count;
@@ -123,7 +123,7 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
             .ToListAsync();
 
         // Create dictionary with all player IDs, defaulting to 0.0 for those with no matches
-        var result = playerIdsList.ToDictionary(id => id, id => 0.0);
+        var result = playerIdsList.ToDictionary(id => id, _ => 0.0);
         foreach (var item in matchStats)
         {
             result[item.PlayerId] = item.MatchesPlayed > 0
