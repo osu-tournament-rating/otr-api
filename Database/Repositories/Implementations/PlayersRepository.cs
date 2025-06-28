@@ -16,7 +16,8 @@ public class PlayersRepository(OtrContext context) : Repository<Player>(context)
         await _context.Players
             .Include(p => p.User)
             .AsNoTracking()
-            .Where(p => ids.Contains(p.Id)).ToListAsync();
+            .Where(p => ids.Contains(p.Id))
+            .ToListAsync();
 
     public async Task<IEnumerable<Player>> GetAsync(IEnumerable<long> osuIds) =>
         await _context.Players.AsNoTracking().Where(p => osuIds.Contains(p.OsuId)).ToListAsync();
