@@ -80,31 +80,25 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         dateMin ??= DateTime.MinValue;
         dateMax ??= DateTime.MaxValue;
 
-        // Get all tournaments with matches that any of the players participated in
-        var tournamentCounts = await _context.Tournaments
+        // Execute a single optimized query that counts tournaments per player
+        var playerTournamentCounts = await _context.Tournaments
+            .AsNoTracking()
             .Where(t => t.Ruleset == ruleset)
-            .Select(t => new
-            {
-                TournamentId = t.Id,
-                PlayerIds = t.Matches
-                    .Where(m =>
-                        m.StartTime >= dateMin
-                        && m.StartTime <= dateMax
-                        && m.VerificationStatus == VerificationStatus.Verified)
-                    .SelectMany(m => m.PlayerRatingAdjustments.Select(stat => stat.PlayerId))
-                    .Where(pid => playerIdsList.Contains(pid))
-                    .Distinct()
-                    .ToList()
-            })
-            .Where(x => x.PlayerIds.Any())
-            .ToListAsync();
+            .SelectMany(t => t.Matches
+                .Where(m =>
+                    m.StartTime >= dateMin
+                    && m.StartTime <= dateMax
+                    && m.VerificationStatus == VerificationStatus.Verified)
+                .SelectMany(m => m.PlayerRatingAdjustments)
+                .Where(pra => playerIdsList.Contains(pra.PlayerId))
+                .Select(pra => new { t.Id, pra.PlayerId })
+                .Distinct())
+            .GroupBy(x => x.PlayerId)
+            .Select(g => new { PlayerId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.PlayerId, x => x.Count);
 
-        // Count tournaments per player
-        var result = playerIdsList.ToDictionary(id => id, _ => 0);
-        foreach (int playerId in tournamentCounts.SelectMany(tournament => tournament.PlayerIds))
-        {
-            result[playerId]++;
-        }
+        // Initialize result with all requested player IDs (including those with 0 tournaments)
+        var result = playerIdsList.ToDictionary(id => id, id => playerTournamentCounts.GetValueOrDefault(id, 0));
 
         return result;
     }
