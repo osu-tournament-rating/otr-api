@@ -34,6 +34,8 @@ public class FilteringService(
             TournamentsPlayed = request.TournamentsPlayed,
             PeakRating = request.PeakRating,
             MatchesPlayed = request.MatchesPlayed,
+            MaxMatchesPlayed = request.MaxMatchesPlayed,
+            MaxTournamentsPlayed = request.MaxTournamentsPlayed,
             PlayersPassed = 0, // Will be updated after processing
             PlayersFailed = 0  // Will be updated after processing
         };
@@ -261,6 +263,16 @@ public class FilteringService(
         if (request.MatchesPlayed.HasValue && matchesPlayed < request.MatchesPlayed.Value)
         {
             failReason |= FilteringFailReason.NotEnoughMatches;
+        }
+
+        if (request.MaxMatchesPlayed.HasValue && matchesPlayed > request.MaxMatchesPlayed.Value)
+        {
+            failReason |= FilteringFailReason.TooManyMatches;
+        }
+
+        if (request.MaxTournamentsPlayed.HasValue && tournamentsPlayed > request.MaxTournamentsPlayed.Value)
+        {
+            failReason |= FilteringFailReason.TooManyTournaments;
         }
 
         return failReason;

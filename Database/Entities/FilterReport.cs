@@ -48,6 +48,16 @@ public class FilterReport : EntityBase
     public int? MatchesPlayed { get; set; }
 
     /// <summary>
+    /// If set, requires players to have played in at most this many matches
+    /// </summary>
+    public int? MaxMatchesPlayed { get; set; }
+
+    /// <summary>
+    /// If set, requires players to have participated in at most this many distinct tournaments
+    /// </summary>
+    public int? MaxTournamentsPlayed { get; set; }
+
+    /// <summary>
     /// The number of players who passed filtering
     /// </summary>
     [Required]

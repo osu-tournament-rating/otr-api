@@ -53,6 +53,20 @@ public class FilteringRequestDTO
     public int? MatchesPlayed { get; set; }
 
     /// <summary>
+    /// If set, requires players to have played in at most
+    /// this many matches
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Maximum matches played must be at least 1.")]
+    public int? MaxMatchesPlayed { get; set; }
+
+    /// <summary>
+    /// If set, requires players to have participated in at most
+    /// this many distinct tournaments
+    /// </summary>
+    [Range(1, int.MaxValue, ErrorMessage = "Maximum tournaments played must be at least 1.")]
+    public int? MaxTournamentsPlayed { get; set; }
+
+    /// <summary>
     /// A list of osu! player ids that will be filtered
     /// </summary>
     [MinLength(1)]
