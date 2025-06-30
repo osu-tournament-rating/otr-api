@@ -3,6 +3,7 @@ using System;
 using Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Database.Migrations
 {
     [DbContext(typeof(OtrContext))]
-    partial class OtrContextModelSnapshot : ModelSnapshot
+    [Migration("20250626004811_FilterReportPlayers")]
+    partial class FilterReportPlayers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -250,17 +253,9 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("matches_played");
 
-                    b.Property<int?>("MaxMatchesPlayed")
-                        .HasColumnType("integer")
-                        .HasColumnName("max_matches_played");
-
                     b.Property<int?>("MaxRating")
                         .HasColumnType("integer")
                         .HasColumnName("max_rating");
-
-                    b.Property<int?>("MaxTournamentsPlayed")
-                        .HasColumnType("integer")
-                        .HasColumnName("max_tournaments_played");
 
                     b.Property<int?>("MinRating")
                         .HasColumnType("integer")

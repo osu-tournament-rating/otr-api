@@ -12,8 +12,6 @@ public interface IRepository<T> where T : class, IEntity
     /// </summary>
     LocalView<T> LocalView { get; }
 
-    // CRUD operations
-
     /// <summary>
     /// Begins tracking an entity in the <see cref="EntityState.Added"/> state
     /// </summary>

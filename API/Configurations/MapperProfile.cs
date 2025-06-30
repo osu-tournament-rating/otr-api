@@ -117,6 +117,20 @@ public class MapperProfile : Profile
             .ForMember(x => x.Ruleset, opt => opt.MapFrom(us => us.DefaultRuleset))
             .ForMember(x => x.RulesetIsControlled, opt => opt.MapFrom(us => us.DefaultRulesetIsControlled));
 
+        // Filter Reports
+        CreateMap<FilterReport, FilteringRequestDTO>()
+            .ForMember(dest => dest.OsuPlayerIds, opt => opt.MapFrom(src => src.FilterReportPlayers.Select(frp => frp.Player.OsuId)));
+        CreateMap<FilterReport, FilteringResultDTO>()
+            .ForMember(dest => dest.FilteringResults, opt => opt.MapFrom(src => src.FilterReportPlayers))
+            .ForMember(dest => dest.FilterReportId, opt => opt.MapFrom(src => src.Id));
+        CreateMap<FilterReportPlayer, PlayerFilteringResultDTO>()
+            .ForMember(dest => dest.PlayerId, opt => opt.MapFrom(src => src.PlayerId))
+            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.Player.Username))
+            .ForMember(dest => dest.OsuId, opt => opt.MapFrom(src => src.Player.OsuId));
+        CreateMap<FilterReport, FilterReportDTO>()
+            .ForMember(dest => dest.Request, opt => opt.MapFrom(src => src))
+            .ForMember(dest => dest.Response, opt => opt.MapFrom(src => src));
+
         // Audits
         CreateMap<GameAudit, AuditDTO>()
             .ForMember(dest => dest.Timestamp, opt => opt.MapFrom(src => src.Created))

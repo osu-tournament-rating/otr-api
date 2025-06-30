@@ -23,4 +23,9 @@ public class FilteringResultDTO
     /// in the same order as submitted in the <see cref="FilteringRequestDTO"/>
     /// </summary>
     public IList<PlayerFilteringResultDTO> FilteringResults { get; set; } = [];
+
+    /// <summary>
+    /// The ID of the filter report stored in the database
+    /// </summary>
+    public int FilterReportId { get; set; }
 }

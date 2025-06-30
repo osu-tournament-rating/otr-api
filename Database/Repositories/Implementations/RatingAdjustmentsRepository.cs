@@ -30,4 +30,36 @@ public class RatingAdjustmentsRepository(OtrContext context)
             .Include(ra => ra.Match!.Tournament)
             .ToListAsync();
     }
+
+    public async Task<Dictionary<int, double?>> GetPeakRatingsForPlayersAsync(
+        IEnumerable<int> playerIds,
+        Ruleset ruleset,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    )
+    {
+        var playerIdsList = playerIds.ToList();
+
+        if (playerIdsList.Count == 0)
+        {
+            return new Dictionary<int, double?>();
+        }
+
+        dateMin ??= DateTime.MinValue;
+        dateMax ??= DateTime.MaxValue;
+
+        // Execute optimized query that calculates max rating per player in the database
+        Dictionary<int, double?> peakRatings = await _context.RatingAdjustments
+            .AsNoTracking()
+            .Where(ra =>
+                playerIdsList.Contains(ra.PlayerId) &&
+                ra.Ruleset == ruleset &&
+                ra.Timestamp >= dateMin &&
+                ra.Timestamp <= dateMax)
+            .GroupBy(ra => ra.PlayerId)
+            .Select(g => new { PlayerId = g.Key, PeakRating = g.Max(ra => ra.RatingAfter) })
+            .ToDictionaryAsync(x => x.PlayerId, x => (double?)x.PeakRating);
+
+        return peakRatings;
+    }
 }

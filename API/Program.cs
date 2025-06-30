@@ -962,6 +962,7 @@ builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthCli
 
 builder.Services.AddScoped<IAdminNoteRepository, AdminNoteRepository>();
 builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
+builder.Services.AddScoped<IFilterReportsRepository, FilterReportsRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
 builder.Services.AddScoped<IMatchesRepository, MatchesRepository>();

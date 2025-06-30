@@ -119,6 +119,14 @@ public class TournamentsService(
     ) => await tournamentsRepository.CountPlayedAsync(playerId, ruleset, dateMin ?? DateTime.MinValue,
         dateMax ?? DateTime.MaxValue);
 
+    public async Task<Dictionary<int, int>> CountPlayedAsync(
+        IEnumerable<int> playerIds,
+        Ruleset ruleset,
+        DateTime? dateMin = null,
+        DateTime? dateMax = null
+    ) => await tournamentsRepository.CountPlayedAsync(playerIds, ruleset, dateMin ?? DateTime.MinValue,
+        dateMax ?? DateTime.MaxValue);
+
     public async Task<TournamentCompactDTO?> UpdateAsync(int id, TournamentCompactDTO wrapper)
     {
         Tournament? existing = await tournamentsRepository.GetAsync(id);

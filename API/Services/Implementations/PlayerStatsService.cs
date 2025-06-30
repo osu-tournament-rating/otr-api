@@ -123,11 +123,20 @@ public class PlayerStatsService(
         };
     }
 
-    public async Task<double> GetPeakRatingAsync(int playerId, Ruleset ruleset, DateTime? dateMin = null,
-        DateTime? dateMax = null)
+    public async Task<Dictionary<int, double?>> GetPeakRatingsAsync(IEnumerable<int> playerIds, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null)
     {
-        return (await ratingAdjustmentsRepository.GetForPlayerAsync(playerId, ruleset, dateMin, dateMax))
-            .Max(ra => ra.RatingAfter);
+        var playerIdsList = playerIds.ToList();
+
+        // Exit early if no player IDs provided
+        if (playerIdsList.Count == 0)
+        {
+            return new Dictionary<int, double?>();
+        }
+
+        Dictionary<int, double?> peakRatings = await ratingAdjustmentsRepository.GetPeakRatingsForPlayersAsync(playerIdsList, ruleset, dateMin, dateMax);
+        var result = playerIdsList.ToDictionary(id => id, id => peakRatings.GetValueOrDefault(id));
+
+        return result;
     }
 
     public async Task<Dictionary<bool, List<PlayerFrequencyDTO>>> GetFrequentMatchupsAsync(

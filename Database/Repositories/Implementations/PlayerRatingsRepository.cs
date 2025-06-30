@@ -32,6 +32,24 @@ public class PlayerRatingsRepository(OtrContext context)
             .FirstOrDefaultAsync();
     }
 
+    public async Task<Dictionary<int, PlayerRating>> GetAsync(IEnumerable<int> playerIds, Ruleset ruleset, DateTime? dateMin = null, DateTime? dateMax = null, bool includeAdjustments = false)
+    {
+        var playerIdsList = playerIds.ToList();
+
+        IQueryable<PlayerRating> query = _context.PlayerRatings
+            .AsNoTracking()
+            .Include(pr => pr.Player.User)
+            .Where(pr => playerIdsList.Contains(pr.PlayerId) && pr.Ruleset == ruleset);
+
+        if (includeAdjustments)
+        {
+            query = query.Include(pr => pr.Adjustments.Where(ra => ra.Timestamp >= dateMin && ra.Timestamp <= dateMax))
+                .ThenInclude(a => a.Match);
+        }
+
+        return await query.ToDictionaryAsync(pr => pr.PlayerId);
+    }
+
     public async Task<IList<PlayerRating>> GetAsync(int page = 1, int pageSize = 25, Ruleset ruleset = Ruleset.Osu,
         string? country = null,
         int? minRank = null, int? maxRank = null, int? minRating = null, int? maxRating = null, int? minMatches = null,

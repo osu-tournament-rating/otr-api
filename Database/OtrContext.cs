@@ -32,6 +32,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
     public virtual DbSet<Beatmap> Beatmaps { get; set; }
     public virtual DbSet<BeatmapAttributes> BeatmapAttributes { get; set; }
     public virtual DbSet<Beatmapset> Beatmapsets { get; set; }
+    public virtual DbSet<FilterReport> FilterReports { get; set; }
+    public virtual DbSet<FilterReportPlayer> FilterReportPlayers { get; set; }
     public virtual DbSet<Game> Games { get; set; }
     public virtual DbSet<GameAdminNote> GameAdminNotes { get; set; }
     public virtual DbSet<GameAudit> GameAudits { get; set; }
@@ -938,6 +940,50 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
                 .WithOne(gan => gan.AdminUser)
                 .HasForeignKey(gan => gan.AdminUserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<FilterReport>(entity =>
+        {
+            entity.Property(f => f.Id).UseIdentityAlwaysColumn();
+            entity.Property(f => f.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: User
+            entity
+                .HasOne(f => f.User)
+                .WithMany()
+                .HasForeignKey(f => f.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: FilterReportPlayers
+            entity
+                .HasMany(f => f.FilterReportPlayers)
+                .WithOne(frp => frp.FilterReport)
+                .HasForeignKey(frp => frp.FilterReportId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<FilterReportPlayer>(entity =>
+        {
+            entity.Property(frp => frp.Id).UseIdentityAlwaysColumn();
+            entity.Property(frp => frp.Created).HasDefaultValueSql(SqlCurrentTimestamp);
+
+            // Relation: FilterReport
+            entity
+                .HasOne(frp => frp.FilterReport)
+                .WithMany(f => f.FilterReportPlayers)
+                .HasForeignKey(frp => frp.FilterReportId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relation: Player
+            entity
+                .HasOne(frp => frp.Player)
+                .WithMany()
+                .HasForeignKey(frp => frp.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes
+            entity.HasIndex(frp => frp.FilterReportId);
+            entity.HasIndex(frp => new { frp.FilterReportId, frp.PlayerId }).IsUnique();
         });
 
         modelBuilder.Entity<UserSettings>(entity =>

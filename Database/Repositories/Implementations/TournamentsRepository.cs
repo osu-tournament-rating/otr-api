@@ -69,6 +69,36 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         DateTime? dateMax
     ) => await QueryForParticipation(playerId, ruleset, dateMin, dateMax).Select(x => x.Id).Distinct().CountAsync();
 
+    public async Task<Dictionary<int, int>> CountPlayedAsync(
+        IEnumerable<int> playerIds,
+        Ruleset ruleset,
+        DateTime? dateMin,
+        DateTime? dateMax
+    )
+    {
+        var playerIdsList = playerIds.ToList();
+        dateMin ??= DateTime.MinValue;
+        dateMax ??= DateTime.MaxValue;
+
+        // Use a more efficient query with direct joins
+        Dictionary<int, int> playerTournamentCounts = await _context.RatingAdjustments
+            .AsNoTracking()
+            .Where(ra => playerIdsList.Contains(ra.PlayerId))
+            .Where(ra => ra.Match != null && ra.Match.Tournament.Ruleset == ruleset)
+            .Where(ra => ra.Match!.StartTime >= dateMin && ra.Match.StartTime <= dateMax)
+            .Where(ra => ra.Match!.VerificationStatus == VerificationStatus.Verified)
+            .GroupBy(ra => new { ra.PlayerId, ra.Match!.TournamentId })
+            .Select(g => new { g.Key.PlayerId, g.Key.TournamentId })
+            .GroupBy(x => x.PlayerId)
+            .Select(g => new { PlayerId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.PlayerId, x => x.Count);
+
+        // Initialize result with all requested player IDs (including those with 0 tournaments)
+        var result = playerIdsList.ToDictionary(id => id, id => playerTournamentCounts.GetValueOrDefault(id, 0));
+
+        return result;
+    }
+
     public async Task<ICollection<Tournament>> GetAsync(
         int page,
         int pageSize,
