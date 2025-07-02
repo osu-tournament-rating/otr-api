@@ -593,8 +593,6 @@ builder.Services
         {
             OnValidatePrincipal = async context =>
             {
-                IOsuClient osuClient = context.HttpContext.RequestServices.GetRequiredService<IOsuClient>();
-
                 string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
                 ILogger authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
                 authLogger.Debug("Validating cookie for user: {UserId}, IsAuthenticated: {IsAuthenticated}",
@@ -606,43 +604,6 @@ builder.Services
                     context.RejectPrincipal();
                     await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     return;
-                }
-
-                // Access token refresh
-                string? accessTokenExpiresAt = context.Properties.GetTokenValue("expires_at");
-                if (accessTokenExpiresAt != null && DateTimeOffset.TryParse(accessTokenExpiresAt, out DateTimeOffset expiresAt))
-                {
-                    double expiresInSeconds = expiresAt.Subtract(DateTimeOffset.UtcNow).TotalSeconds;
-                    var credentials = new OsuCredentials
-                    {
-                        AccessToken = context.Properties.GetTokenValue("access_token") ?? string.Empty,
-                        RefreshToken = context.Properties.GetTokenValue("refresh_token") ?? string.Empty,
-                        ExpiresInSeconds = (long)expiresInSeconds
-                    };
-                    osuClient.Credentials = credentials;
-
-                    OsuCredentials? updatedCredentials = await osuClient.UpdateCredentialsAsync();
-                    if (updatedCredentials != null && updatedCredentials != credentials)
-                    {
-                        DateTimeOffset newExpiresAt = DateTimeOffset.UtcNow.AddSeconds(updatedCredentials.ExpiresInSeconds);
-
-                        context.Properties.UpdateTokenValue("access_token", updatedCredentials.AccessToken);
-                        context.Properties.UpdateTokenValue("refresh_token", updatedCredentials.RefreshToken!);
-                        context.Properties.UpdateTokenValue("expires_at", newExpiresAt.ToString());
-
-                        authLogger.Debug("Updated access token for user: {UserId}", userId ?? "Unknown");
-                    }
-                    else if (updatedCredentials == null)
-                    {
-                        authLogger.Warning("Access token refresh failed. UserId: {UserId}", userId ?? "Unknown");
-                        context.RejectPrincipal();
-                        await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                        return;
-                    }
-                }
-                else
-                {
-                    authLogger.Warning("Access token expiration not found in cookie. UserId: {UserId}", userId ?? "Unknown");
                 }
 
                 authLogger.Debug("Cookie validation successful for user: {UserId}", userId);
