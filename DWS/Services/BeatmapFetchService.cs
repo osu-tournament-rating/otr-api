@@ -35,7 +35,6 @@ public class BeatmapFetchService(
 
             // Process the beatmap and its beatmapset
             await ProcessBeatmapAsync(apiBeatmap, cancellationToken);
-
             await context.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation("Successfully processed beatmap {BeatmapId}", beatmapId);

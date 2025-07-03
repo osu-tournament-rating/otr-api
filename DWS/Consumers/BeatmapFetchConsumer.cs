@@ -24,14 +24,7 @@ public class BeatmapFetchConsumer(
                 message.BeatmapId,
                 context.CancellationToken);
 
-            if (success)
-            {
-                logger.LogInformation(
-                    "Successfully processed beatmap {BeatmapId} (Correlation: {CorrelationId})",
-                    message.BeatmapId,
-                    message.CorrelationId);
-            }
-            else
+            if (!success)
             {
                 logger.LogWarning(
                     "Beatmap {BeatmapId} was not found in osu! API but was processed (Correlation: {CorrelationId})",

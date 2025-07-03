@@ -75,8 +75,6 @@ try
                 TimeSpan.FromSeconds(10),
                 TimeSpan.FromSeconds(30)
             ));
-
-            // Configure error handling
         });
     });
 
