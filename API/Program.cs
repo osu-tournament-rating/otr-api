@@ -23,6 +23,7 @@ using API.Utilities.AdminNotes;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
+using Common.Configurations;
 using Dapper;
 using Database;
 using Database.Entities;
@@ -117,6 +118,11 @@ builder
 builder
     .Services.AddOptionsWithValidateOnStart<RateLimitConfiguration>()
     .Bind(builder.Configuration.GetSection(RateLimitConfiguration.Position))
+    .ValidateDataAnnotations();
+
+builder
+    .Services.AddOptionsWithValidateOnStart<RabbitMqConfiguration>()
+    .Bind(builder.Configuration.GetSection(RabbitMqConfiguration.Position))
     .ValidateDataAnnotations();
 
 #endregion

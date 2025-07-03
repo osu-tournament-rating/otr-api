@@ -79,16 +79,6 @@ try
     IHost host = builder.Build();
 
     Log.Information("DWS (DataWorkerService) starting up...");
-
-    // Run database migrations if configured
-    if (builder.Configuration.GetValue<bool>("RunMigrations", false))
-    {
-        using IServiceScope scope = host.Services.CreateScope();
-        OtrContext dbContext = scope.ServiceProvider.GetRequiredService<OtrContext>();
-        await dbContext.Database.MigrateAsync();
-        Log.Information("Database migrations completed");
-    }
-
     await host.RunAsync();
 }
 catch (Exception ex)

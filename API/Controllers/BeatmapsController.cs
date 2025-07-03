@@ -11,7 +11,7 @@ namespace API.Controllers;
 
 [ApiController]
 [ApiVersion(1)]
-[Authorize(Roles = OtrClaims.Roles.Admin)] // Internal access only at this time
+[Authorize(Roles = OtrClaims.Roles.Admin)]
 [Route("api/v{version:apiVersion}/[controller]")]
 public class BeatmapsController(IBeatmapService beatmapService, IPublishEndpoint publishEndpoint) : Controller
 {
