@@ -63,7 +63,11 @@ try
                 h.Password(rabbitMqPassword);
             });
 
-            cfg.ConfigureEndpoints(context);
+            // Configure endpoint for BeatmapFetchConsumer with explicit queue name
+            cfg.ReceiveEndpoint("otr.data.beatmaps", e =>
+            {
+                e.ConfigureConsumer<BeatmapFetchConsumer>(context);
+            });
 
             // Configure retry policy
             cfg.UseMessageRetry(r => r.Intervals(
