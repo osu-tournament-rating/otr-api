@@ -4,7 +4,7 @@ using MassTransit;
 
 namespace DWS.Consumers;
 
-public abstract class BeatmapFetchConsumer(
+public class BeatmapFetchConsumer(
     ILogger<BeatmapFetchConsumer> logger,
     IBeatmapFetchService beatmapFetchService)
     : IConsumer<FetchBeatmapMessage>
