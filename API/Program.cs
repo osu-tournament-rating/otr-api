@@ -60,8 +60,6 @@ using OsuApiClient;
 using OsuApiClient.Domain.Osu.Users;
 using OsuApiClient.Extensions;
 using OsuApiClient.Net.Authorization;
-using RedLockNet.SERedis;
-using RedLockNet.SERedis.Configuration;
 using Serilog;
 using Serilog.AspNetCore;
 using Serilog.Enrichers.Span;
@@ -880,46 +878,6 @@ builder.Services.AddSingleton<ICacheHandler>(serviceProvider =>
     );
 });
 
-// Redis lock factory (distributed resource access control)
-bool useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistributedLocking ?? true;
-
-if (useRedLock)
-{
-    builder.Services.AddSingleton(serviceProvider =>
-    {
-        IConnectionMultiplexer? sharedRedisConnection = serviceProvider.GetService<IConnectionMultiplexer>();
-        if (sharedRedisConnection != null)
-        {
-            return RedLockFactory.Create(new List<RedLockMultiplexer>
-            {
-                new(sharedRedisConnection)
-            });
-        }
-
-        // Fallback to creating a new connection if the shared one is not available
-        try
-        {
-            var configurationOptions = ConfigurationOptions.Parse(
-                builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-                    ConnectionStringsConfiguration.Position).RedisConnection);
-            configurationOptions.AbortOnConnectFail = false;
-            configurationOptions.ConnectRetry = 3;
-            configurationOptions.ConnectTimeout = 5000;
-            configurationOptions.SyncTimeout = 5000;
-
-            var redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
-            return RedLockFactory.Create(new List<RedLockMultiplexer>
-            {
-                new(redisConnection)
-            });
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Failed to create RedLock factory with Redis connection");
-            throw;
-        }
-    });
-}
 
 
 builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthClient>>();

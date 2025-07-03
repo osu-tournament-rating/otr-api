@@ -1,23 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using OsuApiClient.Configurations.Interfaces;
 
-namespace DataWorkerService.Configurations;
+namespace DWS.Configurations;
 
-/// <summary>
-/// Configures the <see cref="OsuApiClient.OsuClient"/>
-/// </summary>
 public class OsuConfiguration : IOsuClientConfiguration
 {
     public const string Position = "Osu";
 
     [Required(ErrorMessage = "ClientId is required!")]
+    [Range(1, long.MaxValue, ErrorMessage = "ClientId must be a positive, non-zero value!")]
     public long ClientId { get; set; }
 
     [Required(ErrorMessage = "ClientSecret is required!")]
     public string ClientSecret { get; set; } = string.Empty;
 
-    // This value is not used in the DataWorkerService
-    public string RedirectUrl { get; set; } = string.Empty;
+    // This value is not used in the DWS but required by the interface
+    public string RedirectUrl { get; set; } = "http://localhost:5075/api/v1/auth/callback";
 
     public int OsuRateLimit { get; set; } = 60;
 

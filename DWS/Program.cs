@@ -1,9 +1,13 @@
+using Common.Configurations;
 using Database;
+using DWS.Configurations;
 using DWS.Consumers;
 using DWS.Services;
+using DWS.Utilities.Extensions;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using OsuApiClient.Configurations.Implementations;
+using Microsoft.Extensions.Options;
+using OsuApiClient;
 using OsuApiClient.Extensions;
 using Serilog;
 
@@ -32,15 +36,13 @@ try
     });
 
     // Configure osu! API client
-    string osuClientId = builder.Configuration["Osu:ClientId"] ?? throw new InvalidOperationException("Osu:ClientId is not configured");
-    string osuClientSecret = builder.Configuration["Osu:ClientSecret"] ?? throw new InvalidOperationException("Osu:ClientSecret is not configured");
-
-    builder.Services.AddOsuApiClient(new OsuClientConfiguration
+    builder.Services.AddOsuApiClient(new OsuClientOptions
     {
-        ClientId = long.Parse(osuClientId),
-        ClientSecret = osuClientSecret,
-        RedirectUrl = "http://localhost:5075/api/v1/auth/callback" // Not used by DWS but required
+        Configuration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position)
     });
+
+    // Configure RabbitMQ
+    builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection(RabbitMqConfiguration.Position));
 
     // Register services
     builder.Services.AddScoped<IBeatmapFetchService, BeatmapFetchService>();
@@ -52,15 +54,12 @@ try
 
         x.UsingRabbitMq((context, cfg) =>
         {
-            IConfiguration configuration = context.GetRequiredService<IConfiguration>();
-            string rabbitMqHost = configuration["RabbitMq:Host"] ?? "localhost";
-            string rabbitMqUsername = configuration["RabbitMq:Username"] ?? "admin";
-            string rabbitMqPassword = configuration["RabbitMq:Password"] ?? "admin";
+            var rabbitMqConfig = context.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
 
-            cfg.Host(rabbitMqHost, "/", h =>
+            cfg.Host(rabbitMqConfig.Host, "/", h =>
             {
-                h.Username(rabbitMqUsername);
-                h.Password(rabbitMqPassword);
+                h.Username(rabbitMqConfig.Username);
+                h.Password(rabbitMqConfig.Password);
             });
 
             // Configure endpoint for BeatmapFetchConsumer with explicit queue name

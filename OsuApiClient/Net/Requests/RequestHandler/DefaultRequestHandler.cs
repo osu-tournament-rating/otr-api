@@ -12,22 +12,15 @@ using OsuApiClient.Enums;
 using OsuApiClient.Extensions;
 using OsuApiClient.Net.Authorization;
 using OsuApiClient.Net.Constants;
-using RedLockNet;
-using RedLockNet.SERedis;
 
 namespace OsuApiClient.Net.Requests.RequestHandler;
 
 /// <summary>
 /// The default implementation of the handler that makes direct requests to the osu! API
 /// </summary>
-/// <remarks>
-/// Any program which uses the OsuClient MUST have a Redis and RedLock configuration.
-/// This class contains resources which are managed by a distributed locker (RedLock).
-/// </remarks>
 [UsedImplicitly]
 internal sealed class DefaultRequestHandler(
     ILogger<DefaultRequestHandler> logger,
-    IServiceProvider serviceProvider,
     IOsuClientConfiguration configuration
 ) : IRequestHandler
 {
@@ -109,30 +102,9 @@ internal sealed class DefaultRequestHandler(
         CancellationToken cancellationToken = default
     )
     {
-        const string resource = "osu-api-default-request-handler-send-async";
-        var expiry = TimeSpan.FromSeconds(10);
-        var wait = TimeSpan.FromSeconds(10);
-        var retry = TimeSpan.FromSeconds(1);
-
         try
         {
-            if (configuration.EnableDistributedLocking)
-            {
-                RedLockFactory redLockFactory = serviceProvider.GetRequiredService<RedLockFactory>();
-                await using IRedLock? redLock = await redLockFactory.CreateLockAsync(resource, expiry, wait, retry);
-
-                // Short-circuit the lock if we're making an osu!track request.
-                // This should help with the fact that the DataWorkerService is competing
-                // with the API calling out to osu! OAuth for logins
-                if (request.Platform == FetchPlatform.OsuTrack || redLock.IsAcquired)
-                {
-                    return await SendApiRequestAsync(request, cancellationToken);
-                }
-            }
-            else
-            {
-                return await SendApiRequestAsync(request, cancellationToken);
-            }
+            return await SendApiRequestAsync(request, cancellationToken);
         }
         catch (HttpRequestException ex)
         {
