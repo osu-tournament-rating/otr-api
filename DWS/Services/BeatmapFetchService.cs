@@ -63,7 +63,10 @@ public class BeatmapFetchService(
         }
         else
         {
+            // If we already have data for this beatmap, keep it and just mark HasData as false
+            // This preserves existing data when the API returns null
             beatmap.HasData = false;
+            logger.LogWarning("Beatmap {BeatmapId} returned null from API but we have existing data. Keeping existing data and marking HasData as false", beatmapId);
         }
     }
 
@@ -129,6 +132,17 @@ public class BeatmapFetchService(
             {
                 beatmapset = new Beatmapset { OsuId = beatmapsetId };
                 context.Beatmapsets.Add(beatmapset);
+            }
+            else
+            {
+                // If we already have data for this beatmapset, keep it
+                logger.LogWarning("Beatmapset {BeatmapsetId} returned null from API but we have existing data. Keeping existing data", beatmapsetId);
+            }
+
+            // Mark all beatmaps in this set as HasData = false
+            foreach (var beatmap in beatmapset.Beatmaps)
+            {
+                beatmap.HasData = false;
             }
 
             return beatmapset;
