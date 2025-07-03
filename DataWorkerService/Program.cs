@@ -64,10 +64,16 @@ builder.Services.AddSerilog(configuration =>
             "Microsoft.EntityFrameworkCore.Database.Command",
             LogEventLevel.Warning
         )
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
         .Enrich.FromLogContext()
-        .WriteTo.Console(
-            outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}"
-        )
+        .WriteTo.Logger(lc => lc
+            .MinimumLevel.Verbose()
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
+            .Filter.ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
+            .WriteTo.Console(
+                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Exception}"
+            ))
         .WriteTo.File(
             path: Path.Join("logs", "dataworker_log.log"),
             rollingInterval: RollingInterval.Day,
@@ -96,6 +102,7 @@ builder.Services.AddDbContext<OtrContext>(o =>
             )
             .DefaultConnection
     )
+    .LogTo(Log.Logger.Information, LogLevel.Information)
     .AddInterceptors(new AuditingInterceptor(null))
     .UseSnakeCaseNamingConvention();
 });

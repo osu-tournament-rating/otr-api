@@ -31,6 +31,24 @@ services:
     profiles:
       - production
 
+  dws:
+    image: "stagecodes/otr-dws:${TAG:-latest}"
+    container_name: dws
+    env_file:
+      - dws.env
+    depends_on:
+      - db
+      - rabbitmq
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    profiles:
+      - staging
+      - production
+
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -82,6 +100,22 @@ services:
     restart: always
     volumes:
       - redis:/data
+    profiles:
+      - staging
+      - production
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: always
     profiles:
       - staging
       - production
@@ -172,3 +206,4 @@ volumes:
   loki_storage:
   minio_data:
   redis:
+  rabbitmq_data:

@@ -29,6 +29,7 @@ using Database.Entities;
 using Database.Interceptors;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -961,6 +962,29 @@ builder.Services.AddScoped<IPlatformStatsService, PlatformStatsService>();
 builder.Services.AddScoped<ITournamentPlatformStatsService, TournamentPlatformStatsService>();
 builder.Services.AddScoped<IRatingPlatformStatsService, RatingPlatformStatsService>();
 builder.Services.AddScoped<IUserPlatformStatsService, UserPlatformStatsService>();
+
+#endregion
+
+#region MassTransit Configuration
+
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var configuration = context.GetRequiredService<IConfiguration>();
+        string rabbitMqHost = configuration["RabbitMq:Host"] ?? "localhost";
+        string rabbitMqUsername = configuration["RabbitMq:Username"] ?? "admin";
+        string rabbitMqPassword = configuration["RabbitMq:Password"] ?? "admin";
+
+        cfg.Host(rabbitMqHost, "/", h =>
+        {
+            h.Username(rabbitMqUsername);
+            h.Password(rabbitMqPassword);
+        });
+
+        // Configure as publish-only endpoint
+    });
+});
 
 #endregion
 
