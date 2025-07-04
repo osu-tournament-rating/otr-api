@@ -28,5 +28,10 @@
   "RateLimit": {
     "PermitLimit": 30,
     "Window": 60
+  },
+  "RabbitMq": {
+    "Host": "localhost",
+    "Username": "admin",
+    "Password": "admin"
   }
 }

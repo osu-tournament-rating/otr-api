@@ -1,4 +1,5 @@
 using Common.Configurations;
+using Common.Constants;
 using Database;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
@@ -65,7 +66,7 @@ try
 
         x.UsingRabbitMq((context, cfg) =>
         {
-            var rabbitMqConfig = context.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
+            RabbitMqConfiguration rabbitMqConfig = context.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
 
             cfg.Host(rabbitMqConfig.Host, "/", h =>
             {
@@ -73,11 +74,9 @@ try
                 h.Password(rabbitMqConfig.Password);
             });
 
-            // Configure endpoint for BeatmapFetchConsumer with explicit queue name
-            cfg.ReceiveEndpoint("otr.data.beatmaps", e =>
-            {
-                e.ConfigureConsumer<BeatmapFetchConsumer>(context);
-            });
+            // Configure endpoint for BeatmapFetchConsumer with rate limiting
+            // This ensures only one message is processed at a time to respect osu! API rate limits
+            cfg.ReceiveOsuApiEndpoint<BeatmapFetchConsumer>(context, QueueConstants.Osu.Beatmaps);
 
             // Configure retry policy
             cfg.UseMessageRetry(r => r.Intervals(

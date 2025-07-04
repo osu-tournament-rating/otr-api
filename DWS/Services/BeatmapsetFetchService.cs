@@ -108,7 +108,7 @@ public class BeatmapsetFetchService(
         }
 
         // Mark all beatmaps in this set as HasData = false
-        foreach (var beatmap in beatmapset.Beatmaps)
+        foreach (Beatmap beatmap in beatmapset.Beatmaps)
         {
             beatmap.HasData = false;
         }

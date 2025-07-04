@@ -44,6 +44,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
@@ -935,15 +936,12 @@ builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
     {
-        var configuration = context.GetRequiredService<IConfiguration>();
-        string rabbitMqHost = configuration["RabbitMq:Host"] ?? "localhost";
-        string rabbitMqUsername = configuration["RabbitMq:Username"] ?? "admin";
-        string rabbitMqPassword = configuration["RabbitMq:Password"] ?? "admin";
+        RabbitMqConfiguration rabbitMqConfiguration = context.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
 
-        cfg.Host(rabbitMqHost, "/", h =>
+        cfg.Host(rabbitMqConfiguration.Host, "/", h =>
         {
-            h.Username(rabbitMqUsername);
-            h.Password(rabbitMqPassword);
+            h.Username(rabbitMqConfiguration.Username);
+            h.Password(rabbitMqConfiguration.Password);
         });
 
         // Configure as publish-only endpoint
