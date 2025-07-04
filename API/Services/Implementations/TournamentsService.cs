@@ -1,10 +1,12 @@
 using API.DTOs;
+using API.Messages;
 using API.Services.Interfaces;
 using AutoMapper;
 using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
+using MassTransit;
 
 namespace API.Services.Implementations;
 
@@ -12,7 +14,9 @@ public class TournamentsService(
     ITournamentsRepository tournamentsRepository,
     IMatchesRepository matchesRepository,
     IBeatmapsRepository beatmapsRepository,
-    IMapper mapper
+    IMapper mapper,
+    IPublishEndpoint publishEndpoint,
+    ILogger<TournamentsService> logger
     ) : ITournamentsService
 {
     public async Task<TournamentCreatedResultDTO> CreateAsync(
@@ -75,6 +79,44 @@ public class TournamentsService(
         }
 
         Tournament tournament = await tournamentsRepository.CreateAsync(newTournament);
+
+        // Enqueue beatmaps for data fetching
+        // Include newly created beatmaps and existing beatmaps that might be missing data
+        var beatmapsToFetch = new List<long>();
+
+        // Add newly created beatmaps (those that weren't in existingBeatmaps)
+        beatmapsToFetch.AddRange(
+            submittedBeatmapIds.Except(existingBeatmaps.Select(b => b.OsuId))
+        );
+
+        // Add existing beatmaps that don't have data
+        beatmapsToFetch.AddRange(
+            existingBeatmaps
+                .Where(b => !b.HasData || b.BeatmapsetId == null)
+                .Select(b => b.OsuId)
+        );
+
+        if (beatmapsToFetch.Count == 0)
+        {
+            return mapper.Map<TournamentCreatedResultDTO>(tournament);
+        }
+
+        // Publish to queue
+        foreach (FetchBeatmapMessage message in beatmapsToFetch.Select(beatmapId =>
+                        new FetchBeatmapMessage
+                        {
+                            BeatmapId = beatmapId
+                        }))
+        {
+            await publishEndpoint.Publish(message);
+        }
+
+        logger.LogInformation(
+            "Enqueued {Count} beatmaps for data fetching from tournament {TournamentId} ({TournamentName})",
+            beatmapsToFetch.Count,
+            tournament.Id,
+            tournament.Name);
+
         return mapper.Map<TournamentCreatedResultDTO>(tournament);
     }
 
