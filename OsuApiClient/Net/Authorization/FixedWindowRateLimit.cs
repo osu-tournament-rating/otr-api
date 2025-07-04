@@ -46,7 +46,7 @@ internal sealed class FixedWindowRateLimit(int? rateLimitOverride)
 
     public void ClearRemainingTokens()
     {
-        RemainingTokens = -1;
+        RemainingTokens = 0;
     }
 
     /// <summary>

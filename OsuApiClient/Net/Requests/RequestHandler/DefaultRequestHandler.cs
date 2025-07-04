@@ -119,7 +119,10 @@ internal sealed class DefaultRequestHandler(
 
     private async Task<string?> SendApiRequestAsync(IApiRequest request, CancellationToken cancellationToken)
     {
-        HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
+        // Check rate limit before making the request
+        await RespectRateLimitAsync(request.Platform, cancellationToken);
+
+        HttpRequestMessage requestMessage = PrepareRequestAsync(request);
         HttpResponseMessage response = await _httpClient.SendAsync(requestMessage, cancellationToken);
 
         return await OnResponseReceivedAsync(request.Platform, response, cancellationToken);
@@ -131,9 +134,8 @@ internal sealed class DefaultRequestHandler(
     /// <param name="request">API request details</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A formatted <see cref="HttpRequestMessage"/></returns>
-    private async Task<HttpRequestMessage> PrepareRequestAsync(
-        IApiRequest request,
-        CancellationToken cancellationToken = default
+    private HttpRequestMessage PrepareRequestAsync(
+        IApiRequest request
     )
     {
         Uri uri = request.QueryParameters is { Count: > 0 }
@@ -164,7 +166,6 @@ internal sealed class DefaultRequestHandler(
             request.Method.ToString()
         );
 
-        await RespectRateLimitAsync(request.Platform, cancellationToken);
         return requestMessage;
     }
 
@@ -195,20 +196,14 @@ internal sealed class DefaultRequestHandler(
         }
 
         // Throttle when we run out of tokens.
-        //
-        // We use < 0 rather than <= 0 because we decrement tokens and call this
-        // method before the result is returned to the caller.
-        //
-        // When there are 0 tokens remaining, we are safe to proceed with the API call,
-        // but should stop on the next one. So, this value is -1 at that time.
-        // For display purposes, we add 1 to the log.
-        if (rateLimit.RemainingTokens < 0)
+        // When there are 0 tokens remaining, we should throttle before the next request.
+        if (rateLimit.RemainingTokens <= 0)
         {
             logger.LogDebug(
                 "Throttling client for rate limit violation [Platform: {Platform} | Tokens: {Remaining}/{Limit} " +
                 "| Expires In: {Expiry:mm\\:ss}]",
                 platform,
-                rateLimit.RemainingTokens + 1,
+                rateLimit.RemainingTokens,
                 rateLimit.TokenLimit,
                 rateLimit.ExpiresIn
             );
@@ -269,6 +264,7 @@ internal sealed class DefaultRequestHandler(
         CancellationToken cancellationToken = default
     )
     {
+        // Only decrement tokens after successfully sending the request
         UpdateRateLimit(platform);
 
         // Parse response body
