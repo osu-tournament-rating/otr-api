@@ -244,12 +244,13 @@ internal sealed class DefaultRequestHandler(
     /// </summary>
     /// <remarks>Fail-safe in the event we are being rate limited</remarks>
     /// <param name="platform">The platform being fetched</param>
-    private async Task ForceRateLimitCooldown(FetchPlatform platform, int durationSeconds = 300, CancellationToken cancellationToken = default)
+    private async Task ForceRateLimitCooldown(FetchPlatform platform, int durationSeconds = 60, CancellationToken cancellationToken = default)
     {
         FixedWindowRateLimit rateLimit = _rateLimits[platform];
         rateLimit.ClearRemainingTokens();
 
         logger.LogInformation("Rate limit forcefully cooling down [Platform: {Platform} | Duration: {Duration} seconds]", platform, durationSeconds);
+        await Task.Delay(TimeSpan.FromSeconds(durationSeconds), cancellationToken);
 
         await RespectRateLimitAsync(platform, cancellationToken);
     }
