@@ -18,7 +18,7 @@ public static class ServiceExtensions
         ArgumentNullException.ThrowIfNull(configuration);
 
         services.AddSingleton(configuration);
-        services.AddScoped<IRequestHandler, DefaultRequestHandler>();
+        services.AddSingleton<IRequestHandler, DefaultRequestHandler>();
         services.AddScoped<IOsuClient, OsuClient>();
     }
 
