@@ -47,10 +47,8 @@ public class TournamentsService(
                 .Except(existingMatchIds)
                 .Select(matchId => new Match { OsuId = matchId, SubmittedByUserId = submitterUserId })],
             PooledBeatmaps =
-
             [
-                .. existingBeatmaps
-,
+                .. existingBeatmaps,
                 .. submittedBeatmapIds
                             .Except(existingBeatmaps.Select(b => b.OsuId))
                             .Select(beatmapId => new Beatmap { OsuId = beatmapId })
