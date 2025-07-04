@@ -1,12 +1,9 @@
 using System.Linq.Expressions;
 using Database;
-using DWS.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
 using Moq;
 using OsuApiClient;
-using Serilog.Extensions.Logging;
 
 namespace DWS.Tests.DataFetching.TestFixtures;
 
@@ -14,7 +11,6 @@ public abstract class BeatmapFetchTestBase : PostgreSqlTestFixture, IAsyncLifeti
 {
     protected OtrContext Context { get; private set; } = null!;
     protected Mock<IOsuClient> MockOsuClient { get; private set; } = null!;
-    protected BeatmapFetchService Service { get; private set; } = null!;
     private IDbContextTransaction? _transaction;
 
     async Task IAsyncLifetime.InitializeAsync()
@@ -27,11 +23,6 @@ public abstract class BeatmapFetchTestBase : PostgreSqlTestFixture, IAsyncLifeti
         // Create context and begin transaction for test isolation
         Context = CreateContext();
         _transaction = await Context.Database.BeginTransactionAsync();
-
-        // Create service with the context
-        var loggerFactory = new SerilogLoggerFactory();
-        ILogger<BeatmapFetchService> logger = new Logger<BeatmapFetchService>(loggerFactory);
-        Service = new BeatmapFetchService(logger, Context, MockOsuClient.Object);
     }
 
     async Task IAsyncLifetime.DisposeAsync()

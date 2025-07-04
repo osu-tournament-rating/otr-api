@@ -44,6 +44,7 @@ public static class TestDataBuilders
             string title = "Test Song",
             long creatorId = 12345,
             string creatorUsername = "TestMapper",
+            string creatorCountryCode = "US",
             BeatmapRankedStatus rankedStatus = BeatmapRankedStatus.Ranked,
             params BeatmapExtended[] beatmaps)
         {
@@ -59,7 +60,7 @@ public static class TestDataBuilders
                 {
                     Id = creatorId,
                     Username = creatorUsername,
-                    CountryCode = "US"
+                    CountryCode = creatorCountryCode
                 },
                 Beatmaps = beatmaps.Length > 0 ? beatmaps : new[]
                 {

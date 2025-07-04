@@ -40,7 +40,7 @@ public class PostgreSqlContainerTests : PostgreSqlTestFixture, IAsyncLifetime
         await _context.SaveChangesAsync();
 
         // Assert
-        var retrievedBeatmap = await _context.Beatmaps
+        Beatmap? retrievedBeatmap = await _context.Beatmaps
             .FirstOrDefaultAsync(b => b.OsuId == 12345);
 
         Assert.NotNull(retrievedBeatmap);
