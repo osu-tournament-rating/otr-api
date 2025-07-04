@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using OsuApiClient.Domain.Osu.Beatmaps;
+using TestingUtils.SeededData;
 using Beatmap = Database.Entities.Beatmap;
 using Beatmapset = Database.Entities.Beatmapset;
 using Player = Database.Entities.Player;
@@ -32,19 +33,19 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         // Create multiple beatmaps for the beatmapset
         BeatmapExtended[] beatmaps = new[]
         {
-            TestDataBuilders.BeatmapBuilder.CreateBeatmapExtended(
+            SeededOsuApiData.CreateBeatmapExtended(
                 beatmapId: beatmapId,
                 beatmapsetId: beatmapsetId,
                 diffName: "Easy",
                 starRating: 2.5
             ),
-            TestDataBuilders.BeatmapBuilder.CreateBeatmapExtended(
+            SeededOsuApiData.CreateBeatmapExtended(
                 beatmapId: 2,
                 beatmapsetId: beatmapsetId,
                 diffName: "Normal",
                 starRating: 3.8
             ),
-            TestDataBuilders.BeatmapBuilder.CreateBeatmapExtended(
+            SeededOsuApiData.CreateBeatmapExtended(
                 beatmapId: 3,
                 beatmapsetId: beatmapsetId,
                 diffName: "Hard",
@@ -52,7 +53,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
             )
         };
 
-        BeatmapsetExtended apiBeatmapset = TestDataBuilders.BeatmapBuilder.CreateBeatmapsetExtended(
+        BeatmapsetExtended apiBeatmapset = SeededOsuApiData.CreateBeatmapsetExtended(
             beatmapsetId: beatmapsetId,
             artist: "Test Artist",
             title: "Test Song",
@@ -159,7 +160,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         const long beatmapId = 1;
         const long beatmapsetId = 100;
 
-        BeatmapExtended apiBeatmap = TestDataBuilders.BeatmapBuilder.CreateBeatmapExtended(
+        BeatmapExtended apiBeatmap = SeededOsuApiData.CreateBeatmapExtended(
             beatmapId: beatmapId,
             beatmapsetId: beatmapsetId
         );
@@ -204,12 +205,12 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         await Context.SaveChangesAsync();
 
         // Setup API to return updated data
-        BeatmapExtended apiBeatmap = TestDataBuilders.BeatmapBuilder.CreateBeatmapExtended(
+        BeatmapExtended apiBeatmap = SeededOsuApiData.CreateBeatmapExtended(
             beatmapId: beatmapId,
             beatmapsetId: beatmapsetId
         );
 
-        BeatmapsetExtended apiBeatmapset = TestDataBuilders.BeatmapBuilder.CreateBeatmapsetExtended(
+        BeatmapsetExtended apiBeatmapset = SeededOsuApiData.CreateBeatmapsetExtended(
             beatmapsetId: beatmapsetId,
             artist: "Updated Artist",
             title: "Updated Title",
@@ -313,19 +314,19 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         // Setup API to return beatmapset with both beatmaps
         BeatmapExtended[] beatmaps = new[]
         {
-            TestDataBuilders.BeatmapBuilder.CreateBeatmapExtended(
+            SeededOsuApiData.CreateBeatmapExtended(
                 beatmapId: requestedBeatmapId,
                 beatmapsetId: beatmapsetId,
                 diffName: "New"
             ),
-            TestDataBuilders.BeatmapBuilder.CreateBeatmapExtended(
+            SeededOsuApiData.CreateBeatmapExtended(
                 beatmapId: existingBeatmapId,
                 beatmapsetId: beatmapsetId,
                 diffName: "Updated Existing"
             )
         };
 
-        BeatmapsetExtended apiBeatmapset = TestDataBuilders.BeatmapBuilder.CreateBeatmapsetExtended(
+        BeatmapsetExtended apiBeatmapset = SeededOsuApiData.CreateBeatmapsetExtended(
             beatmapsetId: beatmapsetId,
             beatmaps: beatmaps
         );
@@ -397,12 +398,12 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         await Context.SaveChangesAsync();
 
         // Setup API to return updated creator data
-        BeatmapExtended apiBeatmap = TestDataBuilders.BeatmapBuilder.CreateBeatmapExtended(
+        BeatmapExtended apiBeatmap = SeededOsuApiData.CreateBeatmapExtended(
             beatmapId: beatmapId,
             beatmapsetId: beatmapsetId
         );
 
-        BeatmapsetExtended apiBeatmapset = TestDataBuilders.BeatmapBuilder.CreateBeatmapsetExtended(
+        BeatmapsetExtended apiBeatmapset = SeededOsuApiData.CreateBeatmapsetExtended(
             beatmapsetId: beatmapsetId,
             creatorId: creatorId,
             creatorUsername: "NewUsername",
