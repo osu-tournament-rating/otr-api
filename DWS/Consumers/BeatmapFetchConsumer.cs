@@ -8,7 +8,7 @@ namespace DWS.Consumers;
 [UsedImplicitly]
 public class BeatmapFetchConsumer(
     ILogger<BeatmapFetchConsumer> logger,
-    IBeatmapFetchService beatmapFetchService)
+    IBeatmapsetFetchService beatmapsetFetchService)
     : IConsumer<FetchBeatmapMessage>
 {
     public async Task Consume(ConsumeContext<FetchBeatmapMessage> context)
@@ -22,7 +22,7 @@ public class BeatmapFetchConsumer(
 
         try
         {
-            bool success = await beatmapFetchService.FetchAndPersistBeatmapAsync(
+            bool success = await beatmapsetFetchService.FetchAndPersistBeatmapsetByBeatmapIdAsync(
                 message.BeatmapId,
                 context.CancellationToken);
 

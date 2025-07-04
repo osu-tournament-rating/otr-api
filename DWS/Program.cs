@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using OsuApiClient;
 using OsuApiClient.Extensions;
 using Serilog;
+using Serilog.Events;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -24,6 +25,10 @@ try
     builder.Services.AddSerilog((services, configuration) => configuration
         .ReadFrom.Configuration(builder.Configuration)
         .ReadFrom.Services(services)
+        .MinimumLevel.Debug()
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
+        .Filter.ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
         .WriteTo.Console());
 
     // Configure Entity Framework
@@ -45,7 +50,7 @@ try
     builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection(RabbitMqConfiguration.Position));
 
     // Register services
-    builder.Services.AddScoped<IBeatmapFetchService, BeatmapFetchService>();
+    builder.Services.AddScoped<IBeatmapsetFetchService, BeatmapsetFetchService>();
 
     // Configure MassTransit
     builder.Services.AddMassTransit(x =>
