@@ -1,9 +1,11 @@
 using API.Messages;
 using DWS.Services;
+using JetBrains.Annotations;
 using MassTransit;
 
 namespace DWS.Consumers;
 
+[UsedImplicitly]
 public class BeatmapFetchConsumer(
     ILogger<BeatmapFetchConsumer> logger,
     IBeatmapFetchService beatmapFetchService)

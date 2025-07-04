@@ -68,6 +68,8 @@ public class BeatmapFetchService(
             beatmap.HasData = false;
             logger.LogWarning("Beatmap {BeatmapId} returned null from API but we have existing data. Keeping existing data and marking HasData as false", beatmapId);
         }
+
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     private async Task ProcessBeatmapAsync(BeatmapExtended apiBeatmap, CancellationToken cancellationToken)
@@ -103,7 +105,9 @@ public class BeatmapFetchService(
         beatmap.Ar = apiBeatmap.ApproachRate;
         beatmap.Sr = apiBeatmap.StarRating;
         beatmap.MaxCombo = apiBeatmap.MaxCombo;
-        beatmap.Beatmapset = beatmapset;
+
+        // Only set beatmapset if it's not already set to avoid duplicate associations
+        beatmap.Beatmapset ??= beatmapset;
 
         logger.LogDebug("Updated beatmap {BeatmapId} data", apiBeatmap.Id);
     }
@@ -176,10 +180,15 @@ public class BeatmapFetchService(
             existingBeatmap ??= await context.Beatmaps
                     .FirstOrDefaultAsync(b => b.OsuId == apiBeatmap.Id, cancellationToken);
 
+            // Also check if it was added to the context but not yet saved
+            existingBeatmap ??= context.ChangeTracker.Entries<Beatmap>()
+                .Where(e => e.Entity.OsuId == apiBeatmap.Id)
+                .Select(e => e.Entity)
+                .FirstOrDefault();
+
             if (existingBeatmap is null)
             {
                 existingBeatmap = new Beatmap { OsuId = apiBeatmap.Id };
-                context.Beatmaps.Add(existingBeatmap);
                 beatmapset.Beatmaps.Add(existingBeatmap);
             }
 

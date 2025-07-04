@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DWS", "DWS\DWS.csproj", "{18C82091-B79B-4FDB-A271-E8E8AF3EC0D7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DWS.Tests", "DWS.Tests\DWS.Tests.csproj", "{EF3B46C2-ABED-4143-9F8E-0607E4547A68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -167,6 +169,18 @@ Global
 		{18C82091-B79B-4FDB-A271-E8E8AF3EC0D7}.Release|x64.Build.0 = Release|Any CPU
 		{18C82091-B79B-4FDB-A271-E8E8AF3EC0D7}.Release|x86.ActiveCfg = Release|Any CPU
 		{18C82091-B79B-4FDB-A271-E8E8AF3EC0D7}.Release|x86.Build.0 = Release|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Debug|x64.Build.0 = Debug|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Debug|x86.Build.0 = Debug|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Release|x64.ActiveCfg = Release|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Release|x64.Build.0 = Release|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Release|x86.ActiveCfg = Release|Any CPU
+		{EF3B46C2-ABED-4143-9F8E-0607E4547A68}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
