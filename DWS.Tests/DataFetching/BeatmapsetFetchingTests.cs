@@ -1,29 +1,23 @@
-using Database.Repositories.Implementations;
-using Database.Repositories.Interfaces;
 using DWS.Services;
 using DWS.Tests.DataFetching.TestFixtures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using OsuApiClient.Domain.Osu.Beatmaps;
-using Serilog.Extensions.Logging;
 using Beatmap = Database.Entities.Beatmap;
 using Beatmapset = Database.Entities.Beatmapset;
 using Player = Database.Entities.Player;
 
 namespace DWS.Tests.DataFetching;
 
-public class BeatmapsetFetchingTests : BeatmapFetchTestBase
+public class BeatmapsetFetchingTests : IntegrationTestBase
 {
     private BeatmapsetFetchService BeatmapsetService
     {
         get
         {
-            var loggerFactory = new SerilogLoggerFactory();
-            ILogger<BeatmapsetFetchService> logger = new Logger<BeatmapsetFetchService>(loggerFactory);
-            IBeatmapsRepository beatmapsRepository = new BeatmapsRepository(Context);
-            IPlayersRepository playersRepository = new PlayersRepository(Context);
-            return new BeatmapsetFetchService(logger, Context, beatmapsRepository, playersRepository, MockOsuClient.Object);
+            ILogger<BeatmapsetFetchService> logger = CreateLogger<BeatmapsetFetchService>();
+            return new BeatmapsetFetchService(logger, Context, BeatmapsRepository, PlayersRepository, MockOsuClient.Object);
         }
     }
 
@@ -149,7 +143,7 @@ public class BeatmapsetFetchingTests : BeatmapFetchTestBase
         Assert.False(result);
 
         // Verify beatmap was created with HasData = false
-        Beatmap? beatmap = await GetEntityAsync<Beatmap>(b => b.OsuId == beatmapId);
+        Beatmap? beatmap = await BeatmapsRepository.GetAsync(beatmapId);
         Assert.NotNull(beatmap);
         Assert.False(beatmap.HasData);
 
@@ -183,7 +177,7 @@ public class BeatmapsetFetchingTests : BeatmapFetchTestBase
         Assert.False(result);
 
         // Verify beatmapset was created
-        Beatmapset? beatmapset = await GetEntityAsync<Beatmapset>(bs => bs.OsuId == beatmapsetId);
+        Beatmapset? beatmapset = await Context.Beatmapsets.FirstOrDefaultAsync(bs => bs.OsuId == beatmapsetId);
         Assert.NotNull(beatmapset);
 
         // Verify API calls
@@ -236,13 +230,13 @@ public class BeatmapsetFetchingTests : BeatmapFetchTestBase
         Assert.True(result);
 
         // Verify beatmapset was updated
-        Beatmapset? updatedBeatmapset = await GetEntityAsync<Beatmapset>(bs => bs.OsuId == beatmapsetId);
+        Beatmapset? updatedBeatmapset = await Context.Beatmapsets.FirstOrDefaultAsync(bs => bs.OsuId == beatmapsetId);
         Assert.NotNull(updatedBeatmapset);
         Assert.Equal("Updated Artist", updatedBeatmapset.Artist);
         Assert.Equal("Updated Title", updatedBeatmapset.Title);
 
         // Verify only one beatmapset exists
-        int beatmapsetCount = await CountEntitiesAsync<Beatmapset>();
+        int beatmapsetCount = await Context.Beatmapsets.CountAsync();
         Assert.Equal(1, beatmapsetCount);
     }
 
@@ -380,7 +374,7 @@ public class BeatmapsetFetchingTests : BeatmapFetchTestBase
         );
 
         // Verify no data was persisted
-        int beatmapCount = await CountEntitiesAsync<Beatmap>();
+        int beatmapCount = await Context.Beatmaps.CountAsync();
         Assert.Equal(0, beatmapCount);
     }
 
@@ -429,13 +423,13 @@ public class BeatmapsetFetchingTests : BeatmapFetchTestBase
         Assert.True(result);
 
         // Verify player was updated
-        Player? updatedPlayer = await GetEntityAsync<Player>(p => p.OsuId == creatorId);
+        Player? updatedPlayer = await PlayersRepository.GetAsync(new[] { creatorId }).ContinueWith(t => t.Result.FirstOrDefault());
         Assert.NotNull(updatedPlayer);
         Assert.Equal("NewUsername", updatedPlayer.Username);
         Assert.Equal("GB", updatedPlayer.Country);
 
         // Verify only one player exists
-        int playerCount = await CountEntitiesAsync<Player>();
+        int playerCount = await Context.Players.CountAsync();
         Assert.Equal(1, playerCount);
     }
 }
