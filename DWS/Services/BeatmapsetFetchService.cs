@@ -14,6 +14,7 @@ public class BeatmapsetFetchService(
     ILogger<BeatmapsetFetchService> logger,
     OtrContext context,
     IBeatmapsRepository beatmapsRepository,
+    IBeatmapsetsRepository beatmapsetsRepository,
     IPlayersRepository playersRepository,
     IOsuClient osuClient)
     : IBeatmapsetFetchService
@@ -97,20 +98,18 @@ public class BeatmapsetFetchService(
 
     private async Task CreateOrUpdateBeatmapsetWithNoData(long beatmapsetId, CancellationToken cancellationToken)
     {
-        Beatmapset? beatmapset = await context.Beatmapsets
-            .Include(bs => bs.Beatmaps)
-            .FirstOrDefaultAsync(bs => bs.OsuId == beatmapsetId, cancellationToken);
+        Beatmapset? beatmapset = await beatmapsetsRepository.GetWithDetailsAsync(beatmapsetId);
 
         if (beatmapset is null)
         {
             beatmapset = new Beatmapset { OsuId = beatmapsetId };
-            context.Beatmapsets.Add(beatmapset);
+            beatmapsetsRepository.Add(beatmapset);
         }
 
         // Mark all beatmaps in this set as HasData = false
-        foreach (Beatmap beatmap in beatmapset.Beatmaps)
+        if (beatmapset.Id > 0)
         {
-            beatmap.HasData = false;
+            await beatmapsetsRepository.MarkBeatmapsAsNoDataAsync(beatmapset.Id);
         }
 
         await context.SaveChangesAsync(cancellationToken);
@@ -118,22 +117,13 @@ public class BeatmapsetFetchService(
 
     private async Task ProcessBeatmapsetAsync(BeatmapsetExtended apiBeatmapset, CancellationToken cancellationToken)
     {
-        // Todo: Beatmapsets don't have a dedicated repository in the Database project,
-        // so we continue to use the context directly for Beatmapset operations.
-        // Individual beatmaps and players use their respective repositories.
-        // Whenever the API needs a dedicated BeatmapsetsRepository, we'll update
-        // this logic to use that instead.
-
         // Check if beatmapset already exists
-        Beatmapset? beatmapset = await context.Beatmapsets
-            .Include(bs => bs.Creator)
-            .Include(bs => bs.Beatmaps)
-            .FirstOrDefaultAsync(bs => bs.OsuId == apiBeatmapset.Id, cancellationToken);
+        Beatmapset? beatmapset = await beatmapsetsRepository.GetWithDetailsAsync(apiBeatmapset.Id);
 
         if (beatmapset is null)
         {
             beatmapset = new Beatmapset { OsuId = apiBeatmapset.Id };
-            context.Beatmapsets.Add(beatmapset);
+            beatmapsetsRepository.Add(beatmapset);
         }
 
         // Update beatmapset data

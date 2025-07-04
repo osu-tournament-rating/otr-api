@@ -54,6 +54,7 @@ try
 
     // Register repositories
     builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
+    builder.Services.AddScoped<IBeatmapsetsRepository, BeatmapsetsRepository>();
     builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
 
     // Register services

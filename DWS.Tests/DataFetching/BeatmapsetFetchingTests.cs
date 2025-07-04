@@ -18,7 +18,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         get
         {
             ILogger<BeatmapsetFetchService> logger = CreateLogger<BeatmapsetFetchService>();
-            return new BeatmapsetFetchService(logger, Context, BeatmapsRepository, PlayersRepository, MockOsuClient.Object);
+            return new BeatmapsetFetchService(logger, Context, BeatmapsRepository, BeatmapsetsRepository, PlayersRepository, MockOsuClient.Object);
         }
     }
 

@@ -32,6 +32,7 @@ public abstract class IntegrationTestBase : PostgreSqlTestFixture, IAsyncLifetim
 
     // Core entity repositories
     protected IBeatmapsRepository BeatmapsRepository { get; private set; } = null!;
+    protected IBeatmapsetsRepository BeatmapsetsRepository { get; private set; } = null!;
     protected IPlayersRepository PlayersRepository { get; private set; } = null!;
     protected ITournamentsRepository TournamentsRepository { get; private set; } = null!;
     protected IMatchesRepository MatchesRepository { get; private set; } = null!;
@@ -71,6 +72,7 @@ public abstract class IntegrationTestBase : PostgreSqlTestFixture, IAsyncLifetim
     {
         // Core entity repositories (order matters due to dependencies)
         BeatmapsRepository = new BeatmapsRepository(Context);
+        BeatmapsetsRepository = new BeatmapsetsRepository(Context);
         PlayersRepository = new PlayersRepository(Context);
         TournamentsRepository = new TournamentsRepository(Context, BeatmapsRepository);
         MatchesRepository = new MatchesRepository(Context);
