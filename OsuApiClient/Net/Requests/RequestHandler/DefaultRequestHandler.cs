@@ -230,7 +230,7 @@ internal sealed class DefaultRequestHandler(
 
         rateLimit.DecrementRemainingTokens();
 
-        logger.LogTrace(
+        logger.LogDebug(
             "Rate limit updated [Platform: {Platform} | Tokens: {Remaining}/{Limit} | Expires In: {Expiry:mm\\:ss}]",
             platform,
             rateLimit.RemainingTokens,
