@@ -15,34 +15,37 @@ public class BeatmapFetchConsumer(
     {
         FetchBeatmapMessage message = context.Message;
 
-        logger.LogInformation(
-            "Received beatmap fetch request for beatmap {BeatmapId} with correlation ID {CorrelationId}",
-            message.BeatmapId,
-            message.CorrelationId);
-
-        try
+        using (logger.BeginScope(new Dictionary<string, object>
         {
-            bool success = await beatmapsetFetchService.FetchAndPersistBeatmapsetByBeatmapIdAsync(
-                message.BeatmapId,
-                context.CancellationToken);
+            ["BeatmapId"] = message.BeatmapId,
+            ["CorrelationId"] = message.CorrelationId
+        }))
+        {
+            logger.LogInformation("Processing beatmap fetch request [osu! ID: {OsuId} | Correlation ID: {CorrelationID}]",
+                message.BeatmapId, message.CorrelationId);
 
-            if (!success)
+            try
             {
-                logger.LogWarning(
-                    "Beatmap {BeatmapId} was not found in osu! API but was processed (Correlation: {CorrelationId})",
+                bool success = await beatmapsetFetchService.FetchAndPersistBeatmapsetByBeatmapIdAsync(
                     message.BeatmapId,
-                    message.CorrelationId);
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex,
-                "Failed to process beatmap {BeatmapId} (Correlation: {CorrelationId})",
-                message.BeatmapId,
-                message.CorrelationId);
+                    context.CancellationToken);
 
-            // Re-throw to let MassTransit handle retry logic
-            throw;
+                if (success)
+                {
+                    logger.LogInformation("Successfully processed beatmap {BeatmapId}", message.BeatmapId);
+                }
+                else
+                {
+                    logger.LogInformation("Beatmap {BeatmapId} not found in osu! API", message.BeatmapId);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to process beatmap {BeatmapId}", message.BeatmapId);
+
+                // Re-throw to let MassTransit handle retry logic
+                throw;
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ public class BeatmapsetFetchService(
 {
     public async Task<bool> FetchAndPersistBeatmapsetByBeatmapIdAsync(long beatmapId, CancellationToken cancellationToken = default)
     {
-        logger.LogInformation("Fetching beatmapset for beatmap {BeatmapId}", beatmapId);
+        logger.LogDebug("Fetching beatmapset for beatmap {BeatmapId}", beatmapId);
 
         try
         {
@@ -30,7 +30,7 @@ public class BeatmapsetFetchService(
 
             if (existingBeatmap is not null && !existingBeatmap.HasData)
             {
-                logger.LogInformation("Beatmap {BeatmapId} already marked as HasData = false, skipping API calls", beatmapId);
+                logger.LogDebug("Beatmap {BeatmapId} already marked as HasData = false, skipping API calls", beatmapId);
                 return false;
             }
 
@@ -63,7 +63,7 @@ public class BeatmapsetFetchService(
             await ProcessBeatmapsetAsync(apiBeatmapset, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
 
-            logger.LogInformation("Successfully processed beatmapset for beatmap {BeatmapId}", beatmapId);
+            logger.LogDebug("Successfully processed beatmapset {BeatmapsetId} for beatmap {BeatmapId}", apiBeatmapset.Id, beatmapId);
             return true;
         }
         catch (Exception ex)
@@ -91,7 +91,7 @@ public class BeatmapsetFetchService(
             // If we already have data for this beatmap, keep it and just mark HasData as false
             // This preserves existing data when the API returns null
             beatmap.HasData = false;
-            logger.LogWarning("Beatmap {BeatmapId} returned null from API but we have existing data. Keeping existing data and marking HasData as false", beatmapId);
+            logger.LogDebug("Beatmap {BeatmapId} returned null from API, marking HasData as false", beatmapId);
             await beatmapsRepository.UpdateAsync(beatmap);
         }
     }

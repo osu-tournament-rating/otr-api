@@ -31,8 +31,11 @@ try
         .MinimumLevel.Debug()
         .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
         .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
+        .MinimumLevel.Override("MassTransit", LogEventLevel.Information)
+        .MinimumLevel.Override("MassTransit.Messages", LogEventLevel.Warning)
         .Filter.ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
-        .WriteTo.Console());
+        .Enrich.FromLogContext()
+        .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"));
 
     // Configure Entity Framework
     builder.Services.AddDbContext<OtrContext>((_, sqlOptions) =>
