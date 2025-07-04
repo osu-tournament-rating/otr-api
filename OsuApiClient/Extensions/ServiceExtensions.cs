@@ -19,7 +19,7 @@ public static class ServiceExtensions
 
         services.AddSingleton(configuration);
         services.AddSingleton<IRequestHandler, DefaultRequestHandler>();
-        services.AddScoped<IOsuClient, OsuClient>();
+        services.AddSingleton<IOsuClient, OsuClient>();
     }
 
     /// <summary>
