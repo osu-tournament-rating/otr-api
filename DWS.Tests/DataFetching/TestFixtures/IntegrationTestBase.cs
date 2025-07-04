@@ -30,15 +30,19 @@ public abstract class IntegrationTestBase : PostgreSqlTestFixture, IAsyncLifetim
     /// </summary>
     protected ILoggerFactory LoggerFactory { get; private set; } = null!;
 
-    /// <summary>
-    /// Beatmaps repository instance. Automatically created with the test context.
-    /// </summary>
+    // Core entity repositories
     protected IBeatmapsRepository BeatmapsRepository { get; private set; } = null!;
-
-    /// <summary>
-    /// Players repository instance. Automatically created with the test context.
-    /// </summary>
     protected IPlayersRepository PlayersRepository { get; private set; } = null!;
+    protected ITournamentsRepository TournamentsRepository { get; private set; } = null!;
+    protected IMatchesRepository MatchesRepository { get; private set; } = null!;
+    protected IGamesRepository GamesRepository { get; private set; } = null!;
+    protected IGameScoresRepository GameScoresRepository { get; private set; } = null!;
+
+    // Stats and ratings repositories
+    protected IPlayerRatingsRepository PlayerRatingsRepository { get; private set; } = null!;
+    protected IRatingAdjustmentsRepository RatingAdjustmentsRepository { get; private set; } = null!;
+    protected IPlayerMatchStatsRepository PlayerMatchStatsRepository { get; private set; } = null!;
+    protected IPlayerTournamentStatsRepository PlayerTournamentStatsRepository { get; private set; } = null!;
 
     private IDbContextTransaction? _transaction;
 
@@ -60,13 +64,24 @@ public abstract class IntegrationTestBase : PostgreSqlTestFixture, IAsyncLifetim
     }
 
     /// <summary>
-    /// Override this method to create additional repositories that your test needs.
+    /// Loads all repositories that are commonly used by the DataWorkerService.
     /// Called after the context is created but before OnInitializeAsync.
     /// </summary>
-    protected virtual void CreateRepositories()
+    private void LoadRepositories()
     {
-        // Base implementation creates common repositories.
-        // Override to add test-specific repositories.
+        // Core entity repositories (order matters due to dependencies)
+        BeatmapsRepository = new BeatmapsRepository(Context);
+        PlayersRepository = new PlayersRepository(Context);
+        TournamentsRepository = new TournamentsRepository(Context, BeatmapsRepository);
+        MatchesRepository = new MatchesRepository(Context);
+        GamesRepository = new GamesRepository(Context, CreateLogger<GamesRepository>());
+        GameScoresRepository = new GameScoresRepository(Context);
+
+        // Stats and ratings repositories
+        PlayerRatingsRepository = new PlayerRatingsRepository(Context);
+        RatingAdjustmentsRepository = new RatingAdjustmentsRepository(Context);
+        PlayerMatchStatsRepository = new PlayerMatchStatsRepository(Context);
+        PlayerTournamentStatsRepository = new PlayerTournamentStatsRepository(Context);
     }
 
     async Task IAsyncLifetime.InitializeAsync()
@@ -82,12 +97,8 @@ public abstract class IntegrationTestBase : PostgreSqlTestFixture, IAsyncLifetim
         Context = CreateContext();
         _transaction = await Context.Database.BeginTransactionAsync();
 
-        // Create common repositories
-        BeatmapsRepository = new BeatmapsRepository(Context);
-        PlayersRepository = new PlayersRepository(Context);
-
-        // Allow derived classes to create additional repositories
-        CreateRepositories();
+        // Load all repositories
+        LoadRepositories();
 
         // Allow derived classes to perform additional setup
         await OnInitializeAsync();
