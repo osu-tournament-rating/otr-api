@@ -1,5 +1,6 @@
 using Database;
 using Database.Entities;
+using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
 using OsuApiClient.Domain.Osu.Beatmaps;
@@ -12,6 +13,8 @@ namespace DWS.Services;
 public class BeatmapsetFetchService(
     ILogger<BeatmapsetFetchService> logger,
     OtrContext context,
+    IBeatmapsRepository beatmapsRepository,
+    IPlayersRepository playersRepository,
     IOsuClient osuClient)
     : IBeatmapsetFetchService
 {
@@ -22,9 +25,7 @@ public class BeatmapsetFetchService(
         try
         {
             // Check if beatmap already exists and has no data
-            Beatmap? existingBeatmap = await context.Beatmaps
-                .AsNoTracking()
-                .FirstOrDefaultAsync(b => b.OsuId == beatmapId, cancellationToken);
+            Beatmap? existingBeatmap = await beatmapsRepository.GetAsync(beatmapId);
 
             if (existingBeatmap is not null && !existingBeatmap.HasData)
             {
@@ -40,7 +41,7 @@ public class BeatmapsetFetchService(
                 logger.LogWarning("Beatmap {BeatmapId} not found in osu! API", beatmapId);
 
                 // Create or update beatmap with no data flag
-                await CreateOrUpdateBeatmapWithNoData(beatmapId, cancellationToken);
+                await CreateOrUpdateBeatmapWithNoData(beatmapId);
                 return false;
             }
 
@@ -71,10 +72,9 @@ public class BeatmapsetFetchService(
         }
     }
 
-    private async Task CreateOrUpdateBeatmapWithNoData(long beatmapId, CancellationToken cancellationToken)
+    private async Task CreateOrUpdateBeatmapWithNoData(long beatmapId)
     {
-        Beatmap? beatmap = await context.Beatmaps
-            .FirstOrDefaultAsync(b => b.OsuId == beatmapId, cancellationToken);
+        Beatmap? beatmap = await beatmapsRepository.GetAsync(beatmapId);
 
         if (beatmap is null)
         {
@@ -83,7 +83,7 @@ public class BeatmapsetFetchService(
                 OsuId = beatmapId,
                 HasData = false
             };
-            context.Beatmaps.Add(beatmap);
+            await beatmapsRepository.CreateAsync(beatmap);
         }
         else
         {
@@ -91,9 +91,8 @@ public class BeatmapsetFetchService(
             // This preserves existing data when the API returns null
             beatmap.HasData = false;
             logger.LogWarning("Beatmap {BeatmapId} returned null from API but we have existing data. Keeping existing data and marking HasData as false", beatmapId);
+            await beatmapsRepository.UpdateAsync(beatmap);
         }
-
-        await context.SaveChangesAsync(cancellationToken);
     }
 
     private async Task CreateOrUpdateBeatmapsetWithNoData(long beatmapsetId, CancellationToken cancellationToken)
@@ -119,6 +118,12 @@ public class BeatmapsetFetchService(
 
     private async Task ProcessBeatmapsetAsync(BeatmapsetExtended apiBeatmapset, CancellationToken cancellationToken)
     {
+        // Todo: Beatmapsets don't have a dedicated repository in the Database project,
+        // so we continue to use the context directly for Beatmapset operations.
+        // Individual beatmaps and players use their respective repositories.
+        // Whenever the API needs a dedicated BeatmapsetsRepository, we'll update
+        // this logic to use that instead.
+
         // Check if beatmapset already exists
         Beatmapset? beatmapset = await context.Beatmapsets
             .Include(bs => bs.Creator)
@@ -141,7 +146,7 @@ public class BeatmapsetFetchService(
         // Handle creator
         if (apiBeatmapset.User is not null)
         {
-            Player creator = await LoadOrCreatePlayerAsync(apiBeatmapset.User, cancellationToken);
+            Player creator = await LoadOrCreatePlayerAsync(apiBeatmapset.User);
             beatmapset.Creator = creator;
         }
 
@@ -150,13 +155,8 @@ public class BeatmapsetFetchService(
         {
             Beatmap? existingBeatmap = beatmapset.Beatmaps.FirstOrDefault(b => b.OsuId == apiBeatmap.Id);
             existingBeatmap ??= await context.Beatmaps
-                    .FirstOrDefaultAsync(b => b.OsuId == apiBeatmap.Id, cancellationToken);
-
-            // Also check if it was added to the context but not yet saved
-            existingBeatmap ??= context.ChangeTracker.Entries<Beatmap>()
-                .Where(e => e.Entity.OsuId == apiBeatmap.Id)
-                .Select(e => e.Entity)
-                .FirstOrDefault();
+                // Check if beatmap exists in database
+                .FirstOrDefaultAsync(b => b.OsuId == apiBeatmap.Id, cancellationToken) ?? await beatmapsRepository.GetAsync(apiBeatmap.Id);
 
             if (existingBeatmap is null)
             {
@@ -172,7 +172,7 @@ public class BeatmapsetFetchService(
             apiBeatmapset.Id, apiBeatmapset.Beatmaps.Length);
     }
 
-    private void UpdateBeatmapFromApi(Beatmap beatmap, BeatmapExtended apiBeatmap)
+    private static void UpdateBeatmapFromApi(Beatmap beatmap, BeatmapExtended apiBeatmap)
     {
         beatmap.HasData = true;
         beatmap.Ruleset = apiBeatmap.Ruleset;
@@ -192,29 +192,21 @@ public class BeatmapsetFetchService(
         beatmap.MaxCombo = apiBeatmap.MaxCombo;
     }
 
-    private async Task<Player> LoadOrCreatePlayerAsync(ApiUser apiUser, CancellationToken cancellationToken)
+    private async Task<Player> LoadOrCreatePlayerAsync(ApiUser apiUser)
     {
-        Player? player = await context.Players
-            .FirstOrDefaultAsync(p => p.OsuId == apiUser.Id, cancellationToken);
+        Player player = await playersRepository.GetOrCreateAsync(apiUser.Id);
 
-        if (player is null)
+        // Update player data
+        player.Username = apiUser.Username;
+        player.Country = apiUser.CountryCode;
+
+        if (player.Id == 0)
         {
-            player = new Player
-            {
-                OsuId = apiUser.Id,
-                Username = apiUser.Username,
-                Country = apiUser.CountryCode
-            };
-            context.Players.Add(player);
-
+            // Player is newly created (not yet saved)
             logger.LogDebug("Created new player {PlayerId} ({Username})", apiUser.Id, apiUser.Username);
         }
-        else
-        {
-            // Update player data
-            player.Username = apiUser.Username;
-            player.Country = apiUser.CountryCode;
-        }
+
+        await playersRepository.UpdateAsync(player);
 
         return player;
     }

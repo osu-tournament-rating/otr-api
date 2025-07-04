@@ -13,14 +13,13 @@ public class BeatmapFetchConsumerTests
 {
     private readonly Mock<IBeatmapsetFetchService> _mockBeatmapsetFetchService;
     private readonly BeatmapFetchConsumer _consumer;
-    private readonly ILogger<BeatmapFetchConsumer> _logger;
 
     public BeatmapFetchConsumerTests()
     {
         _mockBeatmapsetFetchService = new Mock<IBeatmapsetFetchService>();
         var loggerFactory = new SerilogLoggerFactory();
-        _logger = new Logger<BeatmapFetchConsumer>(loggerFactory);
-        _consumer = new BeatmapFetchConsumer(_logger, _mockBeatmapsetFetchService.Object);
+        ILogger<BeatmapFetchConsumer> logger = new Logger<BeatmapFetchConsumer>(loggerFactory);
+        _consumer = new BeatmapFetchConsumer(logger, _mockBeatmapsetFetchService.Object);
     }
 
     [Fact]

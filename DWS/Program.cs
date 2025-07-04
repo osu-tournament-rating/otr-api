@@ -1,5 +1,7 @@
 using Common.Configurations;
 using Database;
+using Database.Repositories.Implementations;
+using Database.Repositories.Interfaces;
 using DWS.Configurations;
 using DWS.Consumers;
 using DWS.Services;
@@ -32,7 +34,7 @@ try
         .WriteTo.Console());
 
     // Configure Entity Framework
-    builder.Services.AddDbContext<OtrContext>((services, sqlOptions) =>
+    builder.Services.AddDbContext<OtrContext>((_, sqlOptions) =>
     {
         sqlOptions
             .UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -48,6 +50,10 @@ try
 
     // Configure RabbitMQ
     builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection(RabbitMqConfiguration.Position));
+
+    // Register repositories
+    builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
+    builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
 
     // Register services
     builder.Services.AddScoped<IBeatmapsetFetchService, BeatmapsetFetchService>();

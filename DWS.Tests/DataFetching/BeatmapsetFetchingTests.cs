@@ -1,3 +1,5 @@
+using Database.Repositories.Implementations;
+using Database.Repositories.Interfaces;
 using DWS.Services;
 using DWS.Tests.DataFetching.TestFixtures;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +21,9 @@ public class BeatmapsetFetchingTests : BeatmapFetchTestBase
         {
             var loggerFactory = new SerilogLoggerFactory();
             ILogger<BeatmapsetFetchService> logger = new Logger<BeatmapsetFetchService>(loggerFactory);
-            return new BeatmapsetFetchService(logger, Context, MockOsuClient.Object);
+            IBeatmapsRepository beatmapsRepository = new BeatmapsRepository(Context);
+            IPlayersRepository playersRepository = new PlayersRepository(Context);
+            return new BeatmapsetFetchService(logger, Context, beatmapsRepository, playersRepository, MockOsuClient.Object);
         }
     }
 

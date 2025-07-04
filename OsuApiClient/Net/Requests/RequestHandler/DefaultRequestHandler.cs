@@ -3,7 +3,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using AutoMapper;
 using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OsuApiClient.Configurations.Interfaces;
