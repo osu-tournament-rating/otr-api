@@ -144,14 +144,41 @@ public class BeatmapsetFetchService(
         foreach (BeatmapExtended apiBeatmap in apiBeatmapset.Beatmaps)
         {
             Beatmap? existingBeatmap = beatmapset.Beatmaps.FirstOrDefault(b => b.OsuId == apiBeatmap.Id);
-            existingBeatmap ??= await context.Beatmaps
-                // Check if beatmap exists in database
-                .FirstOrDefaultAsync(b => b.OsuId == apiBeatmap.Id, cancellationToken) ?? await beatmapsRepository.GetAsync(apiBeatmap.Id);
 
             if (existingBeatmap is null)
             {
-                existingBeatmap = new Beatmap { OsuId = apiBeatmap.Id };
-                beatmapset.Beatmaps.Add(existingBeatmap);
+                // Check if beatmap exists in database
+                existingBeatmap = await context.Beatmaps
+                    .FirstOrDefaultAsync(b => b.OsuId == apiBeatmap.Id, cancellationToken)
+                    ?? await beatmapsRepository.GetAsync(apiBeatmap.Id);
+
+                if (existingBeatmap is null)
+                {
+                    // Create new beatmap with correct beatmapset relationship
+                    existingBeatmap = new Beatmap
+                    {
+                        OsuId = apiBeatmap.Id,
+                        BeatmapsetId = beatmapset.Id
+                    };
+                    beatmapset.Beatmaps.Add(existingBeatmap);
+                }
+                else if (existingBeatmap.BeatmapsetId != beatmapset.Id)
+                {
+                    // Beatmap exists but belongs to a different beatmapset
+                    // This shouldn't happen in normal circumstances, log a warning
+                    logger.LogWarning(
+                        "Beatmap {BeatmapId} already exists with BeatmapsetId {ExistingBeatmapsetId}, " +
+                        "but API indicates it should belong to BeatmapsetId {ExpectedBeatmapsetId}",
+                        apiBeatmap.Id, existingBeatmap.BeatmapsetId, beatmapset.Id);
+
+                    // Still add it to the collection to ensure navigation property is correct
+                    beatmapset.Beatmaps.Add(existingBeatmap);
+                }
+                else
+                {
+                    // Beatmap exists with correct beatmapset ID, just add to collection
+                    beatmapset.Beatmaps.Add(existingBeatmap);
+                }
             }
 
             // Update beatmap from API data
