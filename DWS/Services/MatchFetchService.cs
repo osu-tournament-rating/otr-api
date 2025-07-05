@@ -93,7 +93,7 @@ public class MatchFetchService(
         await ProcessGamesAsync(match, apiMatch, cancellationToken);
     }
 
-    private Match CreateMatchFromApi(MultiplayerMatch apiMatch)
+    private static Match CreateMatchFromApi(MultiplayerMatch apiMatch)
     {
         return new Match
         {
@@ -106,7 +106,7 @@ public class MatchFetchService(
         };
     }
 
-    private void UpdateMatchFromApi(Match match, MultiplayerMatch apiMatch)
+    private static void UpdateMatchFromApi(Match match, MultiplayerMatch apiMatch)
     {
         match.Name = apiMatch.Match.Name;
         match.StartTime = DateTime.SpecifyKind(apiMatch.Match.StartTime, DateTimeKind.Utc);
@@ -139,7 +139,7 @@ public class MatchFetchService(
             .DistinctBy(p => p.OsuId)
             .ToList();
 
-        if (newPlayers.Any())
+        if (newPlayers.Count != 0)
         {
             foreach (Player player in newPlayers)
             {
@@ -186,10 +186,12 @@ public class MatchFetchService(
 
     private async Task<Game> CreateGameFromApiAsync(Match match, MultiplayerGame apiGame, CancellationToken cancellationToken)
     {
+        Beatmap? beatmap = null;
+
         // Ensure beatmap exists
         if (apiGame.BeatmapId > 0)
         {
-            Beatmap? beatmap = await beatmapsRepository.GetAsync(apiGame.BeatmapId);
+            beatmap = await beatmapsRepository.GetAsync(apiGame.BeatmapId);
             if (beatmap is null)
             {
                 // Create placeholder beatmap
@@ -198,6 +200,9 @@ public class MatchFetchService(
                     OsuId = apiGame.BeatmapId
                 };
                 await beatmapsRepository.CreateAsync(beatmap);
+
+                // Save changes to persist the beatmap before creating the game
+                await context.SaveChangesAsync(cancellationToken);
 
                 // Queue it for processing
                 var fetchBeatmapMessage = new FetchBeatmapMessage
@@ -219,7 +224,7 @@ public class MatchFetchService(
         {
             OsuId = apiGame.Id,
             MatchId = match.Id,
-            BeatmapId = apiGame.BeatmapId > 0 ? (int)apiGame.BeatmapId : null,
+            BeatmapId = beatmap?.Id,
             StartTime = DateTime.SpecifyKind(apiGame.StartTime, DateTimeKind.Utc),
             EndTime = DateTime.SpecifyKind(apiGame.EndTime ?? apiGame.StartTime, DateTimeKind.Utc),
             Ruleset = apiGame.Ruleset,
@@ -281,7 +286,7 @@ public class MatchFetchService(
         }
     }
 
-    private DbGameScore CreateScoreFromApi(Game game, Player player, ApiGameScore apiScore)
+    private static DbGameScore CreateScoreFromApi(Game game, Player player, ApiGameScore apiScore)
     {
         return new DbGameScore
         {
@@ -302,7 +307,7 @@ public class MatchFetchService(
         };
     }
 
-    private void UpdateScoreFromApi(DbGameScore score, ApiGameScore apiScore)
+    private static void UpdateScoreFromApi(DbGameScore score, ApiGameScore apiScore)
     {
         score.Score = apiScore.Score;
         score.MaxCombo = apiScore.MaxCombo;
