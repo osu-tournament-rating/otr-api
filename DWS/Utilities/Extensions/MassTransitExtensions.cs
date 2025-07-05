@@ -10,7 +10,15 @@ public static class MassTransitExtensions
     /// </summary>
     private static void ConfigureRateLimitedEndpoint(this IReceiveEndpointConfigurator endpointConfigurator)
     {
+        // Enable priority queue with max priority level of 10 if this is a RabbitMQ endpoint
+        // This allows high priority messages to be processed first
+        if (endpointConfigurator is IRabbitMqReceiveEndpointConfigurator rabbitMqEndpoint)
+        {
+            rabbitMqEndpoint.EnablePriority(10);
+        }
+
         // Process only one message at a time to ensure we respect the API rate limit
+        // This also ensures strict priority ordering
         endpointConfigurator.PrefetchCount = 1;
 
         // Limit concurrent message processing to 1

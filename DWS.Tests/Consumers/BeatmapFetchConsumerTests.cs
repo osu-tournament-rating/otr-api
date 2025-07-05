@@ -1,4 +1,5 @@
 using API.Messages;
+using Common.Enums;
 using DWS.Consumers;
 using DWS.Services;
 using MassTransit;
@@ -174,5 +175,54 @@ public class BeatmapFetchConsumerTests
         _mockBeatmapsetFetchService.Verify(
             x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    [Theory]
+    [InlineData(MessagePriority.Low)]
+    [InlineData(MessagePriority.Normal)]
+    [InlineData(MessagePriority.High)]
+    public async Task Consume_HandlesAllPriorityLevels(MessagePriority priority)
+    {
+        // Arrange
+        var message = new FetchBeatmapMessage
+        {
+            BeatmapId = 456,
+            CorrelationId = Guid.NewGuid(),
+            Priority = priority
+        };
+
+        _mockBeatmapsetFetchService
+            .Setup(x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var harness = new InMemoryTestHarness();
+        ConsumerTestHarness<BeatmapFetchConsumer>? consumerHarness = harness.Consumer(() => _consumer);
+
+        await harness.Start();
+
+        try
+        {
+            // Act
+            // Note: SetPriority is RabbitMQ-specific and doesn't work with InMemoryTestHarness
+            // The message priority is still part of the message data
+            await harness.InputQueueSendEndpoint.Send(message);
+
+            // Assert
+            Assert.True(await harness.Consumed.Any<FetchBeatmapMessage>());
+            Assert.True(await consumerHarness.Consumed.Any<FetchBeatmapMessage>());
+
+            var consumedMessage = await consumerHarness.Consumed.SelectAsync<FetchBeatmapMessage>().FirstOrDefault();
+            Assert.NotNull(consumedMessage);
+            Assert.Equal(priority, consumedMessage!.Context.Message.Priority);
+
+            // Verify the service was called
+            _mockBeatmapsetFetchService.Verify(
+                x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+        finally
+        {
+            await harness.Stop();
+        }
     }
 }

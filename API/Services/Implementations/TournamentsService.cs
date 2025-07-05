@@ -84,10 +84,14 @@ public class TournamentsService(
         foreach (FetchBeatmapMessage message in submittedBeatmapIds.Select(beatmapId =>
                         new FetchBeatmapMessage
                         {
-                            BeatmapId = beatmapId
+                            BeatmapId = beatmapId,
+                            Priority = MessagePriority.Normal
                         }))
         {
-            await publishEndpoint.Publish(message);
+            await publishEndpoint.Publish(message, context =>
+            {
+                context.SetPriority((byte)message.Priority);
+            });
         }
 
         logger.LogInformation(

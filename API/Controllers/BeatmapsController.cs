@@ -3,6 +3,7 @@ using API.DTOs;
 using API.Messages;
 using API.Services.Interfaces;
 using Asp.Versioning;
+using Common.Enums;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -50,12 +51,13 @@ public class BeatmapsController(IBeatmapService beatmapService, IPublishEndpoint
     /// </summary>
     /// <remarks>Queues a request to fetch the latest beatmap data from the osu! API</remarks>
     /// <param name="id">The osu! beatmap ID</param>
+    /// <param name="priority">The priority level for processing (Low, Normal, High). Defaults to Normal.</param>
     /// <response code="202">Beatmap fetch request queued successfully</response>
     /// <response code="400">Invalid beatmap ID</response>
     [HttpPost("{id:long}/fetch")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> QueueFetchAsync(long id)
+    public async Task<IActionResult> QueueFetchAsync(long id, [FromQuery] MessagePriority priority = MessagePriority.Normal)
     {
         if (id <= 0)
         {
@@ -66,11 +68,15 @@ public class BeatmapsController(IBeatmapService beatmapService, IPublishEndpoint
         {
             BeatmapId = id,
             RequestedAt = DateTime.UtcNow,
-            CorrelationId = Guid.NewGuid()
+            CorrelationId = Guid.NewGuid(),
+            Priority = priority
         };
 
-        await publishEndpoint.Publish(message);
+        await publishEndpoint.Publish(message, context =>
+        {
+            context.SetPriority((byte)message.Priority);
+        });
 
-        return Accepted(new { correlationId = message.CorrelationId, beatmapId = id });
+        return Accepted(new { correlationId = message.CorrelationId, beatmapId = id, priority });
     }
 }
