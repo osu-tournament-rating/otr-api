@@ -1,5 +1,4 @@
-﻿using API.Authorization;
-using API.DTOs;
+﻿using API.DTOs;
 using API.Services.Interfaces;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
