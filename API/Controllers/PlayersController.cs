@@ -21,7 +21,7 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
     /// <response code="404">A player matching the given key does not exist</response>
     /// <response code="200">Returns a player</response>
     [HttpGet]
-    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<PlayerCompactDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(string key)
@@ -50,7 +50,7 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
     /// <response code="404">A player matching the given search key does not exist</response>
     /// <response code="200">Returns a player's stats</response>
     [HttpGet("stats")]
-    [Authorize(Roles = $"{OtrClaims.Roles.User}, {OtrClaims.Roles.Client}")]
+    [AllowAnonymous]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<PlayerDashboardStatsDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStatsAsync(
