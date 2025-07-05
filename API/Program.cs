@@ -445,7 +445,7 @@ builder.Services.AddSerilog(configuration =>
         .Enrich.FromLogContext()
         .Enrich.WithSpan()
         .WriteTo.Logger(lc => lc
-            .MinimumLevel.Verbose()
+            .MinimumLevel.Debug()
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
             .Filter.ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
