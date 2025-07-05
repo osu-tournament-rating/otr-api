@@ -55,7 +55,6 @@ public class MatchFetchService(
             await ProcessMatchAsync(apiMatch, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
 
-            logger.LogDebug("Successfully processed match {MatchId}", osuMatchId);
             return true;
         }
         catch (Exception ex)
