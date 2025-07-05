@@ -1,6 +1,6 @@
-using API.Messages;
 using Common.Enums;
 using DWS.Consumers;
+using DWS.Messages;
 using DWS.Services;
 using MassTransit;
 using MassTransit.Testing;

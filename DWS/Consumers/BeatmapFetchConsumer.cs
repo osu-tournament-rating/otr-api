@@ -1,4 +1,4 @@
-using API.Messages;
+using DWS.Messages;
 using DWS.Services;
 using JetBrains.Annotations;
 using MassTransit;

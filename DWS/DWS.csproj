@@ -20,6 +20,5 @@
     <ProjectReference Include="..\Database\Database.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\OsuApiClient\OsuApiClient.csproj" />
-    <ProjectReference Include="..\API\API.csproj" />
   </ItemGroup>
 </Project>

@@ -1,11 +1,11 @@
 using API.DTOs;
-using API.Messages;
 using API.Services.Interfaces;
 using AutoMapper;
 using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
+using DWS.Messages;
 using MassTransit;
 
 namespace API.Services.Implementations;
@@ -80,7 +80,7 @@ public class TournamentsService(
 
         Tournament tournament = await tournamentsRepository.CreateAsync(newTournament);
 
-        // Publish to queue
+        // Enqueue beatmaps for osu! API data fetching
         foreach (FetchBeatmapMessage message in submittedBeatmapIds.Select(beatmapId =>
                         new FetchBeatmapMessage
                         {
@@ -94,9 +94,24 @@ public class TournamentsService(
             });
         }
 
+        // Enqueue matches for osu! API data fetching
+        foreach (FetchMatchMessage message in submittedMatchIds.Select(matchId =>
+                        new FetchMatchMessage
+                        {
+                            OsuMatchId = matchId,
+                            Priority = MessagePriority.Normal
+                        }))
+        {
+            await publishEndpoint.Publish(message, context =>
+            {
+                context.SetPriority((byte)message.Priority);
+            });
+        }
+
         logger.LogInformation(
-            "Enqueued {Count} beatmaps for data fetching from tournament {TournamentId} ({TournamentName})",
+            "Enqueued {BeatmapCount} beatmaps and {MatchCount} matches for data fetching from tournament {TournamentId} ({TournamentName})",
             submittedBeatmapIds.Count,
+            submittedMatchIds.Count,
             tournament.Id,
             tournament.Name);
 

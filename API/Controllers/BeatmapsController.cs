@@ -1,9 +1,9 @@
 using API.Authorization;
 using API.DTOs;
-using API.Messages;
 using API.Services.Interfaces;
 using Asp.Versioning;
 using Common.Enums;
+using DWS.Messages;
 using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

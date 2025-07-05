@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Common.Enums;
 
-namespace API.Messages;
+namespace DWS.Messages;
 
 public record FetchBeatmapMessage
 {
