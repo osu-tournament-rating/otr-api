@@ -124,6 +124,13 @@ public class TournamentsService(
     public async Task<bool> ExistsAsync(string name, Ruleset ruleset)
         => await tournamentsRepository.ExistsAsync(name, ruleset);
 
+    public async Task<IEnumerable<long>> GetExistingMatchIdsAsync(IEnumerable<long> osuMatchIds)
+    {
+        var matchIdsList = osuMatchIds.ToList();
+        var existingMatches = await matchesRepository.GetAsync(matchIdsList);
+        return existingMatches.Select(m => m.OsuId);
+    }
+
     public async Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true) =>
         mapper.Map<TournamentDTO?>(await tournamentsRepository.GetAsync(id, eagerLoad));
 

@@ -42,7 +42,7 @@ public partial class TournamentsController(ITournamentsService tournamentsServic
     public async Task<IActionResult> CreateAsync([FromBody][Required] TournamentSubmissionDTO tournamentSubmission)
     {
         // Sanitize id collections
-        tournamentSubmission.Ids = tournamentSubmission.Ids.Distinct().Where(id => id >= 1);
+        tournamentSubmission.Ids = tournamentSubmission.Ids.Distinct().Where(id => id >= 1).ToList();
         tournamentSubmission.BeatmapIds = tournamentSubmission.BeatmapIds.Distinct().Where(id => id >= 1);
 
         #region Model Validation
@@ -59,6 +59,17 @@ public partial class TournamentsController(ITournamentsService tournamentsServic
                 nameof(TournamentSubmissionDTO.Ruleset),
                 $"A tournament with the ruleset '{tournamentSubmission.Ruleset}' and name " +
                 $"'{tournamentSubmission.Name}' already exists."
+            );
+        }
+
+        // Check for existing match IDs
+        var existingMatchIds = (await tournamentsService.GetExistingMatchIdsAsync(tournamentSubmission.Ids)).ToList();
+        if (existingMatchIds.Count != 0)
+        {
+            string matchIdsString = string.Join(", ", existingMatchIds.OrderBy(id => id));
+            ModelState.AddModelError(
+                nameof(TournamentSubmissionDTO.Ids),
+                $"osu! match IDs {matchIdsString} already exist"
             );
         }
 
