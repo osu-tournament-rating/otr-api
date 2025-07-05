@@ -18,14 +18,20 @@ public class MeController(IUsersService usersService) : Controller
     /// <summary>
     /// Get the currently logged in user
     /// </summary>
-    /// <response code="302">Redirects to `GET` `/users/{id}`</response>
     /// <response code="200">Returns the currently logged in user</response>
+    /// <response code="404">User not found</response>
     [HttpGet]
     [Authorize(Roles = OtrClaims.Roles.User)]
-    [ProducesResponseType(StatusCodes.Status302Found)]
     [ProducesResponseType<UserDTO>(StatusCodes.Status200OK)]
-    public IActionResult Get() =>
-        RedirectToAction("Get", "Users", new { id = User.GetSubjectId() });
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetAsync()
+    {
+        UserDTO? user = await usersService.GetAsync(User.GetSubjectId());
+
+        return user is null
+            ? NotFound()
+            : Ok(user);
+    }
 
     /// <summary>
     /// Get player stats for the currently logged in user
