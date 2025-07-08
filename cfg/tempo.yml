@@ -1,31 +1,36 @@
-stream_over_http_enabled: true
 server:
   http_listen_port: 3200
   log_level: info
 
 distributor:
-  receivers:      # This configuration will listen on all ports and protocols that tempo is capable of.
-    otlp:         # The receivers all come from the OpenTelemetry collector.  More configuration information can
-      protocols:  # be found here: https://github.com/open-telemetry/opentelemetry-collector/tree/main/receiver
+  receivers:
+    otlp:
+      protocols:
         grpc:
-          endpoint: "tempo:4317"
+          endpoint: "0.0.0.0:4317"
+  ring:
+    kvstore:
+      store: inmemory
 
 ingester:
   lifecycler:
     ring:
-      replication_factor: 2
-  flush_all_on_shutdown: true
-  max_block_duration: 30m
-  complete_block_timeout: 15m
-  flush_check_period: 10s
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+  max_block_duration: 5m
+
+compactor:
+  compaction:
+    block_retention: 1h
+    compaction_window: 1h
+  ring:
+    kvstore:
+      store: inmemory
 
 query_frontend:
   search:
     duration_slo: 5s
-    throughput_bytes_slo: 0
-    metadata_slo:
-      duration_slo: 5s
-      throughput_bytes_slo: 0
   trace_by_id:
     duration_slo: 5s
 
@@ -33,7 +38,7 @@ storage:
   trace:
     backend: s3
     wal:
-      path: /tmp/tempo/wal
+      path: /var/lib/tempo/wal
     s3:
       bucket: tempo
       endpoint: minio:9000
