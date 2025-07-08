@@ -22,15 +22,15 @@ ingester:
       kvstore:
         store: inmemory
       replication_factor: 1
-  chunk_idle_period: 3m
-  chunk_retain_period: 1m
+  chunk_idle_period: 5m
+  chunk_retain_period: 3m
 
 storage_config:
   aws:
-    s3: http://:@minio:9000/loki
+    s3: s3://test:test@minio:9000/loki
     bucketnames: loki
     endpoint: minio:9000/loki
-    region: east-us
+    region: us-east-1
     access_key_id: test
     secret_access_key: test
     insecure: true
