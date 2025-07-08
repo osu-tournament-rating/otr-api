@@ -27,10 +27,9 @@ ingester:
 
 storage_config:
   aws:
-    s3: s3://test:test@minio:9000/loki
     bucketnames: loki
-    endpoint: minio:9000/loki
-    region: us-east-1
+    endpoint: minio:9000
+    region: east-us
     access_key_id: test
     secret_access_key: test
     insecure: true
