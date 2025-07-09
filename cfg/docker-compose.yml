@@ -119,6 +119,7 @@ services:
     image: grafana/tempo
     container_name: tempo
     command: ["--config.file=/etc/tempo.yml"]
+    user: "0:0"
     volumes:
       - ./tempo.yml:/etc/tempo.yml:ro
       - tempo_storage:/var/lib/tempo
