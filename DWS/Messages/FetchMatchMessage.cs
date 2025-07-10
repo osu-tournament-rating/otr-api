@@ -3,14 +3,29 @@ using Common.Enums;
 
 namespace DWS.Messages;
 
+/// <summary>
+/// Message used to request fetching match data from the osu! API.
+/// </summary>
 public record FetchMatchMessage
 {
+    /// <summary>
+    /// The osu! match ID to fetch data for.
+    /// </summary>
     [Required]
     public long OsuMatchId { get; init; }
 
+    /// <summary>
+    /// The timestamp when this fetch request was created.
+    /// </summary>
     public DateTime RequestedAt { get; init; } = DateTime.UtcNow;
 
+    /// <summary>
+    /// Unique identifier for tracking this message through the system.
+    /// </summary>
     public Guid CorrelationId { get; init; } = Guid.NewGuid();
 
+    /// <summary>
+    /// The priority level for processing this message.
+    /// </summary>
     public MessagePriority Priority { get; init; } = MessagePriority.Normal;
 }
