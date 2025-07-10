@@ -16,6 +16,7 @@ app.env
 db.env
 redis.env
 postgres_exporter.env
+rabbitmq.env
 
 .DS_Store
 *.DotSettings.user

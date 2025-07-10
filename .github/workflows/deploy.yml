@@ -141,6 +141,7 @@ jobs:
           echo "${{ secrets.DB_ENV }}" > db.env
           echo "${{ secrets.POSTGRES_EXPORTER_ENV }}" > postgres_exporter.env
           echo "${{ secrets.MINIO_ENV }}" > minio.env
+          echo "${{ secrets.RABBITMQ_ENV }}" > rabbitmq.env
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
