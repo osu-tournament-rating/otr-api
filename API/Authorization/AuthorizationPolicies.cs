@@ -13,7 +13,8 @@ public static class AuthorizationPolicies
 
     /// <summary>
     /// Policy that allows the API to determine if the request is coming from a trusted
-    /// source, such as otr-web.
+    /// source, such as otr-web. This is effectively the same as [AllowAnonymous], except only
+    /// for requests coming from trusted sources.
     /// </summary>
     public const string ApiKeyAuthorization = "ApiKey";
 

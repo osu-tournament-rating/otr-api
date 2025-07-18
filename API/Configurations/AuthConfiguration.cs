@@ -27,7 +27,8 @@ public class AuthConfiguration
     /// </summary>
     /// <remarks>
     /// Requests with a header of X-Api-Key: {AuthorizationApiKey}
-    /// and no other metadata will have requests approved of.
+    /// and no other metadata will have requests approved of,
+    /// assuming the endpoint has this authorization policy.
     /// This key is a way for us to approve public web requests
     /// without enabling [AllowAnonymous] on public endpoints.
     /// This way, we can still rely on user-created API clients

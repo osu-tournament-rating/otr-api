@@ -644,13 +644,11 @@ builder.Services
             },
             OnRedirectToLogin = context =>
             {
-                Log.Debug("Cookie authentication redirecting to login - returning 401 instead");
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return Task.CompletedTask;
             },
             OnRedirectToAccessDenied = context =>
             {
-                Log.Debug("Cookie authentication access denied - returning 403");
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return Task.CompletedTask;
             }
