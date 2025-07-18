@@ -22,6 +22,7 @@
   },
   "Auth": {
     "AllowedHosts": ["http://localhost:3000"],
+    "AuthorizationApiKey": "abcdefgh",
     "EnforceWhitelist": false,
     "PersistDataProtectionKeys": true
   },

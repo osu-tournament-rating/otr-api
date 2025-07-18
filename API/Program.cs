@@ -73,6 +73,7 @@ using ILogger = Serilog.ILogger;
 using User = Database.Entities.User;
 
 #pragma warning disable SYSLIB1045
+
 #region WebApplicationBuilder Configuration
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -449,7 +450,10 @@ builder.Services.AddSerilog(configuration =>
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Warning)
             .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Information)
             .Filter.ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
-            .WriteTo.GrafanaLoki(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).LokiConnection,
+            .WriteTo.GrafanaLoki(
+                builder.Configuration
+                    .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position)
+                    .LokiConnection,
                 new List<LokiLabel>
                 {
                     new() { Key = "app", Value = serviceName },
@@ -459,7 +463,9 @@ builder.Services.AddSerilog(configuration =>
         .WriteTo.Logger(lc => lc
             .Filter
             .ByExcluding(e => e.MessageTemplate.Text.Contains("Microsoft.EntityFrameworkCore.Database.Command"))
-            .WriteTo.Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [trace_id: {TraceId} span_id: {SpanId}] {Message:lj}{NewLine}"))
+            .WriteTo.Console(
+                outputTemplate:
+                "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff} {Level:u3}] [trace_id: {TraceId} span_id: {SpanId}] {Message:lj}{NewLine}"))
         .WriteTo.PostgreSQL(
             connString,
             "Logs",
@@ -554,7 +560,8 @@ builder.Services
                 ? CookieAuthenticationDefaults.AuthenticationScheme
                 : JwtBearerDefaults.AuthenticationScheme;
 
-            Log.Debug("Authentication scheme selection - HasCookie: {HasCookie}, SelectedScheme: {SelectedScheme}, Path: {Path}",
+            Log.Debug(
+                "Authentication scheme selection - HasCookie: {HasCookie}, SelectedScheme: {SelectedScheme}, Path: {Path}",
                 hasCookie, selectedScheme, context.Request.Path);
 
             return selectedScheme;
@@ -581,11 +588,14 @@ builder.Services
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.IsEssential = true;
         options.Cookie.Domain = builder.Configuration.Get<AuthConfiguration>()?.AllowedHosts.FirstOrDefault();
-        options.Cookie.MaxAge = builder.Configuration.Get<AuthConfiguration>()?.CookieExpiration ?? TimeSpan.FromDays(30);
-        options.ExpireTimeSpan = builder.Configuration.Get<AuthConfiguration>()?.CookieExpiration ?? TimeSpan.FromDays(30);
+        options.Cookie.MaxAge =
+            builder.Configuration.Get<AuthConfiguration>()?.CookieExpiration ?? TimeSpan.FromDays(30);
+        options.ExpireTimeSpan =
+            builder.Configuration.Get<AuthConfiguration>()?.CookieExpiration ?? TimeSpan.FromDays(30);
         options.SlidingExpiration = true;
 
-        Log.Information("Cookie authentication configured - Domain: {Domain}, Expiration: {Expiration}, SecurePolicy: {SecurePolicy}",
+        Log.Information(
+            "Cookie authentication configured - Domain: {Domain}, Expiration: {Expiration}, SecurePolicy: {SecurePolicy}",
             options.Cookie.Domain, options.ExpireTimeSpan, options.Cookie.SecurePolicy);
 
         // By default, cookie-based authentication will try to redirect to a "login" endpoint
@@ -600,7 +610,8 @@ builder.Services
 
                 if (context.Principal?.Identity?.IsAuthenticated != true)
                 {
-                    authLogger.Warning("Cookie validation failed - user not authenticated. UserId: {UserId}", userId ?? "Unknown");
+                    authLogger.Warning("Cookie validation failed - user not authenticated. UserId: {UserId}",
+                        userId ?? "Unknown");
                     context.RejectPrincipal();
                     await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     return;
@@ -612,14 +623,16 @@ builder.Services
             {
                 string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
                 ILogger authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
-                authLogger.Information("User signing in with cookie authentication. UserId: {UserId}", userId ?? "Unknown");
+                authLogger.Information("User signing in with cookie authentication. UserId: {UserId}",
+                    userId ?? "Unknown");
                 return Task.CompletedTask;
             },
             OnSignedIn = context =>
             {
                 string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
                 ILogger authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
-                authLogger.Information("User successfully signed in with cookie. UserId: {UserId}", userId ?? "Unknown");
+                authLogger.Information("User successfully signed in with cookie. UserId: {UserId}",
+                    userId ?? "Unknown");
                 return Task.CompletedTask;
             },
             OnSigningOut = context =>
@@ -631,13 +644,11 @@ builder.Services
             },
             OnRedirectToLogin = context =>
             {
-                Log.Debug("Cookie authentication redirecting to login - returning 401 instead");
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return Task.CompletedTask;
             },
             OnRedirectToAccessDenied = context =>
             {
-                Log.Debug("Cookie authentication access denied - returning 403");
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return Task.CompletedTask;
             }
@@ -691,8 +702,7 @@ builder.Services
                 // Build user identity
                 var claims = new List<Claim>
                 {
-                    new(OtrClaims.Role, OtrClaims.Roles.User),
-                    new(OtrClaims.Subject, user.Id.ToString())
+                    new(OtrClaims.Role, OtrClaims.Roles.User), new(OtrClaims.Subject, user.Id.ToString())
                 };
                 claims.AddRange(user.Scopes.Select(r => new Claim(OtrClaims.Role, r)));
 
@@ -712,15 +722,17 @@ builder.Services
 
 // Use redis to persist keys across application restarts
 // This is used for persisting cookies across application restarts
-ConnectionStringsConfiguration connectionStrings = builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-    ConnectionStringsConfiguration.Position
-);
+ConnectionStringsConfiguration connectionStrings =
+    builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(
+        ConnectionStringsConfiguration.Position
+    );
 
 AuthConfiguration authConfiguration = builder.Configuration.BindAndValidate<AuthConfiguration>(
     AuthConfiguration.Position
 );
 
-Log.Information("Starting Data Protection configuration. PersistDataProtectionKeys: {PersistKeys}", authConfiguration.PersistDataProtectionKeys);
+Log.Information("Starting Data Protection configuration. PersistDataProtectionKeys: {PersistKeys}",
+    authConfiguration.PersistDataProtectionKeys);
 
 // Create a shared Redis connection multiplexer for Data Protection
 if (authConfiguration.PersistDataProtectionKeys)
@@ -736,7 +748,8 @@ if (authConfiguration.PersistDataProtectionKeys)
         configurationOptions.ConnectTimeout = 5000;
         configurationOptions.SyncTimeout = 5000;
 
-        redisLogger.Debug("Redis connection options: ConnectRetry={ConnectRetry}, ConnectTimeout={ConnectTimeout}, SyncTimeout={SyncTimeout}",
+        redisLogger.Debug(
+            "Redis connection options: ConnectRetry={ConnectRetry}, ConnectTimeout={ConnectTimeout}, SyncTimeout={SyncTimeout}",
             configurationOptions.ConnectRetry, configurationOptions.ConnectTimeout, configurationOptions.SyncTimeout);
 
         var redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
@@ -755,7 +768,8 @@ if (authConfiguration.PersistDataProtectionKeys)
         // Add connection event handlers for monitoring
         redisConnection.ConnectionFailed += (_, args) =>
         {
-            redisLogger.Error("Redis connection failed: {EndPoint} - {FailureType}", args.EndPoint, args.FailureType);
+            redisLogger.Error("Redis connection failed: {EndPoint} - {FailureType}", args.EndPoint,
+                args.FailureType);
         };
 
         redisConnection.ConnectionRestored += (_, args) =>
@@ -763,30 +777,31 @@ if (authConfiguration.PersistDataProtectionKeys)
             redisLogger.Information("Redis connection restored: {EndPoint}", args.EndPoint);
         };
 
-        redisConnection.ErrorMessage += (_, args) =>
-        {
-            redisLogger.Error("Redis error: {Message}", args.Message);
-        };
+        redisConnection.ErrorMessage += (_, args) => { redisLogger.Error("Redis error: {Message}", args.Message); };
 
         builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);
 
-        redisLogger.Information("Data Protection keys will be persisted to Redis at {RedisConnection}", connectionStrings.RedisConnection);
+        redisLogger.Information("Data Protection keys will be persisted to Redis at {RedisConnection}",
+            connectionStrings.RedisConnection);
     }
     catch (Exception ex)
     {
-        redisLogger.Error(ex, "Failed to connect to Redis for Data Protection. This WILL cause cookie invalidation on restart!");
+        redisLogger.Error(ex,
+            "Failed to connect to Redis for Data Protection. This WILL cause cookie invalidation on restart!");
 
         // Fallback to in-memory key storage with a warning
         builder.Services.AddDataProtection()
             .SetApplicationName("otr-api")
             .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
 
-        redisLogger.Warning("Using in-memory Data Protection keys - cookies will be invalidated on application restart");
+        redisLogger.Warning(
+            "Using in-memory Data Protection keys - cookies will be invalidated on application restart");
     }
 }
 else
 {
-    Log.Information("Data Protection key persistence to Redis is disabled. Keys will be stored in-memory and cookies will be invalidated on restart");
+    Log.Information(
+        "Data Protection key persistence to Redis is disabled. Keys will be stored in-memory and cookies will be invalidated on restart");
 
     // Use in-memory key storage when Redis persistence is disabled
     builder.Services.AddDataProtection()
@@ -805,8 +820,11 @@ builder.Services
         p.RequireRole(OtrClaims.Roles.User);
         p.AddRequirements(new AccessUserResourcesAuthorizationRequirement());
     })
-    .AddPolicy(AuthorizationPolicies.Whitelist, p => { p.AddRequirements(new WhitelistAuthorizationRequirement()); });
+    .AddPolicy(AuthorizationPolicies.Whitelist, p => { p.AddRequirements(new WhitelistAuthorizationRequirement()); })
+    .AddPolicy(AuthorizationPolicies.ApiKeyAuthorization,
+        p => { p.AddRequirements(new ApiKeyAuthorizationRequirement()); });
 
+builder.Services.AddScoped<IAuthorizationHandler, ApiKeyAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, AccessUserResourcesAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, WhitelistAuthorizationHandler>();
 
@@ -837,17 +855,24 @@ builder.Services.AddScoped<AuditingInterceptor>();
 builder.Services.AddDbContext<OtrContext>((services, sqlOptions) =>
 {
     sqlOptions
-        .UseNpgsql(builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position).DefaultConnection,
-            dataSourceOptions => dataSourceOptions.ConfigureDataSource(
-                dataSourceBuilder =>
-                    dataSourceBuilder.ConfigureTracing(tracingOptions =>
+        .UseNpgsql(
+            builder.Configuration
+                .BindAndValidate<ConnectionStringsConfiguration>(ConnectionStringsConfiguration.Position)
+                .DefaultConnection,
+            dataSourceOptions => dataSourceOptions.ConfigureDataSource(dataSourceBuilder =>
+                dataSourceBuilder.ConfigureTracing(tracingOptions =>
                     // This only returns the actual command, unfortunately there's no other way to do this afaik
-                    tracingOptions.ConfigureCommandSpanNameProvider(cmd => Regex.Split(cmd.CommandText[..15], "[a-z]+")[0])
-                            // Filter out commands that shouldn't be related to API operations
-                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("COMMIT", StringComparison.OrdinalIgnoreCase))
-                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("DROP", StringComparison.OrdinalIgnoreCase))
-                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("CREATE", StringComparison.OrdinalIgnoreCase))
-                            .ConfigureCommandFilter(cmd => !cmd.CommandText.StartsWith("ALTER", StringComparison.OrdinalIgnoreCase)))))
+                    tracingOptions
+                        .ConfigureCommandSpanNameProvider(cmd => Regex.Split(cmd.CommandText[..15], "[a-z]+")[0])
+                        // Filter out commands that shouldn't be related to API operations
+                        .ConfigureCommandFilter(cmd =>
+                            !cmd.CommandText.StartsWith("COMMIT", StringComparison.OrdinalIgnoreCase))
+                        .ConfigureCommandFilter(cmd =>
+                            !cmd.CommandText.StartsWith("DROP", StringComparison.OrdinalIgnoreCase))
+                        .ConfigureCommandFilter(cmd =>
+                            !cmd.CommandText.StartsWith("CREATE", StringComparison.OrdinalIgnoreCase))
+                        .ConfigureCommandFilter(cmd =>
+                            !cmd.CommandText.StartsWith("ALTER", StringComparison.OrdinalIgnoreCase)))))
         .LogTo(Log.Logger.Information, LogLevel.Information)
         .AddInterceptors(services.GetRequiredService<AuditingInterceptor>())
         .UseSnakeCaseNamingConvention();
@@ -883,10 +908,7 @@ if (useRedLock)
         IConnectionMultiplexer? sharedRedisConnection = serviceProvider.GetService<IConnectionMultiplexer>();
         if (sharedRedisConnection != null)
         {
-            return RedLockFactory.Create(new List<RedLockMultiplexer>
-            {
-                new(sharedRedisConnection)
-            });
+            return RedLockFactory.Create(new List<RedLockMultiplexer> { new(sharedRedisConnection) });
         }
 
         // Fallback to creating a new connection if the shared one is not available
@@ -901,10 +923,7 @@ if (useRedLock)
             configurationOptions.SyncTimeout = 5000;
 
             var redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
-            return RedLockFactory.Create(new List<RedLockMultiplexer>
-            {
-                new(redisConnection)
-            });
+            return RedLockFactory.Create(new List<RedLockMultiplexer> { new(redisConnection) });
         }
         catch (Exception ex)
         {

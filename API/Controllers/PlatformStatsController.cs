@@ -1,4 +1,5 @@
-﻿using API.DTOs;
+﻿using API.Authorization;
+using API.DTOs;
 using API.Services.Interfaces;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
@@ -19,7 +20,7 @@ public class PlatformStatsController(IPlatformStatsService statsService) : Contr
     /// </summary>
     /// <response code="200">Returns various platform-wide stats</response>
     [HttpGet]
-    [AllowAnonymous]
+    [Authorize(Policy = AuthorizationPolicies.ApiKeyAuthorization)]
     [ProducesResponseType<PlatformStatsDTO>(StatusCodes.Status200OK)]
     [OutputCache(Duration = StatsCacheDurationSeconds)]
     public async Task<IActionResult> GetAsync() => Ok(await statsService.GetAsync());

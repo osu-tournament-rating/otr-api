@@ -21,7 +21,7 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
     /// <response code="404">A player matching the given key does not exist</response>
     /// <response code="200">Returns a player</response>
     [HttpGet]
-    [AllowAnonymous]
+    [Authorize(Policy = AuthorizationPolicies.ApiKeyAuthorization)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<PlayerCompactDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(string key)
@@ -50,7 +50,7 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
     /// <response code="404">A player matching the given search key does not exist</response>
     /// <response code="200">Returns a player's stats</response>
     [HttpGet("stats")]
-    [AllowAnonymous]
+    [Authorize(Policy = AuthorizationPolicies.ApiKeyAuthorization)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<PlayerDashboardStatsDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetStatsAsync(
@@ -97,7 +97,8 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
         [FromQuery] DateTime? dateMax = null
     )
     {
-        IEnumerable<TournamentCompactDTO>? result = await playerService.GetTournamentsAsync(key, ruleset, dateMin, dateMax);
+        IEnumerable<TournamentCompactDTO>? result =
+            await playerService.GetTournamentsAsync(key, ruleset, dateMin, dateMax);
 
         return result is not null
             ? Ok(result)

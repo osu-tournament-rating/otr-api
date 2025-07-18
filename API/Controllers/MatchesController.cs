@@ -32,7 +32,7 @@ public class MatchesController(IMatchesService matchesService) : Controller
     /// <response code="404">A match matching the given id does not exist</response>
     /// <response code="200">Returns a match</response>
     [HttpGet("{id:int}")]
-    [AllowAnonymous]
+    [Authorize(Policy = AuthorizationPolicies.ApiKeyAuthorization)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<MatchDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(int id)

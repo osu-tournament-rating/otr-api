@@ -49,7 +49,7 @@ public class FilteringController(
     /// <response code="404">The filter report was not found</response>
     /// <response code="200">The filter report</response>
     [HttpGet("{id:int}")]
-    [AllowAnonymous]
+    [Authorize(Policy = AuthorizationPolicies.ApiKeyAuthorization)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<FilterReportDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFilterReportAsync(int id)
