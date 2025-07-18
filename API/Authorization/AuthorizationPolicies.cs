@@ -12,6 +12,12 @@ public static class AuthorizationPolicies
     public const string AccessUserResources = "AccessUserResources";
 
     /// <summary>
+    /// Policy that allows the API to determine if the request is coming from a trusted
+    /// source, such as otr-web.
+    /// </summary>
+    public const string ApiKeyAuthorization = "ApiKey";
+
+    /// <summary>
     /// Policy that controls access based on whether or not the whitelist is enabled
     /// </summary>
     public const string Whitelist = "Whitelist";
