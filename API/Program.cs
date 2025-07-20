@@ -631,13 +631,11 @@ builder.Services
             },
             OnRedirectToLogin = context =>
             {
-                Log.Debug("Cookie authentication redirecting to login - returning 401 instead");
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return Task.CompletedTask;
             },
             OnRedirectToAccessDenied = context =>
             {
-                Log.Debug("Cookie authentication access denied - returning 403");
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return Task.CompletedTask;
             }
@@ -800,6 +798,10 @@ else
 
 builder.Services
     .AddAuthorizationBuilder()
+    .AddPolicy(AuthorizationPolicies.ApiKeyAuthorization, p =>
+    {
+        p.AddRequirements(new ApiKeyAuthorizationRequirement());
+    })
     .AddPolicy(AuthorizationPolicies.AccessUserResources, p =>
     {
         p.RequireRole(OtrClaims.Roles.User);
@@ -807,6 +809,7 @@ builder.Services
     })
     .AddPolicy(AuthorizationPolicies.Whitelist, p => { p.AddRequirements(new WhitelistAuthorizationRequirement()); });
 
+builder.Services.AddScoped<IAuthorizationHandler, ApiKeyAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, AccessUserResourcesAuthorizationHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, WhitelistAuthorizationHandler>();
 
