@@ -69,7 +69,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
             .ReturnsAsync(apiBeatmapset);
 
         // Act
-        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetByBeatmapIdAsync(beatmapId);
+        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId);
 
         // Assert
         Assert.True(result);
@@ -118,7 +118,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         await Context.SaveChangesAsync();
 
         // Act
-        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetByBeatmapIdAsync(beatmapId);
+        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId);
 
         // Assert
         Assert.False(result);
@@ -138,7 +138,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
             .ReturnsAsync((BeatmapExtended?)null);
 
         // Act
-        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetByBeatmapIdAsync(beatmapId);
+        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId);
 
         // Assert
         Assert.False(result);
@@ -172,7 +172,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
             .ReturnsAsync((BeatmapsetExtended?)null);
 
         // Act
-        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetByBeatmapIdAsync(beatmapId);
+        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId);
 
         // Assert
         Assert.False(result);
@@ -225,7 +225,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
             .ReturnsAsync(apiBeatmapset);
 
         // Act
-        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetByBeatmapIdAsync(beatmapId);
+        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId);
 
         // Assert
         Assert.True(result);
@@ -269,7 +269,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
             .ReturnsAsync((BeatmapExtended?)null);
 
         // Act
-        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetByBeatmapIdAsync(beatmapId);
+        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId);
 
         // Assert
         Assert.False(result);
@@ -338,7 +338,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
             .ReturnsAsync(apiBeatmapset);
 
         // Act
-        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetByBeatmapIdAsync(requestedBeatmapId);
+        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(requestedBeatmapId);
 
         // Assert
         Assert.True(result);
@@ -371,7 +371,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpRequestException>(
-            async () => await BeatmapsetService.FetchAndPersistBeatmapsetByBeatmapIdAsync(beatmapId)
+            async () => await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId)
         );
 
         // Verify no data was persisted
@@ -418,7 +418,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
             .ReturnsAsync(apiBeatmapset);
 
         // Act
-        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetByBeatmapIdAsync(beatmapId);
+        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId);
 
         // Assert
         Assert.True(result);

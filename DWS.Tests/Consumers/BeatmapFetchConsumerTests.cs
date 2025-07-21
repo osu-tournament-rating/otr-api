@@ -34,7 +34,7 @@ public class BeatmapFetchConsumerTests
         };
 
         _mockBeatmapsetFetchService
-            .Setup(x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.FetchAndPersistBeatmapsetAsync(message.BeatmapId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var harness = new InMemoryTestHarness();
@@ -53,7 +53,7 @@ public class BeatmapFetchConsumerTests
 
             // Verify the service was called
             _mockBeatmapsetFetchService.Verify(
-                x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
+                x => x.FetchAndPersistBeatmapsetAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
         finally
@@ -73,7 +73,7 @@ public class BeatmapFetchConsumerTests
         };
 
         _mockBeatmapsetFetchService
-            .Setup(x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.FetchAndPersistBeatmapsetAsync(message.BeatmapId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
         var harness = new InMemoryTestHarness();
@@ -92,7 +92,7 @@ public class BeatmapFetchConsumerTests
 
             // Verify the service was called
             _mockBeatmapsetFetchService.Verify(
-                x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
+                x => x.FetchAndPersistBeatmapsetAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
         finally
@@ -114,7 +114,7 @@ public class BeatmapFetchConsumerTests
         var expectedException = new InvalidOperationException("Test exception");
 
         _mockBeatmapsetFetchService
-            .Setup(x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.FetchAndPersistBeatmapsetAsync(message.BeatmapId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(expectedException);
 
         var harness = new InMemoryTestHarness();
@@ -140,7 +140,7 @@ public class BeatmapFetchConsumerTests
 
             // Verify the service was called
             _mockBeatmapsetFetchService.Verify(
-                x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
+                x => x.FetchAndPersistBeatmapsetAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
         finally
@@ -161,7 +161,7 @@ public class BeatmapFetchConsumerTests
         };
 
         _mockBeatmapsetFetchService
-            .Setup(x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.FetchAndPersistBeatmapsetAsync(message.BeatmapId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var context = new Mock<ConsumeContext<FetchBeatmapMessage>>();
@@ -173,7 +173,7 @@ public class BeatmapFetchConsumerTests
 
         // Assert
         _mockBeatmapsetFetchService.Verify(
-            x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
+            x => x.FetchAndPersistBeatmapsetAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -192,7 +192,7 @@ public class BeatmapFetchConsumerTests
         };
 
         _mockBeatmapsetFetchService
-            .Setup(x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()))
+            .Setup(x => x.FetchAndPersistBeatmapsetAsync(message.BeatmapId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var harness = new InMemoryTestHarness();
@@ -217,7 +217,7 @@ public class BeatmapFetchConsumerTests
 
             // Verify the service was called
             _mockBeatmapsetFetchService.Verify(
-                x => x.FetchAndPersistBeatmapsetByBeatmapIdAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
+                x => x.FetchAndPersistBeatmapsetAsync(message.BeatmapId, It.IsAny<CancellationToken>()),
                 Times.Once);
         }
         finally

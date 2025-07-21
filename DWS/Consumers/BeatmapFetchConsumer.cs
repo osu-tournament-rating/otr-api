@@ -26,7 +26,7 @@ public class BeatmapFetchConsumer(
 
             try
             {
-                bool success = await beatmapsetFetchService.FetchAndPersistBeatmapsetByBeatmapIdAsync(
+                bool success = await beatmapsetFetchService.FetchAndPersistBeatmapsetAsync(
                     message.BeatmapId,
                     context.CancellationToken);
 
