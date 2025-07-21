@@ -21,7 +21,7 @@ public partial class TournamentsController(ITournamentsService tournamentsServic
     /// <remarks>Results will not include match data</remarks>
     /// <response code="200">Returns all tournaments which fit the request query</response>
     [HttpGet]
-    [AllowAnonymous]
+    [Authorize(Policy = AuthorizationPolicies.ApiKeyAuthorization)]
     [ProducesResponseType<IEnumerable<TournamentDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListAsync([FromQuery] TournamentRequestQueryDTO requestQuery) =>
         Ok(await tournamentsService.GetAsync(requestQuery));
@@ -120,7 +120,7 @@ public partial class TournamentsController(ITournamentsService tournamentsServic
     /// <response code="404">A tournament matching the given id does not exist</response>
     /// <response code="200">Returns a tournament</response>
     [HttpGet("{id:int}")]
-    [AllowAnonymous]
+    [Authorize(Policy = AuthorizationPolicies.ApiKeyAuthorization)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<TournamentDTO>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAsync(int id)
@@ -207,7 +207,7 @@ public partial class TournamentsController(ITournamentsService tournamentsServic
     /// <response code="404">A tournament matching the given id does not exist</response>
     /// <response code="200">Returns a collection of pooled beatmaps</response>
     [HttpGet("{id:int}/beatmaps")]
-    [AllowAnonymous]
+    [Authorize(Policy = AuthorizationPolicies.ApiKeyAuthorization)]
     [ProducesResponseType<IEnumerable<BeatmapDTO>>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetBeatmapsAsync(int id)
