@@ -27,47 +27,36 @@ public class MatchFetchService(
 {
     public async Task<bool> FetchAndPersistMatchAsync(long osuMatchId, CancellationToken cancellationToken = default)
     {
-        logger.LogDebug("Fetching match {MatchId} from osu! API", osuMatchId);
+        logger.LogDebug("Fetching match {OsuMatchId} from osu! API", osuMatchId);
 
         try
         {
             // Fetch the match from osu! API
-            MultiplayerMatch? apiMatch = await osuClient.GetMatchAsync(osuMatchId, cancellationToken);
+            MultiplayerMatch? osuMatch = await osuClient.GetMatchAsync(osuMatchId, cancellationToken);
 
-            if (apiMatch is null)
+            if (osuMatch is null)
             {
-                logger.LogWarning("Match {MatchId} not found in osu! API", osuMatchId);
-
-                // Check if we have existing data for this match
-                IEnumerable<Match> existingMatches = await matchesRepository.GetAsync([osuMatchId]);
-
-                if (existingMatches.Any())
-                {
-                    // Preserve existing data but mark as no longer available from API
-                    logger.LogDebug("Match {MatchId} already exists in database, preserving existing data", osuMatchId);
-                    // Note: We don't modify the existing match data as per requirements
-                }
-
+                logger.LogWarning("Match {OsuMatchId} not found in osu! API", osuMatchId);
                 return false;
             }
 
             // Process the match data
-            await ProcessMatchAsync(apiMatch, cancellationToken);
+            await ProcessMatchAsync(osuMatch, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
 
             return true;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error processing match {MatchId}", osuMatchId);
+            logger.LogError(ex, "Error processing match {OsuMatchId}", osuMatchId);
             throw;
         }
     }
 
-    private async Task ProcessMatchAsync(MultiplayerMatch apiMatch, CancellationToken cancellationToken)
+    private async Task ProcessMatchAsync(MultiplayerMatch osuMatch, CancellationToken cancellationToken)
     {
         // Check if match already exists
-        IEnumerable<Match> existingMatches = await matchesRepository.GetAsync([apiMatch.Match.Id]);
+        IEnumerable<Match> existingMatches = await matchesRepository.GetAsync([osuMatch.Match.Id]);
         Match? existingMatch = existingMatches.FirstOrDefault();
 
         Match match;
@@ -75,21 +64,21 @@ public class MatchFetchService(
         {
             // Update existing match with fresh data
             match = existingMatch;
-            UpdateMatchFromApi(match, apiMatch);
+            UpdateMatchFromApi(match, osuMatch);
             await matchesRepository.UpdateAsync(match);
         }
         else
         {
             // Create new match
-            match = CreateMatchFromApi(apiMatch);
+            match = CreateMatchFromApi(osuMatch);
             await matchesRepository.CreateAsync(match);
         }
 
         // Process players first (needed for game scores)
-        await ProcessPlayersAsync(apiMatch);
+        await ProcessPlayersAsync(osuMatch);
 
         // Process games
-        await ProcessGamesAsync(match, apiMatch, cancellationToken);
+        await ProcessGamesAsync(match, osuMatch, cancellationToken);
     }
 
     private static Match CreateMatchFromApi(MultiplayerMatch apiMatch)

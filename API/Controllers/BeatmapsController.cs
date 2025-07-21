@@ -57,7 +57,7 @@ public class BeatmapsController(IBeatmapService beatmapService, IPublishEndpoint
     [HttpPost("{id:long}/fetch")]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> QueueFetchAsync(long id, [FromQuery] MessagePriority priority = MessagePriority.Normal)
+    public async Task<IActionResult> FetchAsync(long id, [FromQuery] MessagePriority priority = MessagePriority.Normal)
     {
         if (id <= 0)
         {
@@ -68,7 +68,6 @@ public class BeatmapsController(IBeatmapService beatmapService, IPublishEndpoint
         {
             BeatmapId = id,
             RequestedAt = DateTime.UtcNow,
-            CorrelationId = Guid.NewGuid(),
             Priority = priority
         };
 

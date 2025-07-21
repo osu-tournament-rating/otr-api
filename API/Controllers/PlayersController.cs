@@ -3,6 +3,8 @@ using API.DTOs;
 using API.Services.Interfaces;
 using Asp.Versioning;
 using Common.Enums;
+using DWS.Messages;
+using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +13,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/{key}")]
-public class PlayersController(IPlayerService playerService, IPlayerStatsService playerStatsService) : Controller
+public class PlayersController(IPlayerService playerService, IPlayerStatsService playerStatsService, IPublishEndpoint publishEndpoint) : Controller
 {
     /// <summary>
     /// Get a player
@@ -103,5 +105,29 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
         return result is not null
             ? Ok(result)
             : NotFound();
+    }
+
+    [HttpPost("fetch")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    public async Task<IActionResult> FetchAsync(long key, [FromQuery] MessagePriority priority = MessagePriority.Normal)
+    {
+        if (key <= 0)
+        {
+            return BadRequest("Invalid osu! player ID");
+        }
+
+        var message = new FetchPlayerMessage
+        {
+            OsuPlayerId = key,
+            RequestedAt = DateTime.UtcNow,
+            Priority = priority
+        };
+
+        await publishEndpoint.Publish(message, context =>
+        {
+            context.SetPriority((byte)message.Priority);
+        });
+
+        return Accepted(new { correlationId = message.CorrelationId, osuPlayerId = key, priority });
     }
 }

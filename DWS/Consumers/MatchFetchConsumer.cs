@@ -36,7 +36,7 @@ public class MatchFetchConsumer(
                 }
                 else
                 {
-                    logger.LogInformation("Match {OsuMatchId} not found in osu! API", message.OsuMatchId);
+                    logger.LogInformation("Failed to process match {OsuMatchId} - likely missing from osu! API", message.OsuMatchId);
                 }
             }
             catch (Exception ex)

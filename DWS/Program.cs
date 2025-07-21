@@ -66,12 +66,14 @@ try
     // Register services
     builder.Services.AddScoped<IBeatmapsetFetchService, BeatmapsetFetchService>();
     builder.Services.AddScoped<IMatchFetchService, MatchFetchService>();
+    builder.Services.AddScoped<IPlayerFetchService, PlayerFetchService>();
 
     // Configure MassTransit
     builder.Services.AddMassTransit(x =>
     {
         x.AddConsumer<BeatmapFetchConsumer>();
         x.AddConsumer<MatchFetchConsumer>();
+        x.AddConsumer<PlayerFetchConsumer>();
 
         x.UsingRabbitMq((context, cfg) =>
         {
@@ -83,12 +85,11 @@ try
                 h.Password(rabbitMqConfig.Password);
             });
 
-            // Configure endpoint for BeatmapFetchConsumer with rate limiting
-            // This ensures only one message is processed at a time to respect osu! API rate limits
+            // Rate-limited consumers
             cfg.ReceiveOsuApiEndpoint<BeatmapFetchConsumer>(context, QueueConstants.Osu.Beatmaps);
-
-            // Configure endpoint for MatchFetchConsumer with rate limiting
             cfg.ReceiveOsuApiEndpoint<MatchFetchConsumer>(context, QueueConstants.Osu.Matches);
+            cfg.ReceiveOsuApiEndpoint<PlayerFetchConsumer>(context, QueueConstants.Osu.Players);
+
 
             // Configure retry policy
             cfg.UseMessageRetry(r => r.Intervals(

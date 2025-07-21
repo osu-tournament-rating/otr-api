@@ -1,3 +1,4 @@
+using Common.Constants;
 using Common.Enums;
 using Database;
 using Database.Entities;
@@ -58,7 +59,7 @@ public class PlayersService(
         Ruleset defaultRuleset = Ruleset.Osu;
 
         bool once = false;
-        foreach (Ruleset ruleset in Enum.GetValues<Ruleset>().Where(r => r.IsFetchable()))
+        foreach (Ruleset ruleset in EnumConstants.FetchableRulesets)
         {
             UserExtended? result = await osuClient.GetUserAsync(player.OsuId, ruleset);
 
@@ -189,7 +190,7 @@ public class PlayersService(
             player.OsuLastFetch
         );
 
-        foreach (Ruleset r in Enum.GetValues<Ruleset>().Where(r => r.IsFetchable()))
+        foreach (Ruleset r in EnumConstants.FetchableRulesets)
         {
             var result = (await osuClient.GetUserStatsHistoryAsync(player.OsuId, r) ?? [])
                 .ToList();
