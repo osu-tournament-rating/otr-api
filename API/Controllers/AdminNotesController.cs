@@ -93,7 +93,7 @@ public class AdminNotesController(IAdminNoteService adminNoteService, OtrContext
     /// <response code="404">An entity matching the given id does not exist</response>
     /// <response code="200">Returns all admin notes for the entity</response>
     [HttpGet("{entityId:int}/notes")]
-    [AllowAnonymous]
+    [Authorize(Policy = AuthorizationPolicies.ApiKeyAuthorization)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<IEnumerable<AdminNoteDTO>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> ListNotesAsync(int entityId)

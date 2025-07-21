@@ -94,14 +94,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set loki.yml s3
-        uses: fjogeleit/yaml-update-action@main
-        with:
-          valueFile: "./cfg/loki.yml"
-          propertyPath: "storage_config.aws.s3"
-          value: ${{ secrets.LOKI_S3 }}
-          commitChange: false
-
       - name: Set loki.yml access_key
         uses: fjogeleit/yaml-update-action@main
         with:

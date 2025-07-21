@@ -73,6 +73,7 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
     restart: always
     profiles:
       - staging
@@ -206,3 +207,4 @@ volumes:
   minio_data:
   redis:
   rabbitmq_data:
+  prometheus_data:
