@@ -8,31 +8,52 @@ public class ScoreAutomationChecks(ILogger<ScoreAutomationChecks> logger)
 {
     private const int ScoreMinimum = 1000;
 
-    /// <summary>
-    /// Mods that are ineligible for ratings
-    /// </summary>
     private static readonly IEnumerable<Mods> _invalidMods = [Mods.SuddenDeath, Mods.Perfect, Mods.Relax, Mods.Autoplay, Mods.Relax2];
 
-    public static ScoreRejectionReason Process(GameScore score)
+    public ScoreRejectionReason Process(GameScore score)
     {
-        return ScoreMinimumCheck(score) | ScoreModCheck(score) | ScoreRulesetCheck(score);
+        logger.LogTrace("Processing score {ScoreId}", score.Id);
+
+        ScoreRejectionReason result = ScoreMinimumCheck(score) | ScoreModCheck(score) | ScoreRulesetCheck(score);
+
+        logger.LogTrace("Score {ScoreId} processed with rejection reason: {RejectionReason}", score.Id, result);
+        return result;
     }
 
-    private static ScoreRejectionReason ScoreMinimumCheck(GameScore score)
+    private ScoreRejectionReason ScoreMinimumCheck(GameScore score)
     {
-        return score.Score <= ScoreMinimum ? ScoreRejectionReason.ScoreBelowMinimum : ScoreRejectionReason.None;
+        if (score.Score > ScoreMinimum)
+        {
+            return ScoreRejectionReason.None;
+        }
+
+        logger.LogTrace("Score {ScoreId} failed minimum score check. Score: {PlayerScore}, Minimum: {ScoreMinimum}",
+            score.Id, score.Score, ScoreMinimum);
+        return ScoreRejectionReason.ScoreBelowMinimum;
+
     }
 
-    /// <summary>
-    /// Checks whether the score features invalid mods.
-    /// </summary>
-    private static ScoreRejectionReason ScoreModCheck(GameScore score)
+    private ScoreRejectionReason ScoreModCheck(GameScore score)
     {
-        return _invalidMods.All(mod => !score.Mods.HasFlag(mod)) ? ScoreRejectionReason.None : ScoreRejectionReason.InvalidMods;
+        if (_invalidMods.All(mod => !score.Mods.HasFlag(mod)))
+        {
+            return ScoreRejectionReason.None;
+        }
+
+        logger.LogTrace("Score {ScoreId} failed mod check. Invalid mods present: {Mods}", score.Id, score.Mods);
+        return ScoreRejectionReason.InvalidMods;
     }
 
-    private static ScoreRejectionReason ScoreRulesetCheck(GameScore score)
+    private ScoreRejectionReason ScoreRulesetCheck(GameScore score)
     {
-        return score.Game.Match.Tournament.Ruleset == score.Ruleset ? ScoreRejectionReason.None : ScoreRejectionReason.RulesetMismatch;
+        Ruleset tournamentRuleset = score.Game.Match.Tournament.Ruleset;
+        if (tournamentRuleset == score.Ruleset)
+        {
+            return ScoreRejectionReason.None;
+        }
+
+        logger.LogTrace("Score {ScoreId} failed ruleset check. Score Ruleset: {ScoreRuleset}, Tournament Ruleset: {TournamentRuleset}",
+                        score.Id, score.Ruleset, tournamentRuleset);
+        return ScoreRejectionReason.RulesetMismatch;
     }
 }
