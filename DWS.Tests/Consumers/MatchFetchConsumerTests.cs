@@ -89,7 +89,7 @@ public class MatchFetchConsumerTests
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("not found in osu! API")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("likely missing from osu! API")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
