@@ -16,7 +16,7 @@ public class GameBeatmapUsageCheckTests : AutomationChecksTestBase<GameBeatmapUs
 
         Tournament tournament = GenerateTournamentWithPooledBeatmaps();
         Game game = tournament.Matches.First().Games.First();
-        game.Beatmap = new Beatmap { OsuId = beatmapOsuId };
+        game.Beatmap = SeededBeatmap.Generate(osuId: beatmapOsuId);
 
         // Act
         bool actualPass = AutomationCheck.Check(game);
@@ -35,7 +35,7 @@ public class GameBeatmapUsageCheckTests : AutomationChecksTestBase<GameBeatmapUs
 
         Tournament tournament = GenerateTournamentWithPooledBeatmaps();
         Game game = tournament.Matches.First().Games.First();
-        game.Beatmap = new Beatmap { Id = beatmapOsuId, OsuId = beatmapOsuId };
+        game.Beatmap = SeededBeatmap.Generate(id: beatmapOsuId, osuId: beatmapOsuId);
 
         // Act
         bool actualPass = AutomationCheck.Check(game);

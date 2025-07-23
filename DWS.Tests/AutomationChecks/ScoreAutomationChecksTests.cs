@@ -1,11 +1,10 @@
 
 using Common.Enums;
 using Common.Enums.Verification;
-using Database.Entities;
 using DWS.AutomationChecks;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Match = Database.Entities.Match;
+using TestingUtils.SeededData;
 
 namespace DWS.Tests.AutomationChecks;
 
@@ -26,7 +25,10 @@ public class ScoreAutomationChecksTests
     public void Process_ReturnsCorrectRejectionReason_ForScoreMinimum(long scoreAmount, ScoreRejectionReason expected)
     {
         // Arrange
-        var score = new GameScore { Score = (int)scoreAmount, Ruleset = Ruleset.Osu, Game = new Game { Match = new Match { Tournament = new Tournament() } } };
+        var tournament = SeededTournament.Generate(ruleset: Ruleset.Osu);
+        var match = SeededMatch.Generate(tournament: tournament);
+        var game = SeededGame.Generate(match: match, ruleset: Ruleset.Osu);
+        var score = SeededScore.Generate(score: (int)scoreAmount, ruleset: Ruleset.Osu, mods: Mods.None, game: game);
 
         // Act
         ScoreRejectionReason result = _checker.Process(score);
@@ -47,7 +49,10 @@ public class ScoreAutomationChecksTests
     public void Process_ReturnsCorrectRejectionReason_ForMods(Mods mods, ScoreRejectionReason expected)
     {
         // Arrange
-        var score = new GameScore { Score = 50000, Mods = mods, Ruleset = Ruleset.Osu, Game = new Game { Match = new Match { Tournament = new Tournament() } } };
+        var tournament = SeededTournament.Generate(ruleset: Ruleset.Osu);
+        var match = SeededMatch.Generate(tournament: tournament);
+        var game = SeededGame.Generate(match: match, ruleset: Ruleset.Osu);
+        var score = SeededScore.Generate(score: 50000, mods: mods, ruleset: Ruleset.Osu, game: game);
 
         // Act
         ScoreRejectionReason result = _checker.Process(score);
@@ -64,18 +69,10 @@ public class ScoreAutomationChecksTests
     public void Process_ReturnsCorrectRejectionReason_ForRuleset(Ruleset scoreRuleset, Ruleset tournamentRuleset, ScoreRejectionReason expected)
     {
         // Arrange
-        var score = new GameScore
-        {
-            Score = 50000,
-            Ruleset = scoreRuleset,
-            Game = new Game
-            {
-                Match = new Match
-                {
-                    Tournament = new Tournament { Ruleset = tournamentRuleset }
-                }
-            }
-        };
+        var tournament = SeededTournament.Generate(ruleset: tournamentRuleset);
+        var match = SeededMatch.Generate(tournament: tournament);
+        var game = SeededGame.Generate(match: match, ruleset: scoreRuleset);
+        var score = SeededScore.Generate(score: 50000, ruleset: scoreRuleset, mods: Mods.None, game: game);
 
         // Act
         ScoreRejectionReason result = _checker.Process(score);
