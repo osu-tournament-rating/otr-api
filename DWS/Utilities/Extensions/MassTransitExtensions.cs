@@ -55,4 +55,27 @@ public static class MassTransitExtensions
             e.ConfigureConsumer<TConsumer>(context);
         });
     }
+
+    /// <summary>
+    /// Configures a receive endpoint for automation check consumers with priority queue support.
+    /// </summary>
+    public static void ReceiveAutomationCheckEndpoint<TConsumer>(
+        this IRabbitMqBusFactoryConfigurator cfg,
+        IBusRegistrationContext context,
+        string queueName) where TConsumer : class, IConsumer
+    {
+        cfg.ReceiveEndpoint(queueName, e =>
+        {
+            // Enable priority queue with max priority level of 10
+            if (e is IRabbitMqReceiveEndpointConfigurator rabbitMqEndpoint)
+            {
+                rabbitMqEndpoint.EnablePriority(10);
+            }
+
+            // Configure consumer with reasonable concurrency for processing
+            e.PrefetchCount = 10;
+            e.ConcurrentMessageLimit = 5;
+            e.ConfigureConsumer<TConsumer>(context);
+        });
+    }
 }

@@ -1,16 +1,15 @@
 using System.ComponentModel.DataAnnotations;
-using Common.Enums;
 
 namespace DWS.Messages;
 
-public record FetchBeatmapMessage
+/// <summary>
+/// Message used to request fetching beatmap data from the osu! API.
+/// </summary>
+public record FetchBeatmapMessage : BaseMessage
 {
+    /// <summary>
+    /// The osu! beatmap ID to fetch data for.
+    /// </summary>
     [Required]
     public long BeatmapId { get; init; }
-
-    public DateTime RequestedAt { get; init; } = DateTime.UtcNow;
-
-    public Guid CorrelationId { get; init; } = Guid.NewGuid();
-
-    public MessagePriority Priority { get; init; } = MessagePriority.Normal;
 }
