@@ -5,7 +5,7 @@ namespace DWS.Messages;
 /// <summary>
 /// Message used to request processing automation checks for a game.
 /// </summary>
-public record ProcessGameAutomationCheckMessage : BaseMessage
+public record ProcessGameAutomationCheckMessage : Message
 {
     /// <summary>
     /// The game ID to process automation checks for.

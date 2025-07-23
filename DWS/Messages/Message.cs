@@ -5,7 +5,7 @@ namespace DWS.Messages;
 /// <summary>
 /// Base message for all DWS queue messages with common tracking and priority fields.
 /// </summary>
-public abstract record BaseMessage
+public abstract record Message
 {
     /// <summary>
     /// The timestamp when this request was created.

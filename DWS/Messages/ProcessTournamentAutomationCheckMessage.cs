@@ -5,7 +5,7 @@ namespace DWS.Messages;
 /// <summary>
 /// Message used to request processing automation checks for a tournament.
 /// </summary>
-public record ProcessTournamentAutomationCheckMessage : BaseMessage
+public record ProcessTournamentAutomationCheckMessage : Message
 {
     /// <summary>
     /// The tournament ID to process automation checks for.
