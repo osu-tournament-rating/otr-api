@@ -30,7 +30,7 @@ public class ScoreAutomationCheckConsumer(
 
             try
             {
-                bool success = await scoreAutomationCheckService.ProcessAutomationChecksAsync(message.ScoreId);
+                bool success = await scoreAutomationCheckService.ProcessAutomationChecksAsync(message.ScoreId, message.OverrideVerifiedState);
 
                 if (success)
                 {

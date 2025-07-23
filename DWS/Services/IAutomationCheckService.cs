@@ -10,6 +10,7 @@ public interface IAutomationCheckService<TEntity>
     /// Processes automation checks for the specified entity and updates its verification status.
     /// </summary>
     /// <param name="entityId">The ID of the entity to process</param>
+    /// <param name="overrideVerifiedState">Whether to override existing human-verified or rejected states</param>
     /// <returns>True if the entity passed all automation checks, false otherwise</returns>
-    Task<bool> ProcessAutomationChecksAsync(int entityId);
+    Task<bool> ProcessAutomationChecksAsync(int entityId, bool overrideVerifiedState = false);
 }

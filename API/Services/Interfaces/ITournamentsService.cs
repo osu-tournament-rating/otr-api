@@ -127,6 +127,6 @@ public interface ITournamentsService
     /// Reruns automation checks for a tournament and all child entities
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <param name="force">Whether to overwrite fully Verified/Rejected data (dangerous)</param>
-    Task RerunAutomationChecksAsync(int id, bool force = false);
+    /// <param name="overrideVerifiedState">Whether to override existing human-verified or rejected states</param>
+    Task RerunAutomationChecksAsync(int id, bool overrideVerifiedState = false);
 }

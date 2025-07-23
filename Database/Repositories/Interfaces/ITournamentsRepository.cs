@@ -127,6 +127,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// </summary>
     /// <param name="id">Tournament id</param>
     /// <param name="force">Whether to overwrite fully Verified/Rejected data (dangerous)</param>
+    [Obsolete("Use message queue system instead. Publish ProcessTournamentAutomationCheckMessage and related messages through IPublishEndpoint.")]
     Task ResetAutomationStatusesAsync(int id, bool force = false);
 
     /// <summary>

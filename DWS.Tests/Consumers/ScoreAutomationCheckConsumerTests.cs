@@ -37,7 +37,7 @@ public class ScoreAutomationCheckConsumerTests
             ctx.CancellationToken == CancellationToken.None);
 
         _scoreAutomationCheckServiceMock
-            .Setup(x => x.ProcessAutomationChecksAsync(message.ScoreId))
+            .Setup(x => x.ProcessAutomationChecksAsync(message.ScoreId, It.IsAny<bool>()))
             .ReturnsAsync(true);
 
         // Act
@@ -45,7 +45,7 @@ public class ScoreAutomationCheckConsumerTests
 
         // Assert
         _scoreAutomationCheckServiceMock.Verify(x => x.ProcessAutomationChecksAsync(
-            message.ScoreId), Times.Once);
+            message.ScoreId, It.IsAny<bool>()), Times.Once);
 
         _loggerMock.Verify(
             x => x.Log(
@@ -73,7 +73,7 @@ public class ScoreAutomationCheckConsumerTests
             ctx.CancellationToken == CancellationToken.None);
 
         _scoreAutomationCheckServiceMock
-            .Setup(x => x.ProcessAutomationChecksAsync(message.ScoreId))
+            .Setup(x => x.ProcessAutomationChecksAsync(message.ScoreId, It.IsAny<bool>()))
             .ReturnsAsync(false);
 
         // Act
@@ -81,7 +81,7 @@ public class ScoreAutomationCheckConsumerTests
 
         // Assert
         _scoreAutomationCheckServiceMock.Verify(x => x.ProcessAutomationChecksAsync(
-            message.ScoreId), Times.Once);
+            message.ScoreId, It.IsAny<bool>()), Times.Once);
 
         _loggerMock.Verify(
             x => x.Log(
@@ -111,7 +111,7 @@ public class ScoreAutomationCheckConsumerTests
         var expectedException = new InvalidOperationException("Database error");
 
         _scoreAutomationCheckServiceMock
-            .Setup(x => x.ProcessAutomationChecksAsync(message.ScoreId))
+            .Setup(x => x.ProcessAutomationChecksAsync(message.ScoreId, It.IsAny<bool>()))
             .ThrowsAsync(expectedException);
 
         // Act & Assert
@@ -144,7 +144,7 @@ public class ScoreAutomationCheckConsumerTests
             ctx.CancellationToken == cancellationTokenSource.Token);
 
         _scoreAutomationCheckServiceMock
-            .Setup(x => x.ProcessAutomationChecksAsync(message.ScoreId))
+            .Setup(x => x.ProcessAutomationChecksAsync(message.ScoreId, It.IsAny<bool>()))
             .ReturnsAsync(true);
 
         // Act
@@ -152,7 +152,7 @@ public class ScoreAutomationCheckConsumerTests
 
         // Assert
         _scoreAutomationCheckServiceMock.Verify(x => x.ProcessAutomationChecksAsync(
-            message.ScoreId), Times.Once);
+            message.ScoreId, It.IsAny<bool>()), Times.Once);
     }
 
     [Fact]
@@ -172,7 +172,7 @@ public class ScoreAutomationCheckConsumerTests
             ctx.CancellationToken == CancellationToken.None);
 
         _scoreAutomationCheckServiceMock
-            .Setup(x => x.ProcessAutomationChecksAsync(message.ScoreId))
+            .Setup(x => x.ProcessAutomationChecksAsync(message.ScoreId, It.IsAny<bool>()))
             .ReturnsAsync(true);
 
         // Act

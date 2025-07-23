@@ -14,7 +14,7 @@ public class ScoreAutomationCheckService(
     ScoreAutomationChecks scoreAutomationChecks) : IScoreAutomationCheckService
 {
     /// <inheritdoc />
-    public async Task<bool> ProcessAutomationChecksAsync(int entityId)
+    public async Task<bool> ProcessAutomationChecksAsync(int entityId, bool overrideVerifiedState = false)
     {
         logger.LogInformation("Processing automation checks for score {ScoreId}", entityId);
 
@@ -24,6 +24,20 @@ public class ScoreAutomationCheckService(
         {
             logger.LogWarning("Score {ScoreId} not found", entityId);
             return false;
+        }
+
+        // Check if processing is needed based on verification status and override parameter
+        if (!overrideVerifiedState && (score.VerificationStatus == VerificationStatus.Verified || score.VerificationStatus == VerificationStatus.Rejected))
+        {
+            logger.LogInformation("Score {ScoreId} already has status {Status}, skipping automation checks", entityId, score.VerificationStatus);
+            return score.VerificationStatus == VerificationStatus.Verified;
+        }
+
+        // Reset verification status if override is requested
+        if (overrideVerifiedState)
+        {
+            score.VerificationStatus = VerificationStatus.None;
+            logger.LogInformation("Score {ScoreId} verification status reset to None due to override", entityId);
         }
 
         // Run automation checks

@@ -14,7 +14,7 @@ public class GameAutomationCheckService(
     GameAutomationChecks gameAutomationChecks) : IGameAutomationCheckService
 {
     /// <inheritdoc />
-    public async Task<bool> ProcessAutomationChecksAsync(int entityId)
+    public async Task<bool> ProcessAutomationChecksAsync(int entityId, bool overrideVerifiedState = false)
     {
         logger.LogInformation("Processing automation checks for game {GameId}", entityId);
 
@@ -24,6 +24,20 @@ public class GameAutomationCheckService(
         {
             logger.LogWarning("Game {GameId} not found", entityId);
             return false;
+        }
+
+        // Check if we should skip processing based on verification status
+        if (!overrideVerifiedState && (game.VerificationStatus == VerificationStatus.Verified || game.VerificationStatus == VerificationStatus.Rejected))
+        {
+            logger.LogInformation("Skipping automation checks for game {GameId} with status {Status}", entityId, game.VerificationStatus);
+            return game.VerificationStatus == VerificationStatus.Verified;
+        }
+
+        // Reset verification status if overriding
+        if (overrideVerifiedState)
+        {
+            game.VerificationStatus = VerificationStatus.None;
+            logger.LogInformation("Resetting verification status for game {GameId} due to override", entityId);
         }
 
         // Run automation checks

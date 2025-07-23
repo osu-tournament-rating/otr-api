@@ -30,7 +30,7 @@ public class GameAutomationCheckConsumer(
 
             try
             {
-                bool success = await gameAutomationCheckService.ProcessAutomationChecksAsync(message.GameId);
+                bool success = await gameAutomationCheckService.ProcessAutomationChecksAsync(message.GameId, message.OverrideVerifiedState);
 
                 if (success)
                 {

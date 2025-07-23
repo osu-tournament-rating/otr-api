@@ -271,6 +271,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         await UpdateAsync(tournament);
     }
 
+    [Obsolete("Use message queue system instead. Publish ProcessTournamentAutomationCheckMessage and related messages through IPublishEndpoint.")]
     public async Task ResetAutomationStatusesAsync(int id, bool force = false)
     {
         Tournament? tournament = await TournamentsBaseQuery()

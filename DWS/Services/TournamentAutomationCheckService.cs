@@ -14,7 +14,7 @@ public class TournamentAutomationCheckService(
     TournamentAutomationChecks tournamentAutomationChecks) : ITournamentAutomationCheckService
 {
     /// <inheritdoc />
-    public async Task<bool> ProcessAutomationChecksAsync(int entityId)
+    public async Task<bool> ProcessAutomationChecksAsync(int entityId, bool overrideVerifiedState = false)
     {
         logger.LogInformation("Processing automation checks for tournament {TournamentId}", entityId);
 
@@ -24,6 +24,27 @@ public class TournamentAutomationCheckService(
         {
             logger.LogWarning("Tournament {TournamentId} not found", entityId);
             return false;
+        }
+
+        // Check if the entity needs processing based on current verification status
+        if (!overrideVerifiedState &&
+            (tournament.VerificationStatus == VerificationStatus.Verified ||
+             tournament.VerificationStatus == VerificationStatus.Rejected))
+        {
+            logger.LogInformation(
+                "Skipping automation checks for tournament {TournamentId} with verification status {VerificationStatus}",
+                entityId,
+                tournament.VerificationStatus);
+            return tournament.VerificationStatus == VerificationStatus.Verified;
+        }
+
+        // Reset verification status if overriding
+        if (overrideVerifiedState)
+        {
+            tournament.VerificationStatus = VerificationStatus.None;
+            logger.LogInformation(
+                "Resetting verification status to None for tournament {TournamentId} due to override",
+                entityId);
         }
 
         // Load matches with games and scores for automation checks

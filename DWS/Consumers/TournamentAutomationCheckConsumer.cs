@@ -30,7 +30,7 @@ public class TournamentAutomationCheckConsumer(
 
             try
             {
-                bool success = await tournamentAutomationCheckService.ProcessAutomationChecksAsync(message.TournamentId);
+                bool success = await tournamentAutomationCheckService.ProcessAutomationChecksAsync(message.TournamentId, message.OverrideVerifiedState);
 
                 if (success)
                 {

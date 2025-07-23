@@ -197,8 +197,61 @@ public class TournamentsService(
     public async Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId) =>
         mapper.Map<TournamentDTO?>(await tournamentsRepository.AcceptPreVerificationStatusesAsync(id, verifierUserId));
 
-    public async Task RerunAutomationChecksAsync(int id, bool force = false) =>
-        await tournamentsRepository.ResetAutomationStatusesAsync(id, force);
+    public async Task RerunAutomationChecksAsync(int id, bool overrideVerifiedState = false)
+    {
+        // Load the tournament with all its child entities
+        Tournament? tournament = await tournamentsRepository.GetAsync(id, eagerLoad: true);
+        if (tournament is null)
+        {
+            logger.LogWarning("Tournament {TournamentId} not found for rerun automation checks", id);
+            return;
+        }
+
+        await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(tournament);
+
+        // Publish message for the tournament
+        await publishEndpoint.Publish(new ProcessTournamentAutomationCheckMessage
+        {
+            TournamentId = id,
+            OverrideVerifiedState = overrideVerifiedState
+        });
+
+        // Publish messages for all matches
+        foreach (Match match in tournament.Matches)
+        {
+            await publishEndpoint.Publish(new ProcessMatchAutomationCheckMessage
+            {
+                MatchId = match.Id,
+                OverrideVerifiedState = overrideVerifiedState
+            });
+
+            // Publish messages for all games in the match
+            foreach (Game game in match.Games)
+            {
+                await publishEndpoint.Publish(new ProcessGameAutomationCheckMessage
+                {
+                    GameId = game.Id,
+                    OverrideVerifiedState = overrideVerifiedState
+                });
+
+                // Publish messages for all scores in the game
+                foreach (GameScore score in game.Scores)
+                {
+                    await publishEndpoint.Publish(new ProcessScoreAutomationCheckMessage
+                    {
+                        ScoreId = score.Id,
+                        OverrideVerifiedState = overrideVerifiedState
+                    });
+                }
+            }
+        }
+
+        logger.LogInformation(
+            "Enqueued automation checks for tournament {TournamentId} with {MatchCount} matches (overrideVerifiedState: {OverrideVerifiedState})",
+            id,
+            tournament.Matches.Count,
+            overrideVerifiedState);
+    }
 
     public async Task<ICollection<BeatmapDTO>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds) =>
         mapper.Map<ICollection<BeatmapDTO>>(await tournamentsRepository.AddPooledBeatmapsAsync(id, osuBeatmapIds));

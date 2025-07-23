@@ -14,7 +14,7 @@ public class MatchAutomationCheckService(
     MatchAutomationChecks matchAutomationChecks) : IMatchAutomationCheckService
 {
     /// <inheritdoc />
-    public async Task<bool> ProcessAutomationChecksAsync(int entityId)
+    public async Task<bool> ProcessAutomationChecksAsync(int entityId, bool overrideVerifiedState = false)
     {
         logger.LogInformation("Processing automation checks for match {MatchId}", entityId);
 
@@ -24,6 +24,20 @@ public class MatchAutomationCheckService(
         {
             logger.LogWarning("Match {MatchId} not found", entityId);
             return false;
+        }
+
+        // Check if the entity needs processing based on verification status
+        if (!overrideVerifiedState && (match.VerificationStatus == VerificationStatus.Verified || match.VerificationStatus == VerificationStatus.Rejected))
+        {
+            logger.LogInformation("Match {MatchId} already has verification status {Status}, skipping automation checks", entityId, match.VerificationStatus);
+            return match.VerificationStatus == VerificationStatus.Verified;
+        }
+
+        // If overriding verified state, reset the verification status
+        if (overrideVerifiedState)
+        {
+            match.VerificationStatus = VerificationStatus.None;
+            logger.LogInformation("Overriding verification status for match {MatchId}, resetting to None", entityId);
         }
 
         // Run automation checks

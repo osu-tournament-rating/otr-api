@@ -30,7 +30,7 @@ public class MatchAutomationCheckConsumer(
 
             try
             {
-                bool success = await matchAutomationCheckService.ProcessAutomationChecksAsync(message.MatchId);
+                bool success = await matchAutomationCheckService.ProcessAutomationChecksAsync(message.MatchId, message.OverrideVerifiedState);
 
                 if (success)
                 {
