@@ -30,9 +30,7 @@ public class MatchAutomationCheckConsumer(
 
             try
             {
-                bool success = await matchAutomationCheckService.ProcessAutomationChecksAsync(
-                    message.MatchId,
-                    context.CancellationToken);
+                bool success = await matchAutomationCheckService.ProcessAutomationChecksAsync(message.MatchId);
 
                 if (success)
                 {

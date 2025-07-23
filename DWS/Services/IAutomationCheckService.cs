@@ -10,7 +10,6 @@ public interface IAutomationCheckService<TEntity>
     /// Processes automation checks for the specified entity and updates its verification status.
     /// </summary>
     /// <param name="entityId">The ID of the entity to process</param>
-    /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>True if the entity passed all automation checks, false otherwise</returns>
-    Task<bool> ProcessAutomationChecksAsync(int entityId, CancellationToken cancellationToken = default);
+    Task<bool> ProcessAutomationChecksAsync(int entityId);
 }

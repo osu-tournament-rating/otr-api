@@ -14,7 +14,7 @@ public class MatchAutomationCheckService(
     MatchAutomationChecks matchAutomationChecks) : IMatchAutomationCheckService
 {
     /// <inheritdoc />
-    public async Task<bool> ProcessAutomationChecksAsync(int entityId, CancellationToken cancellationToken = default)
+    public async Task<bool> ProcessAutomationChecksAsync(int entityId)
     {
         logger.LogInformation("Processing automation checks for match {MatchId}", entityId);
 

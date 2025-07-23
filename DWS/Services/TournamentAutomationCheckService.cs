@@ -14,7 +14,7 @@ public class TournamentAutomationCheckService(
     TournamentAutomationChecks tournamentAutomationChecks) : ITournamentAutomationCheckService
 {
     /// <inheritdoc />
-    public async Task<bool> ProcessAutomationChecksAsync(int entityId, CancellationToken cancellationToken = default)
+    public async Task<bool> ProcessAutomationChecksAsync(int entityId)
     {
         logger.LogInformation("Processing automation checks for tournament {TournamentId}", entityId);
 

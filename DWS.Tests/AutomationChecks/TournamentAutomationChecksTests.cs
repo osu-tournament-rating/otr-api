@@ -5,7 +5,6 @@ using DWS.AutomationChecks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TestingUtils.SeededData;
-using Xunit;
 
 namespace DWS.Tests.AutomationChecks;
 

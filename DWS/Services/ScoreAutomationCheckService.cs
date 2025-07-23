@@ -14,7 +14,7 @@ public class ScoreAutomationCheckService(
     ScoreAutomationChecks scoreAutomationChecks) : IScoreAutomationCheckService
 {
     /// <inheritdoc />
-    public async Task<bool> ProcessAutomationChecksAsync(int entityId, CancellationToken cancellationToken = default)
+    public async Task<bool> ProcessAutomationChecksAsync(int entityId)
     {
         logger.LogInformation("Processing automation checks for score {ScoreId}", entityId);
 

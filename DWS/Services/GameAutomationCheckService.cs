@@ -14,7 +14,7 @@ public class GameAutomationCheckService(
     GameAutomationChecks gameAutomationChecks) : IGameAutomationCheckService
 {
     /// <inheritdoc />
-    public async Task<bool> ProcessAutomationChecksAsync(int entityId, CancellationToken cancellationToken = default)
+    public async Task<bool> ProcessAutomationChecksAsync(int entityId)
     {
         logger.LogInformation("Processing automation checks for game {GameId}", entityId);
 

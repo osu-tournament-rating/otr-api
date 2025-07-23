@@ -30,9 +30,7 @@ public class TournamentAutomationCheckConsumer(
 
             try
             {
-                bool success = await tournamentAutomationCheckService.ProcessAutomationChecksAsync(
-                    message.TournamentId,
-                    context.CancellationToken);
+                bool success = await tournamentAutomationCheckService.ProcessAutomationChecksAsync(message.TournamentId);
 
                 if (success)
                 {

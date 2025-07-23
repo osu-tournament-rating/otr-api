@@ -108,7 +108,7 @@ internal sealed class DefaultRequestHandler(
         catch (HttpRequestException ex)
         {
             logger.LogError(
-                "Http request exception while fetching platform [{platform}]: {ex}",
+                "Http request exception while fetching platform [{Platform}]: {Ex}",
                 request.Platform.ToString(),
                 ex
             );

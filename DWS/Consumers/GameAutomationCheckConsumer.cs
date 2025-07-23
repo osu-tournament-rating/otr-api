@@ -30,9 +30,7 @@ public class GameAutomationCheckConsumer(
 
             try
             {
-                bool success = await gameAutomationCheckService.ProcessAutomationChecksAsync(
-                    message.GameId,
-                    context.CancellationToken);
+                bool success = await gameAutomationCheckService.ProcessAutomationChecksAsync(message.GameId);
 
                 if (success)
                 {

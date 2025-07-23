@@ -30,9 +30,7 @@ public class ScoreAutomationCheckConsumer(
 
             try
             {
-                bool success = await scoreAutomationCheckService.ProcessAutomationChecksAsync(
-                    message.ScoreId,
-                    context.CancellationToken);
+                bool success = await scoreAutomationCheckService.ProcessAutomationChecksAsync(message.ScoreId);
 
                 if (success)
                 {

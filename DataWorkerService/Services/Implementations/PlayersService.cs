@@ -3,7 +3,6 @@ using Common.Enums;
 using Database;
 using Database.Entities;
 using Database.Repositories.Interfaces;
-using Database.Utilities.Extensions;
 using DataWorkerService.Configurations;
 using DataWorkerService.Services.Interfaces;
 using OsuApiClient;
