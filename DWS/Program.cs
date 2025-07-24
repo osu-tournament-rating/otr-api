@@ -76,10 +76,7 @@ try
     builder.Services.AddScoped<MatchAutomationChecks>();
     builder.Services.AddScoped<TournamentAutomationChecks>();
 
-    // Register automation check services
-    builder.Services.AddScoped<IScoreAutomationCheckService, ScoreAutomationCheckService>();
-    builder.Services.AddScoped<IGameAutomationCheckService, GameAutomationCheckService>();
-    builder.Services.AddScoped<IMatchAutomationCheckService, MatchAutomationCheckService>();
+    // Register automation check service
     builder.Services.AddScoped<ITournamentAutomationCheckService, TournamentAutomationCheckService>();
 
     // Configure MassTransit
@@ -88,9 +85,6 @@ try
         x.AddConsumer<BeatmapFetchConsumer>();
         x.AddConsumer<MatchFetchConsumer>();
         x.AddConsumer<PlayerFetchConsumer>();
-        x.AddConsumer<ScoreAutomationCheckConsumer>();
-        x.AddConsumer<GameAutomationCheckConsumer>();
-        x.AddConsumer<MatchAutomationCheckConsumer>();
         x.AddConsumer<TournamentAutomationCheckConsumer>();
 
         x.UsingRabbitMq((context, cfg) =>
@@ -108,10 +102,7 @@ try
             cfg.ReceiveOsuApiEndpoint<MatchFetchConsumer>(context, QueueConstants.Osu.Matches);
             cfg.ReceiveOsuApiEndpoint<PlayerFetchConsumer>(context, QueueConstants.Osu.Players);
 
-            // Automation check consumers
-            cfg.ReceiveAutomationCheckEndpoint<ScoreAutomationCheckConsumer>(context, QueueConstants.AutomatedChecks.Scores);
-            cfg.ReceiveAutomationCheckEndpoint<GameAutomationCheckConsumer>(context, QueueConstants.AutomatedChecks.Games);
-            cfg.ReceiveAutomationCheckEndpoint<MatchAutomationCheckConsumer>(context, QueueConstants.AutomatedChecks.Matches);
+            // Automation check consumer (tournament-only)
             cfg.ReceiveAutomationCheckEndpoint<TournamentAutomationCheckConsumer>(context, QueueConstants.AutomatedChecks.Tournaments);
 
             // Configure retry policy

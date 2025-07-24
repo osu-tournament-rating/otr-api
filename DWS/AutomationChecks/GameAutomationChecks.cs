@@ -9,15 +9,15 @@ namespace DWS.AutomationChecks;
 public class GameAutomationChecks(ILogger<GameAutomationChecks> logger)
 {
     private static readonly IEnumerable<Mods> _invalidMods = [Mods.SuddenDeath, Mods.Perfect, Mods.Relax, Mods.Autoplay, Mods.Relax2];
-    public GameRejectionReason Process(Game game)
+    public GameRejectionReason Process(Game game, Tournament tournament)
     {
         logger.LogTrace("Processing game {GameId}", game.Id);
 
-        GameRejectionReason result = GameBeatmapUsageCheck(game) |
+        GameRejectionReason result = GameBeatmapUsageCheck(game, tournament) |
                                      GameEndTimeCheck(game) |
                                      GameModCheck(game) |
-                                     GameRulesetCheck(game) |
-                                     GameScoreCountCheck(game) |
+                                     GameRulesetCheck(game, tournament) |
+                                     GameScoreCountCheck(game, tournament) |
                                      GameScoringTypeCheck(game) |
                                      GameTeamTypeCheck(game);
 
@@ -47,7 +47,7 @@ public class GameAutomationChecks(ILogger<GameAutomationChecks> logger)
         return GameRejectionReason.InvalidScoringType;
     }
 
-    private GameRejectionReason GameScoreCountCheck(Game game)
+    private GameRejectionReason GameScoreCountCheck(Game game, Tournament tournament)
     {
         // Game has no scores at all
         if (game.Scores.Count == 0)
@@ -66,7 +66,7 @@ public class GameAutomationChecks(ILogger<GameAutomationChecks> logger)
             return GameRejectionReason.NoValidScores;
         }
 
-        if (validScoresCount % 2 == 0 && validScoresCount / 2 == game.Match.Tournament.LobbySize)
+        if (validScoresCount % 2 == 0 && validScoresCount / 2 == tournament.LobbySize)
         {
             ICollection<GameRoster> rosters = RostersHelper.GenerateRosters(validScores);
 
@@ -81,15 +81,15 @@ public class GameAutomationChecks(ILogger<GameAutomationChecks> logger)
         return GameRejectionReason.LobbySizeMismatch;
     }
 
-    private GameRejectionReason GameRulesetCheck(Game game)
+    private GameRejectionReason GameRulesetCheck(Game game, Tournament tournament)
     {
-        if (game.Ruleset == game.Match.Tournament.Ruleset)
+        if (game.Ruleset == tournament.Ruleset)
         {
             return GameRejectionReason.None;
         }
 
         logger.LogTrace("Game {GameId} failed ruleset check. Game Ruleset: {GameRuleset}, Tournament Ruleset: {TournamentRuleset}",
-                        game.Id, game.Ruleset, game.Match.Tournament.Ruleset);
+                        game.Id, game.Ruleset, tournament.Ruleset);
         return GameRejectionReason.RulesetMismatch;
     }
 
@@ -115,14 +115,12 @@ public class GameAutomationChecks(ILogger<GameAutomationChecks> logger)
         return GameRejectionReason.NoEndTime;
     }
 
-    private static GameRejectionReason GameBeatmapUsageCheck(Game game)
+    private static GameRejectionReason GameBeatmapUsageCheck(Game game, Tournament tournament)
     {
         if (game.Beatmap is null)
         {
             return GameRejectionReason.None;
         }
-
-        Tournament tournament = game.Match.Tournament;
 
         // If the tournament has a mappool
         if (tournament.PooledBeatmaps.Count == 0)

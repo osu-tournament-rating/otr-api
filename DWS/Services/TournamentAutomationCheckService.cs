@@ -7,11 +7,15 @@ namespace DWS.Services;
 
 /// <summary>
 /// Service for processing automation checks on tournaments.
+/// Orchestrates all child entity checks (scores, games, matches) before running tournament-level checks.
 /// </summary>
 public class TournamentAutomationCheckService(
     ILogger<TournamentAutomationCheckService> logger,
     ITournamentsRepository tournamentsRepository,
-    TournamentAutomationChecks tournamentAutomationChecks) : ITournamentAutomationCheckService
+    TournamentAutomationChecks tournamentAutomationChecks,
+    MatchAutomationChecks matchAutomationChecks,
+    GameAutomationChecks gameAutomationChecks,
+    ScoreAutomationChecks scoreAutomationChecks) : ITournamentAutomationCheckService
 {
     /// <inheritdoc />
     public async Task<bool> ProcessAutomationChecksAsync(int entityId, bool overrideVerifiedState = false)
@@ -50,7 +54,12 @@ public class TournamentAutomationCheckService(
         // Load matches with games and scores for automation checks
         await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(tournament);
 
-        // Run automation checks
+        // Process all child entities first (bottom-up approach)
+        ProcessAllScores(tournament);
+        ProcessAllGames(tournament);
+        ProcessAllMatches(tournament);
+
+        // Run tournament-level automation checks
         TournamentRejectionReason rejectionReason = tournamentAutomationChecks.Process(tournament);
 
         // Update verification status based on the result
@@ -67,9 +76,93 @@ public class TournamentAutomationCheckService(
             logger.LogInformation("Tournament {TournamentId} rejected by automation checks: {RejectionReason}", entityId, rejectionReason);
         }
 
-        // Save the updated tournament
+        // Save all changes in a single transaction
         await tournamentsRepository.UpdateAsync(tournament);
 
         return rejectionReason == TournamentRejectionReason.None;
+    }
+
+    /// <summary>
+    /// Processes automation checks for all scores in the tournament
+    /// </summary>
+    private void ProcessAllScores(Tournament tournament)
+    {
+        logger.LogDebug("Processing automation checks for all scores in tournament {TournamentId}", tournament.Id);
+
+        foreach (Match match in tournament.Matches)
+        {
+            foreach (Game game in match.Games)
+            {
+                foreach (GameScore score in game.Scores)
+                {
+                    ScoreRejectionReason scoreRejectionReason = scoreAutomationChecks.Process(score, tournament.Ruleset);
+
+                    // Update score verification status
+                    if (scoreRejectionReason == ScoreRejectionReason.None)
+                    {
+                        score.VerificationStatus = VerificationStatus.PreVerified;
+                        score.RejectionReason = ScoreRejectionReason.None;
+                    }
+                    else
+                    {
+                        score.VerificationStatus = VerificationStatus.PreRejected;
+                        score.RejectionReason = scoreRejectionReason;
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Processes automation checks for all games in the tournament
+    /// </summary>
+    private void ProcessAllGames(Tournament tournament)
+    {
+        logger.LogDebug("Processing automation checks for all games in tournament {TournamentId}", tournament.Id);
+
+        foreach (Match match in tournament.Matches)
+        {
+            foreach (Game game in match.Games)
+            {
+                GameRejectionReason gameRejectionReason = gameAutomationChecks.Process(game, tournament);
+
+                // Update game verification status
+                if (gameRejectionReason == GameRejectionReason.None)
+                {
+                    game.VerificationStatus = VerificationStatus.PreVerified;
+                    game.RejectionReason = GameRejectionReason.None;
+                }
+                else
+                {
+                    game.VerificationStatus = VerificationStatus.PreRejected;
+                    game.RejectionReason = gameRejectionReason;
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Processes automation checks for all matches in the tournament
+    /// </summary>
+    private void ProcessAllMatches(Tournament tournament)
+    {
+        logger.LogDebug("Processing automation checks for all matches in tournament {TournamentId}", tournament.Id);
+
+        foreach (Match match in tournament.Matches)
+        {
+            MatchRejectionReason matchRejectionReason = matchAutomationChecks.Process(match, tournament);
+
+            // Update match verification status
+            if (matchRejectionReason == MatchRejectionReason.None)
+            {
+                match.VerificationStatus = VerificationStatus.PreVerified;
+                match.RejectionReason = MatchRejectionReason.None;
+            }
+            else
+            {
+                match.VerificationStatus = VerificationStatus.PreRejected;
+                match.RejectionReason = matchRejectionReason;
+            }
+        }
     }
 }

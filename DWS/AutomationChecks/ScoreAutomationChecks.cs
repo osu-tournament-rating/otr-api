@@ -10,11 +10,11 @@ public class ScoreAutomationChecks(ILogger<ScoreAutomationChecks> logger)
 
     private static readonly IEnumerable<Mods> _invalidMods = [Mods.SuddenDeath, Mods.Perfect, Mods.Relax, Mods.Autoplay, Mods.Relax2];
 
-    public ScoreRejectionReason Process(GameScore score)
+    public ScoreRejectionReason Process(GameScore score, Ruleset tournamentRuleset)
     {
         logger.LogTrace("Processing score {ScoreId}", score.Id);
 
-        ScoreRejectionReason result = ScoreMinimumCheck(score) | ScoreModCheck(score) | ScoreRulesetCheck(score);
+        ScoreRejectionReason result = ScoreMinimumCheck(score) | ScoreModCheck(score) | ScoreRulesetCheck(score, tournamentRuleset);
 
         logger.LogTrace("Score {ScoreId} processed with rejection reason: {RejectionReason}", score.Id, result);
         return result;
@@ -44,9 +44,8 @@ public class ScoreAutomationChecks(ILogger<ScoreAutomationChecks> logger)
         return ScoreRejectionReason.InvalidMods;
     }
 
-    private ScoreRejectionReason ScoreRulesetCheck(GameScore score)
+    private ScoreRejectionReason ScoreRulesetCheck(GameScore score, Ruleset tournamentRuleset)
     {
-        Ruleset tournamentRuleset = score.Game.Match.Tournament.Ruleset;
         if (tournamentRuleset == score.Ruleset)
         {
             return ScoreRejectionReason.None;

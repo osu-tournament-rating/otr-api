@@ -17,12 +17,12 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
     private const int HeadToHeadExpectedPlayerCount = 2;
     private const int HeadToHeadMaxScoresPerGame = 2;
 
-    public MatchRejectionReason Process(Match match)
+    public MatchRejectionReason Process(Match match, Tournament tournament)
     {
         logger.LogTrace("Processing match {MatchId}", match.Id);
 
         // Head-to-head check is a conversion utility, modifies entities directly
-        PerformHeadToHeadCheck(match);
+        PerformHeadToHeadCheck(match, tournament);
 
         // Checks that modify warning flags
         MatchBeatmapCheck(match);
@@ -32,7 +32,7 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
         // Checks that return rejection reasons
         MatchRejectionReason rejectionReason = MatchEndTimeCheck(match) |
                                              MatchGameCountCheck(match) | // Also modifies warning flags
-                                             MatchNamePrefixCheck(match);
+                                             MatchNamePrefixCheck(match, tournament);
 
         if (rejectionReason != MatchRejectionReason.None || match.WarningFlags != MatchWarningFlags.None)
         {
@@ -115,8 +115,8 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
     /// <summary>
     /// Checks for match names that do not begin with the parent tournament's abbreviation
     /// </summary>
-    private static MatchRejectionReason MatchNamePrefixCheck(Match match) =>
-        match.Name.StartsWith(match.Tournament.Abbreviation, StringComparison.OrdinalIgnoreCase) ?
+    private static MatchRejectionReason MatchNamePrefixCheck(Match match, Tournament tournament) =>
+        match.Name.StartsWith(tournament.Abbreviation, StringComparison.OrdinalIgnoreCase) ?
             MatchRejectionReason.None :
             MatchRejectionReason.NamePrefixMismatch;
 
@@ -152,9 +152,9 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
     /// Checks and converts matches from 1v1 tournaments where games were
     /// incorrectly set to HeadToHead instead of TeamVs.
     /// </summary>
-    private void PerformHeadToHeadCheck(Match match)
+    private void PerformHeadToHeadCheck(Match match, Tournament tournament)
     {
-        if (!IsMatchEligibleForProcessing(match))
+        if (!IsMatchEligibleForProcessing(match, tournament))
         {
             return;
         }
@@ -196,7 +196,7 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
         logger.LogInformation("Successfully converted HeadToHead games to TeamVs [Id: {Id}]", match.Id);
     }
 
-    private bool IsMatchEligibleForProcessing(Match match)
+    private bool IsMatchEligibleForProcessing(Match match, Tournament tournament)
     {
         if (match.Games.Count == 0)
         {
@@ -204,12 +204,12 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
             return false;
         }
 
-        if (match.Tournament.LobbySize == 1)
+        if (tournament.LobbySize == 1)
         {
             return true;
         }
 
-        logger.LogDebug("Match's tournament team size is not 1 [Team size: {TeamSize}]", match.Tournament.LobbySize);
+        logger.LogDebug("Match's tournament team size is not 1 [Team size: {TeamSize}]", tournament.LobbySize);
         return false;
     }
 

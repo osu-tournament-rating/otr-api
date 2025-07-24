@@ -58,6 +58,7 @@ public static class MassTransitExtensions
 
     /// <summary>
     /// Configures a receive endpoint for automation check consumers with priority queue support.
+    /// Uses sequential processing to prevent concurrent Entity Framework modifications.
     /// </summary>
     public static void ReceiveAutomationCheckEndpoint<TConsumer>(
         this IRabbitMqBusFactoryConfigurator cfg,
@@ -72,9 +73,11 @@ public static class MassTransitExtensions
                 rabbitMqEndpoint.EnablePriority(10);
             }
 
-            // Configure consumer with reasonable concurrency for processing
-            e.PrefetchCount = 10;
-            e.ConcurrentMessageLimit = 5;
+            // Process only one message at a time to prevent concurrent Entity Framework modifications
+            // This ensures that multiple tournaments aren't processed simultaneously, avoiding
+            // conflicts when modifying shared entities like Players
+            e.PrefetchCount = 1;
+            e.ConcurrentMessageLimit = 1;
             e.ConfigureConsumer<TConsumer>(context);
         });
     }

@@ -5,8 +5,14 @@ public static class QueueConstants
     public static class AutomatedChecks
     {
         public const string Tournaments = "processing.checks.tournaments";
+
+        [Obsolete("Use tournament-level automation checks instead. Child entity checks are now orchestrated within tournament processing.")]
         public const string Matches = "processing.checks.matches";
+
+        [Obsolete("Use tournament-level automation checks instead. Child entity checks are now orchestrated within tournament processing.")]
         public const string Games = "processing.checks.games";
+
+        [Obsolete("Use tournament-level automation checks instead. Child entity checks are now orchestrated within tournament processing.")]
         public const string Scores = "processing.checks.scores";
     }
 
