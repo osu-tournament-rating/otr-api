@@ -199,57 +199,25 @@ public class TournamentsService(
 
     public async Task RerunAutomationChecksAsync(int id, bool overrideVerifiedState = false)
     {
-        // Load the tournament with all its child entities
-        Tournament? tournament = await tournamentsRepository.GetAsync(id, eagerLoad: true);
+        // Verify the tournament exists
+        Tournament? tournament = await tournamentsRepository.GetAsync(id);
         if (tournament is null)
         {
             logger.LogWarning("Tournament {TournamentId} not found for rerun automation checks", id);
             return;
         }
 
-        await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(tournament);
-
-        // Publish message for the tournament
+        // Publish message for tournament-level automation checks
+        // The tournament consumer will handle all child entity checks internally
         await publishEndpoint.Publish(new ProcessTournamentAutomationCheckMessage
         {
             TournamentId = id,
             OverrideVerifiedState = overrideVerifiedState
         });
 
-        // Publish messages for all matches
-        foreach (Match match in tournament.Matches)
-        {
-            await publishEndpoint.Publish(new ProcessMatchAutomationCheckMessage
-            {
-                MatchId = match.Id,
-                OverrideVerifiedState = overrideVerifiedState
-            });
-
-            // Publish messages for all games in the match
-            foreach (Game game in match.Games)
-            {
-                await publishEndpoint.Publish(new ProcessGameAutomationCheckMessage
-                {
-                    GameId = game.Id,
-                    OverrideVerifiedState = overrideVerifiedState
-                });
-
-                // Publish messages for all scores in the game
-                foreach (GameScore score in game.Scores)
-                {
-                    await publishEndpoint.Publish(new ProcessScoreAutomationCheckMessage
-                    {
-                        ScoreId = score.Id,
-                        OverrideVerifiedState = overrideVerifiedState
-                    });
-                }
-            }
-        }
-
         logger.LogInformation(
-            "Enqueued automation checks for tournament {TournamentId} with {MatchCount} matches (overrideVerifiedState: {OverrideVerifiedState})",
+            "Enqueued automation checks for tournament {TournamentId} (overrideVerifiedState: {OverrideVerifiedState})",
             id,
-            tournament.Matches.Count,
             overrideVerifiedState);
     }
 
