@@ -1,3 +1,5 @@
+using AutoMapper;
+using DWS.Configurations;
 using DWS.Services;
 using DWS.Tests.DataFetching.TestFixtures;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +20,9 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         get
         {
             ILogger<BeatmapsetFetchService> logger = CreateLogger<BeatmapsetFetchService>();
-            return new BeatmapsetFetchService(logger, Context, BeatmapsRepository, BeatmapsetsRepository, PlayersRepository, MockOsuClient.Object);
+            var config = new MapperConfiguration(cfg => cfg.AddProfile<DwsMapperProfile>());
+            IMapper mapper = config.CreateMapper();
+            return new BeatmapsetFetchService(logger, Context, BeatmapsRepository, BeatmapsetsRepository, PlayersRepository, MockOsuClient.Object, mapper);
         }
     }
 
