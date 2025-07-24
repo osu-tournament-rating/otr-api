@@ -20,5 +20,5 @@ public static class OtrConstants
     /// Regex filters that define valid <see cref="Database.Entities.Match"/> <see cref="Database.Entities.Match.Name"/>
     /// conventions
     /// </summary>
-    public static readonly List<string> MatchNamePatterns = [@"^[^]*(\(.+\)\s*vs\.?\s*\(.+\)).*$"];
+    public static readonly List<string> MatchNamePatterns = [@"^.*(\(.+\)\s*vs\.?\s*\(.+\)).*$"];
 }
