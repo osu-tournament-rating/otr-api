@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
+using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
@@ -22,7 +23,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
         eagerLoad
             ? await TournamentsBaseQuery()
-            .AsNoTracking()
             .AsSplitQuery()
             .Include(t => t.PlayerTournamentStats)
             .ThenInclude(pts => pts.Player)
@@ -391,6 +391,13 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
                 await _context.Entry(game)
                     .Collection(g => g.Scores)
                     .LoadAsync();
+
+                foreach (GameScore score in game.Scores)
+                {
+                    await _context.Entry(score)
+                        .Reference(s => s.Player)
+                        .LoadAsync();
+                }
             }
         }
     }

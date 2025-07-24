@@ -167,7 +167,7 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
 
         if (headToHeadGames.Count == 0)
         {
-            logger.LogDebug("Match has no HeadToHead games eligible for TeamVs conversion");
+            logger.LogTrace("Match {MatchId} has no HeadToHead games eligible for TeamVs conversion", match.Id);
             return;
         }
 
@@ -200,7 +200,7 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
     {
         if (match.Games.Count == 0)
         {
-            logger.LogDebug("Match has no games");
+            logger.LogTrace("Match {MatchId} has no games", match.Id);
             return false;
         }
 
@@ -209,7 +209,7 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
             return true;
         }
 
-        logger.LogDebug("Match's tournament team size is not 1 [Team size: {TeamSize}]", tournament.LobbySize);
+        logger.LogTrace("Match {MatchId} tournament team size is not 1 [Team size: {TeamSize}]", match.Id, tournament.LobbySize);
         return false;
     }
 
