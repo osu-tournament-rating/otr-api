@@ -2,6 +2,7 @@ using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using DWS.AutomationChecks;
+using DWS.Models;
 
 namespace DWS.Services;
 
@@ -51,6 +52,9 @@ public class TournamentAutomationCheckService(
                 entityId);
         }
 
+        // Store the tournament status before processing
+        VerificationStatus tournamentStatusBefore = tournament.VerificationStatus;
+
         // Load matches with games and scores for automation checks
         await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(tournament);
 
@@ -67,17 +71,22 @@ public class TournamentAutomationCheckService(
         {
             tournament.VerificationStatus = VerificationStatus.PreVerified;
             tournament.RejectionReason = TournamentRejectionReason.None;
-            logger.LogInformation("Tournament {TournamentId} passed all automation checks", entityId);
         }
         else
         {
             tournament.VerificationStatus = VerificationStatus.PreRejected;
             tournament.RejectionReason = rejectionReason;
-            logger.LogInformation("Tournament {TournamentId} rejected by automation checks: {RejectionReason}", entityId, rejectionReason);
         }
+
+        // Capture detailed state after processing
+        TournamentProcessingState processingState = TournamentProcessingReporter.CaptureDetailedState(tournament, tournamentStatusBefore);
 
         // Save all changes in a single transaction
         await tournamentsRepository.UpdateAsync(tournament);
+
+        // Generate and log the detailed multi-line report
+        string detailedReport = TournamentProcessingReporter.GenerateDetailedReport(processingState);
+        logger.LogInformation("{DetailedReport}", detailedReport);
 
         return rejectionReason == TournamentRejectionReason.None;
     }
