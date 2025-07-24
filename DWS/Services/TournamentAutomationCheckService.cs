@@ -59,9 +59,9 @@ public class TournamentAutomationCheckService(
         await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(tournament);
 
         // Process all child entities first (bottom-up approach)
-        ProcessAllScores(tournament);
-        ProcessAllGames(tournament);
-        ProcessAllMatches(tournament);
+        ProcessAllScores(tournament, overrideVerifiedState);
+        ProcessAllGames(tournament, overrideVerifiedState);
+        ProcessAllMatches(tournament, overrideVerifiedState);
 
         // Run tournament-level automation checks
         TournamentRejectionReason rejectionReason = tournamentAutomationChecks.Process(tournament);
@@ -94,7 +94,9 @@ public class TournamentAutomationCheckService(
     /// <summary>
     /// Processes automation checks for all scores in the tournament
     /// </summary>
-    private void ProcessAllScores(Tournament tournament)
+    /// <param name="tournament">The tournament containing the scores to process</param>
+    /// <param name="overrideVerifiedState">Whether to override existing human-verified or rejected states</param>
+    private void ProcessAllScores(Tournament tournament, bool overrideVerifiedState)
     {
         logger.LogDebug("Processing automation checks for all scores in tournament {TournamentId}", tournament.Id);
 
@@ -104,6 +106,22 @@ public class TournamentAutomationCheckService(
             {
                 foreach (GameScore score in game.Scores)
                 {
+                    // Check if the entity needs processing based on current verification status
+                    if (!overrideVerifiedState &&
+                        (score.VerificationStatus == VerificationStatus.Verified ||
+                         score.VerificationStatus == VerificationStatus.Rejected))
+                    {
+                        continue;
+                    }
+
+                    // Reset verification status if overriding
+                    if (overrideVerifiedState &&
+                        (score.VerificationStatus == VerificationStatus.Verified ||
+                         score.VerificationStatus == VerificationStatus.Rejected))
+                    {
+                        score.VerificationStatus = VerificationStatus.None;
+                    }
+
                     ScoreRejectionReason scoreRejectionReason = scoreAutomationChecks.Process(score, tournament.Ruleset);
 
                     // Update score verification status
@@ -125,7 +143,9 @@ public class TournamentAutomationCheckService(
     /// <summary>
     /// Processes automation checks for all games in the tournament
     /// </summary>
-    private void ProcessAllGames(Tournament tournament)
+    /// <param name="tournament">The tournament containing the games to process</param>
+    /// <param name="overrideVerifiedState">Whether to override existing human-verified or rejected states</param>
+    private void ProcessAllGames(Tournament tournament, bool overrideVerifiedState)
     {
         logger.LogDebug("Processing automation checks for all games in tournament {TournamentId}", tournament.Id);
 
@@ -133,6 +153,22 @@ public class TournamentAutomationCheckService(
         {
             foreach (Game game in match.Games)
             {
+                // Check if the entity needs processing based on current verification status
+                if (!overrideVerifiedState &&
+                    (game.VerificationStatus == VerificationStatus.Verified ||
+                     game.VerificationStatus == VerificationStatus.Rejected))
+                {
+                    continue;
+                }
+
+                // Reset verification status if overriding
+                if (overrideVerifiedState &&
+                    (game.VerificationStatus == VerificationStatus.Verified ||
+                     game.VerificationStatus == VerificationStatus.Rejected))
+                {
+                    game.VerificationStatus = VerificationStatus.None;
+                }
+
                 GameRejectionReason gameRejectionReason = gameAutomationChecks.Process(game, tournament);
 
                 // Update game verification status
@@ -153,12 +189,30 @@ public class TournamentAutomationCheckService(
     /// <summary>
     /// Processes automation checks for all matches in the tournament
     /// </summary>
-    private void ProcessAllMatches(Tournament tournament)
+    /// <param name="tournament">The tournament containing the matches to process</param>
+    /// <param name="overrideVerifiedState">Whether to override existing human-verified or rejected states</param>
+    private void ProcessAllMatches(Tournament tournament, bool overrideVerifiedState)
     {
         logger.LogDebug("Processing automation checks for all matches in tournament {TournamentId}", tournament.Id);
 
         foreach (Match match in tournament.Matches)
         {
+            // Check if the entity needs processing based on current verification status
+            if (!overrideVerifiedState &&
+                (match.VerificationStatus == VerificationStatus.Verified ||
+                 match.VerificationStatus == VerificationStatus.Rejected))
+            {
+                continue;
+            }
+
+            // Reset verification status if overriding
+            if (overrideVerifiedState &&
+                (match.VerificationStatus == VerificationStatus.Verified ||
+                 match.VerificationStatus == VerificationStatus.Rejected))
+            {
+                match.VerificationStatus = VerificationStatus.None;
+            }
+
             MatchRejectionReason matchRejectionReason = matchAutomationChecks.Process(match, tournament);
 
             // Update match verification status
