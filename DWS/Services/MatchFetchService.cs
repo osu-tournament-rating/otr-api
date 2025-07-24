@@ -281,7 +281,9 @@ public class MatchFetchService(
             GameId = game.Id,
             PlayerId = player.Id,
             Team = apiScore.SlotInfo.Team,
-            Score = apiScore.Score,
+            Score = apiScore.Mods.HasFlag(Mods.Easy)
+                ? (int)(apiScore.Score * 1.75)
+                : apiScore.Score,
             MaxCombo = apiScore.MaxCombo,
             Count300 = apiScore.Statistics?.Count300 ?? 0,
             Count100 = apiScore.Statistics?.Count100 ?? 0,
@@ -290,6 +292,8 @@ public class MatchFetchService(
             CountGeki = apiScore.Statistics?.CountGeki ?? 0,
             CountKatu = apiScore.Statistics?.CountKatu ?? 0,
             Pass = apiScore.Passed,
+            Perfect = apiScore.Perfect,
+            Grade = apiScore.Grade,
             Mods = apiScore.Mods,
             Ruleset = game.Ruleset
         };
@@ -297,7 +301,9 @@ public class MatchFetchService(
 
     private static void UpdateScoreFromApi(DbGameScore score, ApiGameScore apiScore)
     {
-        score.Score = apiScore.Score;
+        score.Score = apiScore.Mods.HasFlag(Mods.Easy)
+            ? (int)(apiScore.Score * 1.75)
+            : apiScore.Score;
         score.MaxCombo = apiScore.MaxCombo;
         score.Count300 = apiScore.Statistics?.Count300 ?? 0;
         score.Count100 = apiScore.Statistics?.Count100 ?? 0;
@@ -306,6 +312,8 @@ public class MatchFetchService(
         score.CountGeki = apiScore.Statistics?.CountGeki ?? 0;
         score.CountKatu = apiScore.Statistics?.CountKatu ?? 0;
         score.Pass = apiScore.Passed;
+        score.Perfect = apiScore.Perfect;
+        score.Grade = apiScore.Grade;
         score.Mods = apiScore.Mods;
     }
 }
