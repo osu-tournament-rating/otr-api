@@ -1,3 +1,4 @@
+using AutoMapper;
 using Common.Configurations;
 using Common.Constants;
 using Database;
@@ -52,6 +53,9 @@ try
     {
         Configuration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position)
     });
+
+    // Configure AutoMapper
+    builder.Services.AddAutoMapper(typeof(DwsMapperProfile));
 
     // Configure RabbitMQ
     builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection(RabbitMqConfiguration.Position));

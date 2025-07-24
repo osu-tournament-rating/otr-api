@@ -1,3 +1,4 @@
+using AutoMapper;
 using Common.Constants;
 using Common.Enums;
 using Database;
@@ -11,7 +12,7 @@ using OsuApiClient.Domain.Osu.Users.Attributes;
 namespace DWS.Services;
 
 public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext context,
-    IOsuClient osuClient, IPlayersRepository playersRepository) : IPlayerFetchService
+    IOsuClient osuClient, IPlayersRepository playersRepository, IMapper mapper) : IPlayerFetchService
 {
     public async Task<bool> FetchAndPersistAsync(long osuPlayerId, CancellationToken cancellationToken = default)
     {
@@ -62,20 +63,16 @@ public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext c
         Player? player = await context.Players.FirstOrDefaultAsync(p => p.OsuId == osuUser.Id, cancellationToken);
         bool exists = player is not null;
 
-        player ??= new Player { OsuId = osuUser.Id };
-
-        // Update basic information
-        player.Country = osuUser.CountryCode;
-        player.Username = osuUser.Username;
-        player.DefaultRuleset = osuUser.Ruleset;
-        player.OsuLastFetch = DateTime.UtcNow;
-
         if (exists)
         {
-            await playersRepository.UpdateAsync(player);
+            // Update existing player
+            mapper.Map(osuUser, player!);
+            await playersRepository.UpdateAsync(player!);
         }
         else
         {
+            // Create new player
+            player = mapper.Map<Player>(osuUser);
             await playersRepository.CreateAsync(player);
         }
     }
@@ -88,7 +85,7 @@ public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext c
         }
 
         // Player is guaranteed to exist here assuming this is called after ProcessPlayerAsync
-        Player? player = await context.Players.Include(p => p.RulesetData).FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        Player? player = await context.Players.Include(p => p.RulesetData).FirstOrDefaultAsync(p => p.OsuId == osuUser.Id, cancellationToken);
 
         if (player is null)
         {
@@ -144,14 +141,13 @@ public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext c
 
             if (variantData is null)
             {
-                variantData = new PlayerOsuRulesetData { Ruleset = variant.Ruleset };
+                variantData = mapper.Map<PlayerOsuRulesetData>(variant);
                 player.RulesetData.Add(variantData);
             }
-
-            variantData.Pp = variant.Pp;
-
-            // Safe when IsRanked is true
-            variantData.GlobalRank = variant.GlobalRank!.Value;
+            else
+            {
+                mapper.Map(variant, variantData);
+            }
 
             logger.LogInformation("Handled variant {VariantRuleset} for player {OsuPlayerId}", variant.Ruleset, osuUser.Id);
         }

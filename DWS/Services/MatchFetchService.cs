@@ -1,3 +1,4 @@
+using AutoMapper;
 using Common.Enums;
 using Database;
 using Database.Entities;
@@ -22,7 +23,8 @@ public class MatchFetchService(
     IPlayersRepository playersRepository,
     IBeatmapsRepository beatmapsRepository,
     IOsuClient osuClient,
-    IPublishEndpoint publishEndpoint)
+    IPublishEndpoint publishEndpoint,
+    IMapper mapper)
     : IMatchFetchService
 {
     public async Task<bool> FetchAndPersistMatchAsync(long osuMatchId, CancellationToken cancellationToken = default)
@@ -64,13 +66,13 @@ public class MatchFetchService(
         {
             // Update existing match with fresh data
             match = existingMatch;
-            UpdateMatchFromApi(match, osuMatch);
+            mapper.Map(osuMatch, match);
             await matchesRepository.UpdateAsync(match);
         }
         else
         {
             // Create new match
-            match = CreateMatchFromApi(osuMatch);
+            match = mapper.Map<Match>(osuMatch);
             await matchesRepository.CreateAsync(match);
         }
 
@@ -81,27 +83,6 @@ public class MatchFetchService(
         await ProcessGamesAsync(match, osuMatch, cancellationToken);
     }
 
-    private static Match CreateMatchFromApi(MultiplayerMatch apiMatch)
-    {
-        return new Match
-        {
-            OsuId = apiMatch.Match.Id,
-            Name = apiMatch.Match.Name,
-            StartTime = DateTime.SpecifyKind(apiMatch.Match.StartTime, DateTimeKind.Utc),
-            EndTime = apiMatch.Match.EndTime.HasValue
-                ? DateTime.SpecifyKind(apiMatch.Match.EndTime.Value, DateTimeKind.Utc)
-                : null
-        };
-    }
-
-    private static void UpdateMatchFromApi(Match match, MultiplayerMatch apiMatch)
-    {
-        match.Name = apiMatch.Match.Name;
-        match.StartTime = DateTime.SpecifyKind(apiMatch.Match.StartTime, DateTimeKind.Utc);
-        match.EndTime = apiMatch.Match.EndTime.HasValue
-            ? DateTime.SpecifyKind(apiMatch.Match.EndTime.Value, DateTimeKind.Utc)
-            : null;
-    }
 
     private async Task ProcessPlayersAsync(MultiplayerMatch apiMatch)
     {
@@ -118,12 +99,7 @@ public class MatchFetchService(
         // Create missing players
         var newPlayers = apiMatch.Users
             .Where(u => !existingPlayerIds.Contains(u.Id))
-            .Select(u => new Player
-            {
-                OsuId = u.Id,
-                Username = u.Username,
-                Country = u.CountryCode
-            })
+            .Select(u => mapper.Map<Player>(u))
             .DistinctBy(p => p.OsuId)
             .ToList();
 
@@ -157,7 +133,7 @@ public class MatchFetchService(
             {
                 // Update existing game
                 game = existingGame;
-                UpdateGameFromApi(game, apiGame);
+                mapper.Map(apiGame, game);
                 await gamesRepository.UpdateAsync(game);
             }
             else
@@ -208,29 +184,12 @@ public class MatchFetchService(
             }
         }
 
-        return new Game
-        {
-            OsuId = apiGame.Id,
-            MatchId = match.Id,
-            BeatmapId = beatmap?.Id,
-            StartTime = DateTime.SpecifyKind(apiGame.StartTime, DateTimeKind.Utc),
-            EndTime = DateTime.SpecifyKind(apiGame.EndTime ?? apiGame.StartTime, DateTimeKind.Utc),
-            Ruleset = apiGame.Ruleset,
-            ScoringType = apiGame.ScoringType,
-            TeamType = apiGame.TeamType,
-            Mods = apiGame.Mods
-        };
+        Game game = mapper.Map<Game>(apiGame);
+        game.MatchId = match.Id;
+        game.BeatmapId = beatmap?.Id;
+        return game;
     }
 
-    private static void UpdateGameFromApi(Game game, MultiplayerGame apiGame)
-    {
-        game.StartTime = DateTime.SpecifyKind(apiGame.StartTime, DateTimeKind.Utc);
-        game.EndTime = DateTime.SpecifyKind(apiGame.EndTime ?? game.StartTime, DateTimeKind.Utc);
-        game.Ruleset = apiGame.Ruleset;
-        game.ScoringType = apiGame.ScoringType;
-        game.TeamType = apiGame.TeamType;
-        game.Mods = apiGame.Mods;
-    }
 
     private async Task ProcessGameScoresAsync(Game game, MultiplayerGame apiGame, CancellationToken cancellationToken)
     {
@@ -262,58 +221,20 @@ public class MatchFetchService(
             if (existingScoreMap.TryGetValue(key, out DbGameScore? existingScore))
             {
                 // Update existing score
-                UpdateScoreFromApi(existingScore, apiScore);
+                mapper.Map(apiScore, existingScore);
+                existingScore.Ruleset = game.Ruleset;
                 await gameScoresRepository.UpdateAsync(existingScore);
             }
             else
             {
                 // Create new score
-                DbGameScore score = CreateScoreFromApi(game, player, apiScore);
+                DbGameScore score = mapper.Map<DbGameScore>(apiScore);
+                score.GameId = game.Id;
+                score.PlayerId = player.Id;
+                score.Ruleset = game.Ruleset;
                 await gameScoresRepository.CreateAsync(score);
             }
         }
     }
 
-    private static DbGameScore CreateScoreFromApi(Game game, Player player, ApiGameScore apiScore)
-    {
-        return new DbGameScore
-        {
-            GameId = game.Id,
-            PlayerId = player.Id,
-            Team = apiScore.SlotInfo.Team,
-            Score = apiScore.Mods.HasFlag(Mods.Easy)
-                ? (int)(apiScore.Score * 1.75)
-                : apiScore.Score,
-            MaxCombo = apiScore.MaxCombo,
-            Count300 = apiScore.Statistics?.Count300 ?? 0,
-            Count100 = apiScore.Statistics?.Count100 ?? 0,
-            Count50 = apiScore.Statistics?.Count50 ?? 0,
-            CountMiss = apiScore.Statistics?.CountMiss ?? 0,
-            CountGeki = apiScore.Statistics?.CountGeki ?? 0,
-            CountKatu = apiScore.Statistics?.CountKatu ?? 0,
-            Pass = apiScore.Passed,
-            Perfect = apiScore.Perfect,
-            Grade = apiScore.Grade,
-            Mods = apiScore.Mods,
-            Ruleset = game.Ruleset
-        };
-    }
-
-    private static void UpdateScoreFromApi(DbGameScore score, ApiGameScore apiScore)
-    {
-        score.Score = apiScore.Mods.HasFlag(Mods.Easy)
-            ? (int)(apiScore.Score * 1.75)
-            : apiScore.Score;
-        score.MaxCombo = apiScore.MaxCombo;
-        score.Count300 = apiScore.Statistics?.Count300 ?? 0;
-        score.Count100 = apiScore.Statistics?.Count100 ?? 0;
-        score.Count50 = apiScore.Statistics?.Count50 ?? 0;
-        score.CountMiss = apiScore.Statistics?.CountMiss ?? 0;
-        score.CountGeki = apiScore.Statistics?.CountGeki ?? 0;
-        score.CountKatu = apiScore.Statistics?.CountKatu ?? 0;
-        score.Pass = apiScore.Passed;
-        score.Perfect = apiScore.Perfect;
-        score.Grade = apiScore.Grade;
-        score.Mods = apiScore.Mods;
-    }
 }

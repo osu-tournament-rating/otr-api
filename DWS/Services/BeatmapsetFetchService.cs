@@ -1,3 +1,4 @@
+using AutoMapper;
 using Database;
 using Database.Entities;
 using Database.Repositories.Interfaces;
@@ -16,7 +17,8 @@ public class BeatmapsetFetchService(
     IBeatmapsRepository beatmapsRepository,
     IBeatmapsetsRepository beatmapsetsRepository,
     IPlayersRepository playersRepository,
-    IOsuClient osuClient)
+    IOsuClient osuClient,
+    IMapper mapper)
     : IBeatmapsetFetchService
 {
     public async Task<bool> FetchAndPersistBeatmapsetAsync(long osuBeatmapId, CancellationToken cancellationToken = default)
@@ -127,11 +129,7 @@ public class BeatmapsetFetchService(
         }
 
         // Update beatmapset data
-        beatmapset.Artist = apiBeatmapset.Artist;
-        beatmapset.Title = apiBeatmapset.Title;
-        beatmapset.RankedStatus = apiBeatmapset.RankedStatus;
-        beatmapset.RankedDate = apiBeatmapset.RankedDate;
-        beatmapset.SubmittedDate = apiBeatmapset.SubmittedDate;
+        mapper.Map(apiBeatmapset, beatmapset);
 
         // Handle creator
         if (apiBeatmapset.User is not null)
@@ -182,40 +180,20 @@ public class BeatmapsetFetchService(
             }
 
             // Update beatmap from API data
-            UpdateBeatmapFromApi(existingBeatmap, apiBeatmap);
+            mapper.Map(apiBeatmap, existingBeatmap);
         }
 
         logger.LogDebug("Updated beatmapset {BeatmapsetId} with {BeatmapCount} beatmaps",
             apiBeatmapset.Id, apiBeatmapset.Beatmaps.Length);
     }
 
-    private static void UpdateBeatmapFromApi(Beatmap beatmap, BeatmapExtended apiBeatmap)
-    {
-        beatmap.HasData = true;
-        beatmap.Ruleset = apiBeatmap.Ruleset;
-        beatmap.RankedStatus = apiBeatmap.RankedStatus;
-        beatmap.DiffName = apiBeatmap.DifficultyName;
-        beatmap.TotalLength = apiBeatmap.TotalLength;
-        beatmap.DrainLength = apiBeatmap.HitLength;
-        beatmap.Bpm = apiBeatmap.Bpm;
-        beatmap.CountCircle = apiBeatmap.CountCircles;
-        beatmap.CountSlider = apiBeatmap.CountSliders;
-        beatmap.CountSpinner = apiBeatmap.CountSpinners;
-        beatmap.Cs = apiBeatmap.CircleSize;
-        beatmap.Hp = apiBeatmap.HpDrain;
-        beatmap.Od = apiBeatmap.OverallDifficulty;
-        beatmap.Ar = apiBeatmap.ApproachRate;
-        beatmap.Sr = apiBeatmap.StarRating;
-        beatmap.MaxCombo = apiBeatmap.MaxCombo;
-    }
 
     private async Task<Player> LoadOrCreatePlayerAsync(ApiUser apiUser)
     {
         Player player = await playersRepository.GetOrCreateAsync(apiUser.Id);
 
         // Update player data
-        player.Username = apiUser.Username;
-        player.Country = apiUser.CountryCode;
+        mapper.Map(apiUser, player);
 
         if (player.Id == 0)
         {
