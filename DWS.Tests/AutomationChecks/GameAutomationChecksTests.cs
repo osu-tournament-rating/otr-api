@@ -35,7 +35,7 @@ public class GameAutomationChecksTests
             endTime: DateTime.UtcNow
         );
         game.Match.Tournament.LobbySize = 4;
-        var result = _checker.Process(game);
+        var result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(expected));
     }
 
@@ -54,7 +54,7 @@ public class GameAutomationChecksTests
             endTime: DateTime.UtcNow
         );
         game.Match.Tournament.LobbySize = 4;
-        var result = _checker.Process(game);
+        var result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(expected));
     }
 
@@ -70,7 +70,7 @@ public class GameAutomationChecksTests
         );
         game.Match.Tournament.LobbySize = 4;
         game.Scores = new List<GameScore>();
-        var result = _checker.Process(game);
+        var result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(GameRejectionReason.NoScores));
     }
 
@@ -90,7 +90,7 @@ public class GameAutomationChecksTests
             SeededScore.Generate(verificationStatus: VerificationStatus.Rejected, mods: Mods.None, game: game),
             SeededScore.Generate(verificationStatus: VerificationStatus.PreRejected, mods: Mods.None, game: game)
         };
-        var result = _checker.Process(game);
+        var result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(GameRejectionReason.NoValidScores));
     }
 
@@ -113,7 +113,7 @@ public class GameAutomationChecksTests
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game)
         };
 
-        var result = _checker.Process(game);
+        var result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(GameRejectionReason.LobbySizeMismatch));
     }
 
@@ -136,7 +136,7 @@ public class GameAutomationChecksTests
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game)
         };
 
-        var result = _checker.Process(game);
+        var result = _checker.Process(game, game.Match.Tournament);
         Assert.False(result.HasFlag(GameRejectionReason.LobbySizeMismatch));
     }
 
@@ -154,7 +154,7 @@ public class GameAutomationChecksTests
         );
         game.Match.Tournament.LobbySize = 4;
         game.Match.Tournament.Ruleset = tournamentRuleset;
-        var result = _checker.Process(game);
+        var result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(expected));
     }
 
@@ -176,7 +176,7 @@ public class GameAutomationChecksTests
             endTime: DateTime.UtcNow
         );
         game.Match.Tournament.LobbySize = 4;
-        var result = _checker.Process(game);
+        var result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(expected));
     }
 
@@ -191,7 +191,7 @@ public class GameAutomationChecksTests
             mods: Mods.None
         );
         game.Match.Tournament.LobbySize = 4;
-        var result = _checker.Process(game);
+        var result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(GameRejectionReason.NoEndTime));
     }
 
@@ -215,7 +215,7 @@ public class GameAutomationChecksTests
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 3), team: Team.Blue, mods: Mods.None, game: game),
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game)
         };
-        var result = _checker.Process(game);
+        var result = _checker.Process(game, game.Match.Tournament);
         Assert.Equal(GameRejectionReason.None, result);
     }
 
@@ -239,7 +239,7 @@ public class GameAutomationChecksTests
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 3), team: Team.Blue, mods: Mods.None, game: game),
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game)
         };
-        var result = _checker.Process(game);
+        var result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(GameRejectionReason.BeatmapNotPooled));
     }
 
@@ -312,9 +312,9 @@ public class GameAutomationChecksTests
         game3.Scores.Add(SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 3), team: Team.Blue, mods: Mods.None, game: game3));
         game3.Scores.Add(SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game3));
 
-        _checker.Process(game1);
-        _checker.Process(game2);
-        _checker.Process(game3);
+        _checker.Process(game1, tournament);
+        _checker.Process(game2, tournament);
+        _checker.Process(game3, tournament);
 
         // beatmap123 is used twice (game1 and game3), so neither should be flagged
         // beatmap456 is used once (game2), so it should be flagged

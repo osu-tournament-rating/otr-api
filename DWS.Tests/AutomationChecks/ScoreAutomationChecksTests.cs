@@ -31,7 +31,7 @@ public class ScoreAutomationChecksTests
         var score = SeededScore.Generate(score: (int)scoreAmount, ruleset: Ruleset.Osu, mods: Mods.None, game: game);
 
         // Act
-        ScoreRejectionReason result = _checker.Process(score);
+        ScoreRejectionReason result = _checker.Process(score, tournament.Ruleset);
 
         // Assert
         Assert.Equal(expected, result);
@@ -55,7 +55,7 @@ public class ScoreAutomationChecksTests
         var score = SeededScore.Generate(score: 50000, mods: mods, ruleset: Ruleset.Osu, game: game);
 
         // Act
-        ScoreRejectionReason result = _checker.Process(score);
+        ScoreRejectionReason result = _checker.Process(score, tournament.Ruleset);
 
         // Assert
         Assert.Equal(expected, result);
@@ -75,7 +75,7 @@ public class ScoreAutomationChecksTests
         var score = SeededScore.Generate(score: 50000, ruleset: scoreRuleset, mods: Mods.None, game: game);
 
         // Act
-        ScoreRejectionReason result = _checker.Process(score);
+        ScoreRejectionReason result = _checker.Process(score, tournament.Ruleset);
 
         // Assert
         Assert.Equal(expected, result);
