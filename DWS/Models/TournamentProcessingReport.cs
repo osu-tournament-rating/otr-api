@@ -92,35 +92,44 @@ public class TournamentProcessingState
     public List<RejectionGroup> ScoreRejections { get; init; } = new();
 
     /// <summary>
-    /// Total counts for summary
+    /// Total number of matches in the tournament
     /// </summary>
     public int TotalMatches { get; init; }
+
+    /// <summary>
+    /// Total number of games in the tournament
+    /// </summary>
     public int TotalGames { get; init; }
+
+    /// <summary>
+    /// Total number of scores in the tournament
+    /// </summary>
     public int TotalScores { get; init; }
 
     /// <summary>
-    /// Warning flag counts
+    /// Number of matches with warning flags
     /// </summary>
     public int MatchesWithWarnings { get; init; }
+
+    /// <summary>
+    /// Number of games with warning flags
+    /// </summary>
     public int GamesWithWarnings { get; init; }
 
     /// <summary>
-    /// Verification counts
+    /// Verification counts for matches
     /// </summary>
-    public int PreVerifiedMatches { get; init; }
-    public int VerifiedMatches { get; init; }
-    public int PreRejectedMatches { get; init; }
-    public int RejectedMatches { get; init; }
+    public VerificationCounts MatchCounts { get; init; }
 
-    public int PreVerifiedGames { get; init; }
-    public int VerifiedGames { get; init; }
-    public int PreRejectedGames { get; init; }
-    public int RejectedGames { get; init; }
+    /// <summary>
+    /// Verification counts for games
+    /// </summary>
+    public VerificationCounts GameCounts { get; init; }
 
-    public int PreVerifiedScores { get; init; }
-    public int VerifiedScores { get; init; }
-    public int PreRejectedScores { get; init; }
-    public int RejectedScores { get; init; }
+    /// <summary>
+    /// Verification counts for scores
+    /// </summary>
+    public VerificationCounts ScoreCounts { get; init; }
 }
 
 /// <summary>
@@ -128,11 +137,6 @@ public class TournamentProcessingState
 /// </summary>
 public static class TournamentProcessingReporter
 {
-    /// <summary>
-    /// Maximum number of lines in the detailed report
-    /// </summary>
-    private const int MaxReportLines = 5;
-
     /// <summary>
     /// Column separator for report formatting
     /// </summary>
@@ -181,7 +185,7 @@ public static class TournamentProcessingReporter
     {
         ArgumentNullException.ThrowIfNull(tournament);
 
-        List<Match> matches = tournament.Matches?.ToList() ?? [];
+        List<Match> matches = tournament.Matches.ToList();
         var games = new List<Game>();
         var scores = new List<GameScore>();
 
@@ -199,7 +203,7 @@ public static class TournamentProcessingReporter
         return new TournamentProcessingState
         {
             TournamentId = tournament.Id,
-            Abbreviation = tournament.Abbreviation ?? string.Empty,
+            Abbreviation = tournament.Abbreviation,
             TournamentStatusBefore = beforeStatus,
             TournamentStatusAfter = tournament.VerificationStatus,
             TournamentRejectionReason = tournament.RejectionReason,
@@ -209,23 +213,10 @@ public static class TournamentProcessingReporter
             TotalGames = games.Count,
             TotalScores = scores.Count,
 
-            // Match counts
-            PreVerifiedMatches = matchCounts.PreVerified,
-            VerifiedMatches = matchCounts.Verified,
-            PreRejectedMatches = matchCounts.PreRejected,
-            RejectedMatches = matchCounts.Rejected,
-
-            // Game counts
-            PreVerifiedGames = gameCounts.PreVerified,
-            VerifiedGames = gameCounts.Verified,
-            PreRejectedGames = gameCounts.PreRejected,
-            RejectedGames = gameCounts.Rejected,
-
-            // Score counts
-            PreVerifiedScores = scoreCounts.PreVerified,
-            VerifiedScores = scoreCounts.Verified,
-            PreRejectedScores = scoreCounts.PreRejected,
-            RejectedScores = scoreCounts.Rejected,
+            // Verification counts
+            MatchCounts = matchCounts,
+            GameCounts = gameCounts,
+            ScoreCounts = scoreCounts,
 
             // Warning counts
             MatchesWithWarnings = matches.Count(m => m.WarningFlags != MatchWarningFlags.None),
@@ -270,36 +261,39 @@ public static class TournamentProcessingReporter
         IEnumerable<T> entities,
         Func<T, VerificationStatus> statusSelector)
     {
-        var counts = new VerificationCounts
-        {
-            PreVerified = 0,
-            Verified = 0,
-            PreRejected = 0,
-            Rejected = 0
-        };
+        int preVerified = 0;
+        int verified = 0;
+        int preRejected = 0;
+        int rejected = 0;
 
         foreach (T entity in entities)
         {
             switch (statusSelector(entity))
             {
                 case VerificationStatus.PreVerified:
-                    counts = counts with { PreVerified = counts.PreVerified + 1 };
+                    preVerified++;
                     break;
                 case VerificationStatus.Verified:
-                    counts = counts with { Verified = counts.Verified + 1 };
+                    verified++;
                     break;
                 case VerificationStatus.PreRejected:
-                    counts = counts with { PreRejected = counts.PreRejected + 1 };
+                    preRejected++;
                     break;
                 case VerificationStatus.Rejected:
-                    counts = counts with { Rejected = counts.Rejected + 1 };
+                    rejected++;
                     break;
                 case VerificationStatus.None:
                     break;
             }
         }
 
-        return counts;
+        return new VerificationCounts
+        {
+            PreVerified = preVerified,
+            Verified = verified,
+            PreRejected = preRejected,
+            Rejected = rejected
+        };
     }
 
     /// <summary>
@@ -352,7 +346,7 @@ public static class TournamentProcessingReporter
     private static void AppendMatchesLine(StringBuilder sb, TournamentProcessingState state)
     {
         string info = BuildEntityInfo(state.MatchRejections, state.MatchesWithWarnings);
-        sb.AppendLine($"{MatchesLabel}{ColumnSeparator}{ColumnSeparator}Total: {state.TotalMatches}{FieldSeparator}Pre-Ver: {state.PreVerifiedMatches}{FieldSeparator}Ver: {state.VerifiedMatches}{FieldSeparator}Pre-Rej: {state.PreRejectedMatches}{FieldSeparator}Rej: {state.RejectedMatches}{info}");
+        sb.AppendLine($"{MatchesLabel}{ColumnSeparator}{ColumnSeparator}Total: {state.TotalMatches}{FieldSeparator}Pre-Ver: {state.MatchCounts.PreVerified}{FieldSeparator}Ver: {state.MatchCounts.Verified}{FieldSeparator}Pre-Rej: {state.MatchCounts.PreRejected}{FieldSeparator}Rej: {state.MatchCounts.Rejected}{info}");
     }
 
     /// <summary>
@@ -363,7 +357,7 @@ public static class TournamentProcessingReporter
     private static void AppendGamesLine(StringBuilder sb, TournamentProcessingState state)
     {
         string info = BuildEntityInfo(state.GameRejections, state.GamesWithWarnings);
-        sb.AppendLine($"{GamesLabel}{ColumnSeparator}{ColumnSeparator}Total: {state.TotalGames}{FieldSeparator}Pre-Ver: {state.PreVerifiedGames}{FieldSeparator}Ver: {state.VerifiedGames}{FieldSeparator}Pre-Rej: {state.PreRejectedGames}{FieldSeparator}Rej: {state.RejectedGames}{info}");
+        sb.AppendLine($"{GamesLabel}{ColumnSeparator}{ColumnSeparator}Total: {state.TotalGames}{FieldSeparator}Pre-Ver: {state.GameCounts.PreVerified}{FieldSeparator}Ver: {state.GameCounts.Verified}{FieldSeparator}Pre-Rej: {state.GameCounts.PreRejected}{FieldSeparator}Rej: {state.GameCounts.Rejected}{info}");
     }
 
     /// <summary>
@@ -374,7 +368,7 @@ public static class TournamentProcessingReporter
     private static void AppendScoresLine(StringBuilder sb, TournamentProcessingState state)
     {
         string info = BuildEntityInfo(state.ScoreRejections, warningCount: 0);
-        sb.AppendLine($"{ScoresLabel}{ColumnSeparator}{ColumnSeparator}Total: {state.TotalScores}{FieldSeparator}Pre-Ver: {state.PreVerifiedScores}{FieldSeparator}Ver: {state.VerifiedScores}{FieldSeparator}Pre-Rej: {state.PreRejectedScores}{FieldSeparator}Rej: {state.RejectedScores}{info}");
+        sb.AppendLine($"{ScoresLabel}{ColumnSeparator}{ColumnSeparator}Total: {state.TotalScores}{FieldSeparator}Pre-Ver: {state.ScoreCounts.PreVerified}{FieldSeparator}Ver: {state.ScoreCounts.Verified}{FieldSeparator}Pre-Rej: {state.ScoreCounts.PreRejected}{FieldSeparator}Rej: {state.ScoreCounts.Rejected}{info}");
     }
 
     /// <summary>
@@ -384,8 +378,8 @@ public static class TournamentProcessingReporter
     /// <param name="state">The processing state</param>
     private static void AppendSummaryLine(StringBuilder sb, TournamentProcessingState state)
     {
-        int totalVerified = state.VerifiedMatches + state.VerifiedGames + state.VerifiedScores;
-        int totalRejected = state.RejectedMatches + state.RejectedGames + state.RejectedScores +
+        int totalVerified = state.MatchCounts.Verified + state.GameCounts.Verified + state.ScoreCounts.Verified;
+        int totalRejected = state.MatchCounts.Rejected + state.GameCounts.Rejected + state.ScoreCounts.Rejected +
                           state.MatchRejections.Sum(r => r.Count) +
                           state.GameRejections.Sum(r => r.Count) +
                           state.ScoreRejections.Sum(r => r.Count);
