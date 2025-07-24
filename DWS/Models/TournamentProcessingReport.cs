@@ -180,7 +180,7 @@ public static class TournamentProcessingReporter
     {
         ArgumentNullException.ThrowIfNull(tournament);
 
-        List<Match> matches = tournament.Matches.ToList();
+        var matches = tournament.Matches.ToList();
         var games = new List<Game>();
         var scores = new List<GameScore>();
 
