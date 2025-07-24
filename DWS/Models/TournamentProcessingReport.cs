@@ -168,11 +168,6 @@ public static class TournamentProcessingReporter
     private const string ScoresLabel = "Scores";
 
     /// <summary>
-    /// Label for summary section in report
-    /// </summary>
-    private const string SummaryLabel = "Summary";
-
-    /// <summary>
     /// Captures the detailed state of a tournament and its entities
     /// </summary>
     /// <param name="tournament">The tournament to capture state from</param>
@@ -230,10 +225,10 @@ public static class TournamentProcessingReporter
     }
 
     /// <summary>
-    /// Generates a concise multi-line report limited to 5 lines
+    /// Generates a concise multi-line report limited to 4 lines
     /// </summary>
     /// <param name="state">The processing state</param>
-    /// <returns>A formatted multi-line report string (max 5 lines)</returns>
+    /// <returns>A formatted multi-line report string (max 4 lines)</returns>
     /// <exception cref="ArgumentNullException">Thrown when state is null</exception>
     public static string GenerateDetailedReport(TournamentProcessingState state)
     {
@@ -245,7 +240,6 @@ public static class TournamentProcessingReporter
         AppendMatchesLine(sb, state);
         AppendGamesLine(sb, state);
         AppendScoresLine(sb, state);
-        AppendSummaryLine(sb, state);
 
         return sb.ToString();
     }
@@ -371,24 +365,6 @@ public static class TournamentProcessingReporter
         sb.AppendLine($"{ScoresLabel}{ColumnSeparator}{ColumnSeparator}Total: {state.TotalScores}{FieldSeparator}Pre-Ver: {state.ScoreCounts.PreVerified}{FieldSeparator}Ver: {state.ScoreCounts.Verified}{FieldSeparator}Pre-Rej: {state.ScoreCounts.PreRejected}{FieldSeparator}Rej: {state.ScoreCounts.Rejected}{info}");
     }
 
-    /// <summary>
-    /// Appends the summary line to the report
-    /// </summary>
-    /// <param name="sb">The string builder</param>
-    /// <param name="state">The processing state</param>
-    private static void AppendSummaryLine(StringBuilder sb, TournamentProcessingState state)
-    {
-        int totalVerified = state.MatchCounts.Verified + state.GameCounts.Verified + state.ScoreCounts.Verified;
-        int totalRejected = state.MatchCounts.Rejected + state.GameCounts.Rejected + state.ScoreCounts.Rejected +
-                          state.MatchRejections.Sum(r => r.Count) +
-                          state.GameRejections.Sum(r => r.Count) +
-                          state.ScoreRejections.Sum(r => r.Count);
-
-        bool automationPassed = state.TournamentStatusAfter is VerificationStatus.Verified or VerificationStatus.PreVerified;
-        string result = automationPassed ? "PASSED" : "FAILED";
-
-        sb.AppendLine($"{SummaryLabel}{ColumnSeparator}{ColumnSeparator}Automation Result: {result}{FieldSeparator}Total Verified: {totalVerified}{FieldSeparator}Total Rejected: {totalRejected}");
-    }
 
     /// <summary>
     /// Builds additional info string for entity statistics
