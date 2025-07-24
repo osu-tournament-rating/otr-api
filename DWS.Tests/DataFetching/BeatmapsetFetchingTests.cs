@@ -35,8 +35,8 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         const long creatorId = 1000;
 
         // Create multiple beatmaps for the beatmapset
-        BeatmapExtended[] beatmaps = new[]
-        {
+        BeatmapExtended[] beatmaps =
+        [
             SeededOsuApiData.CreateBeatmapExtended(
                 beatmapId: beatmapId,
                 beatmapsetId: beatmapsetId,
@@ -55,7 +55,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
                 diffName: "Hard",
                 starRating: 5.2
             )
-        };
+        ];
 
         BeatmapsetExtended apiBeatmapset = SeededOsuApiData.CreateBeatmapsetExtended(
             beatmapsetId: beatmapsetId,
@@ -219,7 +219,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
             artist: "Updated Artist",
             title: "Updated Title",
             creatorId: creatorId,
-            beatmaps: new[] { apiBeatmap }
+            beatmaps: [apiBeatmap]
         );
 
         MockOsuClient.Setup(x => x.GetBeatmapAsync(beatmapId, It.IsAny<CancellationToken>()))
@@ -316,8 +316,8 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         await Context.SaveChangesAsync();
 
         // Setup API to return beatmapset with both beatmaps
-        BeatmapExtended[] beatmaps = new[]
-        {
+        BeatmapExtended[] beatmaps =
+        [
             SeededOsuApiData.CreateBeatmapExtended(
                 beatmapId: requestedBeatmapId,
                 beatmapsetId: beatmapsetId,
@@ -328,7 +328,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
                 beatmapsetId: beatmapsetId,
                 diffName: "Updated Existing"
             )
-        };
+        ];
 
         BeatmapsetExtended apiBeatmapset = SeededOsuApiData.CreateBeatmapsetExtended(
             beatmapsetId: beatmapsetId,
@@ -412,7 +412,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
             creatorId: creatorId,
             creatorUsername: "NewUsername",
             creatorCountryCode: "GB",
-            beatmaps: new[] { apiBeatmap }
+            beatmaps: [apiBeatmap]
         );
 
         MockOsuClient.Setup(x => x.GetBeatmapAsync(beatmapId, It.IsAny<CancellationToken>()))
@@ -428,7 +428,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         Assert.True(result);
 
         // Verify player was updated
-        Player? updatedPlayer = await PlayersRepository.GetAsync(new[] { creatorId }).ContinueWith(t => t.Result.FirstOrDefault());
+        Player? updatedPlayer = await PlayersRepository.GetAsync([creatorId]).ContinueWith(t => t.Result.FirstOrDefault());
         Assert.NotNull(updatedPlayer);
         Assert.Equal("NewUsername", updatedPlayer.Username);
         Assert.Equal("GB", updatedPlayer.Country);
