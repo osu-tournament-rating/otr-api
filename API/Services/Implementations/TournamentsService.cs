@@ -194,8 +194,23 @@ public class TournamentsService(
 
     public async Task DeleteAsync(int id) => await tournamentsRepository.DeleteAsync(id);
 
-    public async Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId) =>
-        mapper.Map<TournamentDTO?>(await tournamentsRepository.AcceptPreVerificationStatusesAsync(id, verifierUserId));
+    public async Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId)
+    {
+        Tournament? tournament = await tournamentsRepository.AcceptPreVerificationStatusesAsync(id, verifierUserId);
+
+        if (tournament is not null && tournament.VerificationStatus == VerificationStatus.Verified)
+        {
+            // Publish message to trigger stats processing
+            await publishEndpoint.Publish(new ProcessTournamentStatsMessage
+            {
+                TournamentId = id
+            });
+
+            logger.LogInformation("Enqueued stats processing for tournament {TournamentId}", id);
+        }
+
+        return mapper.Map<TournamentDTO?>(tournament);
+    }
 
     public async Task RerunAutomationChecksAsync(int id, bool overrideVerifiedState = false)
     {

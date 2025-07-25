@@ -67,7 +67,7 @@ public static class RostersHelper
             {
                 // Generate rosters from verified scores without modifying the game entity
                 IEnumerable<GameScore> verifiedScores = game.Scores
-                    .Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done });
+                    .Where(s => s.VerificationStatus == VerificationStatus.Verified);
                 gameRosters = GenerateRosters(verifiedScores);
             }
 
@@ -81,7 +81,7 @@ public static class RostersHelper
 
             // Determine the winning team for this game using verified scores
             var teamScores = game.Scores
-                .Where(s => s is { VerificationStatus: VerificationStatus.Verified, ProcessingStatus: ScoreProcessingStatus.Done })
+                .Where(s => s.VerificationStatus == VerificationStatus.Verified)
                 .GroupBy(s => s.Team)
                 .Select(g => new
                 {

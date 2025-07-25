@@ -81,4 +81,30 @@ public static class MassTransitExtensions
             e.ConfigureConsumer<TConsumer>(context);
         });
     }
+
+    /// <summary>
+    /// Configures a receive endpoint for stats processing consumers with priority queue support.
+    /// Uses sequential processing to prevent concurrent Entity Framework modifications.
+    /// </summary>
+    public static void ReceiveStatsEndpoint<TConsumer>(
+        this IRabbitMqBusFactoryConfigurator cfg,
+        IBusRegistrationContext context,
+        string queueName) where TConsumer : class, IConsumer
+    {
+        cfg.ReceiveEndpoint(queueName, e =>
+        {
+            // Enable priority queue with max priority level of 10
+            if (e is IRabbitMqReceiveEndpointConfigurator rabbitMqEndpoint)
+            {
+                rabbitMqEndpoint.EnablePriority(10);
+            }
+
+            // Process only one message at a time to prevent concurrent Entity Framework modifications
+            // This ensures that multiple tournaments aren't processed simultaneously, avoiding
+            // conflicts when modifying shared entities like Players
+            e.PrefetchCount = 1;
+            e.ConcurrentMessageLimit = 1;
+            e.ConfigureConsumer<TConsumer>(context);
+        });
+    }
 }

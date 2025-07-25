@@ -83,6 +83,11 @@ try
     // Register automation check service
     builder.Services.AddScoped<ITournamentAutomationCheckService, TournamentAutomationCheckService>();
 
+    // Register stats services
+    builder.Services.AddScoped<IGameStatsService, GameStatsService>();
+    builder.Services.AddScoped<IMatchStatsService, MatchStatsService>();
+    builder.Services.AddScoped<ITournamentStatsService, TournamentStatsService>();
+
     // Configure MassTransit
     builder.Services.AddMassTransit(x =>
     {
@@ -90,6 +95,7 @@ try
         x.AddConsumer<MatchFetchConsumer>();
         x.AddConsumer<PlayerFetchConsumer>();
         x.AddConsumer<TournamentAutomationCheckConsumer>();
+        x.AddConsumer<TournamentStatsConsumer>();
 
         x.UsingRabbitMq((context, cfg) =>
         {
@@ -108,6 +114,9 @@ try
 
             // Automation check consumer (tournament-only)
             cfg.ReceiveAutomationCheckEndpoint<TournamentAutomationCheckConsumer>(context, QueueConstants.AutomatedChecks.Tournaments);
+
+            // Stats processing consumer (tournament-only)
+            cfg.ReceiveStatsEndpoint<TournamentStatsConsumer>(context, QueueConstants.Stats.Tournaments);
 
             // Configure retry policy
             cfg.UseMessageRetry(r => r.Intervals(
