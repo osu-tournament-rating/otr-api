@@ -82,7 +82,7 @@ public class TournamentStatsService(
             }
 
             logger.LogWarning(
-                "A verified match that has completed processing contains unexpected stats, aborting" +
+                "Verified match missing required data for tournament stats generation (may not have been processed by otr-processor yet), aborting" +
                 " [Match Id: {Id} | {Stat1}: {Stat1C} | {Stat2}: {Stat2C} | Has WinRecord: {HasWinRecord}]",
                 match.Id,
                 nameof(Match.PlayerMatchStats),

@@ -67,6 +67,7 @@ public class TournamentRequestQueryDTO : IPaginated
     /// Filters results for only tournaments with a specified processing status
     /// </summary>
     [EnumDataType(typeof(TournamentProcessingStatus))]
+    [Obsolete("This property will be removed in a future version. Processing is now handled through event-driven message queue system.")]
     public TournamentProcessingStatus? ProcessingStatus { get; init; }
 
     /// <summary>

@@ -84,6 +84,7 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     /// <summary>
     /// Processing status
     /// </summary>
+    [Obsolete("This field will be removed in favor of event-driven processing")]
     public ScoreProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>

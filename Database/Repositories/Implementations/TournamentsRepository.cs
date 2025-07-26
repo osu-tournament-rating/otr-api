@@ -31,6 +31,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             : await base.GetAsync(id);
 
 
+    [Obsolete("This method is deprecated. Tournament processing is now handled through event-driven message queue system.")]
     public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
         await _context.Tournaments
             .AsSplitQuery()

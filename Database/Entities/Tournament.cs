@@ -65,6 +65,7 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
     /// <summary>
     /// Processing status
     /// </summary>
+    [Obsolete("This field will be removed in favor of event-driven processing")]
     public TournamentProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>

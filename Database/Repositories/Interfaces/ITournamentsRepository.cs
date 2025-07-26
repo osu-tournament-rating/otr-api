@@ -25,6 +25,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// that is not <see cref="TournamentProcessingStatus.Done"/>
     /// </summary>
     /// <param name="limit">Maximum number of tournaments</param>
+    [Obsolete("This method is deprecated. Tournament processing is now handled through event-driven message queue system.")]
     Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit);
 
     /// <summary>

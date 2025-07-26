@@ -92,6 +92,7 @@ public class TournamentCompactDTO
     /// The state of processing
     /// </summary>
     [EnumDataType(typeof(TournamentProcessingStatus))]
+    [Obsolete("This property will be removed in a future version. Processing is now handled through event-driven message queue system.")]
     public TournamentProcessingStatus ProcessingStatus { get; init; }
 
     /// <summary>

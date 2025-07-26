@@ -96,6 +96,7 @@ try
         x.AddConsumer<PlayerFetchConsumer>();
         x.AddConsumer<TournamentAutomationCheckConsumer>();
         x.AddConsumer<TournamentStatsConsumer>();
+        x.AddConsumer<TournamentProcessedConsumer>();
 
         x.UsingRabbitMq((context, cfg) =>
         {
@@ -117,6 +118,9 @@ try
 
             // Stats processing consumer (tournament-only)
             cfg.ReceiveStatsEndpoint<TournamentStatsConsumer>(context, QueueConstants.Stats.Tournaments);
+
+            // Tournament processed notification consumer
+            cfg.ReceiveStatsEndpoint<TournamentProcessedConsumer>(context, QueueConstants.Processing.TournamentsProcessed);
 
             // Configure retry policy
             cfg.UseMessageRetry(r => r.Intervals(

@@ -71,6 +71,7 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// <summary>
     /// Processing status
     /// </summary>
+    [Obsolete("This field will be removed in favor of event-driven processing")]
     public GameProcessingStatus ProcessingStatus { get; set; }
 
     [AuditIgnore]

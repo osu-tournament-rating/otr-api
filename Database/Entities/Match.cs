@@ -64,6 +64,7 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// <summary>
     /// Processing status
     /// </summary>
+    [Obsolete("This field will be removed in favor of event-driven processing")]
     public MatchProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>

@@ -61,6 +61,7 @@ public class MatchCompactDTO
     /// Processing status
     /// </summary>
     [EnumDataType(typeof(MatchProcessingStatus))]
+    [Obsolete("This property will be removed in a future version. Processing is now handled through event-driven message queue system.")]
     public MatchProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>

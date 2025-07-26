@@ -188,7 +188,8 @@ builder.Services.AddScoped<IProcessor<Tournament>, TournamentVerificationProcess
 
 builder.Services.AddHostedService<PlayerOsuUpdateService>();
 builder.Services.AddHostedService<PlayerOsuTrackUpdateService>();
-builder.Services.AddHostedService<TournamentProcessorService>();
+// TournamentProcessorService is deprecated - replaced by event-driven processing via message queue
+// builder.Services.AddHostedService<TournamentProcessorService>();
 
 # endregion
 

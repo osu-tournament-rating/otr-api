@@ -33,4 +33,9 @@ public static class QueueConstants
         public const string Tournaments = "processing.stats.tournaments";
         public const string Matches = "processing.stats.matches";
     }
+
+    public static class Processing
+    {
+        public const string TournamentsProcessed = "tournaments.processed";
+    }
 }

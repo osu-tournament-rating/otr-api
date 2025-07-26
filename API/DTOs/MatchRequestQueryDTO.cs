@@ -59,6 +59,7 @@ public class MatchRequestQueryDTO : IPaginated
     /// Filters results for only matches with a specified processing status
     /// </summary>
     [EnumDataType(typeof(MatchProcessingStatus))]
+    [Obsolete("This property will be removed in a future version. Processing is now handled through event-driven message queue system.")]
     public MatchProcessingStatus? ProcessingStatus { get; init; }
 
     /// <summary>
