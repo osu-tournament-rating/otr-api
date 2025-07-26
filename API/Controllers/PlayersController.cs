@@ -13,7 +13,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/{key}")]
-public class PlayersController(IPlayerService playerService, IPlayerStatsService playerStatsService, IPublishEndpoint publishEndpoint) : Controller
+public class PlayersController(IPlayerService playerService, IPlayerStatsService playerStatsService, IPublishEndpoint publishEndpoint, ILogger<PlayersController> logger) : Controller
 {
     /// <summary>
     /// Get a player
@@ -126,7 +126,11 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
         await publishEndpoint.Publish(message, context =>
         {
             context.SetPriority((byte)message.Priority);
+            context.CorrelationId = message.CorrelationId;
         });
+
+        logger.LogInformation("Published player fetch message [osu! Player ID: {OsuPlayerId} | Correlation ID: {CorrelationId} | Priority: {Priority}]",
+            key, message.CorrelationId, priority);
 
         return Accepted(new { correlationId = message.CorrelationId, osuPlayerId = key, priority });
     }

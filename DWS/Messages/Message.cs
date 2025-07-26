@@ -1,11 +1,12 @@
 using Common.Enums;
+using MassTransit;
 
 namespace DWS.Messages;
 
 /// <summary>
 /// Base message for all DWS queue messages with common tracking and priority fields.
 /// </summary>
-public abstract record Message
+public abstract record Message : CorrelatedBy<Guid>
 {
     /// <summary>
     /// The timestamp when this request was created.

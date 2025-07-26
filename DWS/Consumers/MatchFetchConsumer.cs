@@ -18,11 +18,11 @@ public class MatchFetchConsumer(
         using (logger.BeginScope(new Dictionary<string, object>
         {
             ["OsuMatchId"] = message.OsuMatchId,
-            ["CorrelationId"] = message.CorrelationId
+            ["CorrelationId"] = context.CorrelationId ?? message.CorrelationId
         }))
         {
             logger.LogInformation("Processing match fetch request [osu! Match ID: {OsuMatchId} | Correlation ID: {CorrelationId}]",
-                message.OsuMatchId, message.CorrelationId);
+                message.OsuMatchId, context.CorrelationId ?? message.CorrelationId);
 
             try
             {

@@ -16,11 +16,11 @@ public class PlayerOsuTrackFetchConsumer(ILogger<PlayerOsuTrackFetchConsumer> lo
         using (logger.BeginScope(new Dictionary<string, object>
         {
             ["OsuPlayerId"] = message.OsuPlayerId,
-            ["CorrelationId"] = message.CorrelationId
+            ["CorrelationId"] = context.CorrelationId ?? message.CorrelationId
         }))
         {
             logger.LogInformation("Processing osu!track fetch request [osu! Player ID: {OsuPlayerId} | Correlation ID: {CorrelationId}]",
-                message.OsuPlayerId, message.CorrelationId);
+                message.OsuPlayerId, context.CorrelationId ?? message.CorrelationId);
 
             try
             {

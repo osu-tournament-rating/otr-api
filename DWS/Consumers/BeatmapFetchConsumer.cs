@@ -18,11 +18,11 @@ public class BeatmapFetchConsumer(
         using (logger.BeginScope(new Dictionary<string, object>
         {
             ["BeatmapId"] = message.BeatmapId,
-            ["CorrelationId"] = message.CorrelationId
+            ["CorrelationId"] = context.CorrelationId ?? message.CorrelationId
         }))
         {
             logger.LogInformation("Processing beatmap fetch request [osu! ID: {OsuId} | Correlation ID: {CorrelationID}]",
-                message.BeatmapId, message.CorrelationId);
+                message.BeatmapId, context.CorrelationId ?? message.CorrelationId);
 
             try
             {

@@ -14,7 +14,7 @@ namespace API.Controllers;
 [ApiVersion(1)]
 [Authorize(Roles = OtrClaims.Roles.Admin)]
 [Route("api/v{version:apiVersion}/[controller]")]
-public class BeatmapsController(IBeatmapService beatmapService, IPublishEndpoint publishEndpoint) : Controller
+public class BeatmapsController(IBeatmapService beatmapService, IPublishEndpoint publishEndpoint, ILogger<BeatmapsController> logger) : Controller
 {
     /// <summary>
     /// List all beatmaps
@@ -74,7 +74,11 @@ public class BeatmapsController(IBeatmapService beatmapService, IPublishEndpoint
         await publishEndpoint.Publish(message, context =>
         {
             context.SetPriority((byte)message.Priority);
+            context.CorrelationId = message.CorrelationId;
         });
+
+        logger.LogInformation("Published beatmap fetch message [Beatmap ID: {BeatmapId} | Correlation ID: {CorrelationId} | Priority: {Priority}]",
+            id, message.CorrelationId, priority);
 
         return Accepted(new { correlationId = message.CorrelationId, beatmapId = id, priority });
     }

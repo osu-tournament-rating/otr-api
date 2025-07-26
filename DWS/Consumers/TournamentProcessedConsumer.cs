@@ -26,14 +26,14 @@ public class TournamentProcessedConsumer(
         using (logger.BeginScope(new Dictionary<string, object>
         {
             ["TournamentId"] = message.TournamentId,
-            ["CorrelationId"] = message.CorrelationId,
+            ["CorrelationId"] = context.CorrelationId ?? message.CorrelationId,
             ["Action"] = message.Action,
             ["ProcessedAt"] = message.ProcessedAt
         }))
         {
             logger.LogInformation(
                 "Received tournament processed notification [Tournament ID: {TournamentId} | Action: {Action} | Processed At: {ProcessedAt} | Correlation ID: {CorrelationId}]",
-                message.TournamentId, message.Action, message.ProcessedAt, message.CorrelationId);
+                message.TournamentId, message.Action, message.ProcessedAt, context.CorrelationId ?? message.CorrelationId);
 
             try
             {

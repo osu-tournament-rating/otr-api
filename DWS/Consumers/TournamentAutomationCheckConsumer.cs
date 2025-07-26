@@ -22,11 +22,11 @@ public class TournamentAutomationCheckConsumer(
         using (logger.BeginScope(new Dictionary<string, object>
         {
             ["TournamentId"] = message.TournamentId,
-            ["CorrelationId"] = message.CorrelationId
+            ["CorrelationId"] = context.CorrelationId ?? message.CorrelationId
         }))
         {
             logger.LogInformation("Processing tournament automation check request [Tournament ID: {TournamentId} | Correlation ID: {CorrelationId}]",
-                message.TournamentId, message.CorrelationId);
+                message.TournamentId, context.CorrelationId ?? message.CorrelationId);
 
             try
             {
