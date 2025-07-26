@@ -73,6 +73,7 @@ try
     builder.Services.AddScoped<IBeatmapsetFetchService, BeatmapsetFetchService>();
     builder.Services.AddScoped<IMatchFetchService, MatchFetchService>();
     builder.Services.AddScoped<IPlayerFetchService, PlayerFetchService>();
+    builder.Services.AddScoped<IPlayerOsuTrackFetchService, PlayerOsuTrackFetchService>();
 
     // Register automation check classes
     builder.Services.AddScoped<ScoreAutomationChecks>();
@@ -94,6 +95,7 @@ try
         x.AddConsumer<BeatmapFetchConsumer>();
         x.AddConsumer<MatchFetchConsumer>();
         x.AddConsumer<PlayerFetchConsumer>();
+        x.AddConsumer<PlayerOsuTrackFetchConsumer>();
         x.AddConsumer<TournamentAutomationCheckConsumer>();
         x.AddConsumer<TournamentStatsConsumer>();
         x.AddConsumer<TournamentProcessedConsumer>();
@@ -112,6 +114,7 @@ try
             cfg.ReceiveOsuApiEndpoint<BeatmapFetchConsumer>(context, QueueConstants.Osu.Beatmaps);
             cfg.ReceiveOsuApiEndpoint<MatchFetchConsumer>(context, QueueConstants.Osu.Matches);
             cfg.ReceiveOsuApiEndpoint<PlayerFetchConsumer>(context, QueueConstants.Osu.Players);
+            cfg.ReceiveOsuTrackApiEndpoint<PlayerOsuTrackFetchConsumer>(context, QueueConstants.OsuTrack.Players);
 
             // Automation check consumer (tournament-only)
             cfg.ReceiveAutomationCheckEndpoint<TournamentAutomationCheckConsumer>(context, QueueConstants.AutomatedChecks.Tournaments);
