@@ -420,6 +420,15 @@ builder.Services.AddSwaggerGen(options =>
             BearerFormat = "JWT"
         });
 
+    options.AddSecurityDefinition("ApiKey",
+        new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Name = "X-Api-Key",
+            Type = SecuritySchemeType.ApiKey,
+            Description = "API Key Authorization. Enter your API key in the text box below"
+        });
+
     // Add the ability to authenticate with swagger ui
     options.AddSecurityRequirement(SecurityRequirements.BearerSecurityRequirement);
 });

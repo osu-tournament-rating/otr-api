@@ -1,3 +1,4 @@
+using API.Authorization;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.OpenApi.Models;
@@ -41,6 +42,12 @@ public class SecurityMetadataOperationFilter : IOperationFilter
                 .Select(attr => attr.Policy);
 
             desc += "\n\nPolicy: " + string.Join(", ", policies);
+
+            // Check if ApiKeyAuthorization policy is used
+            if (policies.Any(p => p == AuthorizationPolicies.ApiKeyAuthorization))
+            {
+                operation.Security.Add(SecurityRequirements.ApiKeySecurityRequirement);
+            }
         }
 
         if (authAttributes.Any(attr => attr.Roles != null))
