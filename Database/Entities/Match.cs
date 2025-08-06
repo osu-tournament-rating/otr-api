@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums;
 using Common.Enums.Verification;
 using Common.Utilities.Extensions;
 using Database.Entities.Interfaces;
@@ -66,6 +67,11 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// </summary>
     [Obsolete("This field will be removed in favor of event-driven processing")]
     public MatchProcessingStatus ProcessingStatus { get; set; }
+
+    /// <summary>
+    /// Status of data fetching from the osu! API
+    /// </summary>
+    public DataFetchStatus DataFetchStatus { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Tournament"/> the match was played in

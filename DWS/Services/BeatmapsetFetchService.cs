@@ -1,4 +1,5 @@
 using AutoMapper;
+using Common.Enums;
 using Database;
 using Database.Entities;
 using Database.Repositories.Interfaces;
@@ -18,6 +19,7 @@ public class BeatmapsetFetchService(
     IBeatmapsetsRepository beatmapsetsRepository,
     IPlayersRepository playersRepository,
     IOsuClient osuClient,
+    ITournamentDataCompletionService dataCompletionService,
     IMapper mapper)
     : IBeatmapsetFetchService
 {
@@ -25,15 +27,25 @@ public class BeatmapsetFetchService(
     {
         logger.LogDebug("Fetching beatmapset for beatmap {BeatmapId}", osuBeatmapId);
 
+        Beatmap? existingBeatmap = null;
         try
         {
             // Check if beatmap already exists and has no data
-            Beatmap? existingBeatmap = await beatmapsRepository.GetAsync(osuBeatmapId);
+            existingBeatmap = await beatmapsRepository.GetAsync(osuBeatmapId);
 
             if (existingBeatmap is not null && !existingBeatmap.HasData)
             {
                 logger.LogDebug("Beatmap {BeatmapId} already marked as HasData = false, skipping API calls", osuBeatmapId);
+                await dataCompletionService.UpdateBeatmapFetchStatusAsync(existingBeatmap.Id, DataFetchStatus.NotFound, cancellationToken);
                 return false;
+            }
+
+            // Set status to Fetching if beatmap exists
+            if (existingBeatmap is not null)
+            {
+                existingBeatmap.DataFetchStatus = DataFetchStatus.Fetching;
+                await beatmapsRepository.UpdateAsync(existingBeatmap);
+                await context.SaveChangesAsync(cancellationToken);
             }
 
             // Fetch the individual beatmap to get the beatmapset ID
@@ -44,7 +56,8 @@ public class BeatmapsetFetchService(
                 logger.LogWarning("Beatmap {BeatmapId} not found in osu! API", osuBeatmapId);
 
                 // Create or update beatmap with no data flag
-                await CreateOrUpdateBeatmapWithNoData(osuBeatmapId);
+                int beatmapId = await CreateOrUpdateBeatmapWithNoData(osuBeatmapId);
+                await dataCompletionService.UpdateBeatmapFetchStatusAsync(beatmapId, DataFetchStatus.NotFound, cancellationToken);
                 return false;
             }
 
@@ -58,6 +71,13 @@ public class BeatmapsetFetchService(
 
                 // Create a minimal beatmapset entry
                 await CreateOrUpdateBeatmapsetWithNoData(apiBeatmap.BeatmapsetId, cancellationToken);
+
+                // Mark beatmap as NotFound
+                if (existingBeatmap is not null)
+                {
+                    await dataCompletionService.UpdateBeatmapFetchStatusAsync(existingBeatmap.Id, DataFetchStatus.NotFound, cancellationToken);
+                }
+
                 return false;
             }
 
@@ -65,17 +85,35 @@ public class BeatmapsetFetchService(
             await ProcessBeatmapsetAsync(apiBeatmapset, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
 
+            // Mark all beatmaps in this set as Fetched
+            List<Beatmap> beatmapsToUpdate = await context.Beatmapsets
+                .Where(bs => bs.OsuId == apiBeatmapset.Id)
+                .SelectMany(bs => bs.Beatmaps)
+                .ToListAsync(cancellationToken);
+
+            foreach (Beatmap beatmap in beatmapsToUpdate)
+            {
+                await dataCompletionService.UpdateBeatmapFetchStatusAsync(beatmap.Id, DataFetchStatus.Fetched, cancellationToken);
+            }
+
             logger.LogDebug("Successfully processed beatmapset {BeatmapsetId} for beatmap {BeatmapId}", apiBeatmapset.Id, osuBeatmapId);
             return true;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error processing beatmapset for beatmap {BeatmapId}", osuBeatmapId);
+
+            // Mark as Error if beatmap exists
+            if (existingBeatmap is not null)
+            {
+                await dataCompletionService.UpdateBeatmapFetchStatusAsync(existingBeatmap.Id, DataFetchStatus.Error, cancellationToken);
+            }
+
             throw;
         }
     }
 
-    private async Task CreateOrUpdateBeatmapWithNoData(long beatmapId)
+    private async Task<int> CreateOrUpdateBeatmapWithNoData(long beatmapId)
     {
         Beatmap? beatmap = await beatmapsRepository.GetAsync(beatmapId);
 
@@ -84,7 +122,8 @@ public class BeatmapsetFetchService(
             beatmap = new Beatmap
             {
                 OsuId = beatmapId,
-                HasData = false
+                HasData = false,
+                DataFetchStatus = DataFetchStatus.NotFound
             };
             await beatmapsRepository.CreateAsync(beatmap);
         }
@@ -96,6 +135,8 @@ public class BeatmapsetFetchService(
             logger.LogDebug("Beatmap {BeatmapId} returned null from API, marking HasData as false", beatmapId);
             await beatmapsRepository.UpdateAsync(beatmap);
         }
+
+        return beatmap.Id;
     }
 
     private async Task CreateOrUpdateBeatmapsetWithNoData(long beatmapsetId, CancellationToken cancellationToken)
@@ -156,7 +197,8 @@ public class BeatmapsetFetchService(
                     existingBeatmap = new Beatmap
                     {
                         OsuId = apiBeatmap.Id,
-                        BeatmapsetId = beatmapset.Id
+                        BeatmapsetId = beatmapset.Id,
+                        DataFetchStatus = DataFetchStatus.Fetching
                     };
                     beatmapset.Beatmaps.Add(existingBeatmap);
                 }

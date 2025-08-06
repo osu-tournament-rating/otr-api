@@ -74,6 +74,7 @@ try
     builder.Services.AddScoped<IMatchFetchService, MatchFetchService>();
     builder.Services.AddScoped<IPlayerFetchService, PlayerFetchService>();
     builder.Services.AddScoped<IPlayerOsuTrackFetchService, PlayerOsuTrackFetchService>();
+    builder.Services.AddScoped<ITournamentDataCompletionService, TournamentDataCompletionService>();
 
     // Register automation check classes
     builder.Services.AddScoped<ScoreAutomationChecks>();

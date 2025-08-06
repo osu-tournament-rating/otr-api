@@ -22,7 +22,8 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
             ILogger<BeatmapsetFetchService> logger = CreateLogger<BeatmapsetFetchService>();
             var config = new MapperConfiguration(cfg => cfg.AddProfile<DwsMapperProfile>());
             IMapper mapper = config.CreateMapper();
-            return new BeatmapsetFetchService(logger, Context, BeatmapsRepository, BeatmapsetsRepository, PlayersRepository, MockOsuClient.Object, mapper);
+            var mockDataCompletionService = new Mock<ITournamentDataCompletionService>();
+            return new BeatmapsetFetchService(logger, Context, BeatmapsRepository, BeatmapsetsRepository, PlayersRepository, MockOsuClient.Object, mockDataCompletionService.Object, mapper);
         }
     }
 

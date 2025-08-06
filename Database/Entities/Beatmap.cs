@@ -29,6 +29,11 @@ public class Beatmap : UpdateableEntityBase
     public bool HasData { get; set; } = true;
 
     /// <summary>
+    /// Status of data fetching from the osu! API
+    /// </summary>
+    public DataFetchStatus DataFetchStatus { get; set; }
+
+    /// <summary>
     /// Ruleset
     /// </summary>
     public Ruleset Ruleset { get; set; }

@@ -24,6 +24,7 @@ public class MatchFetchService(
     IBeatmapsRepository beatmapsRepository,
     IOsuClient osuClient,
     IPublishEndpoint publishEndpoint,
+    ITournamentDataCompletionService dataCompletionService,
     IMapper mapper)
     : IMatchFetchService
 {
@@ -39,23 +40,46 @@ public class MatchFetchService(
             if (osuMatch is null)
             {
                 logger.LogWarning("Match {OsuMatchId} not found in osu! API", osuMatchId);
+
+                // Check if match exists in our database to mark as NotFound
+                IEnumerable<Match> existingMatches = await matchesRepository.GetAsync([osuMatchId]);
+                Match? existingMatch = existingMatches.FirstOrDefault();
+
+                if (existingMatch is not null)
+                {
+                    await dataCompletionService.UpdateMatchFetchStatusAsync(existingMatch.Id, DataFetchStatus.NotFound, cancellationToken);
+                }
+
                 return false;
             }
 
             // Process the match data
-            await ProcessMatchAsync(osuMatch, cancellationToken);
+            int matchId = await ProcessMatchAsync(osuMatch, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
+
+            // Mark as Fetched
+            await dataCompletionService.UpdateMatchFetchStatusAsync(matchId, DataFetchStatus.Fetched, cancellationToken);
 
             return true;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error processing match {OsuMatchId}", osuMatchId);
+
+            // Check if match exists to mark as Error
+            IEnumerable<Match> existingMatches = await matchesRepository.GetAsync([osuMatchId]);
+            Match? existingMatch = existingMatches.FirstOrDefault();
+
+            if (existingMatch is not null)
+            {
+                await dataCompletionService.UpdateMatchFetchStatusAsync(existingMatch.Id, DataFetchStatus.Error, cancellationToken);
+            }
+
             throw;
         }
     }
 
-    private async Task ProcessMatchAsync(MultiplayerMatch osuMatch, CancellationToken cancellationToken)
+    private async Task<int> ProcessMatchAsync(MultiplayerMatch osuMatch, CancellationToken cancellationToken)
     {
         // Check if match already exists
         IEnumerable<Match> existingMatches = await matchesRepository.GetAsync([osuMatch.Match.Id]);
@@ -67,12 +91,14 @@ public class MatchFetchService(
             // Update existing match with fresh data
             match = existingMatch;
             mapper.Map(osuMatch, match);
+            match.DataFetchStatus = DataFetchStatus.Fetching; // Set status while processing
             await matchesRepository.UpdateAsync(match);
         }
         else
         {
             // Create new match
             match = mapper.Map<Match>(osuMatch);
+            match.DataFetchStatus = DataFetchStatus.Fetching; // Set status while processing
             await matchesRepository.CreateAsync(match);
         }
 
@@ -81,6 +107,8 @@ public class MatchFetchService(
 
         // Process games
         await ProcessGamesAsync(match, osuMatch, cancellationToken);
+
+        return match.Id;
     }
 
 
@@ -158,10 +186,11 @@ public class MatchFetchService(
             beatmap = await beatmapsRepository.GetAsync(apiGame.BeatmapId);
             if (beatmap is null)
             {
-                // Create placeholder beatmap
+                // Create placeholder beatmap with NotFetched status
                 beatmap = new Beatmap
                 {
-                    OsuId = apiGame.BeatmapId
+                    OsuId = apiGame.BeatmapId,
+                    DataFetchStatus = DataFetchStatus.NotFetched
                 };
                 await beatmapsRepository.CreateAsync(beatmap);
 
