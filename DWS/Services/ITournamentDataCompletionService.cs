@@ -1,3 +1,5 @@
+using Common.Enums;
+
 namespace DWS.Services;
 
 /// <summary>
@@ -19,7 +21,7 @@ public interface ITournamentDataCompletionService
     /// <param name="matchId">The match ID</param>
     /// <param name="status">The fetch status to set</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    Task UpdateMatchFetchStatusAsync(int matchId, Common.Enums.DataFetchStatus status, CancellationToken cancellationToken = default);
+    Task UpdateMatchFetchStatusAsync(int matchId, DataFetchStatus status, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Marks a beatmap's data fetch status
@@ -27,5 +29,5 @@ public interface ITournamentDataCompletionService
     /// <param name="beatmapId">The beatmap ID</param>
     /// <param name="status">The fetch status to set</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    Task UpdateBeatmapFetchStatusAsync(int beatmapId, Common.Enums.DataFetchStatus status, CancellationToken cancellationToken = default);
+    Task UpdateBeatmapFetchStatusAsync(int beatmapId, DataFetchStatus status, CancellationToken cancellationToken = default);
 }

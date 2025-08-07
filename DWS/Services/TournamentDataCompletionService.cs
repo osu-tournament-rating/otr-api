@@ -110,11 +110,7 @@ public class TournamentDataCompletionService(
 
         logger.LogDebug("Updated match {MatchId} fetch status to {Status}", matchId, status);
 
-        // Check if this completion triggers automation checks
-        if (status == DataFetchStatus.Fetched || status == DataFetchStatus.NotFound)
-        {
-            await CheckAndTriggerAutomationChecksIfCompleteAsync(match.TournamentId, cancellationToken);
-        }
+        await CheckAndTriggerAutomationChecksIfCompleteAsync(match.TournamentId, cancellationToken);
     }
 
     /// <inheritdoc />

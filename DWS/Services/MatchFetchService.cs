@@ -194,9 +194,6 @@ public class MatchFetchService(
                 };
                 await beatmapsRepository.CreateAsync(beatmap);
 
-                // Save changes to persist the beatmap before creating the game
-                await context.SaveChangesAsync(cancellationToken);
-
                 // Queue it for processing
                 var fetchBeatmapMessage = new FetchBeatmapMessage
                 {
