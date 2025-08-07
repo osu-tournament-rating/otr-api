@@ -43,10 +43,11 @@ public class TournamentAutomationCheckService(
             return tournament.VerificationStatus == VerificationStatus.Verified;
         }
 
-        // Reset verification status if overriding
+        // Reset verification status and rejection reason if overriding
         if (overrideVerifiedState)
         {
             tournament.VerificationStatus = VerificationStatus.None;
+            tournament.RejectionReason = TournamentRejectionReason.None;
             logger.LogInformation(
                 "Resetting verification status to None for tournament {TournamentId} due to override",
                 entityId);
@@ -113,11 +114,12 @@ public class TournamentAutomationCheckService(
                         continue;
                     }
 
-                    // Reset verification status if overriding
+                    // Reset verification status and rejection reason if overriding
                     if (overrideVerifiedState &&
                         score.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
                     {
                         score.VerificationStatus = VerificationStatus.None;
+                        score.RejectionReason = ScoreRejectionReason.None;
                     }
 
                     ScoreRejectionReason scoreRejectionReason = scoreAutomationChecks.Process(score, tournament.Ruleset);
@@ -158,11 +160,13 @@ public class TournamentAutomationCheckService(
                     continue;
                 }
 
-                // Reset verification status if overriding
+                // Reset verification status and rejection reason if overriding
                 if (overrideVerifiedState &&
                     game.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
                 {
                     game.VerificationStatus = VerificationStatus.None;
+                    game.WarningFlags = GameWarningFlags.None;
+                    game.RejectionReason = GameRejectionReason.None;
                 }
 
                 GameRejectionReason gameRejectionReason = gameAutomationChecks.Process(game, tournament);
@@ -200,11 +204,13 @@ public class TournamentAutomationCheckService(
                 continue;
             }
 
-            // Reset verification status if overriding
+            // Reset verification status and rejection reason if overriding
             if (overrideVerifiedState &&
                 match.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
             {
                 match.VerificationStatus = VerificationStatus.None;
+                match.RejectionReason = MatchRejectionReason.None;
+                match.WarningFlags = MatchWarningFlags.None;
             }
 
             MatchRejectionReason matchRejectionReason = matchAutomationChecks.Process(match, tournament);
