@@ -212,7 +212,7 @@ public class BeatmapFetchConsumerTests
             Assert.True(await harness.Consumed.Any<FetchBeatmapMessage>());
             Assert.True(await consumerHarness.Consumed.Any<FetchBeatmapMessage>());
 
-            var consumedMessage = await consumerHarness.Consumed.SelectAsync<FetchBeatmapMessage>().FirstOrDefault();
+            IReceivedMessage<FetchBeatmapMessage>? consumedMessage = await consumerHarness.Consumed.SelectAsync<FetchBeatmapMessage>().FirstOrDefault();
             Assert.NotNull(consumedMessage);
             Assert.Equal(priority, consumedMessage!.Context.Message.Priority);
 

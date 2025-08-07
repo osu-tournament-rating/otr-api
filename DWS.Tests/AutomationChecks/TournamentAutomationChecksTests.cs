@@ -5,6 +5,7 @@ using DWS.AutomationChecks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TestingUtils.SeededData;
+using Match = Database.Entities.Match;
 
 namespace DWS.Tests.AutomationChecks;
 
@@ -20,7 +21,7 @@ public class TournamentAutomationChecksTests
 
     private static Tournament CreateTestTournament()
     {
-        var tournament = SeededTournament.Generate(
+        Tournament tournament = SeededTournament.Generate(
             id: 1,
             name: "Test Tournament",
             abbreviation: "TT",
@@ -57,19 +58,19 @@ public class TournamentAutomationChecksTests
     public void Process_NoVerifiedMatches_ReturnsNoVerifiedMatches()
     {
         // Arrange
-        var tournament = CreateTestTournament();
+        Tournament tournament = CreateTestTournament();
 
         // Add matches that are all not verified
-        var match1 = SeededMatch.Generate(tournament: tournament);
+        Match match1 = SeededMatch.Generate(tournament: tournament);
         match1.VerificationStatus = VerificationStatus.PreRejected;
         tournament.Matches.Add(match1);
 
-        var match2 = SeededMatch.Generate(tournament: tournament);
+        Match match2 = SeededMatch.Generate(tournament: tournament);
         match2.VerificationStatus = VerificationStatus.PreRejected;
         tournament.Matches.Add(match2);
 
         // Act
-        var result = _tournamentAutomationChecks.Process(tournament);
+        TournamentRejectionReason result = _tournamentAutomationChecks.Process(tournament);
 
         // Assert
         Assert.Equal(TournamentRejectionReason.NoVerifiedMatches, result);
@@ -79,23 +80,23 @@ public class TournamentAutomationChecksTests
     public void Process_AllMatchesVerified_ReturnsNone()
     {
         // Arrange
-        var tournament = CreateTestTournament();
+        Tournament tournament = CreateTestTournament();
 
         // Add matches that are all verified
-        var match1 = SeededMatch.Generate(tournament: tournament);
+        Match match1 = SeededMatch.Generate(tournament: tournament);
         match1.VerificationStatus = VerificationStatus.PreVerified;
-        var game1 = SeededGame.Generate(match: match1);
+        Game game1 = SeededGame.Generate(match: match1);
         match1.Games.Add(game1);
         tournament.Matches.Add(match1);
 
-        var match2 = SeededMatch.Generate(tournament: tournament);
+        Match match2 = SeededMatch.Generate(tournament: tournament);
         match2.VerificationStatus = VerificationStatus.PreVerified;
-        var game2 = SeededGame.Generate(match: match2);
+        Game game2 = SeededGame.Generate(match: match2);
         match2.Games.Add(game2);
         tournament.Matches.Add(match2);
 
         // Act
-        var result = _tournamentAutomationChecks.Process(tournament);
+        TournamentRejectionReason result = _tournamentAutomationChecks.Process(tournament);
 
         // Assert
         Assert.Equal(TournamentRejectionReason.None, result);
@@ -114,14 +115,14 @@ public class TournamentAutomationChecksTests
         TournamentRejectionReason expectedReason)
     {
         // Arrange
-        var tournament = CreateTestTournament();
+        Tournament tournament = CreateTestTournament();
 
         // Add verified matches
         for (int i = 0; i < verifiedCount; i++)
         {
-            var match = SeededMatch.Generate(tournament: tournament);
+            Match match = SeededMatch.Generate(tournament: tournament);
             match.VerificationStatus = VerificationStatus.PreVerified;
-            var game = SeededGame.Generate(match: match);
+            Game game = SeededGame.Generate(match: match);
             match.Games.Add(game);
             tournament.Matches.Add(match);
         }
@@ -129,15 +130,15 @@ public class TournamentAutomationChecksTests
         // Add unverified matches
         for (int i = verifiedCount; i < totalCount; i++)
         {
-            var match = SeededMatch.Generate(tournament: tournament);
+            Match match = SeededMatch.Generate(tournament: tournament);
             match.VerificationStatus = VerificationStatus.PreRejected;
-            var game = SeededGame.Generate(match: match);
+            Game game = SeededGame.Generate(match: match);
             match.Games.Add(game);
             tournament.Matches.Add(match);
         }
 
         // Act
-        var result = _tournamentAutomationChecks.Process(tournament);
+        TournamentRejectionReason result = _tournamentAutomationChecks.Process(tournament);
 
         // Assert
         Assert.Equal(expectedReason, result);
@@ -147,23 +148,23 @@ public class TournamentAutomationChecksTests
     public void Process_MatchesWithoutGamesExcludedFromCount_ReturnsCorrectReason()
     {
         // Arrange
-        var tournament = CreateTestTournament();
+        Tournament tournament = CreateTestTournament();
 
         // Add 8 matches with games (6 verified, 2 not verified = 75% < 80%)
         for (int i = 0; i < 6; i++)
         {
-            var match = SeededMatch.Generate(tournament: tournament);
+            Match match = SeededMatch.Generate(tournament: tournament);
             match.VerificationStatus = VerificationStatus.PreVerified;
-            var game = SeededGame.Generate(match: match);
+            Game game = SeededGame.Generate(match: match);
             match.Games.Add(game);
             tournament.Matches.Add(match);
         }
 
         for (int i = 0; i < 2; i++)
         {
-            var match = SeededMatch.Generate(tournament: tournament);
+            Match match = SeededMatch.Generate(tournament: tournament);
             match.VerificationStatus = VerificationStatus.PreRejected;
-            var game = SeededGame.Generate(match: match);
+            Game game = SeededGame.Generate(match: match);
             match.Games.Add(game);
             tournament.Matches.Add(match);
         }
@@ -171,14 +172,14 @@ public class TournamentAutomationChecksTests
         // Add 5 matches without games (should be excluded from percentage calculation)
         for (int i = 0; i < 5; i++)
         {
-            var match = SeededMatch.Generate(tournament: tournament);
+            Match match = SeededMatch.Generate(tournament: tournament);
             match.VerificationStatus = VerificationStatus.PreRejected;
             // No games added
             tournament.Matches.Add(match);
         }
 
         // Act
-        var result = _tournamentAutomationChecks.Process(tournament);
+        TournamentRejectionReason result = _tournamentAutomationChecks.Process(tournament);
 
         // Assert
         // 6 out of 8 matches with games are verified (75%), which is less than 80%
@@ -189,14 +190,14 @@ public class TournamentAutomationChecksTests
     public void Process_MatchesWithoutGamesButAllOthersVerified_ReturnsNone()
     {
         // Arrange
-        var tournament = CreateTestTournament();
+        Tournament tournament = CreateTestTournament();
 
         // Add 10 matches with games (all verified)
         for (int i = 0; i < 10; i++)
         {
-            var match = SeededMatch.Generate(tournament: tournament);
+            Match match = SeededMatch.Generate(tournament: tournament);
             match.VerificationStatus = VerificationStatus.PreVerified;
-            var game = SeededGame.Generate(match: match);
+            Game game = SeededGame.Generate(match: match);
             match.Games.Add(game);
             tournament.Matches.Add(match);
         }
@@ -204,14 +205,14 @@ public class TournamentAutomationChecksTests
         // Add 3 matches without games
         for (int i = 0; i < 3; i++)
         {
-            var match = SeededMatch.Generate(tournament: tournament);
+            Match match = SeededMatch.Generate(tournament: tournament);
             match.VerificationStatus = VerificationStatus.PreRejected;
             // No games added
             tournament.Matches.Add(match);
         }
 
         // Act
-        var result = _tournamentAutomationChecks.Process(tournament);
+        TournamentRejectionReason result = _tournamentAutomationChecks.Process(tournament);
 
         // Assert
         // All 10 matches with games are verified (100%)
@@ -222,11 +223,11 @@ public class TournamentAutomationChecksTests
     public void Process_EmptyTournament_ReturnsNoVerifiedMatches()
     {
         // Arrange
-        var tournament = CreateTestTournament();
+        Tournament tournament = CreateTestTournament();
         // No matches added
 
         // Act
-        var result = _tournamentAutomationChecks.Process(tournament);
+        TournamentRejectionReason result = _tournamentAutomationChecks.Process(tournament);
 
         // Assert
         Assert.Equal(TournamentRejectionReason.NoVerifiedMatches, result);
@@ -236,18 +237,18 @@ public class TournamentAutomationChecksTests
     public void Process_OnlyMatchesWithoutGames_ReturnsNoVerifiedMatches()
     {
         // Arrange
-        var tournament = CreateTestTournament();
+        Tournament tournament = CreateTestTournament();
 
         // Add only matches without games
         for (int i = 0; i < 5; i++)
         {
-            var match = SeededMatch.Generate(tournament: tournament);
+            Match match = SeededMatch.Generate(tournament: tournament);
             // No games added
             tournament.Matches.Add(match);
         }
 
         // Act
-        var result = _tournamentAutomationChecks.Process(tournament);
+        TournamentRejectionReason result = _tournamentAutomationChecks.Process(tournament);
 
         // Assert
         Assert.Equal(TournamentRejectionReason.NoVerifiedMatches, result);

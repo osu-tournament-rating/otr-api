@@ -138,7 +138,7 @@ public class MatchFetchService(
         // Create missing players
         var newPlayers = apiMatch.Users
             .Where(u => !existingPlayerIds.Contains(u.Id))
-            .Select(u => mapper.Map<Player>(u))
+            .Select(mapper.Map<Player>)
             .DistinctBy(p => p.OsuId)
             .ToList();
 

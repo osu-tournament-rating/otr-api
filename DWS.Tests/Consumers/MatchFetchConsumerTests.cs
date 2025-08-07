@@ -33,7 +33,7 @@ public class MatchFetchConsumerTests
             Priority = MessagePriority.Normal
         };
 
-        var context = Mock.Of<ConsumeContext<FetchMatchMessage>>(ctx =>
+        ConsumeContext<FetchMatchMessage> context = Mock.Of<ConsumeContext<FetchMatchMessage>>(ctx =>
             ctx.Message == message &&
             ctx.CancellationToken == CancellationToken.None);
 
@@ -70,7 +70,7 @@ public class MatchFetchConsumerTests
             Priority = MessagePriority.High
         };
 
-        var context = Mock.Of<ConsumeContext<FetchMatchMessage>>(ctx =>
+        ConsumeContext<FetchMatchMessage> context = Mock.Of<ConsumeContext<FetchMatchMessage>>(ctx =>
             ctx.Message == message &&
             ctx.CancellationToken == CancellationToken.None);
 
@@ -107,7 +107,7 @@ public class MatchFetchConsumerTests
             Priority = MessagePriority.Low
         };
 
-        var context = Mock.Of<ConsumeContext<FetchMatchMessage>>(ctx =>
+        ConsumeContext<FetchMatchMessage> context = Mock.Of<ConsumeContext<FetchMatchMessage>>(ctx =>
             ctx.Message == message &&
             ctx.CancellationToken == CancellationToken.None);
 
@@ -118,7 +118,7 @@ public class MatchFetchConsumerTests
             .ThrowsAsync(expectedException);
 
         // Act & Assert
-        var actualException = await Assert.ThrowsAsync<InvalidOperationException>(() => _consumer.Consume(context));
+        InvalidOperationException actualException = await Assert.ThrowsAsync<InvalidOperationException>(() => _consumer.Consume(context));
         Assert.Equal(expectedException.Message, actualException.Message);
 
         _loggerMock.Verify(
@@ -142,7 +142,7 @@ public class MatchFetchConsumerTests
         };
 
         var cancellationTokenSource = new CancellationTokenSource();
-        var context = Mock.Of<ConsumeContext<FetchMatchMessage>>(ctx =>
+        ConsumeContext<FetchMatchMessage> context = Mock.Of<ConsumeContext<FetchMatchMessage>>(ctx =>
             ctx.Message == message &&
             ctx.CancellationToken == cancellationTokenSource.Token);
 

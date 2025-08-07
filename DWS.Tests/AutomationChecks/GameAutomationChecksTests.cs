@@ -6,6 +6,7 @@ using DWS.AutomationChecks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TestingUtils.SeededData;
+using Match = Database.Entities.Match;
 
 namespace DWS.Tests.AutomationChecks;
 
@@ -27,7 +28,7 @@ public class GameAutomationChecksTests
     [InlineData(TeamType.TagTeamVs, GameRejectionReason.InvalidTeamType)]
     public void Process_TeamTypeCheck(TeamType teamType, GameRejectionReason expected)
     {
-        var game = SeededGame.Generate(
+        Game game = SeededGame.Generate(
             teamType: teamType,
             scoringType: ScoringType.ScoreV2,
             ruleset: Ruleset.Osu,
@@ -35,7 +36,7 @@ public class GameAutomationChecksTests
             endTime: DateTime.UtcNow
         );
         game.Match.Tournament.LobbySize = 4;
-        var result = _checker.Process(game, game.Match.Tournament);
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(expected));
     }
 
@@ -46,7 +47,7 @@ public class GameAutomationChecksTests
     [InlineData(ScoringType.Combo, GameRejectionReason.InvalidScoringType)]
     public void Process_ScoringTypeCheck(ScoringType scoringType, GameRejectionReason expected)
     {
-        var game = SeededGame.Generate(
+        Game game = SeededGame.Generate(
             scoringType: scoringType,
             teamType: TeamType.TeamVs,
             ruleset: Ruleset.Osu,
@@ -54,14 +55,14 @@ public class GameAutomationChecksTests
             endTime: DateTime.UtcNow
         );
         game.Match.Tournament.LobbySize = 4;
-        var result = _checker.Process(game, game.Match.Tournament);
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(expected));
     }
 
     [Fact]
     public void Process_ScoreCountCheck_NoScores()
     {
-        var game = SeededGame.Generate(
+        Game game = SeededGame.Generate(
             teamType: TeamType.TeamVs,
             scoringType: ScoringType.ScoreV2,
             ruleset: Ruleset.Osu,
@@ -70,14 +71,14 @@ public class GameAutomationChecksTests
         );
         game.Match.Tournament.LobbySize = 4;
         game.Scores = new List<GameScore>();
-        var result = _checker.Process(game, game.Match.Tournament);
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(GameRejectionReason.NoScores));
     }
 
     [Fact]
     public void Process_ScoreCountCheck_NoValidScores()
     {
-        var game = SeededGame.Generate(
+        Game game = SeededGame.Generate(
             teamType: TeamType.TeamVs,
             scoringType: ScoringType.ScoreV2,
             ruleset: Ruleset.Osu,
@@ -90,14 +91,14 @@ public class GameAutomationChecksTests
             SeededScore.Generate(verificationStatus: VerificationStatus.Rejected, mods: Mods.None, game: game),
             SeededScore.Generate(verificationStatus: VerificationStatus.PreRejected, mods: Mods.None, game: game)
         };
-        var result = _checker.Process(game, game.Match.Tournament);
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(GameRejectionReason.NoValidScores));
     }
 
     [Fact]
     public void Process_ScoreCountCheck_LobbySizeMismatch()
     {
-        var game = SeededGame.Generate(
+        Game game = SeededGame.Generate(
             teamType: TeamType.TeamVs,
             scoringType: ScoringType.ScoreV2,
             ruleset: Ruleset.Osu,
@@ -113,14 +114,14 @@ public class GameAutomationChecksTests
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game)
         };
 
-        var result = _checker.Process(game, game.Match.Tournament);
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(GameRejectionReason.LobbySizeMismatch));
     }
 
     [Fact]
     public void Process_ScoreCountCheck_Valid()
     {
-        var game = SeededGame.Generate(
+        Game game = SeededGame.Generate(
             teamType: TeamType.TeamVs,
             scoringType: ScoringType.ScoreV2,
             ruleset: Ruleset.Osu,
@@ -136,7 +137,7 @@ public class GameAutomationChecksTests
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game)
         };
 
-        var result = _checker.Process(game, game.Match.Tournament);
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
         Assert.False(result.HasFlag(GameRejectionReason.LobbySizeMismatch));
     }
 
@@ -145,7 +146,7 @@ public class GameAutomationChecksTests
     [InlineData(Ruleset.Taiko, Ruleset.Osu, GameRejectionReason.RulesetMismatch)]
     public void Process_RulesetCheck(Ruleset gameRuleset, Ruleset tournamentRuleset, GameRejectionReason expected)
     {
-        var game = SeededGame.Generate(
+        Game game = SeededGame.Generate(
             ruleset: gameRuleset,
             teamType: TeamType.TeamVs,
             scoringType: ScoringType.ScoreV2,
@@ -154,7 +155,7 @@ public class GameAutomationChecksTests
         );
         game.Match.Tournament.LobbySize = 4;
         game.Match.Tournament.Ruleset = tournamentRuleset;
-        var result = _checker.Process(game, game.Match.Tournament);
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(expected));
     }
 
@@ -168,7 +169,7 @@ public class GameAutomationChecksTests
     [InlineData(Mods.Relax2, GameRejectionReason.InvalidMods)]
     public void Process_ModCheck(Mods mods, GameRejectionReason expected)
     {
-        var game = SeededGame.Generate(
+        Game game = SeededGame.Generate(
             mods: mods,
             teamType: TeamType.TeamVs,
             scoringType: ScoringType.ScoreV2,
@@ -176,14 +177,14 @@ public class GameAutomationChecksTests
             endTime: DateTime.UtcNow
         );
         game.Match.Tournament.LobbySize = 4;
-        var result = _checker.Process(game, game.Match.Tournament);
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(expected));
     }
 
     [Fact]
     public void Process_EndTimeCheck_NoEndTime()
     {
-        var game = SeededGame.Generate(
+        Game game = SeededGame.Generate(
             endTime: DateTime.MinValue,
             teamType: TeamType.TeamVs,
             scoringType: ScoringType.ScoreV2,
@@ -191,14 +192,14 @@ public class GameAutomationChecksTests
             mods: Mods.None
         );
         game.Match.Tournament.LobbySize = 4;
-        var result = _checker.Process(game, game.Match.Tournament);
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(GameRejectionReason.NoEndTime));
     }
 
     [Fact]
     public void Process_BeatmapUsageCheck_NoBeatmap()
     {
-        var game = SeededGame.Generate(
+        Game game = SeededGame.Generate(
             teamType: TeamType.TeamVs,
             scoringType: ScoringType.ScoreV2,
             ruleset: Ruleset.Osu,
@@ -215,14 +216,14 @@ public class GameAutomationChecksTests
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 3), team: Team.Blue, mods: Mods.None, game: game),
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game)
         };
-        var result = _checker.Process(game, game.Match.Tournament);
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
         Assert.Equal(GameRejectionReason.None, result);
     }
 
     [Fact]
     public void Process_BeatmapUsageCheck_BeatmapNotPooled()
     {
-        var game = SeededGame.Generate(
+        Game game = SeededGame.Generate(
             beatmap: SeededBeatmap.Generate(osuId: 123),
             teamType: TeamType.TeamVs,
             scoringType: ScoringType.ScoreV2,
@@ -239,14 +240,14 @@ public class GameAutomationChecksTests
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 3), team: Team.Blue, mods: Mods.None, game: game),
             SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game)
         };
-        var result = _checker.Process(game, game.Match.Tournament);
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
         Assert.True(result.HasFlag(GameRejectionReason.BeatmapNotPooled));
     }
 
     [Fact]
     public void Process_BeatmapUsageCheck_BeatmapUsedOnce_NoPool()
     {
-        var tournament = SeededTournament.Generate(
+        Tournament tournament = SeededTournament.Generate(
             id: 1,
             name: "Test Tournament",
             abbreviation: "TT",
@@ -254,13 +255,13 @@ public class GameAutomationChecksTests
             teamSize: 2
         );
 
-        var mainMatch = SeededMatch.Generate(id: 1, tournament: tournament);
+        Match mainMatch = SeededMatch.Generate(id: 1, tournament: tournament);
 
         // Create beatmaps that will be reused
-        var beatmap123 = SeededBeatmap.Generate(osuId: 123);
-        var beatmap456 = SeededBeatmap.Generate(osuId: 456);
+        Beatmap beatmap123 = SeededBeatmap.Generate(osuId: 123);
+        Beatmap beatmap456 = SeededBeatmap.Generate(osuId: 456);
 
-        var game1 = SeededGame.Generate(
+        Game game1 = SeededGame.Generate(
             id: 1,
             beatmap: beatmap123,
             match: mainMatch,
@@ -278,7 +279,7 @@ public class GameAutomationChecksTests
         game1.Scores.Add(SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 3), team: Team.Blue, mods: Mods.None, game: game1));
         game1.Scores.Add(SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game1));
 
-        var game2 = SeededGame.Generate(
+        Game game2 = SeededGame.Generate(
             id: 2,
             beatmap: beatmap456,
             match: mainMatch,
@@ -295,7 +296,7 @@ public class GameAutomationChecksTests
         game2.Scores.Add(SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 3), team: Team.Blue, mods: Mods.None, game: game2));
         game2.Scores.Add(SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game2));
 
-        var game3 = SeededGame.Generate(
+        Game game3 = SeededGame.Generate(
             id: 3,
             beatmap: beatmap123, // Reuse the same beatmap instance as game1
             match: mainMatch,
