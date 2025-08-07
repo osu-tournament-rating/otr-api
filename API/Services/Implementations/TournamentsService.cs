@@ -198,14 +198,7 @@ public class TournamentsService(
             return mapper.Map<TournamentCompactDTO>(existing);
         }
 
-        // Publish message to trigger stats processing
-        await publishEndpoint.Publish(new ProcessTournamentStatsMessage
-        {
-            TournamentId = id
-        });
-
         logger.LogInformation("Tournament {TournamentId} manually verified, enqueued stats processing", id);
-
         return mapper.Map<TournamentCompactDTO>(existing);
     }
 
@@ -214,18 +207,6 @@ public class TournamentsService(
     public async Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId)
     {
         Tournament? tournament = await tournamentsRepository.AcceptPreVerificationStatusesAsync(id, verifierUserId);
-
-        if (tournament is not null && tournament.VerificationStatus == VerificationStatus.Verified)
-        {
-            // Publish message to trigger stats processing
-            await publishEndpoint.Publish(new ProcessTournamentStatsMessage
-            {
-                TournamentId = id
-            });
-
-            logger.LogInformation("Enqueued stats processing for tournament {TournamentId}", id);
-        }
-
         return mapper.Map<TournamentDTO?>(tournament);
     }
 
