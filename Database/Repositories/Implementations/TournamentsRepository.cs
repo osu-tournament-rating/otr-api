@@ -148,7 +148,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     public async Task<Tournament?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId)
     {
         Tournament? tournament = await TournamentsBaseQuery()
-            .Where(t => t.ProcessingStatus == TournamentProcessingStatus.NeedsVerification)
             .FirstOrDefaultAsync(t => t.Id == id);
 
         if (tournament is null)

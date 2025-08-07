@@ -173,7 +173,6 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
 
         VerificationStatus = VerificationStatus.None;
         RejectionReason = ScoreRejectionReason.None;
-        ProcessingStatus = ScoreProcessingStatus.NeedsAutomationChecks;
     }
 
     /// <summary>

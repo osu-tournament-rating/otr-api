@@ -170,7 +170,6 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
         VerificationStatus = VerificationStatus.None;
         WarningFlags = MatchWarningFlags.None;
         RejectionReason = MatchRejectionReason.None;
-        ProcessingStatus = MatchProcessingStatus.NeedsAutomationChecks;
     }
 
     /// <summary>
@@ -213,7 +212,6 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
         {
             game.VerificationStatus = VerificationStatus.Rejected;
             game.RejectionReason |= GameRejectionReason.RejectedMatch;
-            game.ProcessingStatus = GameProcessingStatus.Done;
 
             game.RejectAllChildren();
         }

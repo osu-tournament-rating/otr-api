@@ -135,7 +135,6 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
 
         VerificationStatus = VerificationStatus.None;
         RejectionReason = TournamentRejectionReason.None;
-        ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
     }
 
     /// <summary>
@@ -173,7 +172,6 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
         {
             match.VerificationStatus = VerificationStatus.Rejected;
             match.RejectionReason |= MatchRejectionReason.RejectedTournament;
-            match.ProcessingStatus = MatchProcessingStatus.Done;
 
             match.RejectAllChildren();
         }
