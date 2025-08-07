@@ -23,7 +23,6 @@ public class MatchCostCalculatorTests
             foreach (GameScore score in game.Scores)
             {
                 score.VerificationStatus = VerificationStatus.Verified;
-                score.ProcessingStatus = ScoreProcessingStatus.Done;
             }
         }
 
