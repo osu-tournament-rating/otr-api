@@ -113,6 +113,11 @@ public class BeatmapsetFetchService(
         }
     }
 
+    /// <summary>
+    /// Creates a new beatmap marked as having no data, or updates an existing one.
+    /// </summary>
+    /// <param name="beatmapId">The osu! beatmap ID.</param>
+    /// <returns>The database ID of the beatmap.</returns>
     private async Task<int> CreateOrUpdateBeatmapWithNoData(long beatmapId)
     {
         Beatmap? beatmap = await beatmapsRepository.GetAsync(beatmapId);
@@ -139,6 +144,11 @@ public class BeatmapsetFetchService(
         return beatmap.Id;
     }
 
+    /// <summary>
+    /// Creates or updates a beatmapset with no data available.
+    /// </summary>
+    /// <param name="beatmapsetId">The osu! beatmapset ID.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
     private async Task CreateOrUpdateBeatmapsetWithNoData(long beatmapsetId, CancellationToken cancellationToken)
     {
         Beatmapset? beatmapset = await beatmapsetsRepository.GetWithDetailsAsync(beatmapsetId);
@@ -158,16 +168,15 @@ public class BeatmapsetFetchService(
         await context.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Processes a beatmapset from the API and persists it to the database.
+    /// </summary>
+    /// <param name="apiBeatmapset">The beatmapset data from the API.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
     private async Task ProcessBeatmapsetAsync(BeatmapsetExtended apiBeatmapset, CancellationToken cancellationToken)
     {
-        // Check if beatmapset already exists
-        Beatmapset? beatmapset = await beatmapsetsRepository.GetWithDetailsAsync(apiBeatmapset.Id);
-
-        if (beatmapset is null)
-        {
-            beatmapset = new Beatmapset { OsuId = apiBeatmapset.Id };
-            beatmapsetsRepository.Add(beatmapset);
-        }
+        // Get or create beatmapset
+        Beatmapset beatmapset = await GetOrCreateBeatmapsetAsync(apiBeatmapset.Id);
 
         // Update beatmapset data
         mapper.Map(apiBeatmapset, beatmapset);
@@ -180,56 +189,104 @@ public class BeatmapsetFetchService(
         }
 
         // Process all beatmaps in the set
-        foreach (BeatmapExtended apiBeatmap in apiBeatmapset.Beatmaps)
-        {
-            Beatmap? existingBeatmap = beatmapset.Beatmaps.FirstOrDefault(b => b.OsuId == apiBeatmap.Id);
-
-            if (existingBeatmap is null)
-            {
-                // Check if beatmap exists in database
-                existingBeatmap = await context.Beatmaps
-                    .FirstOrDefaultAsync(b => b.OsuId == apiBeatmap.Id, cancellationToken)
-                    ?? await beatmapsRepository.GetAsync(apiBeatmap.Id);
-
-                if (existingBeatmap is null)
-                {
-                    // Create new beatmap with correct beatmapset relationship
-                    existingBeatmap = new Beatmap
-                    {
-                        OsuId = apiBeatmap.Id,
-                        BeatmapsetId = beatmapset.Id,
-                        DataFetchStatus = DataFetchStatus.Fetching
-                    };
-                    beatmapset.Beatmaps.Add(existingBeatmap);
-                }
-                else if (existingBeatmap.BeatmapsetId != beatmapset.Id)
-                {
-                    // Beatmap exists but belongs to a different beatmapset
-                    // This shouldn't happen in normal circumstances, log a warning
-                    logger.LogWarning(
-                        "Beatmap {BeatmapId} already exists with BeatmapsetId {ExistingBeatmapsetId}, " +
-                        "but API indicates it should belong to BeatmapsetId {ExpectedBeatmapsetId}",
-                        apiBeatmap.Id, existingBeatmap.BeatmapsetId, beatmapset.Id);
-
-                    // Still add it to the collection to ensure navigation property is correct
-                    beatmapset.Beatmaps.Add(existingBeatmap);
-                }
-                else
-                {
-                    // Beatmap exists with correct beatmapset ID, just add to collection
-                    beatmapset.Beatmaps.Add(existingBeatmap);
-                }
-            }
-
-            // Update beatmap from API data
-            mapper.Map(apiBeatmap, existingBeatmap);
-        }
+        await ProcessBeatmapsAsync(beatmapset, apiBeatmapset.Beatmaps, cancellationToken);
 
         logger.LogDebug("Updated beatmapset {BeatmapsetId} with {BeatmapCount} beatmaps",
             apiBeatmapset.Id, apiBeatmapset.Beatmaps.Length);
     }
 
+    /// <summary>
+    /// Gets an existing beatmapset or creates a new one.
+    /// </summary>
+    /// <param name="beatmapsetId">The osu! beatmapset ID.</param>
+    /// <returns>The beatmapset entity.</returns>
+    private async Task<Beatmapset> GetOrCreateBeatmapsetAsync(long beatmapsetId)
+    {
+        Beatmapset? beatmapset = await beatmapsetsRepository.GetWithDetailsAsync(beatmapsetId);
 
+        if (beatmapset is not null)
+        {
+            return beatmapset;
+        }
+
+        beatmapset = new Beatmapset { OsuId = beatmapsetId };
+        beatmapsetsRepository.Add(beatmapset);
+
+        return beatmapset;
+    }
+
+    /// <summary>
+    /// Processes individual beatmaps within a beatmapset.
+    /// </summary>
+    /// <param name="beatmapset">The parent beatmapset entity.</param>
+    /// <param name="apiBeatmaps">The beatmap data from the API.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    private async Task ProcessBeatmapsAsync(Beatmapset beatmapset, BeatmapExtended[] apiBeatmaps, CancellationToken cancellationToken)
+    {
+        foreach (BeatmapExtended apiBeatmap in apiBeatmaps)
+        {
+            Beatmap existingBeatmap = await GetOrCreateBeatmapAsync(beatmapset, apiBeatmap, cancellationToken);
+
+            // Update beatmap from API data
+            mapper.Map(apiBeatmap, existingBeatmap);
+        }
+    }
+
+    /// <summary>
+    /// Gets an existing beatmap or creates a new one for the beatmapset.
+    /// </summary>
+    /// <param name="beatmapset">The parent beatmapset entity.</param>
+    /// <param name="apiBeatmap">The beatmap data from the API.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The beatmap entity.</returns>
+    private async Task<Beatmap> GetOrCreateBeatmapAsync(Beatmapset beatmapset, BeatmapExtended apiBeatmap, CancellationToken cancellationToken)
+    {
+        Beatmap? existingBeatmap = beatmapset.Beatmaps.FirstOrDefault(b => b.OsuId == apiBeatmap.Id);
+
+        if (existingBeatmap is not null)
+        {
+            return existingBeatmap;
+        }
+
+        {
+            // Check if beatmap exists in database
+            existingBeatmap = await context.Beatmaps
+                                  .FirstOrDefaultAsync(b => b.OsuId == apiBeatmap.Id, cancellationToken)
+                              ?? await beatmapsRepository.GetAsync(apiBeatmap.Id);
+
+            if (existingBeatmap is null)
+            {
+                // Create new beatmap with correct beatmapset relationship
+                existingBeatmap = new Beatmap
+                {
+                    OsuId = apiBeatmap.Id,
+                    BeatmapsetId = beatmapset.Id,
+                    DataFetchStatus = DataFetchStatus.Fetching
+                };
+            }
+            else if (existingBeatmap.BeatmapsetId != beatmapset.Id)
+            {
+                // Beatmap exists but belongs to a different beatmapset
+                // This shouldn't happen in normal circumstances, log a warning
+                logger.LogWarning(
+                    "Beatmap {BeatmapId} already exists with BeatmapsetId {ExistingBeatmapsetId}, " +
+                    "but API indicates it should belong to BeatmapsetId {ExpectedBeatmapsetId}",
+                    apiBeatmap.Id, existingBeatmap.BeatmapsetId, beatmapset.Id);
+            }
+
+            // Beatmap exists with correct beatmapset ID, just add to collection
+            beatmapset.Beatmaps.Add(existingBeatmap);
+        }
+
+        return existingBeatmap;
+    }
+
+
+    /// <summary>
+    /// Loads an existing player or creates a new one from API data.
+    /// </summary>
+    /// <param name="apiUser">The user data from the API.</param>
+    /// <returns>The player entity.</returns>
     private async Task<Player> LoadOrCreatePlayerAsync(ApiUser apiUser)
     {
         Player player = await playersRepository.GetOrCreateAsync(apiUser.Id);

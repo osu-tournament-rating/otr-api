@@ -79,6 +79,12 @@ public class MatchFetchService(
         }
     }
 
+    /// <summary>
+    /// Processes a match from the osu! API and persists it to the database.
+    /// </summary>
+    /// <param name="osuMatch">The match data from osu! API</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The database ID of the processed match</returns>
     private async Task<int> ProcessMatchAsync(MultiplayerMatch osuMatch, CancellationToken cancellationToken)
     {
         // Check if match already exists
@@ -112,6 +118,10 @@ public class MatchFetchService(
     }
 
 
+    /// <summary>
+    /// Processes and creates players from a match if they don't exist.
+    /// </summary>
+    /// <param name="apiMatch">The match data containing player information.</param>
     private async Task ProcessPlayersAsync(MultiplayerMatch apiMatch)
     {
         // Get all unique player IDs from match users
@@ -140,6 +150,12 @@ public class MatchFetchService(
         }
     }
 
+    /// <summary>
+    /// Processes games from the match events and persists them.
+    /// </summary>
+    /// <param name="match">The database match entity.</param>
+    /// <param name="apiMatch">The API match data containing game events.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
     private async Task ProcessGamesAsync(Match match, MultiplayerMatch apiMatch, CancellationToken cancellationToken)
     {
         // Extract games from match events
@@ -176,6 +192,13 @@ public class MatchFetchService(
         }
     }
 
+    /// <summary>
+    /// Creates a new game entity from API data.
+    /// </summary>
+    /// <param name="match">The parent match entity.</param>
+    /// <param name="apiGame">The game data from the API.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The created game entity.</returns>
     private async Task<Game> CreateGameFromApiAsync(Match match, MultiplayerGame apiGame, CancellationToken cancellationToken)
     {
         Beatmap? beatmap = null;
@@ -217,6 +240,12 @@ public class MatchFetchService(
     }
 
 
+    /// <summary>
+    /// Processes and persists game scores from the API.
+    /// </summary>
+    /// <param name="game">The game entity to process scores for.</param>
+    /// <param name="apiGame">The API game data containing scores.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
     private async Task ProcessGameScoresAsync(Game game, MultiplayerGame apiGame, CancellationToken cancellationToken)
     {
         // Get existing scores for this game
@@ -231,12 +260,19 @@ public class MatchFetchService(
             existingScoreMap[(score.PlayerId, score.Team)] = score;
         }
 
+        // Get all player IDs from scores to avoid N+1 queries
+        var playerIds = apiGame.Scores
+            .Select(s => s.UserId)
+            .Distinct()
+            .ToList();
+
+        // Fetch all players at once
+        IEnumerable<Player> players = await playersRepository.GetAsync(playerIds);
+        var playerMap = players.ToDictionary(p => p.OsuId, p => p);
+
         foreach (ApiGameScore apiScore in apiGame.Scores)
         {
-            IEnumerable<Player> players = await playersRepository.GetAsync([apiScore.UserId]);
-            Player? player = players.FirstOrDefault();
-
-            if (player is null)
+            if (!playerMap.TryGetValue(apiScore.UserId, out Player? player))
             {
                 logger.LogWarning("Player {PlayerId} not found for score in game {GameId}", apiScore.UserId, game.Id);
                 continue;

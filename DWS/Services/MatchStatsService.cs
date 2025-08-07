@@ -26,13 +26,13 @@ public class MatchStatsService(
             return false;
         }
 
+        List<Game> verifiedGames = [.. entity.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified)];
+
         // Process game stats for all verified games
-        foreach (Game game in entity.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified))
+        foreach (Game game in verifiedGames)
         {
             await gameStatsService.ProcessGameStatsAsync(game);
         }
-
-        List<Game> verifiedGames = [.. entity.Games.Where(g => g.VerificationStatus == VerificationStatus.Verified)];
 
         if (verifiedGames.Count == 0)
         {
@@ -74,9 +74,11 @@ public class MatchStatsService(
 
     /// <summary>
     /// Generates a list of <see cref="PlayerMatchStats"/> for a given list of <see cref="Game"/>s,
-    /// one per unique <see cref="Player"/>
+    /// one per unique <see cref="Player"/>.
     /// </summary>
-    /// <param name="games">List of <see cref="Game"/>s</param>
+    /// <param name="games">List of <see cref="Game"/>s.</param>
+    /// <param name="existingStats">Existing player match statistics to update.</param>
+    /// <returns>Collection of player match statistics.</returns>
     /// <exception cref="ArgumentException">
     /// If the given list of <see cref="Game"/>s is empty
     /// <br/>If any given <see cref="Game"/>s contains a null <see cref="Game.Rosters"/>
@@ -131,12 +133,12 @@ public class MatchStatsService(
         ICollection<MatchRoster> matchRosters = eGames.First().Match.Rosters;
         int maxMatchScore = matchRosters.Max(r => r.Score);
 
-        // Filter scores and group by player
+        // Filter scores and group by player efficiently
         var playerScoreGroups = eGames
-            .SelectMany(g => g.Scores.Where(s => s.VerificationStatus == VerificationStatus.Verified)
-                .GroupBy(s => s.Player.Id)
-                .Select(group => (group.Key, group.ToList()))
-            )
+            .SelectMany(g => g.Scores)
+            .Where(s => s.VerificationStatus == VerificationStatus.Verified)
+            .GroupBy(s => s.Player.Id)
+            .Select(group => (group.Key, group.ToList()))
             .ToList();
 
         return playerScoreGroups
@@ -144,8 +146,8 @@ public class MatchStatsService(
         {
             (int playerId, List<GameScore> scores) = group;
 
-            // Determine games the player participated in
-            var playerGames = scores.Select(s => s.Game).Distinct().ToList();
+            // Determine games the player participated in (using HashSet for O(1) lookups)
+            var playerGames = scores.Select(s => s.Game).Distinct();
 
             int gamesWon = 0;
             int gamesLost = 0;

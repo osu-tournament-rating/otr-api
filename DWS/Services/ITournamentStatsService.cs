@@ -17,6 +17,5 @@ public interface ITournamentStatsService
     /// Database persistence is handled exclusively by the tournament stats processor.
     /// </remarks>
     /// <param name="tournamentId">The ID of the tournament to process.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result indicates if processing was successful.</returns>
     Task<bool> ProcessTournamentStatsAsync(int tournamentId);
 }

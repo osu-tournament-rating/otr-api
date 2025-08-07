@@ -1,5 +1,12 @@
 namespace DWS.Services;
 
+/// <summary>
+/// Service for fetching match data from the osu! API and persisting all related entities to the database.
+/// </summary>
+/// <remarks>
+/// This service fetches complete match data including games, scores, and player information.
+/// It always retrieves fresh data from the osu! API regardless of existing database records.
+/// </remarks>
 public interface IMatchFetchService
 {
     /// <summary>

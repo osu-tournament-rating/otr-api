@@ -19,6 +19,5 @@ public interface IMatchStatsService
     /// Database persistence is handled exclusively by the tournament stats processor.
     /// </remarks>
     /// <param name="match">The match to process.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result indicates if processing was successful.</returns>
     Task<bool> ProcessMatchStatsAsync(Match match);
 }
