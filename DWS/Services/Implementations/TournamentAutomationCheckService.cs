@@ -3,8 +3,9 @@ using Database.Entities;
 using Database.Repositories.Interfaces;
 using DWS.AutomationChecks;
 using DWS.Models;
+using DWS.Services.Interfaces;
 
-namespace DWS.Services;
+namespace DWS.Services.Implementations;
 
 /// <summary>
 /// Service for processing automation checks on tournaments.

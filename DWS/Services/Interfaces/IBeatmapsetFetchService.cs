@@ -1,4 +1,4 @@
-namespace DWS.Services;
+namespace DWS.Services.Interfaces;
 
 /// <summary>
 /// Service for fetching beatmapset data from the osu! API and persisting them to the database.

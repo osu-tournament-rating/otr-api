@@ -2,8 +2,9 @@ using Common.Enums.Verification;
 using Database.Entities;
 using Database.Entities.Processor;
 using Database.Repositories.Interfaces;
+using DWS.Services.Interfaces;
 
-namespace DWS.Services;
+namespace DWS.Services.Implementations;
 
 /// <summary>
 /// Service for processing tournament statistics.

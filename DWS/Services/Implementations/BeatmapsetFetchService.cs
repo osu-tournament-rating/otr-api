@@ -3,6 +3,7 @@ using Common.Enums;
 using Database;
 using Database.Entities;
 using Database.Repositories.Interfaces;
+using DWS.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
 using OsuApiClient.Domain.Osu.Beatmaps;
@@ -10,7 +11,7 @@ using ApiUser = OsuApiClient.Domain.Osu.Users.User;
 using Beatmap = Database.Entities.Beatmap;
 using Beatmapset = Database.Entities.Beatmapset;
 
-namespace DWS.Services;
+namespace DWS.Services.Implementations;
 
 public class BeatmapsetFetchService(
     ILogger<BeatmapsetFetchService> logger,

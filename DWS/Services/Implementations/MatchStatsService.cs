@@ -1,9 +1,10 @@
 using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
+using DWS.Services.Interfaces;
 using DWS.Utilities;
 
-namespace DWS.Services;
+namespace DWS.Services.Implementations;
 
 /// <summary>
 /// Service for processing match statistics.

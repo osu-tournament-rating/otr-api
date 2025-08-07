@@ -4,12 +4,13 @@ using Common.Enums;
 using Database;
 using Database.Entities;
 using Database.Repositories.Interfaces;
+using DWS.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
 using OsuApiClient.Domain.Osu.Users;
 using OsuApiClient.Domain.Osu.Users.Attributes;
 
-namespace DWS.Services;
+namespace DWS.Services.Implementations;
 
 public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext context,
     IOsuClient osuClient, IPlayersRepository playersRepository, IMapper mapper) : IPlayerFetchService

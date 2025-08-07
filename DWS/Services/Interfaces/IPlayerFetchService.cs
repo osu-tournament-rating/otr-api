@@ -1,4 +1,4 @@
-namespace DWS.Services;
+namespace DWS.Services.Interfaces;
 
 /// <summary>
 /// Service for fetching player data from the osu! API and persisting it to the database.

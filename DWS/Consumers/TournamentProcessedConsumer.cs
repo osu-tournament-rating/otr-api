@@ -2,6 +2,7 @@ using Database.Entities;
 using Database.Repositories.Interfaces;
 using DWS.Messages;
 using DWS.Services;
+using DWS.Services.Interfaces;
 using JetBrains.Annotations;
 using MassTransit;
 

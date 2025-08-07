@@ -2,6 +2,7 @@ using Common.Enums;
 using DWS.Consumers;
 using DWS.Messages;
 using DWS.Services;
+using DWS.Services.Interfaces;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 using Moq;

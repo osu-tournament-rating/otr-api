@@ -1,4 +1,4 @@
-namespace DWS.Services;
+namespace DWS.Services.Interfaces;
 
 /// <summary>
 /// Service for fetching and persisting player historical statistics data from the osu!track API.

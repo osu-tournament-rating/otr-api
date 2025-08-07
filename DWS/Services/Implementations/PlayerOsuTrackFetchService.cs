@@ -3,11 +3,12 @@ using Common.Enums;
 using Database;
 using Database.Entities;
 using Database.Repositories.Interfaces;
+using DWS.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
 using OsuApiClient.Domain.OsuTrack;
 
-namespace DWS.Services;
+namespace DWS.Services.Implementations;
 
 public class PlayerOsuTrackFetchService(
     ILogger<PlayerOsuTrackFetchService> logger,

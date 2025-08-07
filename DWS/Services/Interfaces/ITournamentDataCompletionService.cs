@@ -1,6 +1,6 @@
 using Common.Enums;
 
-namespace DWS.Services;
+namespace DWS.Services.Interfaces;
 
 /// <summary>
 /// Service for tracking and managing tournament data fetching completion status

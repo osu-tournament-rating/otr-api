@@ -1,4 +1,4 @@
-namespace DWS.Services;
+namespace DWS.Services.Interfaces;
 
 /// <summary>
 /// Service for processing automation checks on tournaments.

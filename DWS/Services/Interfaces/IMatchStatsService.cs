@@ -1,23 +1,23 @@
 using Database.Entities;
 
-namespace DWS.Services;
+namespace DWS.Services.Interfaces;
 
 /// <summary>
-/// Service for processing game statistics.
+/// Service for processing match statistics.
 /// </summary>
 /// <remarks>
 /// Entity changes made by implementations of this service are not persisted to the database.
 /// Only the tournament stats processor will persist entities.
 /// </remarks>
-public interface IGameStatsService
+public interface IMatchStatsService
 {
     /// <summary>
-    /// Processes statistics for a game.
+    /// Processes statistics for a match.
     /// </summary>
     /// <remarks>
-    /// This method modifies the provided game entity, but changes are not persisted to the database.
+    /// This method modifies the provided match entity, but changes are not persisted to the database.
     /// Database persistence is handled exclusively by the tournament stats processor.
     /// </remarks>
-    /// <param name="game">The game to process.</param>
-    Task<bool> ProcessGameStatsAsync(Game game);
+    /// <param name="match">The match to process.</param>
+    Task<bool> ProcessMatchStatsAsync(Match match);
 }

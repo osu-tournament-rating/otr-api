@@ -1,5 +1,6 @@
 using DWS.Messages;
 using DWS.Services;
+using DWS.Services.Interfaces;
 using JetBrains.Annotations;
 using MassTransit;
 

@@ -1,4 +1,4 @@
-namespace DWS.Services;
+namespace DWS.Services.Interfaces;
 
 /// <summary>
 /// Service for fetching match data from the osu! API and persisting all related entities to the database.

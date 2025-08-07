@@ -2,10 +2,11 @@ using Common.Enums;
 using Database;
 using Database.Entities;
 using DWS.Messages;
+using DWS.Services.Interfaces;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
-namespace DWS.Services;
+namespace DWS.Services.Implementations;
 
 /// <summary>
 /// Service for tracking and managing tournament data fetching completion status

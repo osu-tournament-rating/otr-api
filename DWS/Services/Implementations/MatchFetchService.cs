@@ -4,6 +4,7 @@ using Database;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using DWS.Messages;
+using DWS.Services.Interfaces;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
@@ -12,7 +13,7 @@ using OsuApiClient.Enums;
 using ApiGameScore = OsuApiClient.Domain.Osu.Multiplayer.GameScore;
 using DbGameScore = Database.Entities.GameScore;
 
-namespace DWS.Services;
+namespace DWS.Services.Implementations;
 
 public class MatchFetchService(
     ILogger<MatchFetchService> logger,

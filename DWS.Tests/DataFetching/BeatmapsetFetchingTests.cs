@@ -1,6 +1,8 @@
 using AutoMapper;
 using DWS.Configurations;
 using DWS.Services;
+using DWS.Services.Implementations;
+using DWS.Services.Interfaces;
 using DWS.Tests.DataFetching.TestFixtures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

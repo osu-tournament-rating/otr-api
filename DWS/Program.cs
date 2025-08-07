@@ -7,6 +7,8 @@ using DWS.AutomationChecks;
 using DWS.Configurations;
 using DWS.Consumers;
 using DWS.Services;
+using DWS.Services.Implementations;
+using DWS.Services.Interfaces;
 using DWS.Utilities.Extensions;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
