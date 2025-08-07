@@ -1,4 +1,3 @@
-using AutoMapper;
 using Common.Configurations;
 using Common.Constants;
 using Database;

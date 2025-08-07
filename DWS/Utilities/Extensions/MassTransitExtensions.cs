@@ -68,10 +68,7 @@ public static class MassTransitExtensions
         cfg.ReceiveEndpoint(queueName, e =>
         {
             // Enable priority queue with max priority level of 10
-            if (e is IRabbitMqReceiveEndpointConfigurator rabbitMqEndpoint)
-            {
-                rabbitMqEndpoint.EnablePriority(10);
-            }
+            e.EnablePriority(10);
 
             // Process only one message at a time to prevent concurrent Entity Framework modifications
             // This ensures that multiple tournaments aren't processed simultaneously, avoiding
@@ -94,10 +91,7 @@ public static class MassTransitExtensions
         cfg.ReceiveEndpoint(queueName, e =>
         {
             // Enable priority queue with max priority level of 10
-            if (e is IRabbitMqReceiveEndpointConfigurator rabbitMqEndpoint)
-            {
-                rabbitMqEndpoint.EnablePriority(10);
-            }
+            e.EnablePriority(10);
 
             // Process only one message at a time to prevent concurrent Entity Framework modifications
             // This ensures that multiple tournaments aren't processed simultaneously, avoiding

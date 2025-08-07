@@ -1,7 +1,6 @@
 using Common.Enums;
 using Database;
 using Database.Entities;
-using Database.Repositories.Interfaces;
 using DWS.Messages;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -36,8 +35,7 @@ public class TournamentDataCompletionService(
 
         // Check if all matches have completed fetching (either Fetched or NotFound are acceptable)
         bool allMatchesComplete = matches.All(m =>
-            m.DataFetchStatus == DataFetchStatus.Fetched ||
-            m.DataFetchStatus == DataFetchStatus.NotFound);
+            m.DataFetchStatus is DataFetchStatus.Fetched or DataFetchStatus.NotFound);
 
         if (!allMatchesComplete)
         {
@@ -60,14 +58,12 @@ public class TournamentDataCompletionService(
                 .ToListAsync(cancellationToken);
 
             bool allBeatmapsComplete = beatmaps.All(b =>
-                b.DataFetchStatus == DataFetchStatus.Fetched ||
-                b.DataFetchStatus == DataFetchStatus.NotFound);
+                b.DataFetchStatus is DataFetchStatus.Fetched or DataFetchStatus.NotFound);
 
             if (!allBeatmapsComplete)
             {
                 int completedCount = beatmaps.Count(b =>
-                    b.DataFetchStatus == DataFetchStatus.Fetched ||
-                    b.DataFetchStatus == DataFetchStatus.NotFound);
+                    b.DataFetchStatus is DataFetchStatus.Fetched or DataFetchStatus.NotFound);
 
                 logger.LogDebug("Not all pooled beatmaps have completed fetching for tournament {TournamentId}. Progress: {Progress}.",
                     tournamentId, $"{completedCount}/{pooledBeatmapIds.Count}");

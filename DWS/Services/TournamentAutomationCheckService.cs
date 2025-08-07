@@ -33,8 +33,7 @@ public class TournamentAutomationCheckService(
 
         // Check if the entity needs processing based on current verification status
         if (!overrideVerifiedState &&
-            (tournament.VerificationStatus == VerificationStatus.Verified ||
-             tournament.VerificationStatus == VerificationStatus.Rejected))
+            tournament.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
         {
             logger.LogInformation(
                 "Skipping automation checks for tournament {TournamentId} with verification status {VerificationStatus}",
@@ -108,16 +107,14 @@ public class TournamentAutomationCheckService(
                 {
                     // Check if the entity needs processing based on current verification status
                     if (!overrideVerifiedState &&
-                        (score.VerificationStatus == VerificationStatus.Verified ||
-                         score.VerificationStatus == VerificationStatus.Rejected))
+                        score.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
                     {
                         continue;
                     }
 
                     // Reset verification status if overriding
                     if (overrideVerifiedState &&
-                        (score.VerificationStatus == VerificationStatus.Verified ||
-                         score.VerificationStatus == VerificationStatus.Rejected))
+                        score.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
                     {
                         score.VerificationStatus = VerificationStatus.None;
                     }
@@ -155,16 +152,14 @@ public class TournamentAutomationCheckService(
             {
                 // Check if the entity needs processing based on current verification status
                 if (!overrideVerifiedState &&
-                    (game.VerificationStatus == VerificationStatus.Verified ||
-                     game.VerificationStatus == VerificationStatus.Rejected))
+                    game.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
                 {
                     continue;
                 }
 
                 // Reset verification status if overriding
                 if (overrideVerifiedState &&
-                    (game.VerificationStatus == VerificationStatus.Verified ||
-                     game.VerificationStatus == VerificationStatus.Rejected))
+                    game.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
                 {
                     game.VerificationStatus = VerificationStatus.None;
                 }
@@ -199,16 +194,14 @@ public class TournamentAutomationCheckService(
         {
             // Check if the entity needs processing based on current verification status
             if (!overrideVerifiedState &&
-                (match.VerificationStatus == VerificationStatus.Verified ||
-                 match.VerificationStatus == VerificationStatus.Rejected))
+                match.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
             {
                 continue;
             }
 
             // Reset verification status if overriding
             if (overrideVerifiedState &&
-                (match.VerificationStatus == VerificationStatus.Verified ||
-                 match.VerificationStatus == VerificationStatus.Rejected))
+                match.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
             {
                 match.VerificationStatus = VerificationStatus.None;
             }

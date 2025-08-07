@@ -2,7 +2,6 @@ using Common.Enums.Verification;
 using Database.Entities;
 using Database.Entities.Processor;
 using Database.Repositories.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace DWS.Services;
 

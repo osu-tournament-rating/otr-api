@@ -48,8 +48,7 @@ public class TournamentAutomationChecks(ILogger<TournamentAutomationChecks> logg
         }
 
         int verifiedMatches = matchesWithGames
-            .Count(m => m.VerificationStatus == VerificationStatus.PreVerified ||
-                       m.VerificationStatus == VerificationStatus.Verified);
+            .Count(m => m.VerificationStatus is VerificationStatus.PreVerified or VerificationStatus.Verified);
 
         if (verifiedMatches == 0)
         {
