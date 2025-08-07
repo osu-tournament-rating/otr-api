@@ -180,6 +180,8 @@ public class TournamentsService(
             return null;
         }
 
+        VerificationStatus originalStatus = existing.VerificationStatus;
+
         mapper.Map(wrapper, existing);
 
         if (wrapper.VerificationStatus == VerificationStatus.Rejected)
@@ -189,6 +191,21 @@ public class TournamentsService(
         }
 
         await tournamentsRepository.UpdateAsync(existing);
+
+        // Don't re-run stats processing if the tournament is not verified.
+        if (originalStatus == VerificationStatus.Verified || wrapper.VerificationStatus != VerificationStatus.Verified)
+        {
+            return mapper.Map<TournamentCompactDTO>(existing);
+        }
+
+        // Publish message to trigger stats processing
+        await publishEndpoint.Publish(new ProcessTournamentStatsMessage
+        {
+            TournamentId = id
+        });
+
+        logger.LogInformation("Tournament {TournamentId} manually verified, enqueued stats processing", id);
+
         return mapper.Map<TournamentCompactDTO>(existing);
     }
 
