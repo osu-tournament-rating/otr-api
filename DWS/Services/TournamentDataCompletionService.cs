@@ -75,8 +75,12 @@ public class TournamentDataCompletionService(
             }
         }
 
-        // All data is fetched, trigger automation checks
-        logger.LogInformation("All data fetched for tournament {TournamentId}. Triggering automation checks.", tournamentId);
+        // All data is fetched, update tournament dates based on match times
+        logger.LogInformation("All data fetched for tournament {TournamentId}. " +
+                              "Updating tournament start & end dates and triggering automation checks.", tournamentId);
+
+        // Update tournament start and end dates based on match start times
+        await UpdateTournamentDatesAsync(tournamentId, cancellationToken);
 
         var automationCheckMessage = new ProcessTournamentAutomationCheckMessage
         {
@@ -139,5 +143,45 @@ public class TournamentDataCompletionService(
         {
             await CheckAndTriggerAutomationChecksIfCompleteAsync(tournamentId, cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Updates the tournament's start and end dates based on the earliest and latest match start times
+    /// </summary>
+    /// <param name="tournamentId">The ID of the tournament to update</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    private async Task UpdateTournamentDatesAsync(int tournamentId, CancellationToken cancellationToken = default)
+    {
+        // Query the earliest and latest match start times for this tournament
+        var matchDates = await context.Matches
+            .Where(m => m.TournamentId == tournamentId && m.StartTime.HasValue)
+            .Select(m => m.StartTime!.Value)
+            .ToListAsync(cancellationToken);
+
+        if (matchDates.Count == 0)
+        {
+            logger.LogDebug("No matches with start times found for tournament {TournamentId}", tournamentId);
+            return;
+        }
+
+        DateTime earliestStartTime = matchDates.Min();
+        DateTime latestStartTime = matchDates.Max();
+
+        // Update the tournament entity
+        Tournament? tournament = await context.Tournaments.FindAsync([tournamentId], cancellationToken);
+
+        if (tournament is null)
+        {
+            logger.LogWarning("Tournament {TournamentId} not found when updating dates", tournamentId);
+            return;
+        }
+
+        tournament.StartTime = earliestStartTime;
+        tournament.EndTime = latestStartTime;
+
+        await context.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Updated tournament {TournamentId} dates: Start={StartTime}, End={EndTime}",
+            tournamentId, earliestStartTime, latestStartTime);
     }
 }
