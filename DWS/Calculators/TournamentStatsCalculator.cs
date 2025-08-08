@@ -9,6 +9,13 @@ namespace DWS.Calculators;
 /// <summary>
 /// Functional calculator for tournament statistics that performs all calculations in-memory.
 /// </summary>
+/// <remarks>
+/// This calculator processes tournament statistics in multiple phases:
+/// 1. Validates tournament and match verification status
+/// 2. Processes individual match and game statistics
+/// 3. Aggregates player performance across the tournament
+/// 4. Updates processing timestamps for tracking
+/// </remarks>
 public class TournamentStatsCalculator : IStatsCalculator
 {
     /// <inheritdoc />
@@ -24,8 +31,9 @@ public class TournamentStatsCalculator : IStatsCalculator
         }
 
         // Filter to only verified matches
-        List<Match> verifiedMatches = [.. tournament.Matches
-            .Where(m => m.VerificationStatus == VerificationStatus.Verified)];
+        var verifiedMatches = tournament.Matches
+            .Where(m => m.VerificationStatus == VerificationStatus.Verified)
+            .ToList();
 
         if (verifiedMatches.Count == 0)
         {
@@ -79,6 +87,12 @@ public class TournamentStatsCalculator : IStatsCalculator
     /// <summary>
     /// Processes statistics for a single match and all its games.
     /// </summary>
+    /// <remarks>
+    /// This method handles:
+    /// - Game score placement calculation
+    /// - Roster generation for both games and matches
+    /// - Player match statistics aggregation
+    /// </remarks>
     /// <param name="match">The match to process.</param>
     /// <returns>True if processing succeeded, false otherwise.</returns>
     private static bool ProcessMatchStatistics(Match match)
@@ -88,8 +102,9 @@ public class TournamentStatsCalculator : IStatsCalculator
             return false;
         }
 
-        List<Game> verifiedGames = [.. match.Games
-            .Where(g => g.VerificationStatus == VerificationStatus.Verified)];
+        var verifiedGames = match.Games
+            .Where(g => g.VerificationStatus == VerificationStatus.Verified)
+            .ToList();
 
         if (verifiedGames.Count == 0)
         {
@@ -139,12 +154,14 @@ public class TournamentStatsCalculator : IStatsCalculator
             return;
         }
 
-        List<GameScore> verifiedScores = [.. game.Scores
+        var verifiedScores = game.Scores
             .Where(s => s.VerificationStatus == VerificationStatus.Verified)
-            .OrderByDescending(s => s.Score)];
+            .OrderByDescending(s => s.Score)
+            .ToList();
 
-        // Assign placements
-        int placement = 1;
+        // Assign placements (1-indexed, ordered by score descending)
+        const int initialPlacement = 1;
+        int placement = initialPlacement;
         foreach (GameScore score in verifiedScores)
         {
             score.Placement = placement++;
@@ -164,6 +181,13 @@ public class TournamentStatsCalculator : IStatsCalculator
     /// <summary>
     /// Generates player match statistics from verified games.
     /// </summary>
+    /// <remarks>
+    /// Calculates comprehensive statistics including:
+    /// - Match costs per player
+    /// - Win/loss records at game and match levels
+    /// - Average performance metrics (score, placement, accuracy)
+    /// - Teammate and opponent tracking
+    /// </remarks>
     /// <param name="games">The games to generate statistics from.</param>
     /// <returns>Collection of player match statistics.</returns>
     private static IEnumerable<PlayerMatchStats> GeneratePlayerMatchStatistics(List<Game> games)
@@ -179,7 +203,7 @@ public class TournamentStatsCalculator : IStatsCalculator
             return [];
         }
 
-        int matchId = games.First().MatchId;
+        int matchId = games[0].MatchId;
         if (games.Any(g => g.MatchId != matchId))
         {
             return [];
@@ -192,7 +216,7 @@ public class TournamentStatsCalculator : IStatsCalculator
         Dictionary<int, Team?> gameWinningTeams = CalculateGameWinningTeams(games);
 
         // Get match rosters and max score
-        ICollection<MatchRoster> matchRosters = games.First().Match.Rosters;
+        ICollection<MatchRoster> matchRosters = games[0].Match.Rosters;
         int maxMatchScore = matchRosters.Count > 0 ? matchRosters.Max(r => r.Score) : 0;
 
         // Group scores by player
@@ -209,7 +233,7 @@ public class TournamentStatsCalculator : IStatsCalculator
 
         return playerScoreGroups.Select(playerData =>
         {
-            var playerGames = playerData.Scores.Select(s => s.Game).Distinct().ToList();
+            Game[] playerGames = playerData.Scores.Select(s => s.Game).Distinct().ToArray();
 
             // Calculate games won/lost
             int gamesWon = 0;
@@ -238,8 +262,8 @@ public class TournamentStatsCalculator : IStatsCalculator
             var opponentIds = matchRosters
                 .Where(r => r.Team != playerMatchRoster?.Team)
                 .SelectMany(r => r.Roster)
-                .Distinct()
                 .Where(id => id != playerData.PlayerId)
+                .Distinct()
                 .ToList();
 
             return new PlayerMatchStats
@@ -264,6 +288,10 @@ public class TournamentStatsCalculator : IStatsCalculator
     /// <summary>
     /// Calculates the winning team for each game.
     /// </summary>
+    /// <remarks>
+    /// Determines winners by summing team scores for each game.
+    /// Returns null for the team if no verified scores exist.
+    /// </remarks>
     /// <param name="games">The games to analyze.</param>
     /// <returns>Dictionary mapping game ID to winning team.</returns>
     private static Dictionary<int, Team?> CalculateGameWinningTeams(List<Game> games)
@@ -302,6 +330,14 @@ public class TournamentStatsCalculator : IStatsCalculator
     /// <summary>
     /// Aggregates player statistics across all tournament matches.
     /// </summary>
+    /// <remarks>
+    /// Creates comprehensive tournament-level statistics for each player including:
+    /// - Average rating changes and match costs
+    /// - Cumulative win/loss records
+    /// - Overall performance metrics
+    /// - Complete teammate identification
+    /// Only includes players with rating adjustments (excludes restricted players).
+    /// </remarks>
     /// <param name="tournament">The tournament to update.</param>
     /// <param name="verifiedMatches">The verified matches to aggregate from.</param>
     private static void AggregatePlayerTournamentStatistics(Tournament tournament, List<Match> verifiedMatches)
