@@ -71,10 +71,14 @@ public class MatchStatsService(
             entity.Rosters.Add(roster);
         }
 
-        var currentStats = entity.PlayerMatchStats.ToDictionary(k => k.PlayerId, v => v);
-        IEnumerable<PlayerMatchStats> generatedStats = GeneratePlayerMatchStats(verifiedGames, currentStats);
+        // Clear existing stats to ensure fresh calculation
+        entity.PlayerMatchStats.Clear();
+        IEnumerable<PlayerMatchStats> generatedStats = GeneratePlayerMatchStats(verifiedGames);
 
-        entity.PlayerMatchStats = [.. generatedStats];
+        foreach (var stat in generatedStats)
+        {
+            entity.PlayerMatchStats.Add(stat);
+        }
         entity.LastProcessingDate = DateTime.UtcNow;
 
         return true;
@@ -85,14 +89,13 @@ public class MatchStatsService(
     /// one per unique <see cref="Player"/>.
     /// </summary>
     /// <param name="games">List of <see cref="Game"/>s.</param>
-    /// <param name="existingStats">Existing player match statistics to update.</param>
     /// <returns>Collection of player match statistics.</returns>
     /// <exception cref="ArgumentException">
     /// If the given list of <see cref="Game"/>s is empty
     /// <br/>If any given <see cref="Game"/>s contains a null <see cref="Game.Rosters"/>
     /// <br/>If the parent <see cref="Match"/> contains a null <see cref="Match.Rosters"/>
     /// </exception>
-    private IEnumerable<PlayerMatchStats> GeneratePlayerMatchStats(IEnumerable<Game> games, Dictionary<int, PlayerMatchStats> existingStats)
+    private IEnumerable<PlayerMatchStats> GeneratePlayerMatchStats(IEnumerable<Game> games)
     {
         var eGames = games.ToList();
 
@@ -189,28 +192,23 @@ public class MatchStatsService(
                 .Where(id => id != playerId)
                 .ToList();
 
-            // Create or update the player stats
-            if (!existingStats.TryGetValue(playerId, out PlayerMatchStats? stat))
+            // Always create new player stats
+            var stat = new PlayerMatchStats
             {
-                stat = new PlayerMatchStats
-                {
-                    PlayerId = playerId
-                };
-                existingStats[playerId] = stat;
-            }
-
-            // Update the stats
-            stat.MatchCost = matchCosts[playerId];
-            stat.AverageScore = scores.Average(s => s.Score);
-            stat.AveragePlacement = scores.Average(s => s.Placement);
-            stat.AverageMisses = scores.Average(s => s.CountMiss);
-            stat.AverageAccuracy = scores.Average(s => s.Accuracy);
-            stat.GamesPlayed = scores.Count;
-            stat.GamesWon = gamesWon;
-            stat.GamesLost = gamesLost;
-            stat.Won = won;
-            stat.TeammateIds = [.. teammateIds];
-            stat.OpponentIds = [.. opponentIds];
+                PlayerId = playerId,
+                MatchId = scores.First().Game.MatchId,
+                MatchCost = matchCosts[playerId],
+                AverageScore = scores.Average(s => s.Score),
+                AveragePlacement = scores.Average(s => s.Placement),
+                AverageMisses = scores.Average(s => s.CountMiss),
+                AverageAccuracy = scores.Average(s => s.Accuracy),
+                GamesPlayed = scores.Count,
+                GamesWon = gamesWon,
+                GamesLost = gamesLost,
+                Won = won,
+                TeammateIds = [.. teammateIds],
+                OpponentIds = [.. opponentIds]
+            };
 
             return stat;
         });

@@ -12,6 +12,7 @@ namespace DWS.Services.Implementations;
 public class TournamentStatsService(
     ILogger<TournamentStatsService> logger,
     ITournamentsRepository tournamentsRepository,
+    IMatchesRepository matchesRepository,
     IMatchStatsService matchStatsService) : ITournamentStatsService
 {
     /// <inheritdoc />
@@ -95,6 +96,8 @@ public class TournamentStatsService(
         foreach (Match match in verifiedMatches)
         {
             await matchStatsService.ProcessMatchStatsAsync(match);
+            // Save match stats changes to database
+            await matchesRepository.UpdateAsync(match);
         }
 
         return verifiedMatches;
@@ -132,12 +135,15 @@ public class TournamentStatsService(
     }
 
     /// <summary>
-    /// Aggregates player statistics across all verified matches and updates tournament stats.
+    /// Aggregates player statistics across all verified matches and creates fresh tournament stats.
     /// </summary>
     /// <param name="tournament">The tournament to update.</param>
     /// <param name="verifiedMatches">The verified matches to aggregate stats from.</param>
     private void AggregatePlayerStatisticsAsync(Tournament tournament, List<Match> verifiedMatches)
     {
+        // Clear existing stats to ensure fresh calculation
+        tournament.PlayerTournamentStats.Clear();
+
         // Pre-aggregate data to avoid repeated LINQ queries
         var playerDataGroups = verifiedMatches
             .SelectMany(m => m.PlayerMatchStats.Select(pms => new { Match = m, Stats = pms }))
@@ -155,10 +161,6 @@ public class TournamentStatsService(
             .Where(x => x.RatingAdjustments.Length > 0) // Skip restricted players
             .ToList();
 
-        // Create a dictionary to track existing PlayerTournamentStats
-        var playerTournamentStatsDict = tournament.PlayerTournamentStats
-            .ToDictionary(pts => pts.PlayerId);
-
         foreach (var playerData in playerDataGroups)
         {
             if (playerData.RatingAdjustments.Length == 0)
@@ -172,47 +174,41 @@ public class TournamentStatsService(
                 continue;
             }
 
-            if (playerTournamentStatsDict.TryGetValue(playerData.PlayerId, out PlayerTournamentStats? existingStats))
+            // Always create new PlayerTournamentStats
+            var stats = new PlayerTournamentStats
             {
-                UpdatePlayerTournamentStats(existingStats, playerData.RatingAdjustments, playerData.MatchStats);
-            }
-            else
-            {
-                // Add a new PlayerTournamentStats
-                var stats = new PlayerTournamentStats
-                {
-                    PlayerId = playerData.PlayerId,
-                    TournamentId = tournament.Id
-                };
-                UpdatePlayerTournamentStats(stats, playerData.RatingAdjustments, playerData.MatchStats);
-                tournament.PlayerTournamentStats.Add(stats);
-            }
+                PlayerId = playerData.PlayerId,
+                TournamentId = tournament.Id
+            };
+
+            PopulatePlayerTournamentStats(stats, playerData.RatingAdjustments, playerData.MatchStats);
+            tournament.PlayerTournamentStats.Add(stats);
         }
     }
 
     /// <summary>
-    /// Updates a player's tournament statistics with aggregated match data.
+    /// Populates a player's tournament statistics with aggregated match data.
     /// </summary>
-    /// <param name="existingStats">The stats object to update.</param>
+    /// <param name="stats">The new stats object to populate.</param>
     /// <param name="matchAdjustments">Rating adjustments from matches.</param>
     /// <param name="matchStats">Match statistics for the player.</param>
-    private static void UpdatePlayerTournamentStats(
-        PlayerTournamentStats existingStats,
+    private static void PopulatePlayerTournamentStats(
+        PlayerTournamentStats stats,
         RatingAdjustment[] matchAdjustments,
         List<PlayerMatchStats> matchStats)
     {
-        existingStats.AverageRatingDelta = matchAdjustments.Average(ra => ra.RatingDelta);
-        existingStats.AverageMatchCost = matchStats.Average(pms => pms.MatchCost);
-        existingStats.AverageScore = (int)matchStats.Average(pms => pms.AverageScore);
-        existingStats.AveragePlacement = matchStats.Average(pms => pms.AveragePlacement);
-        existingStats.AverageAccuracy = matchStats.Average(pms => pms.AverageAccuracy);
-        existingStats.MatchesPlayed = matchStats.Count;
-        existingStats.MatchesWon = matchStats.Count(pms => pms.Won);
-        existingStats.MatchesLost = matchStats.Count - existingStats.MatchesWon;
-        existingStats.GamesPlayed = matchStats.Sum(pms => pms.GamesPlayed);
-        existingStats.GamesWon = matchStats.Sum(pms => pms.GamesWon);
-        existingStats.GamesLost = matchStats.Sum(pms => pms.GamesLost);
-        existingStats.MatchWinRate = existingStats.MatchesWon / (double)matchStats.Count;
-        existingStats.TeammateIds = [.. matchStats.SelectMany(pms => pms.TeammateIds).Distinct()];
+        stats.AverageRatingDelta = matchAdjustments.Average(ra => ra.RatingDelta);
+        stats.AverageMatchCost = matchStats.Average(pms => pms.MatchCost);
+        stats.AverageScore = (int)matchStats.Average(pms => pms.AverageScore);
+        stats.AveragePlacement = matchStats.Average(pms => pms.AveragePlacement);
+        stats.AverageAccuracy = matchStats.Average(pms => pms.AverageAccuracy);
+        stats.MatchesPlayed = matchStats.Count;
+        stats.MatchesWon = matchStats.Count(pms => pms.Won);
+        stats.MatchesLost = matchStats.Count - stats.MatchesWon;
+        stats.GamesPlayed = matchStats.Sum(pms => pms.GamesPlayed);
+        stats.GamesWon = matchStats.Sum(pms => pms.GamesWon);
+        stats.GamesLost = matchStats.Sum(pms => pms.GamesLost);
+        stats.MatchWinRate = stats.MatchesWon / (double)matchStats.Count;
+        stats.TeammateIds = [.. matchStats.SelectMany(pms => pms.TeammateIds).Distinct()];
     }
 }
