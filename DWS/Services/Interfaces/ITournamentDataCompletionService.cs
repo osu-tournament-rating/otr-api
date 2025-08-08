@@ -30,4 +30,10 @@ public interface ITournamentDataCompletionService
     /// <param name="status">The fetch status to set</param>
     /// <param name="cancellationToken">Cancellation token</param>
     Task UpdateBeatmapFetchStatusAsync(int beatmapId, DataFetchStatus status, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Clears the pending automation check flag for a tournament after processing
+    /// </summary>
+    /// <param name="tournamentId">The tournament ID</param>
+    void ClearPendingAutomationCheck(int tournamentId);
 }

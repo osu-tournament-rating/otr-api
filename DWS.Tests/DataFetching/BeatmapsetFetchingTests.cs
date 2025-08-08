@@ -440,4 +440,154 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         int playerCount = await Context.Players.CountAsync();
         Assert.Equal(1, playerCount);
     }
+
+    [Fact]
+    public async Task FetchAndPersistBeatmapsetByBeatmapIdAsync_WhenBeatmapExistsWithValidData_SkipsApiCalls()
+    {
+        // Arrange
+        const long beatmapId = 1;
+
+        // Create existing beatmap with valid data
+        var existingBeatmap = new Beatmap
+        {
+            OsuId = beatmapId,
+            BeatmapsetId = null,
+            HasData = true,
+            DataFetchStatus = Common.Enums.DataFetchStatus.Fetched,
+            DiffName = "Existing Diff",
+            Sr = 4.5
+        };
+        await BeatmapsRepository.CreateAsync(existingBeatmap);
+
+        // Setup API mocks (should NOT be called)
+        MockOsuClient.Setup(x => x.GetBeatmapAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((BeatmapExtended?)null);
+        MockOsuClient.Setup(x => x.GetBeatmapsetAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((BeatmapsetExtended?)null);
+
+        // Act
+        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId);
+
+        // Assert
+        Assert.True(result); // Should return true since beatmap has valid data
+
+        // Verify no API calls were made
+        MockOsuClient.Verify(x => x.GetBeatmapAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
+        MockOsuClient.Verify(x => x.GetBeatmapsetAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
+
+        // Verify beatmap data was not changed
+        Beatmap? beatmap = await BeatmapsRepository.GetAsync(beatmapId);
+        Assert.NotNull(beatmap);
+        Assert.Equal("Existing Diff", beatmap.DiffName);
+        Assert.Equal(4.5, beatmap.Sr);
+        Assert.True(beatmap.HasData);
+        Assert.Equal(Common.Enums.DataFetchStatus.Fetched, beatmap.DataFetchStatus);
+    }
+
+    [Fact]
+    public async Task FetchAndPersistBeatmapsetByBeatmapIdAsync_WhenBeatmapExistsWithIncompleteData_FetchesFromApi()
+    {
+        // Arrange
+        const long beatmapId = 1;
+        const long beatmapsetId = 100;
+
+        // Create existing beatmap with incomplete data (NotFetched status)
+        var existingBeatmap = new Beatmap
+        {
+            OsuId = beatmapId,
+            BeatmapsetId = null,
+            HasData = true, // Has data flag is true
+            DataFetchStatus = Common.Enums.DataFetchStatus.NotFetched // But status is NotFetched
+        };
+        await BeatmapsRepository.CreateAsync(existingBeatmap);
+
+        // Setup API to return beatmap data
+        BeatmapExtended apiBeatmap = SeededOsuApiData.CreateBeatmapExtended(
+            beatmapId: beatmapId,
+            beatmapsetId: beatmapsetId,
+            diffName: "Fetched Diff",
+            starRating: 5.0
+        );
+
+        BeatmapsetExtended apiBeatmapset = SeededOsuApiData.CreateBeatmapsetExtended(
+            beatmapsetId: beatmapsetId,
+            artist: "New Artist",
+            title: "New Title",
+            beatmaps: [apiBeatmap]
+        );
+
+        MockOsuClient.Setup(x => x.GetBeatmapAsync(beatmapId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(apiBeatmap);
+        MockOsuClient.Setup(x => x.GetBeatmapsetAsync(beatmapsetId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(apiBeatmapset);
+
+        // Act
+        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId);
+
+        // Assert
+        Assert.True(result);
+
+        // Verify API calls were made
+        MockOsuClient.Verify(x => x.GetBeatmapAsync(beatmapId, It.IsAny<CancellationToken>()), Times.Once);
+        MockOsuClient.Verify(x => x.GetBeatmapsetAsync(beatmapsetId, It.IsAny<CancellationToken>()), Times.Once);
+
+        // Verify beatmap was updated with fetched data
+        Beatmap? beatmap = await BeatmapsRepository.GetAsync(beatmapId);
+        Assert.NotNull(beatmap);
+        Assert.Equal("Fetched Diff", beatmap.DiffName);
+        Assert.Equal(5.0, beatmap.Sr);
+        Assert.True(beatmap.HasData);
+    }
+
+    [Fact]
+    public async Task FetchAndPersistBeatmapsetByBeatmapIdAsync_WhenBeatmapExistsWithErrorStatus_RetriesFetching()
+    {
+        // Arrange
+        const long beatmapId = 1;
+        const long beatmapsetId = 100;
+
+        // Create existing beatmap with Error status
+        var existingBeatmap = new Beatmap
+        {
+            OsuId = beatmapId,
+            BeatmapsetId = null,
+            HasData = true,
+            DataFetchStatus = Common.Enums.DataFetchStatus.Error // Previous fetch failed
+        };
+        await BeatmapsRepository.CreateAsync(existingBeatmap);
+
+        // Setup API to return beatmap data
+        BeatmapExtended apiBeatmap = SeededOsuApiData.CreateBeatmapExtended(
+            beatmapId: beatmapId,
+            beatmapsetId: beatmapsetId,
+            diffName: "Retried Diff",
+            starRating: 3.5
+        );
+
+        BeatmapsetExtended apiBeatmapset = SeededOsuApiData.CreateBeatmapsetExtended(
+            beatmapsetId: beatmapsetId,
+            beatmaps: [apiBeatmap]
+        );
+
+        MockOsuClient.Setup(x => x.GetBeatmapAsync(beatmapId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(apiBeatmap);
+        MockOsuClient.Setup(x => x.GetBeatmapsetAsync(beatmapsetId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(apiBeatmapset);
+
+        // Act
+        bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId);
+
+        // Assert
+        Assert.True(result);
+
+        // Verify API calls were made (retry after error)
+        MockOsuClient.Verify(x => x.GetBeatmapAsync(beatmapId, It.IsAny<CancellationToken>()), Times.Once);
+        MockOsuClient.Verify(x => x.GetBeatmapsetAsync(beatmapsetId, It.IsAny<CancellationToken>()), Times.Once);
+
+        // Verify beatmap was updated
+        Beatmap? beatmap = await BeatmapsRepository.GetAsync(beatmapId);
+        Assert.NotNull(beatmap);
+        Assert.Equal("Retried Diff", beatmap.DiffName);
+        Assert.Equal(3.5, beatmap.Sr);
+    }
 }

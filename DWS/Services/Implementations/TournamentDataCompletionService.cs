@@ -17,6 +17,9 @@ public class TournamentDataCompletionService(
     IPublishEndpoint publishEndpoint)
     : ITournamentDataCompletionService
 {
+    // Track tournaments that have automation checks pending to prevent duplicates
+    private readonly HashSet<int> _pendingAutomationChecks = [];
+
     /// <inheritdoc />
     public async Task<bool> CheckAndTriggerAutomationChecksIfCompleteAsync(int tournamentId, CancellationToken cancellationToken = default)
     {
@@ -44,17 +47,28 @@ public class TournamentDataCompletionService(
             return false;
         }
 
-        // Get all pooled beatmap IDs for this tournament
+        // Get all beatmap IDs from both pooled beatmaps AND game beatmaps
+        // First, get pooled beatmap IDs
         List<int> pooledBeatmapIds = await context.Tournaments
             .Where(t => t.Id == tournamentId)
             .SelectMany(t => t.PooledBeatmaps.Select(b => b.Id))
             .ToListAsync(cancellationToken);
 
-        if (pooledBeatmapIds.Count > 0)
+        // Second, get beatmap IDs from all games in the tournament's matches
+        List<int> gameBeatmapIds = await context.Games
+            .Where(g => g.Match.TournamentId == tournamentId && g.BeatmapId != null)
+            .Select(g => g.BeatmapId!.Value)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        // Combine all beatmap IDs (removing duplicates)
+        HashSet<int> allBeatmapIds = [.. pooledBeatmapIds, .. gameBeatmapIds];
+
+        if (allBeatmapIds.Count > 0)
         {
-            // Check if all pooled beatmaps have their data fetched
+            // Check if all beatmaps (pooled and from games) have their data fetched
             var beatmaps = await context.Beatmaps
-                .Where(b => pooledBeatmapIds.Contains(b.Id))
+                .Where(b => allBeatmapIds.Contains(b.Id))
                 .Select(b => new { b.Id, b.DataFetchStatus })
                 .ToListAsync(cancellationToken);
 
@@ -66,33 +80,61 @@ public class TournamentDataCompletionService(
                 int completedCount = beatmaps.Count(b =>
                     b.DataFetchStatus is DataFetchStatus.Fetched or DataFetchStatus.NotFound);
 
-                logger.LogDebug("Not all pooled beatmaps have completed fetching for tournament {TournamentId}. Progress: {Progress}.",
-                    tournamentId, $"{completedCount}/{pooledBeatmapIds.Count}");
+                logger.LogDebug("Not all beatmaps have completed fetching for tournament {TournamentId}. " +
+                               "Progress: {Progress} (pooled: {PooledCount}, from games: {GameCount}).",
+                    tournamentId, $"{completedCount}/{allBeatmapIds.Count}",
+                    pooledBeatmapIds.Count, gameBeatmapIds.Count);
                 return false;
             }
         }
 
-        // All data is fetched, update tournament dates based on match times
-        logger.LogInformation("All data fetched for tournament {TournamentId}. " +
-                              "Updating tournament start & end dates and triggering automation checks.", tournamentId);
-
-        // Update tournament start and end dates based on match start times
-        await UpdateTournamentDatesAsync(tournamentId, cancellationToken);
-
-        var automationCheckMessage = new ProcessTournamentAutomationCheckMessage
+        // Check if we already have a pending automation check for this tournament
+        lock (_pendingAutomationChecks)
         {
-            TournamentId = tournamentId,
-            Priority = MessagePriority.Normal,
-            OverrideVerifiedState = false
-        };
+            if (!_pendingAutomationChecks.Add(tournamentId))
+            {
+                logger.LogDebug("Automation check already pending for tournament {TournamentId}, skipping duplicate.", tournamentId);
+                return false;
+            }
+        }
 
-        await publishEndpoint.Publish(automationCheckMessage, ctx =>
+        try
         {
-            ctx.SetPriority((byte)automationCheckMessage.Priority);
-            ctx.CorrelationId = automationCheckMessage.CorrelationId;
-        }, cancellationToken);
+            // All data is fetched, update tournament dates based on match times
+            logger.LogInformation("All data fetched for tournament {TournamentId}. " +
+                                  "Updating tournament start & end dates and triggering automation checks.", tournamentId);
 
-        return true;
+            // Update tournament start and end dates based on match start times
+            await UpdateTournamentDatesAsync(tournamentId, cancellationToken);
+
+            var automationCheckMessage = new ProcessTournamentAutomationCheckMessage
+            {
+                TournamentId = tournamentId,
+                Priority = MessagePriority.Normal,
+                OverrideVerifiedState = false
+            };
+
+            await publishEndpoint.Publish(automationCheckMessage, ctx =>
+            {
+                ctx.SetPriority((byte)automationCheckMessage.Priority);
+                ctx.CorrelationId = automationCheckMessage.CorrelationId;
+            }, cancellationToken);
+
+            // Keep the tournament in pending state until the automation check is processed
+            // The consumer should call back to clear this when complete
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // On error, remove from pending set
+            lock (_pendingAutomationChecks)
+            {
+                _pendingAutomationChecks.Remove(tournamentId);
+            }
+
+            logger.LogError(ex, "Failed to trigger automation checks for tournament {TournamentId}", tournamentId);
+            throw;
+        }
     }
 
     /// <inheritdoc />
@@ -130,13 +172,26 @@ public class TournamentDataCompletionService(
 
         logger.LogDebug("Updated beatmap {BeatmapId} fetch status to {Status}", beatmapId, status);
 
-        // Find tournaments where this beatmap is pooled
-        var pooledTournamentIds = await context.Tournaments
+        // Find tournaments where this beatmap is used (either pooled or in games)
+        // First, find tournaments where this beatmap is pooled
+        List<int> pooledTournamentIds = await context.Tournaments
             .Where(t => t.PooledBeatmaps.Any(b => b.Id == beatmapId))
             .Select(t => t.Id)
             .ToListAsync(cancellationToken);
 
-        foreach (int tournamentId in pooledTournamentIds)
+        // Second, find tournaments where this beatmap is used in games
+        List<int> gameTournamentIds = await context.Games
+            .Where(g => g.BeatmapId == beatmapId)
+            .Select(g => g.Match.TournamentId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        // Combine and deduplicate tournament IDs
+        HashSet<int> allTournamentIds = [.. pooledTournamentIds, .. gameTournamentIds];
+
+        logger.LogDebug("Beatmap {BeatmapId} is used in {Count} tournament(s)", beatmapId, allTournamentIds.Count);
+
+        foreach (int tournamentId in allTournamentIds)
         {
             await CheckAndTriggerAutomationChecksIfCompleteAsync(tournamentId, cancellationToken);
         }
@@ -150,7 +205,7 @@ public class TournamentDataCompletionService(
     private async Task UpdateTournamentDatesAsync(int tournamentId, CancellationToken cancellationToken = default)
     {
         // Query the earliest and latest match start times for this tournament
-        var matchDates = await context.Matches
+        List<DateTime> matchDates = await context.Matches
             .Where(m => m.TournamentId == tournamentId && m.StartTime.HasValue)
             .Select(m => m.StartTime!.Value)
             .ToListAsync(cancellationToken);
@@ -180,5 +235,17 @@ public class TournamentDataCompletionService(
 
         logger.LogInformation("Updated tournament {TournamentId} dates: Start={StartTime}, End={EndTime}",
             tournamentId, earliestStartTime, latestStartTime);
+    }
+
+    /// <inheritdoc />
+    public void ClearPendingAutomationCheck(int tournamentId)
+    {
+        lock (_pendingAutomationChecks)
+        {
+            if (_pendingAutomationChecks.Remove(tournamentId))
+            {
+                logger.LogDebug("Cleared pending automation check flag for tournament {TournamentId}", tournamentId);
+            }
+        }
     }
 }

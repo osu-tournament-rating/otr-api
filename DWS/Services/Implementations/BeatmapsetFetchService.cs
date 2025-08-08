@@ -31,9 +31,18 @@ public class BeatmapsetFetchService(
         Beatmap? existingBeatmap = null;
         try
         {
-            // Check if beatmap already exists and has no data
+            // Check if beatmap already exists
             existingBeatmap = await beatmapsRepository.GetAsync(osuBeatmapId);
 
+            // If beatmap already exists with valid data, skip API calls entirely
+            if (existingBeatmap is not null && existingBeatmap.HasData && existingBeatmap.DataFetchStatus == DataFetchStatus.Fetched)
+            {
+                logger.LogDebug("Beatmap {BeatmapId} already exists with valid data (HasData = true, DataFetchStatus = Fetched), skipping API calls", osuBeatmapId);
+                // No need to update status as it's already Fetched
+                return true;
+            }
+
+            // If beatmap exists but has no data (deleted beatmap), skip API calls
             if (existingBeatmap is not null && !existingBeatmap.HasData)
             {
                 logger.LogDebug("Beatmap {BeatmapId} already marked as HasData = false, skipping API calls", osuBeatmapId);
@@ -86,15 +95,53 @@ public class BeatmapsetFetchService(
             await ProcessBeatmapsetAsync(apiBeatmapset, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
 
-            // Mark all beatmaps in this set as Fetched
+            // Get all beatmaps in this set that need status updates
             List<Beatmap> beatmapsToUpdate = await context.Beatmapsets
                 .Where(bs => bs.OsuId == apiBeatmapset.Id)
                 .SelectMany(bs => bs.Beatmaps)
                 .ToListAsync(cancellationToken);
 
+            // Collect unique tournament IDs first to batch automation checks
+            HashSet<int> affectedTournamentIds = [];
+
+            // Update all beatmap statuses
             foreach (Beatmap beatmap in beatmapsToUpdate)
             {
-                await dataCompletionService.UpdateBeatmapFetchStatusAsync(beatmap.Id, DataFetchStatus.Fetched, cancellationToken);
+                beatmap.DataFetchStatus = DataFetchStatus.Fetched;
+                await beatmapsRepository.UpdateAsync(beatmap);
+
+                // Find tournaments that use this beatmap (pooled or in games)
+                var pooledTournamentIds = await context.Tournaments
+                    .Where(t => t.PooledBeatmaps.Any(b => b.Id == beatmap.Id))
+                    .Select(t => t.Id)
+                    .ToListAsync(cancellationToken);
+
+                var gameTournamentIds = await context.Games
+                    .Where(g => g.BeatmapId == beatmap.Id)
+                    .Select(g => g.Match.TournamentId)
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
+
+                // Add to affected tournaments set
+                foreach (int id in pooledTournamentIds)
+                {
+                    affectedTournamentIds.Add(id);
+                }
+                foreach (int id in gameTournamentIds)
+                {
+                    affectedTournamentIds.Add(id);
+                }
+            }
+
+            await context.SaveChangesAsync(cancellationToken);
+
+            // Now trigger automation checks for all affected tournaments once
+            logger.LogDebug("Beatmapset {BeatmapsetId} update affects {Count} tournament(s)",
+                apiBeatmapset.Id, affectedTournamentIds.Count);
+
+            foreach (int tournamentId in affectedTournamentIds)
+            {
+                await dataCompletionService.CheckAndTriggerAutomationChecksIfCompleteAsync(tournamentId, cancellationToken);
             }
 
             logger.LogDebug("Successfully processed beatmapset {BeatmapsetId} for beatmap {BeatmapId}", apiBeatmapset.Id, osuBeatmapId);

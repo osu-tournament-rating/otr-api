@@ -58,7 +58,7 @@ public class MatchFetchService(
             int matchId = await ProcessMatchAsync(osuMatch, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
 
-            // Mark as Fetched
+            // Mark as Fetched - the completion service will check if beatmaps are also ready
             await dataCompletionService.UpdateMatchFetchStatusAsync(matchId, DataFetchStatus.Fetched, cancellationToken);
 
             return true;
@@ -231,6 +231,31 @@ public class MatchFetchService(
                 }, cancellationToken);
 
                 logger.LogDebug("Queued beatmap {BeatmapId} for fetching", apiGame.BeatmapId);
+            }
+            else if (beatmap.DataFetchStatus == DataFetchStatus.NotFetched ||
+                     (beatmap.DataFetchStatus != DataFetchStatus.Fetched && beatmap.HasData))
+            {
+                // Beatmap exists but hasn't been fetched yet, or has incomplete data
+                // Queue it for processing only if it needs fetching
+                var fetchBeatmapMessage = new FetchBeatmapMessage
+                {
+                    BeatmapId = apiGame.BeatmapId,
+                    Priority = MessagePriority.Normal
+                };
+
+                await publishEndpoint.Publish(fetchBeatmapMessage, ctx =>
+                {
+                    ctx.SetPriority((byte)fetchBeatmapMessage.Priority);
+                }, cancellationToken);
+
+                logger.LogDebug("Queued existing beatmap {BeatmapId} for fetching (status: {Status}, hasData: {HasData})",
+                    apiGame.BeatmapId, beatmap.DataFetchStatus, beatmap.HasData);
+            }
+            else
+            {
+                // Beatmap already has valid data or is marked as not found
+                logger.LogDebug("Beatmap {BeatmapId} already has data (status: {Status}, hasData: {HasData}), linking without fetching",
+                    apiGame.BeatmapId, beatmap.DataFetchStatus, beatmap.HasData);
             }
         }
 
