@@ -254,7 +254,7 @@ public class MatchFetchService(
             else
             {
                 // Beatmap already has valid data or is marked as not found
-                logger.LogDebug("Beatmap {BeatmapId} already has data (status: {Status}, hasData: {HasData}), linking without fetching",
+                logger.LogDebug("Beatmap {BeatmapId} already has data (status: {Status}, hasData: {HasData}), no fetch required",
                     apiGame.BeatmapId, beatmap.DataFetchStatus, beatmap.HasData);
             }
         }

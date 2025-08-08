@@ -323,4 +323,117 @@ public class GameAutomationChecksTests
         Assert.True(game2.WarningFlags.HasFlag(GameWarningFlags.BeatmapUsedOnce));
         Assert.False(game3.WarningFlags.HasFlag(GameWarningFlags.BeatmapUsedOnce));
     }
+
+    [Fact]
+    public void Process_CombinedRejectionReasons_ReturnsAllFailures()
+    {
+        // Arrange
+        Game game = SeededGame.Generate(
+            teamType: TeamType.HeadToHead, // Invalid team type
+            scoringType: ScoringType.Accuracy, // Invalid scoring type
+            ruleset: Ruleset.Taiko, // Will mismatch with tournament
+            mods: Mods.SuddenDeath, // Invalid mod
+            endTime: DateTime.MinValue // No end time
+        );
+        game.Match.Tournament.Ruleset = Ruleset.Osu; // Different from game
+        game.Match.Tournament.LobbySize = 4;
+        game.Scores.Clear(); // No scores
+
+        // Act
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
+
+        // Assert - Should have all rejection reasons
+        Assert.True(result.HasFlag(GameRejectionReason.InvalidTeamType));
+        Assert.True(result.HasFlag(GameRejectionReason.InvalidScoringType));
+        Assert.True(result.HasFlag(GameRejectionReason.RulesetMismatch));
+        Assert.True(result.HasFlag(GameRejectionReason.InvalidMods));
+        Assert.True(result.HasFlag(GameRejectionReason.NoEndTime));
+        Assert.True(result.HasFlag(GameRejectionReason.NoScores));
+    }
+
+
+    [Fact]
+    public void Process_ScoreCountCheck_UnbalancedTeams()
+    {
+        // Arrange
+        Game game = SeededGame.Generate(
+            teamType: TeamType.TeamVs,
+            scoringType: ScoringType.ScoreV2,
+            ruleset: Ruleset.Osu,
+            mods: Mods.None,
+            endTime: DateTime.UtcNow
+        );
+        game.Match.Tournament.LobbySize = 2;
+        game.Scores.Clear();
+
+        // Unbalanced teams: 3 Red, 1 Blue
+        game.Scores.Add(SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 1), team: Team.Red, mods: Mods.None, game: game));
+        game.Scores.Add(SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 2), team: Team.Red, mods: Mods.None, game: game));
+        game.Scores.Add(SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 3), team: Team.Red, mods: Mods.None, game: game));
+        game.Scores.Add(SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game));
+
+        // Act
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
+
+        // Assert - Should fail due to unbalanced teams
+        Assert.True(result.HasFlag(GameRejectionReason.LobbySizeMismatch));
+    }
+
+    [Fact]
+    public void Process_BeatmapUsageCheck_BeatmapInPool()
+    {
+        // Arrange
+        Beatmap poolBeatmap = SeededBeatmap.Generate(osuId: 999);
+        Game game = SeededGame.Generate(
+            beatmap: poolBeatmap,
+            teamType: TeamType.TeamVs,
+            scoringType: ScoringType.ScoreV2,
+            ruleset: Ruleset.Osu,
+            mods: Mods.None,
+            endTime: DateTime.UtcNow
+        );
+        game.Match.Tournament.PooledBeatmaps.Add(poolBeatmap);
+        game.Match.Tournament.LobbySize = 2;
+        game.Scores = new List<GameScore>
+        {
+            SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 1), team: Team.Red, mods: Mods.None, game: game),
+            SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 2), team: Team.Red, mods: Mods.None, game: game),
+            SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 3), team: Team.Blue, mods: Mods.None, game: game),
+            SeededScore.Generate(verificationStatus: VerificationStatus.Verified, player: SeededPlayer.Generate(id: 4), team: Team.Blue, mods: Mods.None, game: game)
+        };
+
+        // Act
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
+
+        // Assert - Should not be rejected as beatmap is in pool
+        Assert.False(result.HasFlag(GameRejectionReason.BeatmapNotPooled));
+    }
+
+    [Theory]
+    [InlineData(Mods.Hidden | Mods.HardRock, GameRejectionReason.None)]
+    [InlineData(Mods.DoubleTime | Mods.Hidden, GameRejectionReason.None)]
+    [InlineData(Mods.Nightcore | Mods.Hidden, GameRejectionReason.None)]
+    [InlineData(Mods.HalfTime | Mods.Easy, GameRejectionReason.None)]
+    [InlineData(Mods.Flashlight | Mods.NoFail, GameRejectionReason.None)]
+    [InlineData(Mods.SuddenDeath | Mods.Hidden, GameRejectionReason.InvalidMods)]
+    [InlineData(Mods.Perfect | Mods.HardRock, GameRejectionReason.InvalidMods)]
+    [InlineData(Mods.Relax | Mods.DoubleTime, GameRejectionReason.InvalidMods)]
+    public void Process_ModCheck_ComplexModCombinations(Mods mods, GameRejectionReason expected)
+    {
+        // Arrange
+        Game game = SeededGame.Generate(
+            mods: mods,
+            teamType: TeamType.TeamVs,
+            scoringType: ScoringType.ScoreV2,
+            ruleset: Ruleset.Osu,
+            endTime: DateTime.UtcNow
+        );
+        game.Match.Tournament.LobbySize = 4;
+
+        // Act
+        GameRejectionReason result = _checker.Process(game, game.Match.Tournament);
+
+        // Assert
+        Assert.True(result.HasFlag(expected));
+    }
 }

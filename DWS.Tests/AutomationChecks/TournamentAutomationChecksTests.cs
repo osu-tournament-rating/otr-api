@@ -254,4 +254,81 @@ public class TournamentAutomationChecksTests
         Assert.Equal(TournamentRejectionReason.NoVerifiedMatches, result);
     }
 
+    [Theory]
+    [InlineData(79, 100, TournamentRejectionReason.NotEnoughVerifiedMatches)] // 79% - just below threshold
+    [InlineData(80, 100, TournamentRejectionReason.None)] // 80% - exactly at threshold
+    [InlineData(81, 100, TournamentRejectionReason.None)] // 81% - just above threshold
+    public void Process_EdgeCasesAroundThreshold(int verifiedCount, int totalCount, TournamentRejectionReason expectedReason)
+    {
+        // Arrange
+        Tournament tournament = CreateTestTournament();
+
+        // Add verified matches
+        for (int i = 0; i < verifiedCount; i++)
+        {
+            Match match = SeededMatch.Generate(tournament: tournament);
+            match.VerificationStatus = VerificationStatus.Verified;
+            Game game = SeededGame.Generate(match: match);
+            match.Games.Add(game);
+            tournament.Matches.Add(match);
+        }
+
+        // Add unverified matches
+        for (int i = verifiedCount; i < totalCount; i++)
+        {
+            Match match = SeededMatch.Generate(tournament: tournament);
+            match.VerificationStatus = VerificationStatus.Rejected;
+            Game game = SeededGame.Generate(match: match);
+            match.Games.Add(game);
+            tournament.Matches.Add(match);
+        }
+
+        // Act
+        TournamentRejectionReason result = _tournamentAutomationChecks.Process(tournament);
+
+        // Assert
+        Assert.Equal(expectedReason, result);
+    }
+
+    [Fact]
+    public void Process_MixedVerificationStatuses_CountsBothPreVerifiedAndVerified()
+    {
+        // Arrange
+        Tournament tournament = CreateTestTournament();
+
+        // Add 4 PreVerified, 4 Verified, 2 Rejected (80% verified total)
+        for (int i = 0; i < 4; i++)
+        {
+            Match match = SeededMatch.Generate(tournament: tournament);
+            match.VerificationStatus = VerificationStatus.PreVerified;
+            Game game = SeededGame.Generate(match: match);
+            match.Games.Add(game);
+            tournament.Matches.Add(match);
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            Match match = SeededMatch.Generate(tournament: tournament);
+            match.VerificationStatus = VerificationStatus.Verified;
+            Game game = SeededGame.Generate(match: match);
+            match.Games.Add(game);
+            tournament.Matches.Add(match);
+        }
+
+        for (int i = 0; i < 2; i++)
+        {
+            Match match = SeededMatch.Generate(tournament: tournament);
+            match.VerificationStatus = VerificationStatus.Rejected;
+            Game game = SeededGame.Generate(match: match);
+            match.Games.Add(game);
+            tournament.Matches.Add(match);
+        }
+
+        // Act
+        TournamentRejectionReason result = _tournamentAutomationChecks.Process(tournament);
+
+        // Assert - 8 out of 10 matches are verified (80%), should pass
+        Assert.Equal(TournamentRejectionReason.None, result);
+    }
+
 }
