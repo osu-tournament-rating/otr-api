@@ -4,9 +4,9 @@ using Database;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
 using DWS.AutomationChecks;
+using DWS.Calculators;
 using DWS.Configurations;
 using DWS.Consumers;
-using DWS.Services;
 using DWS.Services.Implementations;
 using DWS.Services.Interfaces;
 using DWS.Utilities.Extensions;
@@ -83,13 +83,11 @@ try
     builder.Services.AddScoped<MatchAutomationChecks>();
     builder.Services.AddScoped<TournamentAutomationChecks>();
 
-    // Register automation check service
     builder.Services.AddScoped<ITournamentAutomationCheckService, TournamentAutomationCheckService>();
-
-    // Register stats services
-    builder.Services.AddScoped<IGameStatsService, GameStatsService>();
-    builder.Services.AddScoped<IMatchStatsService, MatchStatsService>();
     builder.Services.AddScoped<ITournamentStatsService, TournamentStatsService>();
+
+    // Register calculator for functional statistics processing
+    builder.Services.AddScoped<IStatsCalculator, TournamentStatsCalculator>();
 
     // Configure MassTransit
     builder.Services.AddMassTransit(x =>
