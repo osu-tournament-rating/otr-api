@@ -14,6 +14,14 @@
     "OsuRateLimit": 60,
     "OsuTrackRateLimit": 30
   },
+  "PlayerUpdateService": {
+    "Enabled": false,
+    "OutdatedAfterDays": 14,
+    "BatchSize": 100,
+    "CheckIntervalSeconds": 3600,
+    "MaxMessagesPerCycle": 50,
+    "MessagePriority": 0
+  },
   "Serilog": {
     "MinimumLevel": {
       "Default": "Information",

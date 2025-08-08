@@ -7,6 +7,7 @@ using DWS.AutomationChecks;
 using DWS.Calculators;
 using DWS.Configurations;
 using DWS.Consumers;
+using DWS.Services;
 using DWS.Services.Implementations;
 using DWS.Services.Interfaces;
 using DWS.Utilities.Extensions;
@@ -61,6 +62,11 @@ try
     // Configure RabbitMQ
     builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection(RabbitMqConfiguration.Position));
 
+    // Configure Player Update Service
+    builder.Services.AddOptionsWithValidateOnStart<PlayerUpdateServiceConfiguration>()
+        .Bind(builder.Configuration.GetSection(PlayerUpdateServiceConfiguration.Position))
+        .ValidateDataAnnotations();
+
     // Register repositories
     builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
     builder.Services.AddScoped<IBeatmapsetsRepository, BeatmapsetsRepository>();
@@ -88,6 +94,9 @@ try
 
     // Register calculator for functional statistics processing
     builder.Services.AddScoped<IStatsCalculator, TournamentStatsCalculator>();
+
+    // Register background services
+    builder.Services.AddHostedService<PlayerUpdateBackgroundService>();
 
     // Configure MassTransit
     builder.Services.AddMassTransit(x =>
