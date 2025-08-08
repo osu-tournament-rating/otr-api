@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
-using Database.Entities.Interfaces;
 using Database.Entities.Processor;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
@@ -394,10 +393,18 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
                 .Collection(m => m.PlayerMatchStats)
                 .LoadAsync();
 
+            await _context.Entry(match)
+                .Collection(m => m.Rosters)
+                .LoadAsync();
+
             foreach (Game game in match.Games)
             {
                 await _context.Entry(game)
                     .Collection(g => g.Scores)
+                    .LoadAsync();
+
+                await _context.Entry(game)
+                    .Collection(g => g.Rosters)
                     .LoadAsync();
 
                 foreach (GameScore score in game.Scores)
