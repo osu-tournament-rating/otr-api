@@ -34,9 +34,13 @@ public class GameStatsService(ILogger<GameStatsService> logger) : IGameStatsServ
         AssignScorePlacements(verifiedScores);
 
         // Clear existing rosters and regenerate to ensure consistency
-        // This prevents duplicate key violations while ensuring data is up-to-date
+        // Properly manage the EF-tracked collection to prevent duplicate key violations
         entity.Rosters.Clear();
-        entity.Rosters = RostersHelper.GenerateRosters(verifiedScores);
+        var newRosters = RostersHelper.GenerateRosters(verifiedScores);
+        foreach (var roster in newRosters)
+        {
+            entity.Rosters.Add(roster);
+        }
 
         entity.LastProcessingDate = DateTime.UtcNow;
 

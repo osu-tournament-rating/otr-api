@@ -63,9 +63,13 @@ public class MatchStatsService(
 
         // Ordering here matters, GeneratePlayerMatchStats relies on the game.Match having a populated roster.
         // Clear existing rosters and regenerate to ensure consistency
-        // This prevents duplicate key violations while ensuring data is up-to-date
+        // Properly manage the EF-tracked collection to prevent duplicate key violations
         entity.Rosters.Clear();
-        entity.Rosters = RostersHelper.GenerateRosters(verifiedGames);
+        var newRosters = RostersHelper.GenerateRosters(verifiedGames);
+        foreach (var roster in newRosters)
+        {
+            entity.Rosters.Add(roster);
+        }
 
         var currentStats = entity.PlayerMatchStats.ToDictionary(k => k.PlayerId, v => v);
         IEnumerable<PlayerMatchStats> generatedStats = GeneratePlayerMatchStats(verifiedGames, currentStats);
