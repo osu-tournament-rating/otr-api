@@ -152,16 +152,12 @@ public class MatchesRepository(OtrContext context) : Repository<Match>(context),
 
     public async Task LoadGamesWithScoresAsync(Match match)
     {
+        // Load all games with their scores in a single query using Include chain
         await _context.Entry(match)
             .Collection(m => m.Games)
+            .Query()
+            .Include(g => g.Scores)
             .LoadAsync();
-
-        foreach (Game game in match.Games)
-        {
-            await _context.Entry(game)
-                .Collection(g => g.Scores)
-                .LoadAsync();
-        }
     }
 
     public async Task<IEnumerable<Match>> GetPlayerMatchesAsync(

@@ -375,53 +375,21 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
 
     public async Task LoadMatchesWithGamesAndScoresAsync(Tournament tournament)
     {
+        // Load all matches with related data in a single query using Include and ThenInclude chains
         await _context.Entry(tournament)
             .Collection(t => t.Matches)
+            .Query()
+            .AsSplitQuery()
+            .Include(m => m.Games)
+                .ThenInclude(g => g.Scores)
+                    .ThenInclude(s => s.Player)
+            .Include(m => m.Games)
+                .ThenInclude(g => g.Rosters)
+            .Include(m => m.PlayerRatingAdjustments)
+            .Include(m => m.PlayerMatchStats)
+                .ThenInclude(s => s.Player)
+            .Include(m => m.Rosters)
             .LoadAsync();
-
-        foreach (Match match in tournament.Matches)
-        {
-            await _context.Entry(match)
-                .Collection(m => m.Games)
-                .LoadAsync();
-
-            await _context.Entry(match)
-                .Collection(m => m.PlayerRatingAdjustments)
-                .LoadAsync();
-
-            await _context.Entry(match)
-                .Collection(m => m.PlayerMatchStats)
-                .LoadAsync();
-
-            await _context.Entry(match)
-                .Collection(m => m.Rosters)
-                .LoadAsync();
-
-            foreach (Game game in match.Games)
-            {
-                await _context.Entry(game)
-                    .Collection(g => g.Scores)
-                    .LoadAsync();
-
-                await _context.Entry(game)
-                    .Collection(g => g.Rosters)
-                    .LoadAsync();
-
-                foreach (GameScore score in game.Scores)
-                {
-                    await _context.Entry(score)
-                        .Reference(s => s.Player)
-                        .LoadAsync();
-                }
-            }
-
-            foreach (PlayerMatchStats stats in match.PlayerMatchStats)
-            {
-                await _context.Entry(stats)
-                    .Reference(s => s.Player)
-                    .LoadAsync();
-            }
-        }
     }
 
     private IQueryable<Tournament> TournamentsBaseQuery() =>
