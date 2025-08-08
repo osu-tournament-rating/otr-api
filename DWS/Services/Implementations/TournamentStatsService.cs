@@ -110,14 +110,10 @@ public class TournamentStatsService(
         foreach (Match match in verifiedMatches.Where(match => !HasRequiredProcessorData(match)))
         {
             logger.LogWarning(
-                "Verified match missing required data for tournament stats generation (may not have been processed by otr-processor yet), aborting" +
-                " [Match Id: {Id} | {Stat1}: {Stat1C} | {Stat2}: {Stat2C} | Has WinRecord: {HasWinRecord}]",
+                "Verified match missing rating adjustments from otr-processor, aborting" +
+                " [Match Id: {Id} | Rating Adjustments: {AdjustmentCount}]",
                 match.Id,
-                nameof(Match.PlayerMatchStats),
-                match.PlayerMatchStats.Count,
-                nameof(match.PlayerRatingAdjustments),
-                match.PlayerRatingAdjustments.Count,
-                match.Rosters.Count > 0
+                match.PlayerRatingAdjustments.Count
             );
             return false;
         }
@@ -126,44 +122,13 @@ public class TournamentStatsService(
     }
 
     /// <summary>
-    /// Checks if a match has the required processor data, accounting for restricted players.
+    /// Checks if a match has been processed by the otr-processor.
     /// </summary>
     /// <param name="match">The match to check.</param>
-    /// <returns>True if the match has valid processor data.</returns>
-    private bool HasRequiredProcessorData(Match match)
+    /// <returns>True if the processor has run (at least one rating adjustment exists), false otherwise.</returns>
+    private static bool HasRequiredProcessorData(Match match)
     {
-        // Match must have some data
-        if (match.PlayerMatchStats.Count == 0 || match.Rosters.Count == 0)
-        {
-            return false;
-        }
-
-        // If no rating adjustments at all, it hasn't been processed
-        if (match.PlayerRatingAdjustments.Count == 0)
-        {
-            return false;
-        }
-
-        // Check for mismatches due to restricted players
-        var playersWithStats = match.PlayerMatchStats.Select(pms => pms.PlayerId).ToHashSet();
-        var playersWithAdjustments = match.PlayerRatingAdjustments.Select(ra => ra.PlayerId).ToHashSet();
-        var missingAdjustments = playersWithStats.Except(playersWithAdjustments).ToList();
-
-        if (missingAdjustments.Count > 0)
-        {
-            // Log the mismatch for investigation but allow processing to continue
-            // This handles cases where players became restricted after match completion
-            logger.LogInformation(
-                "Match has players with stats but no rating adjustments, likely due to player restrictions " +
-                "[Match Id: {Id} | Players missing adjustments: {MissingPlayers} | Stats: {StatsCount} | Adjustments: {AdjustmentsCount}]",
-                match.Id,
-                string.Join(", ", missingAdjustments),
-                match.PlayerMatchStats.Count,
-                match.PlayerRatingAdjustments.Count
-            );
-        }
-
-        return true;
+        return match.PlayerRatingAdjustments.Count != 0;
     }
 
     /// <summary>

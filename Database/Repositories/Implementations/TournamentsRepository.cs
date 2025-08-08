@@ -386,6 +386,14 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
                 .Collection(m => m.Games)
                 .LoadAsync();
 
+            await _context.Entry(match)
+                .Collection(m => m.PlayerRatingAdjustments)
+                .LoadAsync();
+
+            await _context.Entry(match)
+                .Collection(m => m.PlayerMatchStats)
+                .LoadAsync();
+
             foreach (Game game in match.Games)
             {
                 await _context.Entry(game)
@@ -398,6 +406,13 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
                         .Reference(s => s.Player)
                         .LoadAsync();
                 }
+            }
+
+            foreach (PlayerMatchStats stats in match.PlayerMatchStats)
+            {
+                await _context.Entry(stats)
+                    .Reference(s => s.Player)
+                    .LoadAsync();
             }
         }
     }

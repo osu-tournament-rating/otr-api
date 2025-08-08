@@ -219,7 +219,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Dictionary<int, int>> GetLobbySizeStatsAsync(bool verified = true);
 
     /// <summary>
-    /// Loads the matches, games, and scores for a tournament to enable cascading operations
+    /// Loads the matches, games, scores, player match stats, and rating adjustments for a tournament to enable cascading operations
     /// </summary>
     /// <param name="tournament">The tournament to load children for</param>
     Task LoadMatchesWithGamesAndScoresAsync(Tournament tournament);

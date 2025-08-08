@@ -62,6 +62,9 @@ public class MatchStatsService(
         }
 
         // Ordering here matters, GeneratePlayerMatchStats relies on the game.Match having a populated roster.
+        // Clear existing rosters and regenerate to ensure consistency
+        // This prevents duplicate key violations while ensuring data is up-to-date
+        entity.Rosters.Clear();
         entity.Rosters = RostersHelper.GenerateRosters(verifiedGames);
 
         var currentStats = entity.PlayerMatchStats.ToDictionary(k => k.PlayerId, v => v);
