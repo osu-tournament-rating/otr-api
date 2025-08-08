@@ -33,8 +33,8 @@ public class TournamentProcessedConsumer(
         }))
         {
             logger.LogInformation(
-                "Received tournament processed notification [Tournament ID: {TournamentId} | Action: {Action} | Processed At: {ProcessedAt} | Correlation ID: {CorrelationId}]",
-                message.TournamentId, message.Action, message.ProcessedAt, context.CorrelationId ?? message.CorrelationId);
+                "Processing tournament {TournamentId} [Action: {Action}]",
+                message.TournamentId, message.Action);
 
             try
             {
@@ -48,20 +48,10 @@ public class TournamentProcessedConsumer(
                     return;
                 }
 
-                logger.LogInformation(
-                    "Tournament {TournamentId} validation passed. Triggering stats generation [Action: {Action}]",
-                    message.TournamentId, message.Action);
-
                 // Trigger stats generation for the tournament
                 bool success = await tournamentStatsService.ProcessTournamentStatsAsync(message.TournamentId);
 
-                if (success)
-                {
-                    logger.LogInformation(
-                        "Tournament {TournamentId} statistics processed successfully [Action: {Action} | Processed At: {ProcessedAt}]",
-                        message.TournamentId, message.Action, message.ProcessedAt);
-                }
-                else
+                if (!success)
                 {
                     logger.LogWarning(
                         "Tournament {TournamentId} statistics processing returned false [Action: {Action}]",

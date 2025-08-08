@@ -2,6 +2,7 @@ using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using DWS.Calculators;
+using DWS.Models;
 using DWS.Services.Interfaces;
 
 namespace DWS.Services.Implementations;
@@ -36,12 +37,13 @@ public class TournamentStatsService(
         }
 
         // Perform all statistics calculations in-memory
-        bool success = statsCalculator.CalculateAllStatistics(tournament);
-        if (!success)
+        StatsCalculationResult result = statsCalculator.CalculateAllStatistics(tournament);
+        if (!result.Success)
         {
             logger.LogError(
-                "Failed to calculate statistics for tournament [Id: {Id}]",
-                tournament.Id
+                "Failed to calculate statistics for tournament {TournamentId}: {Error}",
+                tournament.Id,
+                result.ErrorMessage ?? "Unknown error"
             );
             return false;
         }
@@ -50,10 +52,11 @@ public class TournamentStatsService(
         await tournamentsRepository.UpdateAsync(tournament);
 
         logger.LogInformation(
-            "Successfully processed tournament statistics [Id: {Id} | Matches: {MatchCount} | Player Stats: {PlayerCount}]",
+            "Tournament {TournamentId} statistics processed successfully [Matches: {MatchCount} | PlayerTournamentStats: {PlayerTournamentStatsCount} | PlayerMatchStats: {PlayerMatchStatsCount}]",
             tournament.Id,
-            tournament.Matches.Count(m => m.VerificationStatus == VerificationStatus.Verified),
-            tournament.PlayerTournamentStats.Count
+            result.VerifiedMatchesCount,
+            result.PlayerTournamentStatsCount,
+            result.PlayerMatchStatsCount
         );
 
         return true;

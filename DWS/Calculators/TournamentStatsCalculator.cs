@@ -1,6 +1,7 @@
 using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
+using DWS.Models;
 using DWS.Utilities;
 
 namespace DWS.Calculators;
@@ -8,20 +9,18 @@ namespace DWS.Calculators;
 /// <summary>
 /// Functional calculator for tournament statistics that performs all calculations in-memory.
 /// </summary>
-public class TournamentStatsCalculator(
-    ILogger<TournamentStatsCalculator> logger) : IStatsCalculator
+public class TournamentStatsCalculator : IStatsCalculator
 {
     /// <inheritdoc />
-    public bool CalculateAllStatistics(Tournament tournament)
+    public StatsCalculationResult CalculateAllStatistics(Tournament tournament)
     {
         if (tournament.VerificationStatus is not VerificationStatus.Verified)
         {
-            logger.LogError(
-                "Stats calculation attempted for unverified tournament [Id: {Id} | Status: {Status}]",
-                tournament.Id,
-                tournament.VerificationStatus
-            );
-            return false;
+            return new StatsCalculationResult
+            {
+                Success = false,
+                ErrorMessage = $"Tournament {tournament.Id} is not verified (status: {tournament.VerificationStatus})"
+            };
         }
 
         // Filter to only verified matches
@@ -30,28 +29,36 @@ public class TournamentStatsCalculator(
 
         if (verifiedMatches.Count == 0)
         {
-            logger.LogWarning(
-                "No verified matches found for tournament [Id: {Id}]",
-                tournament.Id
-            );
-            return false;
+            return new StatsCalculationResult
+            {
+                Success = false,
+                ErrorMessage = $"No verified matches found for tournament {tournament.Id}"
+            };
         }
 
         // Process all matches and their games
-        foreach (Match match in verifiedMatches.Where(match => !ProcessMatchStatistics(match)))
+        int totalPlayerMatchStats = 0;
+        foreach (Match match in verifiedMatches)
         {
-            logger.LogError(
-                "Failed to process match statistics [Match Id: {MatchId} | Tournament Id: {TournamentId}]",
-                match.Id,
-                tournament.Id
-            );
-            return false;
+            if (!ProcessMatchStatistics(match))
+            {
+                return new StatsCalculationResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Failed to process match statistics for match {match.Id} in tournament {tournament.Id}"
+                };
+            }
+            totalPlayerMatchStats += match.PlayerMatchStats.Count;
         }
 
         // Validate processor data exists
         if (!ValidateProcessorData(verifiedMatches))
         {
-            return false;
+            return new StatsCalculationResult
+            {
+                Success = false,
+                ErrorMessage = $"Missing processor data for tournament {tournament.Id}"
+            };
         }
 
         // Aggregate player tournament statistics
@@ -60,14 +67,13 @@ public class TournamentStatsCalculator(
         // Update processing timestamp
         tournament.LastProcessingDate = DateTime.UtcNow;
 
-        logger.LogInformation(
-            "Successfully calculated tournament statistics [Id: {Id} | Matches: {MatchCount} | Players: {PlayerCount}]",
-            tournament.Id,
-            verifiedMatches.Count,
-            tournament.PlayerTournamentStats.Count
-        );
-
-        return true;
+        return new StatsCalculationResult
+        {
+            Success = true,
+            PlayerTournamentStatsCount = tournament.PlayerTournamentStats.Count,
+            PlayerMatchStatsCount = totalPlayerMatchStats,
+            VerifiedMatchesCount = verifiedMatches.Count
+        };
     }
 
     /// <summary>
@@ -75,15 +81,10 @@ public class TournamentStatsCalculator(
     /// </summary>
     /// <param name="match">The match to process.</param>
     /// <returns>True if processing succeeded, false otherwise.</returns>
-    private bool ProcessMatchStatistics(Match match)
+    private static bool ProcessMatchStatistics(Match match)
     {
         if (match.VerificationStatus is not VerificationStatus.Verified)
         {
-            logger.LogError(
-                "Attempted to process unverified match [Id: {Id} | Status: {Status}]",
-                match.Id,
-                match.VerificationStatus
-            );
             return false;
         }
 
@@ -92,10 +93,6 @@ public class TournamentStatsCalculator(
 
         if (verifiedGames.Count == 0)
         {
-            logger.LogError(
-                "No verified games found for match [Id: {Id}]",
-                match.Id
-            );
             return false;
         }
 
@@ -108,10 +105,6 @@ public class TournamentStatsCalculator(
         // Validate all games have rosters
         if (verifiedGames.Any(g => g.Rosters.Count == 0))
         {
-            logger.LogWarning(
-                "One or more games missing rosters after processing [Match Id: {Id}]",
-                match.Id
-            );
             return false;
         }
 
@@ -139,15 +132,10 @@ public class TournamentStatsCalculator(
     /// Processes statistics for a single game.
     /// </summary>
     /// <param name="game">The game to process.</param>
-    private void ProcessGameStatistics(Game game)
+    private static void ProcessGameStatistics(Game game)
     {
         if (game.VerificationStatus is not VerificationStatus.Verified)
         {
-            logger.LogWarning(
-                "Skipping unverified game [Id: {Id} | Status: {Status}]",
-                game.Id,
-                game.VerificationStatus
-            );
             return;
         }
 
@@ -178,7 +166,7 @@ public class TournamentStatsCalculator(
     /// </summary>
     /// <param name="games">The games to generate statistics from.</param>
     /// <returns>Collection of player match statistics.</returns>
-    private IEnumerable<PlayerMatchStats> GeneratePlayerMatchStatistics(List<Game> games)
+    private static IEnumerable<PlayerMatchStats> GeneratePlayerMatchStatistics(List<Game> games)
     {
         if (games.Count == 0)
         {
@@ -188,14 +176,12 @@ public class TournamentStatsCalculator(
         // Validate all games have rosters and belong to same match
         if (games.Any(g => g.Rosters.Count == 0))
         {
-            logger.LogWarning("One or more games have empty rosters");
             return [];
         }
 
         int matchId = games.First().MatchId;
         if (games.Any(g => g.MatchId != matchId))
         {
-            logger.LogError("Games belong to different matches");
             return [];
         }
 
@@ -308,18 +294,9 @@ public class TournamentStatsCalculator(
     /// </summary>
     /// <param name="matches">The matches to validate.</param>
     /// <returns>True if all matches have processor data, false otherwise.</returns>
-    private bool ValidateProcessorData(List<Match> matches)
+    private static bool ValidateProcessorData(List<Match> matches)
     {
-        foreach (Match match in matches.Where(match => match.PlayerRatingAdjustments.Count == 0))
-        {
-            logger.LogWarning(
-                "Match missing rating adjustments from processor [Match Id: {Id}]",
-                match.Id
-            );
-            return false;
-        }
-
-        return true;
+        return matches.All(match => match.PlayerRatingAdjustments.Count > 0);
     }
 
     /// <summary>
@@ -327,7 +304,7 @@ public class TournamentStatsCalculator(
     /// </summary>
     /// <param name="tournament">The tournament to update.</param>
     /// <param name="verifiedMatches">The verified matches to aggregate from.</param>
-    private void AggregatePlayerTournamentStatistics(Tournament tournament, List<Match> verifiedMatches)
+    private static void AggregatePlayerTournamentStatistics(Tournament tournament, List<Match> verifiedMatches)
     {
         // Clear existing statistics
         tournament.PlayerTournamentStats.Clear();
@@ -353,11 +330,6 @@ public class TournamentStatsCalculator(
         {
             if (playerData.AllRatingAdjustments.Length == 0)
             {
-                logger.LogDebug(
-                    "Skipping player with no rating adjustments [Player Id: {PlayerId} | Tournament Id: {TournamentId}]",
-                    playerData.PlayerId,
-                    tournament.Id
-                );
                 continue;
             }
 

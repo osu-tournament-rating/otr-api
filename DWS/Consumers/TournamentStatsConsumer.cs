@@ -26,18 +26,11 @@ public class TournamentStatsConsumer(
             ["CorrelationId"] = context.CorrelationId ?? message.CorrelationId
         }))
         {
-            logger.LogInformation("Processing tournament statistics request [Tournament ID: {TournamentId} | Correlation ID: {CorrelationId}]",
-                message.TournamentId, context.CorrelationId ?? message.CorrelationId);
-
             try
             {
                 bool success = await tournamentStatsService.ProcessTournamentStatsAsync(message.TournamentId);
 
-                if (success)
-                {
-                    logger.LogInformation("Tournament {TournamentId} statistics processed successfully", message.TournamentId);
-                }
-                else
+                if (!success)
                 {
                     logger.LogWarning("Tournament {TournamentId} statistics processing failed", message.TournamentId);
                 }
