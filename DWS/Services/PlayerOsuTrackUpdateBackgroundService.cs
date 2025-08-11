@@ -9,14 +9,14 @@ using Microsoft.Extensions.Options;
 namespace DWS.Services;
 
 /// <summary>
-/// Background service that periodically checks for players with outdated data and enqueues messages to fetch updated data from the osu! API.
+/// Background service that periodically checks for players with outdated osu!track data and enqueues messages to fetch updated data from the osu!track API.
 /// </summary>
-public class PlayerUpdateBackgroundService(
+public class PlayerOsuTrackUpdateBackgroundService(
     IServiceProvider serviceProvider,
-    ILogger<PlayerUpdateBackgroundService> logger,
-    IOptions<PlayerUpdateServiceConfiguration> configuration) : BackgroundService
+    ILogger<PlayerOsuTrackUpdateBackgroundService> logger,
+    IOptions<PlayerOsuTrackUpdateServiceConfiguration> configuration) : BackgroundService
 {
-    private readonly PlayerUpdateServiceConfiguration _configuration = configuration.Value;
+    private readonly PlayerOsuTrackUpdateServiceConfiguration _configuration = configuration.Value;
 
     /// <summary>
     /// Executes the background service.
@@ -26,11 +26,11 @@ public class PlayerUpdateBackgroundService(
     {
         if (!_configuration.Enabled)
         {
-            logger.LogInformation("Player update background service is disabled via configuration");
+            logger.LogInformation("Player osu!track update background service is disabled via configuration");
             return;
         }
 
-        logger.LogInformation("Player update background service started [Check Interval: {CheckInterval}s | Outdated After: {OutdatedAfterDays} days | Max Messages Per Cycle: {MaxMessages} | Priority: {Priority}]",
+        logger.LogInformation("Player osu!track update background service started [Check Interval: {CheckInterval}s | Outdated After: {OutdatedAfterDays} days | Max Messages Per Cycle: {MaxMessages} | Priority: {Priority}]",
             _configuration.CheckIntervalSeconds, _configuration.OutdatedAfterDays, _configuration.MaxMessagesPerCycle, (MessagePriority)_configuration.MessagePriority);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -42,11 +42,11 @@ public class PlayerUpdateBackgroundService(
             catch (OperationCanceledException)
             {
                 // Expected when cancellation is requested
-                logger.LogDebug("Player update check cancelled");
+                logger.LogDebug("Player osu!track update check cancelled");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error occurred while checking for outdated players");
+                logger.LogError(ex, "Error occurred while checking for outdated osu!track player data");
             }
 
             await Task.Delay(TimeSpan.FromSeconds(_configuration.CheckIntervalSeconds), stoppingToken);
@@ -54,7 +54,7 @@ public class PlayerUpdateBackgroundService(
     }
 
     /// <summary>
-    /// Checks for players with outdated data and enqueues messages to fetch updated data.
+    /// Checks for players with outdated osu!track data and enqueues messages to fetch updated data.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     private async Task CheckAndEnqueueOutdatedPlayersAsync(CancellationToken cancellationToken)
@@ -65,25 +65,25 @@ public class PlayerUpdateBackgroundService(
 
         DateTime cutoffDate = DateTime.UtcNow.AddDays(-_configuration.OutdatedAfterDays);
 
-        logger.LogDebug("Checking for players with data older than {CutoffDate:u} [Max Messages: {MaxMessages}]",
+        logger.LogDebug("Checking for players with osu!track data older than {CutoffDate:u} [Max Messages: {MaxMessages}]",
             cutoffDate, _configuration.MaxMessagesPerCycle);
 
         // Query for outdated players - prioritize oldest data first
         var outdatedPlayers = await context.Players
             .AsNoTracking()
-            .Where(p => p.OsuLastFetch < cutoffDate)
-            .OrderBy(p => p.OsuLastFetch) // Process oldest first
+            .Where(p => p.OsuTrackLastFetch < cutoffDate)
+            .OrderBy(p => p.OsuTrackLastFetch) // Process oldest first
             .Take(_configuration.MaxMessagesPerCycle)
-            .Select(p => new { p.Id, p.OsuId, p.Username, p.OsuLastFetch })
+            .Select(p => new { p.Id, p.OsuId, p.Username, p.OsuTrackLastFetch })
             .ToListAsync(cancellationToken);
 
         if (outdatedPlayers.Count == 0)
         {
-            logger.LogDebug("No outdated players found");
+            logger.LogDebug("No outdated osu!track player data found");
             return;
         }
 
-        logger.LogInformation("Found {Count} players with outdated data", outdatedPlayers.Count);
+        logger.LogInformation("Found {Count} players with outdated osu!track data", outdatedPlayers.Count);
 
         int enqueuedCount = 0;
         int failedCount = 0;
@@ -101,7 +101,7 @@ public class PlayerUpdateBackgroundService(
             {
                 try
                 {
-                    var message = new FetchPlayerMessage
+                    var message = new FetchPlayerOsuTrackMessage
                     {
                         OsuPlayerId = player.OsuId,
                         CorrelationId = correlationId,
@@ -115,25 +115,25 @@ public class PlayerUpdateBackgroundService(
                     }, cancellationToken);
 
                     enqueuedCount++;
-                    logger.LogDebug("Enqueued player fetch message [Username: {Username} | Last Fetch: {LastFetch:u} | Days Outdated: {DaysOutdated:F1}]",
-                        player.Username, player.OsuLastFetch, (DateTime.UtcNow - player.OsuLastFetch).TotalDays);
+                    logger.LogDebug("Enqueued player osu!track fetch message [Username: {Username} | Last Fetch: {LastFetch:u} | Days Outdated: {DaysOutdated:F1}]",
+                        player.Username, player.OsuTrackLastFetch, (DateTime.UtcNow - player.OsuTrackLastFetch).TotalDays);
                 }
                 catch (Exception ex)
                 {
                     failedCount++;
-                    logger.LogError(ex, "Failed to enqueue message for player [Username: {Username}]", player.Username);
+                    logger.LogError(ex, "Failed to enqueue osu!track message for player [Username: {Username}]", player.Username);
                 }
             }
         }
 
         if (failedCount > 0)
         {
-            logger.LogWarning("Player update cycle completed [Enqueued: {EnqueuedCount} | Failed: {FailedCount} | Total: {TotalCount}]",
+            logger.LogWarning("Player osu!track update cycle completed [Enqueued: {EnqueuedCount} | Failed: {FailedCount} | Total: {TotalCount}]",
                 enqueuedCount, failedCount, outdatedPlayers.Count);
         }
         else if (enqueuedCount > 0)
         {
-            logger.LogInformation("Successfully enqueued {EnqueuedCount} player fetch messages", enqueuedCount);
+            logger.LogInformation("Successfully enqueued {EnqueuedCount} player osu!track fetch messages", enqueuedCount);
         }
     }
 
@@ -143,7 +143,7 @@ public class PlayerUpdateBackgroundService(
     /// <param name="cancellationToken">Cancellation token.</param>
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
-        logger.LogInformation("Player update background service is stopping");
+        logger.LogInformation("Player osu!track update background service is stopping");
         await base.StopAsync(cancellationToken);
     }
 }

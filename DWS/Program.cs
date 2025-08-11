@@ -67,6 +67,11 @@ try
         .Bind(builder.Configuration.GetSection(PlayerUpdateServiceConfiguration.Position))
         .ValidateDataAnnotations();
 
+    // Configure Player osu!track Update Service
+    builder.Services.AddOptionsWithValidateOnStart<PlayerOsuTrackUpdateServiceConfiguration>()
+        .Bind(builder.Configuration.GetSection(PlayerOsuTrackUpdateServiceConfiguration.Position))
+        .ValidateDataAnnotations();
+
     // Register repositories
     builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
     builder.Services.AddScoped<IBeatmapsetsRepository, BeatmapsetsRepository>();
@@ -97,6 +102,7 @@ try
 
     // Register background services
     builder.Services.AddHostedService<PlayerUpdateBackgroundService>();
+    builder.Services.AddHostedService<PlayerOsuTrackUpdateBackgroundService>();
 
     // Configure MassTransit
     builder.Services.AddMassTransit(x =>
