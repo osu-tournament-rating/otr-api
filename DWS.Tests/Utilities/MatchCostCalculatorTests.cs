@@ -1,17 +1,17 @@
 using System.Diagnostics.CodeAnalysis;
 using Common.Enums.Verification;
 using Database.Entities;
-using DataWorkerService.Utilities;
+using DWS.Utilities;
 using TestingUtils.SeededData;
 
-namespace DataWorkerService.Tests.Utilities;
+namespace DWS.Tests.Utilities;
 
 public class MatchCostCalculatorTests
 {
     [Fact]
     [SuppressMessage("ReSharper", "StringLiteralTypo")]
     [SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Local")]
-    public void OtrMatchCostFormula_ProducesAccurateData()
+    public void CalculateOtrMatchCosts_ProducesAccurateData()
     {
         // Arrange
         Match match = SeededMatch.ExampleMatch();
