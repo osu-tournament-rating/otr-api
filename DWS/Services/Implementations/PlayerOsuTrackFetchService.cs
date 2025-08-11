@@ -1,5 +1,6 @@
 using Common.Constants;
 using Common.Enums;
+using Common.Enums.Verification;
 using Database;
 using Database.Entities;
 using Database.Repositories.Interfaces;
@@ -51,9 +52,9 @@ public class PlayerOsuTrackFetchService(
             }
         }
 
+        player.OsuTrackLastFetch = DateTime.UtcNow;
         if (successfullyProcessedAnyRuleset)
         {
-            player.OsuTrackLastFetch = DateTime.UtcNow;
             await playersRepository.UpdateAsync(player);
 
             logger.LogInformation("Successfully updated osu!track data for player {OsuPlayerId}", osuPlayerId);
@@ -101,7 +102,7 @@ public class PlayerOsuTrackFetchService(
             return false;
         }
 
-        UserStatUpdate? earliestStat = FindEarliestRelevantStat(player, statUpdates);
+        UserStatUpdate? earliestStat = await FindEarliestRelevantStatAsync(player, statUpdates, context, cancellationToken);
         if (earliestStat is null)
         {
             logger.LogTrace("No relevant osu!track stats found for player [osu! ID: {OsuPlayerId} | Ruleset: {Ruleset}]",
@@ -124,12 +125,20 @@ public class PlayerOsuTrackFetchService(
     /// </summary>
     /// <param name="player">The player to analyze.</param>
     /// <param name="statUpdates">The list of stat updates from osu!track.</param>
+    /// <param name="context">The database context.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>The most relevant stat update, or null if none found.</returns>
-    private static UserStatUpdate? FindEarliestRelevantStat(Player player, List<UserStatUpdate> statUpdates)
+    private static async Task<UserStatUpdate?> FindEarliestRelevantStatAsync(
+        Player player,
+        List<UserStatUpdate> statUpdates,
+        OtrContext context,
+        CancellationToken cancellationToken)
     {
+        // First try to get earliest match date from MatchStats if they exist
         DateTime? earliestMatchDate = player.MatchStats
             .DefaultIfEmpty()
-            .Min(pms => pms?.Match.StartTime);
+            // If no MatchStats, query the database directly for verified matches
+            .Min(pms => pms?.Match.StartTime) ?? await FindEarliestVerifiedMatchDateAsync(player.Id, context, cancellationToken);
 
         if (earliestMatchDate is not null)
         {
@@ -139,6 +148,26 @@ public class PlayerOsuTrackFetchService(
         }
 
         return statUpdates.FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Finds the earliest verified match date for a player by querying the database directly.
+    /// </summary>
+    /// <param name="playerId">The player ID to search for.</param>
+    /// <param name="context">The database context.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The earliest verified match date, or null if none found.</returns>
+    private static async Task<DateTime?> FindEarliestVerifiedMatchDateAsync(
+        int playerId,
+        OtrContext context,
+        CancellationToken cancellationToken)
+    {
+        return await context.GameScores
+            .Where(gs => gs.PlayerId == playerId)
+            .Where(gs => gs.Game.Match.VerificationStatus == VerificationStatus.Verified)
+            .Where(gs => gs.Game.Match.Tournament.VerificationStatus == VerificationStatus.Verified)
+            .Select(gs => gs.Game.Match.StartTime)
+            .MinAsync(cancellationToken);
     }
 
     /// <summary>
