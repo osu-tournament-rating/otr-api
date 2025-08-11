@@ -151,12 +151,12 @@ try
 
     IHost host = builder.Build();
 
-    Log.Information("DWS (DataWorkerService) starting up...");
+    Log.Information("DWS starting up...");
     await host.RunAsync();
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "DWS (DataWorkerService) terminated unexpectedly");
+    Log.Fatal(ex, "DWS terminated unexpectedly");
 }
 finally
 {
