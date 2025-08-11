@@ -17,14 +17,14 @@
   "PlayerUpdateService": {
     "Enabled": false,
     "OutdatedAfterDays": 14,
-    "CheckIntervalSeconds": 300,
+    "CheckIntervalSeconds": 600,
     "MaxMessagesPerCycle": 500,
     "MessagePriority": 0
   },
   "PlayerOsuTrackUpdateService": {
     "Enabled": false,
     "OutdatedAfterDays": 60,
-    "CheckIntervalSeconds": 300,
+    "CheckIntervalSeconds": 600,
     "MaxMessagesPerCycle": 500,
     "MessagePriority": 0
   },

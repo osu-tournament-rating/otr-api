@@ -24,7 +24,7 @@ public class PlayerUpdateServiceConfiguration
     /// Delay in seconds between checking for outdated players.
     /// </summary>
     [Range(60, 86400)]
-    public int CheckIntervalSeconds { get; init; } = 300;
+    public int CheckIntervalSeconds { get; init; } = 600;
 
     /// <summary>
     /// Maximum number of messages to enqueue per check cycle.
