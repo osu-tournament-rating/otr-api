@@ -24,13 +24,13 @@ public class PlayerOsuTrackUpdateServiceConfiguration
     /// Delay in seconds between checking for outdated players.
     /// </summary>
     [Range(60, 86400)]
-    public int CheckIntervalSeconds { get; init; } = 3600; // Default: 1 hour
+    public int CheckIntervalSeconds { get; init; } = 300;
 
     /// <summary>
     /// Maximum number of messages to enqueue per check cycle.
     /// </summary>
     [Range(1, 500)]
-    public int MaxMessagesPerCycle { get; init; } = 100;
+    public int MaxMessagesPerCycle { get; init; } = 500;
 
     /// <summary>
     /// Priority level for player osu!track fetch messages (0 = low, 5 = normal, 10 = high).
