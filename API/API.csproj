@@ -79,7 +79,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Database\Database.csproj" />
     <ProjectReference Include="..\OsuApiClient\OsuApiClient.csproj" />
-    <ProjectReference Include="..\DWS\DWS.csproj" />
+    <ProjectReference Include="..\DWS\DWS.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>contentFiles;build;buildMultitargeting;buildTransitive;native</ExcludeAssets>
+    </ProjectReference>
   </ItemGroup>
   <Target Name="Husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0">
     <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
