@@ -134,7 +134,7 @@ public class PlayerOsuTrackFetchService(
         OtrContext context,
         CancellationToken cancellationToken)
     {
-        // First try to get earliest match date from MatchStats if they exist
+        // First try to get the earliest match date from MatchStats if they exist
         DateTime? earliestMatchDate = player.MatchStats
             .DefaultIfEmpty()
             // If no MatchStats, query the database directly for verified matches
