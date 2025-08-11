@@ -45,12 +45,12 @@ jobs:
         id: set-tag
         run: |
           api_image_prefix="${{ secrets.DOCKERHUB_USERNAME }}/otr-api"
-          worker_image_prefix="${{ secrets.DOCKERHUB_USERNAME }}/otr-data-worker-service"
+          dws_image_prefix="${{ secrets.DOCKERHUB_USERNAME }}/otr-dws"
 
           if [[ "${{ inputs.target }}" == "Staging" ]]; then
             echo "PRIMARY_TAG=staging" >> $GITHUB_OUTPUT
             echo "API_TAGS=${api_image_prefix}:staging" >> $GITHUB_OUTPUT
-            echo "WORKER_TAGS=${worker_image_prefix}:staging" >> $GITHUB_OUTPUT
+            echo "DWS_TAGS=${dws_image_prefix}:staging" >> $GITHUB_OUTPUT
           elif [[ "${{ inputs.target }}" == "Production" && "${{ github.ref_type }}" == "tag" ]]; then
             echo "PRIMARY_TAG=${{ github.ref_name }}" >> $GITHUB_OUTPUT
             {
@@ -60,9 +60,9 @@ jobs:
               echo 'EOF'
             } >> "$GITHUB_OUTPUT"
             {
-              echo 'WORKER_TAGS<<EOF'
-              echo "${worker_image_prefix}:${{ github.ref_name }}"
-              echo "${worker_image_prefix}:latest"
+              echo 'DWS_TAGS<<EOF'
+              echo "${dws_image_prefix}:${{ github.ref_name }}"
+              echo "${dws_image_prefix}:latest"
               echo 'EOF'
             } >> "$GITHUB_OUTPUT"
           else
@@ -78,13 +78,13 @@ jobs:
           push: true
           tags: ${{ steps.set-tag.outputs.API_TAGS }}
 
-      - name: Build and Push DataWorkerService Docker Image
+      - name: Build and Push DWS Docker Image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: DataWorkerService.Dockerfile
+          file: DWS.Dockerfile
           push: true
-          tags: ${{ steps.set-tag.outputs.WORKER_TAGS }}
+          tags: ${{ steps.set-tag.outputs.DWS_TAGS }}
 
   deploy:
     needs: publish
@@ -129,7 +129,7 @@ jobs:
       - name: Create .env files
         run: |
           echo "${{ secrets.API_ENV }}" > api.env
-          echo "${{ secrets.DATAWORKERSERVICE_ENV }}" > dataworkerservice.env
+          echo "${{ secrets.DWS_ENV }}" > dws.env
           echo "${{ secrets.DB_ENV }}" > db.env
           echo "${{ secrets.POSTGRES_EXPORTER_ENV }}" > postgres_exporter.env
           echo "${{ secrets.MINIO_ENV }}" > minio.env
