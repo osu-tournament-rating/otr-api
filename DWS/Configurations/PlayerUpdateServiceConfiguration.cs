@@ -21,12 +21,6 @@ public class PlayerUpdateServiceConfiguration
     public int OutdatedAfterDays { get; init; } = 14;
 
     /// <summary>
-    /// Number of players to check per batch.
-    /// </summary>
-    [Range(1, 1000)]
-    public int BatchSize { get; init; } = 100;
-
-    /// <summary>
     /// Delay in seconds between checking for outdated players.
     /// </summary>
     [Range(60, 86400)]

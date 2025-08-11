@@ -17,16 +17,15 @@
   "PlayerUpdateService": {
     "Enabled": false,
     "OutdatedAfterDays": 14,
-    "BatchSize": 100,
-    "CheckIntervalSeconds": 3600,
-    "MaxMessagesPerCycle": 50,
+    "CheckIntervalSeconds": 300,
+    "MaxMessagesPerCycle": 500,
     "MessagePriority": 0
   },
   "PlayerOsuTrackUpdateService": {
     "Enabled": false,
-    "OutdatedAfterDays": 14,
-    "CheckIntervalSeconds": 3600,
-    "MaxMessagesPerCycle": 100,
+    "OutdatedAfterDays": 60,
+    "CheckIntervalSeconds": 300,
+    "MaxMessagesPerCycle": 500,
     "MessagePriority": 0
   },
   "Serilog": {
