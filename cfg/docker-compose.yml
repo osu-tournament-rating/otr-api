@@ -14,23 +14,6 @@ services:
       - staging
       - production
 
-  dataworkerservice:
-    image: "stagecodes/otr-data-worker-service:${TAG:-latest}"
-    container_name: dataworkerservice
-    env_file:
-      - dataworkerservice.env
-    depends_on:
-      - db
-      - redis
-    restart: always
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50m"
-        max-file: "3"
-    profiles:
-      - production
-
   dws:
     image: "stagecodes/otr-dws:${TAG:-latest}"
     container_name: dws
