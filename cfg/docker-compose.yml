@@ -22,6 +22,7 @@ services:
     depends_on:
       - db
       - rabbitmq
+      - redis
     restart: always
     logging:
       driver: "json-file"

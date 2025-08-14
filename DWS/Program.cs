@@ -18,8 +18,8 @@ using OsuApiClient;
 using OsuApiClient.Extensions;
 using Serilog;
 using Serilog.Events;
+using StackExchange.Redis;
 
-// Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
@@ -28,7 +28,6 @@ try
 {
     HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
-    // Configure Serilog
     builder.Services.AddSerilog((services, configuration) => configuration
         .ReadFrom.Configuration(builder.Configuration)
         .ReadFrom.Services(services)
@@ -41,7 +40,6 @@ try
         .Enrich.FromLogContext()
         .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"));
 
-    // Configure Entity Framework
     builder.Services.AddDbContext<OtrContext>((_, sqlOptions) =>
     {
         sqlOptions
@@ -50,29 +48,59 @@ try
             .UseSnakeCaseNamingConvention();
     });
 
-    // Configure osu! API client
     builder.Services.AddOsuApiClient(new OsuClientOptions
     {
         Configuration = builder.Configuration.BindAndValidate<OsuConfiguration>(OsuConfiguration.Position)
     });
 
-    // Configure AutoMapper
     builder.Services.AddAutoMapper(typeof(DwsMapperProfile));
 
-    // Configure RabbitMQ
     builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection(RabbitMqConfiguration.Position));
 
-    // Configure Player Update Service
     builder.Services.AddOptionsWithValidateOnStart<PlayerUpdateServiceConfiguration>()
         .Bind(builder.Configuration.GetSection(PlayerUpdateServiceConfiguration.Position))
         .ValidateDataAnnotations();
 
-    // Configure Player osu!track Update Service
     builder.Services.AddOptionsWithValidateOnStart<PlayerOsuTrackUpdateServiceConfiguration>()
         .Bind(builder.Configuration.GetSection(PlayerOsuTrackUpdateServiceConfiguration.Position))
         .ValidateDataAnnotations();
 
-    // Register repositories
+    builder.Services.AddOptionsWithValidateOnStart<MessageDeduplicationConfiguration>()
+        .Bind(builder.Configuration.GetSection(MessageDeduplicationConfiguration.Position))
+        .ValidateDataAnnotations();
+
+    builder.Services.AddOptionsWithValidateOnStart<ConnectionStringsConfiguration>()
+        .Bind(builder.Configuration.GetSection(ConnectionStringsConfiguration.Position))
+        .ValidateDataAnnotations();
+
+    builder.Services.AddSingleton<IConnectionMultiplexer>(serviceProvider =>
+    {
+        ConnectionStringsConfiguration connectionStrings = serviceProvider.GetRequiredService<IOptions<ConnectionStringsConfiguration>>().Value;
+        ILogger<Program> logger = serviceProvider.GetRequiredService<ILogger<Program>>();
+
+        logger.LogInformation("Connecting to Redis at: {RedisConnection}", connectionStrings.RedisConnection);
+
+        var configurationOptions = ConfigurationOptions.Parse(connectionStrings.RedisConnection);
+        configurationOptions.AbortOnConnectFail = false;
+        configurationOptions.ConnectRetry = 3;
+        configurationOptions.ConnectTimeout = 5000;
+        configurationOptions.SyncTimeout = 5000;
+
+        var connection = ConnectionMultiplexer.Connect(configurationOptions);
+
+        connection.ConnectionFailed += (_, args) =>
+        {
+            logger.LogError("Redis connection failed: {EndPoint} - {FailureType}", args.EndPoint, args.FailureType);
+        };
+
+        connection.ConnectionRestored += (_, args) =>
+        {
+            logger.LogInformation("Redis connection restored: {EndPoint}", args.EndPoint);
+        };
+
+        return connection;
+    });
+
     builder.Services.AddScoped<IBeatmapsRepository, BeatmapsRepository>();
     builder.Services.AddScoped<IBeatmapsetsRepository, BeatmapsetsRepository>();
     builder.Services.AddScoped<IPlayersRepository, PlayersRepository>();
@@ -81,14 +109,13 @@ try
     builder.Services.AddScoped<IGameScoresRepository, GameScoresRepository>();
     builder.Services.AddScoped<ITournamentsRepository, TournamentsRepository>();
 
-    // Register services
+    builder.Services.AddSingleton<IMessageDeduplicationService, MessageDeduplicationService>();
     builder.Services.AddScoped<IBeatmapsetFetchService, BeatmapsetFetchService>();
     builder.Services.AddScoped<IMatchFetchService, MatchFetchService>();
     builder.Services.AddScoped<IPlayerFetchService, PlayerFetchService>();
     builder.Services.AddScoped<IPlayerOsuTrackFetchService, PlayerOsuTrackFetchService>();
     builder.Services.AddScoped<ITournamentDataCompletionService, TournamentDataCompletionService>();
 
-    // Register automation check classes
     builder.Services.AddScoped<ScoreAutomationChecks>();
     builder.Services.AddScoped<GameAutomationChecks>();
     builder.Services.AddScoped<MatchAutomationChecks>();
@@ -97,14 +124,11 @@ try
     builder.Services.AddScoped<ITournamentAutomationCheckService, TournamentAutomationCheckService>();
     builder.Services.AddScoped<ITournamentStatsService, TournamentStatsService>();
 
-    // Register calculator for functional statistics processing
     builder.Services.AddScoped<IStatsCalculator, TournamentStatsCalculator>();
 
-    // Register background services
     builder.Services.AddHostedService<PlayerUpdateBackgroundService>();
     builder.Services.AddHostedService<PlayerOsuTrackUpdateBackgroundService>();
 
-    // Configure MassTransit
     builder.Services.AddMassTransit(x =>
     {
         x.AddConsumer<BeatmapFetchConsumer>();
@@ -125,22 +149,17 @@ try
                 h.Password(rabbitMqConfig.Password);
             });
 
-            // Rate-limited consumers
             cfg.ReceiveOsuApiEndpoint<BeatmapFetchConsumer>(context, QueueConstants.Osu.Beatmaps);
             cfg.ReceiveOsuApiEndpoint<MatchFetchConsumer>(context, QueueConstants.Osu.Matches);
             cfg.ReceiveOsuApiEndpoint<PlayerFetchConsumer>(context, QueueConstants.Osu.Players);
             cfg.ReceiveOsuTrackApiEndpoint<PlayerOsuTrackFetchConsumer>(context, QueueConstants.OsuTrack.Players);
 
-            // Automation check consumer (tournament-only)
             cfg.ReceiveAutomationCheckEndpoint<TournamentAutomationCheckConsumer>(context, QueueConstants.AutomatedChecks.Tournaments);
 
-            // Stats processing consumer (tournament-only)
             cfg.ReceiveStatsEndpoint<TournamentStatsConsumer>(context, QueueConstants.Stats.Tournaments);
 
-            // Tournament processed notification consumer
             cfg.ReceiveStatsEndpoint<TournamentProcessedConsumer>(context, QueueConstants.Processing.TournamentsProcessed);
 
-            // Configure retry policy
             cfg.UseMessageRetry(r => r.Intervals(
                 TimeSpan.FromSeconds(5),
                 TimeSpan.FromSeconds(10),

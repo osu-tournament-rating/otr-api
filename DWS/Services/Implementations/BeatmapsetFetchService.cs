@@ -31,18 +31,14 @@ public class BeatmapsetFetchService(
         Beatmap? existingBeatmap = null;
         try
         {
-            // Check if beatmap already exists
             existingBeatmap = await beatmapsRepository.GetAsync(osuBeatmapId);
 
-            // If beatmap already exists with valid data, skip API calls entirely
             if (existingBeatmap is not null && existingBeatmap.HasData && existingBeatmap.DataFetchStatus == DataFetchStatus.Fetched)
             {
                 logger.LogDebug("Beatmap {BeatmapId} already exists with valid data (HasData = true, DataFetchStatus = Fetched), skipping API calls", osuBeatmapId);
-                // No need to update status as it's already Fetched
                 return true;
             }
 
-            // If beatmap exists but has no data (deleted beatmap), skip API calls
             if (existingBeatmap is not null && !existingBeatmap.HasData)
             {
                 logger.LogDebug("Beatmap {BeatmapId} already marked as HasData = false, skipping API calls", osuBeatmapId);
@@ -50,7 +46,6 @@ public class BeatmapsetFetchService(
                 return false;
             }
 
-            // Set status to Fetching if beatmap exists
             if (existingBeatmap is not null)
             {
                 existingBeatmap.DataFetchStatus = DataFetchStatus.Fetching;
@@ -58,20 +53,17 @@ public class BeatmapsetFetchService(
                 await context.SaveChangesAsync(cancellationToken);
             }
 
-            // Fetch the individual beatmap to get the beatmapset ID
             BeatmapExtended? apiBeatmap = await osuClient.GetBeatmapAsync(osuBeatmapId, cancellationToken);
 
             if (apiBeatmap is null)
             {
                 logger.LogWarning("Beatmap {BeatmapId} not found in osu! API", osuBeatmapId);
 
-                // Create or update beatmap with no data flag
                 int beatmapId = await CreateOrUpdateBeatmapWithNoData(osuBeatmapId);
                 await dataCompletionService.UpdateBeatmapFetchStatusAsync(beatmapId, DataFetchStatus.NotFound, cancellationToken);
                 return false;
             }
 
-            // Fetch the entire beatmapset using the beatmapset ID
             BeatmapsetExtended? apiBeatmapset = await osuClient.GetBeatmapsetAsync(apiBeatmap.BeatmapsetId, cancellationToken);
 
             if (apiBeatmapset is null)
@@ -79,10 +71,8 @@ public class BeatmapsetFetchService(
                 logger.LogWarning("Beatmapset {BeatmapsetId} not found in osu! API for beatmap {BeatmapId}",
                     apiBeatmap.BeatmapsetId, osuBeatmapId);
 
-                // Create a minimal beatmapset entry
                 await CreateOrUpdateBeatmapsetWithNoData(apiBeatmap.BeatmapsetId, cancellationToken);
 
-                // Mark beatmap as NotFound
                 if (existingBeatmap is not null)
                 {
                     await dataCompletionService.UpdateBeatmapFetchStatusAsync(existingBeatmap.Id, DataFetchStatus.NotFound, cancellationToken);
@@ -91,38 +81,32 @@ public class BeatmapsetFetchService(
                 return false;
             }
 
-            // Process the entire beatmapset (includes all beatmaps)
             await ProcessBeatmapsetAsync(apiBeatmapset, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
 
-            // Get all beatmaps in this set that need status updates
             List<Beatmap> beatmapsToUpdate = await context.Beatmapsets
                 .Where(bs => bs.OsuId == apiBeatmapset.Id)
                 .SelectMany(bs => bs.Beatmaps)
                 .ToListAsync(cancellationToken);
 
-            // Collect unique tournament IDs first to batch automation checks
             HashSet<int> affectedTournamentIds = [];
 
-            // Update all beatmap statuses
             foreach (Beatmap beatmap in beatmapsToUpdate)
             {
                 beatmap.DataFetchStatus = DataFetchStatus.Fetched;
                 await beatmapsRepository.UpdateAsync(beatmap);
 
-                // Find tournaments that use this beatmap (pooled or in games)
-                var pooledTournamentIds = await context.Tournaments
+                List<int> pooledTournamentIds = await context.Tournaments
                     .Where(t => t.PooledBeatmaps.Any(b => b.Id == beatmap.Id))
                     .Select(t => t.Id)
                     .ToListAsync(cancellationToken);
 
-                var gameTournamentIds = await context.Games
+                List<int> gameTournamentIds = await context.Games
                     .Where(g => g.BeatmapId == beatmap.Id)
                     .Select(g => g.Match.TournamentId)
                     .Distinct()
                     .ToListAsync(cancellationToken);
 
-                // Add to affected tournaments set
                 foreach (int id in pooledTournamentIds)
                 {
                     affectedTournamentIds.Add(id);
@@ -135,7 +119,6 @@ public class BeatmapsetFetchService(
 
             await context.SaveChangesAsync(cancellationToken);
 
-            // Now trigger automation checks for all affected tournaments once
             logger.LogDebug("Beatmapset {BeatmapsetId} update affects {Count} tournament(s)",
                 apiBeatmapset.Id, affectedTournamentIds.Count);
 
@@ -151,7 +134,6 @@ public class BeatmapsetFetchService(
         {
             logger.LogError(ex, "Error processing beatmapset for beatmap {BeatmapId}", osuBeatmapId);
 
-            // Mark as Error if beatmap exists
             if (existingBeatmap is not null)
             {
                 await dataCompletionService.UpdateBeatmapFetchStatusAsync(existingBeatmap.Id, DataFetchStatus.Error, cancellationToken);
@@ -182,8 +164,6 @@ public class BeatmapsetFetchService(
         }
         else
         {
-            // If we already have data for this beatmap, keep it and just mark HasData as false
-            // This preserves existing data when the API returns null
             beatmap.HasData = false;
             logger.LogDebug("Beatmap {BeatmapId} returned null from API, marking HasData as false", beatmapId);
             await beatmapsRepository.UpdateAsync(beatmap);
@@ -207,7 +187,6 @@ public class BeatmapsetFetchService(
             beatmapsetsRepository.Add(beatmapset);
         }
 
-        // Mark all beatmaps in this set as HasData = false
         if (beatmapset.Id > 0)
         {
             await beatmapsetsRepository.MarkBeatmapsAsNoDataAsync(beatmapset.Id);
@@ -223,20 +202,16 @@ public class BeatmapsetFetchService(
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     private async Task ProcessBeatmapsetAsync(BeatmapsetExtended apiBeatmapset, CancellationToken cancellationToken)
     {
-        // Get or create beatmapset
         Beatmapset beatmapset = await GetOrCreateBeatmapsetAsync(apiBeatmapset.Id);
 
-        // Update beatmapset data
         mapper.Map(apiBeatmapset, beatmapset);
 
-        // Handle creator
         if (apiBeatmapset.User is not null)
         {
             Player creator = await LoadOrCreatePlayerAsync(apiBeatmapset.User);
             beatmapset.Creator = creator;
         }
 
-        // Process all beatmaps in the set
         await ProcessBeatmapsAsync(beatmapset, apiBeatmapset.Beatmaps, cancellationToken);
 
         logger.LogDebug("Updated beatmapset {BeatmapsetId} with {BeatmapCount} beatmaps",
@@ -275,7 +250,6 @@ public class BeatmapsetFetchService(
         {
             Beatmap existingBeatmap = await GetOrCreateBeatmapAsync(beatmapset, apiBeatmap, cancellationToken);
 
-            // Update beatmap from API data
             mapper.Map(apiBeatmap, existingBeatmap);
         }
     }
@@ -297,14 +271,12 @@ public class BeatmapsetFetchService(
         }
 
         {
-            // Check if beatmap exists in database
             existingBeatmap = await context.Beatmaps
                                   .FirstOrDefaultAsync(b => b.OsuId == apiBeatmap.Id, cancellationToken)
                               ?? await beatmapsRepository.GetAsync(apiBeatmap.Id);
 
             if (existingBeatmap is null)
             {
-                // Create new beatmap with correct beatmapset relationship
                 existingBeatmap = new Beatmap
                 {
                     OsuId = apiBeatmap.Id,
@@ -314,15 +286,12 @@ public class BeatmapsetFetchService(
             }
             else if (existingBeatmap.BeatmapsetId != beatmapset.Id)
             {
-                // Beatmap exists but belongs to a different beatmapset
-                // This shouldn't happen in normal circumstances, log a warning
                 logger.LogWarning(
                     "Beatmap {BeatmapId} already exists with BeatmapsetId {ExistingBeatmapsetId}, " +
                     "but API indicates it should belong to BeatmapsetId {ExpectedBeatmapsetId}",
                     apiBeatmap.Id, existingBeatmap.BeatmapsetId, beatmapset.Id);
             }
 
-            // Beatmap exists with correct beatmapset ID, just add to collection
             beatmapset.Beatmaps.Add(existingBeatmap);
         }
 
@@ -339,12 +308,10 @@ public class BeatmapsetFetchService(
     {
         Player player = await playersRepository.GetOrCreateAsync(apiUser.Id);
 
-        // Update player data
         mapper.Map(apiUser, player);
 
         if (player.Id == 0)
         {
-            // Player is newly created (not yet saved)
             logger.LogDebug("Created new player {PlayerId} ({Username})", apiUser.Id, apiUser.Username);
         }
 

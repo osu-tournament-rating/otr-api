@@ -35,14 +35,12 @@ public class MatchFetchService(
 
         try
         {
-            // Fetch the match from osu! API
             MultiplayerMatch? osuMatch = await osuClient.GetMatchAsync(osuMatchId, cancellationToken);
 
             if (osuMatch is null)
             {
                 logger.LogWarning("Match {OsuMatchId} not found in osu! API", osuMatchId);
 
-                // Check if match exists in our database to mark as NotFound
                 IEnumerable<Match> existingMatches = await matchesRepository.GetAsync([osuMatchId]);
                 Match? existingMatch = existingMatches.FirstOrDefault();
 
@@ -54,11 +52,9 @@ public class MatchFetchService(
                 return false;
             }
 
-            // Process the match data
             int matchId = await ProcessMatchAsync(osuMatch, cancellationToken);
             await context.SaveChangesAsync(cancellationToken);
 
-            // Mark as Fetched - the completion service will check if beatmaps are also ready
             await dataCompletionService.UpdateMatchFetchStatusAsync(matchId, DataFetchStatus.Fetched, cancellationToken);
 
             return true;
@@ -67,7 +63,6 @@ public class MatchFetchService(
         {
             logger.LogError(ex, "Error processing match {OsuMatchId}", osuMatchId);
 
-            // Check if match exists to mark as Error
             IEnumerable<Match> existingMatches = await matchesRepository.GetAsync([osuMatchId]);
             Match? existingMatch = existingMatches.FirstOrDefault();
 
@@ -88,31 +83,26 @@ public class MatchFetchService(
     /// <returns>The database ID of the processed match</returns>
     private async Task<int> ProcessMatchAsync(MultiplayerMatch osuMatch, CancellationToken cancellationToken)
     {
-        // Check if match already exists
         IEnumerable<Match> existingMatches = await matchesRepository.GetAsync([osuMatch.Match.Id]);
         Match? existingMatch = existingMatches.FirstOrDefault();
 
         Match match;
         if (existingMatch is not null)
         {
-            // Update existing match with fresh data
             match = existingMatch;
             mapper.Map(osuMatch, match);
-            match.DataFetchStatus = DataFetchStatus.Fetching; // Set status while processing
+            match.DataFetchStatus = DataFetchStatus.Fetching;
             await matchesRepository.UpdateAsync(match);
         }
         else
         {
-            // Create new match
             match = mapper.Map<Match>(osuMatch);
-            match.DataFetchStatus = DataFetchStatus.Fetching; // Set status while processing
+            match.DataFetchStatus = DataFetchStatus.Fetching;
             await matchesRepository.CreateAsync(match);
         }
 
-        // Process players first (needed for game scores)
         await ProcessPlayersAsync(osuMatch);
 
-        // Process games
         await ProcessGamesAsync(match, osuMatch, cancellationToken);
 
         return match.Id;
@@ -125,17 +115,14 @@ public class MatchFetchService(
     /// <param name="apiMatch">The match data containing player information.</param>
     private async Task ProcessPlayersAsync(MultiplayerMatch apiMatch)
     {
-        // Get all unique player IDs from match users
         var playerIds = apiMatch.Users
             .Select(u => u.Id)
             .Distinct()
             .ToList();
 
-        // Check which players already exist
         IEnumerable<Player> existingPlayers = await playersRepository.GetAsync(playerIds);
         var existingPlayerIds = existingPlayers.Select(p => p.OsuId).ToHashSet();
 
-        // Create missing players
         var newPlayers = apiMatch.Users
             .Where(u => !existingPlayerIds.Contains(u.Id))
             .Select(mapper.Map<Player>)
@@ -159,7 +146,6 @@ public class MatchFetchService(
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     private async Task ProcessGamesAsync(Match match, MultiplayerMatch apiMatch, CancellationToken cancellationToken)
     {
-        // Extract games from match events
         var gameEvents = apiMatch.Events
             .Where(e => e.Detail.Type == MultiplayerEventType.Game && e.Game != null)
             .Select(e => e.Game!)
@@ -167,8 +153,6 @@ public class MatchFetchService(
 
         foreach (MultiplayerGame apiGame in gameEvents)
         {
-            // Check if game already exists
-            // Note: We search by osu ID as games should be unique by their osu ID
             Game? existingGame = await context.Games
                 .Where(g => g.OsuId == apiGame.Id)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -176,19 +160,16 @@ public class MatchFetchService(
             Game game;
             if (existingGame is not null)
             {
-                // Update existing game
                 game = existingGame;
                 mapper.Map(apiGame, game);
                 await gamesRepository.UpdateAsync(game);
             }
             else
             {
-                // Create new game
                 game = await CreateGameFromApiAsync(match, apiGame, cancellationToken);
                 await gamesRepository.CreateAsync(game);
             }
 
-            // Process game scores
             await ProcessGameScoresAsync(game, apiGame, cancellationToken);
         }
     }
@@ -204,13 +185,11 @@ public class MatchFetchService(
     {
         Beatmap? beatmap = null;
 
-        // Ensure beatmap exists
         if (apiGame.BeatmapId > 0)
         {
             beatmap = await beatmapsRepository.GetAsync(apiGame.BeatmapId);
             if (beatmap is null)
             {
-                // Create placeholder beatmap with NotFetched status
                 beatmap = new Beatmap
                 {
                     OsuId = apiGame.BeatmapId,
@@ -218,7 +197,6 @@ public class MatchFetchService(
                 };
                 await beatmapsRepository.CreateAsync(beatmap);
 
-                // Queue it for processing
                 var fetchBeatmapMessage = new FetchBeatmapMessage
                 {
                     BeatmapId = apiGame.BeatmapId,
@@ -232,11 +210,8 @@ public class MatchFetchService(
 
                 logger.LogDebug("Queued beatmap {BeatmapId} for fetching", apiGame.BeatmapId);
             }
-            else if (beatmap.DataFetchStatus == DataFetchStatus.NotFetched ||
-                     (beatmap.DataFetchStatus != DataFetchStatus.Fetched && beatmap.HasData))
+            else if (beatmap.DataFetchStatus == DataFetchStatus.NotFetched)
             {
-                // Beatmap exists but hasn't been fetched yet, or has incomplete data
-                // Queue it for processing only if it needs fetching
                 var fetchBeatmapMessage = new FetchBeatmapMessage
                 {
                     BeatmapId = apiGame.BeatmapId,
@@ -253,7 +228,6 @@ public class MatchFetchService(
             }
             else
             {
-                // Beatmap already has valid data or is marked as not found
                 logger.LogDebug("Beatmap {BeatmapId} already has data (status: {Status}, hasData: {HasData}), no fetch required",
                     apiGame.BeatmapId, beatmap.DataFetchStatus, beatmap.HasData);
             }
@@ -274,7 +248,6 @@ public class MatchFetchService(
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     private async Task ProcessGameScoresAsync(Game game, MultiplayerGame apiGame, CancellationToken cancellationToken)
     {
-        // Get existing scores for this game
         List<DbGameScore> existingScores = await context.GameScores
             .Include(gs => gs.Player)
             .Where(gs => gs.GameId == game.Id)
@@ -286,13 +259,11 @@ public class MatchFetchService(
             existingScoreMap[(score.PlayerId, score.Team)] = score;
         }
 
-        // Get all player IDs from scores to avoid N+1 queries
         var playerIds = apiGame.Scores
             .Select(s => s.UserId)
             .Distinct()
             .ToList();
 
-        // Fetch all players at once
         IEnumerable<Player> players = await playersRepository.GetAsync(playerIds);
         var playerMap = players.ToDictionary(p => p.OsuId, p => p);
 
@@ -308,14 +279,12 @@ public class MatchFetchService(
 
             if (existingScoreMap.TryGetValue(key, out DbGameScore? existingScore))
             {
-                // Update existing score
                 mapper.Map(apiScore, existingScore);
                 existingScore.Ruleset = game.Ruleset;
                 await gameScoresRepository.UpdateAsync(existingScore);
             }
             else
             {
-                // Create new score
                 DbGameScore score = mapper.Map<DbGameScore>(apiScore);
                 score.GameId = game.Id;
                 score.PlayerId = player.Id;

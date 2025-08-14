@@ -2,9 +2,11 @@ using Common.Enums;
 using Database;
 using DWS.Configurations;
 using DWS.Messages;
+using DWS.Services.Interfaces;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using OsuApiClient.Enums;
 
 namespace DWS.Services;
 
@@ -41,7 +43,6 @@ public class PlayerOsuTrackUpdateBackgroundService(
             }
             catch (OperationCanceledException)
             {
-                // Expected when cancellation is requested
                 logger.LogDebug("Player osu!track update check cancelled");
             }
             catch (Exception ex)
@@ -62,13 +63,13 @@ public class PlayerOsuTrackUpdateBackgroundService(
         using IServiceScope scope = serviceProvider.CreateScope();
         OtrContext context = scope.ServiceProvider.GetRequiredService<OtrContext>();
         IPublishEndpoint publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
+        IMessageDeduplicationService deduplicationService = scope.ServiceProvider.GetRequiredService<IMessageDeduplicationService>();
 
         DateTime cutoffDate = DateTime.UtcNow.AddDays(-_configuration.OutdatedAfterDays);
 
         logger.LogDebug("Checking for players with osu!track data older than {CutoffDate:u} [Max Messages: {MaxMessages}]",
             cutoffDate, _configuration.MaxMessagesPerCycle);
 
-        // Query for outdated players - prioritize oldest data first
         var outdatedPlayers = await context.Players
             .AsNoTracking()
             .Where(p => p.OsuTrackLastFetch < cutoffDate)
@@ -86,6 +87,7 @@ public class PlayerOsuTrackUpdateBackgroundService(
         logger.LogInformation("Found {Count} players with outdated osu!track data", outdatedPlayers.Count);
 
         int enqueuedCount = 0;
+        int skippedCount = 0;
         int failedCount = 0;
 
         foreach (var player in outdatedPlayers)
@@ -99,6 +101,17 @@ public class PlayerOsuTrackUpdateBackgroundService(
                 ["CorrelationId"] = correlationId
             }))
             {
+                if (!await deduplicationService.TryReserveFetchAsync(
+                    FetchResourceType.Player,
+                    player.OsuId,
+                    FetchPlatform.OsuTrack))
+                {
+                    logger.LogDebug("Skipping player {OsuId} ({Username}) - already pending or recently processed for osu!track",
+                        player.OsuId, player.Username);
+                    skippedCount++;
+                    continue;
+                }
+
                 try
                 {
                     var message = new FetchPlayerOsuTrackMessage
@@ -115,21 +128,26 @@ public class PlayerOsuTrackUpdateBackgroundService(
                     }, cancellationToken);
 
                     enqueuedCount++;
-                    logger.LogDebug("Enqueued player osu!track fetch message [Username: {Username} | Last Fetch: {LastFetch:u} | Days Outdated: {DaysOutdated:F1}]",
+                    logger.LogInformation("Enqueued player osu!track fetch message [Username: {Username} | Last Fetch: {LastFetch:u} | Days Outdated: {DaysOutdated:F1}]",
                         player.Username, player.OsuTrackLastFetch, (DateTime.UtcNow - player.OsuTrackLastFetch).TotalDays);
                 }
                 catch (Exception ex)
                 {
+                    await deduplicationService.ReleaseFetchAsync(
+                        FetchResourceType.Player,
+                        player.OsuId,
+                        FetchPlatform.OsuTrack);
+
                     failedCount++;
                     logger.LogError(ex, "Failed to enqueue osu!track message for player [Username: {Username}]", player.Username);
                 }
             }
         }
 
-        if (failedCount > 0)
+        if (failedCount > 0 || skippedCount > 0)
         {
-            logger.LogWarning("Player osu!track update cycle completed [Enqueued: {EnqueuedCount} | Failed: {FailedCount} | Total: {TotalCount}]",
-                enqueuedCount, failedCount, outdatedPlayers.Count);
+            logger.LogWarning("Player osu!track update cycle completed [Enqueued: {EnqueuedCount} | Skipped: {SkippedCount} | Failed: {FailedCount} | Total: {TotalCount}]",
+                enqueuedCount, skippedCount, failedCount, outdatedPlayers.Count);
         }
         else if (enqueuedCount > 0)
         {
