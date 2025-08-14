@@ -30,6 +30,8 @@ RUN dotnet build "API/API.csproj" -c Release -o /app/build
 
 # Stage 3: Publish
 FROM build AS publish
+# Remove example.appsettings.json files to prevent publish conflicts
+RUN find . -name "example.appsettings.json" -type f -delete
 RUN dotnet publish "API/API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Stage 4: Final runtime image
