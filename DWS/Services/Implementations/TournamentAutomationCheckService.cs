@@ -32,14 +32,36 @@ public class TournamentAutomationCheckService(
             return false;
         }
 
-        // Check if the entity needs processing based on current verification status
-        if (!overrideVerifiedState &&
-            tournament.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
+        // Store the tournament status before processing
+        VerificationStatus tournamentStatusBefore = tournament.VerificationStatus;
+
+        // Load matches with games and scores for automation checks
+        await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(tournament);
+
+        // Perform HeadToHead to TeamVs conversion unless tournament is already verified
+        // Rejected tournaments may have been rejected on submission but still need conversion
+        if (tournament.VerificationStatus != VerificationStatus.Verified)
+        {
+            PerformHeadToHeadConversion(tournament);
+        }
+
+        // Check if automation checks should be skipped based on current verification status
+        bool skipAutomationChecks = !overrideVerifiedState &&
+            tournament.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected;
+
+        if (skipAutomationChecks)
         {
             logger.LogInformation(
                 "Skipping automation checks for tournament {TournamentId} with verification status {VerificationStatus}",
                 entityId,
                 tournament.VerificationStatus);
+
+            // Save any changes from HeadToHead conversion (if it was performed for a Rejected tournament)
+            if (tournament.VerificationStatus == VerificationStatus.Rejected)
+            {
+                await tournamentsRepository.UpdateAsync(tournament);
+            }
+
             return tournament.VerificationStatus == VerificationStatus.Verified;
         }
 
@@ -53,19 +75,8 @@ public class TournamentAutomationCheckService(
                 entityId);
         }
 
-        // Store the tournament status before processing
-        VerificationStatus tournamentStatusBefore = tournament.VerificationStatus;
-
-        // Load matches with games and scores for automation checks
-        await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(tournament);
-
         // Process all child entities first (bottom-up approach)
         ProcessAllScores(tournament, overrideVerifiedState);
-
-        // Perform HeadToHead to TeamVs conversion BEFORE game checks
-        // This ensures games are in the correct TeamType before validation
-        PerformHeadToHeadConversion(tournament);
-
         ProcessAllGames(tournament, overrideVerifiedState);
         ProcessAllMatches(tournament, overrideVerifiedState);
 
@@ -236,7 +247,8 @@ public class TournamentAutomationCheckService(
 
     /// <summary>
     /// Performs HeadToHead to TeamVs conversion for all matches in the tournament.
-    /// This must be done BEFORE game automation checks to ensure games have the correct TeamType.
+    /// This runs for all tournaments except those already Verified, ensuring data appears correctly on the website.
+    /// Rejected tournaments still need conversion as they may have been rejected on submission.
     /// </summary>
     /// <param name="tournament">The tournament containing the matches to convert</param>
     private void PerformHeadToHeadConversion(Tournament tournament)
@@ -245,13 +257,8 @@ public class TournamentAutomationCheckService(
 
         foreach (Match match in tournament.Matches)
         {
-            // Skip if match is already rejected or verified
-            if (match.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
-            {
-                continue;
-            }
-
-            // Perform the conversion using the match automation checks logic
+            // Always perform the conversion regardless of match verification status
+            // This is critical for data display consistency on the website
             matchAutomationChecks.PerformHeadToHeadConversion(match, tournament);
         }
     }
