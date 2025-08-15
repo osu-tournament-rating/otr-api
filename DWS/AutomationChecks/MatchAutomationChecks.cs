@@ -21,8 +21,8 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
     {
         logger.LogTrace("Processing match {MatchId}", match.Id);
 
-        // Head-to-head check is a conversion utility, modifies entities directly
-        PerformHeadToHeadCheck(match, tournament);
+        // Note: HeadToHead to TeamVs conversion is now performed earlier in the process
+        // by TournamentAutomationCheckService.PerformHeadToHeadConversion()
 
         // Checks that modify warning flags
         MatchBeatmapCheck(match);
@@ -151,8 +151,9 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
     /// <summary>
     /// Checks and converts matches from 1v1 tournaments where games were
     /// incorrectly set to HeadToHead instead of TeamVs.
+    /// This method is called BEFORE game automation checks to ensure correct TeamType validation.
     /// </summary>
-    private void PerformHeadToHeadCheck(Match match, Tournament tournament)
+    public void PerformHeadToHeadConversion(Match match, Tournament tournament)
     {
         if (!IsMatchEligibleForProcessing(match, tournament))
         {

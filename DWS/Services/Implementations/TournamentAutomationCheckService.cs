@@ -61,6 +61,11 @@ public class TournamentAutomationCheckService(
 
         // Process all child entities first (bottom-up approach)
         ProcessAllScores(tournament, overrideVerifiedState);
+
+        // Perform HeadToHead to TeamVs conversion BEFORE game checks
+        // This ensures games are in the correct TeamType before validation
+        PerformHeadToHeadConversion(tournament);
+
         ProcessAllGames(tournament, overrideVerifiedState);
         ProcessAllMatches(tournament, overrideVerifiedState);
 
@@ -226,6 +231,28 @@ public class TournamentAutomationCheckService(
                 match.VerificationStatus = VerificationStatus.PreRejected;
                 match.RejectionReason = matchRejectionReason;
             }
+        }
+    }
+
+    /// <summary>
+    /// Performs HeadToHead to TeamVs conversion for all matches in the tournament.
+    /// This must be done BEFORE game automation checks to ensure games have the correct TeamType.
+    /// </summary>
+    /// <param name="tournament">The tournament containing the matches to convert</param>
+    private void PerformHeadToHeadConversion(Tournament tournament)
+    {
+        logger.LogDebug("Performing HeadToHead to TeamVs conversion for tournament {TournamentId}", tournament.Id);
+
+        foreach (Match match in tournament.Matches)
+        {
+            // Skip if match is already rejected or verified
+            if (match.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
+            {
+                continue;
+            }
+
+            // Perform the conversion using the match automation checks logic
+            matchAutomationChecks.PerformHeadToHeadConversion(match, tournament);
         }
     }
 }
