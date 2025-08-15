@@ -43,9 +43,6 @@ public class TournamentsService(
             RankRangeLowerBound = submission.RankRangeLowerBound,
             Ruleset = submission.Ruleset,
             LobbySize = submission.LobbySize,
-            ProcessingStatus = preApprove
-                ? TournamentProcessingStatus.NeedsMatchData
-                : TournamentProcessingStatus.NeedsApproval,
             SubmittedByUserId = submitterUserId,
             Matches = [.. submittedMatchIds
                 .Except(existingMatchIds)
@@ -60,22 +57,15 @@ public class TournamentsService(
         };
 
         // Handle reject-on-submit cases
+        // Note: We only mark the tournament as rejected, not the child entities.
+        // The HeadToHead converter needs access to non-rejected data to perform conversions.
+        // Child rejection will be cascaded later by the automation checks after conversion.
         if (submission.RejectionReason.HasValue && submission.RejectionReason.Value is not TournamentRejectionReason.None)
         {
-            newTournament.ProcessingStatus = TournamentProcessingStatus.Done;
             newTournament.RejectionReason = submission.RejectionReason.Value;
 
             newTournament.VerificationStatus = VerificationStatus.Rejected;
             newTournament.VerifiedByUserId = submitterUserId;
-
-            foreach (Match match in newTournament.Matches)
-            {
-                match.ProcessingStatus = MatchProcessingStatus.Done;
-                match.RejectionReason = MatchRejectionReason.RejectedTournament;
-
-                match.VerificationStatus = VerificationStatus.Rejected;
-                match.VerifiedByUserId = submitterUserId;
-            }
         }
 
         Tournament tournament = await tournamentsRepository.CreateAsync(newTournament);
@@ -184,6 +174,8 @@ public class TournamentsService(
 
         mapper.Map(wrapper, existing);
 
+        // When manually rejecting a tournament via update, cascade to children
+        // Note: HeadToHead conversion should have already run during initial processing
         if (wrapper.VerificationStatus == VerificationStatus.Rejected)
         {
             await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(existing);

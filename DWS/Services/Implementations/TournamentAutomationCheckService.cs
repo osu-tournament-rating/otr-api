@@ -38,11 +38,20 @@ public class TournamentAutomationCheckService(
         // Load matches with games and scores for automation checks
         await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(tournament);
 
-        // Perform HeadToHead to TeamVs conversion unless tournament is already verified
-        // Rejected tournaments may have been rejected on submission but still need conversion
+        // Perform HeadToHead to TeamVs conversion before any rejection processing
+        // This must happen BEFORE cascading rejections to ensure data is accessible
         if (tournament.VerificationStatus != VerificationStatus.Verified)
         {
             PerformHeadToHeadConversion(tournament);
+        }
+
+        // If tournament was rejected on submission, cascade rejection to children AFTER conversion
+        if (tournament.VerificationStatus == VerificationStatus.Rejected)
+        {
+            logger.LogInformation(
+                "Cascading rejection status to child entities for tournament {TournamentId} after HeadToHead conversion",
+                entityId);
+            tournament.RejectAllChildren();
         }
 
         // Check if automation checks should be skipped based on current verification status

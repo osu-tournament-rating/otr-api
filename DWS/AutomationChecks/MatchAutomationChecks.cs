@@ -199,18 +199,12 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
 
     private bool IsMatchEligibleForProcessing(Match match, Tournament tournament)
     {
-        if (match.Games.Count == 0)
-        {
-            logger.LogTrace("Match {MatchId} has no games", match.Id);
-            return false;
-        }
-
         if (tournament.LobbySize == 1)
         {
             return true;
         }
 
-        logger.LogTrace("Match {MatchId} tournament team size is not 1 [Team size: {TeamSize}]", match.Id, tournament.LobbySize);
+        logger.LogTrace("Match {MatchId} tournament lobby size is not 1 [Team size: {TeamSize}]", match.Id, tournament.LobbySize);
         return false;
     }
 
