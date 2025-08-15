@@ -1,3 +1,4 @@
+using Common.Enums;
 using Database.Entities;
 using Database.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,6 @@ public class BeatmapsetsRepository(OtrContext context) : Repository<Beatmapset>(
         return await _context.Beatmaps
             .Where(b => b.BeatmapsetId == beatmapsetId)
             .ExecuteUpdateAsync(setters => setters
-                .SetProperty(b => b.HasData, false));
+                .SetProperty(b => b.DataFetchStatus, DataFetchStatus.NotFound));
     }
 }

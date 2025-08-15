@@ -201,7 +201,7 @@ public class DwsMapperProfile : Profile
         // BeatmapExtended → DbBeatmap
         CreateMap<BeatmapExtended, DbBeatmap>()
             .ForMember(dest => dest.OsuId, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.HasData, opt => opt.MapFrom(src => true))
+            .ForMember(dest => dest.DataFetchStatus, opt => opt.MapFrom(src => DataFetchStatus.Fetched))
             .ForMember(dest => dest.Ruleset, opt => opt.MapFrom(src => src.Ruleset))
             .ForMember(dest => dest.RankedStatus, opt => opt.MapFrom(src => src.RankedStatus))
             .ForMember(dest => dest.DiffName, opt => opt.MapFrom(src => src.DifficultyName))

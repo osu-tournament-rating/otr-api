@@ -93,7 +93,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
 
         // Verify all beatmaps were created
         Assert.Equal(3, beatmapset.Beatmaps.Count);
-        Assert.All(beatmapset.Beatmaps, b => Assert.True(b.HasData));
+        Assert.All(beatmapset.Beatmaps, b => Assert.Equal(Common.Enums.DataFetchStatus.Fetched, b.DataFetchStatus));
 
         Beatmap? easyBeatmap = beatmapset.Beatmaps.FirstOrDefault(b => b.DiffName == "Easy");
         Assert.NotNull(easyBeatmap);
@@ -115,11 +115,11 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         // Arrange
         const long beatmapId = 1;
 
-        // Create existing beatmap with HasData = false
+        // Create existing beatmap with DataFetchStatus = NotFound
         var existingBeatmap = new Beatmap
         {
             OsuId = beatmapId,
-            HasData = false
+            DataFetchStatus = Common.Enums.DataFetchStatus.NotFound
         };
         Context.Beatmaps.Add(existingBeatmap);
         await Context.SaveChangesAsync();
@@ -150,10 +150,10 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         // Assert
         Assert.False(result);
 
-        // Verify beatmap was created with HasData = false
+        // Verify beatmap was created with DataFetchStatus = NotFound
         Beatmap? beatmap = await BeatmapsRepository.GetAsync(beatmapId);
         Assert.NotNull(beatmap);
-        Assert.False(beatmap.HasData);
+        Assert.Equal(Common.Enums.DataFetchStatus.NotFound, beatmap.DataFetchStatus);
 
         // Verify only beatmap API call was made
         MockOsuClient.Verify(x => x.GetBeatmapAsync(beatmapId, It.IsAny<CancellationToken>()), Times.Once);
@@ -249,17 +249,17 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
     }
 
     [Fact]
-    public async Task FetchAndPersistBeatmapsetByBeatmapIdAsync_WhenBeatmapExistsWithData_PreservesExistingDataOnApiNull()
+    public async Task FetchAndPersistBeatmapsetByBeatmapIdAsync_WhenBeatmapExistsWithFetchedStatus_SkipsApiCallAndReturnsTrue()
     {
         // Arrange
         const long beatmapId = 1;
         const long beatmapsetId = 100;
 
-        // Create existing beatmap with data
+        // Create existing beatmap with Fetched status
         var existingBeatmap = new Beatmap
         {
             OsuId = beatmapId,
-            HasData = true,
+            DataFetchStatus = Common.Enums.DataFetchStatus.Fetched,
             DiffName = "Existing Diff",
             Sr = 5.5,
             Beatmapset = new Beatmapset
@@ -272,26 +272,26 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         Context.Beatmaps.Add(existingBeatmap);
         await Context.SaveChangesAsync();
 
-        MockOsuClient.Setup(x => x.GetBeatmapAsync(beatmapId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((BeatmapExtended?)null);
-
         // Act
         bool result = await BeatmapsetService.FetchAndPersistBeatmapsetAsync(beatmapId);
 
-        // Assert
-        Assert.False(result);
+        // Assert - Should return true since beatmap already has fetched data
+        Assert.True(result);
 
-        // Verify beatmap data was preserved but HasData was set to false
+        // Verify beatmap data and status remain unchanged
         Beatmap? beatmap = await Context.Beatmaps
             .Include(b => b.Beatmapset)
             .FirstOrDefaultAsync(b => b.OsuId == beatmapId);
 
         Assert.NotNull(beatmap);
-        Assert.False(beatmap.HasData);
+        Assert.Equal(Common.Enums.DataFetchStatus.Fetched, beatmap.DataFetchStatus);
         Assert.Equal("Existing Diff", beatmap.DiffName);
         Assert.Equal(5.5, beatmap.Sr);
         Assert.NotNull(beatmap.Beatmapset);
         Assert.Equal("Existing Artist", beatmap.Beatmapset.Artist);
+
+        // Verify no API calls were made since we already have the data
+        MockOsuClient.Verify(x => x.GetBeatmapAsync(It.IsAny<long>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -306,7 +306,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         var existingBeatmap = new Beatmap
         {
             OsuId = existingBeatmapId,
-            HasData = true,
+            DataFetchStatus = Common.Enums.DataFetchStatus.Fetched,
             DiffName = "Existing",
             Beatmapset = new Beatmapset
             {
@@ -452,7 +452,6 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         {
             OsuId = beatmapId,
             BeatmapsetId = null,
-            HasData = true,
             DataFetchStatus = Common.Enums.DataFetchStatus.Fetched,
             DiffName = "Existing Diff",
             Sr = 4.5
@@ -480,7 +479,6 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         Assert.NotNull(beatmap);
         Assert.Equal("Existing Diff", beatmap.DiffName);
         Assert.Equal(4.5, beatmap.Sr);
-        Assert.True(beatmap.HasData);
         Assert.Equal(Common.Enums.DataFetchStatus.Fetched, beatmap.DataFetchStatus);
     }
 
@@ -496,8 +494,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         {
             OsuId = beatmapId,
             BeatmapsetId = null,
-            HasData = true, // Has data flag is true
-            DataFetchStatus = Common.Enums.DataFetchStatus.NotFetched // But status is NotFetched
+            DataFetchStatus = Common.Enums.DataFetchStatus.NotFetched // Status is NotFetched
         };
         await BeatmapsRepository.CreateAsync(existingBeatmap);
 
@@ -536,7 +533,7 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         Assert.NotNull(beatmap);
         Assert.Equal("Fetched Diff", beatmap.DiffName);
         Assert.Equal(5.0, beatmap.Sr);
-        Assert.True(beatmap.HasData);
+        Assert.Equal(Common.Enums.DataFetchStatus.Fetched, beatmap.DataFetchStatus);
     }
 
     [Fact]
@@ -551,7 +548,6 @@ public class BeatmapsetFetchingTests : IntegrationTestBase
         {
             OsuId = beatmapId,
             BeatmapsetId = null,
-            HasData = true,
             DataFetchStatus = Common.Enums.DataFetchStatus.Error // Previous fetch failed
         };
         await BeatmapsRepository.CreateAsync(existingBeatmap);

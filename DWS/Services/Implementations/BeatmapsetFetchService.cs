@@ -33,15 +33,15 @@ public class BeatmapsetFetchService(
         {
             existingBeatmap = await beatmapsRepository.GetAsync(osuBeatmapId);
 
-            if (existingBeatmap is not null && existingBeatmap.HasData && existingBeatmap.DataFetchStatus == DataFetchStatus.Fetched)
+            if (existingBeatmap is not null && existingBeatmap.DataFetchStatus == DataFetchStatus.Fetched)
             {
-                logger.LogDebug("Beatmap {BeatmapId} already exists with valid data (HasData = true, DataFetchStatus = Fetched), skipping API calls", osuBeatmapId);
+                logger.LogDebug("Beatmap {BeatmapId} already exists with valid data (DataFetchStatus = Fetched), skipping API calls", osuBeatmapId);
                 return true;
             }
 
-            if (existingBeatmap is not null && !existingBeatmap.HasData)
+            if (existingBeatmap is not null && existingBeatmap.DataFetchStatus == DataFetchStatus.NotFound)
             {
-                logger.LogDebug("Beatmap {BeatmapId} already marked as HasData = false, skipping API calls", osuBeatmapId);
+                logger.LogDebug("Beatmap {BeatmapId} already marked as NotFound, skipping API calls", osuBeatmapId);
                 await dataCompletionService.UpdateBeatmapFetchStatusAsync(existingBeatmap.Id, DataFetchStatus.NotFound, cancellationToken);
                 return false;
             }
@@ -157,15 +157,14 @@ public class BeatmapsetFetchService(
             beatmap = new Beatmap
             {
                 OsuId = beatmapId,
-                HasData = false,
                 DataFetchStatus = DataFetchStatus.NotFound
             };
             await beatmapsRepository.CreateAsync(beatmap);
         }
         else
         {
-            beatmap.HasData = false;
-            logger.LogDebug("Beatmap {BeatmapId} returned null from API, marking HasData as false", beatmapId);
+            beatmap.DataFetchStatus = DataFetchStatus.NotFound;
+            logger.LogDebug("Beatmap {BeatmapId} returned null from API, marking DataFetchStatus as NotFound", beatmapId);
             await beatmapsRepository.UpdateAsync(beatmap);
         }
 

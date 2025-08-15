@@ -224,13 +224,13 @@ public class MatchFetchService(
                     ctx.SetPriority((byte)fetchBeatmapMessage.Priority);
                 }, cancellationToken);
 
-                logger.LogDebug("Queued existing beatmap {BeatmapId} for fetching (status: {Status}, hasData: {HasData})",
-                    apiGame.BeatmapId, beatmap.DataFetchStatus, beatmap.HasData);
+                logger.LogDebug("Queued existing beatmap {BeatmapId} for fetching (status: {Status})",
+                    apiGame.BeatmapId, beatmap.DataFetchStatus);
             }
             else
             {
-                logger.LogDebug("Beatmap {BeatmapId} already has data (status: {Status}, hasData: {HasData}), no fetch required",
-                    apiGame.BeatmapId, beatmap.DataFetchStatus, beatmap.HasData);
+                logger.LogDebug("Beatmap {BeatmapId} already has data (status: {Status}), no fetch required",
+                    apiGame.BeatmapId, beatmap.DataFetchStatus);
             }
         }
 

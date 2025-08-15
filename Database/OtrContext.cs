@@ -67,8 +67,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(b => b.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
-            entity.Property(b => b.HasData).HasDefaultValue(true);
-
             // Relation: BeatmapAttributes
             entity
                 .HasMany(b => b.Attributes)

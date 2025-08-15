@@ -1,3 +1,4 @@
+using Common.Enums;
 using Database.Entities;
 using DWS.Tests.DataFetching.TestFixtures;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +31,7 @@ public class PostgreSqlContainerTests : PostgreSqlTestFixture, IAsyncLifetime
         var beatmap = new Beatmap
         {
             OsuId = 12345,
-            HasData = true,
+            DataFetchStatus = DataFetchStatus.Fetched,
             DiffName = "Test Difficulty",
             Sr = 5.5
         };
