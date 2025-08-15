@@ -1,5 +1,6 @@
 using AutoMapper;
 using Common.Enums;
+using Common.Enums.Verification;
 using Database;
 using Database.Entities;
 using Database.Repositories.Interfaces;
@@ -236,6 +237,17 @@ public class MatchFetchService(
         Game game = mapper.Map<Game>(apiGame);
         game.MatchId = match.Id;
         game.BeatmapId = beatmap?.Id;
+
+        // If the parent match is rejected, cascade the rejection to the newly created game
+        if (match.VerificationStatus != VerificationStatus.Rejected)
+        {
+            return game;
+        }
+
+        game.VerificationStatus = VerificationStatus.Rejected;
+        game.RejectionReason |= GameRejectionReason.RejectedMatch;
+        logger.LogInformation("Cascaded rejection to new game {GameId} from rejected match {MatchId}", game.OsuId, match.Id);
+
         return game;
     }
 
@@ -281,6 +293,14 @@ public class MatchFetchService(
             {
                 mapper.Map(apiScore, existingScore);
                 existingScore.Ruleset = game.Ruleset;
+
+                // If the parent game is rejected, cascade the rejection to updated scores
+                if (game.VerificationStatus == VerificationStatus.Rejected)
+                {
+                    existingScore.VerificationStatus = VerificationStatus.Rejected;
+                    existingScore.RejectionReason |= ScoreRejectionReason.RejectedGame;
+                }
+
                 await gameScoresRepository.UpdateAsync(existingScore);
             }
             else
@@ -289,6 +309,15 @@ public class MatchFetchService(
                 score.GameId = game.Id;
                 score.PlayerId = player.Id;
                 score.Ruleset = game.Ruleset;
+
+                // If the parent game is rejected, cascade the rejection to new scores
+                if (game.VerificationStatus == VerificationStatus.Rejected)
+                {
+                    score.VerificationStatus = VerificationStatus.Rejected;
+                    score.RejectionReason |= ScoreRejectionReason.RejectedGame;
+                    logger.LogInformation("Cascaded rejection to new score for player {PlayerId} in rejected game {GameId}", player.Id, game.Id);
+                }
+
                 await gameScoresRepository.CreateAsync(score);
             }
         }
