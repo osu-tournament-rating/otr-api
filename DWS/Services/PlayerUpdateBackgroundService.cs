@@ -88,6 +88,7 @@ public class PlayerUpdateBackgroundService(
 
         int enqueuedCount = 0;
         int skippedCount = 0;
+        int cachedCount = 0;
         int failedCount = 0;
 
         foreach (var player in outdatedPlayers)
@@ -101,12 +102,36 @@ public class PlayerUpdateBackgroundService(
                 ["CorrelationId"] = correlationId
             }))
             {
+                // Check the status to distinguish between cached and pending
+                DeduplicationStatus status = await deduplicationService.GetFetchStatusAsync(
+                    FetchResourceType.Player,
+                    player.OsuId,
+                    FetchPlatform.Osu);
+
+                if (status == DeduplicationStatus.RecentlyProcessed)
+                {
+                    logger.LogDebug("Skipping player {OsuId} ({Username}) - recently processed (cached)",
+                        player.OsuId, player.Username);
+                    cachedCount++;
+                    continue;
+                }
+
+                if (status == DeduplicationStatus.Pending)
+                {
+                    logger.LogDebug("Skipping player {OsuId} ({Username}) - already pending",
+                        player.OsuId, player.Username);
+                    skippedCount++;
+                    continue;
+                }
+
+                // Try to reserve the fetch
                 if (!await deduplicationService.TryReserveFetchAsync(
                     FetchResourceType.Player,
                     player.OsuId,
                     FetchPlatform.Osu))
                 {
-                    logger.LogDebug("Skipping player {OsuId} ({Username}) - already pending or recently processed",
+                    // This shouldn't happen given the check above, but handle it gracefully
+                    logger.LogDebug("Failed to reserve player {OsuId} ({Username}) - race condition",
                         player.OsuId, player.Username);
                     skippedCount++;
                     continue;
@@ -144,14 +169,18 @@ public class PlayerUpdateBackgroundService(
             }
         }
 
+        // Calculate the actual fetch count (excluding cached players)
+        int actualFetchCount = outdatedPlayers.Count - cachedCount;
+
         if (failedCount > 0 || skippedCount > 0)
         {
-            logger.LogWarning("Player update cycle completed [Enqueued: {EnqueuedCount} | Skipped: {SkippedCount} | Failed: {FailedCount} | Total: {TotalCount}]",
-                enqueuedCount, skippedCount, failedCount, outdatedPlayers.Count);
+            logger.LogWarning("Player update cycle completed [Enqueued: {EnqueuedCount} | Skipped (Pending): {SkippedCount} | Cached: {CachedCount} | Failed: {FailedCount} | Actual Fetches: {ActualFetchCount}/{MaxMessages}]",
+                enqueuedCount, skippedCount, cachedCount, failedCount, actualFetchCount, _configuration.MaxMessagesPerCycle);
         }
         else if (enqueuedCount > 0)
         {
-            logger.LogInformation("Successfully enqueued {EnqueuedCount} player fetch messages", enqueuedCount);
+            logger.LogInformation("Successfully enqueued {EnqueuedCount} player fetch messages [Cached: {CachedCount} | Actual Fetches: {ActualFetchCount}/{MaxMessages}]",
+                enqueuedCount, cachedCount, actualFetchCount, _configuration.MaxMessagesPerCycle);
         }
     }
 
