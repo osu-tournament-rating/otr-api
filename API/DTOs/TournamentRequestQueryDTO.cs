@@ -63,12 +63,6 @@ public class TournamentRequestQueryDTO : IPaginated
     [EnumDataType(typeof(TournamentRejectionReason))]
     public TournamentRejectionReason? RejectionReason { get; init; }
 
-    /// <summary>
-    /// Filters results for only tournaments with a specified processing status
-    /// </summary>
-    [EnumDataType(typeof(TournamentProcessingStatus))]
-    [Obsolete("This property will be removed in a future version. Processing is now handled through event-driven message queue system.")]
-    public TournamentProcessingStatus? ProcessingStatus { get; init; }
 
     /// <summary>
     /// Filters results for only tournaments submitted by a user with a specified id

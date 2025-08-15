@@ -44,7 +44,6 @@ public class TournamentAutomationChecksTests
             LobbySize = tournament.LobbySize,
             VerificationStatus = tournament.VerificationStatus,
             RejectionReason = tournament.RejectionReason,
-            ProcessingStatus = tournament.ProcessingStatus,
             SubmittedByUser = new User
             {
                 Id = 1,

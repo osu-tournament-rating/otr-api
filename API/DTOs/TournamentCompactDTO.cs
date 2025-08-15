@@ -88,12 +88,6 @@ public class TournamentCompactDTO
     [EnumDataType(typeof(VerificationStatus))]
     public VerificationStatus VerificationStatus { get; init; }
 
-    /// <summary>
-    /// The state of processing
-    /// </summary>
-    [EnumDataType(typeof(TournamentProcessingStatus))]
-    [Obsolete("This property will be removed in a future version. Processing is now handled through event-driven message queue system.")]
-    public TournamentProcessingStatus ProcessingStatus { get; init; }
 
     /// <summary>
     /// The rejection reason

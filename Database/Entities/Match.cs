@@ -16,7 +16,7 @@ namespace Database.Entities;
 /// </summary>
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<MatchAdminNote>
+public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>
 {
     private string _name = string.Empty;
 
@@ -49,9 +49,6 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
 
     public VerificationStatus VerificationStatus { get; set; }
 
-    [AuditIgnore]
-    public DateTime LastProcessingDate { get; set; }
-
     /// <summary>
     /// Rejection reason
     /// </summary>
@@ -62,11 +59,6 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// </summary>
     public MatchWarningFlags WarningFlags { get; set; }
 
-    /// <summary>
-    /// Processing status
-    /// </summary>
-    [Obsolete("This field will be removed in favor of event-driven processing")]
-    public MatchProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
     /// Status of data fetching from the osu! API

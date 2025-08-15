@@ -20,13 +20,6 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// </remarks>
     Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
 
-    /// <summary>
-    /// Gets tournaments with a <see cref="TournamentProcessingStatus"/>
-    /// that is not <see cref="TournamentProcessingStatus.Done"/>
-    /// </summary>
-    /// <param name="limit">Maximum number of tournaments</param>
-    [Obsolete("This method is deprecated. Tournament processing is now handled through event-driven message queue system.")]
-    Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit);
 
     /// <summary>
     /// Denotes if a tournament with the given name and ruleset exists
@@ -104,7 +97,6 @@ public interface ITournamentsRepository : IRepository<Tournament>
         DateTime? dateMax = null,
         VerificationStatus? verificationStatus = null,
         TournamentRejectionReason? rejectionReason = null,
-        TournamentProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
         int? lobbySize = null,
@@ -123,7 +115,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Tournament?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId);
 
     /// <summary>
-    /// Resets the VerificationStatus, ProcessingStatus, WarningFlags (if applicable), and RejectionReasons for
+    /// Resets the VerificationStatus, WarningFlags (if applicable), and RejectionReasons for
     /// the tournament and all descendant entities
     /// </summary>
     /// <param name="id">Tournament id</param>

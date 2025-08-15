@@ -11,7 +11,7 @@ namespace Database.Entities;
 /// <summary>
 /// An osu! tournament
 /// </summary>
-public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>
+public class Tournament : UpdateableEntityBase, IAdminNotableEntity<TournamentAdminNote>
 {
     private readonly string _name = string.Empty;
 
@@ -54,19 +54,11 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
 
     public VerificationStatus VerificationStatus { get; set; }
 
-    [AuditIgnore]
-    public DateTime LastProcessingDate { get; set; }
-
     /// <summary>
     /// Rejection reason
     /// </summary>
     public TournamentRejectionReason RejectionReason { get; set; }
 
-    /// <summary>
-    /// Processing status
-    /// </summary>
-    [Obsolete("This field will be removed in favor of event-driven processing")]
-    public TournamentProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
     /// Id of the <see cref="User"/> that submitted the tournament

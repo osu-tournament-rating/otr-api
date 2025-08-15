@@ -72,8 +72,6 @@ public class TournamentStatsCalculator : IStatsCalculator
         // Aggregate player tournament statistics
         AggregatePlayerTournamentStatistics(tournament, verifiedMatches);
 
-        // Update processing timestamp
-        tournament.LastProcessingDate = DateTime.UtcNow;
 
         return new StatsCalculationResult
         {
@@ -139,7 +137,6 @@ public class TournamentStatsCalculator : IStatsCalculator
             match.PlayerMatchStats.Add(stat);
         }
 
-        match.LastProcessingDate = DateTime.UtcNow;
         return true;
     }
 
@@ -175,7 +172,6 @@ public class TournamentStatsCalculator : IStatsCalculator
             game.Rosters.Add(roster);
         }
 
-        game.LastProcessingDate = DateTime.UtcNow;
     }
 
     /// <summary>

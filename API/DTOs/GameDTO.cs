@@ -57,12 +57,6 @@ public class GameDTO
     [EnumDataType(typeof(VerificationStatus))]
     public VerificationStatus VerificationStatus { get; init; }
 
-    /// <summary>
-    /// The processing status
-    /// </summary>
-    [EnumDataType(typeof(GameProcessingStatus))]
-    [Obsolete("This property will be removed in a future version. Processing is now handled through event-driven message queue system.")]
-    public GameProcessingStatus ProcessingStatus { get; init; }
 
     /// <summary>
     /// Warning flags

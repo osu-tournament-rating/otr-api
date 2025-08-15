@@ -137,7 +137,6 @@ public class TournamentsService(
             dateMax: requestQuery.DateMax,
             verificationStatus: requestQuery.VerificationStatus,
             rejectionReason: requestQuery.RejectionReason,
-            processingStatus: requestQuery.ProcessingStatus,
             submittedBy: requestQuery.SubmittedBy,
             verifiedBy: requestQuery.VerifiedBy,
             lobbySize: requestQuery.LobbySize,

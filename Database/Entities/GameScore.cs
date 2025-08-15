@@ -12,7 +12,7 @@ namespace Database.Entities;
 /// A score set by a <see cref="Entities.Player"/> in a <see cref="Entities.Game"/>
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameScoreAdminNote>, IScoreStatistics
+public class GameScore : UpdateableEntityBase, IAdminNotableEntity<GameScoreAdminNote>, IScoreStatistics
 {
     /// <summary>
     /// Total score
@@ -73,19 +73,11 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
 
     public VerificationStatus VerificationStatus { get; set; }
 
-    [AuditIgnore]
-    public DateTime LastProcessingDate { get; set; }
-
     /// <summary>
     /// Rejection reason
     /// </summary>
     public ScoreRejectionReason RejectionReason { get; set; }
 
-    /// <summary>
-    /// Processing status
-    /// </summary>
-    [Obsolete("This field will be removed in favor of event-driven processing")]
-    public ScoreProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Game" /> that the <see cref="GameScore" /> was set in

@@ -13,7 +13,7 @@ namespace Database.Entities;
 /// A game played in a <see cref="Match"/>
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>
+public class Game : UpdateableEntityBase, IAdminNotableEntity<GameAdminNote>
 {
     /// <summary>
     /// osu! id
@@ -67,15 +67,6 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// Warning flags
     /// </summary>
     public GameWarningFlags WarningFlags { get; set; }
-
-    /// <summary>
-    /// Processing status
-    /// </summary>
-    [Obsolete("This field will be removed in favor of event-driven processing")]
-    public GameProcessingStatus ProcessingStatus { get; set; }
-
-    [AuditIgnore]
-    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Match"/> that the game was played in

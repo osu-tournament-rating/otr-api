@@ -30,34 +30,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             : await base.GetAsync(id);
 
 
-    [Obsolete("This method is deprecated. Tournament processing is now handled through event-driven message queue system.")]
-    public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
-        await _context.Tournaments
-            .AsSplitQuery()
-            .Include(t => t.PooledBeatmaps)
-            .Include(t => t.PlayerTournamentStats)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.Rosters)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.PlayerMatchStats)
-            .ThenInclude(pms => pms.Player)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.PlayerRatingAdjustments)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.Games)
-            .ThenInclude(g => g.Beatmap)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.Games)
-            .ThenInclude(g => g.Scores)
-            .ThenInclude(s => s.Player)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.Games)
-            .ThenInclude(g => g.Rosters)
-            .Where(t => t.ProcessingStatus != TournamentProcessingStatus.Done &&
-                        t.ProcessingStatus != TournamentProcessingStatus.NeedsApproval)
-            .OrderBy(t => t.LastProcessingDate)
-            .Take(limit)
-            .ToListAsync();
 
     public async Task<bool> ExistsAsync(string name, Ruleset ruleset) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Ruleset == ruleset);
@@ -110,7 +82,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         DateTime? dateMax = null,
         VerificationStatus? verificationStatus = null,
         TournamentRejectionReason? rejectionReason = null,
-        TournamentProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
         int? lobbySize = null,
@@ -126,7 +97,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .WhereDateRange(dateMin, dateMax)
             .WhereVerificationStatus(verificationStatus)
             .WhereRejectionReason(rejectionReason)
-            .WhereProcessingStatus(processingStatus)
             .WhereSubmittedBy(submittedBy)
             .WhereVerifiedBy(verifiedBy)
             .WhereLobbySize(lobbySize);
@@ -135,7 +105,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         {
             query = query
                 .WhereVerificationStatus(VerificationStatus.Verified)
-                .WhereProcessingStatus(TournamentProcessingStatus.Done);
+    ;
         }
 
         return await query

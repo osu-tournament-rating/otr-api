@@ -24,8 +24,7 @@ public static class SeededTournament
         Ruleset? ruleset = null,
         int? teamSize = null,
         VerificationStatus? verificationStatus = null,
-        TournamentRejectionReason? rejectionReason = null,
-        TournamentProcessingStatus? processingStatus = null
+        TournamentRejectionReason? rejectionReason = null
     ) =>
         new()
         {
@@ -38,6 +37,5 @@ public static class SeededTournament
             LobbySize = teamSize ?? s_rand.NextInclusive(1, 8),
             VerificationStatus = verificationStatus ?? s_rand.NextEnum<VerificationStatus>(),
             RejectionReason = rejectionReason ?? s_rand.NextEnum<TournamentRejectionReason>(),
-            ProcessingStatus = processingStatus ?? s_rand.NextEnum<TournamentProcessingStatus>()
         };
 }
