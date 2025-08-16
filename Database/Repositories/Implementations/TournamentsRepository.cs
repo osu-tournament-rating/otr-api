@@ -22,7 +22,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     public async Task<Tournament?> GetAsync(int id, bool eagerLoad = false) =>
         eagerLoad
             ? await TournamentsBaseQuery()
-            .AsNoTracking()
             .AsSplitQuery()
             .Include(t => t.PlayerTournamentStats)
             .ThenInclude(pts => pts.Player)
@@ -31,33 +30,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             : await base.GetAsync(id);
 
 
-    public async Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit) =>
-        await _context.Tournaments
-            .AsSplitQuery()
-            .Include(t => t.PooledBeatmaps)
-            .Include(t => t.PlayerTournamentStats)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.Rosters)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.PlayerMatchStats)
-            .ThenInclude(pms => pms.Player)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.PlayerRatingAdjustments)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.Games)
-            .ThenInclude(g => g.Beatmap)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.Games)
-            .ThenInclude(g => g.Scores)
-            .ThenInclude(s => s.Player)
-            .Include(t => t.Matches)
-            .ThenInclude(m => m.Games)
-            .ThenInclude(g => g.Rosters)
-            .Where(t => t.ProcessingStatus != TournamentProcessingStatus.Done &&
-                        t.ProcessingStatus != TournamentProcessingStatus.NeedsApproval)
-            .OrderBy(t => t.LastProcessingDate)
-            .Take(limit)
-            .ToListAsync();
 
     public async Task<bool> ExistsAsync(string name, Ruleset ruleset) =>
         await _context.Tournaments.AnyAsync(x => x.Name.ToLower() == name.ToLower() && x.Ruleset == ruleset);
@@ -110,7 +82,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         DateTime? dateMax = null,
         VerificationStatus? verificationStatus = null,
         TournamentRejectionReason? rejectionReason = null,
-        TournamentProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
         int? lobbySize = null,
@@ -126,7 +97,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .WhereDateRange(dateMin, dateMax)
             .WhereVerificationStatus(verificationStatus)
             .WhereRejectionReason(rejectionReason)
-            .WhereProcessingStatus(processingStatus)
             .WhereSubmittedBy(submittedBy)
             .WhereVerifiedBy(verifiedBy)
             .WhereLobbySize(lobbySize);
@@ -135,7 +105,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         {
             query = query
                 .WhereVerificationStatus(VerificationStatus.Verified)
-                .WhereProcessingStatus(TournamentProcessingStatus.Done);
+    ;
         }
 
         return await query
@@ -147,7 +117,6 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
     public async Task<Tournament?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId)
     {
         Tournament? tournament = await TournamentsBaseQuery()
-            .Where(t => t.ProcessingStatus == TournamentProcessingStatus.NeedsVerification)
             .FirstOrDefaultAsync(t => t.Id == id);
 
         if (tournament is null)
@@ -271,6 +240,7 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
         await UpdateAsync(tournament);
     }
 
+    [Obsolete("Use message queue system instead. Publish ProcessTournamentAutomationCheckMessage and related messages through IPublishEndpoint.")]
     public async Task ResetAutomationStatusesAsync(int id, bool force = false)
     {
         Tournament? tournament = await TournamentsBaseQuery()
@@ -375,23 +345,21 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
 
     public async Task LoadMatchesWithGamesAndScoresAsync(Tournament tournament)
     {
+        // Load all matches with related data in a single query using Include and ThenInclude chains
         await _context.Entry(tournament)
             .Collection(t => t.Matches)
+            .Query()
+            .AsSplitQuery()
+            .Include(m => m.Games)
+                .ThenInclude(g => g.Scores)
+                    .ThenInclude(s => s.Player)
+            .Include(m => m.Games)
+                .ThenInclude(g => g.Rosters)
+            .Include(m => m.PlayerRatingAdjustments)
+            .Include(m => m.PlayerMatchStats)
+                .ThenInclude(s => s.Player)
+            .Include(m => m.Rosters)
             .LoadAsync();
-
-        foreach (Match match in tournament.Matches)
-        {
-            await _context.Entry(match)
-                .Collection(m => m.Games)
-                .LoadAsync();
-
-            foreach (Game game in match.Games)
-            {
-                await _context.Entry(game)
-                    .Collection(g => g.Scores)
-                    .LoadAsync();
-            }
-        }
     }
 
     private IQueryable<Tournament> TournamentsBaseQuery() =>

@@ -32,9 +32,4 @@ public interface IOsuClientConfiguration
     /// Gets or sets the client rate limit for <see cref="Enums.FetchPlatform.OsuTrack"/>
     /// </summary>
     int OsuTrackRateLimit { get; set; }
-
-    /// <summary>
-    /// Whether to enable distributed locking with redis
-    /// </summary>
-    bool EnableDistributedLocking { get; set; }
 }

@@ -69,19 +69,6 @@ public static class QueryExtensions
             ? query.Where(e => e.VerificationStatus == verificationStatus.Value)
             : query;
 
-    /// <summary>
-    /// Filters a <see cref="Tournament"/> query for those with the given
-    /// <see cref="TournamentProcessingStatus"/>
-    /// </summary>
-    /// <param name="processingStatus">Processing status</param>
-    /// <remarks>Does nothing if <paramref name="processingStatus"/> is null</remarks>
-    public static IQueryable<Tournament> WhereProcessingStatus(
-        this IQueryable<Tournament> query,
-        TournamentProcessingStatus? processingStatus = null
-    ) =>
-        processingStatus.HasValue
-            ? query.Where(t => t.ProcessingStatus == processingStatus.Value)
-            : query;
 
     /// <summary>
     /// Filters a <see cref="Tournament"/> query for those with the given
@@ -225,12 +212,6 @@ public static class QueryExtensions
     public static IQueryable<Match> WhereVerified(this IQueryable<Match> query) =>
         query.AsQueryable().Where(x => x.VerificationStatus == VerificationStatus.Verified);
 
-    /// <summary>
-    /// Filters a <see cref="Match"/> query for those with a <see cref="MatchProcessingStatus"/>
-    /// of <see cref="MatchProcessingStatus.Done"/>
-    /// </summary>
-    public static IQueryable<Match> WhereProcessingCompleted(this IQueryable<Match> query) =>
-        query.AsQueryable().Where(x => x.ProcessingStatus == MatchProcessingStatus.Done);
 
     /// <summary>
     /// Includes navigation properties for a <see cref="Match"/>
@@ -375,8 +356,7 @@ public static class QueryExtensions
 
         if (verified)
         {
-            query = query.Include(g => g.Scores.Where(s => s.VerificationStatus == VerificationStatus.Verified &&
-                                                           s.ProcessingStatus == ScoreProcessingStatus.Done));
+            query = query.Include(g => g.Scores.Where(s => s.VerificationStatus == VerificationStatus.Verified));
         }
 
         return query

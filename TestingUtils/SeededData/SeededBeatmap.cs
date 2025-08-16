@@ -53,7 +53,12 @@ public static class SeededBeatmap
         {
             Id = id ?? _sRand.Next(),
             OsuId = osuId ?? _sRand.NextInt64(),
-            HasData = hasData ?? _sRand.NextBool(),
+            DataFetchStatus = hasData switch
+            {
+                true => DataFetchStatus.Fetched,
+                false => DataFetchStatus.NotFound,
+                null => _sRand.NextBool() ? DataFetchStatus.Fetched : DataFetchStatus.NotFound
+            },
             DiffName = diffName ?? string.Empty,
             RankedStatus = rankedStatus ?? _sRand.NextEnum<BeatmapRankedStatus>(),
             TotalLength = totalLength ?? _sRand.NextInt64(LengthMin, LengthMax),

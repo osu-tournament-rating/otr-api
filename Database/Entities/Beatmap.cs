@@ -16,13 +16,9 @@ public class Beatmap : UpdateableEntityBase
     public long OsuId { get; init; }
 
     /// <summary>
-    /// Denotes if the <see cref="Beatmap"/> has populated data
+    /// Status of data fetching from the osu! API
     /// </summary>
-    /// <remarks>
-    /// Set only on creation. If the beatmap is deleted from osu! at
-    /// the time of access, this value will be false and all properties will be unpopulated.
-    /// </remarks>
-    public bool HasData { get; set; }
+    public DataFetchStatus DataFetchStatus { get; set; }
 
     /// <summary>
     /// Ruleset

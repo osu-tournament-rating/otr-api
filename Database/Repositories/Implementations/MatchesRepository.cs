@@ -29,7 +29,6 @@ public class MatchesRepository(OtrContext context) : Repository<Match>(context),
         DateTime? dateMax = null,
         VerificationStatus? verificationStatus = null,
         MatchRejectionReason? rejectionReason = null,
-        MatchProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
         MatchQuerySortType? querySortType = null,
@@ -68,10 +67,6 @@ public class MatchesRepository(OtrContext context) : Repository<Match>(context),
             query = query.Where(m => m.RejectionReason == rejectionReason.Value);
         }
 
-        if (processingStatus.HasValue)
-        {
-            query = query.Where(m => m.ProcessingStatus == processingStatus.Value);
-        }
 
         if (submittedBy.HasValue)
         {
@@ -114,7 +109,6 @@ public class MatchesRepository(OtrContext context) : Repository<Match>(context),
             .Include(x => x.Tournament)
             .AsNoTracking()
             .WhereVerified()
-            .WhereProcessingCompleted()
             .Where(x => EF.Functions.ILike(x.Name, $"%{name}%", @"\"))
             .OrderByDescending(m => m.StartTime)
             .Take(30)
@@ -152,16 +146,12 @@ public class MatchesRepository(OtrContext context) : Repository<Match>(context),
 
     public async Task LoadGamesWithScoresAsync(Match match)
     {
+        // Load all games with their scores in a single query using Include chain
         await _context.Entry(match)
             .Collection(m => m.Games)
+            .Query()
+            .Include(g => g.Scores)
             .LoadAsync();
-
-        foreach (Game game in match.Games)
-        {
-            await _context.Entry(game)
-                .Collection(g => g.Scores)
-                .LoadAsync();
-        }
     }
 
     public async Task<IEnumerable<Match>> GetPlayerMatchesAsync(
@@ -173,7 +163,6 @@ public class MatchesRepository(OtrContext context) : Repository<Match>(context),
         await _context.Matches
             .AsNoTracking()
             .WhereVerified()
-            .WhereProcessingCompleted()
             .WherePlayerParticipated(osuId)
             .WhereRuleset(ruleset)
             .WhereDateRange(after, before)

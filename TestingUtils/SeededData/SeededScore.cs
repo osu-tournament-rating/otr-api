@@ -34,7 +34,6 @@ public static class SeededScore
         Ruleset? ruleset = null,
         VerificationStatus? verificationStatus = null,
         ScoreRejectionReason? rejectionReason = null,
-        ScoreProcessingStatus? processingStatus = null,
         Player? player = null,
         Game? game = null
     )
@@ -51,7 +50,6 @@ public static class SeededScore
             Ruleset = ruleset ?? s_rand.NextEnum<Ruleset>(),
             VerificationStatus = verificationStatus ?? s_rand.NextEnum<VerificationStatus>(),
             RejectionReason = rejectionReason ?? s_rand.NextEnum<ScoreRejectionReason>(),
-            ProcessingStatus = processingStatus ?? s_rand.NextEnum<ScoreProcessingStatus>(),
             GameId = seededGame.Id,
             Game = seededGame,
             PlayerId = seededPlayer.Id,

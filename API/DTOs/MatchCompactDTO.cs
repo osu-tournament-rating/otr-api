@@ -57,16 +57,7 @@ public class MatchCompactDTO
     [EnumDataType(typeof(MatchWarningFlags))]
     public MatchWarningFlags WarningFlags { get; set; }
 
-    /// <summary>
-    /// Processing status
-    /// </summary>
-    [EnumDataType(typeof(MatchProcessingStatus))]
-    public MatchProcessingStatus ProcessingStatus { get; set; }
 
-    /// <summary>
-    /// Timestamp of the last time the match was processed
-    /// </summary>
-    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Games played in this match

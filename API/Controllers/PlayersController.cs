@@ -1,8 +1,11 @@
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities.DataAnnotations;
 using Asp.Versioning;
 using Common.Enums;
+using DWS.Messages;
+using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +14,7 @@ namespace API.Controllers;
 [ApiController]
 [ApiVersion(1)]
 [Route("api/v{version:apiVersion}/[controller]/{key}")]
-public class PlayersController(IPlayerService playerService, IPlayerStatsService playerStatsService) : Controller
+public class PlayersController(IPlayerService playerService, IPlayerStatsService playerStatsService, IPublishEndpoint publishEndpoint, ILogger<PlayersController> logger) : Controller
 {
     /// <summary>
     /// Get a player
@@ -103,5 +106,43 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
         return result is not null
             ? Ok(result)
             : NotFound();
+    }
+
+    /// <summary>
+    /// Enqueues a message to fetch player data from the osu! API
+    /// </summary>
+    /// <param name="key">The osu! player ID to fetch data for</param>
+    /// <param name="priority">The message queue priority for processing this fetch request</param>
+    /// <response code="202">The fetch request was accepted and queued for processing</response>
+    /// <response code="400">The provided osu! player ID is negative</response>
+    [HttpPost("fetch")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType<QueueResponseDTO>(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> FetchAsync([Positive] long key, [FromQuery] MessagePriority priority = MessagePriority.Normal)
+    {
+        var message = new FetchPlayerMessage
+        {
+            OsuPlayerId = key,
+            RequestedAt = DateTime.UtcNow,
+            Priority = priority
+        };
+
+        await publishEndpoint.Publish(message, context =>
+        {
+            context.SetPriority((byte)message.Priority);
+            context.CorrelationId = message.CorrelationId;
+        });
+
+        logger.LogInformation("Published player fetch message [osu! Player ID: {OsuPlayerId} | Correlation ID: {CorrelationId} | Priority: {Priority}]",
+            key, message.CorrelationId, priority);
+
+        var response = new QueueResponseDTO
+        {
+            CorrelationId = message.CorrelationId,
+            Priority = priority
+        };
+
+        return Accepted(response);
     }
 }

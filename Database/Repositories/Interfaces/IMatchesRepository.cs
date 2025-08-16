@@ -23,7 +23,6 @@ public interface IMatchesRepository : IRepository<Match>
         DateTime? dateMax = null,
         VerificationStatus? verificationStatus = null,
         MatchRejectionReason? rejectionReason = null,
-        MatchProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
         MatchQuerySortType? querySortType = null,

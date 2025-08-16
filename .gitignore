@@ -12,10 +12,7 @@ scripts/inserts
 **/apptests.json
 ./Database/Database/
 
-app.env
-db.env
-redis.env
-postgres_exporter.env
+*.env
 
 .DS_Store
 *.DotSettings.user
@@ -25,3 +22,4 @@ postgres_exporter.env
 
 .aider*
 CLAUDE.md
+GEMINI.md

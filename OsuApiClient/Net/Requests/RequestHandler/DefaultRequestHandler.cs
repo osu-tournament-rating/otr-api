@@ -3,7 +3,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using AutoMapper;
 using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using OsuApiClient.Configurations.Interfaces;
@@ -12,22 +11,15 @@ using OsuApiClient.Enums;
 using OsuApiClient.Extensions;
 using OsuApiClient.Net.Authorization;
 using OsuApiClient.Net.Constants;
-using RedLockNet;
-using RedLockNet.SERedis;
 
 namespace OsuApiClient.Net.Requests.RequestHandler;
 
 /// <summary>
 /// The default implementation of the handler that makes direct requests to the osu! API
 /// </summary>
-/// <remarks>
-/// Any program which uses the OsuClient MUST have a Redis and RedLock configuration.
-/// This class contains resources which are managed by a distributed locker (RedLock).
-/// </remarks>
 [UsedImplicitly]
 internal sealed class DefaultRequestHandler(
     ILogger<DefaultRequestHandler> logger,
-    IServiceProvider serviceProvider,
     IOsuClientConfiguration configuration
 ) : IRequestHandler
 {
@@ -109,35 +101,14 @@ internal sealed class DefaultRequestHandler(
         CancellationToken cancellationToken = default
     )
     {
-        const string resource = "osu-api-default-request-handler-send-async";
-        var expiry = TimeSpan.FromSeconds(10);
-        var wait = TimeSpan.FromSeconds(10);
-        var retry = TimeSpan.FromSeconds(1);
-
         try
         {
-            if (configuration.EnableDistributedLocking)
-            {
-                RedLockFactory redLockFactory = serviceProvider.GetRequiredService<RedLockFactory>();
-                await using IRedLock? redLock = await redLockFactory.CreateLockAsync(resource, expiry, wait, retry);
-
-                // Short-circuit the lock if we're making an osu!track request.
-                // This should help with the fact that the DataWorkerService is competing
-                // with the API calling out to osu! OAuth for logins
-                if (request.Platform == FetchPlatform.OsuTrack || redLock.IsAcquired)
-                {
-                    return await SendApiRequestAsync(request, cancellationToken);
-                }
-            }
-            else
-            {
-                return await SendApiRequestAsync(request, cancellationToken);
-            }
+            return await SendApiRequestAsync(request, cancellationToken);
         }
         catch (HttpRequestException ex)
         {
             logger.LogError(
-                "Http request exception while fetching platform [{platform}]: {ex}",
+                "Http request exception while fetching platform [{Platform}]: {Ex}",
                 request.Platform.ToString(),
                 ex
             );
@@ -148,7 +119,10 @@ internal sealed class DefaultRequestHandler(
 
     private async Task<string?> SendApiRequestAsync(IApiRequest request, CancellationToken cancellationToken)
     {
-        HttpRequestMessage requestMessage = await PrepareRequestAsync(request, cancellationToken);
+        // Check rate limit before making the request
+        await RespectRateLimitAsync(request.Platform, cancellationToken);
+
+        HttpRequestMessage requestMessage = PrepareRequestAsync(request);
         HttpResponseMessage response = await _httpClient.SendAsync(requestMessage, cancellationToken);
 
         return await OnResponseReceivedAsync(request.Platform, response, cancellationToken);
@@ -160,9 +134,8 @@ internal sealed class DefaultRequestHandler(
     /// <param name="request">API request details</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A formatted <see cref="HttpRequestMessage"/></returns>
-    private async Task<HttpRequestMessage> PrepareRequestAsync(
-        IApiRequest request,
-        CancellationToken cancellationToken = default
+    private HttpRequestMessage PrepareRequestAsync(
+        IApiRequest request
     )
     {
         Uri uri = request.QueryParameters is { Count: > 0 }
@@ -193,8 +166,6 @@ internal sealed class DefaultRequestHandler(
             request.Method.ToString()
         );
 
-        await RespectRateLimitAsync(request.Platform, cancellationToken);
-
         return requestMessage;
     }
 
@@ -224,7 +195,8 @@ internal sealed class DefaultRequestHandler(
             );
         }
 
-        // Throttle when no remaining tokens
+        // Throttle when we run out of tokens.
+        // When there are 0 tokens remaining, we should throttle before the next request.
         if (rateLimit.RemainingTokens <= 0)
         {
             logger.LogDebug(
@@ -253,7 +225,7 @@ internal sealed class DefaultRequestHandler(
 
         rateLimit.DecrementRemainingTokens();
 
-        logger.LogTrace(
+        logger.LogDebug(
             "Rate limit updated [Platform: {Platform} | Tokens: {Remaining}/{Limit} | Expires In: {Expiry:mm\\:ss}]",
             platform,
             rateLimit.RemainingTokens,
@@ -267,12 +239,13 @@ internal sealed class DefaultRequestHandler(
     /// </summary>
     /// <remarks>Fail-safe in the event we are being rate limited</remarks>
     /// <param name="platform">The platform being fetched</param>
-    private async Task ForceRateLimitCooldown(FetchPlatform platform, int durationSeconds = 300, CancellationToken cancellationToken = default)
+    private async Task ForceRateLimitCooldown(FetchPlatform platform, int durationSeconds = 60, CancellationToken cancellationToken = default)
     {
         FixedWindowRateLimit rateLimit = _rateLimits[platform];
         rateLimit.ClearRemainingTokens();
 
         logger.LogInformation("Rate limit forcefully cooling down [Platform: {Platform} | Duration: {Duration} seconds]", platform, durationSeconds);
+        await Task.Delay(TimeSpan.FromSeconds(durationSeconds), cancellationToken);
 
         await RespectRateLimitAsync(platform, cancellationToken);
     }
@@ -291,6 +264,7 @@ internal sealed class DefaultRequestHandler(
         CancellationToken cancellationToken = default
     )
     {
+        // Only decrement tokens after successfully sending the request
         UpdateRateLimit(platform);
 
         // Parse response body

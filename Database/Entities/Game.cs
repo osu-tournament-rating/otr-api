@@ -13,7 +13,7 @@ namespace Database.Entities;
 /// A game played in a <see cref="Match"/>
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameAdminNote>
+public class Game : UpdateableEntityBase, IAdminNotableEntity<GameAdminNote>
 {
     /// <summary>
     /// osu! id
@@ -67,14 +67,6 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
     /// Warning flags
     /// </summary>
     public GameWarningFlags WarningFlags { get; set; }
-
-    /// <summary>
-    /// Processing status
-    /// </summary>
-    public GameProcessingStatus ProcessingStatus { get; set; }
-
-    [AuditIgnore]
-    public DateTime LastProcessingDate { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Match"/> that the game was played in
@@ -148,7 +140,6 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
         VerificationStatus = VerificationStatus.None;
         WarningFlags = GameWarningFlags.None;
         RejectionReason = GameRejectionReason.None;
-        ProcessingStatus = GameProcessingStatus.NeedsAutomationChecks;
     }
 
     /// <summary>
@@ -189,7 +180,6 @@ public class Game : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntit
         {
             score.VerificationStatus = VerificationStatus.Rejected;
             score.RejectionReason |= ScoreRejectionReason.RejectedGame;
-            score.ProcessingStatus = ScoreProcessingStatus.Done;
         }
     }
 

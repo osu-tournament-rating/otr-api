@@ -31,6 +31,13 @@ public interface ITournamentsService
     Task<bool> ExistsAsync(string name, Ruleset ruleset);
 
     /// <summary>
+    /// Gets a list of osu! match IDs that already exist in the database
+    /// </summary>
+    /// <param name="osuMatchIds">Collection of osu! match IDs to check</param>
+    /// <returns>Collection of osu! match IDs that already exist</returns>
+    Task<IEnumerable<long>> GetExistingMatchIdsAsync(IEnumerable<long> osuMatchIds);
+
+    /// <summary>
     /// Gets a tournament by id
     /// </summary>
     /// <param name="id">The tournament id</param>
@@ -120,6 +127,6 @@ public interface ITournamentsService
     /// Reruns automation checks for a tournament and all child entities
     /// </summary>
     /// <param name="id">Tournament id</param>
-    /// <param name="force">Whether to overwrite fully Verified/Rejected data (dangerous)</param>
-    Task RerunAutomationChecksAsync(int id, bool force = false);
+    /// <param name="overrideVerifiedState">Whether to override existing human-verified or rejected states</param>
+    Task RerunAutomationChecksAsync(int id, bool overrideVerifiedState = false);
 }

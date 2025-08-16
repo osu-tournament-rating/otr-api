@@ -125,7 +125,7 @@ public static class OptionsExtensions
             catch (Exception ex)
             {
                 Log.Error(
-                    "Error loading configuration file: '{ConfigFile}'\n{Ex}",
+                    ex, "Error loading configuration file: '{ConfigFile}'\n{Ex}",
                     o.ConfigFile,
                     ex
                 );

@@ -88,11 +88,6 @@ public class TournamentCompactDTO
     [EnumDataType(typeof(VerificationStatus))]
     public VerificationStatus VerificationStatus { get; init; }
 
-    /// <summary>
-    /// The state of processing
-    /// </summary>
-    [EnumDataType(typeof(TournamentProcessingStatus))]
-    public TournamentProcessingStatus ProcessingStatus { get; init; }
 
     /// <summary>
     /// The rejection reason

@@ -20,6 +20,4 @@ public class OsuConfiguration : IOsuClientConfiguration
     public int OsuRateLimit { get; set; } = 60;
 
     public int OsuTrackRateLimit { get; set; } = 30;
-
-    public bool EnableDistributedLocking { get; set; } = true;
 }

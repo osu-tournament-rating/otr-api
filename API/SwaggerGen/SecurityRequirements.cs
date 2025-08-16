@@ -44,4 +44,18 @@ public static class SecurityRequirements
             (roles ?? []).ToList()
         }
     };
+
+    /// <summary>
+    /// Creates a <see cref="OpenApiSecurityRequirement"/> with a reference to the "ApiKey" security definition
+    /// </summary>
+    public static OpenApiSecurityRequirement ApiKeySecurityRequirement => new()
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "ApiKey" }
+            },
+            new List<string>()
+        }
+    };
 }

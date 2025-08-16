@@ -20,12 +20,6 @@ public interface ITournamentsRepository : IRepository<Tournament>
     /// </remarks>
     Task<Tournament?> GetAsync(int id, bool eagerLoad = false);
 
-    /// <summary>
-    /// Gets tournaments with a <see cref="TournamentProcessingStatus"/>
-    /// that is not <see cref="TournamentProcessingStatus.Done"/>
-    /// </summary>
-    /// <param name="limit">Maximum number of tournaments</param>
-    Task<IEnumerable<Tournament>> GetNeedingProcessingAsync(int limit);
 
     /// <summary>
     /// Denotes if a tournament with the given name and ruleset exists
@@ -103,7 +97,6 @@ public interface ITournamentsRepository : IRepository<Tournament>
         DateTime? dateMax = null,
         VerificationStatus? verificationStatus = null,
         TournamentRejectionReason? rejectionReason = null,
-        TournamentProcessingStatus? processingStatus = null,
         int? submittedBy = null,
         int? verifiedBy = null,
         int? lobbySize = null,
@@ -122,11 +115,12 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Tournament?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId);
 
     /// <summary>
-    /// Resets the VerificationStatus, ProcessingStatus, WarningFlags (if applicable), and RejectionReasons for
+    /// Resets the VerificationStatus, WarningFlags (if applicable), and RejectionReasons for
     /// the tournament and all descendant entities
     /// </summary>
     /// <param name="id">Tournament id</param>
     /// <param name="force">Whether to overwrite fully Verified/Rejected data (dangerous)</param>
+    [Obsolete("Use message queue system instead. Publish ProcessTournamentAutomationCheckMessage and related messages through IPublishEndpoint.")]
     Task ResetAutomationStatusesAsync(int id, bool force = false);
 
     /// <summary>
@@ -217,7 +211,7 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Dictionary<int, int>> GetLobbySizeStatsAsync(bool verified = true);
 
     /// <summary>
-    /// Loads the matches, games, and scores for a tournament to enable cascading operations
+    /// Loads the matches, games, scores, player match stats, and rating adjustments for a tournament to enable cascading operations
     /// </summary>
     /// <param name="tournament">The tournament to load children for</param>
     Task LoadMatchesWithGamesAndScoresAsync(Tournament tournament);

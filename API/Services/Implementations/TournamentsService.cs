@@ -5,6 +5,8 @@ using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
 using Database.Repositories.Interfaces;
+using DWS.Messages;
+using MassTransit;
 
 namespace API.Services.Implementations;
 
@@ -12,7 +14,9 @@ public class TournamentsService(
     ITournamentsRepository tournamentsRepository,
     IMatchesRepository matchesRepository,
     IBeatmapsRepository beatmapsRepository,
-    IMapper mapper
+    IMapper mapper,
+    IPublishEndpoint publishEndpoint,
+    ILogger<TournamentsService> logger
     ) : ITournamentsService
 {
     public async Task<TournamentCreatedResultDTO> CreateAsync(
@@ -39,18 +43,13 @@ public class TournamentsService(
             RankRangeLowerBound = submission.RankRangeLowerBound,
             Ruleset = submission.Ruleset,
             LobbySize = submission.LobbySize,
-            ProcessingStatus = preApprove
-                ? TournamentProcessingStatus.NeedsMatchData
-                : TournamentProcessingStatus.NeedsApproval,
             SubmittedByUserId = submitterUserId,
             Matches = [.. submittedMatchIds
                 .Except(existingMatchIds)
                 .Select(matchId => new Match { OsuId = matchId, SubmittedByUserId = submitterUserId })],
             PooledBeatmaps =
-
             [
-                .. existingBeatmaps
-,
+                .. existingBeatmaps,
                 .. submittedBeatmapIds
                             .Except(existingBeatmaps.Select(b => b.OsuId))
                             .Select(beatmapId => new Beatmap { OsuId = beatmapId })
@@ -58,25 +57,54 @@ public class TournamentsService(
         };
 
         // Handle reject-on-submit cases
+        // Note: We only mark the tournament as rejected, not the child entities.
+        // The HeadToHead converter needs access to non-rejected data to perform conversions.
+        // Child rejection will be cascaded later by the automation checks after conversion.
         if (submission.RejectionReason.HasValue && submission.RejectionReason.Value is not TournamentRejectionReason.None)
         {
-            newTournament.ProcessingStatus = TournamentProcessingStatus.Done;
             newTournament.RejectionReason = submission.RejectionReason.Value;
 
             newTournament.VerificationStatus = VerificationStatus.Rejected;
             newTournament.VerifiedByUserId = submitterUserId;
-
-            foreach (Match match in newTournament.Matches)
-            {
-                match.ProcessingStatus = MatchProcessingStatus.Done;
-                match.RejectionReason = MatchRejectionReason.RejectedTournament;
-
-                match.VerificationStatus = VerificationStatus.Rejected;
-                match.VerifiedByUserId = submitterUserId;
-            }
         }
 
         Tournament tournament = await tournamentsRepository.CreateAsync(newTournament);
+
+        // Enqueue beatmaps for osu! API data fetching
+        foreach (FetchBeatmapMessage message in submittedBeatmapIds.Select(beatmapId =>
+                        new FetchBeatmapMessage
+                        {
+                            BeatmapId = beatmapId,
+                            Priority = MessagePriority.Normal
+                        }))
+        {
+            await publishEndpoint.Publish(message, context =>
+            {
+                context.SetPriority((byte)message.Priority);
+            });
+        }
+
+        // Enqueue matches for osu! API data fetching
+        foreach (FetchMatchMessage message in submittedMatchIds.Select(matchId =>
+                        new FetchMatchMessage
+                        {
+                            OsuMatchId = matchId,
+                            Priority = MessagePriority.Normal
+                        }))
+        {
+            await publishEndpoint.Publish(message, context =>
+            {
+                context.SetPriority((byte)message.Priority);
+            });
+        }
+
+        logger.LogInformation(
+            "Enqueued {BeatmapCount} beatmaps and {MatchCount} matches for data fetching from tournament {TournamentId} ({TournamentName})",
+            submittedBeatmapIds.Count,
+            submittedMatchIds.Count,
+            tournament.Id,
+            tournament.Name);
+
         return mapper.Map<TournamentCreatedResultDTO>(tournament);
     }
 
@@ -85,6 +113,13 @@ public class TournamentsService(
 
     public async Task<bool> ExistsAsync(string name, Ruleset ruleset)
         => await tournamentsRepository.ExistsAsync(name, ruleset);
+
+    public async Task<IEnumerable<long>> GetExistingMatchIdsAsync(IEnumerable<long> osuMatchIds)
+    {
+        var matchIdsList = osuMatchIds.ToList();
+        var existingMatches = await matchesRepository.GetAsync(matchIdsList);
+        return existingMatches.Select(m => m.OsuId);
+    }
 
     public async Task<TournamentDTO?> GetAsync(int id, bool eagerLoad = true) =>
         mapper.Map<TournamentDTO?>(await tournamentsRepository.GetAsync(id, eagerLoad));
@@ -102,7 +137,6 @@ public class TournamentsService(
             dateMax: requestQuery.DateMax,
             verificationStatus: requestQuery.VerificationStatus,
             rejectionReason: requestQuery.RejectionReason,
-            processingStatus: requestQuery.ProcessingStatus,
             submittedBy: requestQuery.SubmittedBy,
             verifiedBy: requestQuery.VerifiedBy,
             lobbySize: requestQuery.LobbySize,
@@ -135,8 +169,12 @@ public class TournamentsService(
             return null;
         }
 
+        VerificationStatus originalStatus = existing.VerificationStatus;
+
         mapper.Map(wrapper, existing);
 
+        // When manually rejecting a tournament via update, cascade to children
+        // Note: HeadToHead conversion should have already run during initial processing
         if (wrapper.VerificationStatus == VerificationStatus.Rejected)
         {
             await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(existing);
@@ -144,16 +182,48 @@ public class TournamentsService(
         }
 
         await tournamentsRepository.UpdateAsync(existing);
+
+        // Don't re-run stats processing if the tournament is not verified.
+        if (originalStatus == VerificationStatus.Verified || wrapper.VerificationStatus != VerificationStatus.Verified)
+        {
+            return mapper.Map<TournamentCompactDTO>(existing);
+        }
+
+        logger.LogInformation("Tournament {TournamentId} manually verified, enqueued stats processing", id);
         return mapper.Map<TournamentCompactDTO>(existing);
     }
 
     public async Task DeleteAsync(int id) => await tournamentsRepository.DeleteAsync(id);
 
-    public async Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId) =>
-        mapper.Map<TournamentDTO?>(await tournamentsRepository.AcceptPreVerificationStatusesAsync(id, verifierUserId));
+    public async Task<TournamentDTO?> AcceptPreVerificationStatusesAsync(int id, int verifierUserId)
+    {
+        Tournament? tournament = await tournamentsRepository.AcceptPreVerificationStatusesAsync(id, verifierUserId);
+        return mapper.Map<TournamentDTO?>(tournament);
+    }
 
-    public async Task RerunAutomationChecksAsync(int id, bool force = false) =>
-        await tournamentsRepository.ResetAutomationStatusesAsync(id, force);
+    public async Task RerunAutomationChecksAsync(int id, bool overrideVerifiedState = false)
+    {
+        // Verify the tournament exists
+        Tournament? tournament = await tournamentsRepository.GetAsync(id);
+        if (tournament is null)
+        {
+            logger.LogWarning("Tournament {TournamentId} not found for rerun automation checks", id);
+            return;
+        }
+
+        // Publish message for tournament-level automation checks
+        // The tournament consumer will handle all child entity checks internally
+        await publishEndpoint.Publish(new ProcessTournamentAutomationCheckMessage
+        {
+            TournamentId = id,
+            OverrideVerifiedState = overrideVerifiedState
+        });
+
+        logger.LogInformation(
+            "Enqueued automation checks for tournament {TournamentId} (overrideVerifiedState: {OverrideVerifiedState})",
+            id,
+            overrideVerifiedState);
+    }
 
     public async Task<ICollection<BeatmapDTO>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds) =>
         mapper.Map<ICollection<BeatmapDTO>>(await tournamentsRepository.AddPooledBeatmapsAsync(id, osuBeatmapIds));

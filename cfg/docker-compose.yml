@@ -14,13 +14,14 @@ services:
       - staging
       - production
 
-  dataworkerservice:
-    image: "stagecodes/otr-data-worker-service:${TAG:-latest}"
-    container_name: dataworkerservice
+  dws:
+    image: "stagecodes/otr-dws:${TAG:-latest}"
+    container_name: dws
     env_file:
-      - dataworkerservice.env
+      - dws.env
     depends_on:
       - db
+      - rabbitmq
       - redis
     restart: always
     logging:
@@ -29,6 +30,7 @@ services:
         max-size: "50m"
         max-file: "3"
     profiles:
+      - staging
       - production
 
   grafana:
@@ -83,6 +85,21 @@ services:
     restart: always
     volumes:
       - redis:/data
+    profiles:
+      - staging
+      - production
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    env_file:
+      - rabbitmq.env
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: always
     profiles:
       - staging
       - production
@@ -173,4 +190,5 @@ volumes:
   loki_storage:
   minio_data:
   redis:
+  rabbitmq_data:
   prometheus_data:

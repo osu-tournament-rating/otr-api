@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Database\Database.csproj" />
+    <ProjectReference Include="..\OsuApiClient\OsuApiClient.csproj" />
   </ItemGroup>
 
 </Project>

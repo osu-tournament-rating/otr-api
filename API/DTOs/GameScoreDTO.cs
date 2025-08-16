@@ -112,11 +112,6 @@ public class GameScoreDTO
     [EnumDataType(typeof(VerificationStatus))]
     public VerificationStatus VerificationStatus { get; init; }
 
-    /// <summary>
-    /// The current state of processing
-    /// </summary>
-    [EnumDataType(typeof(ScoreProcessingStatus))]
-    public ScoreProcessingStatus ProcessingStatus { get; init; }
 
     /// <summary>
     /// The rejection reason

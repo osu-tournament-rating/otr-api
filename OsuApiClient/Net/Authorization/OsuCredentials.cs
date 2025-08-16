@@ -31,7 +31,10 @@ public class OsuCredentials
     public TimeSpan ExpiresIn => TimeSpan.FromSeconds(ExpiresInSeconds) - (DateTimeOffset.Now - _created);
 
     /// <summary>
-    /// Denotes if the access token has expired
+    /// Denotes if the access token has expired or is about to expire
     /// </summary>
-    public bool HasExpired => ExpiresIn < TimeSpan.Zero;
+    /// <remarks>
+    /// Includes a 5-minute buffer to prevent using tokens that are about to expire
+    /// </remarks>
+    public bool HasExpired => ExpiresIn < TimeSpan.FromMinutes(5);
 }
