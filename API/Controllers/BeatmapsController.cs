@@ -55,6 +55,7 @@ public class BeatmapsController(IBeatmapService beatmapService, IPublishEndpoint
     /// <response code="202">Beatmap fetch request queued successfully</response>
     /// <response code="400">Invalid beatmap ID</response>
     [HttpPost("{id:long}/fetch")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> FetchAsync(long id, [FromQuery] MessagePriority priority = MessagePriority.Normal)
