@@ -137,7 +137,6 @@ try
         x.AddConsumer<PlayerOsuTrackFetchConsumer>();
         x.AddConsumer<TournamentAutomationCheckConsumer>();
         x.AddConsumer<TournamentStatsConsumer>();
-        x.AddConsumer<TournamentProcessedConsumer>();
 
         x.UsingRabbitMq((context, cfg) =>
         {
@@ -157,8 +156,6 @@ try
             cfg.ReceiveAutomationCheckEndpoint<TournamentAutomationCheckConsumer>(context, QueueConstants.AutomatedChecks.Tournaments);
 
             cfg.ReceiveStatsEndpoint<TournamentStatsConsumer>(context, QueueConstants.Stats.Tournaments);
-
-            cfg.ReceiveStatsEndpoint<TournamentProcessedConsumer>(context, QueueConstants.Processing.TournamentsProcessed);
 
             cfg.UseMessageRetry(r => r.Intervals(
                 TimeSpan.FromSeconds(5),

@@ -23,12 +23,4 @@ public static class QueueConstants
     {
         public const string Tournaments = "processing.stats.tournaments";
     }
-
-    /// <summary>
-    /// Published by otr-processor
-    /// </summary>
-    public static class Processing
-    {
-        public const string TournamentsProcessed = "processing.ratings.tournaments";
-    }
 }
