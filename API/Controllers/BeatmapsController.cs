@@ -1,6 +1,7 @@
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities.DataAnnotations;
 using Asp.Versioning;
 using Common.Enums;
 using DWS.Messages;
@@ -47,24 +48,18 @@ public class BeatmapsController(IBeatmapService beatmapService, IPublishEndpoint
     }
 
     /// <summary>
-    /// Queue a beatmap fetch request
+    /// Enqueues a message to fetch beatmap data from the osu! API
     /// </summary>
-    /// <remarks>Queues a request to fetch the latest beatmap data from the osu! API</remarks>
-    /// <param name="id">The osu! beatmap ID</param>
-    /// <param name="priority">The priority level for processing (Low, Normal, High). Defaults to Normal.</param>
-    /// <response code="202">Beatmap fetch request queued successfully</response>
-    /// <response code="400">Invalid beatmap ID</response>
+    /// <param name="id">The osu! beatmap ID to fetch data for</param>
+    /// <param name="priority">The message queue priority for processing this fetch request</param>
+    /// <response code="202">The fetch request was accepted and queued for processing</response>
+    /// <response code="400">The provided beatmap ID is negative</response>
     [HttpPost("{id:long}/fetch")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
-    [ProducesResponseType(StatusCodes.Status202Accepted)]
+    [ProducesResponseType<QueueResponseDTO>(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> FetchAsync(long id, [FromQuery] MessagePriority priority = MessagePriority.Normal)
+    public async Task<IActionResult> FetchAsync([Positive] long id, [FromQuery] MessagePriority priority = MessagePriority.Normal)
     {
-        if (id <= 0)
-        {
-            return BadRequest("Invalid beatmap ID");
-        }
-
         var message = new FetchBeatmapMessage
         {
             BeatmapId = id,
@@ -81,6 +76,12 @@ public class BeatmapsController(IBeatmapService beatmapService, IPublishEndpoint
         logger.LogInformation("Published beatmap fetch message [Beatmap ID: {BeatmapId} | Correlation ID: {CorrelationId} | Priority: {Priority}]",
             id, message.CorrelationId, priority);
 
-        return Accepted(new { correlationId = message.CorrelationId, beatmapId = id, priority });
+        var response = new QueueResponseDTO
+        {
+            CorrelationId = message.CorrelationId,
+            Priority = priority
+        };
+
+        return Accepted(response);
     }
 }

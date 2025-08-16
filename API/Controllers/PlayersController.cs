@@ -1,6 +1,7 @@
 using API.Authorization;
 using API.DTOs;
 using API.Services.Interfaces;
+using API.Utilities.DataAnnotations;
 using Asp.Versioning;
 using Common.Enums;
 using DWS.Messages;
@@ -107,15 +108,19 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
             : NotFound();
     }
 
+    /// <summary>
+    /// Enqueues a message to fetch player data from the osu! API
+    /// </summary>
+    /// <param name="key">The osu! player ID to fetch data for</param>
+    /// <param name="priority">The message queue priority for processing this fetch request</param>
+    /// <response code="202">The fetch request was accepted and queued for processing</response>
+    /// <response code="400">The provided osu! player ID is negative</response>
     [HttpPost("fetch")]
     [Authorize(Roles = OtrClaims.Roles.Admin)]
-    public async Task<IActionResult> FetchAsync(long key, [FromQuery] MessagePriority priority = MessagePriority.Normal)
+    [ProducesResponseType<QueueResponseDTO>(StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> FetchAsync([Positive] long key, [FromQuery] MessagePriority priority = MessagePriority.Normal)
     {
-        if (key <= 0)
-        {
-            return BadRequest("Invalid osu! player ID");
-        }
-
         var message = new FetchPlayerMessage
         {
             OsuPlayerId = key,
@@ -132,6 +137,12 @@ public class PlayersController(IPlayerService playerService, IPlayerStatsService
         logger.LogInformation("Published player fetch message [osu! Player ID: {OsuPlayerId} | Correlation ID: {CorrelationId} | Priority: {Priority}]",
             key, message.CorrelationId, priority);
 
-        return Accepted(new { correlationId = message.CorrelationId, osuPlayerId = key, priority });
+        var response = new QueueResponseDTO
+        {
+            CorrelationId = message.CorrelationId,
+            Priority = priority
+        };
+
+        return Accepted(response);
     }
 }
