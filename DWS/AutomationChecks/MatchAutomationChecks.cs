@@ -21,17 +21,12 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
     {
         logger.LogTrace("Processing match {MatchId}", match.Id);
 
-        // Note: HeadToHead to TeamVs conversion is now performed earlier in the process
-        // by TournamentAutomationCheckService.PerformHeadToHeadConversion()
-
-        // Checks that modify warning flags
         MatchBeatmapCheck(match);
         MatchNameFormatCheck(match);
         MatchTeamsIntegrityCheck(match);
 
-        // Checks that return rejection reasons
         MatchRejectionReason rejectionReason = MatchEndTimeCheck(match) |
-                                             MatchGameCountCheck(match) | // Also modifies warning flags
+                                             MatchGameCountCheck(match) |
                                              MatchNamePrefixCheck(match, tournament);
 
         if (rejectionReason != MatchRejectionReason.None || match.WarningFlags != MatchWarningFlags.None)
@@ -56,7 +51,6 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
             return;
         }
 
-        // If any of Games 3 and beyond have a rejection reason of BeatmapNotPooled, return false
         if (games[2..].Any(g => g.RejectionReason.HasFlag(GameRejectionReason.BeatmapNotPooled)))
         {
             match.WarningFlags |= MatchWarningFlags.UnexpectedBeatmapsFound;
@@ -74,7 +68,6 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
     /// </summary>
     private static MatchRejectionReason MatchGameCountCheck(Match match)
     {
-        // Match has no games at all
         if (match.Games.Count == 0)
         {
             return MatchRejectionReason.NoGames;
@@ -85,7 +78,6 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
 
         switch (validGamesCount)
         {
-            // Match has no valid games
             case 0:
                 return MatchRejectionReason.NoValidGames;
             case < 3:
@@ -93,9 +85,6 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
             case 3 or 4:
                 match.WarningFlags |= MatchWarningFlags.LowGameCount;
                 return MatchRejectionReason.None;
-            // Number of games satisfies a "best of X" situation
-            // This turned out to be not that worth to calculate, so as long as there are >= 3 games,
-            // it is at least good enough to be sent to manual review
             default:
                 return MatchRejectionReason.None;
         }
@@ -126,11 +115,7 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
     private static void MatchTeamsIntegrityCheck(Match match)
     {
         Game[] validGames = match.Games.Where(g => g.VerificationStatus.IsPreVerifiedOrVerified()).ToArray();
-
-        // Generate match rosters without modifying game entities
         ICollection<MatchRoster> matchRosters = RostersHelper.GenerateRosters(validGames);
-
-        // Check for overlapping rosters
         HashSet<int>[] playerIdsPerRoster = matchRosters.Select(mr => mr.Roster.ToHashSet()).ToArray();
 
         for (int i = 0; i < playerIdsPerRoster.Length; i++)

@@ -19,42 +19,37 @@ public class TournamentAutomationCheckService(
     GameAutomationChecks gameAutomationChecks,
     ScoreAutomationChecks scoreAutomationChecks) : ITournamentAutomationCheckService
 {
-    /// <inheritdoc />
-    public async Task<bool> ProcessAutomationChecksAsync(int entityId, bool overrideVerifiedState = false)
+    public async Task<bool> ProcessAutomationChecksAsync(int tournamentId, bool overrideVerifiedState = false)
     {
-        logger.LogInformation("Processing automation checks for tournament {TournamentId}", entityId);
+        logger.LogInformation("Processing automation checks for tournament {TournamentId}", tournamentId);
 
         // Fetch the tournament with eager loading of navigation properties
-        Tournament? tournament = await tournamentsRepository.GetAsync(entityId, eagerLoad: true);
+        Tournament? tournament = await tournamentsRepository.GetAsync(tournamentId, eagerLoad: true);
         if (tournament is null)
         {
-            logger.LogWarning("Tournament {TournamentId} not found", entityId);
+            logger.LogWarning("Tournament {TournamentId} not found", tournamentId);
             return false;
         }
 
-        // Store the tournament status before processing
         VerificationStatus tournamentStatusBefore = tournament.VerificationStatus;
 
-        // Load matches with games and scores for automation checks
         await tournamentsRepository.LoadMatchesWithGamesAndScoresAsync(tournament);
 
-        // Perform HeadToHead to TeamVs conversion before any rejection processing
-        // This must happen BEFORE cascading rejections to ensure data is accessible
+        // Ordering matters - HeadToHead conversion must be performed before
+        // rejecting all child entities.
         if (tournament.VerificationStatus != VerificationStatus.Verified)
         {
             PerformHeadToHeadConversion(tournament);
         }
 
-        // If tournament was rejected on submission, cascade rejection to children AFTER conversion
         if (tournament.VerificationStatus == VerificationStatus.Rejected)
         {
             logger.LogInformation(
                 "Cascading rejection status to child entities for tournament {TournamentId} after HeadToHead conversion",
-                entityId);
+                tournamentId);
             tournament.RejectAllChildren();
         }
 
-        // Check if automation checks should be skipped based on current verification status
         bool skipAutomationChecks = !overrideVerifiedState &&
             tournament.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected;
 
@@ -62,10 +57,9 @@ public class TournamentAutomationCheckService(
         {
             logger.LogInformation(
                 "Skipping automation checks for tournament {TournamentId} with verification status {VerificationStatus}",
-                entityId,
+                tournamentId,
                 tournament.VerificationStatus);
 
-            // Save any changes from HeadToHead conversion (if it was performed for a Rejected tournament)
             if (tournament.VerificationStatus == VerificationStatus.Rejected)
             {
                 await tournamentsRepository.UpdateAsync(tournament);
@@ -74,25 +68,21 @@ public class TournamentAutomationCheckService(
             return tournament.VerificationStatus == VerificationStatus.Verified;
         }
 
-        // Reset verification status and rejection reason if overriding
         if (overrideVerifiedState)
         {
             tournament.VerificationStatus = VerificationStatus.None;
             tournament.RejectionReason = TournamentRejectionReason.None;
             logger.LogInformation(
                 "Resetting verification status to None for tournament {TournamentId} due to override",
-                entityId);
+                tournamentId);
         }
 
-        // Process all child entities first (bottom-up approach)
         ProcessAllScores(tournament, overrideVerifiedState);
         ProcessAllGames(tournament, overrideVerifiedState);
         ProcessAllMatches(tournament, overrideVerifiedState);
 
-        // Run tournament-level automation checks
         TournamentRejectionReason rejectionReason = tournamentAutomationChecks.Process(tournament);
 
-        // Update verification status based on the result
         if (rejectionReason == TournamentRejectionReason.None)
         {
             tournament.VerificationStatus = VerificationStatus.PreVerified;
@@ -104,13 +94,10 @@ public class TournamentAutomationCheckService(
             tournament.RejectionReason = rejectionReason;
         }
 
-        // Capture detailed state after processing
         TournamentProcessingState processingState = TournamentProcessingReporter.CaptureDetailedState(tournament, tournamentStatusBefore);
 
-        // Save all changes in a single transaction
         await tournamentsRepository.UpdateAsync(tournament);
 
-        // Generate and log the detailed multi-line report
         string detailedReport = TournamentProcessingReporter.GenerateDetailedReport(processingState);
         logger.LogInformation("{DetailedReport}", detailedReport);
 
@@ -132,14 +119,12 @@ public class TournamentAutomationCheckService(
             {
                 foreach (GameScore score in game.Scores)
                 {
-                    // Check if the entity needs processing based on current verification status
                     if (!overrideVerifiedState &&
                         score.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
                     {
                         continue;
                     }
 
-                    // Reset verification status and rejection reason if overriding
                     if (overrideVerifiedState &&
                         score.VerificationStatus is VerificationStatus.Verified or VerificationStatus.Rejected)
                     {

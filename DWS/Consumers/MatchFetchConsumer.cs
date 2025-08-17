@@ -43,8 +43,6 @@ public class MatchFetchConsumer(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to process match {OsuMatchId}", message.OsuMatchId);
-
-                // Re-throw to let MassTransit handle retry logic
                 throw;
             }
         }

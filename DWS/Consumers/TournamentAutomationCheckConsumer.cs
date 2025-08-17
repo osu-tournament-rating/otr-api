@@ -43,17 +43,13 @@ public class TournamentAutomationCheckConsumer(
                     logger.LogInformation("Tournament {TournamentId} failed automation checks", message.TournamentId);
                 }
 
-                // Clear the pending automation check flag now that processing is complete
                 dataCompletionService.ClearPendingAutomationCheck(message.TournamentId);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to process automation checks for tournament {TournamentId}", message.TournamentId);
 
-                // Clear the pending flag even on error so it can be retried
                 dataCompletionService.ClearPendingAutomationCheck(message.TournamentId);
-
-                // Re-throw to let MassTransit handle retry logic
                 throw;
             }
         }

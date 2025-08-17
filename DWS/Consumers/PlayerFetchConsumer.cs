@@ -39,8 +39,6 @@ public class PlayerFetchConsumer(ILogger<PlayerFetchConsumer> logger,
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to process player {OsuPlayerId}", message.OsuPlayerId);
-
-                // Re-throw to let MassTransit handle retry logic
                 throw;
             }
         }
