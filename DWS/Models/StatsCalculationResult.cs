@@ -8,25 +8,25 @@ public class StatsCalculationResult
     /// <summary>
     /// Whether the statistics calculation completed successfully.
     /// </summary>
-    public bool Success { get; set; }
+    public bool Success { get; init; }
 
     /// <summary>
     /// Number of PlayerTournamentStats records generated.
     /// </summary>
-    public int PlayerTournamentStatsCount { get; set; }
+    public int PlayerTournamentStatsCount { get; init; }
 
     /// <summary>
     /// Total number of PlayerMatchStats records generated across all matches.
     /// </summary>
-    public int PlayerMatchStatsCount { get; set; }
+    public int PlayerMatchStatsCount { get; init; }
 
     /// <summary>
     /// Number of verified matches processed.
     /// </summary>
-    public int VerifiedMatchesCount { get; set; }
+    public int VerifiedMatchesCount { get; init; }
 
     /// <summary>
     /// Optional error message if calculation failed.
     /// </summary>
-    public string? ErrorMessage { get; set; }
+    public string? ErrorMessage { get; init; }
 }
