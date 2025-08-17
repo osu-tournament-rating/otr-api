@@ -28,6 +28,14 @@
     "MaxMessagesPerCycle": 500,
     "MessagePriority": 0
   },
+  "ConsumerConcurrency": {
+    "BeatmapFetchConsumers": 1,
+    "MatchFetchConsumers": 1,
+    "PlayerFetchConsumers": 1,
+    "PlayerOsuTrackFetchConsumers": 1,
+    "TournamentAutomationCheckConsumers": 1,
+    "TournamentStatsConsumers": 10
+  },
   "Serilog": {
     "MinimumLevel": {
       "Default": "Information",

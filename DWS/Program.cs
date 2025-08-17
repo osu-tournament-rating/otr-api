@@ -73,6 +73,10 @@ try
         .Bind(builder.Configuration.GetSection(ConnectionStringsConfiguration.Position))
         .ValidateDataAnnotations();
 
+    builder.Services.AddOptionsWithValidateOnStart<ConsumerConcurrencyConfiguration>()
+        .Bind(builder.Configuration.GetSection(ConsumerConcurrencyConfiguration.Position))
+        .ValidateDataAnnotations();
+
     builder.Services.AddSingleton<IConnectionMultiplexer>(serviceProvider =>
     {
         ConnectionStringsConfiguration connectionStrings = serviceProvider.GetRequiredService<IOptions<ConnectionStringsConfiguration>>().Value;
@@ -141,6 +145,7 @@ try
         x.UsingRabbitMq((context, cfg) =>
         {
             RabbitMqConfiguration rabbitMqConfig = context.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
+            ConsumerConcurrencyConfiguration concurrencyConfig = context.GetRequiredService<IOptions<ConsumerConcurrencyConfiguration>>().Value;
 
             cfg.Host(rabbitMqConfig.Host, "/", h =>
             {
@@ -148,14 +153,14 @@ try
                 h.Password(rabbitMqConfig.Password);
             });
 
-            cfg.ReceiveOsuApiEndpoint<BeatmapFetchConsumer>(context, QueueConstants.Osu.Beatmaps);
-            cfg.ReceiveOsuApiEndpoint<MatchFetchConsumer>(context, QueueConstants.Osu.Matches);
-            cfg.ReceiveOsuApiEndpoint<PlayerFetchConsumer>(context, QueueConstants.Osu.Players);
-            cfg.ReceiveOsuTrackApiEndpoint<PlayerOsuTrackFetchConsumer>(context, QueueConstants.OsuTrack.Players);
+            cfg.ReceiveOsuApiEndpoint<BeatmapFetchConsumer>(context, QueueConstants.Osu.Beatmaps, concurrencyConfig.BeatmapFetchConsumers);
+            cfg.ReceiveOsuApiEndpoint<MatchFetchConsumer>(context, QueueConstants.Osu.Matches, concurrencyConfig.MatchFetchConsumers);
+            cfg.ReceiveOsuApiEndpoint<PlayerFetchConsumer>(context, QueueConstants.Osu.Players, concurrencyConfig.PlayerFetchConsumers);
+            cfg.ReceiveOsuTrackApiEndpoint<PlayerOsuTrackFetchConsumer>(context, QueueConstants.OsuTrack.Players, concurrencyConfig.PlayerOsuTrackFetchConsumers);
 
-            cfg.ReceiveAutomationCheckEndpoint<TournamentAutomationCheckConsumer>(context, QueueConstants.AutomatedChecks.Tournaments);
+            cfg.ReceiveAutomationCheckEndpoint<TournamentAutomationCheckConsumer>(context, QueueConstants.AutomatedChecks.Tournaments, concurrencyConfig.TournamentAutomationCheckConsumers);
 
-            cfg.ReceiveStatsEndpoint<TournamentStatsConsumer>(context, QueueConstants.Stats.Tournaments);
+            cfg.ReceiveStatsEndpoint<TournamentStatsConsumer>(context, QueueConstants.Stats.Tournaments, concurrencyConfig.TournamentStatsConsumers);
 
             cfg.UseMessageRetry(r => r.Intervals(
                 TimeSpan.FromSeconds(5),
