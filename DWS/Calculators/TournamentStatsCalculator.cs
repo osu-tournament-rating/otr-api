@@ -156,14 +156,6 @@ public class TournamentStatsCalculator : IStatsCalculator
             .OrderByDescending(s => s.Score)
             .ToList();
 
-        // Assign placements (1-indexed, ordered by score descending)
-        const int initialPlacement = 1;
-        int placement = initialPlacement;
-        foreach (GameScore score in verifiedScores)
-        {
-            score.Placement = placement++;
-        }
-
         // Generate game rosters
         game.Rosters.Clear();
         ICollection<GameRoster> newGameRosters = RostersHelper.GenerateRosters(verifiedScores);
@@ -171,7 +163,6 @@ public class TournamentStatsCalculator : IStatsCalculator
         {
             game.Rosters.Add(roster);
         }
-
     }
 
     /// <summary>

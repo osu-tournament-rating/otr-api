@@ -20,8 +20,11 @@ public class GameScore : UpdateableEntityBase, IAdminNotableEntity<GameScoreAdmi
     public int Score { get; set; }
 
     /// <summary>
-    /// Placement of the <see cref="Score"/> in the <see cref="Game"/> compared to all <see cref="Entities.Player"/>'s <see cref="Score"/>
+    /// Placement of the <see cref="Score"/> in the <see cref="Game"/> compared to all <see cref="Entities.Player"/>'s <see cref="Score"/>.
     /// </summary>
+    /// <remarks>
+    /// This field is maintained by the otr-processor.
+    /// </remarks>
     public int Placement { get; set; }
 
     /// <summary>
