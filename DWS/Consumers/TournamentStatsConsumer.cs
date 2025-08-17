@@ -15,7 +15,6 @@ public class TournamentStatsConsumer(
     ITournamentStatsService tournamentStatsService)
     : IConsumer<ProcessTournamentStatsMessage>
 {
-    /// <inheritdoc />
     public async Task Consume(ConsumeContext<ProcessTournamentStatsMessage> context)
     {
         ProcessTournamentStatsMessage message = context.Message;

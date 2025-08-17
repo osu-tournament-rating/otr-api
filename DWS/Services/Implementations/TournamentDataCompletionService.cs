@@ -20,7 +20,6 @@ public class TournamentDataCompletionService(
     // Track tournaments that have automation checks pending to prevent duplicates
     private readonly HashSet<int> _pendingAutomationChecks = [];
 
-    /// <inheritdoc />
     public async Task<bool> CheckAndTriggerAutomationChecksIfCompleteAsync(int tournamentId, CancellationToken cancellationToken = default)
     {
         logger.LogDebug("Checking data completion status for tournament {TournamentId}", tournamentId);
@@ -137,7 +136,6 @@ public class TournamentDataCompletionService(
         }
     }
 
-    /// <inheritdoc />
     public async Task UpdateMatchFetchStatusAsync(int matchId, DataFetchStatus status, CancellationToken cancellationToken = default)
     {
         Match? match = await context.Matches.FindAsync([matchId], cancellationToken);
@@ -156,7 +154,6 @@ public class TournamentDataCompletionService(
         await CheckAndTriggerAutomationChecksIfCompleteAsync(match.TournamentId, cancellationToken);
     }
 
-    /// <inheritdoc />
     public async Task UpdateBeatmapFetchStatusAsync(int beatmapId, DataFetchStatus status, CancellationToken cancellationToken = default)
     {
         Beatmap? beatmap = await context.Beatmaps.FindAsync([beatmapId], cancellationToken);
@@ -237,7 +234,6 @@ public class TournamentDataCompletionService(
             tournamentId, earliestStartTime, latestStartTime);
     }
 
-    /// <inheritdoc />
     public void ClearPendingAutomationCheck(int tournamentId)
     {
         lock (_pendingAutomationChecks)

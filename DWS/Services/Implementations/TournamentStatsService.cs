@@ -15,7 +15,6 @@ public class TournamentStatsService(
     ITournamentsRepository tournamentsRepository,
     IStatsCalculator statsCalculator) : ITournamentStatsService
 {
-    /// <inheritdoc />
     public async Task<bool> ProcessTournamentStatsAsync(int tournamentId)
     {
         // Load entire tournament with all related data in a single query

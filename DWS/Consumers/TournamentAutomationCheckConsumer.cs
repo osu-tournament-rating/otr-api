@@ -16,7 +16,6 @@ public class TournamentAutomationCheckConsumer(
     ITournamentDataCompletionService dataCompletionService)
     : IConsumer<ProcessTournamentAutomationCheckMessage>
 {
-    /// <inheritdoc />
     public async Task Consume(ConsumeContext<ProcessTournamentAutomationCheckMessage> context)
     {
         ProcessTournamentAutomationCheckMessage message = context.Message;

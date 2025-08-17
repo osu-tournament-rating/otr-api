@@ -18,7 +18,6 @@ namespace DWS.Calculators;
 /// </remarks>
 public class TournamentStatsCalculator : IStatsCalculator
 {
-    /// <inheritdoc />
     public StatsCalculationResult CalculateAllStatistics(Tournament tournament)
     {
         if (tournament.VerificationStatus is not VerificationStatus.Verified)
