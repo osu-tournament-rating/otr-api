@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using Common.Enums;
 using Common.Enums.Verification;
 using Common.Utilities.Extensions;
 using Database.Entities.Interfaces;
@@ -15,7 +16,7 @@ namespace Database.Entities;
 /// </summary>
 [SuppressMessage("ReSharper", "CollectionNeverUpdated.Global")]
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<MatchAdminNote>
+public class Match : UpdateableEntityBase, IAdminNotableEntity<MatchAdminNote>
 {
     private string _name = string.Empty;
 
@@ -48,9 +49,6 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
 
     public VerificationStatus VerificationStatus { get; set; }
 
-    [AuditIgnore]
-    public DateTime LastProcessingDate { get; set; }
-
     /// <summary>
     /// Rejection reason
     /// </summary>
@@ -61,10 +59,11 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
     /// </summary>
     public MatchWarningFlags WarningFlags { get; set; }
 
+
     /// <summary>
-    /// Processing status
+    /// Status of data fetching from the osu! API
     /// </summary>
-    public MatchProcessingStatus ProcessingStatus { get; set; }
+    public DataFetchStatus DataFetchStatus { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Tournament"/> the match was played in
@@ -163,7 +162,6 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
         VerificationStatus = VerificationStatus.None;
         WarningFlags = MatchWarningFlags.None;
         RejectionReason = MatchRejectionReason.None;
-        ProcessingStatus = MatchProcessingStatus.NeedsAutomationChecks;
     }
 
     /// <summary>
@@ -206,7 +204,6 @@ public class Match : UpdateableEntityBase, IProcessableEntity, IAdminNotableEnti
         {
             game.VerificationStatus = VerificationStatus.Rejected;
             game.RejectionReason |= GameRejectionReason.RejectedMatch;
-            game.ProcessingStatus = GameProcessingStatus.Done;
 
             game.RejectAllChildren();
         }

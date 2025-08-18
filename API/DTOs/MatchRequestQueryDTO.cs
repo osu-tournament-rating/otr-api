@@ -55,11 +55,6 @@ public class MatchRequestQueryDTO : IPaginated
     [EnumDataType(typeof(MatchRejectionReason))]
     public MatchRejectionReason? RejectionReason { get; init; }
 
-    /// <summary>
-    /// Filters results for only matches with a specified processing status
-    /// </summary>
-    [EnumDataType(typeof(MatchProcessingStatus))]
-    public MatchProcessingStatus? ProcessingStatus { get; init; }
 
     /// <summary>
     /// Filters results for only matches submitted by a user with a specified id

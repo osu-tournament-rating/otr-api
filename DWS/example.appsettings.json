@@ -1,0 +1,48 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=db;Port=5432;Database=postgres;Username=postgres;Password=password"
+  },
+  "RabbitMq": {
+    "Host": "rabbitmq",
+    "Username": "admin",
+    "Password": "admin"
+  },
+  "Osu": {
+    "ClientId": "",
+    "ClientSecret": "",
+    "RedirectUrl": "http://localhost:5075/api/v1/auth/callback",
+    "OsuRateLimit": 60,
+    "OsuTrackRateLimit": 30
+  },
+  "PlayerUpdateService": {
+    "Enabled": false,
+    "OutdatedAfterDays": 14,
+    "CheckIntervalSeconds": 600,
+    "MaxMessagesPerCycle": 500,
+    "MessagePriority": 0
+  },
+  "PlayerOsuTrackUpdateService": {
+    "Enabled": false,
+    "OutdatedAfterDays": 60,
+    "CheckIntervalSeconds": 600,
+    "MaxMessagesPerCycle": 500,
+    "MessagePriority": 0
+  },
+  "ConsumerConcurrency": {
+    "BeatmapFetchConsumers": 1,
+    "MatchFetchConsumers": 1,
+    "PlayerFetchConsumers": 1,
+    "PlayerOsuTrackFetchConsumers": 1,
+    "TournamentAutomationCheckConsumers": 1,
+    "TournamentStatsConsumers": 10
+  },
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "Microsoft.EntityFrameworkCore": "Warning"
+      }
+    }
+  }
+}

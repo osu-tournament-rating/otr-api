@@ -16,8 +16,8 @@ COPY ["API.Tests/API.Tests.csproj", "./API.Tests/"]
 COPY ["API.Utils.Jwt/API.Utils.Jwt.csproj", "./API.Utils.Jwt/"]
 COPY ["Common/Common.csproj", "./Common/"]
 COPY ["Database/Database.csproj", "./Database/"]
-COPY ["DataWorkerService/DataWorkerService.csproj", "./DataWorkerService/"]
-COPY ["DataWorkerService.Tests/DataWorkerService.Tests.csproj", "./DataWorkerService.Tests/"]
+COPY ["DWS/DWS.csproj", "./DWS/"]
+COPY ["DWS.Tests/DWS.Tests.csproj", "./DWS.Tests/"]
 COPY ["OsuApiClient/OsuApiClient.csproj", "./OsuApiClient/"]
 COPY ["OsuApiClient.Tests/OsuApiClient.Tests.csproj", "./OsuApiClient.Tests/"]
 COPY ["TestingUtils/TestingUtils.csproj", "./TestingUtils/"]
@@ -30,6 +30,8 @@ RUN dotnet build "API/API.csproj" -c Release -o /app/build
 
 # Stage 3: Publish
 FROM build AS publish
+# Remove example.appsettings.json files to prevent publish conflicts
+RUN find . -name "example.appsettings.json" -type f -delete
 RUN dotnet publish "API/API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Stage 4: Final runtime image

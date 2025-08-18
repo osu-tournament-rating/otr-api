@@ -11,7 +11,7 @@ namespace Database.Entities;
 /// <summary>
 /// An osu! tournament
 /// </summary>
-public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<TournamentAdminNote>
+public class Tournament : UpdateableEntityBase, IAdminNotableEntity<TournamentAdminNote>
 {
     private readonly string _name = string.Empty;
 
@@ -54,18 +54,11 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
 
     public VerificationStatus VerificationStatus { get; set; }
 
-    [AuditIgnore]
-    public DateTime LastProcessingDate { get; set; }
-
     /// <summary>
     /// Rejection reason
     /// </summary>
     public TournamentRejectionReason RejectionReason { get; set; }
 
-    /// <summary>
-    /// Processing status
-    /// </summary>
-    public TournamentProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
     /// Id of the <see cref="User"/> that submitted the tournament
@@ -134,7 +127,6 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
 
         VerificationStatus = VerificationStatus.None;
         RejectionReason = TournamentRejectionReason.None;
-        ProcessingStatus = TournamentProcessingStatus.NeedsAutomationChecks;
     }
 
     /// <summary>
@@ -172,7 +164,6 @@ public class Tournament : UpdateableEntityBase, IProcessableEntity, IAdminNotabl
         {
             match.VerificationStatus = VerificationStatus.Rejected;
             match.RejectionReason |= MatchRejectionReason.RejectedTournament;
-            match.ProcessingStatus = MatchProcessingStatus.Done;
 
             match.RejectAllChildren();
         }

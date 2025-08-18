@@ -23,12 +23,14 @@ using API.Utilities.AdminNotes;
 using API.Utilities.Extensions;
 using Asp.Versioning;
 using AutoMapper;
+using Common.Configurations;
 using Dapper;
 using Database;
 using Database.Entities;
 using Database.Interceptors;
 using Database.Repositories.Implementations;
 using Database.Repositories.Interfaces;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -42,6 +44,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
@@ -58,8 +61,6 @@ using OsuApiClient;
 using OsuApiClient.Domain.Osu.Users;
 using OsuApiClient.Extensions;
 using OsuApiClient.Net.Authorization;
-using RedLockNet.SERedis;
-using RedLockNet.SERedis.Configuration;
 using Serilog;
 using Serilog.AspNetCore;
 using Serilog.Enrichers.Span;
@@ -116,6 +117,11 @@ builder
 builder
     .Services.AddOptionsWithValidateOnStart<RateLimitConfiguration>()
     .Bind(builder.Configuration.GetSection(RateLimitConfiguration.Position))
+    .ValidateDataAnnotations();
+
+builder
+    .Services.AddOptionsWithValidateOnStart<RabbitMqConfiguration>()
+    .Bind(builder.Configuration.GetSection(RabbitMqConfiguration.Position))
     .ValidateDataAnnotations();
 
 #endregion
@@ -412,6 +418,15 @@ builder.Services.AddSwaggerGen(options =>
                 "JWT Authorization using the Bearer scheme. Paste **ONLY** your JWT in the text box below",
             Scheme = JwtBearerDefaults.AuthenticationScheme,
             BearerFormat = "JWT"
+        });
+
+    options.AddSecurityDefinition("ApiKey",
+        new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Name = "X-Api-Key",
+            Type = SecuritySchemeType.ApiKey,
+            Description = "API Key Authorization. Enter your API key in the text box below"
         });
 
     // Add the ability to authenticate with swagger ui
@@ -876,46 +891,6 @@ builder.Services.AddSingleton<ICacheHandler>(serviceProvider =>
     );
 });
 
-// Redis lock factory (distributed resource access control)
-bool useRedLock = builder.Configuration.Get<OsuConfiguration>()?.EnableDistributedLocking ?? true;
-
-if (useRedLock)
-{
-    builder.Services.AddSingleton(serviceProvider =>
-    {
-        IConnectionMultiplexer? sharedRedisConnection = serviceProvider.GetService<IConnectionMultiplexer>();
-        if (sharedRedisConnection != null)
-        {
-            return RedLockFactory.Create(new List<RedLockMultiplexer>
-            {
-                new(sharedRedisConnection)
-            });
-        }
-
-        // Fallback to creating a new connection if the shared one is not available
-        try
-        {
-            var configurationOptions = ConfigurationOptions.Parse(
-                builder.Configuration.BindAndValidate<ConnectionStringsConfiguration>(
-                    ConnectionStringsConfiguration.Position).RedisConnection);
-            configurationOptions.AbortOnConnectFail = false;
-            configurationOptions.ConnectRetry = 3;
-            configurationOptions.ConnectTimeout = 5000;
-            configurationOptions.SyncTimeout = 5000;
-
-            var redisConnection = ConnectionMultiplexer.Connect(configurationOptions);
-            return RedLockFactory.Create(new List<RedLockMultiplexer>
-            {
-                new(redisConnection)
-            });
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Failed to create RedLock factory with Redis connection");
-            throw;
-        }
-    });
-}
 
 
 builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthClient>>();
@@ -964,6 +939,26 @@ builder.Services.AddScoped<IPlatformStatsService, PlatformStatsService>();
 builder.Services.AddScoped<ITournamentPlatformStatsService, TournamentPlatformStatsService>();
 builder.Services.AddScoped<IRatingPlatformStatsService, RatingPlatformStatsService>();
 builder.Services.AddScoped<IUserPlatformStatsService, UserPlatformStatsService>();
+
+#endregion
+
+#region MassTransit Configuration
+
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        RabbitMqConfiguration rabbitMqConfiguration = context.GetRequiredService<IOptions<RabbitMqConfiguration>>().Value;
+
+        cfg.Host(rabbitMqConfiguration.Host, "/", h =>
+        {
+            h.Username(rabbitMqConfiguration.Username);
+            h.Password(rabbitMqConfiguration.Password);
+        });
+
+        // Configure as publish-only endpoint
+    });
+});
 
 #endregion
 

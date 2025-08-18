@@ -26,7 +26,6 @@ public class MatchesService(
             dateMax: filter.DateMax,
             verificationStatus: filter.VerificationStatus,
             rejectionReason: filter.RejectionReason,
-            processingStatus: filter.ProcessingStatus,
             submittedBy: filter.SubmittedBy,
             verifiedBy: filter.VerifiedBy,
             querySortType: filter.Sort,

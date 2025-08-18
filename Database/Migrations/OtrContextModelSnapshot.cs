@@ -65,6 +65,10 @@ namespace Database.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("cs");
 
+                    b.Property<int>("DataFetchStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("data_fetch_status");
+
                     b.Property<string>("DiffName")
                         .IsRequired()
                         .HasMaxLength(512)
@@ -74,12 +78,6 @@ namespace Database.Migrations
                     b.Property<int>("DrainLength")
                         .HasColumnType("integer")
                         .HasColumnName("drain_length");
-
-                    b.Property<bool>("HasData")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("has_data");
 
                     b.Property<double>("Hp")
                         .HasColumnType("double precision")
@@ -387,12 +385,6 @@ namespace Database.Migrations
                         .HasColumnName("end_time")
                         .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
-                    b.Property<DateTime>("LastProcessingDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_processing_date")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
-
                     b.Property<int>("MatchId")
                         .HasColumnType("integer")
                         .HasColumnName("match_id");
@@ -408,12 +400,6 @@ namespace Database.Migrations
                     b.Property<int>("PlayMode")
                         .HasColumnType("integer")
                         .HasColumnName("play_mode");
-
-                    b.Property<int>("ProcessingStatus")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("processing_status");
 
                     b.Property<int>("RejectionReason")
                         .ValueGeneratedOnAdd()
@@ -669,12 +655,6 @@ namespace Database.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("grade");
 
-                    b.Property<DateTime>("LastProcessingDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_processing_date")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
-
                     b.Property<int>("MaxCombo")
                         .HasColumnType("integer")
                         .HasColumnName("max_combo");
@@ -698,10 +678,6 @@ namespace Database.Migrations
                     b.Property<int>("PlayerId")
                         .HasColumnType("integer")
                         .HasColumnName("player_id");
-
-                    b.Property<int>("ProcessingStatus")
-                        .HasColumnType("integer")
-                        .HasColumnName("processing_status");
 
                     b.Property<int>("RejectionReason")
                         .HasColumnType("integer")
@@ -858,15 +834,13 @@ namespace Database.Migrations
                         .HasColumnName("created")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<int>("DataFetchStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("data_fetch_status");
+
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_time");
-
-                    b.Property<DateTime>("LastProcessingDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_processing_date")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -879,12 +853,6 @@ namespace Database.Migrations
                     b.Property<long>("OsuId")
                         .HasColumnType("bigint")
                         .HasColumnName("osu_id");
-
-                    b.Property<int>("ProcessingStatus")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("processing_status");
 
                     b.Property<int>("RejectionReason")
                         .ValueGeneratedOnAdd()
@@ -1760,12 +1728,6 @@ namespace Database.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("forum_url");
 
-                    b.Property<DateTime>("LastProcessingDate")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_processing_date")
-                        .HasDefaultValueSql("'2007-09-17T00:00:00'::timestamp");
-
                     b.Property<int>("LobbySize")
                         .HasColumnType("integer")
                         .HasColumnName("lobby_size");
@@ -1775,12 +1737,6 @@ namespace Database.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("character varying(512)")
                         .HasColumnName("name");
-
-                    b.Property<int>("ProcessingStatus")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("processing_status");
 
                     b.Property<int>("RankRangeLowerBound")
                         .HasColumnType("integer")

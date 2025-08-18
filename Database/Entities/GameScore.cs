@@ -12,7 +12,7 @@ namespace Database.Entities;
 /// A score set by a <see cref="Entities.Player"/> in a <see cref="Entities.Game"/>
 /// </summary>
 [SuppressMessage("ReSharper", "PropertyCanBeMadeInitOnly.Global")]
-public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotableEntity<GameScoreAdminNote>, IScoreStatistics
+public class GameScore : UpdateableEntityBase, IAdminNotableEntity<GameScoreAdminNote>, IScoreStatistics
 {
     /// <summary>
     /// Total score
@@ -20,8 +20,11 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
     public int Score { get; set; }
 
     /// <summary>
-    /// Placement of the <see cref="Score"/> in the <see cref="Game"/> compared to all <see cref="Entities.Player"/>'s <see cref="Score"/>
+    /// Placement of the <see cref="Score"/> in the <see cref="Game"/> compared to all <see cref="Entities.Player"/>'s <see cref="Score"/>.
     /// </summary>
+    /// <remarks>
+    /// This field is maintained by the otr-processor.
+    /// </remarks>
     public int Placement { get; set; }
 
     /// <summary>
@@ -73,18 +76,11 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
 
     public VerificationStatus VerificationStatus { get; set; }
 
-    [AuditIgnore]
-    public DateTime LastProcessingDate { get; set; }
-
     /// <summary>
     /// Rejection reason
     /// </summary>
     public ScoreRejectionReason RejectionReason { get; set; }
 
-    /// <summary>
-    /// Processing status
-    /// </summary>
-    public ScoreProcessingStatus ProcessingStatus { get; set; }
 
     /// <summary>
     /// Id of the <see cref="Entities.Game" /> that the <see cref="GameScore" /> was set in
@@ -172,7 +168,6 @@ public class GameScore : UpdateableEntityBase, IProcessableEntity, IAdminNotable
 
         VerificationStatus = VerificationStatus.None;
         RejectionReason = ScoreRejectionReason.None;
-        ProcessingStatus = ScoreProcessingStatus.NeedsAutomationChecks;
     }
 
     /// <summary>

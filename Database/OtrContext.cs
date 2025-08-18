@@ -67,8 +67,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(b => b.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
-            entity.Property(b => b.HasData).HasDefaultValue(true);
-
             // Relation: BeatmapAttributes
             entity
                 .HasMany(b => b.Attributes)
@@ -145,13 +143,11 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(g => g.VerificationStatus).HasDefaultValue(VerificationStatus.None);
             entity.Property(g => g.RejectionReason).HasDefaultValue(GameRejectionReason.None);
             entity.Property(g => g.WarningFlags).HasDefaultValue(GameWarningFlags.None);
-            entity.Property(g => g.ProcessingStatus).HasDefaultValue(GameProcessingStatus.NeedsAutomationChecks);
 
             entity.Property(g => g.Created).HasDefaultValueSql(SqlCurrentTimestamp);
             entity.Property(g => g.StartTime).HasDefaultValueSql(SqlPlaceholderDate);
             entity.Property(g => g.EndTime).HasDefaultValueSql(SqlPlaceholderDate);
 
-            entity.Property(g => g.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
 
             // Relation: Audits
             entity
@@ -240,7 +236,6 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(gs => gs.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
-            entity.Property(gs => gs.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
 
             // Relation: Audits
             entity
@@ -342,11 +337,9 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
             entity.Property(m => m.VerificationStatus).HasDefaultValue(VerificationStatus.None);
             entity.Property(m => m.RejectionReason).HasDefaultValue(MatchRejectionReason.None);
             entity.Property(m => m.WarningFlags).HasDefaultValue(MatchWarningFlags.None);
-            entity.Property(m => m.ProcessingStatus).HasDefaultValue(MatchProcessingStatus.NeedsData);
 
             entity.Property(m => m.Created).HasDefaultValueSql(SqlCurrentTimestamp);
 
-            entity.Property(m => m.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
 
             // Relation: Audits
             entity.HasMany(m => m.Audits);
@@ -746,10 +739,8 @@ public class OtrContext(DbContextOptions<OtrContext> options) : DbContext(option
 
             entity.Property(t => t.VerificationStatus).HasDefaultValue(VerificationStatus.None);
             entity.Property(t => t.RejectionReason).HasDefaultValue(TournamentRejectionReason.None);
-            entity.Property(t => t.ProcessingStatus).HasDefaultValue(TournamentProcessingStatus.NeedsApproval);
 
             entity.Property(t => t.Created).HasDefaultValueSql(SqlCurrentTimestamp);
-            entity.Property(t => t.LastProcessingDate).HasDefaultValueSql(SqlPlaceholderDate);
 
             // Relation: User (Submitter)
             entity
