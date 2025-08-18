@@ -17,14 +17,12 @@ public class TournamentStatsService(
 {
     public async Task<bool> ProcessTournamentStatsAsync(int tournamentId)
     {
-        // Load entire tournament with all related data in a single query
         Tournament? tournament = await LoadTournamentWithAllDataAsync(tournamentId);
         if (tournament == null)
         {
             return false;
         }
 
-        // Validate tournament is verified
         if (tournament.VerificationStatus is not VerificationStatus.Verified)
         {
             logger.LogError(
@@ -35,7 +33,6 @@ public class TournamentStatsService(
             return false;
         }
 
-        // Perform all statistics calculations in-memory
         StatsCalculationResult result = statsCalculator.CalculateAllStatistics(tournament);
         if (!result.Success)
         {
@@ -47,7 +44,6 @@ public class TournamentStatsService(
             return false;
         }
 
-        // Single database save for all changes
         await tournamentsRepository.UpdateAsync(tournament);
 
         logger.LogInformation(

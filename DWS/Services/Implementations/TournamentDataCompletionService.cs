@@ -17,14 +17,12 @@ public class TournamentDataCompletionService(
     IPublishEndpoint publishEndpoint)
     : ITournamentDataCompletionService
 {
-    // Track tournaments that have automation checks pending to prevent duplicates
     private readonly HashSet<int> _pendingAutomationChecks = [];
 
     public async Task<bool> CheckAndTriggerAutomationChecksIfCompleteAsync(int tournamentId, CancellationToken cancellationToken = default)
     {
         logger.LogDebug("Checking data completion status for tournament {TournamentId}", tournamentId);
 
-        // Check if all matches for this tournament have their data fetched
         var matches = await context.Matches
             .Where(m => m.TournamentId == tournamentId)
             .Select(m => new { m.Id, m.DataFetchStatus })
@@ -36,7 +34,6 @@ public class TournamentDataCompletionService(
             return false;
         }
 
-        // Check if all matches have completed fetching (either Fetched or NotFound are acceptable)
         bool allMatchesComplete = matches.All(m =>
             m.DataFetchStatus is DataFetchStatus.Fetched or DataFetchStatus.NotFound);
 
@@ -46,26 +43,21 @@ public class TournamentDataCompletionService(
             return false;
         }
 
-        // Get all beatmap IDs from both pooled beatmaps AND game beatmaps
-        // First, get pooled beatmap IDs
         List<int> pooledBeatmapIds = await context.Tournaments
             .Where(t => t.Id == tournamentId)
             .SelectMany(t => t.PooledBeatmaps.Select(b => b.Id))
             .ToListAsync(cancellationToken);
 
-        // Second, get beatmap IDs from all games in the tournament's matches
         List<int> gameBeatmapIds = await context.Games
             .Where(g => g.Match.TournamentId == tournamentId && g.BeatmapId != null)
             .Select(g => g.BeatmapId!.Value)
             .Distinct()
             .ToListAsync(cancellationToken);
 
-        // Combine all beatmap IDs (removing duplicates)
         HashSet<int> allBeatmapIds = [.. pooledBeatmapIds, .. gameBeatmapIds];
 
         if (allBeatmapIds.Count > 0)
         {
-            // Check if all beatmaps (pooled and from games) have their data fetched
             var beatmaps = await context.Beatmaps
                 .Where(b => allBeatmapIds.Contains(b.Id))
                 .Select(b => new { b.Id, b.DataFetchStatus })
@@ -87,7 +79,6 @@ public class TournamentDataCompletionService(
             }
         }
 
-        // Check if we already have a pending automation check for this tournament
         lock (_pendingAutomationChecks)
         {
             if (!_pendingAutomationChecks.Add(tournamentId))

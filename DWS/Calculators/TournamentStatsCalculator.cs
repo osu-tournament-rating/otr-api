@@ -29,7 +29,6 @@ public class TournamentStatsCalculator : IStatsCalculator
             };
         }
 
-        // Filter to only verified matches
         var verifiedMatches = tournament.Matches
             .Where(m => m.VerificationStatus == VerificationStatus.Verified)
             .ToList();
@@ -43,7 +42,6 @@ public class TournamentStatsCalculator : IStatsCalculator
             };
         }
 
-        // Process all matches and their games
         int totalPlayerMatchStats = 0;
         foreach (Match match in verifiedMatches)
         {
@@ -58,7 +56,6 @@ public class TournamentStatsCalculator : IStatsCalculator
             totalPlayerMatchStats += match.PlayerMatchStats.Count;
         }
 
-        // Validate processor data exists
         if (!ValidateProcessorData(verifiedMatches))
         {
             return new StatsCalculationResult
@@ -68,7 +65,6 @@ public class TournamentStatsCalculator : IStatsCalculator
             };
         }
 
-        // Aggregate player tournament statistics
         AggregatePlayerTournamentStatistics(tournament, verifiedMatches);
 
 
