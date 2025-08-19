@@ -225,8 +225,34 @@ public class TournamentsService(
             overrideVerifiedState);
     }
 
-    public async Task<ICollection<BeatmapDTO>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds) =>
-        mapper.Map<ICollection<BeatmapDTO>>(await tournamentsRepository.AddPooledBeatmapsAsync(id, osuBeatmapIds));
+    public async Task<ICollection<BeatmapDTO>> AddPooledBeatmapsAsync(int id, ICollection<long> osuBeatmapIds)
+    {
+        osuBeatmapIds = osuBeatmapIds.Distinct().ToList();
+        ICollection<Beatmap> beatmaps = await tournamentsRepository.AddPooledBeatmapsAsync(id, osuBeatmapIds);
+
+        // Enqueue beatmap fetch messages for each beatmap
+        foreach (long osuBeatmapId in osuBeatmapIds)
+        {
+            var message = new FetchBeatmapMessage
+            {
+                BeatmapId = osuBeatmapId,
+                RequestedAt = DateTime.UtcNow,
+                Priority = MessagePriority.Normal
+            };
+
+            await publishEndpoint.Publish(message, context =>
+            {
+                context.SetPriority((byte)message.Priority);
+                context.CorrelationId = message.CorrelationId;
+            });
+
+            logger.LogInformation(
+                "Published beatmap fetch message for pooled beatmap [Tournament ID: {TournamentId} | Beatmap ID: {BeatmapId} | Correlation ID: {CorrelationId}]",
+                id, osuBeatmapId, message.CorrelationId);
+        }
+
+        return mapper.Map<ICollection<BeatmapDTO>>(beatmaps);
+    }
 
     public async Task<ICollection<BeatmapDTO>> GetPooledBeatmapsAsync(int id) =>
         mapper.Map<ICollection<BeatmapDTO>>(await tournamentsRepository.GetPooledBeatmapsAsync(id));
