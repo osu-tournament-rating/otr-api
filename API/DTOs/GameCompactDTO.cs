@@ -55,4 +55,15 @@ public class GameCompactDTO
     /// Timestamp of the end of the game
     /// </summary>
     public DateTime? EndTime { get; init; }
+
+    /// <summary>
+    /// The mods enabled for the game
+    /// </summary>
+    [EnumDataType(typeof(Mods))]
+    public Mods Mods { get; init; }
+
+    /// <summary>
+    /// The beatmap played during the game
+    /// </summary>
+    public BeatmapCompactDTO? Beatmap { get; init; }
 }

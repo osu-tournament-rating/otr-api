@@ -24,6 +24,7 @@ public class MapperProfile : Profile
 
         // Beatmaps
         CreateMap<Beatmap, BeatmapDTO>();
+        CreateMap<Beatmap, BeatmapCompactDTO>();
         CreateMap<Beatmapset, BeatmapsetCompactDTO>();
         CreateMap<BeatmapAttributes, BeatmapAttributesDTO>();
 
