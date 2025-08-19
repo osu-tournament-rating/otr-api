@@ -32,7 +32,7 @@ public class MatchDTO : MatchCompactDTO
     /// <summary>
     /// Match win record information
     /// </summary>
-    public MatchWinRecordDTO? MatchWinRecord { get; set; }
+    public MatchWinRecordDTO? WinRecord { get; set; }
 
     /// <summary>
     /// Roster information for teams in this match

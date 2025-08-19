@@ -70,11 +70,4 @@ public interface IMatchesService
     /// <param name="playerId">Player id</param>
     /// <returns>The number of scores deleted</returns>
     Task<int> DeletePlayerScoresAsync(int matchId, int playerId);
-
-    /// <summary>
-    /// Gets match statistics including rating adjustments and player match stats
-    /// </summary>
-    /// <param name="matchId">Match id</param>
-    /// <returns>Match statistics or null if match not found</returns>
-    Task<MatchStatisticsDTO?> GetStatisticsAsync(int matchId);
 }

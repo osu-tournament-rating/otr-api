@@ -57,8 +57,6 @@ public class MatchCompactDTO
     [EnumDataType(typeof(MatchWarningFlags))]
     public MatchWarningFlags WarningFlags { get; set; }
 
-
-
     /// <summary>
     /// Games played in this match
     /// </summary>
