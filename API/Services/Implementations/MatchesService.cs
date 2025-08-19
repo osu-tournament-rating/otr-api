@@ -4,6 +4,7 @@ using AutoMapper;
 using Common.Enums;
 using Common.Enums.Verification;
 using Database.Entities;
+using Database.Entities.Processor;
 using Database.Repositories.Interfaces;
 
 namespace API.Services.Implementations;
@@ -12,6 +13,8 @@ public class MatchesService(
     IMatchesRepository matchesRepository,
     IPlayersRepository playersRepository,
     IGameScoresRepository gameScoresRepository,
+    IRatingAdjustmentsRepository ratingAdjustmentsRepository,
+    IPlayerMatchStatsRepository playerMatchStatsRepository,
     IMapper mapper
 ) : IMatchesService
 {
@@ -120,5 +123,23 @@ public class MatchesService(
             mapper.Map<ICollection<PlayerCompactDTO>>(await playersRepository.GetAsync(playerIds));
 
         return players;
+    }
+
+    public async Task<MatchStatisticsDTO?> GetStatisticsAsync(int matchId)
+    {
+        if (!await matchesRepository.ExistsAsync(matchId))
+        {
+            return null;
+        }
+
+        IEnumerable<RatingAdjustment> ratingAdjustments = await ratingAdjustmentsRepository.GetForMatchAsync(matchId);
+        IEnumerable<PlayerMatchStats> playerMatchStats = await playerMatchStatsRepository.GetForMatchAsync(matchId);
+
+        return new MatchStatisticsDTO
+        {
+            MatchId = matchId,
+            RatingAdjustments = mapper.Map<ICollection<RatingAdjustmentDTO>>(ratingAdjustments),
+            PlayerMatchStats = mapper.Map<ICollection<PlayerMatchStatsDTO>>(playerMatchStats)
+        };
     }
 }
