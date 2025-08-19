@@ -138,4 +138,12 @@ public class PlayerMatchStatsRepository(OtrContext context) : IPlayerMatchStatsR
         // Ensure all requested players are in the result with a winrate of 0.0 if they haven't played
         return playerIdsList.ToDictionary(id => id, id => winrates.GetValueOrDefault(id, 0.0));
     }
+
+    public async Task<IEnumerable<PlayerMatchStats>> GetForMatchAsync(int matchId)
+    {
+        return await context.PlayerMatchStats
+            .Where(pms => pms.MatchId == matchId)
+            .Include(pms => pms.Player)
+            .ToListAsync();
+    }
 }

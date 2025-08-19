@@ -36,4 +36,11 @@ public interface IRatingAdjustmentsRepository : IRepository<RatingAdjustment>
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
+
+    /// <summary>
+    /// Get all rating adjustments for a specific match
+    /// </summary>
+    /// <param name="matchId">The match ID to get adjustments for</param>
+    /// <returns>Collection of rating adjustments for the match</returns>
+    Task<IEnumerable<RatingAdjustment>> GetForMatchAsync(int matchId);
 }

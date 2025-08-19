@@ -62,4 +62,13 @@ public class RatingAdjustmentsRepository(OtrContext context)
 
         return peakRatings;
     }
+
+    public async Task<IEnumerable<RatingAdjustment>> GetForMatchAsync(int matchId)
+    {
+        return await _context.RatingAdjustments
+            .Where(ra => ra.MatchId == matchId)
+            .Include(ra => ra.Player)
+            .Include(ra => ra.Match!.Tournament)
+            .ToListAsync();
+    }
 }

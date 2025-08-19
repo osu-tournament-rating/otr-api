@@ -63,4 +63,11 @@ public interface IPlayerMatchStatsRepository
         DateTime? dateMin = null,
         DateTime? dateMax = null
     );
+
+    /// <summary>
+    /// Get all player match statistics for a specific match
+    /// </summary>
+    /// <param name="matchId">The match ID to get statistics for</param>
+    /// <returns>Collection of player match statistics for the match</returns>
+    Task<IEnumerable<PlayerMatchStats>> GetForMatchAsync(int matchId);
 }
