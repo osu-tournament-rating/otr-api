@@ -10,6 +10,11 @@ namespace API.DTOs;
 public class RatingAdjustmentDTO
 {
     /// <summary>
+    /// The ID of the Player the adjustment belongs to
+    /// </summary>
+    public int PlayerId { get; set; }
+
+    /// <summary>
     /// The type of event that caused the adjustment
     /// </summary>
     public RatingAdjustmentType AdjustmentType { get; init; }

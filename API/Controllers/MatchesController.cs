@@ -45,25 +45,6 @@ public class MatchesController(IMatchesService matchesService) : Controller
     }
 
     /// <summary>
-    /// Get match statistics including rating adjustments and player match stats
-    /// </summary>
-    /// <param name="id">Match id</param>
-    /// <response code="404">A match matching the given id does not exist</response>
-    /// <response code="200">Returns match statistics</response>
-    [HttpGet("{id:int}/statistics")]
-    [Authorize(Policy = AuthorizationPolicies.ApiKeyAuthorization)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType<MatchStatisticsDTO>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetStatisticsAsync(int id)
-    {
-        MatchStatisticsDTO? statistics = await matchesService.GetStatisticsAsync(id);
-
-        return statistics is null
-            ? NotFound()
-            : Ok(statistics);
-    }
-
-    /// <summary>
     /// Links games from provided matches into a single match id before deleting
     /// the provided matches
     /// </summary>

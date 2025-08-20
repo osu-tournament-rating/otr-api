@@ -70,7 +70,7 @@ public class MapperProfile : Profile
             .IncludeBase<Match, MatchCompactDTO>()
             .ForMember(x => x.Players, opt => opt.Ignore())
             .ForMember(x => x.RatingAdjustments, opt => opt.MapFrom(src => src.PlayerRatingAdjustments))
-            .ForMember(x => x.MatchWinRecord, opt => opt.MapFrom(src => src.WinRecord))
+            .ForMember(x => x.WinRecord, opt => opt.MapFrom(src => src.WinRecord))
             .ForMember(x => x.Rosters, opt => opt.MapFrom(src => src.Rosters));
         CreateMap<Match, MatchSubmissionStatusDTO>();
         CreateMap<Match, MatchCreatedResultDTO>()
