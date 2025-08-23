@@ -67,13 +67,14 @@ public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext c
         if (exists)
         {
             // Update existing player
-            mapper.Map(osuUser, player!);
+            mapper.Map(osuUser, player);
             await playersRepository.UpdateAsync(player!);
         }
         else
         {
             // Create new player
             player = mapper.Map<Player>(osuUser);
+
             await playersRepository.CreateAsync(player);
         }
     }
@@ -112,17 +113,7 @@ public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext c
             }
 
             rulesetData.Pp = osuUser.Statistics.Pp;
-
-            if (osuUser.Statistics.GlobalRank is null)
-            {
-                logger.LogDebug("Found null global rank while processing ruleset data, aborting " +
-                                "[osu! ID: {OsuPlayerId} | Ruleset: {Ruleset} | Statistics: {@Statistics}]", osuUser.Id, ruleset, osuUser.Statistics);
-                return;
-            }
-            else
-            {
-                rulesetData.GlobalRank = osuUser.Statistics.GlobalRank.Value;
-            }
+            rulesetData.GlobalRank = osuUser.Statistics.GlobalRank;
         }
 
         await playersRepository.UpdateAsync(player);
