@@ -45,6 +45,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Interfaces;
@@ -621,6 +622,28 @@ builder.Services
                     return;
                 }
 
+                // Validate X-Api-Key header for cookie authentication
+                AuthConfiguration authConfig = builder.Configuration.BindAndValidate<AuthConfiguration>(
+                    AuthConfiguration.Position
+                );
+
+                const string apiKeyHeader = "X-Api-Key";
+                if (!context.HttpContext.Request.Headers.TryGetValue(apiKeyHeader, out StringValues providedKey))
+                {
+                    authLogger.Debug("Cookie authentication rejected - X-Api-Key header not provided. UserId: {UserId}", userId);
+                    context.RejectPrincipal();
+                    await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    return;
+                }
+
+                if (!authConfig.AuthorizationApiKey.Equals(providedKey))
+                {
+                    authLogger.Debug("Cookie authentication rejected - Invalid X-Api-Key header. UserId: {UserId}", userId);
+                    context.RejectPrincipal();
+                    await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    return;
+                }
+
                 authLogger.Debug("Cookie validation successful for user: {UserId}", userId);
             },
             OnSigningIn = context =>
@@ -634,14 +657,14 @@ builder.Services
             {
                 string? userId = context.Principal?.FindFirst(OtrClaims.Subject)?.Value;
                 ILogger authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
-                authLogger.Information("User successfully signed in with cookie. UserId: {UserId}", userId ?? "Unknown");
+                authLogger.Debug("User successfully signed in with cookie. UserId: {UserId}", userId ?? "Unknown");
                 return Task.CompletedTask;
             },
             OnSigningOut = context =>
             {
                 string? userId = context.HttpContext.User.FindFirst(OtrClaims.Subject)?.Value;
                 ILogger authLogger = Log.ForContext("SourceContext", "Authentication.Cookie");
-                authLogger.Information("User signing out. UserId: {UserId}", userId ?? "Unknown");
+                authLogger.Debug("User signing out. UserId: {UserId}", userId ?? "Unknown");
                 return Task.CompletedTask;
             },
             OnRedirectToLogin = context =>
