@@ -52,12 +52,10 @@ public class FetchDeduplicationSettings
     /// <summary>
     /// TTL in seconds for pending reservations
     /// </summary>
-    [Range(60, 86400)]
     public int PendingTtlSeconds { get; init; } = 3600; // 1 hour default
 
     /// <summary>
     /// TTL in seconds for recently processed cache
     /// </summary>
-    [Range(60, 86400)]
     public int ProcessedTtlSeconds { get; init; } = 1800; // 30 minutes default
 }
