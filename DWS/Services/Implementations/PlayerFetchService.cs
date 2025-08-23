@@ -67,13 +67,14 @@ public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext c
         if (exists)
         {
             // Update existing player
-            mapper.Map(osuUser, player!);
+            mapper.Map(osuUser, player);
             await playersRepository.UpdateAsync(player!);
         }
         else
         {
             // Create new player
             player = mapper.Map<Player>(osuUser);
+
             await playersRepository.CreateAsync(player);
         }
     }

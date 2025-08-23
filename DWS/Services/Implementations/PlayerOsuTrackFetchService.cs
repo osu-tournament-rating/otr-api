@@ -53,10 +53,10 @@ public class PlayerOsuTrackFetchService(
         }
 
         player.OsuTrackLastFetch = DateTime.UtcNow;
+        await playersRepository.UpdateAsync(player);
+
         if (successfullyProcessedAnyRuleset)
         {
-            await playersRepository.UpdateAsync(player);
-
             logger.LogInformation("Successfully updated osu!track data for player {OsuPlayerId}", osuPlayerId);
             return true;
         }
