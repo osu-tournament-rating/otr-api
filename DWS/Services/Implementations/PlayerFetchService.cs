@@ -112,17 +112,7 @@ public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext c
             }
 
             rulesetData.Pp = osuUser.Statistics.Pp;
-
-            if (osuUser.Statistics.GlobalRank is null)
-            {
-                logger.LogDebug("Found null global rank while processing ruleset data, aborting " +
-                                "[osu! ID: {OsuPlayerId} | Ruleset: {Ruleset} | Statistics: {@Statistics}]", osuUser.Id, ruleset, osuUser.Statistics);
-                return;
-            }
-            else
-            {
-                rulesetData.GlobalRank = osuUser.Statistics.GlobalRank.Value;
-            }
+            rulesetData.GlobalRank = osuUser.Statistics.GlobalRank;
         }
 
         await playersRepository.UpdateAsync(player);

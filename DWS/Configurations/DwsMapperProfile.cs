@@ -185,7 +185,7 @@ public class DwsMapperProfile : Profile
         CreateMap<UserStatisticsVariant, PlayerOsuRulesetData>()
             .ForMember(dest => dest.Ruleset, opt => opt.MapFrom(src => src.Ruleset))
             .ForMember(dest => dest.Pp, opt => opt.MapFrom(src => src.Pp))
-            .ForMember(dest => dest.GlobalRank, opt => opt.MapFrom(src => src.GlobalRank!.Value))
+            .ForMember(dest => dest.GlobalRank, opt => opt.MapFrom(src => src.GlobalRank))
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.PlayerId, opt => opt.Ignore())
             .ForMember(dest => dest.Player, opt => opt.Ignore())

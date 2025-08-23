@@ -21,7 +21,7 @@ public class PlayerOsuRulesetData : UpdateableEntityBase
     /// <summary>
     /// Last recorded global rank
     /// </summary>
-    public int GlobalRank { get; set; }
+    public int? GlobalRank { get; set; }
 
     /// <summary>
     /// Global rank approximately at the time of the <see cref="Player"/>'s first appearance in a <see cref="Match"/>
