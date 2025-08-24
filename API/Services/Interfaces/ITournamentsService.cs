@@ -129,4 +129,10 @@ public interface ITournamentsService
     /// <param name="id">Tournament id</param>
     /// <param name="overrideVerifiedState">Whether to override existing human-verified or rejected states</param>
     Task RerunAutomationChecksAsync(int id, bool overrideVerifiedState = false);
+
+    /// <summary>
+    /// Enqueues all matches for data fetching from the given tournament, regardless of match fetch status.
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    Task FetchMatchDataAsync(int id);
 }

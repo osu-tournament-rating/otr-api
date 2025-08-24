@@ -240,12 +240,6 @@ public class TournamentsService(
                 Priority = MessagePriority.Normal
             };
 
-            await publishEndpoint.Publish(message, context =>
-            {
-                context.SetPriority((byte)message.Priority);
-                context.CorrelationId = message.CorrelationId;
-            });
-
             logger.LogInformation(
                 "Published beatmap fetch message for pooled beatmap [Tournament ID: {TournamentId} | Beatmap ID: {BeatmapId} | Correlation ID: {CorrelationId}]",
                 id, osuBeatmapId, message.CorrelationId);
@@ -262,4 +256,20 @@ public class TournamentsService(
 
     public async Task DeletePooledBeatmapsAsync(int id) =>
         await tournamentsRepository.DeletePooledBeatmapsAsync(id);
+
+    public async Task FetchMatchDataAsync(int id)
+    {
+        var osuMatchIds = await tournamentsRepository.GetOsuMatchIdsAsync(id);
+
+        foreach (long osuMatchId in osuMatchIds)
+        {
+            var message = new FetchMatchMessage
+            {
+                OsuMatchId = osuMatchId,
+                Priority = MessagePriority.High
+            };
+
+            await publishEndpoint.Publish(message);
+        }
+    }
 }
