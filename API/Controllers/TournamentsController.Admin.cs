@@ -127,4 +127,25 @@ public partial class TournamentsController
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Enqueues data for match fetching 
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPost("{id:int}:fetch-match-data")]
+    [Authorize(Roles = OtrClaims.Roles.Admin)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> FetchMatchDataAsync(int id)
+    {
+        if (!await tournamentsService.ExistsAsync(id))
+        {
+            return NotFound();
+        }
+
+        await tournamentsService.FetchMatchDataAsync(id);
+
+        return Ok();
+    }
 }

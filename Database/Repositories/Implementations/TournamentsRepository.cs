@@ -6,6 +6,7 @@ using Database.Entities.Processor;
 using Database.Repositories.Interfaces;
 using Database.Utilities.Extensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 
 namespace Database.Repositories.Implementations;
 
@@ -382,4 +383,10 @@ public class TournamentsRepository(OtrContext context, IBeatmapsRepository beatm
             .Include(t => t.SubmittedByUser!.Player)
             .Include(t => t.VerifiedByUser!.Player)
             .AsSplitQuery();
+
+    public async Task<ICollection<long>> GetOsuMatchIdsAsync(int id) =>
+        await _context.Matches
+            .Where(m => m.TournamentId == id)
+            .Select(m => m.OsuId)
+            .ToListAsync();
 }

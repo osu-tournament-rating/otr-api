@@ -260,41 +260,31 @@ public class MatchFetchService(
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     private async Task ProcessGameScoresAsync(Game game, MultiplayerGame apiGame, CancellationToken cancellationToken)
     {
-        List<DbGameScore> existingScores = await context.GameScores
-            .Include(gs => gs.Player)
+        var existingScoresMap = (await context.GameScores
             .Where(gs => gs.GameId == game.Id)
-            .ToListAsync(cancellationToken);
-        var existingScoreMap = new Dictionary<(int, Team), DbGameScore>();
+            .ToListAsync(cancellationToken))
+            .ToDictionary(s => s.PlayerId);
 
-        foreach (DbGameScore score in existingScores)
-        {
-            existingScoreMap[(score.PlayerId, score.Team)] = score;
-        }
+        var playerOsuIds = apiGame.Scores.Select(s => s.UserId).Distinct().ToList();
+        var players = await playersRepository.GetAsync(playerOsuIds);
 
-        var playerIds = apiGame.Scores
-            .Select(s => s.UserId)
-            .Distinct()
-            .ToList();
-
-        IEnumerable<Player> players = await playersRepository.GetAsync(playerIds);
-        var playerMap = players.ToDictionary(p => p.OsuId, p => p);
+        var playerMap = players.ToDictionary(p => p.OsuId, p => p.Id);
 
         foreach (ApiGameScore apiScore in apiGame.Scores)
         {
-            if (!playerMap.TryGetValue(apiScore.UserId, out Player? player))
+            if (!playerMap.TryGetValue(apiScore.UserId, out int playerId))
             {
-                logger.LogWarning("Player {PlayerId} not found for score in game {GameId}", apiScore.UserId, game.Id);
+                logger.LogWarning("Player with OsuId {OsuId} not found for score in game {GameId}", apiScore.UserId, game.OsuId);
                 continue;
             }
 
-            (int Id, Team Team) key = (player.Id, apiScore.SlotInfo.Team);
-
-            if (existingScoreMap.TryGetValue(key, out DbGameScore? existingScore))
+            // Check for an existing score using only the PlayerId.
+            if (existingScoresMap.TryGetValue(playerId, out DbGameScore? existingScore))
             {
+                // Score exists: update it with the latest data.
                 mapper.Map(apiScore, existingScore);
                 existingScore.Ruleset = game.Ruleset;
 
-                // If the parent game is rejected, cascade the rejection to updated scores
                 if (game.VerificationStatus == VerificationStatus.Rejected)
                 {
                     existingScore.VerificationStatus = VerificationStatus.Rejected;
@@ -305,20 +295,20 @@ public class MatchFetchService(
             }
             else
             {
-                DbGameScore score = mapper.Map<DbGameScore>(apiScore);
-                score.GameId = game.Id;
-                score.PlayerId = player.Id;
-                score.Ruleset = game.Ruleset;
+                // Score does not exist: create a new one.
+                DbGameScore newScore = mapper.Map<DbGameScore>(apiScore);
+                newScore.GameId = game.Id;
+                newScore.PlayerId = playerId;
+                newScore.Ruleset = game.Ruleset;
 
-                // If the parent game is rejected, cascade the rejection to new scores
                 if (game.VerificationStatus == VerificationStatus.Rejected)
                 {
-                    score.VerificationStatus = VerificationStatus.Rejected;
-                    score.RejectionReason |= ScoreRejectionReason.RejectedGame;
-                    logger.LogInformation("Cascaded rejection to new score for player {PlayerId} in rejected game {GameId}", player.Id, game.Id);
+                    newScore.VerificationStatus = VerificationStatus.Rejected;
+                    newScore.RejectionReason |= ScoreRejectionReason.RejectedGame;
+                    logger.LogInformation("Cascaded rejection to new score for player {PlayerId} in rejected game {GameId}", playerId, game.OsuId);
                 }
 
-                await gameScoresRepository.CreateAsync(score);
+                await gameScoresRepository.CreateAsync(newScore);
             }
         }
     }

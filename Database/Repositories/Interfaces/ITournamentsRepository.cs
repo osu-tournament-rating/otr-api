@@ -211,6 +211,13 @@ public interface ITournamentsRepository : IRepository<Tournament>
     Task<Dictionary<int, int>> GetLobbySizeStatsAsync(bool verified = true);
 
     /// <summary>
+    /// Get all osu! match ids for a tournament
+    /// </summary>
+    /// <param name="id">Tournament id</param>
+    /// <returns>All osu! match IDs for the tournament</returns>
+    Task<ICollection<long>> GetOsuMatchIdsAsync(int id);
+
+    /// <summary>
     /// Loads the matches, games, scores, player match stats, and rating adjustments for a tournament to enable cascading operations
     /// </summary>
     /// <param name="tournament">The tournament to load children for</param>
