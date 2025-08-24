@@ -260,8 +260,6 @@ public class MatchFetchService(
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     private async Task ProcessGameScoresAsync(Game game, MultiplayerGame apiGame, CancellationToken cancellationToken)
     {
-        // Fetch existing scores and map them by PlayerId for efficient lookup.
-        // This aligns with the database unique constraint (player_id, game_id).
         var existingScoresMap = (await context.GameScores
             .Where(gs => gs.GameId == game.Id)
             .ToListAsync(cancellationToken))
@@ -270,7 +268,6 @@ public class MatchFetchService(
         var playerOsuIds = apiGame.Scores.Select(s => s.UserId).Distinct().ToList();
         var players = await playersRepository.GetAsync(playerOsuIds);
 
-        // Map osu! user ID to internal database Player ID.
         var playerMap = players.ToDictionary(p => p.OsuId, p => p.Id);
 
         foreach (ApiGameScore apiScore in apiGame.Scores)
