@@ -173,6 +173,11 @@ try
     IHost host = builder.Build();
 
     Log.Information("DWS starting up...");
+
+    // Clear all message deduplication keys
+    var deduplicationService = host.Services.GetRequiredService<IMessageDeduplicationService>();
+    await deduplicationService.ClearAsync();
+
     await host.RunAsync();
 }
 catch (Exception ex)

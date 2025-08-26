@@ -9,15 +9,26 @@ using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
 using OsuApiClient.Domain.Osu.Users;
 using OsuApiClient.Domain.Osu.Users.Attributes;
+using OsuApiClient.Enums;
 
 namespace DWS.Services.Implementations;
 
 public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext context,
-    IOsuClient osuClient, IPlayersRepository playersRepository, IMapper mapper) : IPlayerFetchService
+    IOsuClient osuClient, IPlayersRepository playersRepository, IMapper mapper,
+    IMessageDeduplicationService messageDeduplicationService) : IPlayerFetchService
 {
     public async Task<bool> FetchAndPersistAsync(long osuPlayerId, CancellationToken cancellationToken = default)
     {
         logger.LogDebug("Fetching player {OsuPlayerId} from osu! API", osuPlayerId);
+
+        var player = await playersRepository.GetOrCreateAsync(osuPlayerId);
+        player.OsuLastFetch = DateTime.UtcNow;
+
+        if (player is null)
+        {
+            logger.LogWarning("Player with osu! ID {OsuId} does not exist", osuPlayerId);
+            return false;
+        }
 
         bool processedOnce = false;
         foreach (Ruleset ruleset in EnumConstants.FetchableRulesets)
@@ -28,14 +39,18 @@ public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext c
 
                 if (osuUser is null)
                 {
+                    await messageDeduplicationService.ReleaseFetchAsync(FetchResourceType.Player, osuPlayerId, FetchPlatform.Osu);
+                    await playersRepository.UpdateAsync(player);
+
                     logger.LogWarning("No data found for player, aborting further fetching of ruleset data [osu! ID: {OsuPlayerId} | Ruleset: {Ruleset}]",
                         osuPlayerId, ruleset);
+
                     return false;
                 }
 
                 if (!processedOnce)
                 {
-                    await ProcessPlayerAsync(osuUser, cancellationToken);
+                    LoadPlayer(osuUser, player);
                     processedOnce = true;
                 }
 
@@ -51,32 +66,22 @@ public class PlayerFetchService(ILogger<PlayerFetchService> logger, OtrContext c
                 logger.LogError(ex, "Error processing player [osu! ID: {OsuPlayerId} | Ruleset: {Ruleset}]", osuPlayerId, ruleset);
                 return false;
             }
+            finally
+            {
+                await messageDeduplicationService.ReleaseFetchAsync(FetchResourceType.Player, osuPlayerId, FetchPlatform.Osu);
+                await playersRepository.UpdateAsync(player);
+            }
         }
 
-        logger.LogDebug("Finished fetch & storage of ruleset data for player {OsuPlayerId}", osuPlayerId);
+        await messageDeduplicationService.MarkFetchCompletedAsync(FetchResourceType.Player, osuPlayerId, FetchPlatform.Osu);
 
+        logger.LogDebug("Finished fetch & storage of ruleset data for player {OsuPlayerId}", osuPlayerId);
         return true;
     }
 
-    private async Task ProcessPlayerAsync(UserExtended osuUser, CancellationToken cancellationToken)
+    private void LoadPlayer(UserExtended osuUser, Player player)
     {
-        // Get reference to existing player if available
-        Player? player = await context.Players.FirstOrDefaultAsync(p => p.OsuId == osuUser.Id, cancellationToken);
-        bool exists = player is not null;
-
-        if (exists)
-        {
-            // Update existing player
-            mapper.Map(osuUser, player);
-            await playersRepository.UpdateAsync(player!);
-        }
-        else
-        {
-            // Create new player
-            player = mapper.Map<Player>(osuUser);
-
-            await playersRepository.CreateAsync(player);
-        }
+        mapper.Map(osuUser, player);
     }
 
     private async Task ProcessPlayerRulesetDataAsync(UserExtended osuUser, Ruleset ruleset, CancellationToken cancellationToken)

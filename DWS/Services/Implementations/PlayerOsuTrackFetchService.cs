@@ -8,6 +8,7 @@ using DWS.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using OsuApiClient;
 using OsuApiClient.Domain.OsuTrack;
+using OsuApiClient.Enums;
 
 namespace DWS.Services.Implementations;
 
@@ -15,7 +16,8 @@ public class PlayerOsuTrackFetchService(
     ILogger<PlayerOsuTrackFetchService> logger,
     OtrContext context,
     IOsuClient osuClient,
-    IPlayersRepository playersRepository) : IPlayerOsuTrackFetchService
+    IPlayersRepository playersRepository,
+    IMessageDeduplicationService messageDeduplicationService) : IPlayerOsuTrackFetchService
 {
     public async Task<bool> FetchAndPersistAsync(long osuPlayerId, CancellationToken cancellationToken = default)
     {
@@ -29,6 +31,8 @@ public class PlayerOsuTrackFetchService(
 
         if (player is null)
         {
+            await messageDeduplicationService.ReleaseFetchAsync(FetchResourceType.Player, osuPlayerId, FetchPlatform.OsuTrack);
+
             logger.LogWarning("Player not found in database, aborting osu!track fetch [osu! ID: {OsuPlayerId}]", osuPlayerId);
             return false;
         }
@@ -47,13 +51,19 @@ public class PlayerOsuTrackFetchService(
             }
             catch (Exception ex)
             {
+                await messageDeduplicationService.ReleaseFetchAsync(FetchResourceType.Player, osuPlayerId, FetchPlatform.OsuTrack);
+
                 logger.LogError(ex, "Error processing osu!track data for player [osu! ID: {OsuPlayerId} | Ruleset: {Ruleset}]",
                     osuPlayerId, ruleset);
             }
+            finally
+            {
+                player.OsuTrackLastFetch = DateTime.UtcNow;
+                await playersRepository.UpdateAsync(player);
+            }
         }
 
-        player.OsuTrackLastFetch = DateTime.UtcNow;
-        await playersRepository.UpdateAsync(player);
+        await messageDeduplicationService.MarkFetchCompletedAsync(FetchResourceType.Player, osuPlayerId, FetchPlatform.OsuTrack);
 
         if (successfullyProcessedAnyRuleset)
         {

@@ -27,6 +27,11 @@ public interface IMessageDeduplicationService
     Task MarkFetchCompletedAsync(FetchResourceType resourceType, long resourceId, FetchPlatform platform, TimeSpan? processedTtl = null);
 
     /// <summary>
+    /// Clears all resource fetch reservations
+    /// </summary>
+    Task ClearAsync();
+
+    /// <summary>
     /// Releases a resource fetch reservation (used on failure or timeout)
     /// </summary>
     /// <param name="resourceType">Type of resource</param>

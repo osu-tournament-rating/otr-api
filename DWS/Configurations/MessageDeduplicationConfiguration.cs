@@ -30,13 +30,13 @@ public class MessageDeduplicationConfiguration
     /// Configuration for beatmap fetch deduplication
     /// </summary>
     [Required]
-    public FetchDeduplicationSettings BeatmapFetch { get; init; } = new();
+    public FetchDeduplicationSettings BeatmapFetch { get; init; } = new() { Enabled = false };
 
     /// <summary>
     /// Configuration for match fetch deduplication
     /// </summary>
     [Required]
-    public FetchDeduplicationSettings MatchFetch { get; init; } = new();
+    public FetchDeduplicationSettings MatchFetch { get; init; } = new() { Enabled = false };
 }
 
 /// <summary>
