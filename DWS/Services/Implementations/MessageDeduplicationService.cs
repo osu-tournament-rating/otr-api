@@ -301,4 +301,30 @@ public class MessageDeduplicationService(
         FetchDeduplicationSettings settings = GetResourceConfiguration(resourceType, platform);
         return TimeSpan.FromSeconds(settings.ProcessedTtlSeconds);
     }
+
+    public async Task ClearAsync()
+    {
+        if (!_configuration.Enabled)
+        {
+            logger.LogDebug("Deduplication is disabled, skipping clear operation");
+            return;
+        }
+
+        const string pendingKeyPattern = "otr-dws:fetch:*:*:pending:*";
+        var server = redis.GetServer(redis.GetEndPoints().First());
+
+        try
+        {
+            foreach (var key in server.Keys(pattern: pendingKeyPattern))
+            {
+                await _database.KeyDeleteAsync(key);
+                logger.LogInformation("Deleted key {Key}", key);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error clearing pending fetch keys");
+            throw;
+        }
+    }
 }
