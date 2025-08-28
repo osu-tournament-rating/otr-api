@@ -618,7 +618,6 @@ builder.Services
                 {
                     authLogger.Warning("Cookie validation failed - user not authenticated. UserId: {UserId}", userId ?? "Unknown");
                     context.RejectPrincipal();
-                    await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     return;
                 }
 
@@ -632,7 +631,6 @@ builder.Services
                 {
                     authLogger.Debug("Cookie authentication rejected - X-Api-Key header not provided. UserId: {UserId}", userId);
                     context.RejectPrincipal();
-                    await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     return;
                 }
 
@@ -640,7 +638,6 @@ builder.Services
                 {
                     authLogger.Debug("Cookie authentication rejected - Invalid X-Api-Key header. UserId: {UserId}", userId);
                     context.RejectPrincipal();
-                    await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     return;
                 }
 
