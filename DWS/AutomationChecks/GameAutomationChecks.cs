@@ -13,6 +13,9 @@ public class GameAutomationChecks(ILogger<GameAutomationChecks> logger)
     {
         logger.LogTrace("Processing game {GameId}", game.Id);
 
+        // Clear warning flags prior to processing
+        game.WarningFlags = GameWarningFlags.None;
+
         GameRejectionReason result = GameBeatmapUsageCheck(game, tournament) |
                                      GameEndTimeCheck(game) |
                                      GameModCheck(game) |

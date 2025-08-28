@@ -21,6 +21,9 @@ public class MatchAutomationChecks(ILogger<MatchAutomationChecks> logger)
     {
         logger.LogTrace("Processing match {MatchId}", match.Id);
 
+        // Clear warning flags prior to processing
+        match.WarningFlags = MatchWarningFlags.None;
+
         MatchBeatmapCheck(match);
         MatchNameFormatCheck(match);
         MatchTeamsIntegrityCheck(match);
