@@ -57,7 +57,6 @@ public class GameDTO
     [EnumDataType(typeof(VerificationStatus))]
     public VerificationStatus VerificationStatus { get; init; }
 
-
     /// <summary>
     /// Warning flags
     /// </summary>
@@ -83,7 +82,7 @@ public class GameDTO
     /// <summary>
     /// The beatmap played
     /// </summary>
-    public BeatmapDTO Beatmap { get; init; } = null!;
+    public BeatmapDTO? Beatmap { get; init; }
 
     /// <summary>
     /// Win record
