@@ -1,4 +1,3 @@
-# o!TR API
-[![CodeFactor](https://www.codefactor.io/repository/github/hburn7/otr-api/badge?s=382af0f57183ebbc8d658da42ca70cb5450cc4e8)](https://www.codefactor.io/repository/github/hburn7/otr-api)
+# Obsolete
 
-All API documentation is located in [this section](https://docs.otr.stagec.xyz/o-tr-api.html) of the [otr docs](https://docs.otr.stagec.xyz/).
+This repository was made obsolete in [this release](https://github.com/osu-tournament-rating/otr-web/releases/tag/2025.10.01) of [otr-web](https://github.com/osu-tournament-rating/otr-web).
